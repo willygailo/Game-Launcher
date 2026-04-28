@@ -1,4 +1,4 @@
-# 🎮 Game Launcher & Performance Booster
+<h1 align="center">🎮 Game Launcher & Performance Booster</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Android-10--15%20(API%2029--35)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API"/>
@@ -13,24 +13,20 @@
 
 ---
 
-## 👤 Developer
+<h2 align="center">👤 Developer</h2>
 
-<table>
-  <tr>
-    <td>
-      <img src="https://github.com/Willy-kali.png" width="100" style="border-radius:50%"/>
-    </td>
-    <td>
-      <strong>Willy Gailo</strong><br/>
-      🔗 <a href="https://github.com/Willy-kali">GitHub</a> • 
-      <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027">Facebook</a>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="https://github.com/Willy-kali.png" width="120" style="border-radius:50%"/><br/><br/>
+  <strong>Willy Gailo</strong><br/>
+  🔗 <a href="https://github.com/Willy-kali">GitHub</a> • 
+  <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027">Facebook</a>
+</p>
 
 ---
 
-## ✨ Features
+<h2 align="center">✨ Features</h2>
+
+<div align="center">
 
 | 🎯 Feature | 📝 Description | 🔥 Status |
 |------------|----------------|-----------|
@@ -47,9 +43,11 @@
 | **📦 Storage Optimizer** | Run fstrim para sa speed boost | ✅ Available |
 | **🌐 Network Manager** | Monitor ping at connection status | ✅ Available |
 
+</div>
+
 ---
 
-## 🛠️ Tech Stack
+<h2 align="center">🛠️ Tech Stack</h2>
 
 <div align="center">
 
@@ -66,14 +64,16 @@
 
 ---
 
-## 🚀 Quick Start
+<h2 align="center">🚀 Quick Start</h2>
+
+<div align="center">
 
 ### 📋 Requirements
 
-- ☝️ Android Studio Hedgehog (2023.1.1) or newer
-- ☕ JDK 17
-- 🤖 Android SDK 34 (Android 14)
-- 📱 Test device: Android 10-15 (API 29-35)
+☝️ Android Studio Hedgehog (2023.1.1) or newer  
+☕ JDK 17  
+🖥️ Android SDK 34 (Android 14)  
+📱 Test device: Android 10-15 (API 29-35)
 
 ### 🔧 Build Instructions
 
@@ -99,9 +99,13 @@ cd "Game launcher"
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
+</div>
+
 ---
 
-## 🔐 Permissions Needed
+<h2 align="center">🔐 Permissions Needed</h2>
+
+<div align="center">
 
 | 🔑 Permission | 📝 Purpose |
 |---------------|-------------|
@@ -112,9 +116,11 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service running |
 | `ACCESS_WIFI_STATE` | WiFi lock feature |
 
+</div>
+
 ---
 
-## 📱 Supported Android Versions
+<h2 align="center">📱 Supported Android Versions</h2>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Android%2010-API%2029-3DDC84?style=flat" alt="API 29"/>
@@ -127,7 +133,9 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
-## 🔧 Troubleshooting
+<h2 align="center">🔧 Troubleshooting</h2>
+
+<div align="center">
 
 <details>
 <summary><strong>🖥️ Max Brightness Not Working?</strong></summary>
@@ -165,9 +173,13 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 </details>
 
+</div>
+
 ---
 
-## 📂 Project Structure
+<h2 align="center">📂 Project Structure</h2>
+
+<div align="center">
 
 ```
 app/src/main/java/com/gamelauncher/
@@ -192,27 +204,33 @@ app/src/main/java/com/gamelauncher/
 └── 🏠 widgets/           # Home Screen Widgets
 ```
 
+</div>
+
 ---
 
-## 🤝 Contributing
+<h2 align="center">🤝 Contributing</h2>
 
+<p align="center">
 Contributions are welcome! 🎉
 
 1. 🍴 Fork the Project
-2. 🌿 Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push to the Branch (`git push origin feature/AmazingFeature`)
+2. 🌿 Create your Feature Branch (<code>git checkout -b feature/AmazingFeature</code>)
+3. 💾 Commit your Changes (<code>git commit -m 'Add some AmazingFeature'</code>)
+4. 📤 Push to the Branch (<code>git push origin feature/AmazingFeature</code>)
 5. 🔁 Open a Pull Request
+</p>
 
 ---
 
-## 📜 License
+<h2 align="center">📜 License</h2>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<p align="center">
+This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.
+</p>
 
 ---
 
-## 🌟 Showcase
+<h2 align="center">🌟 Showcase</h2>
 
 <p align="center">
   <em>🚀 Built with ❤️ for Filipino mobile gamers!</em><br/>
