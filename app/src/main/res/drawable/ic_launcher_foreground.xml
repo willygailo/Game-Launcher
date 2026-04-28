@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Gaming controller icon -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M74.5,42h-41c-2.5,0 -4.5,2 -4.5,4.5v25c0,2.5 2,4.5 4.5,4.5h41c2.5,0 4.5,-2 4.5,-4.5v-25c0,-2.5 -2,-4.5 -4.5,-4.5zM54,67h-6v-6h6v6zM54,57h-6v-6h6v6zM64,67h-6v-6h6v6zM64,57h-6v-6h6v6z"/>
+    <!-- D-pad -->
+    <path
+        android:fillColor="#B900FF"
+        android:pathData="M41,54h-6v-6h-6v6h-6v6h6v6h6v-6h6z"/>
+    <!-- Boost flame -->
+    <path
+        android:fillColor="#FF0055"
+        android:pathData="M74,58c0,0 -3,4 -6,4s-3,-4 -3,-4s2,-3 3,-5s3,5 3,5z"/>
+</vector>

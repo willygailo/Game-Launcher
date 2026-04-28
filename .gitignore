@@ -1,0 +1,61 @@
+# Built application files
+*.apk
+*.ap_
+*.dex
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle files
+.gradle/
+build/
+app/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log Files
+*.log
+
+# Android Studio generated files
+*.iml
+/.idea/workspace.xml
+/.idea/libraries
+/.idea/gradle.xml
+/.idea/assetWizardModel.xml
+/.idea/runConfigurations.xml
+/.idea/codeStyleOptions.xml
+/.idea/codeStyles
+/.idea/caches
+/.idea/modules.xml
+/.idea/navEditor.xml
+/.idea/resource-manager.xml
+/.idea/thumbnails
+/.idea/vcs.xml
+/.idea/misc.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services
+google-services.json
+google-services-info.plist
+
+# Android Profiling
+*.hprof
+
+# Kotlin
+.kotlin/
+
+# Gradle Wrapper (keep the jar)
+!gradle/wrapper/gradle-wrapper.jar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Gradle build cache
+.gradle-home/
