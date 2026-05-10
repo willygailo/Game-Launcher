@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gamelauncher.core.startManagedService
 import com.gamelauncher.data.model.GameModel
 import com.gamelauncher.services.GameBoosterService
 import com.gamelauncher.ui.theme.*
@@ -29,6 +32,7 @@ fun GameListScreen(
     viewModel: GamesViewModel = hiltViewModel()
 ) {
     val games by viewModel.games.collectAsState()
+    val isScanning by viewModel.isScanning.collectAsState()
     val context = LocalContext.current
 
     Column(
@@ -37,17 +41,54 @@ fun GameListScreen(
             .background(BackgroundDark)
             .padding(16.dp)
     ) {
-        Text(
-            text = "My Games",
-            style = MaterialTheme.typography.headlineMedium,
-            color = TextPrimary,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "My Games",
+                style = MaterialTheme.typography.headlineMedium,
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(onClick = viewModel::refreshGames) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Refresh games",
+                    tint = PrimaryNeon
+                )
+            }
+        }
 
-        if (games.isEmpty()) {
+        if (isScanning) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = PrimaryNeon)
+            }
+        } else if (games.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "No games detected yet",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tap refresh after installing or updating games",
+                        color = TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedButton(onClick = viewModel::refreshGames) {
+                        Text("Scan Games")
+                    }
+                }
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -61,9 +102,9 @@ fun GameListScreen(
                                     action = GameBoosterService.ACTION_START_BOOST
                                     putExtra(GameBoosterService.EXTRA_PACKAGE, game.packageName)
                                     putExtra(GameBoosterService.EXTRA_TARGET_FPS, game.targetFps)
-                                    putExtra(GameBoosterService.EXTRA_WIFI_LOCK, game.wifiLockEnabled)
+                                    putExtra(GameBoosterService.EXTRA_ENABLE_NETWORK, game.wifiLockEnabled)
                                 }
-                                context.startService(intent)
+                                context.startManagedService(intent)
                             }
                             viewModel.launchGame(game)
                         },

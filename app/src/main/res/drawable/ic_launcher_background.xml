@@ -4,8 +4,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Background gradient -->
+
+    <!-- Deep dark base background -->
     <path
         android:fillColor="#09090B"
         android:pathData="M0,0h108v108h-108z"/>
+
+    <!-- Subtle blue-purple radial glow in center -->
+    <path
+        android:fillColor="#180A1F"
+        android:pathData="M54,54 A35,35 0 1,1 53.99,54z"/>
+
+    <!-- Faint cyan inner glow -->
+    <path
+        android:fillColor="#0C1E2A"
+        android:pathData="M54,54 A20,20 0 1,1 53.99,54z"/>
+
+    <!-- Subtle corner accents (top-left) -->
+    <path
+        android:fillColor="#06001A"
+        android:pathData="M0,0 L30,0 L0,30z"/>
+
+    <!-- Subtle corner accents (bottom-right) -->
+    <path
+        android:fillColor="#06001A"
+        android:pathData="M108,108 L78,108 L108,78z"/>
+
 </vector>

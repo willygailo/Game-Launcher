@@ -8,8 +8,8 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -42,6 +43,12 @@ class OverlayService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        val hasOverlayPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
+        if (!hasOverlayPermission) {
             stopSelf()
             return START_NOT_STICKY
         }
@@ -79,7 +86,9 @@ class OverlayService : Service() {
                 @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         )
 
@@ -93,6 +102,7 @@ class OverlayService : Service() {
             setBackgroundColor(Color.parseColor("#80000000"))
             setPadding(16, 8, 16, 8)
             textSize = 14f
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
         }
 
         try {
@@ -100,7 +110,7 @@ class OverlayService : Service() {
             fpsManager.startTracking()
 
             serviceScope.launch {
-                fpsManager.fps.collect { currentFps ->
+                fpsManager.fps.collectLatest { currentFps ->
                     (overlayView as? TextView)?.text = "FPS: ${currentFps.roundToInt()}"
                     
                     val color = when {

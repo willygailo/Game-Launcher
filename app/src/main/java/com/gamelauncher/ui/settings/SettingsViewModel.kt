@@ -1,9 +1,12 @@
 package com.gamelauncher.ui.settings
 
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.provider.Settings
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import com.gamelauncher.core.startManagedService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gamelauncher.core.ImmersiveModeManager
@@ -42,6 +45,47 @@ class SettingsViewModel @Inject constructor(
         initialValue = false
     )
 
+    val isGameDetectorEnabled: StateFlow<Boolean> = settingsPreferences.gameDetectorEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+
+    val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
+        hasUsageAccess()
+    }
+
+    val hasOverlayPermission: StateFlow<Boolean> = stateFlowFrom {
+        canDrawOverlays()
+    }
+
+    val hasWriteSettingsPermission: StateFlow<Boolean> = stateFlowFrom {
+        immersiveModeManager.hasWriteSettingsPermission()
+    }
+
+    val hasNotificationPermission: StateFlow<Boolean> = stateFlowFrom {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val pm = context.packageManager
+            pm.checkPermission(
+                android.Manifest.permission.POST_NOTIFICATIONS,
+                context.packageName
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    private fun <T> stateFlowFrom(block: () -> T): StateFlow<T> {
+        return kotlinx.coroutines.flow.MutableStateFlow(block()).also { flow ->
+            viewModelScope.launch {
+                while (true) {
+                    kotlinx.coroutines.delay(2000)
+                    flow.value = block()
+                }
+            }
+        }
+    }
+
     fun setGlobalAutoBoost(enabled: Boolean) {
         viewModelScope.launch {
             settingsPreferences.setGlobalAutoBoost(enabled)
@@ -57,14 +101,35 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPreferences.setOverlayEnabled(enabled)
             if (enabled) {
-                val intent = Intent(context, OverlayService::class.java)
-                context.startService(intent)
+                if (canDrawOverlays()) {
+                    context.startManagedService(Intent(context, OverlayService::class.java))
+                } else {
+                    requestOverlayPermission()
+                }
             } else {
                 val intent = Intent(context, OverlayService::class.java).apply {
                     action = OverlayService.ACTION_STOP
                 }
-                context.startService(intent)
+                context.startManagedService(intent)
             }
+        }
+    }
+
+    fun setGameDetectorEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPreferences.setGameDetectorEnabled(enabled)
+            if (enabled && !hasUsageAccess()) {
+                requestUsageAccessPermission()
+                return@launch
+            }
+            val intent = Intent(context, GameDetectorService::class.java).apply {
+                action = if (enabled) {
+                    GameDetectorService.ACTION_START_DETECTOR
+                } else {
+                    GameDetectorService.ACTION_STOP_DETECTOR
+                }
+            }
+            context.startManagedService(intent)
         }
     }
 
@@ -93,7 +158,7 @@ class SettingsViewModel @Inject constructor(
                 val boostIntent = Intent(context, GameBoosterService::class.java).apply {
                     action = GameBoosterService.ACTION_STOP_BOOST
                 }
-                context.startService(boostIntent)
+                context.startManagedService(boostIntent)
             } catch (e: Exception) {}
             
             // Stop Overlay Service
@@ -101,7 +166,7 @@ class SettingsViewModel @Inject constructor(
                 val overlayIntent = Intent(context, OverlayService::class.java).apply {
                     action = OverlayService.ACTION_STOP
                 }
-                context.startService(overlayIntent)
+                context.startManagedService(overlayIntent)
             } catch (e: Exception) {}
             
             // Stop Game Detector
@@ -109,12 +174,43 @@ class SettingsViewModel @Inject constructor(
                 val detectorIntent = Intent(context, GameDetectorService::class.java).apply {
                     action = GameDetectorService.ACTION_STOP_DETECTOR
                 }
-                context.startService(detectorIntent)
+                context.startManagedService(detectorIntent)
             } catch (e: Exception) {}
             
             // Reset preferences
             settingsPreferences.setGlobalAutoBoost(false)
             settingsPreferences.setOverlayEnabled(false)
+            settingsPreferences.setGameDetectorEnabled(false)
+        }
+    }
+
+    fun requestOverlayPermission() {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${context.packageName}")
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    fun requestUsageAccessPermission() {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    fun requestBatteryOptimizationExemption() {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:${context.packageName}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { context.startActivity(intent) }.onFailure {
+            val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(fallback)
         }
     }
 
@@ -132,6 +228,25 @@ class SettingsViewModel @Inject constructor(
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(altIntent)
+        }
+    }
+
+    private fun canDrawOverlays(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(context)
+    }
+
+    private fun hasUsageAccess(): Boolean {
+        return try {
+            val usageStatsManager = context.getSystemService(UsageStatsManager::class.java)
+            val now = System.currentTimeMillis()
+            val stats = usageStatsManager?.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                now - 10000,
+                now
+            )
+            stats != null && stats.isNotEmpty()
+        } catch (e: Exception) {
+            false
         }
     }
 }

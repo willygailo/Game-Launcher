@@ -7,7 +7,9 @@ import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gamelauncher.core.DeviceManager
+import com.gamelauncher.core.FpsMonitor
 import com.gamelauncher.core.ImmersiveModeManager
+import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.core.RootShellManager
 import com.gamelauncher.data.model.DeviceSpecs
@@ -25,8 +27,10 @@ class DashboardViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val deviceManager: DeviceManager,
     private val performanceManager: PerformanceManager,
+    private val networkManager: NetworkManager,
     private val immersiveModeManager: ImmersiveModeManager,
-    private val rootShellManager: RootShellManager
+    private val rootShellManager: RootShellManager,
+    private val fpsMonitor: FpsMonitor
 ) : ViewModel() {
 
     private val _deviceSpecs = MutableStateFlow(DeviceSpecs())
@@ -43,13 +47,22 @@ class DashboardViewModel @Inject constructor(
 
     init {
         startMonitoring()
+        startFpsMonitoring()
         checkRootStatus()
-        checkPermissions()
+        refreshPermissionStates()
     }
 
-    private fun checkPermissions() {
-        _isDndEnabled.value = immersiveModeManager.hasDndPermission()
-        _isBrightnessLocked.value = immersiveModeManager.hasWriteSettingsPermission()
+    private fun startFpsMonitoring() {
+        viewModelScope.launch {
+            fpsMonitor.getFpsFlow().collect { fps ->
+                _deviceSpecs.value = _deviceSpecs.value.copy(currentFps = fps)
+            }
+        }
+    }
+
+    fun refreshPermissionStates() {
+        _isDndEnabled.value = immersiveModeManager.isGamingDndActive()
+        _isBrightnessLocked.value = immersiveModeManager.isBrightnessLocked()
     }
 
     private fun checkRootStatus() {
@@ -62,12 +75,19 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             while (true) {
                 val (ramTotal, ramUsed, ramFree) = deviceManager.getRamInfo()
-                val cpuMhz = deviceManager.getCpuFreqMhz()
+                val socInfo = deviceManager.getSocInfo()
                 
                 _deviceSpecs.value = _deviceSpecs.value.copy(
+                    socName = socInfo.socName,
+                    architecture = socInfo.architecture,
+                    deviceRating = deviceManager.getDeviceRating(),
+                    isGamingOptimized = socInfo.isGamingOptimized,
+
                     cpuUsagePercent = deviceManager.getCpuUsagePercent(),
-                    cpuFreqMhz = cpuMhz,
+                    cpuFreqMhz = deviceManager.getCpuFreqMhz(),
+                    cpuCoreCount = deviceManager.getCoreCount(),
                     cpuGovernor = deviceManager.getCpuGovernor(),
+                    gpuUsagePercent = performanceManager.getGpuUsagePercent(),
                     gpuFreqMhz = performanceManager.getGpuFreqMhz(),
                     gpuRenderer = performanceManager.getGpuRenderer(),
                     ramTotalMb = ramTotal,
@@ -76,7 +96,12 @@ class DashboardViewModel @Inject constructor(
                     batteryLevel = deviceManager.getBatteryLevelInt(),
                     batteryTemperature = deviceManager.getBatteryTemperatureFloat(),
                     batteryChargingStatus = deviceManager.getBatteryStatusString(),
+                    batteryHealth = deviceManager.getBatteryHealth(),
+                    batteryVoltage = deviceManager.getBatteryVoltage(),
                     thermalStatus = deviceManager.getThermalStatus(),
+                    networkType = networkManager.getNetworkType(),
+                    networkStrengthDbm = networkManager.getWifiSignalDbm(),
+                    wifiLinkSpeedMbps = networkManager.getWifiLinkSpeedMbps(),
                     displayRefreshRateHz = performanceManager.getCurrentRefreshRate(),
                     supportedRefreshRates = performanceManager.getSupportedRefreshRates()
                 )
@@ -149,11 +174,27 @@ class DashboardViewModel @Inject constructor(
 
     // Legacy toggle methods
     fun toggleDnd(enabled: Boolean) {
-        if (enabled) enableDnd() else disableDnd()
+        if (enabled) {
+            if (immersiveModeManager.hasDndPermission()) {
+                enableDnd()
+            } else {
+                requestDndPermission()
+            }
+        } else {
+            disableDnd()
+        }
     }
 
     fun toggleBrightnessLock(enabled: Boolean) {
-        if (enabled) enableBrightness() else disableBrightness()
+        if (enabled) {
+            if (immersiveModeManager.hasWriteSettingsPermission()) {
+                enableBrightness()
+            } else {
+                requestBrightnessPermission()
+            }
+        } else {
+            disableBrightness()
+        }
     }
 
     fun triggerFstrim() {

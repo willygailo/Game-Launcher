@@ -36,16 +36,17 @@ fun updateAppWidget(
 ) {
     val views = RemoteViews(context.packageName, R.layout.widget_game_booster)
     
-    val intent = Intent(context, MainActivity::class.java)
-    val pendingIntent = PendingIntent.getActivity(
-        context, 0, intent,
+    val openIntent = Intent(context, MainActivity::class.java)
+    val openPendingIntent = PendingIntent.getActivity(
+        context, 0, openIntent,
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
-    views.setOnClickPendingIntent(R.id.btn_boost, pendingIntent)
+    views.setOnClickPendingIntent(R.id.btn_open, openPendingIntent)
     
     val boostIntent = Intent(context, GameBoosterService::class.java).apply {
         action = GameBoosterService.ACTION_START_BOOST
     }
+
     val boostPendingIntent = PendingIntent.getService(
         context, 1, boostIntent,
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

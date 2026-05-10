@@ -40,6 +40,16 @@
             android:textColor="#000000"
             android:backgroundTint="#00E5FF"
             android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btn_open"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="OPEN"
+            android:textColor="#FAFAFA"
+            android:backgroundTint="#27272A"
+            android:textSize="12sp"
+            android:layout_marginStart="8dp" />
             
     </LinearLayout>
 

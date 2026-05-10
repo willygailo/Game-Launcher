@@ -18,6 +18,9 @@ interface GameDao {
     @Query("SELECT * FROM games WHERE packageName = :packageName")
     suspend fun getGameByPackageName(packageName: String): GameModel?
 
+    @Query("SELECT packageName FROM games")
+    suspend fun getAllGamePackages(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGame(game: GameModel)
 

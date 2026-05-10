@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import com.gamelauncher.data.local.GameDao
 import com.gamelauncher.data.model.GameModel
 import com.gamelauncher.data.model.KnownGames
+import com.gamelauncher.ml.GameClassifier
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class GamesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val gameDao: GameDao
+    private val gameDao: GameDao,
+    private val gameClassifier: GameClassifier
 ) {
     val allGames: Flow<List<GameModel>> = gameDao.getAllGames()
 
@@ -27,10 +29,10 @@ class GamesRepository @Inject constructor(
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
         val resolveInfos = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            pm.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(0L))
+            pm.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong()))
         } else {
             @Suppress("DEPRECATION")
-            pm.queryIntentActivities(intent, 0)
+            pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
         }
 
         val installedGames = mutableListOf<GameModel>()
@@ -48,6 +50,9 @@ class GamesRepository @Inject constructor(
                 (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
             }
 
+            // Check using ML/heuristic classifier
+            val isClassifierGame = gameClassifier.isGame(pkgName, pm)
+
             if (isKnown != null) {
                 installedGames.add(GameModel(
                     packageName = pkgName,
@@ -63,19 +68,50 @@ class GamesRepository @Inject constructor(
                     isKnownGame = false,
                     customCategory = "Other"
                 ))
+            } else if (isClassifierGame && !isSystemApp(pm, appInfo)) {
+                val appName = pm.getApplicationLabel(appInfo).toString()
+                installedGames.add(GameModel(
+                    packageName = pkgName,
+                    name = appName,
+                    isKnownGame = false,
+                    customCategory = "Other"
+                ))
             }
         }
-        
-        // Save to DB (only add new ones, don't overwrite user settings for existing)
-        for (game in installedGames) {
-            val existing = gameDao.getGameByPackageName(game.packageName)
+
+        val installedPackages = installedGames.mapTo(linkedSetOf()) { it.packageName }
+        val existingPackages = gameDao.getAllGamePackages()
+
+        existingPackages
+            .asSequence()
+            .filterNot { it in installedPackages }
+            .forEach { gameDao.deleteGameByPackage(it) }
+
+        for (scannedGame in installedGames) {
+            val existing = gameDao.getGameByPackageName(scannedGame.packageName)
             if (existing == null) {
-                gameDao.insertGame(game)
+                gameDao.insertGame(scannedGame)
+            } else {
+                gameDao.updateGame(
+                    existing.copy(
+                        name = scannedGame.name,
+                        isKnownGame = scannedGame.isKnownGame,
+                        customCategory = scannedGame.customCategory
+                    )
+                )
             }
         }
     }
 
+    private fun isSystemApp(pm: PackageManager, appInfo: ApplicationInfo): Boolean {
+        return (appInfo.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0
+    }
+
     suspend fun updateGame(game: GameModel) = gameDao.updateGame(game)
+
+    suspend fun getGame(packageName: String): GameModel? = withContext(Dispatchers.IO) {
+        gameDao.getGameByPackageName(packageName)
+    }
 
     suspend fun recordGameLaunch(packageName: String) = withContext(Dispatchers.IO) {
         val game = gameDao.getGameByPackageName(packageName)

@@ -46,12 +46,10 @@ class GameBoosterTileService : TileService() {
     }
 
     private fun updateTile() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            qsTile?.let { tile ->
-                tile.state = if (isBoostActive) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-                tile.label = if (isBoostActive) "BOOST ON" else "Game Booster"
-                tile.updateTile()
-            }
+        qsTile?.let { tile ->
+            tile.state = if (isBoostActive) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+            tile.label = if (isBoostActive) "BOOST ON" else "Game Booster"
+            tile.updateTile()
         }
     }
 

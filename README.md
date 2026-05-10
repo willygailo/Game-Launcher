@@ -1,7 +1,7 @@
 <h1 align="center">🎮 Game Launcher & Performance Booster</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Android-10--15%20(API%2029--35)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API"/>
+  <img src="https://img.shields.io/badge/Android-7.0--15%20(API%2024--35)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API"/>
   <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin"/>
   <img src="https://img.shields.io/badge/Jetpack%20Compose-latest-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose"/>
   <img src="https://img.shields.io/badge/Hilt-DI-FF4088?style=for-the-badge&logo=dagger&logoColor=white" alt="Hilt"/>
@@ -42,6 +42,52 @@
 | **🧹 RAM Optimizer** | Kill background apps instantly | ✅ Available |
 | **📦 Storage Optimizer** | Run fstrim para sa speed boost | ✅ Available |
 | **🌐 Network Manager** | Monitor ping at connection status | ✅ Available |
+| **🤖 ML Game Detection** | TensorFlow Lite auto-detect games | ✅ Available |
+| **📋 Background Tasks** | WorkManager scheduled optimization | ✅ Available |
+
+### 🚀 NEW: Performance Enhancement System
+
+| 🎮 Feature | 📝 Description | 🔥 Status |
+|------------|----------------|-----------|
+| **🧠 Smart CPU/GPU Scaling** | Auto-detects chipset, applies dynamic profiles (NOT permanent max lock) | ✅ NEW |
+| **🔇 DND Fix** | Auto-enables/disables Do Not Disturb during gameplay | ✅ NEW |
+| **🖥️ Refresh Rate Lock** | Auto-detects max Hz (60-165Hz), locks during gaming | ✅ NEW |
+| **🎬 FPS Optimization** | Auto-detects device max FPS, matches game capabilities | ✅ NEW |
+| **👆 Touch Latency Optimizer** | Reduces input lag for competitive gaming | ✅ NEW |
+| **🌡️ Thermal Protection** | Smart temperature monitoring, prevents throttling | ✅ NEW |
+| **📱 All Chipsets Supported** | Snapdragon, MediaTek, Exynos, Dimensity, Kirin, Unisoc, Tensor | ✅ NEW |
+
+### 🎮 Supported Games (80+ Titles)
+
+| Game | Package | Max FPS |
+|------|---------|---------|
+| **PUBG Mobile** | `com.tencent.ig` | 90 |
+| **PUBG Mobile (Regional)** | `com.pubg.krmobile`, `com.pubg.imobile` | 90 |
+| **PUBG NEW STATE** | `com.krafton.gamepubg` | 120 |
+| **Call of Duty Mobile** | `com.activision.callofduty.shooter` | 120 |
+| **Free Fire** | `com.garena.game.freefire` | 60 |
+| **Free Fire Max** | `com.garena.game.freefiremobile` | 60 |
+| **Mobile Legends: Bang Bang** | `com.mobile.legends` | 90 |
+| **Genshin Impact** | `com.miHoYo.GenshinImpact` | 60 |
+| **Honkai: Star Rail** | `com.miHoYo.hsr` | 60 |
+| **League of Legends: Wild Rift** | `com.riotgames.leagueofwildrift` | 90 |
+| **Valorant Mobile** | `com.riotgames.valorant` | 90 |
+| **Apex Legends Mobile** | `com.ea.gp.apexlegendsmobilefps` | 90 |
+| **Marvel Future Fight** | `com.proximabeta.mf` | 60 |
+| **Fortnite** | `com.epicgames.fortnite` | 60 |
+| **Minecraft PE** | `com.mojang.minecraftpe` | 60 |
+| **Clash of Clans** | `com.supercell.clashofclans` | 60 |
+| **Clash Royale** | `com.supercell.clashroyale` | 60 |
+| **Brawl Stars** | `com.supercell.brawlstars` | 60 |
+| **FIFA Mobile** | `com.ea.gp.fifamobile` | 60 |
+| **Asphalt 9** | `com.gameloft.asphalt9` | 60 |
+| **NBA 2K Mobile** | `com.t2ksports.nba2kmobile` | 60 |
+| **Dead by Daylight Mobile** | `com.bhvr.dbdmobile` | 60 |
+| **Rainbow Six Mobile** | `com.ubisoft.rainbowsixmobile` | 90 |
+| **Pokémon UNITE** | `com.pokemon.unite` | 60 |
+| **Diablo Immortal** | `com.blizzard.diabloimmortal` | 60 |
+| **Tower of Fantasy** | `com.hotta.dreamroom` | 60 |
+| **And 50+ more titles...** | Various regional versions | 60-120 |
 
 </div>
 
@@ -59,6 +105,8 @@
 | **Architecture** | 🏗️ MVVM + Repository Pattern |
 | **Build System** | ⚙️ Gradle Kotlin DSL |
 | **Language** | 🟣 Kotlin 1.9+ |
+| **ML** | 🧠 TensorFlow Lite |
+| **Background Tasks** | ⚡ WorkManager |
 
 </div>
 
@@ -73,7 +121,7 @@
 ☝️ Android Studio Hedgehog (2023.1.1) or newer  
 ☕ JDK 17  
 🖥️ Android SDK 34 (Android 14)  
-📱 Test device: Android 10-15 (API 29-35)
+📱 Test device: Android 7.0-15 (API 24-35)
 
 ### 🔧 Build Instructions
 
@@ -115,6 +163,27 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | `KILL_BACKGROUND_PROCESSES` | RAM optimization |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service running |
 | `ACCESS_WIFI_STATE` | WiFi lock feature |
+| `ACCESS_NOTIFICATIONS` | DND control during gaming |
+| `PACKAGE_USAGE_STATS` | Auto game detection |
+
+</div>
+
+---
+
+<h2 align="center">📱 Supported Chipsets</h2>
+
+<div align="center">
+
+| Manufacturer | Series | Status |
+|--------------|--------|--------|
+| **Qualcomm** | Snapdragon 8 Gen 1/2/3, 7 Gen 1/2, 6 Gen 1 | ✅ Full Support |
+| **MediaTek** | Dimensity 9000/8000/7000, Helio G-series | ✅ Full Support |
+| **Samsung** | Exynos 2200/2100/1080/980 | ✅ Full Support |
+| **Huawei** | Kirin 9000/8000/7000 | ✅ Full Support |
+| **Unisoc** | T820/T770/T618/T610 | ✅ Full Support |
+| **Google** | Tensor G1/G2/G3 | ✅ Full Support |
+
+*Smart auto-performance scaling - NOT permanent max lock to prevent overheating*
 
 </div>
 
@@ -123,6 +192,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 <h2 align="center">📱 Supported Android Versions</h2>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Android%207.0-API%2024-3DDC84?style=flat" alt="API 24"/>
   <img src="https://img.shields.io/badge/Android%2010-API%2029-3DDC84?style=flat" alt="API 29"/>
   <img src="https://img.shields.io/badge/Android%2011-API%2030-3DDC84?style=flat" alt="API 30"/>
   <img src="https://img.shields.io/badge/Android%2012-API%2031-3DDC84?style=flat" alt="API 31"/>
@@ -130,6 +200,28 @@ adb install app/build/outputs/apk/debug/app-debug.apk
   <img src="https://img.shields.io/badge/Android%2014-API%2034-3DDC84?style=flat" alt="API 34"/>
   <img src="https://img.shields.io/badge/Android%2015-API%2035-3DDC84?style=flat" alt="API 35"/>
 </p>
+
+---
+
+<h2 align="center">🔓 Root vs Non-Root Features</h2>
+
+<div align="center">
+
+| Feature | Without Root | With Root |
+|---------|--------------|-----------|
+| **Performance Session (Android 12+)** | ✅ | ✅ |
+| **Thread Priority Boost** | ✅ | ✅ |
+| **Refresh Rate Control** | ⚠️ Limited | ✅ Full |
+| **CPU Governor Control** | ❌ | ✅ |
+| **GPU Governor Control** | ❌ | ✅ |
+| **Thermal Throttling Disable** | ❌ | ✅ |
+| **Memory Cleanup** | ⚠️ Basic | ✅ Full |
+| **Touch Latency Optimization** | ⚠️ Basic | ✅ Full |
+| **SoC-Specific Optimizations** | ❌ | ✅ |
+
+*Root is optional - basic features work without root!*
+
+</div>
 
 ---
 

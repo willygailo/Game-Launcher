@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.gamelauncher.data.model.DeviceSpecs
 import com.gamelauncher.ui.theme.*
 
@@ -26,6 +27,11 @@ fun DashboardScreen(
     val isDndEnabled by viewModel.isDndEnabled.collectAsState()
     val isBrightnessLocked by viewModel.isBrightnessLocked.collectAsState()
     val isRootAvailable by viewModel.isRootAvailable.collectAsState()
+
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshPermissionStates()
+        onPauseOrDispose { }
+    }
 
     Column(
         modifier = Modifier
@@ -60,14 +66,14 @@ fun DashboardScreen(
             MetricCard(
                 title = "CPU Usage",
                 value = "${specs.cpuUsagePercent.toInt()}%",
-                subtitle = "${specs.cpuFreqMhz} MHz",
+                subtitle = "${specs.cpuFreqMhz} MHz | ${specs.cpuCoreCount} cores",
                 color = TertiaryAccent,
                 modifier = Modifier.weight(1f)
             )
             MetricCard(
                 title = "RAM",
                 value = "${specs.ramUsedMb} MB",
-                subtitle = "of ${specs.ramTotalMb} MB",
+                subtitle = "Free ${specs.ramFreeMb} MB",
                 color = PrimaryNeon,
                 modifier = Modifier.weight(1f)
             )
@@ -77,24 +83,41 @@ fun DashboardScreen(
             MetricCard(
                 title = "GPU",
                 value = if (specs.gpuFreqMhz > 0) "${specs.gpuFreqMhz} MHz" else "Ready",
-                subtitle = specs.gpuRenderer,
+                subtitle = "${specs.gpuRenderer} | ${specs.gpuUsagePercent.toInt()}%",
                 color = SecondaryNeon,
                 modifier = Modifier.weight(1f)
             )
             MetricCard(
                 title = "Battery",
                 value = "${specs.batteryLevel}%",
-                subtitle = "${specs.batteryTemperature}°C | ${specs.batteryChargingStatus}",
+                subtitle = "${specs.batteryTemperature}°C | ${specs.batteryHealth}",
                 color = if (specs.batteryTemperature > 40f) ErrorRed else SuccessGreen,
                 modifier = Modifier.weight(1f)
             )
         }
 
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            MetricCard(
+                title = "Device Tier",
+                value = "Tier ${specs.deviceRating}/10",
+                subtitle = specs.socName,
+                color = if (specs.isGamingOptimized) SuccessGreen else WarningOrange,
+                modifier = Modifier.weight(1f)
+            )
+            MetricCard(
+                title = "Network",
+                value = specs.networkType,
+                subtitle = "${specs.wifiLinkSpeedMbps} Mbps | ${specs.networkStrengthDbm} dBm",
+                color = PrimaryNeon,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
         MetricCard(
-            title = "Display",
-            value = "${specs.displayRefreshRateHz} Hz",
-            subtitle = "Supported: ${specs.supportedRefreshRates.joinToString { "${it.toInt()}" }}",
-            color = TextPrimary,
+            title = "Display & FPS",
+            value = "${specs.currentFps.toInt()} FPS @ ${specs.displayRefreshRateHz.toInt()} Hz",
+            subtitle = "Supported: ${specs.supportedRefreshRates.joinToString { "${it.toInt()}Hz" }} | Max: ${specs.supportedRefreshRates.maxOrNull()?.toInt() ?: 60}Hz",
+            color = if (specs.currentFps > 0) PrimaryNeon else TextSecondary,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -113,13 +136,7 @@ fun DashboardScreen(
                     Text("Block Notifications (DND)", color = TextPrimary)
                     Switch(
                         checked = isDndEnabled, 
-                        onCheckedChange = { enabled ->
-                            if (enabled) {
-                                viewModel.requestDndPermission()
-                            } else {
-                                viewModel.disableDnd()
-                            }
-                        }, 
+                        onCheckedChange = viewModel::toggleDnd,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = SecondaryNeon, 
                             checkedTrackColor = SecondaryNeon.copy(alpha = 0.5f)
@@ -133,13 +150,7 @@ fun DashboardScreen(
                     Text("Lock Max Brightness", color = TextPrimary)
                     Switch(
                         checked = isBrightnessLocked, 
-                        onCheckedChange = { enabled ->
-                            if (enabled) {
-                                viewModel.requestBrightnessPermission()
-                            } else {
-                                viewModel.disableBrightness()
-                            }
-                        }, 
+                        onCheckedChange = viewModel::toggleBrightnessLock,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = SecondaryNeon, 
                             checkedTrackColor = SecondaryNeon.copy(alpha = 0.5f)

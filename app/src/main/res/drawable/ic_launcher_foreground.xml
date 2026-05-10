@@ -4,16 +4,143 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Gaming controller icon -->
+
+    <!-- Outer glow ring (cyan) -->
     <path
-        android:fillColor="#00E5FF"
-        android:pathData="M74.5,42h-41c-2.5,0 -4.5,2 -4.5,4.5v25c0,2.5 2,4.5 4.5,4.5h41c2.5,0 4.5,-2 4.5,-4.5v-25c0,-2.5 -2,-4.5 -4.5,-4.5zM54,67h-6v-6h6v6zM54,57h-6v-6h6v6zM64,67h-6v-6h6v6zM64,57h-6v-6h6v6z"/>
-    <!-- D-pad -->
+        android:fillColor="#3000E5FF"
+        android:pathData="M54,8 A46,46 0 1,1 53.99,8z"/>
+
+    <!-- Controller body -->
+    <path
+        android:fillColor="#00C8E8"
+        android:pathData="M78,47c0,-2.8 -2.2,-5 -5,-5H35c-2.8,0 -5,2.2 -5,5v22c0,2.8 2.2,5 5,5H73c2.8,0 5,-2.2 5,-5z"/>
+
+    <!-- Controller body inner -->
+    <path
+        android:fillColor="#001A2E"
+        android:pathData="M76,48.5c0,-2 -1.6,-3.5 -3.5,-3.5H35.5c-2,0 -3.5,1.6 -3.5,3.5v19c0,2 1.6,3.5 3.5,3.5H72.5c2,0 3.5,-1.6 3.5,-3.5z"/>
+
+    <!-- Left grip -->
+    <path
+        android:fillColor="#009AB5"
+        android:pathData="M30,60c0,0 -6,4 -6,10s4,8 4,8l6,-4z"/>
+
+    <!-- Right grip -->
+    <path
+        android:fillColor="#009AB5"
+        android:pathData="M78,60c0,0 6,4 6,10s-4,8 -4,8l-6,-4z"/>
+
+    <!-- D-pad horizontal -->
     <path
         android:fillColor="#B900FF"
-        android:pathData="M41,54h-6v-6h-6v6h-6v6h6v6h6v-6h6z"/>
-    <!-- Boost flame -->
+        android:pathData="M38,55h12v8H38z"
+        android:strokeColor="#CC00FF"
+        android:strokeWidth="0.5"/>
+
+    <!-- D-pad vertical -->
     <path
-        android:fillColor="#FF0055"
-        android:pathData="M74,58c0,0 -3,4 -6,4s-3,-4 -3,-4s2,-3 3,-5s3,5 3,5z"/>
+        android:fillColor="#B900FF"
+        android:pathData="M42,51h4v16h-4z"
+        android:strokeColor="#CC00FF"
+        android:strokeWidth="0.5"/>
+
+    <!-- D-pad center dot -->
+    <path
+        android:fillColor="#CC44FF"
+        android:pathData="M42,57 A2,2 0 1,1 41.99,57z"/>
+
+    <!-- Right buttons (ABXY) -->
+    <!-- Y button - top -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:pathData="M70,52 A3,3 0 1,1 69.99,52z"/>
+    <!-- A button - bottom -->
+    <path
+        android:fillColor="#00FF88"
+        android:pathData="M70,64 A3,3 0 1,1 69.99,64z"/>
+    <!-- X button - left -->
+    <path
+        android:fillColor="#4488FF"
+        android:pathData="M64,58 A3,3 0 1,1 63.99,58z"/>
+    <!-- B button - right -->
+    <path
+        android:fillColor="#FFAA00"
+        android:pathData="M76,58 A3,3 0 1,1 75.99,58z"/>
+
+    <!-- Left joystick -->
+    <path
+        android:fillColor="#005566"
+        android:pathData="M44,68 A5,5 0 1,1 43.99,68z"/>
+    <path
+        android:fillColor="#00C8E8"
+        android:pathData="M44,68 A2.5,2.5 0 1,1 43.99,68z"/>
+
+    <!-- Right joystick -->
+    <path
+        android:fillColor="#005566"
+        android:pathData="M64,68 A5,5 0 1,1 63.99,68z"/>
+    <path
+        android:fillColor="#00C8E8"
+        android:pathData="M64,68 A2.5,2.5 0 1,1 63.99,68z"/>
+
+    <!-- Center logo (lightning bolt) -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M55,52l-4,7h3.5l-3.5,7 7,-9h-3.5z"/>
+
+    <!-- Lightning bolt left -->
+    <path
+        android:fillColor="#5500CC"
+        android:pathData="M24,50l-5,3 3,2 -5,5 9,-4 -3,-2z"
+        android:fillAlpha="0.85"/>
+
+    <!-- Lightning bolt right -->
+    <path
+        android:fillColor="#0099BB"
+        android:pathData="M84,50l5,3 -3,2 5,5 -9,-4 3,-2z"
+        android:fillAlpha="0.85"/>
+
+    <!-- Flame top outer -->
+    <path
+        android:fillColor="#FF5500"
+        android:pathData="M54,12 C52,16 49,20 50,25 C51,29 54,30 54,30 C54,30 57,29 58,25 C59,20 56,16 54,12z"/>
+
+    <!-- Flame top inner -->
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M54,17 C53,20 52,22 52.5,25 C53,27 54,28 54,28 C54,28 55,27 55.5,25 C56,22 55,20 54,17z"/>
+
+    <!-- Flame tip -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,21 C53.5,23 53.5,25 54,26 C54.5,25 54.5,23 54,21z"/>
+
+    <!-- Speed lines left -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M15,45 L25,46 L15,47z"
+        android:fillAlpha="0.6"/>
+    <path
+        android:fillColor="#B900FF"
+        android:pathData="M12,55 L22,56 L12,57z"
+        android:fillAlpha="0.5"/>
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M15,65 L25,66 L15,67z"
+        android:fillAlpha="0.4"/>
+
+    <!-- Speed lines right -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M93,45 L83,46 L93,47z"
+        android:fillAlpha="0.6"/>
+    <path
+        android:fillColor="#B900FF"
+        android:pathData="M96,55 L86,56 L96,57z"
+        android:fillAlpha="0.5"/>
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M93,65 L83,66 L93,67z"
+        android:fillAlpha="0.4"/>
+
 </vector>

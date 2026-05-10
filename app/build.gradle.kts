@@ -12,10 +12,10 @@ android {
 
     defaultConfig {
         applicationId = "com.gamelauncher"
-        minSdk = 29   // Android 10
+        minSdk = 24   // Android 7.0+ for wider device coverage across Snapdragon, MediaTek, Exynos, and Unisoc devices
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     buildTypes {
@@ -89,4 +89,7 @@ dependencies {
     ksp(libs.androidx.hilt.compiler)
 
     debugImplementation(libs.androidx.ui.tooling)
+
+    // TensorFlow Lite for ML game detection (basic only)
+    implementation(libs.tensorflow.lite)
 }

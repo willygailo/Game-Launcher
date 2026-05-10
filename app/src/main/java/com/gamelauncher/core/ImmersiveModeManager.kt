@@ -58,6 +58,13 @@ class ImmersiveModeManager @Inject constructor(
         }
     }
 
+    fun isGamingDndActive(): Boolean {
+        if (!hasDndPermission()) return false
+        return runCatching {
+            notificationManager.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_NONE
+        }.getOrDefault(false)
+    }
+
     fun disableGamingDnd(): Boolean {
         if (!hasDndPermission()) return false
         return try {
@@ -113,6 +120,15 @@ class ImmersiveModeManager @Inject constructor(
         } catch (e: Exception) {
             false
         }
+    }
+
+    fun isBrightnessLocked(threshold: Int = 240): Boolean {
+        if (!hasWriteSettingsPermission()) return false
+        return runCatching {
+            val mode = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE)
+            val brightness = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+            mode == Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL && brightness >= threshold
+        }.getOrDefault(false)
     }
 
     // ── Volume Control ───────────────────────────────────────────────────

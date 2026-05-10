@@ -4,6 +4,11 @@ package com.gamelauncher.data.model
  * Real-time hardware snapshot for dashboard display.
  */
 data class DeviceSpecs(
+    val socName: String = "Unknown SoC",
+    val architecture: String = "arm64-v8a",
+    val deviceRating: Int = 5,
+    val isGamingOptimized: Boolean = false,
+
     val cpuUsagePercent: Float = 0f,
     val cpuFreqMhz: Long = 0L,
     val cpuCoreCount: Int = Runtime.getRuntime().availableProcessors(),
@@ -20,6 +25,7 @@ data class DeviceSpecs(
     val batteryLevel: Int = 100,
     val batteryTemperature: Float = 25f,
     val batteryChargingStatus: String = "Unknown",
+    val batteryHealth: String = "Unknown",
     val batteryVoltage: Int = 0,
 
     val displayRefreshRateHz: Float = 60f,

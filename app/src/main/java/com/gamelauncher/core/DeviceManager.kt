@@ -18,13 +18,17 @@ import javax.inject.Singleton
 @Singleton
 class DeviceManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val rootShellManager: RootShellManager
+    private val rootShellManager: RootShellManager,
+    private val socManager: SocManager
 ) {
     private val activityManager = context.getSystemService(ActivityManager::class.java)
     private val powerManager = context.getSystemService(PowerManager::class.java)
     private var batteryLevel: Int = 100
     private var batteryTemp: Float = 25f
     private var batteryStatus: String = "Unknown"
+    private var batteryVoltage: Int = 4200
+    private var batteryHealth: String = "Unknown"
+    private var batteryTech: String = "Unknown"
 
     init {
         registerBatteryReceiver()
@@ -38,6 +42,7 @@ class DeviceManager @Inject constructor(
                         batteryLevel = (intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100 / 
                             intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1))
                         batteryTemp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 250) / 10f
+                        batteryVoltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 4200)
                         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
                         batteryStatus = when (status) {
                             BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
@@ -46,6 +51,16 @@ class DeviceManager @Inject constructor(
                             BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Not Charging"
                             else -> "Unknown"
                         }
+                        val health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)
+                        batteryHealth = when (health) {
+                            BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
+                            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
+                            BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
+                            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
+                            BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
+                            else -> "Unknown"
+                        }
+                        batteryTech = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Unknown"
                     }
                 }
             }
@@ -54,15 +69,41 @@ class DeviceManager @Inject constructor(
         } catch (e: Exception) {}
     }
 
+    private var lastCpuTime: Long = 0
+    private var lastCpuIdle: Long = 0
+
     fun getCpuUsagePercent(): Float {
         return try {
-            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val cpuUsage = activityManager.processesInErrorState
-            val load = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
-            val total = Runtime.getRuntime().totalMemory()
-            val usagePercent = (load.toFloat() / total.toFloat() * 100f)
-            return usagePercent.coerceIn(0f, 100f)
-        } catch (e: Exception) { 0f }
+            val reader = java.io.RandomAccessFile("/proc/stat", "r")
+            val load = reader.readLine()
+            reader.close()
+
+            val toks = load.split(" +".toRegex()).dropLastWhile { it.isEmpty() }
+            val idle = toks[4].toLong()
+            val cpu = toks[1].toLong() + toks[2].toLong() + toks[3].toLong() + toks[5].toLong() +
+                      toks[6].toLong() + toks[7].toLong()
+
+            if (lastCpuTime == 0L) {
+                lastCpuTime = cpu
+                lastCpuIdle = idle
+                return 0f
+            }
+
+            val diffCpu = cpu - lastCpuTime
+            val diffIdle = idle - lastCpuIdle
+            lastCpuTime = cpu
+            lastCpuIdle = idle
+
+            if (diffCpu + diffIdle > 0) {
+                ((diffCpu.toFloat() / (diffCpu + diffIdle)) * 100f).coerceIn(0f, 100f)
+            } else 0f
+        } catch (e: Exception) {
+            try {
+                val total = Runtime.getRuntime().totalMemory()
+                val free = Runtime.getRuntime().freeMemory()
+                ((total - free).toFloat() / total.toFloat() * 100f).coerceIn(0f, 100f)
+            } catch (e2: Exception) { 0f }
+        }
     }
 
     fun getCpuFreqMhz(): Long {
@@ -114,6 +155,16 @@ class DeviceManager @Inject constructor(
     fun getBatteryTemperatureFloat(): Float = batteryTemp
 
     fun getBatteryStatusString(): String = batteryStatus
+
+    fun getBatteryVoltage(): Int = batteryVoltage
+
+    fun getBatteryHealth(): String = batteryHealth
+
+    fun getBatteryTech(): String = batteryTech
+
+    fun getSocInfo(): SocInfo = socManager.getSocInfo()
+
+    fun getDeviceRating(): Int = socManager.getDeviceRating()
 
     fun getThermalStatus(): Int {
         return try {
