@@ -18,9 +18,9 @@
 <h2 align="center">👤 Developer</h2>
 
 <p align="center">
-  <img src="https://github.com/Willy-kali.png" width="120" style="border-radius:50%"/><br/><br/>
+  <img src="https://github.com/willygailo.png" width="120" style="border-radius:50%"/><br/><br/>
   <strong>Willy Gailo</strong><br/>
-  🔗 <a href="https://github.com/Willy-kali">GitHub</a> • 
+  🔗 <a href="https://github.com/willygailo">GitHub</a> • 
   <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027">Facebook</a>
 </p>
 
