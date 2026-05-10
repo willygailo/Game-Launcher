@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin"/>
   <img src="https://img.shields.io/badge/Jetpack%20Compose-latest-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose"/>
   <img src="https://img.shields.io/badge/Hilt-DI-FF4088?style=for-the-badge&logo=dagger&logoColor=white" alt="Hilt"/>
+  <img src="https://img.shields.io/badge/TensorFlow%20Lite-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow Lite"/>
+  <img src="https://img.shields.io/badge/Version-1.1.0-00C853?style=for-the-badge" alt="Version 1.1.0"/>
 </p>
 
 <p align="center">
@@ -30,20 +32,21 @@
 
 | 🎯 Feature | 📝 Description | 🔥 Status |
 |------------|----------------|-----------|
-| **📊 Real-time Monitoring** | CPU, RAM, GPU, at battery stats | ✅ Available |
+| **📊 Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ Available |
 | **🎯 Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ Available |
 | **🎮 Game Library** | Auto-detect ng lahat ng installed games | ✅ Available |
 | **⚡ Per-Game Boosts** | Custom FPS (30-165), WiFi lock per game | ✅ Available |
 | **📺 Immersive Controls** | DND mode, max brightness automation | ✅ Available |
-| **🏠 Home Widget** | Quick shortcut sa home screen | ✅ Available |
+| **🏠 Home Widget** | Quick Boost at Open buttons sa home screen | ✅ Available |
 | **⚙️ Quick Settings Tile** | Toggle booster sa notification panel | ✅ Available |
-| **🤖 Game Detector** | Auto-boost pag nag-open ng game | ✅ Available |
+| **🤖 Game Detector** | Auto-boost pag nag-open ng game (UsageStatsManager) | ✅ Available |
 | **📈 Stats History** | Track ng play time per session | ✅ Available |
 | **🧹 RAM Optimizer** | Kill background apps instantly | ✅ Available |
 | **📦 Storage Optimizer** | Run fstrim para sa speed boost | ✅ Available |
-| **🌐 Network Manager** | Monitor ping at connection status | ✅ Available |
-| **🤖 ML Game Detection** | TensorFlow Lite auto-detect games | ✅ Available |
+| **🌐 Network Manager** | WiFi low-latency lock, signal strength, link speed | ✅ Available |
+| **🤖 ML Game Detection** | TensorFlow Lite 2.17 auto-classify games | ✅ Available |
 | **📋 Background Tasks** | WorkManager scheduled optimization | ✅ Available |
+| **🔐 Permission UI** | Individual permission cards na may status indicator | ✅ Available |
 
 ### 🚀 NEW: Performance Enhancement System
 
@@ -55,39 +58,41 @@
 | **🎬 FPS Optimization** | Auto-detects device max FPS, matches game capabilities | ✅ NEW |
 | **👆 Touch Latency Optimizer** | Reduces input lag for competitive gaming | ✅ NEW |
 | **🌡️ Thermal Protection** | Smart temperature monitoring, prevents throttling | ✅ NEW |
-| **📱 All Chipsets Supported** | Snapdragon, MediaTek, Exynos, Dimensity, Kirin, Unisoc, Tensor | ✅ NEW |
+| **📱 All Chipsets Supported** | Snapdragon, MediaTek, Exynos, Dimensity, Kirin, Unisoc, Tensor (G1-G4) | ✅ NEW |
 
-### 🎮 Supported Games (80+ Titles)
+### 🎮 Supported Games (130+ Titles)
 
 | Game | Package | Max FPS |
 |------|---------|---------|
-| **PUBG Mobile** | `com.tencent.ig` | 90 |
-| **PUBG Mobile (Regional)** | `com.pubg.krmobile`, `com.pubg.imobile` | 90 |
-| **PUBG NEW STATE** | `com.krafton.gamepubg` | 120 |
-| **Call of Duty Mobile** | `com.activision.callofduty.shooter` | 120 |
-| **Free Fire** | `com.garena.game.freefire` | 60 |
-| **Free Fire Max** | `com.garena.game.freefiremobile` | 60 |
-| **Mobile Legends: Bang Bang** | `com.mobile.legends` | 90 |
-| **Genshin Impact** | `com.miHoYo.GenshinImpact` | 60 |
-| **Honkai: Star Rail** | `com.miHoYo.hsr` | 60 |
-| **League of Legends: Wild Rift** | `com.riotgames.leagueofwildrift` | 90 |
-| **Valorant Mobile** | `com.riotgames.valorant` | 90 |
-| **Apex Legends Mobile** | `com.ea.gp.apexlegendsmobilefps` | 90 |
-| **Marvel Future Fight** | `com.proximabeta.mf` | 60 |
-| **Fortnite** | `com.epicgames.fortnite` | 60 |
-| **Minecraft PE** | `com.mojang.minecraftpe` | 60 |
-| **Clash of Clans** | `com.supercell.clashofclans` | 60 |
-| **Clash Royale** | `com.supercell.clashroyale` | 60 |
-| **Brawl Stars** | `com.supercell.brawlstars` | 60 |
-| **FIFA Mobile** | `com.ea.gp.fifamobile` | 60 |
-| **Asphalt 9** | `com.gameloft.asphalt9` | 60 |
-| **NBA 2K Mobile** | `com.t2ksports.nba2kmobile` | 60 |
-| **Dead by Daylight Mobile** | `com.bhvr.dbdmobile` | 60 |
-| **Rainbow Six Mobile** | `com.ubisoft.rainbowsixmobile` | 90 |
-| **Pokémon UNITE** | `com.pokemon.unite` | 60 |
-| **Diablo Immortal** | `com.blizzard.diabloimmortal` | 60 |
-| **Tower of Fantasy** | `com.hotta.dreamroom` | 60 |
-| **And 50+ more titles...** | Various regional versions | 60-120 |
+| **PUBG Mobile** | `com.tencent.ig` | 165 |
+| **PUBG Mobile (Regional)** | `com.pubg.krmobile`, `com.pubg.imobile`, `com.pubg.mobile` | 165 |
+| **PUBG NEW STATE** | `com.krafton.gamepubg` | 165 |
+| **Call of Duty Mobile** | `com.activision.callofduty.shooter` | 165 |
+| **Call of Duty Mobile (Garena)** | `com.garena.game.codm` | 165 |
+| **Call of Duty Warzone Mobile** | `com.activision.callofduty.warzone` | 165 |
+| **Free Fire / Free Fire Max** | `com.garena.game.freefire` / `com.garena.game.freefiremobile` | 165 |
+| **Free Fire (Regional)** | Thailand, Vietnam, Indonesia, India, Philippines, Malaysia, Singapore | 165 |
+| **Mobile Legends: Bang Bang** | `com.mobile.legends` | 165 |
+| **Genshin Impact** | `com.miHoYo.GenshinImpact` / `com.miHoYo.ys` | 165 |
+| **Honkai: Star Rail** | `com.miHoYo.hsr` | 165 |
+| **League of Legends: Wild Rift** | `com.riotgames.leagueofwildrift` | 165 |
+| **Valorant Mobile** | `com.riotgames.valorant` | 165 |
+| **Apex Legends Mobile** | `com.ea.gp.apexlegendsmobilefps` | 165 |
+| **Marvel Future Fight** | `com.proximabeta.mf` | 165 |
+| **Fortnite** | `com.epicgames.fortnite` / `com.epicgames.fortnitemobile` | 165 |
+| **Minecraft PE** | `com.mojang.minecraftpe` | 165 |
+| **Clash of Clans** | `com.supercell.clashofclans` | 165 |
+| **Clash Royale** | `com.supercell.clashroyale` | 165 |
+| **Brawl Stars** | `com.supercell.brawlstars` | 165 |
+| **FIFA Mobile** | `com.ea.gp.fifamobile` | 165 |
+| **Asphalt 9** | `com.gameloft.asphalt9` | 165 |
+| **NBA 2K Mobile** | `com.t2ksports.nba2kmobile` | 165 |
+| **Dead by Daylight Mobile** | `com.bhvr.dbdmobile` | 165 |
+| **Rainbow Six Mobile** | `com.ubisoft.rainbowsixmobile` | 165 |
+| **Pokémon UNITE** | `com.pokemon.unite` | 165 |
+| **Diablo Immortal** | `com.blizzard.diabloimmortal` | 165 |
+| **Tower of Fantasy** | `com.hotta.dreamroom` | 165 |
+| **And 100+ more titles...** | Regional variants + ML detected | 165 |
 
 </div>
 
@@ -105,7 +110,7 @@
 | **Architecture** | 🏗️ MVVM + Repository Pattern |
 | **Build System** | ⚙️ Gradle Kotlin DSL |
 | **Language** | 🟣 Kotlin 1.9+ |
-| **ML** | 🧠 TensorFlow Lite |
+| **ML** | 🧠 TensorFlow Lite 2.17 (game classification) |
 | **Background Tasks** | ⚡ WorkManager |
 
 </div>
@@ -127,8 +132,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/Willy-kali/Game-Launcher-Performance-Booster.git
-cd "Game launcher"
+git clone https://github.com/willygailo/Game-Launcher.git
+cd "Pro Game Launcher.apk"
 
 # Build debug APK
 ./gradlew assembleDebug
@@ -158,13 +163,15 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | 🔑 Permission | 📝 Purpose |
 |---------------|-------------|
 | `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games |
-| `FOREGROUND_SERVICE` | Background boosting services |
-| `WRITE_SETTINGS` | Automatic brightness control |
-| `KILL_BACKGROUND_PROCESSES` | RAM optimization |
-| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service running |
-| `ACCESS_WIFI_STATE` | WiFi lock feature |
+| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_DATA_SYNC` | Background boosting services |
+| `WRITE_SETTINGS` | Automatic brightness at animation control |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service alive during sessions |
+| `ACCESS_WIFI_STATE` / `CHANGE_WIFI_STATE` | WiFi low-latency lock |
 | `ACCESS_NOTIFICATIONS` | DND control during gaming |
-| `PACKAGE_USAGE_STATS` | Auto game detection |
+| `PACKAGE_USAGE_STATS` | Auto game detection (UsageStatsManager) |
+| `QUERY_ALL_PACKAGES` | Scan installed apps for games |
+| `POST_NOTIFICATIONS` | Booster status notifications (Android 13+) |
+| `MODIFY_AUDIO_SETTINGS` | Volume optimization during gaming |
 
 </div>
 
@@ -176,12 +183,12 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 | Manufacturer | Series | Status |
 |--------------|--------|--------|
-| **Qualcomm** | Snapdragon 8 Gen 1/2/3, 7 Gen 1/2, 6 Gen 1 | ✅ Full Support |
-| **MediaTek** | Dimensity 9000/8000/7000, Helio G-series | ✅ Full Support |
-| **Samsung** | Exynos 2200/2100/1080/980 | ✅ Full Support |
-| **Huawei** | Kirin 9000/8000/7000 | ✅ Full Support |
-| **Unisoc** | T820/T770/T618/T610 | ✅ Full Support |
-| **Google** | Tensor G1/G2/G3 | ✅ Full Support |
+| **Qualcomm** | Snapdragon 8 Gen 1/2/3, 7 Gen 1/2, 6 Gen 1, all SD models | ✅ Full Support |
+| **MediaTek** | Dimensity 9000/8000/7000, Helio G-series, all MTK | ✅ Full Support |
+| **Samsung** | Exynos 2200/2100/1080/980, all Exynos models | ✅ Full Support |
+| **Huawei** | Kirin 9000/8000/7000, all Kirin models | ✅ Full Support |
+| **Unisoc** | T820/T770/T618/T610, all Unisoc models | ✅ Full Support |
+| **Google** | Tensor G1/G2/G3/G4 | ✅ Full Support |
 
 *Smart auto-performance scaling - NOT permanent max lock to prevent overheating*
 
@@ -275,25 +282,26 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 ```
 app/src/main/java/com/gamelauncher/
-├── 🎮 core/              # Managers (Device, FPS, Performance, etc.)
+├── 🎮 core/              # Managers (Device, FPS, Performance, SoC, DND, Network, Touch, etc.)
 ├── 📦 data/              # Database, Models, Repository
 │   ├── local/            # Room Database & DAOs
-│   ├── model/            # Data classes
+│   ├── model/            # Data classes (GameModel, DeviceSpecs)
 │   ├── preference/       # DataStore settings
 │   └── repository/      # Data layer
 ├── 💉 di/                # Hilt Dependency Injection
-├── 📡 receivers/         # Broadcast Receivers (Boot)
+├── 🧠 ml/                # TensorFlow Lite Game Classifier
+├── 📡 receivers/         # Broadcast Receivers (Boot, Package Changes)
 ├── 🛎️ services/          # Background Services
 │   ├── GameBoosterService
-│   ├── GameDetectorService
+│   ├── GameDetectorService (UsageStatsManager-based)
 │   ├── OverlayService
 │   └── GameBoosterTileService
 ├── 🎨 ui/                # UI Components (Compose)
-│   ├── dashboard/        # Dashboard Screen + ViewModel
-│   ├── games/            # Games Library Screen
-│   ├── settings/         # Settings Screen
+│   ├── dashboard/        # Dashboard w/ Device Tier, Network, FPS cards
+│   ├── games/            # Games Library w/ refresh & scanning state
+│   ├── settings/         # Settings w/ individual permission cards
 │   └── theme/           # App Theme & Colors
-└── 🏠 widgets/           # Home Screen Widgets
+└── 🏠 widgets/           # Home Screen Widget (Boost + Open buttons)
 ```
 
 </div>
@@ -337,7 +345,7 @@ This project is licensed under the MIT License - see the <a href="LICENSE">LICEN
 
 <sub>Optimizing gaming performance one device at a time ⚡</sub>
 
-[![GitHub stars](https://img.shields.io/github/stars/Willy-kali/Game-Launcher-Performance-Booster?style=social)](https://github.com/Willy-kali/Game-Launcher-Performance-Booster/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/Willy-kali/Game-Launcher-Performance-Booster?style=social)](https://github.com/Willy-kali/Game-Launcher-Performance-Booster/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/network/members)
 
 </div>
