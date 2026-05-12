@@ -28,7 +28,7 @@
 
 | Dashboard | FPS Overlay | Games Library | Settings |
 |---|---|---|---|
-| `screenshot_1.png` | `screenshot_2.png` | `screenshot_3.png` | `screenshot_4.png` |
+| ![Dashboard](assets/screenshot_dashboard.jpg) | ![FPS Overlay](assets/screenshot_fps.jpg) | ![Games Library](assets/screenshot_games.jpg) | ![Settings](assets/screenshot_settings.jpg) |
 
 ---
 
