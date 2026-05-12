@@ -24,11 +24,12 @@
 
 ## Screenshots
 
-*<!-- TODO: Add screenshots here -->*
-
-| Dashboard | FPS Overlay | Games Library | Settings |
-|---|---|---|---|
-| ![Dashboard](assets/screenshot_dashboard.jpg) | ![FPS Overlay](assets/screenshot_fps.jpg) | ![Games Library](assets/screenshot_games.jpg) | ![Settings](assets/screenshot_settings.jpg) |
+| | | |
+|---|---|---|
+| ![SS1](assets/Screenshot_20260512-134350.jpg) | ![SS2](assets/Screenshot_20260512-134359.jpg) | ![SS3](assets/Screenshot_20260512-134411.jpg) |
+| ![SS4](assets/Screenshot_20260512-134423.jpg) | ![SS5](assets/Screenshot_20260512-134441.jpg) | ![SS6](assets/Screenshot_20260512-134449.jpg) |
+| ![SS7](assets/Screenshot_20260512-134531.jpg) | ![SS8](assets/Screenshot_20260512-134608.jpg) | ![SS9](assets/Screenshot_20260512-134619.jpg) |
+| ![SS10](assets/Screenshot_20260512-134638.jpg) | ![SS11](assets/Screenshot_20260512-134712.jpg) | ![SS12](assets/Screenshot_20260512-134830.jpg) |
 
 ---
 
