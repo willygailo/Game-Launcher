@@ -1,3 +1,5 @@
+<div align="center">
+
 # 🎮 Game Launcher & Performance Booster
 
 [![Android API](https://img.shields.io/badge/Android_10--16_API_29--36-3DDC84?style=for-the-badge&logo=android&logoColor=white)]()
@@ -23,6 +25,7 @@
 ## Screenshots
 
 *<!-- TODO: Add screenshots here -->*
+
 | Dashboard | FPS Overlay | Games Library | Settings |
 |---|---|---|---|
 | `screenshot_1.png` | `screenshot_2.png` | `screenshot_3.png` | `screenshot_4.png` |
@@ -32,7 +35,7 @@
 ## ✨ Features
 
 | Feature | Description | Status |
-|---------|-------------|--------|
+|---|---|---|
 | **Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ |
 | **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
 | **Live Boost Notification** | Real-time FPS & Hz sa notification habang naglalaro | ✅ |
@@ -49,51 +52,51 @@
 | **ML Game Detection** | TensorFlow Lite 2.17 auto-classify games | ✅ |
 | **Background Tasks** | WorkManager scheduled optimization | ✅ |
 | **Permission UI** | Individual permission cards na may status indicator (incl. battery exemption) | ✅ |
-| **🔍 Game Search & Filter** | Search bar + category filter chips (MOBA, FPS, RPG, etc.) | ✅ |
-| **📊 Gaming Session Recording** | Auto-record play time, FPS, battery drain, RAM per session | ✅ |
-| **📈 Session Stats Dashboard** | Total sessions & play time cards sa Dashboard | ✅ |
-| **📱 Game Details Screen** | Dedicated screen with session history, avg FPS, stats per game | ✅ |
-| **🎨 Per-Game Graphics Mode** | Performance/Balanced/Battery Saver/Custom mode per game | ✅ |
-| **🎯 Draggable FPS Overlay** | Drag the FPS counter anywhere on screen | ✅ |
-| **💡 Brightness Slider** | Adjustable brightness level (10%-100%) | ✅ |
-| **🖥️ CPU Core Control** | Toggle individual CPU cores on/off (root) | ✅ |
-| **⚡ Benchmark Mode** | CPU/GPU/Memory benchmark with overall score | ✅ |
-| **🌓 Dark/Light Theme** | Toggle between dark and light theme | ✅ |
-| **📦 Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
-| **🚀 Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
+| **Game Search & Filter** | Search bar + category filter chips (MOBA, FPS, RPG, etc.) | ✅ |
+| **Gaming Session Recording** | Auto-record play time, FPS, battery drain, RAM per session | ✅ |
+| **Session Stats Dashboard** | Total sessions & play time cards sa Dashboard | ✅ |
+| **Game Details Screen** | Dedicated screen with session history, avg FPS, stats per game | ✅ |
+| **Per-Game Graphics Mode** | Performance/Balanced/Battery Saver/Custom mode per game | ✅ |
+| **Draggable FPS Overlay** | Drag the FPS counter anywhere on screen | ✅ |
+| **Brightness Slider** | Adjustable brightness level (10%-100%) | ✅ |
+| **CPU Core Control** | Toggle individual CPU cores on/off (root) | ✅ |
+| **Benchmark Mode** | CPU/GPU/Memory benchmark with overall score | ✅ |
+| **Dark/Light Theme** | Toggle between dark and light theme | ✅ |
+| **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
+| **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
 
 ### v1.7.2: Live Monitoring, DND Fix, Benchmark & Session Overhaul
 
 | Feature | Description | Status |
-|---------|-------------|--------|
-| **Live FPS/Hz Notification** | GameBoosterService shows real-time FPS & Hz every 2s | 🆕 v1.7.2 |
-| **DND Fix** | `DndManager` now uses `INTERRUPTION_FILTER_NONE` (totally block notifs) | 🔧 v1.7.2 |
-| **Benchmark Update** | Real GPU test via Bitmap, CPU via sort/primes, memory via 512KB arrays | 🔧 v1.7.2 |
-| **Manual Session Recording** | Games tab now records GamingSession on PLAY | 🆕 v1.7.2 |
-| **Session Update Fix** | Uses session ID directly, not fragile `getLastSessionForGame` | 🔧 v1.7.2 |
-| **FpsMonitor Rewrite** | StateFlow instead of callbackFlow for reliable FPS | 🔧 v1.7.2 |
-| **Display & FPS Fix** | Real FPS & Hz now properly display on Dashboard | 🔧 v1.7.2 |
-| **Battery Exemption UI** | Shows "Granted" status, direct app settings fallback | 🔧 v1.7.2 |
-| **Non-Root GPU Force** | `forceGpuRendering()` + `setHighPerformanceMode()` | 🆕 v1.7.2 |
-| **Universal Chipset Detection** | Rockchip, Allwinner, Amlogic, Broadcom support + device fallback | 🆕 v1.7.2 |
+|---|---|---|
+| **Live FPS/Hz Notification** | GameBoosterService shows real-time FPS & Hz every 2s | 🆕 |
+| **DND Fix** | `DndManager` now uses `INTERRUPTION_FILTER_NONE` (totally block notifs) | 🔧 |
+| **Benchmark Update** | Real GPU test via Bitmap, CPU via sort/primes, memory via 512KB arrays | 🔧 |
+| **Manual Session Recording** | Games tab now records GamingSession on PLAY | 🆕 |
+| **Session Update Fix** | Uses session ID directly, not fragile `getLastSessionForGame` | 🔧 |
+| **FpsMonitor Rewrite** | StateFlow instead of callbackFlow for reliable FPS | 🔧 |
+| **Display & FPS Fix** | Real FPS & Hz now properly display on Dashboard | 🔧 |
+| **Battery Exemption UI** | Shows "Granted" status, direct app settings fallback | 🔧 |
+| **Non-Root GPU Force** | `forceGpuRendering()` + `setHighPerformanceMode()` | 🆕 |
+| **Universal Chipset Detection** | Rockchip, Allwinner, Amlogic, Broadcom support + device fallback | 🆕 |
 
 ### v1.7.1: Performance Overhaul & Bug Fixes
 
 | Feature | Description | Status |
-|---------|-------------|--------|
-| **Namespace Fix** | `com.gamelauncher.app` → `com.gamelauncher` (fixes ClassNotFoundException) | 🔧 v1.7.1 |
-| **Foreground Service Fix** | `dataSync` → `specialUse` with proper declaration (crash fix on Android 15+) | 🔧 v1.7.1 |
-| **Kapt → KSP Migration** | Hilt compiler via KSP, no more "falling back to 1.9" warning | 🔧 v1.7.1 |
-| **Wake Lock Support** | PowerManager partial wake lock for non-root devices | 🆕 v1.7.1 |
-| **Non-Root Optimizer** | `optimizeNonRoot()` — wake lock + thread priority + animations off | 🆕 v1.7.1 |
-| **Non-Root App Killer** | killBackgroundApps now uses ActivityManager for non-root | 🆕 v1.7.1 |
-| **All Deprecation Warnings Fixed** | NetworkManager, Theme, aaptOptions | 🔧 v1.7.1 |
-| **lockRefreshRate Cleanup** | Removed broken API 36 dead code | 🔧 v1.7.1 |
+|---|---|---|
+| **Namespace Fix** | `com.gamelauncher.app` → `com.gamelauncher` (fixes ClassNotFoundException) | 🔧 |
+| **Foreground Service Fix** | `dataSync` → `specialUse` with proper declaration (crash fix on Android 15+) | 🔧 |
+| **Kapt → KSP Migration** | Hilt compiler via KSP, no more "falling back to 1.9" warning | 🔧 |
+| **Wake Lock Support** | PowerManager partial wake lock for non-root devices | 🆕 |
+| **Non-Root Optimizer** | `optimizeNonRoot()` — wake lock + thread priority + animations off | 🆕 |
+| **Non-Root App Killer** | killBackgroundApps now uses ActivityManager for non-root | 🆕 |
+| **All Deprecation Warnings Fixed** | NetworkManager, Theme, aaptOptions | 🔧 |
+| **lockRefreshRate Cleanup** | Removed broken API 36 dead code | 🔧 |
 
 ### v2.0.0: Enhanced Gaming Experience
 
 | Feature | Description | Status |
-|---------|-------------|--------|
+|---|---|---|
 | **Game Session Recording** | Auto-record start/end time, FPS, battery drain, RAM per session | ✅ |
 | **Game Search & Filter** | Real-time search bar + category filter chips | ✅ |
 | **Draggable FPS Overlay** | Touch and drag the FPS counter anywhere on screen | ✅ |
@@ -107,29 +110,18 @@
 | **Dark/Light Theme Toggle** | Switch between dark and light theme in Settings | ✅ |
 | **Profile Import/Export** | Backup/restore per-game settings as JSON files | ✅ |
 
-### v1.7.0: Next-Gen Performance Engine
+</div>
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **Smart CPU/GPU Scaling** | Auto-detects chipset, applies dynamic profiles | ✅ |
-| **DND Fix** | Auto-enables/disables Do Not Disturb during gameplay | ✅ |
-| **Refresh Rate Lock** | Auto-detects max Hz (60-240Hz), locks during gaming | ✅ |
-| **FPS Optimization** | Auto-detects device max FPS, matches game capabilities | ✅ |
-| **Touch Latency Optimizer** | Reduces input lag for competitive gaming | ✅ |
-| **Thermal Protection** | Smart temperature monitoring, adaptive throttle prevention | ✅ |
-| **All Chipsets Supported** | SD 8 Elite, Dimensity 9400, Tensor G5+, Exynos 2400, Kirin 9010, Unisoc T820 | ✅ |
-| **ADPF v2 Support** | Android Dynamic Performance Framework (API 35+) frame pacing | 🆕 v1.7 |
-| **Jank Detection** | Real-time frame timing & jank analysis (16ms/32ms thresholds) | 🆕 v1.7 |
-| **Thermal-Aware Boost** | Auto-scales performance based on device temperature | 🆕 v1.7 |
-| **Adaptive FPS** | Dynamically adjusts FPS target based on thermal & load | 🆕 v1.7 |
-| **Per-Core CPU Monitor** | Individual core frequency & utilization tracking | 🆕 v1.7 |
-| **Frame Time Stability** | Measures & reports frame time variance for smoothness | 🆕 v1.7 |
-| **Android 16 Ready** | Full API 36 support, new performance APIs | 🆕 v1.7 |
+---
+
+<div align="center">
 
 ### Supported Games (165+ Titles)
 
+</div>
+
 | Game | Package | Max FPS |
-|------|---------|---------|
+|---|---|---|
 | **PUBG Mobile** | `com.tencent.ig` | 165 |
 | **PUBG Mobile (Regional)** | `com.pubg.krmobile`, `com.pubg.imobile`, `com.pubg.mobile` | 165 |
 | **PUBG NEW STATE** | `com.krafton.gamepubg` | 165 |
@@ -161,10 +153,14 @@
 
 ---
 
+<div align="center">
+
 ## 🛠️ Tech Stack
 
+</div>
+
 | Category | Technology |
-|----------|------------|
+|---|---|
 | **UI Framework** | Jetpack Compose BOM 2024.06 + Material Design 3 |
 | **Dependency Injection** | Hilt 2.52 via KSP (no Kapt) |
 | **Local Storage** | Room 2.6.1 + DataStore Preferences |
@@ -182,7 +178,11 @@
 
 ---
 
+<div align="center">
+
 ## 🚀 Quick Start
+
+</div>
 
 ### Requirements
 
@@ -232,17 +232,21 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ### Build Troubleshooting
 
 | Issue | Fix |
-|-------|-----|
+|---|---|
 | `Kapt doesn't support language version 2.0+` | Already fixed — Hilt uses KSP now |
 | `ForegroundServiceTypeMismatch` | Already fixed — all services use `specialUse` with declarations |
 | `ClassNotFoundException` on launch | Already fixed — namespace matches actual packages |
 
 ---
 
+<div align="center">
+
 ## 🔐 Permissions Needed
 
+</div>
+
 | Permission | Purpose |
-|------------|---------|
+|---|---|
 | `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games |
 | `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | Background boosting services (game perf, overlay, game detection) |
 | `WRITE_SETTINGS` | Automatic brightness at animation control |
@@ -256,10 +260,14 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
+<div align="center">
+
 ## 📱 Supported Chipsets
 
+</div>
+
 | Manufacturer | Series | Status |
-|--------------|--------|--------|
+|---|---|---|
 | **Qualcomm** | Snapdragon 8 Elite, 8 Gen 1/2/3/4, 7+ Gen 2/3, 7s/7 Gen 3, 6 Gen 1, 4 Gen 2, all SD models | ✅ |
 | **MediaTek** | Dimensity 9400/9300/9200/9000/8300/8200/8100/8025/7350/7300/7250/7200/7050, Helio G99/G96/G95/G91/G88/G85/G80/G70/G36/G25 | ✅ |
 | **Samsung** | Exynos 2400/2200/2100/1480/1380/1280/1080, all Exynos models | ✅ |
@@ -281,13 +289,17 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
+<div align="center">
+
 ## 🔓 Root vs Non-Root Features
 
 > The app is **fully designed for non-root devices**. 80% of features work without root.
 > Root users get additional low-level optimizations, but the core gaming boost experience is complete without it.
 
+</div>
+
 | Feature | Without Root | With Root |
-|---------|--------------|-----------|
+|---|---|---|
 | ADPF Performance Session (Android 12+) | ✅ | ✅ |
 | Wake Lock (PowerManager) | ✅ | ✅ |
 | Thread Priority Boost | ✅ | ✅ |
@@ -314,7 +326,11 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
+<div align="center">
+
 ## 🔧 Troubleshooting
+
+</div>
 
 <details>
 <summary><strong>Why are some features marked as "unavailable" in the notification?</strong></summary>
@@ -361,7 +377,11 @@ This is normal on non-root devices. The app shows a count of optimizations that 
 
 ---
 
+<div align="center">
+
 ## 📂 Project Structure
+
+</div>
 
 ```
 app/src/main/java/com/gamelauncher/
@@ -392,6 +412,8 @@ app/src/main/java/com/gamelauncher/
 ```
 
 ---
+
+<div align="center">
 
 ## 🤝 Contributing
 
@@ -431,3 +453,5 @@ MIT License — see the [LICENSE](LICENSE) file for details.
 
 [![GitHub stars](https://img.shields.io/github/stars/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/network/members)
+
+</div>
