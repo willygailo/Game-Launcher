@@ -431,7 +431,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release](https://github.com/willygailo/Game-Launcher/releases) (coming soon)
+- [Latest Release: v1.7.2](https://github.com/willygailo/Game-Launcher/releases/tag/v1.7.2)
 - Or build from source using the instructions above
 
 ---
