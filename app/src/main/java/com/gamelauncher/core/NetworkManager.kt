@@ -43,12 +43,14 @@ class NetworkManager @Inject constructor(
 
     fun isWifiLockHeld(): Boolean = wifiLock?.isHeld ?: false
 
+    @Suppress("DEPRECATION")
     fun getWifiLinkSpeedMbps(): Int {
         return try {
             wifiManager?.connectionInfo?.linkSpeed ?: 0
         } catch (_: Exception) { 0 }
     }
 
+    @Suppress("DEPRECATION")
     fun getWifiSignalDbm(): Int {
         return try {
             wifiManager?.connectionInfo?.rssi ?: -100

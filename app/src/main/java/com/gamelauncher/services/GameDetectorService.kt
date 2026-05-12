@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.app.usage.UsageStatsManager
+import android.os.Build
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.IBinder
@@ -15,6 +16,8 @@ import com.gamelauncher.core.GameOptimizationCoordinator
 import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.core.SupportedGames
 import com.gamelauncher.core.TouchLatencyOptimizer
+import com.gamelauncher.data.local.GameDao
+import com.gamelauncher.data.model.GamingSession
 import com.gamelauncher.data.preference.SettingsPreferences
 import com.gamelauncher.ml.GameClassifier
 import com.gamelauncher.ui.MainActivity
@@ -41,12 +44,16 @@ class GameDetectorService : Service() {
     @Inject lateinit var settingsPreferences: SettingsPreferences
     @Inject lateinit var deviceManager: com.gamelauncher.core.DeviceManager
     @Inject lateinit var networkManager: com.gamelauncher.core.NetworkManager
+    @Inject lateinit var gameDao: GameDao
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var detectorJob: Job? = null
     private var usageStatsManager: UsageStatsManager? = null
     private var currentGame: String? = null
     private var isBoostActive = false
+    private var currentSessionId: Long = 0L
+    private var sessionStartTime: Long = 0L
+    private var sessionStartBattery: Int = 0
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -61,18 +68,18 @@ class GameDetectorService : Service() {
     }
 
     private fun startDetector() {
-        startForeground(
-            NOTIFICATION_ID,
-            createNotification(
-                title = "Game Detector Active",
-                text = "Monitoring foreground apps..."
+        try {
+            startForeground(
+                NOTIFICATION_ID,
+                createNotification("Game Detector Active", "Monitoring foreground apps...")
             )
-        )
-
+        } catch (e: Exception) {
+            stopSelf()
+            return
+        }
         if (usageStatsManager == null) {
             usageStatsManager = getSystemService(UsageStatsManager::class.java)
         }
-
         detectorJob?.cancel()
         detectorJob = serviceScope.launch {
             while (isActive) {
@@ -91,17 +98,12 @@ class GameDetectorService : Service() {
 
     private fun monitorForegroundApp() {
         val packageName = getForegroundPackage()
-
         if (packageName.isBlank()) {
             updateNotification("Game Detector Active", "Grant Usage Access in Settings to auto-detect games")
             return
         }
-
         if (packageName == this.packageName) return
-
-        if (packageName == currentGame) {
-            return
-        }
+        if (packageName == currentGame) return
 
         if (isKnownGame(packageName)) {
             handleGameDetected(packageName)
@@ -126,13 +128,13 @@ class GameDetectorService : Service() {
         return SupportedGames.isSupportedGame(packageName) || gameClassifier.isGame(packageName, packageManager)
     }
 
+    @Suppress("DEPRECATION")
     private fun isGameCategory(packageName: String): Boolean {
         return runCatching {
             val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 appInfo.category == ApplicationInfo.CATEGORY_GAME
             } else {
-                @Suppress("DEPRECATION")
                 (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
             }
         }.getOrDefault(false)
@@ -142,9 +144,7 @@ class GameDetectorService : Service() {
         if (currentGame == packageName) return
         currentGame = packageName
 
-        serviceScope.launch {
-            startSmartBoost(packageName)
-        }
+        serviceScope.launch { startSmartBoost(packageName) }
 
         val gameName = runCatching {
             packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
@@ -152,7 +152,6 @@ class GameDetectorService : Service() {
 
         val gameInfo = SupportedGames.findGame(packageName)
         val fpsText = if (gameInfo != null) "@ ${gameInfo.maxFps} FPS" else ""
-        
         updateNotification("Game Detected", "$gameName - Boost Active $fpsText")
     }
 
@@ -160,54 +159,64 @@ class GameDetectorService : Service() {
         if (isBoostActive) return
         isBoostActive = true
 
-        val settings = settingsPreferences
-
-        val globalAutoBoost = settings.globalAutoBoost.first()
+        val globalAutoBoost = settingsPreferences.globalAutoBoost.first()
         if (!globalAutoBoost) return
 
-        val dndEnabled = settings.dndEnabled.first()
-        val touchEnabled = settings.touchOptimizationEnabled.first()
-        val memoryEnabled = settings.memoryCleanupEnabled.first()
-        val networkEnabled = settings.networkOptimizationEnabled.first()
+        val dndEnabled = settingsPreferences.dndEnabled.first()
+        val touchEnabled = settingsPreferences.touchOptimizationEnabled.first()
+        val memoryEnabled = settingsPreferences.memoryCleanupEnabled.first()
+        val networkEnabled = settingsPreferences.networkOptimizationEnabled.first()
+        val adaptivePerf = settingsPreferences.adaptivePerformanceEnabled.first()
+        val thermalAware = settingsPreferences.thermalAwareBoost.first()
 
-        val result = optimizationCoordinator.startOptimization(packageName)
+        val result = if (thermalAware)
+            optimizationCoordinator.startThermalAwareOptimization(packageName)
+        else
+            optimizationCoordinator.startOptimization(packageName)
 
-        if (dndEnabled) {
-            dndManager.enableGamingDnd()
-        }
-
+        if (dndEnabled) dndManager.enableGamingDnd()
         if (touchEnabled) {
             touchLatencyOptimizer.enableTouchOptimizations()
             touchLatencyOptimizer.enableHighFrequencyTouch()
         }
-
-        if (memoryEnabled) {
-            deviceManager.killBackgroundApps()
-        }
+        if (memoryEnabled) deviceManager.killBackgroundApps()
 
         val gameInfo = SupportedGames.findGame(packageName)
-        val targetFps = gameInfo?.maxFps ?: 60
-        
+        val targetFps = gameInfo?.maxFps ?: result.targetFps
+
         performanceManager.startPerformanceSession(targetFps)
         performanceManager.boostThreadPriority()
         performanceManager.disableAnimations()
 
-        val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
-        performanceManager.lockRefreshRate(maxHz)
+        val supportedRates = performanceManager.getSupportedRefreshRates()
+        val maxHz = supportedRates.maxOrNull() ?: 60f
+        val stableHz = supportedRates.minByOrNull { kotlin.math.abs(it - maxHz) } ?: 60f
+        performanceManager.lockRefreshRate(stableHz)
         performanceManager.lockFps(targetFps)
 
         if (networkEnabled) {
             networkManager.acquireWifiLowLatencyLock("GameBoost")
         }
-    }
 
-    private fun startBoost() {
-        if (isBoostActive) return
-        isBoostActive = true
+        val name = runCatching {
+            packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
+        }.getOrDefault(packageName)
 
-        performanceManager.boostThreadPriority()
-        performanceManager.startPerformanceSession(120)
-        performanceManager.disableAnimations()
+        val thermalStatus = deviceManager.getThermalStatus()
+        val thermalWarning = if (thermalStatus >= android.os.PowerManager.THERMAL_STATUS_MODERATE)
+            " [Thermal: ${optimizationCoordinator.getThermalStatusString()}]" else ""
+        val errorText = if (result.errors.isNotEmpty() && result.errors.none { it.contains("overheat", true) })
+            " | ${result.errors.size} optimizations unavailable" else ""
+        updateNotification("Game Detected", "$name @ ${targetFps}FPS - Boost Active$thermalWarning$errorText")
+
+        sessionStartTime = System.currentTimeMillis()
+        sessionStartBattery = deviceManager.getBatteryLevel()
+        currentSessionId = gameDao.insertSession(GamingSession(
+            packageName = packageName,
+            gameName = name,
+            startTime = sessionStartTime,
+            wasBoosted = true
+        ))
     }
 
     private fun stopBoost() {
@@ -220,7 +229,6 @@ class GameDetectorService : Service() {
             touchLatencyOptimizer.disableTouchOptimizations()
             touchLatencyOptimizer.disableHighFrequencyTouch()
             networkManager.releaseWifiLock()
-
             val defaultHz = performanceManager.getSupportedRefreshRates().firstOrNull() ?: 60f
             performanceManager.lockRefreshRate(defaultHz)
         }
@@ -229,17 +237,36 @@ class GameDetectorService : Service() {
         performanceManager.stopPerformanceSession()
         performanceManager.restoreAnimations()
 
+        if (currentSessionId > 0L) {
+            val endTime = System.currentTimeMillis()
+            val batteryNow = deviceManager.getBatteryLevel()
+            val (_, ramUsed, _) = deviceManager.getRamInfo()
+            val sessionId = currentSessionId
+            serviceScope.launch {
+                gameDao.updateSession(GamingSession(
+                    id = sessionId,
+                    packageName = currentGame ?: "",
+                    gameName = "",
+                    startTime = sessionStartTime,
+                    endTime = endTime,
+                    durationMs = (endTime - sessionStartTime).coerceAtLeast(0),
+                    avgRamUsage = ramUsed,
+                    batteryDrain = (sessionStartBattery - batteryNow).coerceAtLeast(0),
+                    wasBoosted = true
+                ))
+            }
+            currentSessionId = 0L
+        }
+
         currentGame = null
     }
 
     private fun createNotification(title: String, text: String): Notification {
         val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
+            this, 0,
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-
         return NotificationCompat.Builder(this, GameLauncherApp.CHANNEL_BOOSTER)
             .setContentTitle(title)
             .setContentText(text)

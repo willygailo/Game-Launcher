@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -35,6 +36,11 @@ class OverlayService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var windowManager: WindowManager
     private var overlayView: View? = null
+    private var overlayParams: WindowManager.LayoutParams? = null
+    private var initialX = 100
+    private var initialY = 100
+    private var initialTouchX = 0f
+    private var initialTouchY = 0f
 
     override fun onCreate() {
         super.onCreate()
@@ -67,7 +73,12 @@ class OverlayService : Service() {
             .setOngoing(true)
             .build()
 
-        startForeground(2, notification)
+        try {
+            startForeground(2, notification)
+        } catch (e: Exception) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         showOverlay()
 
@@ -77,7 +88,7 @@ class OverlayService : Service() {
     private fun showOverlay() {
         if (overlayView != null) return
 
-        val layoutParams = WindowManager.LayoutParams(
+        overlayParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -87,14 +98,13 @@ class OverlayService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         )
 
-        layoutParams.gravity = Gravity.TOP or Gravity.START
-        layoutParams.x = 100
-        layoutParams.y = 100
+        overlayParams!!.gravity = Gravity.TOP or Gravity.START
+        overlayParams!!.x = initialX
+        overlayParams!!.y = initialY
 
         overlayView = TextView(this).apply {
             text = "FPS: --"
@@ -103,10 +113,30 @@ class OverlayService : Service() {
             setPadding(16, 8, 16, 8)
             textSize = 14f
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+            setOnTouchListener { _, event ->
+                val params = overlayParams ?: return@setOnTouchListener false
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialX = params.x
+                        initialY = params.y
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+                        true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        params.x = (initialX + (event.rawX - initialTouchX)).toInt()
+                        params.y = (initialY + (event.rawY - initialTouchY)).toInt()
+                        windowManager.updateViewLayout(this, params)
+                        true
+                    }
+                    else -> false
+                }
+            }
         }
 
         try {
-            windowManager.addView(overlayView, layoutParams)
+            windowManager.addView(overlayView, overlayParams)
             fpsManager.startTracking()
 
             serviceScope.launch {

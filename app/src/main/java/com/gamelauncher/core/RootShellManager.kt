@@ -5,13 +5,14 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.InputStreamReader
+import kotlin.concurrent.Volatile
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RootShellManager @Inject constructor() {
 
-    private var hasRootCache: Boolean? = null
+    @Volatile private var hasRootCache: Boolean? = null
 
     /**
      * Checks if the device has root access and the user grants permission.

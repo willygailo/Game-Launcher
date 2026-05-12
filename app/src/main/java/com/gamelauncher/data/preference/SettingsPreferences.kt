@@ -25,126 +25,71 @@ class SettingsPreferences @Inject constructor(
 ) {
     private val dataStore = context.dataStore
 
+    // Existing settings
     val globalAutoBoost: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_GLOBAL_AUTO_BOOST] ?: true }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_GLOBAL_AUTO_BOOST] ?: true }
 
-    val globalTargetFps: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_GLOBAL_TARGET_FPS] ?: 60 }
-
-    val globalTargetHz: Flow<Float> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_GLOBAL_TARGET_HZ] ?: 60f }
-        
     val isOverlayEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_OVERLAY_ENABLED] ?: false }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_OVERLAY_ENABLED] ?: false }
 
     val gameDetectorEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_GAME_DETECTOR_ENABLED] ?: false }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_GAME_DETECTOR_ENABLED] ?: false }
 
     val dndEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_DND_ENABLED] ?: true }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_DND_ENABLED] ?: true }
 
     val touchOptimizationEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_TOUCH_OPTIMIZATION_ENABLED] ?: true }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_TOUCH_OPTIMIZATION_ENABLED] ?: true }
 
     val memoryCleanupEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_MEMORY_CLEANUP_ENABLED] ?: true }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_MEMORY_CLEANUP_ENABLED] ?: true }
 
     val networkOptimizationEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_NETWORK_OPTIMIZATION_ENABLED] ?: true }
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_NETWORK_OPTIMIZATION_ENABLED] ?: true }
 
-    val smartPerformanceEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_SMART_PERFORMANCE_ENABLED] ?: true }
+    val isDarkTheme: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_DARK_THEME] ?: true }
 
-    val autoDetectRefreshRate: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_AUTO_DETECT_REFRESH_RATE] ?: true }
+    val onboardingCompleted: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_ONBOARDING_COMPLETED] ?: false }
 
-    val temperatureMonitoringEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }.map { it[KEY_TEMPERATURE_MONITORING_ENABLED] ?: true }
+    // NEW: Adaptive performance settings
+    val adaptivePerformanceEnabled: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_ADAPTIVE_PERF] ?: true }
 
-    suspend fun setGlobalAutoBoost(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_GLOBAL_AUTO_BOOST] = enabled }
-    }
+    val thermalAwareBoost: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_THERMAL_AWARE] ?: true }
 
-    suspend fun setGlobalTargetFps(fps: Int) {
-        dataStore.edit { preferences -> preferences[KEY_GLOBAL_TARGET_FPS] = fps }
-    }
-
-    suspend fun setGlobalTargetHz(hz: Float) {
-        dataStore.edit { preferences -> preferences[KEY_GLOBAL_TARGET_HZ] = hz }
-    }
-    
-    suspend fun setOverlayEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_OVERLAY_ENABLED] = enabled }
-    }
-
-    suspend fun setGameDetectorEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_GAME_DETECTOR_ENABLED] = enabled }
-    }
-
-    suspend fun setDndEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_DND_ENABLED] = enabled }
-    }
-
-    suspend fun setTouchOptimizationEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_TOUCH_OPTIMIZATION_ENABLED] = enabled }
-    }
-
-    suspend fun setMemoryCleanupEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_MEMORY_CLEANUP_ENABLED] = enabled }
-    }
-
-    suspend fun setNetworkOptimizationEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_NETWORK_OPTIMIZATION_ENABLED] = enabled }
-    }
-
-    suspend fun setSmartPerformanceEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_SMART_PERFORMANCE_ENABLED] = enabled }
-    }
-
-    suspend fun setAutoDetectRefreshRate(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_AUTO_DETECT_REFRESH_RATE] = enabled }
-    }
-
-    suspend fun setTemperatureMonitoringEnabled(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[KEY_TEMPERATURE_MONITORING_ENABLED] = enabled }
-    }
+    // Setters
+    suspend fun setDarkTheme(enabled: Boolean) { dataStore.edit { it[KEY_DARK_THEME] = enabled } }
+    suspend fun setOnboardingCompleted() { dataStore.edit { it[KEY_ONBOARDING_COMPLETED] = true } }
+    suspend fun setGlobalAutoBoost(enabled: Boolean) { dataStore.edit { it[KEY_GLOBAL_AUTO_BOOST] = enabled } }
+    suspend fun setOverlayEnabled(enabled: Boolean) { dataStore.edit { it[KEY_OVERLAY_ENABLED] = enabled } }
+    suspend fun setGameDetectorEnabled(enabled: Boolean) { dataStore.edit { it[KEY_GAME_DETECTOR_ENABLED] = enabled } }
+    suspend fun setThermalAwareBoost(enabled: Boolean) { dataStore.edit { it[KEY_THERMAL_AWARE] = enabled } }
 
     companion object {
+        private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
+        private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         private val KEY_GLOBAL_AUTO_BOOST = booleanPreferencesKey("global_auto_boost")
-        private val KEY_GLOBAL_TARGET_FPS = intPreferencesKey("global_target_fps")
-        private val KEY_GLOBAL_TARGET_HZ = floatPreferencesKey("global_target_hz")
-        private val KEY_OVERLAY_ENABLED = booleanPreferencesKey("overlay_enabled")
-        private val KEY_GAME_DETECTOR_ENABLED = booleanPreferencesKey("game_detector_enabled")
         private val KEY_DND_ENABLED = booleanPreferencesKey("dnd_enabled")
         private val KEY_TOUCH_OPTIMIZATION_ENABLED = booleanPreferencesKey("touch_optimization_enabled")
         private val KEY_MEMORY_CLEANUP_ENABLED = booleanPreferencesKey("memory_cleanup_enabled")
         private val KEY_NETWORK_OPTIMIZATION_ENABLED = booleanPreferencesKey("network_optimization_enabled")
-        private val KEY_SMART_PERFORMANCE_ENABLED = booleanPreferencesKey("smart_performance_enabled")
-        private val KEY_AUTO_DETECT_REFRESH_RATE = booleanPreferencesKey("auto_detect_refresh_rate")
-        private val KEY_TEMPERATURE_MONITORING_ENABLED = booleanPreferencesKey("temperature_monitoring_enabled")
+        private val KEY_ADAPTIVE_PERF = booleanPreferencesKey("adaptive_performance")
+        private val KEY_OVERLAY_ENABLED = booleanPreferencesKey("overlay_enabled")
+        private val KEY_GAME_DETECTOR_ENABLED = booleanPreferencesKey("game_detector_enabled")
+        private val KEY_THERMAL_AWARE = booleanPreferencesKey("thermal_aware_boost")
     }
 }

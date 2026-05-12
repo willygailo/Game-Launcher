@@ -1,66 +1,132 @@
-<h1 align="center">🎮 Game Launcher & Performance Booster</h1>
+# 🎮 Game Launcher & Performance Booster
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Android-7.0--15%20(API%2024--35)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API"/>
-  <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin"/>
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-latest-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose"/>
-  <img src="https://img.shields.io/badge/Hilt-DI-FF4088?style=for-the-badge&logo=dagger&logoColor=white" alt="Hilt"/>
-  <img src="https://img.shields.io/badge/TensorFlow%20Lite-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow Lite"/>
-  <img src="https://img.shields.io/badge/Version-1.1.0-00C853?style=for-the-badge" alt="Version 1.1.0"/>
-</p>
+[![Android API](https://img.shields.io/badge/Android_10--16_API_29--36-3DDC84?style=for-the-badge&logo=android&logoColor=white)]()
+[![Kotlin](https://img.shields.io/badge/Kotlin_2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)]()
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
+[![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
+[![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
+[![Version](https://img.shields.io/badge/Version_1.7.2-00C853?style=for-the-badge)]()
 
-<p align="center">
-  <strong>🚀 Ang pinaka-powerful na Android performance booster para sa mobile gaming!</strong>
-</p>
+> **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
 ---
 
-<h2 align="center">👤 Developer</h2>
+## 👤 Developer
 
-<p align="center">
-  <img src="https://github.com/willygailo.png" width="120" style="border-radius:50%"/><br/><br/>
-  <strong>Willy Gailo</strong><br/>
-  🔗 <a href="https://github.com/willygailo">GitHub</a> • 
-  <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027">Facebook</a>
-</p>
+| | |
+|---|---|
+| ![Willy Gailo](https://github.com/willygailo.png?size=120) | **Willy Gailo** |
+| | [GitHub](https://github.com/willygailo) • [Facebook](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) |
 
 ---
 
-<h2 align="center">✨ Features</h2>
+## Screenshots
 
-<div align="center">
+*<!-- TODO: Add screenshots here -->*
+| Dashboard | FPS Overlay | Games Library | Settings |
+|---|---|---|---|
+| `screenshot_1.png` | `screenshot_2.png` | `screenshot_3.png` | `screenshot_4.png` |
 
-| 🎯 Feature | 📝 Description | 🔥 Status |
-|------------|----------------|-----------|
-| **📊 Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ Available |
-| **🎯 Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ Available |
-| **🎮 Game Library** | Auto-detect ng lahat ng installed games | ✅ Available |
-| **⚡ Per-Game Boosts** | Custom FPS (30-165), WiFi lock per game | ✅ Available |
-| **📺 Immersive Controls** | DND mode, max brightness automation | ✅ Available |
-| **🏠 Home Widget** | Quick Boost at Open buttons sa home screen | ✅ Available |
-| **⚙️ Quick Settings Tile** | Toggle booster sa notification panel | ✅ Available |
-| **🤖 Game Detector** | Auto-boost pag nag-open ng game (UsageStatsManager) | ✅ Available |
-| **📈 Stats History** | Track ng play time per session | ✅ Available |
-| **🧹 RAM Optimizer** | Kill background apps instantly | ✅ Available |
-| **📦 Storage Optimizer** | Run fstrim para sa speed boost | ✅ Available |
-| **🌐 Network Manager** | WiFi low-latency lock, signal strength, link speed | ✅ Available |
-| **🤖 ML Game Detection** | TensorFlow Lite 2.17 auto-classify games | ✅ Available |
-| **📋 Background Tasks** | WorkManager scheduled optimization | ✅ Available |
-| **🔐 Permission UI** | Individual permission cards na may status indicator | ✅ Available |
+---
 
-### 🚀 NEW: Performance Enhancement System
+## ✨ Features
 
-| 🎮 Feature | 📝 Description | 🔥 Status |
-|------------|----------------|-----------|
-| **🧠 Smart CPU/GPU Scaling** | Auto-detects chipset, applies dynamic profiles (NOT permanent max lock) | ✅ NEW |
-| **🔇 DND Fix** | Auto-enables/disables Do Not Disturb during gameplay | ✅ NEW |
-| **🖥️ Refresh Rate Lock** | Auto-detects max Hz (60-165Hz), locks during gaming | ✅ NEW |
-| **🎬 FPS Optimization** | Auto-detects device max FPS, matches game capabilities | ✅ NEW |
-| **👆 Touch Latency Optimizer** | Reduces input lag for competitive gaming | ✅ NEW |
-| **🌡️ Thermal Protection** | Smart temperature monitoring, prevents throttling | ✅ NEW |
-| **📱 All Chipsets Supported** | Snapdragon, MediaTek, Exynos, Dimensity, Kirin, Unisoc, Tensor (G1-G4) | ✅ NEW |
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ |
+| **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
+| **Live Boost Notification** | Real-time FPS & Hz sa notification habang naglalaro | ✅ |
+| **Game Library** | Auto-detect ng lahat ng installed games | ✅ |
+| **Per-Game Boosts** | Custom FPS (30-165), WiFi lock per game | ✅ |
+| **Immersive Controls** | DND mode (INTERRUPTION_FILTER_NONE), max brightness automation | ✅ |
+| **Home Widget** | Quick Boost at Open buttons sa home screen | ✅ |
+| **Quick Settings Tile** | Toggle booster sa notification panel | ✅ |
+| **Game Detector** | Auto-boost pag nag-open ng game (UsageStatsManager) | ✅ |
+| **Stats History** | Track ng play time per session (manual + auto) | ✅ |
+| **RAM Optimizer** | Kill background apps instantly (non-root via ActivityManager) | ✅ |
+| **Storage Optimizer** | Run fstrim para sa speed boost | ✅ |
+| **Network Manager** | WiFi low-latency lock, signal strength, link speed | ✅ |
+| **ML Game Detection** | TensorFlow Lite 2.17 auto-classify games | ✅ |
+| **Background Tasks** | WorkManager scheduled optimization | ✅ |
+| **Permission UI** | Individual permission cards na may status indicator (incl. battery exemption) | ✅ |
+| **🔍 Game Search & Filter** | Search bar + category filter chips (MOBA, FPS, RPG, etc.) | ✅ |
+| **📊 Gaming Session Recording** | Auto-record play time, FPS, battery drain, RAM per session | ✅ |
+| **📈 Session Stats Dashboard** | Total sessions & play time cards sa Dashboard | ✅ |
+| **📱 Game Details Screen** | Dedicated screen with session history, avg FPS, stats per game | ✅ |
+| **🎨 Per-Game Graphics Mode** | Performance/Balanced/Battery Saver/Custom mode per game | ✅ |
+| **🎯 Draggable FPS Overlay** | Drag the FPS counter anywhere on screen | ✅ |
+| **💡 Brightness Slider** | Adjustable brightness level (10%-100%) | ✅ |
+| **🖥️ CPU Core Control** | Toggle individual CPU cores on/off (root) | ✅ |
+| **⚡ Benchmark Mode** | CPU/GPU/Memory benchmark with overall score | ✅ |
+| **🌓 Dark/Light Theme** | Toggle between dark and light theme | ✅ |
+| **📦 Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
+| **🚀 Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
 
-### 🎮 Supported Games (130+ Titles)
+### v1.7.2: Live Monitoring, DND Fix, Benchmark & Session Overhaul
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Live FPS/Hz Notification** | GameBoosterService shows real-time FPS & Hz every 2s | 🆕 v1.7.2 |
+| **DND Fix** | `DndManager` now uses `INTERRUPTION_FILTER_NONE` (totally block notifs) | 🔧 v1.7.2 |
+| **Benchmark Update** | Real GPU test via Bitmap, CPU via sort/primes, memory via 512KB arrays | 🔧 v1.7.2 |
+| **Manual Session Recording** | Games tab now records GamingSession on PLAY | 🆕 v1.7.2 |
+| **Session Update Fix** | Uses session ID directly, not fragile `getLastSessionForGame` | 🔧 v1.7.2 |
+| **FpsMonitor Rewrite** | StateFlow instead of callbackFlow for reliable FPS | 🔧 v1.7.2 |
+| **Display & FPS Fix** | Real FPS & Hz now properly display on Dashboard | 🔧 v1.7.2 |
+| **Battery Exemption UI** | Shows "Granted" status, direct app settings fallback | 🔧 v1.7.2 |
+| **Non-Root GPU Force** | `forceGpuRendering()` + `setHighPerformanceMode()` | 🆕 v1.7.2 |
+| **Universal Chipset Detection** | Rockchip, Allwinner, Amlogic, Broadcom support + device fallback | 🆕 v1.7.2 |
+
+### v1.7.1: Performance Overhaul & Bug Fixes
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Namespace Fix** | `com.gamelauncher.app` → `com.gamelauncher` (fixes ClassNotFoundException) | 🔧 v1.7.1 |
+| **Foreground Service Fix** | `dataSync` → `specialUse` with proper declaration (crash fix on Android 15+) | 🔧 v1.7.1 |
+| **Kapt → KSP Migration** | Hilt compiler via KSP, no more "falling back to 1.9" warning | 🔧 v1.7.1 |
+| **Wake Lock Support** | PowerManager partial wake lock for non-root devices | 🆕 v1.7.1 |
+| **Non-Root Optimizer** | `optimizeNonRoot()` — wake lock + thread priority + animations off | 🆕 v1.7.1 |
+| **Non-Root App Killer** | killBackgroundApps now uses ActivityManager for non-root | 🆕 v1.7.1 |
+| **All Deprecation Warnings Fixed** | NetworkManager, Theme, aaptOptions | 🔧 v1.7.1 |
+| **lockRefreshRate Cleanup** | Removed broken API 36 dead code | 🔧 v1.7.1 |
+
+### v2.0.0: Enhanced Gaming Experience
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Game Session Recording** | Auto-record start/end time, FPS, battery drain, RAM per session | ✅ |
+| **Game Search & Filter** | Real-time search bar + category filter chips | ✅ |
+| **Draggable FPS Overlay** | Touch and drag the FPS counter anywhere on screen | ✅ |
+| **Onboarding Walkthrough** | 4-page guided intro for first-time users | ✅ |
+| **Per-Game Graphics Mode** | Choose Performance/Balanced/Battery Saver/Custom per game | ✅ |
+| **Brightness Slider** | Adjustable 10%-100% brightness slider | ✅ |
+| **Session Stats Dashboard** | Total sessions & play time tracking cards | ✅ |
+| **Game Details Screen** | Session history, average FPS, per-game statistics | ✅ |
+| **CPU Core Control** | Toggle individual cores on/off (root required) | ✅ |
+| **Benchmark Mode** | Run CPU/GPU/Memory benchmark, compare scores | ✅ |
+| **Dark/Light Theme Toggle** | Switch between dark and light theme in Settings | ✅ |
+| **Profile Import/Export** | Backup/restore per-game settings as JSON files | ✅ |
+
+### v1.7.0: Next-Gen Performance Engine
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Smart CPU/GPU Scaling** | Auto-detects chipset, applies dynamic profiles | ✅ |
+| **DND Fix** | Auto-enables/disables Do Not Disturb during gameplay | ✅ |
+| **Refresh Rate Lock** | Auto-detects max Hz (60-240Hz), locks during gaming | ✅ |
+| **FPS Optimization** | Auto-detects device max FPS, matches game capabilities | ✅ |
+| **Touch Latency Optimizer** | Reduces input lag for competitive gaming | ✅ |
+| **Thermal Protection** | Smart temperature monitoring, adaptive throttle prevention | ✅ |
+| **All Chipsets Supported** | SD 8 Elite, Dimensity 9400, Tensor G5+, Exynos 2400, Kirin 9010, Unisoc T820 | ✅ |
+| **ADPF v2 Support** | Android Dynamic Performance Framework (API 35+) frame pacing | 🆕 v1.7 |
+| **Jank Detection** | Real-time frame timing & jank analysis (16ms/32ms thresholds) | 🆕 v1.7 |
+| **Thermal-Aware Boost** | Auto-scales performance based on device temperature | 🆕 v1.7 |
+| **Adaptive FPS** | Dynamically adjusts FPS target based on thermal & load | 🆕 v1.7 |
+| **Per-Core CPU Monitor** | Individual core frequency & utilization tracking | 🆕 v1.7 |
+| **Frame Time Stability** | Measures & reports frame time variance for smoothness | 🆕 v1.7 |
+| **Android 16 Ready** | Full API 36 support, new performance APIs | 🆕 v1.7 |
+
+### Supported Games (165+ Titles)
 
 | Game | Package | Max FPS |
 |------|---------|---------|
@@ -71,99 +137,114 @@
 | **Call of Duty Mobile (Garena)** | `com.garena.game.codm` | 165 |
 | **Call of Duty Warzone Mobile** | `com.activision.callofduty.warzone` | 165 |
 | **Free Fire / Free Fire Max** | `com.garena.game.freefire` / `com.garena.game.freefiremobile` | 165 |
-| **Free Fire (Regional)** | Thailand, Vietnam, Indonesia, India, Philippines, Malaysia, Singapore | 165 |
 | **Mobile Legends: Bang Bang** | `com.mobile.legends` | 165 |
-| **Genshin Impact** | `com.miHoYo.GenshinImpact` / `com.miHoYo.ys` | 165 |
-| **Honkai: Star Rail** | `com.miHoYo.hsr` | 165 |
+| **Genshin Impact** | `com.miHoYo.GenshinImpact` / `com.HoYoverse.GenshinImpact` | 165 |
+| **Honkai: Star Rail** | `com.miHoYo.hsr` / `com.HoYoverse.hkrpg` | 165 |
+| **Zenless Zone Zero** | `com.HoYoverse.zzz` | 165 |
+| **Wuthering Waves** | `com.kuro.wutheringwaves` | 165 |
 | **League of Legends: Wild Rift** | `com.riotgames.leagueofwildrift` | 165 |
 | **Valorant Mobile** | `com.riotgames.valorant` | 165 |
-| **Apex Legends Mobile** | `com.ea.gp.apexlegendsmobilefps` | 165 |
-| **Marvel Future Fight** | `com.proximabeta.mf` | 165 |
+| **Honor of Kings** | `com.tencent.tmgp.sgame` | 165 |
 | **Fortnite** | `com.epicgames.fortnite` / `com.epicgames.fortnitemobile` | 165 |
+| **Apex Legends Mobile** | `com.ea.gp.apexlegendsmobilefps` | 165 |
+| **Roblox** | `com.roblox.client` | 165 |
 | **Minecraft PE** | `com.mojang.minecraftpe` | 165 |
-| **Clash of Clans** | `com.supercell.clashofclans` | 165 |
-| **Clash Royale** | `com.supercell.clashroyale` | 165 |
-| **Brawl Stars** | `com.supercell.brawlstars` | 165 |
-| **FIFA Mobile** | `com.ea.gp.fifamobile` | 165 |
-| **Asphalt 9** | `com.gameloft.asphalt9` | 165 |
-| **NBA 2K Mobile** | `com.t2ksports.nba2kmobile` | 165 |
-| **Dead by Daylight Mobile** | `com.bhvr.dbdmobile` | 165 |
-| **Rainbow Six Mobile** | `com.ubisoft.rainbowsixmobile` | 165 |
-| **Pokémon UNITE** | `com.pokemon.unite` | 165 |
-| **Diablo Immortal** | `com.blizzard.diabloimmortal` | 165 |
-| **Tower of Fantasy** | `com.hotta.dreamroom` | 165 |
-| **And 100+ more titles...** | Regional variants + ML detected | 165 |
+| **Squad Busters** | `com.supercell.squad` | 165 |
+| **Marvel Snap** | `com.levelinfinite.marvelsnap` | 165 |
+| **World of Tanks Blitz** | `com.wargaming.wot.blitz` | 165 |
+| **Monster Hunter Now** | `com.capcom.monsterhunter` | 165 |
+| **Dragon Ball Legends** | `com.bandainamco.dragonballlegends` | 165 |
+| **eFootball PES** | `com.konami.pes` | 165 |
+| **GTA: Definitive Edition** | `com.rockstargames.gtade` | 165 |
 
-</div>
+*And 135+ more titles — including regional variants and ML-detected games.*
 
 ---
 
-<h2 align="center">🛠️ Tech Stack</h2>
-
-<div align="center">
+## 🛠️ Tech Stack
 
 | Category | Technology |
-|----------|-------------|
-| **UI Framework** | ☝️ Jetpack Compose + Material Design 3 |
-| **Dependency Injection** | 💉 Hilt (Dagger) |
-| **Local Storage** | 🗄️ Room Database + DataStore Preferences |
-| **Architecture** | 🏗️ MVVM + Repository Pattern |
-| **Build System** | ⚙️ Gradle Kotlin DSL |
-| **Language** | 🟣 Kotlin 1.9+ |
-| **ML** | 🧠 TensorFlow Lite 2.17 (game classification) |
-| **Background Tasks** | ⚡ WorkManager |
-
-</div>
+|----------|------------|
+| **UI Framework** | Jetpack Compose BOM 2024.06 + Material Design 3 |
+| **Dependency Injection** | Hilt 2.52 via KSP (no Kapt) |
+| **Local Storage** | Room 2.6.1 + DataStore Preferences |
+| **Architecture** | MVVM + Repository Pattern |
+| **Build System** | Gradle 8.9 + AGP 8.5.2 + Kotlin DSL |
+| **Language** | Kotlin 2.0.21 |
+| **Annotation Processing** | KSP (Room + Hilt compiler) |
+| **ML** | TensorFlow Lite 2.17 (game classification) |
+| **Background Tasks** | WorkManager 2.10 |
+| **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) |
+| **Frame Analysis** | Choreographer StateFlow-based FPS + FrameMetrics jank detection |
+| **Wake Lock** | PowerManager partial wake lock (non-root) |
+| **Benchmark** | CPU (sort/primes), GPU (Bitmap operations), Memory (allocation) |
+| **Chipset Detection** | Proc/cpuinfo + sysfs + Build.SOC_MODEL (Snapdragon/MTK/Exynos/Kirin/Unisoc/Tensor + others) |
 
 ---
 
-<h2 align="center">🚀 Quick Start</h2>
+## 🚀 Quick Start
 
-<div align="center">
+### Requirements
 
-### 📋 Requirements
+- Android Studio Ladybug (2024.2.1) or newer
+- JDK 17+
+- Android SDK 36 (Android 16)
+- Test device: Android 10-16 (API 29-36)
+- Gradle 8.9 (wrapper included)
 
-☝️ Android Studio Hedgehog (2023.1.1) or newer  
-☕ JDK 17  
-🖥️ Android SDK 34 (Android 14)  
-📱 Test device: Android 7.0-15 (API 24-35)
-
-### 🔧 Build Instructions
+### Build Instructions
 
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/willygailo/Game-Launcher.git
 cd "Pro Game Launcher.apk"
 
-# Build debug APK
+# Build debug APK (clean)
+./gradlew clean assembleDebug
+
+# Or incremental build
 ./gradlew assembleDebug
 
-# Output location
+# APK location:
 # app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### 📱 Install sa Device
+### Install sa Device
 
 ```bash
-# Enable USB Debugging sa device
+# Enable USB Debugging:
 # Settings > About Phone > Tap "Build Number" 7 times
 # Settings > System > Developer Options > Enable USB Debugging
 
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-</div>
+### Run Tests
+
+```bash
+# Unit tests
+./gradlew testDebugUnitTest
+
+# Instrumentation tests (naka connect na device/emulator)
+./gradlew connectedDebugAndroidTest
+```
+
+### Build Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `Kapt doesn't support language version 2.0+` | Already fixed — Hilt uses KSP now |
+| `ForegroundServiceTypeMismatch` | Already fixed — all services use `specialUse` with declarations |
+| `ClassNotFoundException` on launch | Already fixed — namespace matches actual packages |
 
 ---
 
-<h2 align="center">🔐 Permissions Needed</h2>
+## 🔐 Permissions Needed
 
-<div align="center">
-
-| 🔑 Permission | 📝 Purpose |
-|---------------|-------------|
+| Permission | Purpose |
+|------------|---------|
 | `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games |
-| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_DATA_SYNC` | Background boosting services |
+| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | Background boosting services (game perf, overlay, game detection) |
 | `WRITE_SETTINGS` | Automatic brightness at animation control |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service alive during sessions |
 | `ACCESS_WIFI_STATE` / `CHANGE_WIFI_STATE` | WiFi low-latency lock |
@@ -173,71 +254,77 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | `POST_NOTIFICATIONS` | Booster status notifications (Android 13+) |
 | `MODIFY_AUDIO_SETTINGS` | Volume optimization during gaming |
 
-</div>
-
 ---
 
-<h2 align="center">📱 Supported Chipsets</h2>
-
-<div align="center">
+## 📱 Supported Chipsets
 
 | Manufacturer | Series | Status |
 |--------------|--------|--------|
-| **Qualcomm** | Snapdragon 8 Gen 1/2/3, 7 Gen 1/2, 6 Gen 1, all SD models | ✅ Full Support |
-| **MediaTek** | Dimensity 9000/8000/7000, Helio G-series, all MTK | ✅ Full Support |
-| **Samsung** | Exynos 2200/2100/1080/980, all Exynos models | ✅ Full Support |
-| **Huawei** | Kirin 9000/8000/7000, all Kirin models | ✅ Full Support |
-| **Unisoc** | T820/T770/T618/T610, all Unisoc models | ✅ Full Support |
-| **Google** | Tensor G1/G2/G3/G4 | ✅ Full Support |
+| **Qualcomm** | Snapdragon 8 Elite, 8 Gen 1/2/3/4, 7+ Gen 2/3, 7s/7 Gen 3, 6 Gen 1, 4 Gen 2, all SD models | ✅ |
+| **MediaTek** | Dimensity 9400/9300/9200/9000/8300/8200/8100/8025/7350/7300/7250/7200/7050, Helio G99/G96/G95/G91/G88/G85/G80/G70/G36/G25 | ✅ |
+| **Samsung** | Exynos 2400/2200/2100/1480/1380/1280/1080, all Exynos models | ✅ |
+| **Huawei** | Kirin 9010/9000S/9000/8000/990, all Kirin models | ✅ |
+| **Unisoc** | T820/T770/T765/T760/T7250/T620/T618/T616/T610/T606 | ✅ |
+| **Google** | Tensor G5/G4/G3/G2/G1 | ✅ |
 
-*Smart auto-performance scaling - NOT permanent max lock to prevent overheating*
+*Smart auto-performance scaling — NOT permanent max lock to prevent overheating.*
 
-</div>
+### Android Versions
 
----
-
-<h2 align="center">📱 Supported Android Versions</h2>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Android%207.0-API%2024-3DDC84?style=flat" alt="API 24"/>
-  <img src="https://img.shields.io/badge/Android%2010-API%2029-3DDC84?style=flat" alt="API 29"/>
-  <img src="https://img.shields.io/badge/Android%2011-API%2030-3DDC84?style=flat" alt="API 30"/>
-  <img src="https://img.shields.io/badge/Android%2012-API%2031-3DDC84?style=flat" alt="API 31"/>
-  <img src="https://img.shields.io/badge/Android%2013-API%2033-3DDC84?style=flat" alt="API 33"/>
-  <img src="https://img.shields.io/badge/Android%2014-API%2034-3DDC84?style=flat" alt="API 34"/>
-  <img src="https://img.shields.io/badge/Android%2015-API%2035-3DDC84?style=flat" alt="API 35"/>
-</p>
+[![API 29](https://img.shields.io/badge/Android_10-API_29-3DDC84?style=flat)]()
+[![API 30](https://img.shields.io/badge/Android_11-API_30-3DDC84?style=flat)]()
+[![API 31](https://img.shields.io/badge/Android_12-API_31-3DDC84?style=flat)]()
+[![API 33](https://img.shields.io/badge/Android_13-API_33-3DDC84?style=flat)]()
+[![API 34](https://img.shields.io/badge/Android_14-API_34-3DDC84?style=flat)]()
+[![API 35](https://img.shields.io/badge/Android_15-API_35-3DDC84?style=flat)]()
+[![API 36](https://img.shields.io/badge/Android_16-API_36-3DDC84?style=flat)]()
 
 ---
 
-<h2 align="center">🔓 Root vs Non-Root Features</h2>
+## 🔓 Root vs Non-Root Features
 
-<div align="center">
+> The app is **fully designed for non-root devices**. 80% of features work without root.
+> Root users get additional low-level optimizations, but the core gaming boost experience is complete without it.
 
 | Feature | Without Root | With Root |
 |---------|--------------|-----------|
-| **Performance Session (Android 12+)** | ✅ | ✅ |
-| **Thread Priority Boost** | ✅ | ✅ |
-| **Refresh Rate Control** | ⚠️ Limited | ✅ Full |
-| **CPU Governor Control** | ❌ | ✅ |
-| **GPU Governor Control** | ❌ | ✅ |
-| **Thermal Throttling Disable** | ❌ | ✅ |
-| **Memory Cleanup** | ⚠️ Basic | ✅ Full |
-| **Touch Latency Optimization** | ⚠️ Basic | ✅ Full |
-| **SoC-Specific Optimizations** | ❌ | ✅ |
+| ADPF Performance Session (Android 12+) | ✅ | ✅ |
+| Wake Lock (PowerManager) | ✅ | ✅ |
+| Thread Priority Boost | ✅ | ✅ |
+| FPS/Hz Monitoring | ✅ | ✅ |
+| Performance Benchmark | ✅ | ✅ |
+| Jank Detection & Frame Timing | ✅ ✅ | ✅ ✅ |
+| Refresh Rate Lock | ✅ (via Settings) | ✅ (via sysfs) |
+| Animation Speed Control | ✅ (via Settings) | ✅ (via sysfs) |
+| Memory Cleanup | ✅ (killBackgroundProcesses) | ✅ (kill + drop caches) |
+| Touch Optimization | ✅ (pointer speed) | ✅ (20+ sysfs/props) |
+| Storage Optimization | ✅ (cache cleanup) | ✅ (FSTRIM) |
+| Game Session Recording | ✅ (manual + auto) | ✅ (manual + auto) |
+| GPU Force Render | ✅ (via Settings) | ✅ (via sysfs) |
+| High Performance Mode | ✅ (via PowerManager) | ✅ (via kernel) |
+| CPU Governor Control | ❌ | ✅ |
+| CPU Core Control | ❌ | ✅ |
+| GPU Governor Control | ❌ | ✅ |
+| Thermal Throttling Disable | ❌ | ✅ |
+| Hidden Power Unlock | ❌ | ✅ |
+| SoC-Specific Tweaks | ❌ | ✅ |
+| FPS/Hz System Prop Lock | ❌ | ✅ |
 
-*Root is optional - basic features work without root!*
-
-</div>
+*Root is optional — the app is designed to work great on non-root devices!*
 
 ---
 
-<h2 align="center">🔧 Troubleshooting</h2>
-
-<div align="center">
+## 🔧 Troubleshooting
 
 <details>
-<summary><strong>🖥️ Max Brightness Not Working?</strong></summary>
+<summary><strong>Why are some features marked as "unavailable" in the notification?</strong></summary>
+
+This is normal on non-root devices. The app shows a count of optimizations that require root access (CPU Governor, GPU tuning, etc.). All non-root features (FPS Boost, ADPF, Thread Priority, Animation Control, Memory Cleanup, Touch Optimization, Refresh Rate Lock) are still fully active.
+
+</details>
+
+<details>
+<summary><strong>Max Brightness Not Working?</strong></summary>
 
 1. Buksan ang **Settings** tab sa app
 2. I-tap ang **Grant System Settings**
@@ -246,7 +333,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 </details>
 
 <details>
-<summary><strong>🎯 FPS Overlay Not Showing?</strong></summary>
+<summary><strong>FPS Overlay Not Showing?</strong></summary>
 
 1. Go to **Settings → Apps → Game Launcher → Permissions**
 2. I-enable ang **Display over other apps**
@@ -255,7 +342,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 </details>
 
 <details>
-<summary><strong>🔇 DND Not Working?</strong></summary>
+<summary><strong>DND Not Working?</strong></summary>
 
 1. Go to **Settings → Apps → Game Launcher → Notifications**
 2. I-enable ang **Do Not Disturb access**
@@ -264,7 +351,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 </details>
 
 <details>
-<summary><strong>⚡ Booster Not Starting Automatically?</strong></summary>
+<summary><strong>Booster Not Starting Automatically?</strong></summary>
 
 1. Go to **Settings → Apps → Game Launcher**
 2. Battery → **Unrestricted** (para di mapatay ng system)
@@ -272,80 +359,75 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 </details>
 
-</div>
-
 ---
 
-<h2 align="center">📂 Project Structure</h2>
-
-<div align="center">
+## 📂 Project Structure
 
 ```
 app/src/main/java/com/gamelauncher/
-├── 🎮 core/              # Managers (Device, FPS, Performance, SoC, DND, Network, Touch, etc.)
-├── 📦 data/              # Database, Models, Repository
-│   ├── local/            # Room Database & DAOs
-│   ├── model/            # Data classes (GameModel, DeviceSpecs)
-│   ├── preference/       # DataStore settings
-│   └── repository/      # Data layer
-├── 💉 di/                # Hilt Dependency Injection
-├── 🧠 ml/                # TensorFlow Lite Game Classifier
-├── 📡 receivers/         # Broadcast Receivers (Boot, Package Changes)
-├── 🛎️ services/          # Background Services
+├── core/              # Performance, Device, FPS/Jank, SoC, DND, Network, Touch, Thermals
+│   ├── BenchmarkManager.kt    # CPU/GPU/Memory benchmark
+│   ├── ProfileManager.kt      # Game profile import/export
+│   └── ...
+├── data/              # Database, Models, Repository
+│   ├── local/         # Room Database & DAOs
+│   ├── model/         # Data classes (GameModel, GamingSession, DeviceSpecs)
+│   ├── preference/    # DataStore settings (theme, onboarding, toggles)
+│   └── repository/    # Data layer
+├── di/                # Hilt Dependency Injection
+├── ml/                # TensorFlow Lite Game Classifier
+├── receivers/         # Broadcast Receivers (Boot, Package Changes)
+├── services/          # Background Services
 │   ├── GameBoosterService
-│   ├── GameDetectorService (UsageStatsManager-based)
-│   ├── OverlayService
+│   ├── GameDetectorService (UsageStatsManager-based, session recording)
+│   ├── OverlayService (draggable FPS counter)
 │   └── GameBoosterTileService
-├── 🎨 ui/                # UI Components (Compose)
-│   ├── dashboard/        # Dashboard w/ Device Tier, Network, FPS cards
-│   ├── games/            # Games Library w/ refresh & scanning state
-│   ├── settings/         # Settings w/ individual permission cards
-│   └── theme/           # App Theme & Colors
-└── 🏠 widgets/           # Home Screen Widget (Boost + Open buttons)
+├── ui/                # UI Components (Compose)
+│   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core
+│   ├── games/         # Games Library w/ search, filter, game details screen
+│   ├── onboarding/    # 4-step onboarding walkthrough
+│   ├── settings/      # Settings w/ permissions, theme toggle, import/export
+│   └── theme/         # App Theme & Colors (dark/light)
+└── widgets/           # Home Screen Widget (Boost + Open buttons)
 ```
 
-</div>
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repo
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Follow existing code style (MVVM, Compose, Hilt patterns)
+4. Make sure tests pass: `./gradlew testDebugUnitTest`
+5. Commit: `git commit -m 'Add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
 ---
 
-<h2 align="center">🤝 Contributing</h2>
+## 📥 Download
 
-<p align="center">
-Contributions are welcome! 🎉
-
-1. 🍴 Fork the Project
-2. 🌿 Create your Feature Branch (<code>git checkout -b feature/AmazingFeature</code>)
-3. 💾 Commit your Changes (<code>git commit -m 'Add some AmazingFeature'</code>)
-4. 📤 Push to the Branch (<code>git push origin feature/AmazingFeature</code>)
-5. 🔁 Open a Pull Request
-</p>
+- [Latest Release](https://github.com/willygailo/Game-Launcher/releases) (coming soon)
+- Or build from source using the instructions above
 
 ---
 
-<h2 align="center">📜 License</h2>
+## 📜 License
 
-<p align="center">
-This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.
-</p>
+MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-<h2 align="center">🌟 Showcase</h2>
+## 🌟 Showcase
 
-<p align="center">
-  <em>🚀 Built with ❤️ for Filipino mobile gamers!</em><br/>
-  <em>📍 Philippines 🇵🇭</em>
-</p>
+*Built with ❤️ for Filipino mobile gamers!*
+*📍 Philippines 🇵🇭*
 
 ---
 
-<div align="center">
-
-### 🎮 Game Launcher & Performance Booster
-
-<sub>Optimizing gaming performance one device at a time ⚡</sub>
+*Optimizing gaming performance one device at a time ⚡*
 
 [![GitHub stars](https://img.shields.io/github/stars/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/willygailo/Game-Launcher?style=social)](https://github.com/willygailo/Game-Launcher/network/members)
-
-</div>

@@ -3,7 +3,6 @@ package com.gamelauncher.core
 import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioManager
-import android.os.Build
 import android.provider.Settings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +17,7 @@ class DndManager @Inject constructor(
     private val notificationManager = context.getSystemService(NotificationManager::class.java)
     private val audioManager = context.getSystemService(AudioManager::class.java)
     
-    private var originalRingerMode: Int = AudioManager.RINGER_MODE_NORMAL
+    private var originalFilter: Int = NotificationManager.INTERRUPTION_FILTER_ALL
 
     fun isDndPermissionGranted(): Boolean {
         return try {
@@ -38,10 +37,11 @@ class DndManager @Inject constructor(
         if (!isDndPermissionGranted()) return@withContext false
 
         try {
-            originalRingerMode = audioManager?.ringerMode ?: AudioManager.RINGER_MODE_NORMAL
+            originalFilter = runCatching {
+                notificationManager?.currentInterruptionFilter ?: NotificationManager.INTERRUPTION_FILTER_ALL
+            }.getOrDefault(NotificationManager.INTERRUPTION_FILTER_ALL)
 
-            notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
-            
+            notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
             audioManager?.ringerMode = AudioManager.RINGER_MODE_SILENT
 
             true
@@ -50,14 +50,9 @@ class DndManager @Inject constructor(
 
     suspend fun disableGamingDnd(): Boolean = withContext(Dispatchers.IO) {
         try {
-            notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+            notificationManager?.setInterruptionFilter(originalFilter)
             audioManager?.ringerMode = AudioManager.RINGER_MODE_NORMAL
-
             true
         } catch (_: Exception) { false }
     }
-
-    suspend fun suppressAllNotifications(): Boolean = enableGamingDnd()
-
-    suspend fun restoreAllNotifications(): Boolean = disableGamingDnd()
 }

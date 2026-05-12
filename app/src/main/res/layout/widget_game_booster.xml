@@ -32,23 +32,31 @@
         android:gravity="center"
         android:layout_marginTop="12dp">
 
-        <Button
+        <TextView
             android:id="@+id/btn_boost"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="40dp"
+            android:layout_weight="1"
             android:text="BOOST"
             android:textColor="#000000"
-            android:backgroundTint="#00E5FF"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="#00E5FF"
+            android:padding="8dp" />
 
-        <Button
+        <TextView
             android:id="@+id/btn_open"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="40dp"
+            android:layout_weight="1"
             android:text="OPEN"
             android:textColor="#FAFAFA"
-            android:backgroundTint="#27272A"
             android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="#27272A"
+            android:padding="8dp"
             android:layout_marginStart="8dp" />
             
     </LinearLayout>

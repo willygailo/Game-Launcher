@@ -1,0 +1,86 @@
+Game launcher/
+├── core/
+│   ├── analytics/
+│   ├── audio/
+│   ├── base/
+│   ├── constants/
+│   ├── di/
+│   │   ├── AppModule.kt
+│   │   ├── DatabaseModule.kt
+│   │   ├── NetworkModule.kt
+│   │   ├── RepositoryModule.kt
+│   │   ├── ServiceModule.kt       ← NEW
+│   │   ├── UseCaseModule.kt
+│   │   └── WorkerModule.kt        ← NEW
+│   ├── error/                     ← NEW
+│   │   ├── AppError.kt
+│   │   └── ErrorMapper.kt
+│   ├── network/
+│   ├── permissions/
+│   ├── security/
+│   ├── service/                   ← MOVED from root /service/
+│   │   ├── GameSessionForegroundService.kt
+│   │   └── GameNotificationService.kt
+│   ├── session/                   ← MOVED from data/local/database/
+│   │   └── SessionManager.kt
+│   ├── startup/                   ← NEW
+│   │   └── AppInitializers.kt
+│   ├── utils/
+│   └── worker/                    ← MOVED from root /worker/
+│       ├── CleanCacheWorker.kt
+│       ├── SyncPlayerDataWorker.kt
+│       └── UploadGameResultWorker.kt
+│
+├── data/
+│   ├── local/
+│   │   ├── dao/
+│   │   │   ├── AchievementDao.kt
+│   │   │   ├── FriendDao.kt       ← NEW
+│   │   │   ├── GameHistoryDao.kt
+│   │   │   ├── InventoryDao.kt
+│   │   │   └── PlayerDao.kt
+│   │   ├── database/
+│   │   │   └── GamingDatabase.kt  (SessionManager removed)
+│   │   ├── datastore/
+│   │   └── entity/
+│   │       ├── AchievementEntity.kt
+│   │       ├── FriendEntity.kt    ← NEW
+│   │       ├── GameHistoryEntity.kt
+│   │       ├── InventoryEntity.kt
+│   │       └── PlayerEntity.kt
+│   ├── mapper/
+│   ├── remote/
+│   │   ├── api/
+│   │   ├── dto/
+│   │   │   ├── achievement/       ← NEW
+│   │   │   │   └── AchievementDto.kt
+│   │   │   ├── auth/
+│   │   │   ├── friend/            ← NEW
+│   │   │   │   ├── FriendDto.kt
+│   │   │   │   └── FriendRequestDto.kt
+│   │   │   ├── game/
+│   │   │   ├── leaderboard/
+│   │   │   ├── notification/      ← NEW
+│   │   │   │   └── NotificationDto.kt
+│   │   │   ├── player/
+│   │   │   └── store/
+│   │   └── socket/                ← RENAMED from websocket/
+│   │       ├── GameSocketService.kt
+│   │       ├── SocketEventMapper.kt
+│   │       └── SocketMessage.kt
+│   └── repository/
+│       └── NotificationRepositoryImpl.kt  ← NEW
+│
+├── domain/
+│   ├── model/
+│   ├── repository/
+│   │   └── NotificationRepository.kt     ← NEW
+│   └── usecase/
+│       └── notification/                  ← NEW
+│           ├── GetNotificationsUseCase.kt
+│           └── MarkNotificationReadUseCase.kt
+│
+└── presentation/
+    └── features/
+        └── auth/
+            └── AuthEvent.kt               ← NEW

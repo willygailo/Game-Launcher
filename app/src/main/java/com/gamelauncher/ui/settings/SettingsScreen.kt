@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ fun SettingsScreen(
     val hasOverlayPerm by viewModel.hasOverlayPermission.collectAsState()
     val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsState()
     val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsState()
+    val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     Column(
@@ -75,7 +79,8 @@ fun SettingsScreen(
         PermissionCard(
             title = "Battery Optimization",
             subtitle = "Keeps booster services alive in long sessions",
-            buttonText = "Ignore Battery Optimization",
+            buttonText = if (hasBatteryExempt) "Granted" else "Ignore Battery Optimization",
+            granted = hasBatteryExempt,
             onClick = viewModel::requestBatteryOptimizationExemption
         )
 
@@ -115,6 +120,47 @@ fun SettingsScreen(
             checked = detectorEnabled,
             onCheckedChange = { viewModel.setGameDetectorEnabled(it) }
         )
+
+        val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+        SettingCard(
+            title = "Dark Theme",
+            subtitle = "Toggle between dark and light theme",
+            checked = isDarkTheme,
+            onCheckedChange = { viewModel.setDarkTheme(it) }
+        )
+
+        viewModel.profileMessage.collectAsState().value?.let { msg ->
+            LaunchedEffect(msg) {
+                kotlinx.coroutines.delay(3000)
+                viewModel.clearProfileMessage()
+            }
+            Card(
+                colors = CardDefaults.cardColors(containerColor = SuccessGreen.copy(alpha = 0.1f)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(msg, color = SuccessGreen, modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { viewModel.exportProfiles() },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryNeon),
+                shape = RoundedCornerShape(12.dp)
+            ) { Text("Export Profiles") }
+
+            val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+            ) { uri -> uri?.let { viewModel.importProfiles(it) } }
+
+            OutlinedButton(
+                onClick = { filePickerLauncher.launch("application/json") },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = SecondaryNeon),
+                shape = RoundedCornerShape(12.dp)
+            ) { Text("Import Profiles") }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 

@@ -41,8 +41,8 @@ data class GamingSession(
 )
 
 enum class GraphicsMode(val displayName: String, val fpsLimit: Int, val description: String) {
-    PERFORMANCE("Performance", 120, "Max FPS, lower graphics quality"),
-    BALANCED("Balanced", 60, "Balance of FPS and graphics"),
+    PERFORMANCE("Performance", 165, "Max FPS, lower graphics quality"),
+    BALANCED("Balanced", 90, "Balance of FPS and graphics"),
     BATTERY_SAVER("Battery Saver", 30, "Lower FPS for longer battery life"),
     CUSTOM("Custom", 60, "Custom FPS settings")
 }

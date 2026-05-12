@@ -5,7 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
+import androidx.activity.result.contract.ActivityResultContracts
+import com.gamelauncher.core.ProfileManager
 import com.gamelauncher.core.startManagedService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,8 +21,11 @@ import com.gamelauncher.services.OverlayService
 import com.gamelauncher.services.GameDetectorService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,7 +36,8 @@ class SettingsViewModel @Inject constructor(
     private val settingsPreferences: SettingsPreferences,
     private val performanceManager: PerformanceManager,
     private val immersiveModeManager: ImmersiveModeManager,
-    private val networkManager: NetworkManager
+    private val networkManager: NetworkManager,
+    private val profileManager: ProfileManager
 ) : ViewModel() {
 
     val globalAutoBoost: StateFlow<Boolean> = settingsPreferences.globalAutoBoost.stateIn(
@@ -49,6 +56,12 @@ class SettingsViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = false
+    )
+
+    val isDarkTheme: StateFlow<Boolean> = settingsPreferences.isDarkTheme.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
     )
 
     val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
@@ -75,10 +88,48 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    val hasBatteryExemption: StateFlow<Boolean> = stateFlowFrom {
+        val pm = context.getSystemService(PowerManager::class.java)
+        pm?.isIgnoringBatteryOptimizations(context.packageName) == true
+    }
+
+    private val _profileMessage = MutableStateFlow<String?>(null)
+    val profileMessage: StateFlow<String?> = _profileMessage.asStateFlow()
+
+    fun clearProfileMessage() { _profileMessage.value = null }
+
+    fun exportProfiles() {
+        viewModelScope.launch {
+            try {
+                val uri = profileManager.exportProfiles()
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(shareIntent, "Export Game Profiles"))
+                _profileMessage.value = "Profiles exported successfully"
+            } catch (e: Exception) {
+                _profileMessage.value = "Export failed: ${e.message}"
+            }
+        }
+    }
+
+    fun importProfiles(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                val count = profileManager.importProfiles(uri)
+                _profileMessage.value = "Imported $count game profiles"
+            } catch (e: Exception) {
+                _profileMessage.value = "Import failed: ${e.message}"
+            }
+        }
+    }
+
     private fun <T> stateFlowFrom(block: () -> T): StateFlow<T> {
         return kotlinx.coroutines.flow.MutableStateFlow(block()).also { flow ->
             viewModelScope.launch {
-                while (true) {
+                while (isActive) {
                     kotlinx.coroutines.delay(2000)
                     flow.value = block()
                 }
@@ -112,6 +163,12 @@ class SettingsViewModel @Inject constructor(
                 }
                 context.startManagedService(intent)
             }
+        }
+    }
+
+    fun setDarkTheme(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPreferences.setDarkTheme(enabled)
         }
     }
 
@@ -207,10 +264,11 @@ class SettingsViewModel @Inject constructor(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         runCatching { context.startActivity(intent) }.onFailure {
-            val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+            val fallback = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-            context.startActivity(fallback)
+            runCatching { context.startActivity(fallback) }
         }
     }
 

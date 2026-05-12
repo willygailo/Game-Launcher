@@ -38,7 +38,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GameLauncher"
         android:hardwareAccelerated="true"
-        tools:targetApi="35">
+        android:largeHeap="true"
+        tools:targetApi="36">
 
         <!-- Main Activity -->
         <activity
@@ -57,17 +58,29 @@
         <service
             android:name=".services.GameBoosterService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="game_performance_boosting" />
+        </service>
 
         <service
             android:name=".services.OverlayService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="fps_overlay_display" />
+        </service>
 
         <service
             android:name=".services.GameDetectorService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="game_detection_monitoring" />
+        </service>
 
         <!-- Quick Settings Tile -->
         <service
@@ -118,6 +131,16 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

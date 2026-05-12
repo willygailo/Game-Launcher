@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,7 +27,12 @@ fun DashboardScreen(
     val specs by viewModel.deviceSpecs.collectAsState()
     val isDndEnabled by viewModel.isDndEnabled.collectAsState()
     val isBrightnessLocked by viewModel.isBrightnessLocked.collectAsState()
+    val brightnessLevel by viewModel.brightnessLevel.collectAsState()
     val isRootAvailable by viewModel.isRootAvailable.collectAsState()
+    val totalSessions by viewModel.totalSessions.collectAsState()
+    val totalPlayTimeMinutes by viewModel.totalPlayTimeMinutes.collectAsState()
+    val benchmarkResult by viewModel.benchmarkResult.collectAsState()
+    val isBenchmarking by viewModel.isBenchmarking.collectAsState()
 
     LifecycleResumeEffect(Unit) {
         viewModel.refreshPermissionStates()
@@ -121,6 +127,54 @@ fun DashboardScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Card(
+            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            border = androidx.compose.foundation.BorderStroke(1.dp, if (benchmarkResult != null) PrimaryNeon.copy(alpha = 0.5f) else TextSecondary.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text("Benchmark", color = PrimaryNeon, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    if (isBenchmarking) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = PrimaryNeon)
+                    } else {
+                        Button(
+                            onClick = viewModel::runBenchmark,
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryNeon, contentColor = Color.Black),
+                            shape = RoundedCornerShape(8.dp)
+                        ) { Text("Run", fontWeight = FontWeight.Bold) }
+                    }
+                }
+                benchmarkResult?.let { result ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("CPU: ${result.cpuScore}", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                        Text("GPU: ${result.gpuScore}", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                        Text("MEM: ${result.memoryScore}", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                        Text("Score: ${result.overallScore}", color = PrimaryNeon, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+        }
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            MetricCard(
+                title = "Sessions",
+                value = "$totalSessions",
+                subtitle = "Total gaming sessions",
+                color = SecondaryNeon,
+                modifier = Modifier.weight(1f)
+            )
+            MetricCard(
+                title = "Play Time",
+                value = "${totalPlayTimeMinutes}m",
+                subtitle = "Total tracked time",
+                color = TertiaryAccent,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
         // Immersive Controls
         Card(
             colors = CardDefaults.cardColors(containerColor = SurfaceDark),
@@ -157,10 +211,55 @@ fun DashboardScreen(
                         )
                     )
                 }
+                
+                if (isBrightnessLocked) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Brightness Level", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Slider(
+                        value = brightnessLevel,
+                        onValueChange = viewModel::setBrightnessLevel,
+                        valueRange = 0.1f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = SecondaryNeon,
+                            activeTrackColor = SecondaryNeon
+                        )
+                    )
+                    Text("${(brightnessLevel * 100).toInt()}%", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
 
         if (isRootAvailable) {
+            LaunchedEffect(Unit) { viewModel.refreshCoreStatus() }
+            val coreStatus by viewModel.coreOnlineStatus.collectAsState()
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                border = androidx.compose.foundation.BorderStroke(1.dp, TertiaryAccent.copy(alpha = 0.3f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("CPU Core Control", color = TertiaryAccent, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        coreStatus.forEachIndexed { index, online ->
+                            FilterChip(
+                                selected = online,
+                                onClick = { viewModel.toggleCore(index, !online) },
+                                label = { Text("C$index", fontSize = MaterialTheme.typography.labelSmall.fontSize) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = if (online) SuccessGreen.copy(alpha = 0.3f) else ErrorRed.copy(alpha = 0.3f),
+                                    selectedLabelColor = if (online) SuccessGreen else ErrorRed
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Button(
                 onClick = { viewModel.triggerFstrim() },
                 modifier = Modifier.fillMaxWidth(),
@@ -168,6 +267,22 @@ fun DashboardScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Root: Storage Optimizer (FSTRIM)", fontWeight = FontWeight.Bold)
+            }
+        } else {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                border = androidx.compose.foundation.BorderStroke(1.dp, TextSecondary.copy(alpha = 0.2f))
+            ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("🔒", fontSize = MaterialTheme.typography.titleLarge.fontSize)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text("Root Features Locked", color = TextPrimary, fontWeight = FontWeight.Bold)
+                        Text("CPU Core Control & Storage Optimizer (FSTRIM) require root access", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
 

@@ -21,9 +21,9 @@ import javax.inject.Singleton
 class ImmersiveModeManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val notificationManager = context.getSystemService(NotificationManager::class.java)
+    private val audioManager = context.getSystemService(AudioManager::class.java)
+    private val powerManager = context.getSystemService(PowerManager::class.java)
     private val contentResolver: ContentResolver = context.contentResolver
 
     // State preservation to restore after gaming

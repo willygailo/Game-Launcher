@@ -5,11 +5,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,17 +25,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.gamelauncher.core.startManagedService
 import com.gamelauncher.data.model.GameModel
 import com.gamelauncher.services.GameBoosterService
+import com.gamelauncher.ui.Screen
 import com.gamelauncher.ui.theme.*
 
 @Composable
 fun GameListScreen(
+    navController: NavController? = null,
     viewModel: GamesViewModel = hiltViewModel()
 ) {
-    val games by viewModel.games.collectAsState()
+    val filteredGames by viewModel.filteredGames.collectAsState()
     val isScanning by viewModel.isScanning.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val availableCategories by viewModel.availableCategories.collectAsState()
     val context = LocalContext.current
 
     Column(
@@ -44,7 +53,7 @@ fun GameListScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -63,24 +72,65 @@ fun GameListScreen(
             }
         }
 
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = viewModel::setSearchQuery,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search games...", color = TextSecondary) },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                cursorColor = PrimaryNeon,
+                focusedBorderColor = PrimaryNeon,
+                unfocusedBorderColor = SurfaceVariantDark,
+                focusedContainerColor = SurfaceDark,
+                unfocusedContainerColor = SurfaceDark
+            )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (availableCategories.size > 1) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                availableCategories.forEach { category ->
+                    FilterChip(
+                        selected = selectedCategory == category,
+                        onClick = { viewModel.setSelectedCategory(category) },
+                        label = { Text(category, fontSize = MaterialTheme.typography.labelSmall.fontSize) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = PrimaryNeon.copy(alpha = 0.3f),
+                            selectedLabelColor = PrimaryNeon
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         if (isScanning) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = PrimaryNeon)
             }
-        } else if (games.isEmpty()) {
+        } else if (filteredGames.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "No games detected yet",
+                        text = if (searchQuery.isNotBlank() || selectedCategory != "All") "No matching games" else "No games detected yet",
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tap refresh after installing or updating games",
+                        text = if (searchQuery.isNotBlank() || selectedCategory != "All") "Try a different search or filter" else "Tap refresh after installing or updating games",
                         color = TextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -92,11 +142,10 @@ fun GameListScreen(
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(games, key = { it.packageName }) { game ->
+                items(filteredGames, key = { it.packageName }) { game ->
                     GameCard(
                         game = game,
                         onLaunch = { 
-                            // Start background booster service if enabled
                             if (game.highPerformanceMode) {
                                 val intent = Intent(context, GameBoosterService::class.java).apply {
                                     action = GameBoosterService.ACTION_START_BOOST
@@ -108,7 +157,10 @@ fun GameListScreen(
                             }
                             viewModel.launchGame(game)
                         },
-                        onUpdate = { viewModel.updateGameSettings(it) }
+                        onUpdate = { viewModel.updateGameSettings(it) },
+                        onDetails = {
+                            navController?.navigate("${Screen.GameDetails.route}/${game.packageName}")
+                        }
                     )
                 }
             }
@@ -120,7 +172,8 @@ fun GameListScreen(
 fun GameCard(
     game: GameModel,
     onLaunch: () -> Unit,
-    onUpdate: (GameModel) -> Unit
+    onUpdate: (GameModel) -> Unit,
+    onDetails: (() -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -133,6 +186,16 @@ fun GameCard(
             null
         }
     }
+
+    val gameInfo = remember(game.packageName) {
+        com.gamelauncher.core.SupportedGames.findGame(game.packageName)
+    }
+    val deviceMaxFps = remember {
+        val dm = context.getSystemService(android.hardware.display.DisplayManager::class.java)
+        val display = dm?.getDisplay(android.view.Display.DEFAULT_DISPLAY)
+        display?.supportedModes?.maxOfOrNull { it.refreshRate.toInt() } ?: 165
+    }
+    val gameMaxFps = gameInfo?.maxFps?.coerceAtMost(deviceMaxFps) ?: deviceMaxFps
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -166,6 +229,15 @@ fun GameCard(
                     Text(game.customCategory, color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                 }
                 
+                if (onDetails != null) {
+                    IconButton(onClick = onDetails) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Game details",
+                            tint = TextSecondary
+                        )
+                    }
+                }
                 Button(
                     onClick = onLaunch,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNeon, contentColor = Color.Black),
@@ -203,14 +275,32 @@ fun GameCard(
                     }
                     
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Target FPS: ${game.targetFps}", color = TextSecondary)
+                    Text("Graphics Mode: ${game.graphicsMode}", color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        com.gamelauncher.data.model.GraphicsMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = game.graphicsMode == mode.name,
+                                onClick = { onUpdate(game.copy(graphicsMode = mode.name)) },
+                                label = { Text(mode.displayName, fontSize = MaterialTheme.typography.labelSmall.fontSize) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = SecondaryNeon.copy(alpha = 0.3f),
+                                    selectedLabelColor = SecondaryNeon
+                                )
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Target FPS: ${game.targetFps} / ${gameMaxFps} max", color = TextSecondary)
                     Slider(
                         value = game.targetFps.toFloat(),
                         onValueChange = { onUpdate(game.copy(targetFps = it.toInt())) },
-                        valueRange = 30f..165f,
-                        steps = 5,
+                        valueRange = 30f..gameMaxFps.toFloat(),
+                        steps = ((gameMaxFps - 30) / 15),
                         colors = SliderDefaults.colors(thumbColor = PrimaryNeon, activeTrackColor = PrimaryNeon)
                     )
+                    Text("Device supports up to ${deviceMaxFps}Hz", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

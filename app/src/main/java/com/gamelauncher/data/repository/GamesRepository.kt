@@ -54,11 +54,13 @@ class GamesRepository @Inject constructor(
             val isClassifierGame = gameClassifier.isGame(pkgName, pm)
 
             if (isKnown != null) {
+                val knownGame = com.gamelauncher.core.SupportedGames.findGame(pkgName)
                 installedGames.add(GameModel(
                     packageName = pkgName,
                     name = isKnown.second,
                     isKnownGame = true,
-                    customCategory = isKnown.third
+                    customCategory = isKnown.third,
+                    targetFps = knownGame?.maxFps?.coerceIn(30, 165) ?: 60
                 ))
             } else if (isSystemGame) {
                 val appName = pm.getApplicationLabel(appInfo).toString()
