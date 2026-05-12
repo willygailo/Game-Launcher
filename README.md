@@ -18,7 +18,7 @@
 | | |
 |---|---|
 | ![Willy Gailo](https://github.com/willygailo.png?size=120) | **Willy Gailo** |
-| ![Facebook](assets/facebook_preview.jpg) | [GitHub](https://github.com/willygailo) • [Facebook](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) |
+| ![Facebook](assets/facebook_profile.jpg) | [GitHub](https://github.com/willygailo) • [Facebook](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) |
 
 ---
 
