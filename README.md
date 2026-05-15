@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_1.7.2-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_1.8.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -66,6 +66,26 @@
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
 
+### v1.8.0: Max FPS/Hz Unlock, SurfaceFlinger Boost, New SoCs & Games
+
+| Feature | Description | Status |
+|---|---|---|
+| **SurfaceFlinger FPS Unlock** | `service call SurfaceFlinger 1035 i32 1` + 8 system props para sa max frame rate | 🆕 |
+| **240Hz Display Support** | Auto-detect at lock hanggang 240Hz, dynamic FPS list per device | 🆕 |
+| **ADPF v2 Integration** | Preferred update rate tracking, GPU pre-emption boost | 🆕 |
+| **GPU Touch Boost** | Adreno/Mali/Immortalis specific touch-to-GPU feedback | 🆕 |
+| **Faster Game Detection** | `/proc`-based detection (200ms vs 1500ms), boosted thread priority | 🆕 |
+| **Dual FPS+Hz Overlay** | Shows both FPS at current refresh rate sa floating counter | 🆕 |
+| **6 New Snapdragon SoCs** | 8 Elite Gen 2, 8 Gen 5, 7 Gen 1, 6 Gen 4/3, 4 Gen 2/1 | 🆕 |
+| **9 New Dimensity SoCs** | 9500, 9400+, 8400, 8250, 7400, Helio G100/G84 | 🆕 |
+| **Exynos 2600/2500/1580** | Samsung latest Exynos chipset support + ratings | 🆕 |
+| **Tensor G6 Support** | Google Tensor G6/GS801 detection at optimization | 🆕 |
+| **40+ New Games** | Delta Force, Overwatch Mobile, FragPunk, Solo Leveling, etc. | 🆕 |
+| **Enhanced MediaTek Opt** | VPU governor, cpufreq power mode, CCI mode tuning | 🔧 |
+| **Snapdragon CDSB Boost** | Compute CDSB governor, mem_latency, qti_cpu_boost module | 🔧 |
+| **Touch Input Props** | `vendor.perf.input_boost.*` duration/frequency control | 🆕 |
+| **CPU Governor Display** | Shows current governor name sa Dashboard CPU card | 🆕 |
+
 ### v1.7.2: Live Monitoring, DND Fix, Benchmark & Session Overhaul
 
 | Feature | Description | Status |
@@ -117,7 +137,7 @@
 
 <div align="center">
 
-### Supported Games (165+ Titles)
+### Supported Games (200+ Titles)
 
 </div>
 
@@ -150,7 +170,22 @@
 | **eFootball PES** | `com.konami.pes` | 165 |
 | **GTA: Definitive Edition** | `com.rockstargames.gtade` | 165 |
 
-*And 135+ more titles — including regional variants and ML-detected games.*
+| **Delta Force Mobile** | `com.tencent.deltaforce` | 165 |
+| **Overwatch Mobile** | `com.blizzard.overwatchmobile` | 165 |
+| **FragPunk Mobile** | `com.netease.fragpunk` | 165 |
+| **Solo Leveling: Arise** | `com.netmarble.solo_leveling` | 165 |
+| **The First Descendant Mobile** | `com.nexon.firstdescendant` | 165 |
+| **Naraka Bladepoint Mobile** | `com.netease.naraka` | 165 |
+| **CrossFire Mobile** | `com.tencent.tmgp.cf` | 165 |
+| **Standoff 2** | `com.axlebolt.standoff2` | 165 |
+| **Critical Ops** | `com.criticalforce.studio.criticalops` | 165 |
+| **Reverse: 1999** | `com.bluepoch.re1999` | 165 |
+| **EA Sports FC 26 Mobile** | `com.ea.gp.fc26` | 165 |
+| **eFootball 2026** | `com.konami.pes2026` | 165 |
+| **NBA 2K26** | `com.t2ksports.nba2k26` | 165 |
+| **Tekken Mobile** | `com.bandainamco.tekkenmobile` | 165 |
+
+*And 170+ more titles — including regional variants and ML-detected games.*
 
 ---
 
@@ -171,7 +206,7 @@
 | **Annotation Processing** | KSP (Room + Hilt compiler) |
 | **ML** | TensorFlow Lite 2.17 (game classification) |
 | **Background Tasks** | WorkManager 2.10 |
-| **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) |
+| **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) + SurfaceFlinger unlock |
 | **Frame Analysis** | Choreographer StateFlow-based FPS + FrameMetrics jank detection |
 | **Wake Lock** | PowerManager partial wake lock (non-root) |
 | **Benchmark** | CPU (sort/primes), GPU (Bitmap operations), Memory (allocation) |
@@ -269,12 +304,12 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 | Manufacturer | Series | Status |
 |---|---|---|
-| **Qualcomm** | Snapdragon 8 Elite, 8 Gen 1/2/3/4, 7+ Gen 2/3, 7s/7 Gen 3, 6 Gen 1, 4 Gen 2, all SD models | ✅ |
-| **MediaTek** | Dimensity 9400/9300/9200/9000/8300/8200/8100/8025/7350/7300/7250/7200/7050, Helio G99/G96/G95/G91/G88/G85/G80/G70/G36/G25 | ✅ |
-| **Samsung** | Exynos 2400/2200/2100/1480/1380/1280/1080, all Exynos models | ✅ |
+| **Qualcomm** | Snapdragon 8 Elite Gen 2, 8 Elite, 8 Gen 1/2/3/4/5, 7+ Gen 2/3, 7 Gen 1/3, 7s Gen 2, 6 Gen 1/3/4, 4 Gen 1/2, all SD models | ✅ |
+| **MediaTek** | Dimensity 9500/9400+/9400/9300+/9300/9200+/9200/9000/8400/8300+/8300/8250/8200/8100/8025/7400/7350/7300/7250/7200/7050/7030, Helio G100/G99/G96/G95/G91/G88/G85/G84/G80/G70/G36/G35/G25 | ✅ |
+| **Samsung** | Exynos 2600/2500/2400/2200/2100/1580/1480/1380/1280/1080, Exynos W series | ✅ |
 | **Huawei** | Kirin 9010/9000S/9000/8000/990, all Kirin models | ✅ |
 | **Unisoc** | T820/T770/T765/T760/T7250/T620/T618/T616/T610/T606 | ✅ |
-| **Google** | Tensor G5/G4/G3/G2/G1 | ✅ |
+| **Google** | Tensor G6/G5/G4/G3/G2/G1 | ✅ |
 
 *Smart auto-performance scaling — NOT permanent max lock to prevent overheating.*
 
@@ -432,7 +467,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v1.7.2](https://github.com/willygailo/Game-Launcher/releases/tag/v1.7.2)
+- [Latest Release: v1.8.0](https://github.com/willygailo/Game-Launcher/releases/tag/v1.8.0)
 - Or build from source using the instructions above
 
 ---
