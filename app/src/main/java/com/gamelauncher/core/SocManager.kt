@@ -224,7 +224,7 @@ class SocManager @Inject constructor() {
         return when (socType) {
             SocType.SNAPDRAGON -> {
                 val model = getSocModel().uppercase()
-                listOf("8", "7", "6").any { model.contains(it) }
+                listOf("8", "7", "6", "4").any { model.contains(it) }
             }
             SocType.MEDIATEK -> {
                 val model = getSocModel().uppercase()
@@ -270,8 +270,10 @@ class SocManager @Inject constructor() {
             SocType.SNAPDRAGON -> {
                 val m = model.lowercase()
                 when {
+                    m.contains("8 elite gen 2") || m.contains("sm8900") -> "Snapdragon 8 Elite Gen 2"
                     m.contains("8 elite") || m.contains("sm8750") -> "Snapdragon 8 Elite"
-                    m.contains("8 gen 4") || m.contains("sm8650") -> "Snapdragon 8 Gen 4"
+                    m.contains("8 gen 5") || m.contains("sm8850") -> "Snapdragon 8 Gen 5"
+                    m.contains("8 gen 4") || m.contains("sm8750") -> "Snapdragon 8 Gen 4"
                     m.contains("8 gen 3") || m.contains("sm8650") -> "Snapdragon 8 Gen 3"
                     m.contains("8 gen 2") || m.contains("sm8550") -> "Snapdragon 8 Gen 2"
                     m.contains("8 gen 1") || m.contains("sm8450") -> "Snapdragon 8 Gen 1"
@@ -282,34 +284,48 @@ class SocManager @Inject constructor() {
                     m.contains("7 gen 3") || m.contains("sm7550") -> "Snapdragon 7 Gen 3"
                     m.contains("7s gen 2") || m.contains("sm7435") -> "Snapdragon 7s Gen 2"
                     m.contains("7+ gen 2") || m.contains("sm7475") -> "Snapdragon 7+ Gen 2"
+                    m.contains("7 gen 1") || m.contains("sm7450") -> "Snapdragon 7 Gen 1"
+                    m.contains("6 gen 4") || m.contains("sm6650") -> "Snapdragon 6 Gen 4"
+                    m.contains("6 gen 3") || m.contains("sm6475") -> "Snapdragon 6 Gen 3"
                     m.contains("6 gen 1") || m.contains("sm6450") -> "Snapdragon 6 Gen 1"
                     m.contains("4 gen 2") || m.contains("sm4450") -> "Snapdragon 4 Gen 2"
+                    m.contains("4 gen 1") || m.contains("sm4375") -> "Snapdragon 4 Gen 1"
                     else -> "Snapdragon (${hardware.take(20)})"
                 }
             }
             SocType.MEDIATEK -> {
                 val m = model.uppercase()
                 when {
+                    m.contains("9500") || m.contains("MT9500") -> "Dimensity 9500"
                     m.contains("9400") || m.contains("MT9400") -> "Dimensity 9400"
+                    m.contains("9400+") || m.contains("MT9400P") -> "Dimensity 9400+"
                     m.contains("9300") || m.contains("MT9300") -> "Dimensity 9300"
+                    m.contains("9300+") || m.contains("MT9300P") -> "Dimensity 9300+"
                     m.contains("9200") || m.contains("MT9200") -> "Dimensity 9200"
+                    m.contains("9200+") || m.contains("MT9200P") -> "Dimensity 9200+"
                     m.contains("9000") || m.contains("MT9000") -> "Dimensity 9000"
+                    m.contains("8400") || m.contains("MT8400") -> "Dimensity 8400"
                     m.contains("8300") || m.contains("MT8300") -> "Dimensity 8300"
+                    m.contains("8300+") || m.contains("MT8300P") -> "Dimensity 8300+"
+                    m.contains("8250") || m.contains("MT8250") -> "Dimensity 8250"
                     m.contains("8200") || m.contains("MT8200") -> "Dimensity 8200"
                     m.contains("8100") || m.contains("MT8100") -> "Dimensity 8100"
                     m.contains("8025") || m.contains("MT8025") -> "Dimensity 8025"
+                    m.contains("7400") || m.contains("MT7400") -> "Dimensity 7400"
                     m.contains("7350") || m.contains("MT7350") -> "Dimensity 7350"
                     m.contains("7300") || m.contains("MT7300") -> "Dimensity 7300"
                     m.contains("7250") || m.contains("MT7250") -> "Dimensity 7250"
                     m.contains("7200") || m.contains("MT7200") -> "Dimensity 7200"
                     m.contains("7050") || m.contains("MT7050") -> "Dimensity 7050"
                     m.contains("7030") || m.contains("MT7030") -> "Dimensity 7030"
+                    m.contains("G100") -> "Helio G100"
                     m.contains("G99") -> "Helio G99"
                     m.contains("G96") -> "Helio G96"
                     m.contains("G95") -> "Helio G95"
                     m.contains("G91") -> "Helio G91"
                     m.contains("G88") -> "Helio G88"
                     m.contains("G85") -> "Helio G85"
+                    m.contains("G84") -> "Helio G84"
                     m.contains("G80") -> "Helio G80"
                     m.contains("G70") -> "Helio G70"
                     m.contains("G36") -> "Helio G36"
@@ -321,13 +337,17 @@ class SocManager @Inject constructor() {
             SocType.EXYNOS -> {
                 val m = model.uppercase()
                 when {
+                    m.contains("2600") -> "Exynos 2600"
+                    m.contains("2500") -> "Exynos 2500"
                     m.contains("2400") -> "Exynos 2400"
                     m.contains("2200") -> "Exynos 2200"
                     m.contains("2100") -> "Exynos 2100"
-                    m.contains("1080") -> "Exynos 1080"
+                    m.contains("1580") -> "Exynos 1580"
+                    m.contains("1480") -> "Exynos 1480"
                     m.contains("1380") -> "Exynos 1380"
                     m.contains("1280") -> "Exynos 1280"
-                    m.contains("1480") -> "Exynos 1480"
+                    m.contains("1080") -> "Exynos 1080"
+                    m.contains("W1000") || m.contains("W920") -> "Exynos W"
                     else -> "Exynos ${model.take(10)}"
                 }
             }
@@ -451,39 +471,46 @@ class SocManager @Inject constructor() {
             SocType.SNAPDRAGON -> {
                 val model = getSocModel().lowercase()
                 when {
+                    model.contains("8 elite gen 2") -> 10
                     model.contains("8 elite") -> 10
+                    model.contains("8 gen 5") -> 10
                     model.contains("8 gen 4") || model.contains("8 gen 3") -> 10
                     model.contains("8 gen 2") -> 9
                     model.contains("8 gen 1") || model.contains("888") -> 9
                     model.contains("870") || model.contains("865") -> 8
                     model.contains("7+ gen 3") || model.contains("7+ gen 2") -> 8
                     model.contains("7 gen 3") || model.contains("7s gen 2") -> 7
+                    model.contains("7 gen 1") -> 7
                     model.contains("855") || model.contains("845") -> 7
+                    model.contains("6 gen 4") || model.contains("6 gen 3") -> 7
                     model.contains("6 gen 1") -> 6
+                    model.contains("4 gen 2") || model.contains("4 gen 1") -> 5
                     else -> 6
                 }
             }
             SocType.MEDIATEK -> {
                 val model = getSocModel().lowercase()
                 when {
-                    model.contains("9400") || model.contains("9300") -> 10
+                    model.contains("9500") || model.contains("9400") || model.contains("9300") -> 10
                     model.contains("9200") || model.contains("9000") -> 9
-                    model.contains("8300") || model.contains("8200") || model.contains("8100") -> 8
-                    model.contains("8025") || model.contains("7350") || model.contains("7300") -> 7
+                    model.contains("8400") || model.contains("8300") || model.contains("8250") -> 8
+                    model.contains("8200") || model.contains("8100") -> 8
+                    model.contains("8025") || model.contains("7400") || model.contains("7350") || model.contains("7300") -> 7
                     model.contains("7200") || model.contains("7050") -> 6
-                    model.contains("g99") || model.contains("g96") -> 7
+                    model.contains("g100") || model.contains("g99") || model.contains("g96") -> 7
                     model.contains("g95") || model.contains("g90") -> 6
-                    model.contains("g88") || model.contains("g85") || model.contains("g80") -> 5
-                    model.contains("g70") || model.contains("g36") || model.contains("g25") -> 4
+                    model.contains("g88") || model.contains("g85") || model.contains("g84") || model.contains("g80") -> 5
+                    model.contains("g70") || model.contains("g36") || model.contains("g35") || model.contains("g25") -> 4
                     else -> 5
                 }
             }
             SocType.EXYNOS -> {
                 val model = getSocModel().lowercase()
                 when {
+                    model.contains("2600") || model.contains("2500") -> 10
                     model.contains("2400") -> 9
                     model.contains("2200") || model.contains("2100") -> 8
-                    model.contains("1480") || model.contains("1380") -> 7
+                    model.contains("1580") || model.contains("1480") || model.contains("1380") -> 7
                     model.contains("1280") -> 6
                     else -> 6
                 }
@@ -510,10 +537,12 @@ class SocManager @Inject constructor() {
             SocType.TENSOR -> {
                 val model = getSocModel().uppercase()
                 when {
-                    model.contains("G5") -> 9
-                    model.contains("G4") || model.contains("G3") -> 9
-                    model.contains("G2") -> 8
-                    model.contains("G1") -> 7
+                    model.contains("G6") || model.contains("GS801") -> 10
+                    model.contains("G5") || model.contains("GS601") -> 9
+                    model.contains("G4") || model.contains("GS501") -> 9
+                    model.contains("G3") || model.contains("GS301") -> 9
+                    model.contains("G2") || model.contains("GS201") -> 8
+                    model.contains("G1") || model.contains("GS101") -> 7
                     else -> 7
                 }
             }

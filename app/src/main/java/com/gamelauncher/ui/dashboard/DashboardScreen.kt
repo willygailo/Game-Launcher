@@ -72,7 +72,7 @@ fun DashboardScreen(
             MetricCard(
                 title = "CPU Usage",
                 value = "${specs.cpuUsagePercent.toInt()}%",
-                subtitle = "${specs.cpuFreqMhz} MHz | ${specs.cpuCoreCount} cores",
+                subtitle = "${specs.cpuFreqMhz} MHz | ${specs.cpuCoreCount} cores | ${specs.cpuGovernor}",
                 color = TertiaryAccent,
                 modifier = Modifier.weight(1f)
             )
@@ -122,7 +122,13 @@ fun DashboardScreen(
         MetricCard(
             title = "Display & FPS",
             value = "${specs.currentFps.toInt()} FPS @ ${specs.displayRefreshRateHz.toInt()} Hz",
-            subtitle = "Supported: ${specs.supportedRefreshRates.joinToString { "${it.toInt()}Hz" }} | Max: ${specs.supportedRefreshRates.maxOrNull()?.toInt() ?: 60}Hz",
+            subtitle = buildString {
+                append("Supported: ${specs.supportedRefreshRates.joinToString { "${it.toInt()}Hz" }}")
+                append(" | Max: ${specs.supportedRefreshRates.maxOrNull()?.toInt() ?: 60}Hz")
+                if (specs.adpfPreferredRate > 0 && specs.adpfPreferredRate != 60f) {
+                    append(" | ADPF: ${specs.adpfPreferredRate.toInt()}Hz")
+                }
+            },
             color = if (specs.currentFps > 0) PrimaryNeon else TextSecondary,
             modifier = Modifier.fillMaxWidth()
         )

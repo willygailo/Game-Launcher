@@ -61,6 +61,21 @@ class TouchLatencyOptimizer @Inject constructor(
             "echo 100 > /sys/class/touchscreen/primary/report_rate",
             "echo 4 > /sys/class/touchscreen/primary/anti_shake_level",
             "echo 1 > /sys/module/msm_drm/parameters/psr_enable",
+            // High performance touch GPU feedback
+            "echo 1 > /sys/class/touchscreen/primary/touch_boost",
+            "echo 1 > /sys/class/touchscreen/primary/quick_input",
+            "echo 1 > /proc/touchpanel/game_switch_enable",
+            "echo 0 > /proc/touchpanel/oppo_tp_direction",
+            "echo 1 > /proc/touchpanel/oplus_tp_gesture",
+            "echo 1 > /sys/touchpanel/double_tap",
+            "echo 0 > /sys/touchpanel/edge_touch",
+            "echo 0 > /sys/touchpanel/oppo_tp_limit_enable",
+            // GPU touch boost (Adreno specific)
+            "echo 1 > /sys/class/kgsl/kgsl-3d0/touch_boost",
+            "echo 100 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel",
+            // Stylus and high polling rate
+            "echo 1 > /sys/module/usbtouchscreen/parameters/touch_boost",
+            "echo 1 > /sys/module/sy700/parameters/touch_boost",
             "setprop view.touch_slop 2",
             "setprop view.scroll_friction 10",
             "setprop windowsmgr.max_events_per_sec 2000",
@@ -73,7 +88,13 @@ class TouchLatencyOptimizer @Inject constructor(
             "setprop debug.sf.latch_unsignaled 1",
             "setprop persist.vendor.qti.input.touch_boost 1",
             "setprop vendor.display.input_boost 1",
-            "setprop persist.sys.touch.xp 1"
+            "setprop persist.sys.touch.xp 1",
+            // Extra touch input boost
+            "setprop vendor.perf.input_boost.enable 1",
+            "setprop vendor.perf.input_boost.duration 1500",
+            "setprop vendor.perf.input_boost.freq 2000000",
+            "setprop persist.sys.touch.optimization 1",
+            "setprop sys.touch.boost 1"
         )
         for (cmd in commands) {
             runCatching { Runtime.getRuntime().exec(arrayOf("su", "-c", cmd)).waitFor() }

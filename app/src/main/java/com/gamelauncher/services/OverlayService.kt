@@ -13,10 +13,12 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import com.gamelauncher.core.FPSManager
 import com.gamelauncher.core.GameLauncherApp
+import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +34,7 @@ import kotlin.math.roundToInt
 class OverlayService : Service() {
 
     @Inject lateinit var fpsManager: FPSManager
+    @Inject lateinit var performanceManager: PerformanceManager
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var windowManager: WindowManager
@@ -41,6 +44,8 @@ class OverlayService : Service() {
     private var initialY = 100
     private var initialTouchX = 0f
     private var initialTouchY = 0f
+    private var fpsText: TextView? = null
+    private var hzText: TextView? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -106,13 +111,25 @@ class OverlayService : Service() {
         overlayParams!!.x = initialX
         overlayParams!!.y = initialY
 
-        overlayView = TextView(this).apply {
-            text = "FPS: --"
-            setTextColor(Color.GREEN)
+        overlayView = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.parseColor("#80000000"))
-            setPadding(16, 8, 16, 8)
-            textSize = 14f
+            setPadding(12, 8, 12, 8)
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+            fpsText = TextView(context).apply {
+                text = "FPS: --"
+                setTextColor(Color.GREEN)
+                textSize = 16f
+                setPadding(4, 2, 4, 2)
+            }.also { addView(it) }
+
+            hzText = TextView(context).apply {
+                text = "Hz: --"
+                setTextColor(Color.CYAN)
+                textSize = 11f
+                setPadding(4, 0, 4, 2)
+            }.also { addView(it) }
 
             setOnTouchListener { _, event ->
                 val params = overlayParams ?: return@setOnTouchListener false
@@ -141,14 +158,16 @@ class OverlayService : Service() {
 
             serviceScope.launch {
                 fpsManager.fps.collectLatest { currentFps ->
-                    (overlayView as? TextView)?.text = "FPS: ${currentFps.roundToInt()}"
+                    val currentHz = performanceManager.getCurrentRefreshRate().roundToInt()
+                    fpsText?.text = "FPS: ${currentFps.roundToInt()}"
+                    hzText?.text = "${currentHz}Hz"
                     
                     val color = when {
                         currentFps >= 55 -> Color.GREEN
                         currentFps >= 30 -> Color.YELLOW
                         else -> Color.RED
                     }
-                    (overlayView as? TextView)?.setTextColor(color)
+                    fpsText?.setTextColor(color)
                 }
             }
         } catch (e: Exception) {

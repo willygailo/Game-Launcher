@@ -125,6 +125,7 @@ class DashboardViewModel @Inject constructor(
                     gpuUsagePercent = performanceManager.getGpuUsagePercent(),
                     gpuFreqMhz = performanceManager.getGpuFreqMhz(),
                     gpuRenderer = performanceManager.getGpuRenderer(),
+                    adpfPreferredRate = performanceManager.getAdpfPreferredRate(),
                     ramTotalMb = ramTotal,
                     ramUsedMb = ramUsed,
                     ramFreeMb = ramFree,

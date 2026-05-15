@@ -206,6 +206,8 @@ class GameOptimizationCoordinator @Inject constructor(
                 SocType.MEDIATEK -> applyMediaTekOptimizations()
                 SocType.EXYNOS -> applyExynosOptimizations()
                 SocType.KIRIN -> applyKirinOptimizations()
+                SocType.TENSOR -> applyTensorOptimizations()
+                SocType.UNISOC -> applyUnisocOptimizations()
                 else -> {}
             }
         }
@@ -217,12 +219,20 @@ class GameOptimizationCoordinator @Inject constructor(
         rootShellManager.executeCommand("echo 1 > /sys/kernel/debug/sched_energy_aware")
         rootShellManager.executeCommand("echo 100 > /sys/class/devfreq/soc:qcom,cpu-llcc-bw/max_freq")
         rootShellManager.executeCommand("echo 100 > /sys/class/devfreq/soc:qcom,cpubw/max_freq")
+        // Snapdragon 8 Elite Gen 2 / 8 Elite specific
+        rootShellManager.executeCommand("echo 1 > /sys/class/devfreq/soc:qcom,compute-cdsb/governor")
+        rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/mem_latency")
+        rootShellManager.executeCommand("echo 1 > /sys/module/qti_cpu_boost/parameters/boost_enabled")
+        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/soc/*/qcom,cpufreq-hw/boost")
     }
 
     private suspend fun applyMediaTekOptimizations() {
         rootShellManager.executeCommand("echo 1 > /sys/module/mtk_vcore_debug/parameters/enable")
         rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/game_mode")
         rootShellManager.executeCommand("echo 1 > /sys/kernel/ged/boost_gpu_enable")
+        rootShellManager.executeCommand("echo performance > /sys/class/misc/mtk-vpu/devfreq/mtk-vpu/governor")
+        rootShellManager.executeCommand("echo 1 > /proc/cpufreq/cpufreq_power_mode")
+        rootShellManager.executeCommand("echo 0 > /proc/cpufreq/cpufreq_cci_mode")
     }
 
     private suspend fun applyExynosOptimizations() {
@@ -235,6 +245,19 @@ class GameOptimizationCoordinator @Inject constructor(
         rootShellManager.executeCommand("echo 1 > /sys/kernel/hisi/npu/boost")
     }
 
+    private suspend fun applyTensorOptimizations() {
+        rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        rootShellManager.executeCommand("echo performance > /sys/class/devfreq/*mali*/governor")
+        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/vertex.0/boost")
+        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/edge.0/boost")
+    }
+
+    private suspend fun applyUnisocOptimizations() {
+        rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        rootShellManager.executeCommand("echo noop > /sys/block/mmcblk0/queue/scheduler")
+        rootShellManager.executeCommand("echo 1 > /sys/class/misc/mali0/device/power_policy")
+    }
+
     private fun getAdaptiveTargetFps(gameInfo: SupportedGames.GameInfo?, thermalStatus: Int): Int {
         val gameMax = gameInfo?.maxFps ?: 0
         val deviceMax = performanceManager.getMaxRefreshRate().toInt()
@@ -242,6 +265,9 @@ class GameOptimizationCoordinator @Inject constructor(
         val rawTarget = when {
             gameMax > 0 && gameMax <= deviceMax -> gameMax
             gameMax > 0 -> deviceMax
+            deviceMax >= 240 -> 240
+            deviceMax >= 200 -> 200
+            deviceMax >= 180 -> 180
             deviceMax >= 165 -> 165
             deviceMax >= 144 -> 144
             deviceMax >= 120 -> 120
@@ -271,7 +297,11 @@ class GameOptimizationCoordinator @Inject constructor(
     fun isOptimizationActive(): Boolean = isOptimizationActive
     fun getCurrentGamePackage(): String? = currentGamePackage
 
-    fun getSupportedFps(): List<Int> = listOf(30, 45, 60, 90, 120, 144, 165, 240)
+    fun getSupportedFps(): List<Int> {
+        val rates = performanceManager.getSupportedRefreshRates()
+        val maxRate = rates.maxOrNull()?.toInt() ?: 60
+        return listOf(30, 45, 60, 90, 120, 144, 165, 180, 200, 240).filter { it <= maxRate }
+    }
 
     fun getSupportedRefreshRates(): List<Float> = performanceManager.getSupportedRefreshRates()
 

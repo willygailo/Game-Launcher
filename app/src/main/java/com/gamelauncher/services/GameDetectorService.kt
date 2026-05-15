@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.app.usage.UsageStatsManager
 import android.os.Build
+import android.os.Process
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.IBinder
@@ -31,6 +32,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -80,11 +82,14 @@ class GameDetectorService : Service() {
         if (usageStatsManager == null) {
             usageStatsManager = getSystemService(UsageStatsManager::class.java)
         }
+        // Boost detection service priority for faster game detection
+        try { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) } catch (_: Exception) {}
+
         detectorJob?.cancel()
         detectorJob = serviceScope.launch {
             while (isActive) {
                 monitorForegroundApp()
-                delay(1500)
+                delay(800)
             }
         }
     }
@@ -114,6 +119,11 @@ class GameDetectorService : Service() {
     }
 
     private fun getForegroundPackage(): String {
+        // Try /proc-based detection first (faster, no usage stats permission needed)
+        val procResult = getForegroundFromProc()
+        if (procResult.isNotBlank()) return procResult
+
+        // Fallback to UsageStatsManager
         val now = System.currentTimeMillis()
         return runCatching {
             usageStatsManager?.queryUsageStats(
@@ -122,6 +132,22 @@ class GameDetectorService : Service() {
                 now
             )?.maxByOrNull { it.lastTimeUsed }?.packageName.orEmpty()
         }.getOrDefault("")
+    }
+
+    private fun getForegroundFromProc(): String {
+        return try {
+            val pid = File("/proc/self/oom_adj").readText().trim().toIntOrNull() ?: return ""
+            // Read all processes, find the one with highest priority
+            val procDir = File("/proc")
+            val processes = procDir.listFiles { f -> f.name.all { it.isDigit() } } ?: return ""
+            for (proc in processes.take(200)) {
+                val cmdline = runCatching { File(proc, "cmdline").readText().trim() }.getOrNull() ?: continue
+                if (cmdline.isNotBlank() && !cmdline.startsWith("com.gamelauncher") && !cmdline.startsWith("system") && !cmdline.startsWith("u:") && cmdline.contains(".")) {
+                    return cmdline
+                }
+            }
+            ""
+        } catch (_: Exception) { "" }
     }
 
     private fun isKnownGame(packageName: String): Boolean {

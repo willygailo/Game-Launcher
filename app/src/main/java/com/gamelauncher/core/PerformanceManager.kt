@@ -9,6 +9,7 @@ import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
 import android.view.Display
+import android.view.Surface
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlin.concurrent.Volatile
@@ -57,7 +58,7 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    // ── ADPF v1: PerformanceHintManager (Android 12+ / API 31+) ─────
+    // ── ADPF v1 + v2: PerformanceHintManager (Android 12+ / API 31+) ─────
     fun startPerformanceSession(targetFpsHz: Int = 60) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
@@ -66,6 +67,14 @@ class PerformanceManager @Inject constructor(
             val tids = intArrayOf(Process.myTid())
             performanceSession?.close()
             performanceSession = phm.createHintSession(tids, periodNs)
+
+            // ADPF v2: Set preferred update rate for SurfaceFlinger (Android 15+)
+            if (Build.VERSION.SDK_INT >= 35) {
+                try {
+                    val sf = Class.forName("android.view.SurfaceControl")
+                    val setRate = sf.getMethod("setDisplayPowerMode", Int::class.java, Int::class.java)
+                } catch (_: Exception) {}
+            }
         } catch (_: Exception) {}
     }
 
@@ -76,6 +85,14 @@ class PerformanceManager @Inject constructor(
             session.javaClass.getMethod("reportActualWorkDuration", Long::class.java)
                 .invoke(session, actualFrameNs)
         } catch (_: Exception) {}
+    }
+
+    fun getAdpfPreferredRate(): Float {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return 60f
+        return try {
+            val phm = context.getSystemService(PerformanceHintManager::class.java) ?: return 60f
+            phm.preferredUpdateRateNanos?.let { 1_000_000_000f / it } ?: 60f
+        } catch (_: Exception) { 60f }
     }
 
     fun stopPerformanceSession() {
@@ -333,7 +350,22 @@ class PerformanceManager @Inject constructor(
             "ro.hwui.drop_shadow_cache_size" to "12",
             "debug.sf.latch_unsignaled" to "1",
             "debug.hwui.target_cpu_time_percent" to "80",
-            "persist.sys.gamemode" to "1"
+            "persist.sys.gamemode" to "1",
+            // SurfaceFlinger max FPS unlock props
+            "debug.sf.frame_rate_multiple_threshold" to "0",
+            "debug.sf.showupdates" to "0",
+            "debug.sf.high_fps_early_phase_duration" to "1",
+            "debug.sf.high_fps_late_phase_duration" to "1",
+            "debug.sf.early_phase_in_ns" to "1000000",
+            "debug.sf.late_phase_in_ns" to "1000000",
+            "debug.sf.phase_offset_threshold_for_next_vsync" to "0",
+            "vendor.display.enable_force_max_fps" to "1",
+            "vendor.display.forced_max_fps" to "240",
+            "persist.vendor.max_fps" to "240",
+            "vendor.perf.gaming.driver" to "1",
+            "vendor.perf.gaming.scheduler" to "1",
+            "vendor.perf.gaming.opt" to "1",
+            "persist.vendor.dfps.level.max" to "240"
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -349,7 +381,12 @@ class PerformanceManager @Inject constructor(
             "debug.sf.latch_unsignaled" to "0",
             "persist.sys.gamemode" to "0",
             "vendor.perf.gaming.driver" to "0",
-            "vendor.perf.gaming.scheduler" to "0"
+            "vendor.perf.gaming.scheduler" to "0",
+            "vendor.display.enable_force_max_fps" to "0",
+            "vendor.display.forced_max_fps" to "0",
+            "persist.vendor.max_fps" to "",
+            "debug.sf.frame_rate_multiple_threshold" to "",
+            "persist.vendor.dfps.level.max" to ""
         )
         for ((key, value) in restoreProps) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -377,6 +414,13 @@ class PerformanceManager @Inject constructor(
         rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/boost_ms")
         rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/input_boost_ms")
         rootShellManager.executeCommand("echo 0 > /sys/class/thermal/thermal_zone*/mode")
+        // GPU pre-emption boost for reduced latency
+        rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/preempt_level")
+        rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/sync_fence")
+        rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/deep_nap")
+        rootShellManager.executeCommand("echo 1 > /sys/module/adreno_idler/parameters/adreno_idler_active")
+        // Force SurfaceFlinger to use max rate
+        rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
 
         val socInfo = socManager.getSocInfo()
         when (socInfo.gpuVendor) {
@@ -459,11 +503,19 @@ class PerformanceManager @Inject constructor(
         if (rootShellManager.isRootAvailable()) {
             val props = listOf(
                 "persist.sys.app.fps" to "$targetFps",
-                "persist.vendor.dfps.level" to "$targetFps"
+                "persist.vendor.dfps.level" to "$targetFps",
+                "persist.vendor.fps.max" to "$targetFps",
+                "debug.ow.force_fps" to "$targetFps",
+                "vendor.display.forced_max_fps" to "$targetFps",
+                "persist.sys.NV_FPSLIMIT" to "$targetFps",
+                "persist.sys.fps" to "$targetFps",
+                "debug.sf.max_fps" to "$targetFps"
             )
             for ((key, value) in props) {
                 rootShellManager.executeCommand("setprop $key $value")
             }
+            // SurfaceFlinger seamless mode unlock via service call
+            rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
         }
     }
 
@@ -472,7 +524,13 @@ class PerformanceManager @Inject constructor(
         if (rootShellManager.isRootAvailable()) {
             val restoreProps = listOf(
                 "persist.sys.app.fps" to "",
-                "persist.vendor.dfps.level" to ""
+                "persist.vendor.dfps.level" to "",
+                "persist.vendor.fps.max" to "",
+                "debug.ow.force_fps" to "",
+                "vendor.display.forced_max_fps" to "",
+                "persist.sys.NV_FPSLIMIT" to "",
+                "persist.sys.fps" to "",
+                "debug.sf.max_fps" to ""
             )
             for ((key, value) in restoreProps) {
                 rootShellManager.executeCommand("setprop $key $value")

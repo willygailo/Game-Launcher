@@ -32,6 +32,7 @@ data class DeviceSpecs(
     val supportedRefreshRates: List<Float> = listOf(60f),
     val screenWidthPx: Int = 1080,
     val screenHeightPx: Int = 2400,
+    val adpfPreferredRate: Float = 60f,
 
     val networkType: String = "WiFi",
     val networkStrengthDbm: Int = -70,

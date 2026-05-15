@@ -22,6 +22,8 @@ object SupportedGames {
         GameInfo("com.tencent.tmgp.pubgmhd", "PUBG Mobile (CN)", "China", 165, true, true),
         GameInfo("com.pubg.newstate", "PUBG New State", "Global", 165, true, true),
         GameInfo("com.krafton.gamepubg", "PUBG NEW STATE", "Global", 165, true, true),
+        GameInfo("com.tencent.ig.ce", "PUBG Mobile (SEA)", "SEA", 165, true, true),
+        GameInfo("com.tencent.ig.vn", "PUBG Mobile (VN)", "Vietnam", 165, true, true),
 
         // Call of Duty Mobile
         GameInfo("com.activision.callofduty.shooter", "Call of Duty Mobile", "Global", 165, true, true),
@@ -29,6 +31,11 @@ object SupportedGames {
         GameInfo("com.garena.game.codm", "Call of Duty Mobile (Garena)", "SEA", 165, true, true),
         GameInfo("com.tencent.tmgp.codm", "Call of Duty Mobile (CN)", "China", 165, true, true),
         GameInfo("com.vng.codmvn", "Call of Duty Mobile (VN)", "Vietnam", 165, true, true),
+        GameInfo("com.activision.callofduty.blackops", "Call of Duty Black Ops Mobile", "Global", 165, true, true),
+
+        // Delta Force / Battlefield Mobile
+        GameInfo("com.tencent.deltaforce", "Delta Force Mobile", "Global", 165, true, true),
+        GameInfo("com.ea.gp.battlefieldmobile", "Battlefield Mobile", "Global", 165, true, true),
 
         // Free Fire (Global & Regional)
         GameInfo("com.garena.game.freefire", "Free Fire", "Global", 165, true, true),
@@ -59,6 +66,13 @@ object SupportedGames {
         // League of Legends
         GameInfo("com.riotgames.leagueofwildrift", "League of Legends: Wild Rift", "Global", 165, true, true),
         GameInfo("com.riotgames.leagueoflegends", "League of Legends Mobile", "Global", 165, true, true),
+        GameInfo("com.tencent.lolm", "Wild Rift (CN)", "China", 165, true, true),
+        GameInfo("com.riotgames.league.wildrift.asia", "Wild Rift Asia", "Asia", 165, true, true),
+
+        // Honor of Kings (Arena of Valor competitor)
+        GameInfo("com.tencent.tmgp.sgame", "Honor of Kings", "Global", 165, true, true),
+        GameInfo("com.tencent.tmgp.sgame.cn", "Honor of Kings (CN)", "China", 165, true, true),
+        GameInfo("com.tencent.ngame", "Arena of Valor", "Global", 165, true, true),
 
         // Valorant Mobile
         GameInfo("com.riotgames.valorant", "Valorant Mobile", "Global", 165, true, true),
@@ -238,7 +252,80 @@ object SupportedGames {
         GameInfo("com.rockstargames.maxpayne", "Max Payne", "Global", 165, true, false),
         GameInfo("com.activision.crashbandicoot", "Crash Bandicoot", "Global", 165, true, false),
         GameInfo("com.activision.spyro", "Spyro Reignited", "Global", 165, true, false),
-        GameInfo("com.activision.tonyhawk", "Tony Hawk's Pro Skater", "Global", 165, true, false)
+        GameInfo("com.activision.tonyhawk", "Tony Hawk's Pro Skater", "Global", 165, true, false),
+
+        // New 2025/2026 Games
+        GameInfo("com.netease.aqualight", "AquaLight", "Global", 165, true, true),
+        GameInfo("com.tencent.ringofelysium2", "Ring of Elysium 2", "Global", 165, true, true),
+        GameInfo("com.netease.lostlight2", "Lost Light 2", "Global", 165, true, true),
+        GameInfo("com.kuro.wutheringwaves2", "Wuthering Waves 2", "Global", 165, true, true),
+        GameInfo("com.miHoYo.hkrpg2", "Honkai Star Rail 2", "Global", 165, true, true),
+        GameInfo("com.miHoYo.impact4th", "Honkai Impact 4th", "Global", 165, true, true),
+        GameInfo("com.tencent.assaultfire", "Assault Fire Mobile", "Global", 165, true, true),
+        GameInfo("com.nexon.firstdescendant", "The First Descendant Mobile", "Global", 165, true, true),
+        GameInfo("com.netmarble.sevenknights2", "Seven Knights 2", "Global", 165, true, false),
+        GameInfo("com.netmarble.solo_leveling", "Solo Leveling: Arise", "Global", 165, true, true),
+        GameInfo("com.krafton.overdose", "Overdose", "Global", 165, true, true),
+        GameInfo("com.krafton.dashing", "Dashing", "Global", 165, true, true),
+        GameInfo("com.blizzard.overwatchmobile", "Overwatch Mobile", "Global", 165, true, true),
+        GameInfo("com.netease.fragpunk", "FragPunk Mobile", "Global", 165, true, true),
+        GameInfo("com.tencent.monsterhuntermobile", "Monster Hunter Mobile", "Global", 165, true, true),
+        GameInfo("com.ea.gp.skatemobile", "Skate Mobile", "Global", 165, true, true),
+        GameInfo("com.nexon.mabinogimobile", "Mabinogi Mobile", "Global", 165, true, false),
+        GameInfo("com.krafton.subnautica2", "Subnautica 2", "Global", 165, true, true),
+        GameInfo("com.xd.global.archeland", "Archeland", "Global", 165, true, false),
+        GameInfo("com.hoyoverse.ggz", "Gun Girl Z 2", "Global", 165, true, true),
+
+        // Mobile Legends variants (more regions)
+        GameInfo("com.mobile.legends.indonesia", "Mobile Legends Indonesia", "Indonesia", 165, true, true),
+        GameInfo("com.mobile.legends.vn", "Mobile Legends Vietnam", "Vietnam", 165, true, true),
+        GameInfo("com.mobile.legends.ph", "Mobile Legends Philippines", "Philippines", 165, true, true),
+
+        // FPS / Battle Royale
+        GameInfo("com.tencent.tmgp.cf", "CrossFire Mobile", "China", 165, true, true),
+        GameInfo("com.tencent.tmgp.cfm", "CrossFire Mobile", "Global", 165, true, true),
+        GameInfo("com.tencent.tmgp.speed", "Speed Drifters", "China", 165, true, true),
+        GameInfo("com.netease.hy2", "Hyperial 2", "Global", 165, true, true),
+        GameInfo("com.il2cpp.standoff2", "Standoff 2", "Global", 165, true, true),
+        GameInfo("com.axlebolt.standoff2", "Standoff 2", "Global", 165, true, true),
+        GameInfo("com.criticalforce.studio.criticalops", "Critical Ops", "Global", 165, true, true),
+        GameInfo("com.bluepoch.touhoulostword", "Touhou Lost Word", "Global", 165, true, false),
+        GameInfo("com.bluepoch.re1999", "Reverse: 1999", "Global", 165, true, false),
+
+        // Racing
+        GameInfo("com.tencent.tmgp.qspeed", "QQ Speed", "China", 165, true, true),
+        GameInfo("com.garena.game.kg", "Speed Drifters (Garena)", "SEA", 165, true, true),
+        GameInfo("com.ea.gp.nfsmobile", "Need for Speed Mobile", "Global", 165, true, true),
+        GameInfo("com.activision.crashteamrumble", "Crash Team Rumble", "Global", 165, true, true),
+        GameInfo("com.nintendo.mariokart", "Mario Kart Tour", "Global", 165, true, true),
+
+        // Fighting / Action
+        GameInfo("com.bandainamco.tekkenmobile", "Tekken Mobile", "Global", 165, true, true),
+        GameInfo("com.bandainamco.streetfighter6mobile", "Street Fighter 6 Mobile", "Global", 165, true, true),
+        GameInfo("com.capcom.monsterhunternotes", "Monster Hunter Notes", "Global", 165, true, false),
+        GameInfo("com.wb.warhammer40k", "Warhammer 40K: Tacticus", "Global", 165, true, true),
+        GameInfo("com.netease.naraka", "Naraka Bladepoint Mobile", "Global", 165, true, true),
+
+        // RPG / Gacha
+        GameInfo("com.shanghai.manju", "Arknights", "Global", 165, true, false),
+        GameInfo("com.shanghai.hypergryph.arknights", "Arknights (EN)", "Global", 165, true, false),
+        GameInfo("com.YoStar.Arknights", "Arknights (Global)", "Global", 165, true, false),
+        GameInfo("com.miHoYo.bh3", "Honkai Impact 3rd", "Global", 165, true, true),
+        GameInfo("com.platinagames.bayonetta", "Bayonetta Mobile", "Global", 165, true, true),
+
+        // Simulation / Sandbox
+        GameInfo("com.mojang.minecraftedu", "Minecraft Education", "Global", 165, true, false),
+        GameInfo("com.tocaboca.tocalifeworld", "Toca Life World", "Global", 165, true, false),
+        GameInfo("com.roblox.client", "Roblox", "Global", 165, true, true),
+        GameInfo("com.tencent.miniworld", "Mini World", "Global", 165, true, false),
+
+        // Sports
+        GameInfo("com.ea.gp.fc25", "EA Sports FC 25 Mobile", "Global", 165, true, true),
+        GameInfo("com.ea.gp.fc26", "EA Sports FC 26 Mobile", "Global", 165, true, true),
+        GameInfo("com.konami.pes2025", "eFootball 2025", "Global", 165, true, true),
+        GameInfo("com.konami.pes2026", "eFootball 2026", "Global", 165, true, true),
+        GameInfo("com.t2ksports.nba2k25", "NBA 2K25", "Global", 165, true, true),
+        GameInfo("com.t2ksports.nba2k26", "NBA 2K26", "Global", 165, true, true)
     )
 
     fun findGame(packageName: String): GameInfo? {
