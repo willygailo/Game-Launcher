@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_1.8.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_2.0.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -66,6 +66,23 @@
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
 
+### v2.0.0: Enhanced Gaming Experience
+
+| Feature | Description | Status |
+|---|---|---|
+| **Game Session Recording** | Auto-record start/end time, FPS, battery drain, RAM per session | ✅ |
+| **Game Search & Filter** | Real-time search bar + category filter chips | ✅ |
+| **Draggable FPS Overlay** | Touch and drag the FPS counter anywhere on screen | ✅ |
+| **Onboarding Walkthrough** | 4-page guided intro for first-time users | ✅ |
+| **Per-Game Graphics Mode** | Choose Performance/Balanced/Battery Saver/Custom per game | ✅ |
+| **Brightness Slider** | Adjustable 10%-100% brightness slider | ✅ |
+| **Session Stats Dashboard** | Total sessions & play time tracking cards | ✅ |
+| **Game Details Screen** | Session history, average FPS, per-game statistics | ✅ |
+| **CPU Core Control** | Toggle individual cores on/off (root required) | ✅ |
+| **Benchmark Mode** | Run CPU/GPU/Memory benchmark, compare scores | ✅ |
+| **Dark/Light Theme Toggle** | Switch between dark and light theme in Settings | ✅ |
+| **Profile Import/Export** | Backup/restore per-game settings as JSON files | ✅ |
+
 ### v1.8.0: Max FPS/Hz Unlock, SurfaceFlinger Boost, New SoCs & Games
 
 | Feature | Description | Status |
@@ -113,23 +130,6 @@
 | **Non-Root App Killer** | killBackgroundApps now uses ActivityManager for non-root | 🆕 |
 | **All Deprecation Warnings Fixed** | NetworkManager, Theme, aaptOptions | 🔧 |
 | **lockRefreshRate Cleanup** | Removed broken API 36 dead code | 🔧 |
-
-### v2.0.0: Enhanced Gaming Experience
-
-| Feature | Description | Status |
-|---|---|---|
-| **Game Session Recording** | Auto-record start/end time, FPS, battery drain, RAM per session | ✅ |
-| **Game Search & Filter** | Real-time search bar + category filter chips | ✅ |
-| **Draggable FPS Overlay** | Touch and drag the FPS counter anywhere on screen | ✅ |
-| **Onboarding Walkthrough** | 4-page guided intro for first-time users | ✅ |
-| **Per-Game Graphics Mode** | Choose Performance/Balanced/Battery Saver/Custom per game | ✅ |
-| **Brightness Slider** | Adjustable 10%-100% brightness slider | ✅ |
-| **Session Stats Dashboard** | Total sessions & play time tracking cards | ✅ |
-| **Game Details Screen** | Session history, average FPS, per-game statistics | ✅ |
-| **CPU Core Control** | Toggle individual cores on/off (root required) | ✅ |
-| **Benchmark Mode** | Run CPU/GPU/Memory benchmark, compare scores | ✅ |
-| **Dark/Light Theme Toggle** | Switch between dark and light theme in Settings | ✅ |
-| **Profile Import/Export** | Backup/restore per-game settings as JSON files | ✅ |
 
 </div>
 
@@ -467,7 +467,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v1.8.0](https://github.com/willygailo/Game-Launcher/releases/tag/v1.8.0)
+- [Latest Release: v2.0.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.0.0)
 - Or build from source using the instructions above
 
 ---
