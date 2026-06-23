@@ -188,11 +188,11 @@ class GameDetectorService : Service() {
         val globalAutoBoost = settingsPreferences.globalAutoBoost.first()
         if (!globalAutoBoost) return
 
+        val gameModel = gameDao.getGameByPackageName(packageName)
         val dndEnabled = settingsPreferences.dndEnabled.first()
-        val touchEnabled = settingsPreferences.touchOptimizationEnabled.first()
+        val touchEnabled = gameModel?.touchLatencyBoost ?: settingsPreferences.touchOptimizationEnabled.first()
         val memoryEnabled = settingsPreferences.memoryCleanupEnabled.first()
-        val networkEnabled = settingsPreferences.networkOptimizationEnabled.first()
-        val adaptivePerf = settingsPreferences.adaptivePerformanceEnabled.first()
+        val networkEnabled = gameModel?.wifiLockEnabled ?: settingsPreferences.networkOptimizationEnabled.first()
         val thermalAware = settingsPreferences.thermalAwareBoost.first()
 
         val result = if (thermalAware)
@@ -205,10 +205,20 @@ class GameDetectorService : Service() {
             touchLatencyOptimizer.enableTouchOptimizations()
             touchLatencyOptimizer.enableHighFrequencyTouch()
         }
-        if (memoryEnabled) deviceManager.killBackgroundApps()
+        
+        val ramAggressiveness = gameModel?.ramAggressiveness ?: "NORMAL"
+        if (memoryEnabled && ramAggressiveness != "LIGHT") {
+            deviceManager.killBackgroundApps()
+            if (ramAggressiveness == "AGGRESSIVE" || ramAggressiveness == "EXTREME") {
+                performanceManager.triggerHeapCompaction()
+            }
+            if (ramAggressiveness == "EXTREME") {
+                deviceManager.killBackgroundApps()
+            }
+        }
 
         val gameInfo = SupportedGames.findGame(packageName)
-        val targetFps = gameInfo?.maxFps ?: result.targetFps
+        val targetFps = gameModel?.targetFps ?: (gameInfo?.maxFps ?: result.targetFps)
 
         performanceManager.startPerformanceSession(targetFps)
         performanceManager.boostThreadPriority()
@@ -216,7 +226,8 @@ class GameDetectorService : Service() {
 
         val supportedRates = performanceManager.getSupportedRefreshRates()
         val maxHz = supportedRates.maxOrNull() ?: 60f
-        val stableHz = supportedRates.minByOrNull { kotlin.math.abs(it - maxHz) } ?: 60f
+        val targetHz = if (gameModel?.forceMaxRefreshRate == true) maxHz else maxHz
+        val stableHz = supportedRates.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
         performanceManager.lockRefreshRate(stableHz)
         performanceManager.lockFps(targetFps)
 

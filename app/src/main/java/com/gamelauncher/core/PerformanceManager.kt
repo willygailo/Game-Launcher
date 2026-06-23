@@ -365,7 +365,16 @@ class PerformanceManager @Inject constructor(
             "vendor.perf.gaming.driver" to "1",
             "vendor.perf.gaming.scheduler" to "1",
             "vendor.perf.gaming.opt" to "1",
-            "persist.vendor.dfps.level.max" to "240"
+            "persist.vendor.dfps.level.max" to "240",
+            // Real no fake extra boosting properties
+            "persist.sys.use_dithering" to "0",
+            "persist.sys.ui.hw" to "1",
+            "debug.egl.hw" to "1",
+            "debug.egl.profiler" to "1",
+            "debug.gr.num_framebuffers" to "3",
+            "debug.composition.type" to "gpu",
+            "persist.sys.composition.type" to "gpu",
+            "wifi.supplicant_scan_interval" to "300"
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -386,7 +395,16 @@ class PerformanceManager @Inject constructor(
             "vendor.display.forced_max_fps" to "0",
             "persist.vendor.max_fps" to "",
             "debug.sf.frame_rate_multiple_threshold" to "",
-            "persist.vendor.dfps.level.max" to ""
+            "persist.vendor.dfps.level.max" to "",
+            // Restore extra boosting properties
+            "persist.sys.use_dithering" to "1",
+            "persist.sys.ui.hw" to "0",
+            "debug.egl.hw" to "0",
+            "debug.egl.profiler" to "0",
+            "debug.gr.num_framebuffers" to "2",
+            "debug.composition.type" to "",
+            "persist.sys.composition.type" to "",
+            "wifi.supplicant_scan_interval" to ""
         )
         for ((key, value) in restoreProps) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -536,5 +554,13 @@ class PerformanceManager @Inject constructor(
                 rootShellManager.executeCommand("setprop $key $value")
             }
         }
+    }
+
+    fun triggerHeapCompaction() {
+        try {
+            System.gc()
+            System.runFinalization()
+            Runtime.getRuntime().gc()
+        } catch (_: Exception) {}
     }
 }

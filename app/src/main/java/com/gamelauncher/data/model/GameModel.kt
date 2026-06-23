@@ -19,6 +19,10 @@ data class GameModel(
     val wifiLockEnabled: Boolean = true,
     val graphicsMode: String = "BALANCED",
     val cpuBoost: Boolean = true,
+    val touchLatencyBoost: Boolean = true,
+    val forceMaxRefreshRate: Boolean = true,
+    val gpuTuning: Boolean = true,
+    val ramAggressiveness: String = "NORMAL",
     val addedAt: Long = System.currentTimeMillis()
 )
 

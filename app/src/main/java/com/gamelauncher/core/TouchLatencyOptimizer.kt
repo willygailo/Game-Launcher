@@ -76,7 +76,7 @@ class TouchLatencyOptimizer @Inject constructor(
             // Stylus and high polling rate
             "echo 1 > /sys/module/usbtouchscreen/parameters/touch_boost",
             "echo 1 > /sys/module/sy700/parameters/touch_boost",
-            "setprop view.touch_slop 2",
+            "setprop view.touch_slop 1",
             "setprop view.scroll_friction 10",
             "setprop windowsmgr.max_events_per_sec 2000",
             "setprop ro.max.fling_velocity 20000",
@@ -86,7 +86,6 @@ class TouchLatencyOptimizer @Inject constructor(
             "setprop sys.use_fifo_ui 1",
             "setprop debug.hwui.render_thread true",
             "setprop debug.sf.latch_unsignaled 1",
-            "setprop persist.vendor.qti.input.touch_boost 1",
             "setprop vendor.display.input_boost 1",
             "setprop persist.sys.touch.xp 1",
             // Extra touch input boost
@@ -94,7 +93,12 @@ class TouchLatencyOptimizer @Inject constructor(
             "setprop vendor.perf.input_boost.duration 1500",
             "setprop vendor.perf.input_boost.freq 2000000",
             "setprop persist.sys.touch.optimization 1",
-            "setprop sys.touch.boost 1"
+            "setprop sys.touch.boost 1",
+            "setprop persist.sys.input.latency 0",
+            "setprop touch.device.type touchscreen",
+            "setprop touch.pressure.scale 0.001",
+            "setprop ro.input.noautomap 1",
+            "setprop view.minimum_fling_velocity 5"
         )
         for (cmd in commands) {
             runCatching { Runtime.getRuntime().exec(arrayOf("su", "-c", cmd)).waitFor() }

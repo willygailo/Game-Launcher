@@ -21,7 +21,8 @@ class GameOptimizationCoordinator @Inject constructor(
     private val dndManager: DndManager,
     private val touchLatencyOptimizer: TouchLatencyOptimizer,
     private val rootShellManager: RootShellManager,
-    private val socManager: SocManager
+    private val socManager: SocManager,
+    private val gameDao: com.gamelauncher.data.local.GameDao
 ) {
     data class OptimizationResult(
         val success: Boolean,
@@ -45,20 +46,26 @@ class GameOptimizationCoordinator @Inject constructor(
         val appliedOptimizations = mutableListOf<String>()
         val errors = mutableListOf<String>()
 
+        val gameModel = gameDao.getGameByPackageName(packageName)
         val socInfo = socManager.getSocInfo()
         val gameInfo = SupportedGames.findGame(packageName)
         val thermalStatus = deviceManager.getThermalStatus()
-        val targetFps = getAdaptiveTargetFps(gameInfo, thermalStatus)
+
+        // Use custom target FPS if configured, otherwise fallback to adaptive logic
+        val targetFps = gameModel?.targetFps ?: getAdaptiveTargetFps(gameInfo, thermalStatus)
         val supportedRates = performanceManager.getSupportedRefreshRates()
         val maxRefreshRate = supportedRates.maxOrNull() ?: 60f
-        val targetHz = getAdaptiveRefreshRate(maxRefreshRate, thermalStatus)
+
+        // Use maximum rate if forceMaxRefreshRate is true, otherwise fallback to adaptive
+        val targetHz = if (gameModel?.forceMaxRefreshRate == true) maxRefreshRate else getAdaptiveRefreshRate(maxRefreshRate, thermalStatus)
         val stableHz = performanceManager.getNearestSupportedRefreshRate(targetHz)
 
         try {
             val hasRoot = rootShellManager.isRootAvailable()
 
             if (hasRoot) {
-                if (socInfo.isGamingOptimized) {
+                val forceGpu = gameModel?.gpuTuning ?: true
+                if (forceGpu) {
                     val cpuResult = performanceManager.maximizeCpuGpuPerformance()
                     if (cpuResult) {
                         appliedOptimizations.add("CPU/GPU Performance Boost (${socInfo.socType.name})")
@@ -98,9 +105,12 @@ class GameOptimizationCoordinator @Inject constructor(
                     errors.add("DND permission not granted")
                 }
 
-                touchLatencyOptimizer.enableTouchOptimizations()
-                touchLatencyOptimizer.enableHighFrequencyTouch()
-                appliedOptimizations.add("Touch Latency Optimized")
+                val touchBoost = gameModel?.touchLatencyBoost ?: true
+                if (touchBoost) {
+                    touchLatencyOptimizer.enableTouchOptimizations()
+                    touchLatencyOptimizer.enableHighFrequencyTouch()
+                    appliedOptimizations.add("Touch Latency Optimized")
+                }
 
                 performanceManager.disableAnimations()
                 appliedOptimizations.add("Animations Disabled")
@@ -111,9 +121,19 @@ class GameOptimizationCoordinator @Inject constructor(
             networkManager.acquireWifiLowLatencyLock("GameBoost")
             appliedOptimizations.add("Low Latency Network Mode")
 
-            val memFreed = deviceManager.killBackgroundApps()
-            if (memFreed > 0) {
-                appliedOptimizations.add("Memory Cleaned (${memFreed}MB freed)")
+            val ramAggressiveness = gameModel?.ramAggressiveness ?: "NORMAL"
+            if (ramAggressiveness != "LIGHT") {
+                val memFreed = deviceManager.killBackgroundApps()
+                if (memFreed > 0) {
+                    appliedOptimizations.add("Memory Cleaned (${memFreed}MB freed)")
+                }
+                if (ramAggressiveness == "AGGRESSIVE" || ramAggressiveness == "EXTREME") {
+                    performanceManager.triggerHeapCompaction()
+                    appliedOptimizations.add("Heap Compaction Applied")
+                }
+                if (ramAggressiveness == "EXTREME") {
+                    deviceManager.killBackgroundApps()
+                }
             }
 
             if (hasRoot) applySocSpecificOptimizations(socInfo)

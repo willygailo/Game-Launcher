@@ -66,6 +66,17 @@
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
 
+### v2.1.0: "Max Boost Real" Cyberpunk Update
+
+| Feature | Description | Status |
+|---|---|---|
+| **Cyberpunk Dashboard** | New premium UI with animated arc gauges for CPU & GPU and linear progress bars for RAM & Battery | ✅ |
+| **Max Refresh Rate Unlock** | Force maximum Hz output with custom FPS sliders up to device limits | ✅ |
+| **Advanced Touch Latency Boost** | Extreme input latency reduction with pointer speed control | ✅ |
+| **GPU Performance Tuning** | High-performance GPU rendering unlock and graphics parameter tweaks | ✅ |
+| **RAM Aggressiveness Control** | Granular RAM management (LIGHT/NORMAL/AGGRESSIVE/EXTREME) | ✅ |
+| **Per-Game Settings Panel** | Expandable config UI per game to toggle individual max boosts | ✅ |
+
 ### v2.0.0: Enhanced Gaming Experience
 
 | Feature | Description | Status |
