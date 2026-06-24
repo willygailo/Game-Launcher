@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_2.2.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_2.3.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -65,6 +65,16 @@
 | **Dark/Light Theme** | Toggle between dark and light theme | ✅ |
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
+
+### v2.3.0: "Advanced Non-Root Boosts" Update
+
+| Feature | Description | Status |
+|---|---|---|
+| **WRITE_SECURE_SETTINGS** | ADB-grantable permission to allow safe, deep system-level tweaks on non-root devices | 🆕 |
+| **12 Touch Latency Overrides** | Pointer speed, touch report rate (1000Hz), scroll friction, velocity tracker, and input boost duration optimization | 🆕 |
+| **6 Advanced System Toggles** | Kill animations, force GPU Game Driver, suspend background sync, mobile data priority, battery saver override, and disable location scans | 🆕 |
+| **Adaptive Dashboard Banner** | Shows glowing neon blue `⚡ ADVANCED MODE` banner for ADB or green `🔓 ROOT MODE` badge for root when tweaks are active | 🆕 |
+| **Interactive ADB Guide Card** | Easy-to-use clipboard command copy-paste helper card in Settings for non-technical users | 🆕 |
 
 ### v2.2.0: "Clean & Reactive" Architectural Overhaul
 
@@ -364,12 +374,12 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | Performance Benchmark | ✅ | ✅ |
 | Jank Detection & Frame Timing | ✅ ✅ | ✅ ✅ |
 | Refresh Rate Lock | ✅ (via Settings) | ✅ (via sysfs) |
-| Animation Speed Control | ✅ (via Settings) | ✅ (via sysfs) |
+| Animation Speed Control | ✅ (via ADB/Secure Settings) | ✅ (via sysfs) |
 | Memory Cleanup | ✅ (killBackgroundProcesses) | ✅ (kill + drop caches) |
-| Touch Optimization | ✅ (pointer speed) | ✅ (20+ sysfs/props) |
+| Touch Optimization | ✅ (12 overrides via ADB/Secure) | ✅ (20+ sysfs/props) |
 | Storage Optimization | ✅ (cache cleanup) | ✅ (FSTRIM) |
 | Game Session Recording | ✅ (manual + auto) | ✅ (manual + auto) |
-| GPU Force Render | ✅ (via Settings) | ✅ (via sysfs) |
+| GPU Force Render | ✅ (via ADB/Secure Settings) | ✅ (via sysfs) |
 | High Performance Mode | ✅ (via PowerManager) | ✅ (via kernel) |
 | CPU Governor Control | ❌ | ✅ |
 | CPU Core Control | ❌ | ✅ |
@@ -491,7 +501,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v2.2.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.2.0)
+- [Latest Release: v2.3.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.3.0)
 - Or build from source using the instructions above
 
 ---
