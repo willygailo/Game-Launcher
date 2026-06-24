@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_2.0.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_2.2.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -65,6 +65,16 @@
 | **Dark/Light Theme** | Toggle between dark and light theme | ✅ |
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
+
+### v2.2.0: "Clean & Reactive" Architectural Overhaul
+
+| Feature | Description | Status |
+|---|---|---|
+| **Domain Layer Use Cases** | Introduced `GetInstalledGamesUseCase` and `LaunchGameAndBoostUseCase` to isolate business and service orchestration logic | 🆕 |
+| **UDF State Management** | Unified state tracking with `GamesUiState` in `GamesViewModel` for a single source of truth | 🆕 |
+| **Progressive Flow Game Scanner** | Refactored the scanner to use Kotlin `Flow` for real-time progress updates and incremental game list populating | 🆕 |
+| **Robust Unit Testing** | Added unit tests for Use Cases and ViewModels using JUnit4, Mockito, and Truth with a custom `FakeGamesRepository` | 🆕 |
+| **UI Component Extraction** | Extracted `GameCard` and nested components into a separate, clean `com.gamelauncher.ui.components` package | 🆕 |
 
 ### v2.1.0: "Max Boost Real" Cyberpunk Update
 
@@ -441,6 +451,8 @@ app/src/main/java/com/gamelauncher/
 │   ├── model/         # Data classes (GameModel, GamingSession, DeviceSpecs)
 │   ├── preference/    # DataStore settings (theme, onboarding, toggles)
 │   └── repository/    # Data layer
+├── domain/            # Domain Layer (Use Cases)
+│   └── usecase/       # GetInstalledGamesUseCase, LaunchGameAndBoostUseCase
 ├── di/                # Hilt Dependency Injection
 ├── ml/                # TensorFlow Lite Game Classifier
 ├── receivers/         # Broadcast Receivers (Boot, Package Changes)
@@ -450,8 +462,9 @@ app/src/main/java/com/gamelauncher/
 │   ├── OverlayService (draggable FPS counter)
 │   └── GameBoosterTileService
 ├── ui/                # UI Components (Compose)
+│   ├── components/    # Reusable UI components (GameCard, BoostToggleRow, MiniTag)
 │   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core
-│   ├── games/         # Games Library w/ search, filter, game details screen
+│   ├── games/         # Games Library screen and search functionality
 │   ├── onboarding/    # 4-step onboarding walkthrough
 │   ├── settings/      # Settings w/ permissions, theme toggle, import/export
 │   └── theme/         # App Theme & Colors (dark/light)
@@ -478,7 +491,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v2.0.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.0.0)
+- [Latest Release: v2.2.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.2.0)
 - Or build from source using the instructions above
 
 ---
