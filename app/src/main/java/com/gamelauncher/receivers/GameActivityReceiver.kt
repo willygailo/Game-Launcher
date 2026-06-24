@@ -7,6 +7,7 @@ import com.gamelauncher.data.repository.GamesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,7 +25,7 @@ class GameActivityReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                gamesRepository.scanAndSaveGames()
+                gamesRepository.scanAndSaveGames().collect()
             } finally {
                 pendingResult.finish()
             }

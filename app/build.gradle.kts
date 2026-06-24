@@ -97,6 +97,10 @@ android {
         density { enableSplit = true }
         abi { enableSplit = true }
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
