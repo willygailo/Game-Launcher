@@ -64,6 +64,43 @@ class SettingsViewModel @Inject constructor(
         initialValue = true
     )
 
+    // Secure settings toggles
+    val secureAnimScale: StateFlow<Boolean> = settingsPreferences.secureSettingsAnimScale.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureGameDriver: StateFlow<Boolean> = settingsPreferences.secureSettingsGameDriver.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureSyncOff: StateFlow<Boolean> = settingsPreferences.secureSettingsSyncOff.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureMobileData: StateFlow<Boolean> = settingsPreferences.secureSettingsMobileData.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureBatterySaver: StateFlow<Boolean> = settingsPreferences.secureSettingsBatterySaver.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureLocationOff: StateFlow<Boolean> = settingsPreferences.secureSettingsLocationOff.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
     val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
         hasUsageAccess()
     }
@@ -91,6 +128,16 @@ class SettingsViewModel @Inject constructor(
     val hasBatteryExemption: StateFlow<Boolean> = stateFlowFrom {
         val pm = context.getSystemService(PowerManager::class.java)
         pm?.isIgnoringBatteryOptimizations(context.packageName) == true
+    }
+
+    /** True when adb granted WRITE_SECURE_SETTINGS — we probe by trying a no-op write */
+    val hasWriteSecureSettings: StateFlow<Boolean> = stateFlowFrom {
+        try {
+            val cr = context.contentResolver
+            val cur = android.provider.Settings.Global.getInt(cr, "adb_enabled", 0)
+            android.provider.Settings.Global.putInt(cr, "adb_enabled", cur) // write same value back
+            true
+        } catch (e: SecurityException) { false }
     }
 
     private val _profileMessage = MutableStateFlow<String?>(null)
@@ -170,6 +217,30 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPreferences.setDarkTheme(enabled)
         }
+    }
+
+    fun setSecureAnimScale(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsAnimScale(enabled) }
+    }
+
+    fun setSecureGameDriver(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsGameDriver(enabled) }
+    }
+
+    fun setSecureSyncOff(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsSyncOff(enabled) }
+    }
+
+    fun setSecureMobileData(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsMobileData(enabled) }
+    }
+
+    fun setSecureBatterySaver(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsBatterySaver(enabled) }
+    }
+
+    fun setSecureLocationOff(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsLocationOff(enabled) }
     }
 
     fun setGameDetectorEnabled(enabled: Boolean) {

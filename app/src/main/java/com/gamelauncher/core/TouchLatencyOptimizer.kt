@@ -39,6 +39,7 @@ class TouchLatencyOptimizer @Inject constructor(
             restoreRootTouchOptimizations()
         } else {
             setPointerSpeed(originalPointerSpeed)
+            restoreNonRootTouchOptimizations()
         }
         true
     }
@@ -125,8 +126,85 @@ class TouchLatencyOptimizer @Inject constructor(
         setTouchSensitivity(1.0f)
     }
 
+    // Saved non-root state for restoration
+    private var savedTouchSensitivity: Int = -1
+    private var savedTouchReportRate: Int = -1
+    private var savedGameMode: Int = -1
+    private var savedScrollFriction: Float = -1f
+
     private fun applyNonRootTouchOptimizations() {
+        val cr = context.contentResolver
+        // Save originals
+        savedTouchSensitivity = runCatching {
+            Settings.System.getInt(cr, "touch_sensitivity", 100)
+        }.getOrDefault(-1)
+        savedTouchReportRate = runCatching {
+            Settings.System.getInt(cr, "touch_report_rate", 0)
+        }.getOrDefault(-1)
+        savedGameMode = runCatching {
+            Settings.Global.getInt(cr, "game_mode", 0)
+        }.getOrDefault(-1)
+        savedScrollFriction = runCatching {
+            Settings.System.getFloat(cr, "scroll_friction", 0.015f)
+        }.getOrDefault(-1f)
+
+        // 1. Max pointer speed
         setPointerSpeed(11)
+
+        // 2. Max touch sensitivity (200 = 2x)
+        runCatching { Settings.System.putInt(cr, "touch_sensitivity", 200) }
+
+        // 3. High-frequency touch report rate (1000Hz if supported)
+        runCatching { Settings.System.putInt(cr, "touch_report_rate", 1000) }
+
+        // 4. Minimize scroll friction for snappier scrolling
+        runCatching { Settings.System.putFloat(cr, "scroll_friction", 0.005f) }
+
+        // 5. Enable system game mode flag
+        runCatching { Settings.Global.putInt(cr, "game_mode", 1) }
+
+        // 6. Enable GPU game driver hint
+        runCatching { Settings.Global.putInt(cr, "game_driver_all_apps", 1) }
+
+        // 7. Input boost duration (milliseconds)
+        runCatching { Settings.Global.putInt(cr, "input_boost_duration_ms", 1500) }
+
+        // 8. Disable battery saver auto-restrictions on input
+        runCatching { Settings.Global.putInt(cr, "low_power_standby_enabled", 0) }
+
+        // 9. Maximize fling velocity for responsive lists
+        runCatching { Settings.System.putInt(cr, "max_fling_velocity", 24000) }
+        runCatching { Settings.System.putInt(cr, "min_fling_velocity", 80) }
+
+        // 10. Set touch exploration (haptic feedback sharpness)
+        runCatching { Settings.System.putInt(cr, "haptic_feedback_enabled", 1) }
+
+        // 11. Minimize long-press timeout for snappier response
+        runCatching { Settings.Secure.putInt(cr, "long_press_timeout", 300) }
+
+        // 12. Touch zoom control - faster double-tap
+        runCatching { Settings.Secure.putInt(cr, "multi_press_timeout", 150) }
+    }
+
+    private fun restoreNonRootTouchOptimizations() {
+        val cr = context.contentResolver
+        if (savedTouchSensitivity >= 0)
+            runCatching { Settings.System.putInt(cr, "touch_sensitivity", savedTouchSensitivity) }
+        if (savedTouchReportRate >= 0)
+            runCatching { Settings.System.putInt(cr, "touch_report_rate", savedTouchReportRate) }
+        if (savedGameMode >= 0)
+            runCatching { Settings.Global.putInt(cr, "game_mode", savedGameMode) }
+        if (savedScrollFriction >= 0f)
+            runCatching { Settings.System.putFloat(cr, "scroll_friction", savedScrollFriction) }
+
+        // Restore remaining defaults
+        runCatching { Settings.Global.putInt(cr, "game_driver_all_apps", 0) }
+        runCatching { Settings.Global.putInt(cr, "input_boost_duration_ms", 0) }
+        runCatching { Settings.Global.putInt(cr, "low_power_standby_enabled", 1) }
+        runCatching { Settings.System.putInt(cr, "max_fling_velocity", 8000) }
+        runCatching { Settings.System.putInt(cr, "min_fling_velocity", 50) }
+        runCatching { Settings.Secure.putInt(cr, "long_press_timeout", 400) }
+        runCatching { Settings.Secure.putInt(cr, "multi_press_timeout", 300) }
     }
 
     fun setPointerSpeed(speed: Int) {

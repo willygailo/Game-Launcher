@@ -71,6 +71,30 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_THERMAL_AWARE] ?: true }
 
+    val secureSettingsAnimScale: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_ANIM_SCALE] ?: true }
+
+    val secureSettingsGameDriver: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_GAME_DRIVER] ?: true }
+
+    val secureSettingsSyncOff: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_SYNC_OFF] ?: true }
+
+    val secureSettingsMobileData: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_MOBILE_DATA] ?: true }
+
+    val secureSettingsBatterySaver: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_BATTERY_SAVER] ?: true }
+
+    val secureSettingsLocationOff: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_LOCATION_OFF] ?: true }
+
     // Setters
     suspend fun setDarkTheme(enabled: Boolean) { dataStore.edit { it[KEY_DARK_THEME] = enabled } }
     suspend fun setOnboardingCompleted() { dataStore.edit { it[KEY_ONBOARDING_COMPLETED] = true } }
@@ -78,6 +102,13 @@ class SettingsPreferences @Inject constructor(
     suspend fun setOverlayEnabled(enabled: Boolean) { dataStore.edit { it[KEY_OVERLAY_ENABLED] = enabled } }
     suspend fun setGameDetectorEnabled(enabled: Boolean) { dataStore.edit { it[KEY_GAME_DETECTOR_ENABLED] = enabled } }
     suspend fun setThermalAwareBoost(enabled: Boolean) { dataStore.edit { it[KEY_THERMAL_AWARE] = enabled } }
+
+    suspend fun setSecureSettingsAnimScale(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_ANIM_SCALE] = enabled } }
+    suspend fun setSecureSettingsGameDriver(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_GAME_DRIVER] = enabled } }
+    suspend fun setSecureSettingsSyncOff(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_SYNC_OFF] = enabled } }
+    suspend fun setSecureSettingsMobileData(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_MOBILE_DATA] = enabled } }
+    suspend fun setSecureSettingsBatterySaver(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_BATTERY_SAVER] = enabled } }
+    suspend fun setSecureSettingsLocationOff(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_LOCATION_OFF] = enabled } }
 
     companion object {
         private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
@@ -91,5 +122,12 @@ class SettingsPreferences @Inject constructor(
         private val KEY_OVERLAY_ENABLED = booleanPreferencesKey("overlay_enabled")
         private val KEY_GAME_DETECTOR_ENABLED = booleanPreferencesKey("game_detector_enabled")
         private val KEY_THERMAL_AWARE = booleanPreferencesKey("thermal_aware_boost")
+
+        private val KEY_SECURE_SETTINGS_ANIM_SCALE = booleanPreferencesKey("secure_settings_anim_scale")
+        private val KEY_SECURE_SETTINGS_GAME_DRIVER = booleanPreferencesKey("secure_settings_game_driver")
+        private val KEY_SECURE_SETTINGS_SYNC_OFF = booleanPreferencesKey("secure_settings_sync_off")
+        private val KEY_SECURE_SETTINGS_MOBILE_DATA = booleanPreferencesKey("secure_settings_mobile_data")
+        private val KEY_SECURE_SETTINGS_BATTERY_SAVER = booleanPreferencesKey("secure_settings_battery_saver")
+        private val KEY_SECURE_SETTINGS_LOCATION_OFF = booleanPreferencesKey("secure_settings_location_off")
     }
 }

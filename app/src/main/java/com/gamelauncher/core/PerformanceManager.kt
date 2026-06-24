@@ -1,7 +1,10 @@
 package com.gamelauncher.core
 
+import android.Manifest
 import android.app.ActivityManager
+import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.PerformanceHintManager
@@ -10,8 +13,10 @@ import android.os.Process
 import android.provider.Settings
 import android.view.Display
 import android.view.Surface
+import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlin.concurrent.Volatile
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -22,7 +27,8 @@ import javax.inject.Singleton
 class PerformanceManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val rootShellManager: RootShellManager,
-    private val socManager: SocManager
+    private val socManager: SocManager,
+    private val settingsPreferences: SettingsPreferences
 ) {
     @Volatile private var performanceSession: AutoCloseable? = null
     @Volatile private var wakeLock: PowerManager.WakeLock? = null
@@ -262,19 +268,143 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    fun optimizeNonRoot() {
-        boostThreadPriority()
-        acquireWakeLock()
-        disableAnimations()
-        forceGpuRendering()
-        setHighPerformanceMode()
+    // Cache for original system settings states (restored after boost stops)
+    @Volatile private var originalLowPowerMode: Int? = null
+    @Volatile private var originalMasterSync: Boolean? = null
+    @Volatile private var originalMobileDataAlwaysOn: Int? = null
+    @Volatile private var originalLocationMode: Int? = null
+    @Volatile private var originalWindowAnimScale: Float? = null
+    @Volatile private var originalTransitionAnimScale: Float? = null
+    @Volatile private var originalAnimatorDurationScale: Float? = null
+    @Volatile private var originalGameDriverOptInApps: String? = null
+
+    fun hasSecureSettingsPermission(): Boolean {
+        return context.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun restoreNonRoot() {
+    suspend fun optimizeNonRoot(packageName: String) {
+        boostThreadPriority()
+        acquireWakeLock()
+        
+        val resolver = context.contentResolver
+        val hasSecurePerm = hasSecureSettingsPermission()
+
+        if (hasSecurePerm) {
+            try {
+                // 1. Disable Animations globally if enabled in preferences
+                if (settingsPreferences.secureSettingsAnimScale.first()) {
+                    originalWindowAnimScale = Settings.Global.getFloat(resolver, "window_animation_scale", 1.0f)
+                    originalTransitionAnimScale = Settings.Global.getFloat(resolver, "transition_animation_scale", 1.0f)
+                    originalAnimatorDurationScale = Settings.Global.getFloat(resolver, "animator_duration_scale", 1.0f)
+                    
+                    Settings.Global.putFloat(resolver, "window_animation_scale", 0.0f)
+                    Settings.Global.putFloat(resolver, "transition_animation_scale", 0.0f)
+                    Settings.Global.putFloat(resolver, "animator_duration_scale", 0.0f)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 2. Force Battery/Power Saver Mode OFF
+                if (settingsPreferences.secureSettingsBatterySaver.first()) {
+                    originalLowPowerMode = Settings.Global.getInt(resolver, "low_power", 0)
+                    Settings.Global.putInt(resolver, "low_power", 0)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 3. Keep Mobile Data Always On (for fast WiFi-mobile handoff / dual-net stability)
+                if (settingsPreferences.secureSettingsMobileData.first()) {
+                    originalMobileDataAlwaysOn = Settings.Global.getInt(resolver, "mobile_data_always_on", 0)
+                    Settings.Global.putInt(resolver, "mobile_data_always_on", 1)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 4. Disable Master Auto-Sync temporarily to avoid background sync lag/ping spikes
+                if (settingsPreferences.secureSettingsSyncOff.first()) {
+                    originalMasterSync = ContentResolver.getMasterSyncAutomatically()
+                    ContentResolver.setMasterSyncAutomatically(false)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 5. Disable Location/GPS Scanning temporarily to avoid background localization CPU spikes
+                if (settingsPreferences.secureSettingsLocationOff.first()) {
+                    originalLocationMode = Settings.Secure.getInt(resolver, "location_mode", 3)
+                    Settings.Secure.putInt(resolver, "location_mode", 0)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 6. Force Game Driver for game package name
+                if (settingsPreferences.secureSettingsGameDriver.first()) {
+                    originalGameDriverOptInApps = Settings.Global.getString(resolver, "game_driver_opt_in_apps") ?: ""
+                    val currentApps = originalGameDriverOptInApps ?: ""
+                    if (!currentApps.split(",").contains(packageName)) {
+                        val newApps = if (currentApps.isEmpty()) packageName else "$currentApps,$packageName"
+                        Settings.Global.putString(resolver, "game_driver_opt_in_apps", newApps)
+                    }
+                    
+                    // Also force game mode globally if supported
+                    Settings.Global.putInt(resolver, "game_mode", 1)
+                }
+            } catch (_: Exception) {}
+        } else {
+            // Fallback to basic non-root optimizations (which only write Settings.System if WRITE_SETTINGS is granted)
+            disableAnimations()
+            forceGpuRendering()
+            setHighPerformanceMode()
+        }
+    }
+
+    suspend fun restoreNonRoot() {
         restoreThreadPriority()
         releaseWakeLock()
-        restoreAnimations()
-        restoreGpuRendering()
+        
+        val resolver = context.contentResolver
+        val hasSecurePerm = hasSecureSettingsPermission()
+
+        if (hasSecurePerm) {
+            try {
+                originalWindowAnimScale?.let { Settings.Global.putFloat(resolver, "window_animation_scale", it) }
+                originalTransitionAnimScale?.let { Settings.Global.putFloat(resolver, "transition_animation_scale", it) }
+                originalAnimatorDurationScale?.let { Settings.Global.putFloat(resolver, "animator_duration_scale", it) }
+                originalWindowAnimScale = null
+                originalTransitionAnimScale = null
+                originalAnimatorDurationScale = null
+            } catch (_: Exception) {}
+
+            try {
+                originalLowPowerMode?.let { Settings.Global.putInt(resolver, "low_power", it) }
+                originalLowPowerMode = null
+            } catch (_: Exception) {}
+
+            try {
+                originalMobileDataAlwaysOn?.let { Settings.Global.putInt(resolver, "mobile_data_always_on", it) }
+                originalMobileDataAlwaysOn = null
+            } catch (_: Exception) {}
+
+            try {
+                originalMasterSync?.let { ContentResolver.setMasterSyncAutomatically(it) }
+                originalMasterSync = null
+            } catch (_: Exception) {}
+
+            try {
+                originalLocationMode?.let { Settings.Secure.putInt(resolver, "location_mode", it) }
+                originalLocationMode = null
+            } catch (_: Exception) {}
+
+            try {
+                originalGameDriverOptInApps?.let {
+                    Settings.Global.putString(resolver, "game_driver_opt_in_apps", it)
+                }
+                originalGameDriverOptInApps = null
+                Settings.Global.putInt(resolver, "game_mode", 0)
+            } catch (_: Exception) {}
+        } else {
+            restoreAnimations()
+            restoreGpuRendering()
+        }
     }
 
     // ── Root Hardware Tuning ─────────────────────────────────────────

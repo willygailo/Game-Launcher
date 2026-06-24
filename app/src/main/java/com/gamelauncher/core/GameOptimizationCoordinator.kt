@@ -77,7 +77,7 @@ class GameOptimizationCoordinator @Inject constructor(
                     appliedOptimizations.add("CPU Performance Boost (${socInfo.socType.name})")
                 }
             } else {
-                performanceManager.optimizeNonRoot()
+                performanceManager.optimizeNonRoot(packageName)
                 appliedOptimizations.add("Non-Root Performance Mode")
             }
 

@@ -40,6 +40,7 @@ fun DashboardScreen(
     val totalPlayTimeMinutes by viewModel.totalPlayTimeMinutes.collectAsState()
     val benchmarkResult by viewModel.benchmarkResult.collectAsState()
     val isBenchmarking by viewModel.isBenchmarking.collectAsState()
+    val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsState()
 
     LifecycleResumeEffect(Unit) {
         viewModel.refreshPermissionStates()
@@ -105,6 +106,58 @@ fun DashboardScreen(
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+        }
+
+        // Advanced secure boosts banner
+        if (hasWriteSecure || isRootAvailable) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                if (isRootAvailable) SuccessGreen.copy(alpha = 0.18f) else PrimaryNeon.copy(alpha = 0.12f),
+                                SecondaryNeon.copy(alpha = 0.08f)
+                            )
+                        ),
+                        RoundedCornerShape(10.dp)
+                    )
+                    .border(
+                        1.dp,
+                        (if (isRootAvailable) SuccessGreen else PrimaryNeon).copy(alpha = 0.5f),
+                        RoundedCornerShape(10.dp)
+                    )
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        val modeLabel = when {
+                            isRootAvailable -> "🔓 ROOT MODE"
+                            hasWriteSecure -> "⚡ ADVANCED MODE"
+                            else -> ""
+                        }
+                        Text(modeLabel, color = if (isRootAvailable) SuccessGreen else PrimaryNeon, fontWeight = FontWeight.Black, style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            if (isRootAvailable) "All system-level performance tweaks are active"
+                            else "6 secure system tweaks active — animation kill, game driver, sync freeze & more",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background((if (isRootAvailable) SuccessGreen else PrimaryNeon).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            if (isRootAvailable) "ROOT" else "ADB+",
+                            color = if (isRootAvailable) SuccessGreen else PrimaryNeon,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
             }
         }
 

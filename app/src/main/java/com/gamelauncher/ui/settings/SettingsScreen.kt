@@ -32,7 +32,17 @@ fun SettingsScreen(
     val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsState()
     val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsState()
     val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsState()
+    val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Secure toggles
+    val secureAnimScale by viewModel.secureAnimScale.collectAsState()
+    val secureGameDriver by viewModel.secureGameDriver.collectAsState()
+    val secureSyncOff by viewModel.secureSyncOff.collectAsState()
+    val secureMobileData by viewModel.secureMobileData.collectAsState()
+    val secureBatterySaver by viewModel.secureBatterySaver.collectAsState()
+    val secureLocationOff by viewModel.secureLocationOff.collectAsState()
+    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Column(
         modifier = Modifier
@@ -55,10 +65,11 @@ fun SettingsScreen(
             style = MaterialTheme.typography.bodySmall
         )
 
+        // ── Standard Permissions ──────────────────────────────
         PermissionCard(
             title = "System Settings Access",
             subtitle = "Needed for brightness and animation controls",
-            buttonText = if (hasWriteSettings) "Granted" else "Grant Write Settings",
+            buttonText = if (hasWriteSettings) "Granted ✓" else "Grant Write Settings",
             granted = hasWriteSettings,
             onClick = viewModel::requestWriteSettingsPermission
         )
@@ -66,7 +77,7 @@ fun SettingsScreen(
         PermissionCard(
             title = "Overlay Permission",
             subtitle = "Required for floating FPS counter",
-            buttonText = if (hasOverlayPerm) "Granted" else "Grant Overlay",
+            buttonText = if (hasOverlayPerm) "Granted ✓" else "Grant Overlay",
             granted = hasOverlayPerm,
             onClick = viewModel::requestOverlayPermission
         )
@@ -74,7 +85,7 @@ fun SettingsScreen(
         PermissionCard(
             title = "Usage Access",
             subtitle = "Required for auto game detection while gaming",
-            buttonText = if (hasUsageAccess) "Granted" else "Grant Usage Access",
+            buttonText = if (hasUsageAccess) "Granted ✓" else "Grant Usage Access",
             granted = hasUsageAccess,
             onClick = viewModel::requestUsageAccessPermission
         )
@@ -82,7 +93,7 @@ fun SettingsScreen(
         PermissionCard(
             title = "Battery Optimization",
             subtitle = "Keeps booster services alive in long sessions",
-            buttonText = if (hasBatteryExempt) "Granted" else "Ignore Battery Optimization",
+            buttonText = if (hasBatteryExempt) "Granted ✓" else "Ignore Battery Optimization",
             granted = hasBatteryExempt,
             onClick = viewModel::requestBatteryOptimizationExemption
         )
@@ -91,7 +102,7 @@ fun SettingsScreen(
             PermissionCard(
                 title = "Notifications",
                 subtitle = "Required for booster status notifications (Android 13+)",
-                buttonText = if (hasNotificationPerm) "Granted" else "Grant Notifications",
+                buttonText = if (hasNotificationPerm) "Granted ✓" else "Grant Notifications",
                 granted = hasNotificationPerm,
                 onClick = {
                     val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -103,6 +114,117 @@ fun SettingsScreen(
             )
         }
 
+        // ── ADB Advanced Unlock Guide ──────────────────────────
+        val adbCmd = "adb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS"
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (hasWriteSecure) SuccessGreen.copy(alpha = 0.08f)
+                                 else PrimaryNeon.copy(alpha = 0.06f)
+            ),
+            shape = RoundedCornerShape(16.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (hasWriteSecure) SuccessGreen.copy(alpha = 0.5f) else PrimaryNeon.copy(alpha = 0.4f)
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (hasWriteSecure) "⚡ Advanced Boost: ACTIVE" else "🔓 Unlock Advanced Boost",
+                        color = if (hasWriteSecure) SuccessGreen else PrimaryNeon,
+                        fontWeight = FontWeight.Black,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (hasWriteSecure) {
+                        Box(
+                            modifier = Modifier
+                                .background(SuccessGreen.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) { Text("UNLOCKED", color = SuccessGreen, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black) }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                if (!hasWriteSecure) {
+                    Text(
+                        "Run this one-time ADB command from a PC to unlock deep system tweaks: animation scale, game driver, sync freeze, network priority, battery optimizer, and touch latency.",
+                        color = TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    // Copyable command box
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = BackgroundDark),
+                        shape = RoundedCornerShape(8.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryNeon.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                adbCmd,
+                                color = PrimaryNeon,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = {
+                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(adbCmd))
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryNeon, contentColor = BackgroundDark),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("📋  Copy ADB Command", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Text(
+                        "Deep system optimizations are active. Use the toggles below to control each boost independently.",
+                        color = TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+
+        // ── Secure Settings Toggles (shown when unlocked) ──────
+        if (hasWriteSecure) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryNeon.copy(alpha = 0.25f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "⚡ Advanced System Tweaks",
+                        color = PrimaryNeon,
+                        fontWeight = FontWeight.Black,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    SecureToggleRow("Kill Animations (Ultra Smooth)", "Sets scale to 0 — eliminates UI lag", secureAnimScale) { viewModel.setSecureAnimScale(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Game GPU Driver", "Forces system to use optimized game GPU driver", secureGameDriver) { viewModel.setSecureGameDriver(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Freeze Background Sync", "Stops background data sync while gaming", secureSyncOff) { viewModel.setSecureSyncOff(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Mobile Data Priority", "Keeps mobile data active at max priority", secureMobileData) { viewModel.setSecureMobileData(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Battery Saver Override", "Prevents battery saver from throttling performance", secureBatterySaver) { viewModel.setSecureBatterySaver(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Disable Location Scan", "Stops WiFi/BT scanning to reduce CPU interrupts", secureLocationOff) { viewModel.setSecureLocationOff(it) }
+                }
+            }
+        }
+
+        // ── General Feature Toggles ───────────────────────────
         SettingCard(
             title = "Global Auto Boost",
             subtitle = "Boost performance globally for all games",
@@ -175,6 +297,34 @@ fun SettingsScreen(
         ) {
             Text("Stop All Active Boosts", fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun SecureToggleRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = TextPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+            Text(subtitle, color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = PrimaryNeon,
+                checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f)
+            )
+        )
     }
 }
 

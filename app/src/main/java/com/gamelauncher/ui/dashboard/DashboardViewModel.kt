@@ -69,12 +69,27 @@ class DashboardViewModel @Inject constructor(
     private val _isBenchmarking = MutableStateFlow(false)
     val isBenchmarking: StateFlow<Boolean> = _isBenchmarking.asStateFlow()
 
+    private val _hasWriteSecure = MutableStateFlow(false)
+    val hasWriteSecureSettings: StateFlow<Boolean> = _hasWriteSecure.asStateFlow()
+
     init {
         startMonitoring()
         startFpsMonitoring()
         checkRootStatus()
         refreshPermissionStates()
         loadSessionStats()
+        checkWriteSecure()
+    }
+
+    private fun checkWriteSecure() {
+        viewModelScope.launch {
+            _hasWriteSecure.value = try {
+                val cr = context.contentResolver
+                val cur = android.provider.Settings.Global.getInt(cr, "adb_enabled", 0)
+                android.provider.Settings.Global.putInt(cr, "adb_enabled", cur)
+                true
+            } catch (e: SecurityException) { false }
+        }
     }
 
     private fun loadSessionStats() {
