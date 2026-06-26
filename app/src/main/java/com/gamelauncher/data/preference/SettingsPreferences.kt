@@ -95,6 +95,33 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_SECURE_SETTINGS_LOCATION_OFF] ?: true }
 
+    // ── NEW: Battery Saver + Network + Thermal ────────────────────────
+
+    /** When true, battery saver is automatically killed when boost starts */
+    val disableBatterySaverOnBoost: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_DISABLE_BATTERY_SAVER_ON_BOOST] ?: true }
+
+    /** When true, enable mobile_data_always_on for WiFi+Data dual stack during gaming */
+    val networkDualStackEnabled: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_NETWORK_DUAL_STACK] ?: true }
+
+    /** When true, whitelists the game package from Doze mode */
+    val dozeWhitelistEnabled: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_DOZE_WHITELIST] ?: true }
+
+    /** When true (root only), suspends thermal-engine during gaming for max perf */
+    val suspendThermalOnBoost: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SUSPEND_THERMAL] ?: false }
+
+    /** Force max Hz on display during boost */
+    val forceMaxHzOnBoost: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_FORCE_MAX_HZ] ?: true }
+
     // Setters
     suspend fun setDarkTheme(enabled: Boolean) { dataStore.edit { it[KEY_DARK_THEME] = enabled } }
     suspend fun setOnboardingCompleted() { dataStore.edit { it[KEY_ONBOARDING_COMPLETED] = true } }
@@ -109,6 +136,11 @@ class SettingsPreferences @Inject constructor(
     suspend fun setSecureSettingsMobileData(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_MOBILE_DATA] = enabled } }
     suspend fun setSecureSettingsBatterySaver(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_BATTERY_SAVER] = enabled } }
     suspend fun setSecureSettingsLocationOff(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_LOCATION_OFF] = enabled } }
+    suspend fun setDisableBatterySaverOnBoost(enabled: Boolean) { dataStore.edit { it[KEY_DISABLE_BATTERY_SAVER_ON_BOOST] = enabled } }
+    suspend fun setNetworkDualStackEnabled(enabled: Boolean) { dataStore.edit { it[KEY_NETWORK_DUAL_STACK] = enabled } }
+    suspend fun setDozeWhitelistEnabled(enabled: Boolean) { dataStore.edit { it[KEY_DOZE_WHITELIST] = enabled } }
+    suspend fun setSuspendThermalOnBoost(enabled: Boolean) { dataStore.edit { it[KEY_SUSPEND_THERMAL] = enabled } }
+    suspend fun setForceMaxHzOnBoost(enabled: Boolean) { dataStore.edit { it[KEY_FORCE_MAX_HZ] = enabled } }
 
     companion object {
         private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
@@ -129,5 +161,11 @@ class SettingsPreferences @Inject constructor(
         private val KEY_SECURE_SETTINGS_MOBILE_DATA = booleanPreferencesKey("secure_settings_mobile_data")
         private val KEY_SECURE_SETTINGS_BATTERY_SAVER = booleanPreferencesKey("secure_settings_battery_saver")
         private val KEY_SECURE_SETTINGS_LOCATION_OFF = booleanPreferencesKey("secure_settings_location_off")
+        // New keys
+        private val KEY_DISABLE_BATTERY_SAVER_ON_BOOST = booleanPreferencesKey("disable_battery_saver_on_boost")
+        private val KEY_NETWORK_DUAL_STACK = booleanPreferencesKey("network_dual_stack_enabled")
+        private val KEY_DOZE_WHITELIST = booleanPreferencesKey("doze_whitelist_enabled")
+        private val KEY_SUSPEND_THERMAL = booleanPreferencesKey("suspend_thermal_on_boost")
+        private val KEY_FORCE_MAX_HZ = booleanPreferencesKey("force_max_hz_on_boost")
     }
 }

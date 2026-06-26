@@ -277,6 +277,35 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalTransitionAnimScale: Float? = null
     @Volatile private var originalAnimatorDurationScale: Float? = null
     @Volatile private var originalGameDriverOptInApps: String? = null
+    @Volatile private var originalMobileDataAlwaysOnPrev: Int? = null
+
+    /**
+     * Force mobile data always-on so the device maintains a cellular background
+     * connection even while on WiFi — prevents the WiFi→data handoff lag spike.
+     * Requires WRITE_SECURE_SETTINGS.
+     */
+    fun forceMobileDataAlwaysOn() {
+        if (!hasSecureSettingsPermission()) return
+        try {
+            val resolver = context.contentResolver
+            originalMobileDataAlwaysOnPrev = Settings.Global.getInt(resolver, "mobile_data_always_on", 0)
+            Settings.Global.putInt(resolver, "mobile_data_always_on", 1)
+            // Also tell the network stack to keep WiFi + LTE both alive
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Settings.Global.putInt(resolver, "wifi_is_usable_score_cache_timeout_millis", 5000)
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun restoreMobileDataAlwaysOn() {
+        if (!hasSecureSettingsPermission()) return
+        try {
+            originalMobileDataAlwaysOnPrev?.let {
+                Settings.Global.putInt(context.contentResolver, "mobile_data_always_on", it)
+            }
+            originalMobileDataAlwaysOnPrev = null
+        } catch (_: Exception) {}
+    }
 
     fun hasSecureSettingsPermission(): Boolean {
         return context.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
@@ -504,7 +533,22 @@ class PerformanceManager @Inject constructor(
             "debug.gr.num_framebuffers" to "3",
             "debug.composition.type" to "gpu",
             "persist.sys.composition.type" to "gpu",
-            "wifi.supplicant_scan_interval" to "300"
+            "wifi.supplicant_scan_interval" to "300",
+            // Additional turbo props for max FPS unlock
+            "debug.sf.disable_client_composition_cache" to "1",
+            "debug.sf.enable_gl_backpressure" to "0",
+            "ro.surface_flinger.max_frame_buffer_acquired_buffers" to "3",
+            "debug.sf.recomputecrop" to "0",
+            "persist.vendor.camera.preview.fps" to "240",
+            // 5G/network performance tweaks
+            "net.tcp.buffersize.5g" to "4096,87380,4194304,4096,65536,4194304",
+            "net.tcp.buffersize.lte" to "4096,87380,4194304,4096,65536,4194304",
+            "net.tcp.buffersize.wifi" to "524288,1048576,4194304,524288,1048576,4194304",
+            "net.rmnet0.dns1" to "8.8.8.8",
+            "net.rmnet0.dns2" to "8.8.4.4",
+            // Battery saver system-level kill (root layer)
+            "persist.sys.power_save_mode" to "0",
+            "persist.sys.battery_saver" to "0"
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")

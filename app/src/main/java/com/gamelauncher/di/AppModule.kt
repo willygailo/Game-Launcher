@@ -1,6 +1,7 @@
 package com.gamelauncher.di
 
 import android.content.Context
+import android.hardware.display.DisplayManager
 import androidx.room.Room
 import com.gamelauncher.data.local.AppDatabase
 import com.gamelauncher.data.local.GameDao
@@ -29,5 +30,11 @@ object AppModule {
     @Singleton
     fun provideGameDao(database: AppDatabase): GameDao {
         return database.gameDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDisplayManager(@ApplicationContext context: Context): DisplayManager {
+        return context.getSystemService(DisplayManager::class.java)
     }
 }

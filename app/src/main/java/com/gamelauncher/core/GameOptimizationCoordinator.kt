@@ -22,7 +22,8 @@ class GameOptimizationCoordinator @Inject constructor(
     private val touchLatencyOptimizer: TouchLatencyOptimizer,
     private val rootShellManager: RootShellManager,
     private val socManager: SocManager,
-    private val gameDao: com.gamelauncher.data.local.GameDao
+    private val gameDao: com.gamelauncher.data.local.GameDao,
+    private val batterySaverManager: BatterySaverManager  // ── NEW
 ) {
     data class OptimizationResult(
         val success: Boolean,
@@ -50,6 +51,12 @@ class GameOptimizationCoordinator @Inject constructor(
         val socInfo = socManager.getSocInfo()
         val gameInfo = SupportedGames.findGame(packageName)
         val thermalStatus = deviceManager.getThermalStatus()
+
+        // ── Kill Battery Saver FIRST ─────────────────────────────────
+        val bsKilled = batterySaverManager.disableBatterySaver()
+        if (bsKilled) appliedOptimizations.add("⚡ Battery Saver Disabled")
+        batterySaverManager.whitelistGameFromDoze(packageName)
+        appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
 
         // Use custom target FPS if configured, otherwise fallback to adaptive logic
         val targetFps = gameModel?.targetFps ?: getAdaptiveTargetFps(gameInfo, thermalStatus)
@@ -210,6 +217,10 @@ class GameOptimizationCoordinator @Inject constructor(
 
             performanceManager.restoreAnimations()
             restoredOptimizations.add("Animations Restored")
+
+            // Restore battery saver state
+            batterySaverManager.restoreBatterySaver()
+            restoredOptimizations.add("⚡ Battery Saver State Restored")
         } catch (e: Exception) {}
 
         isOptimizationActive = false

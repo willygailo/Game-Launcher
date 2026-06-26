@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_2.3.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_2.4.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -39,9 +39,13 @@
 |---|---|---|
 | **Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ |
 | **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
-| **Live Boost Notification** | Real-time FPS & Hz sa notification habang naglalaro | ✅ |
+| **Live Boost Notification** | Real-time FPS, Hz, network type & battery sa notification | ✅ |
+| **Battery Saver Killer** | Auto-disable battery saver + Doze whitelist on boost start | ✅ 🆕 |
+| **5G / WiFi Dual Stack** | 5G NR detection + WiFi 6E/7 + simultaneous WiFi+Data mode | ✅ 🆕 |
+| **Max Hz Forcer** | Force peak_refresh_rate to device maximum (no root needed) | ✅ 🆕 |
+| **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ 🆕 |
 | **Game Library** | Auto-detect ng lahat ng installed games | ✅ |
-| **Per-Game Boosts** | Custom FPS (30-165), WiFi lock per game | ✅ |
+| **Per-Game Boosts** | Custom FPS (30-240), WiFi lock per game | ✅ |
 | **Immersive Controls** | DND mode (INTERRUPTION_FILTER_NONE), max brightness automation | ✅ |
 | **Home Widget** | Quick Boost at Open buttons sa home screen | ✅ |
 | **Quick Settings Tile** | Toggle booster sa notification panel | ✅ |
@@ -49,10 +53,10 @@
 | **Stats History** | Track ng play time per session (manual + auto) | ✅ |
 | **RAM Optimizer** | Kill background apps instantly (non-root via ActivityManager) | ✅ |
 | **Storage Optimizer** | Run fstrim para sa speed boost | ✅ |
-| **Network Manager** | WiFi low-latency lock, signal strength, link speed | ✅ |
+| **Network Manager** | WiFi low-latency lock, 5G detection, dual-stack, quality score | ✅ |
 | **ML Game Detection** | TensorFlow Lite 2.17 auto-classify games | ✅ |
 | **Background Tasks** | WorkManager scheduled optimization | ✅ |
-| **Permission UI** | Individual permission cards na may status indicator (incl. battery exemption) | ✅ |
+| **Permission UI** | Individual permission cards na may status indicator | ✅ |
 | **Game Search & Filter** | Search bar + category filter chips (MOBA, FPS, RPG, etc.) | ✅ |
 | **Gaming Session Recording** | Auto-record play time, FPS, battery drain, RAM per session | ✅ |
 | **Session Stats Dashboard** | Total sessions & play time cards sa Dashboard | ✅ |
@@ -65,6 +69,47 @@
 | **Dark/Light Theme** | Toggle between dark and light theme | ✅ |
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
+
+---
+
+### 🆕 v2.4.0: "Nuclear Boost" — Battery Saver Kill + 5G + Max Hz
+
+> The biggest performance update yet. Battery saver ang kalaban ng FPS — now it dies first.
+
+| Feature | Description | Status |
+|---|---|---|
+| **BatterySaverManager** | Triple-layer battery saver killer: Settings.Global → PowerManager reflection → Root shell | 🆕 |
+| **Adaptive Battery Disable** | Kills `adaptive_battery_management_enabled` so Android can't secretly re-enable saver mid-game | 🆕 |
+| **Doze Whitelist** | `dumpsys deviceidle whitelist +<pkg>` — game process stays alive, no throttle | 🆕 |
+| **5G NR Detection** | Real `NETWORK_TYPE_NR` detection via TelephonyManager (API 29+) + NetworkCapabilities (API 31+) | 🆕 |
+| **WiFi 6E / WiFi 7 Detection** | `WifiInfo.wifiStandard` — shows "WiFi 4/5/6/6E/7" in overlay & notification | 🆕 |
+| **WiFi + Data Dual Stack** | Both connections active simultaneously — best ping path selected automatically | 🆕 |
+| **Network Quality Score (0-100)** | Real-time score based on bandwidth + type + congestion — shown in live notification | 🆕 |
+| **Live Network StateFlows** | `networkType`, `is5G`, `wifiGenerationLabel`, `networkQualityScore` — reactive UI | 🆕 |
+| **Max Hz Forcer (No Root)** | Writes `peak_refresh_rate` + `min_refresh_rate` via Settings.System — no root needed | 🆕 |
+| **Jank Detection** | Frame interval > 2× target period counted as jank, displayed in overlay | 🆕 |
+| **Rolling Avg FPS** | 2-second sliding window average (smoother than raw FPS for overlay readability) | 🆕 |
+| **Frame Drop Alert** | `frameDropAlert` StateFlow fires when FPS falls below 85% of target | 🆕 |
+| **Turbo SurfaceFlinger Props** | `debug.sf.disable_client_composition_cache`, `max_frame_buffer_acquired_buffers=3`, and more | 🆕 |
+| **TCP Buffer Tuning (Root)** | Optimized `net.tcp.buffersize.5g/.lte/.wifi` via setprop — real latency reduction | 🆕 |
+| **Root Battery Kill** | `persist.sys.power_save_mode=0`, `persist.sys.battery_saver=0` via setprop (root) | 🆕 |
+| **Thermal Engine Suspend** | Stop `thermal-engine`/`thermald`/`mi_thermald` during session (root, optional toggle) | 🆕 |
+| **Smart Boost Notification** | Shows game name + FPS + Hz + network type + battery % + saver status, live every 2s | 🆕 |
+| **New Settings Toggles** | `disableBatterySaverOnBoost`, `networkDualStackEnabled`, `dozeWhitelistEnabled`, `forceMaxHzOnBoost`, `suspendThermalOnBoost` | 🆕 |
+| **Mobile Data Always-On** | `mobile_data_always_on=1` during boost — prevents WiFi→data handoff ping spikes | 🆕 |
+
+**Boost pipeline order (v2.4.0):**
+```
+1. Kill Battery Saver          ← NEW (happens first now)
+2. Whitelist game from Doze    ← NEW
+3. Start network monitoring    ← NEW (live StateFlows)
+4. CPU/GPU/ADPF optimization
+5. WiFi low-latency lock + mobile_data_always_on ← ENHANCED
+6. Force max Hz + FPS lock     ← ENHANCED
+7. Live notification updater (FPS | Hz | Network | Battery)
+```
+
+---
 
 ### v2.3.0: "Advanced Non-Root Boosts" Update
 
@@ -200,7 +245,6 @@
 | **Dragon Ball Legends** | `com.bandainamco.dragonballlegends` | 165 |
 | **eFootball PES** | `com.konami.pes` | 165 |
 | **GTA: Definitive Edition** | `com.rockstargames.gtade` | 165 |
-
 | **Delta Force Mobile** | `com.tencent.deltaforce` | 165 |
 | **Overwatch Mobile** | `com.blizzard.overwatchmobile` | 165 |
 | **FragPunk Mobile** | `com.netease.fragpunk` | 165 |
@@ -231,14 +275,16 @@
 | **UI Framework** | Jetpack Compose BOM 2024.06 + Material Design 3 |
 | **Dependency Injection** | Hilt 2.52 via KSP (no Kapt) |
 | **Local Storage** | Room 2.6.1 + DataStore Preferences |
-| **Architecture** | MVVM + Repository Pattern |
+| **Architecture** | MVVM + Repository Pattern + Domain Use Cases |
 | **Build System** | Gradle 8.9 + AGP 8.5.2 + Kotlin DSL |
 | **Language** | Kotlin 2.0.21 |
 | **Annotation Processing** | KSP (Room + Hilt compiler) |
 | **ML** | TensorFlow Lite 2.17 (game classification) |
 | **Background Tasks** | WorkManager 2.10 |
 | **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) + SurfaceFlinger unlock |
-| **Frame Analysis** | Choreographer StateFlow-based FPS + FrameMetrics jank detection |
+| **Frame Analysis** | Choreographer — raw FPS (500ms) + 2s rolling avg + jank detection |
+| **Network** | ConnectivityManager NetworkCallback + WifiInfo (WiFi 6E/7) + TelephonyManager (5G NR) |
+| **Battery** | PowerManager + Settings.Global + root shell (triple-layer) |
 | **Wake Lock** | PowerManager partial wake lock (non-root) |
 | **Benchmark** | CPU (sort/primes), GPU (Bitmap operations), Memory (allocation) |
 | **Chipset Detection** | Proc/cpuinfo + sysfs + Build.SOC_MODEL (Snapdragon/MTK/Exynos/Kirin/Unisoc/Tensor + others) |
@@ -264,7 +310,7 @@
 ```bash
 # Clone
 git clone https://github.com/willygailo/Game-Launcher.git
-cd "Pro Game Launcher.apk"
+cd Game-Launcher
 
 # Build debug APK (clean)
 ./gradlew clean assembleDebug
@@ -312,18 +358,37 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 </div>
 
-| Permission | Purpose |
-|---|---|
-| `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games |
-| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | Background boosting services (game perf, overlay, game detection) |
-| `WRITE_SETTINGS` | Automatic brightness at animation control |
-| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service alive during sessions |
-| `ACCESS_WIFI_STATE` / `CHANGE_WIFI_STATE` | WiFi low-latency lock |
-| `ACCESS_NOTIFICATIONS` | DND control during gaming |
-| `PACKAGE_USAGE_STATS` | Auto game detection (UsageStatsManager) |
-| `QUERY_ALL_PACKAGES` | Scan installed apps for games |
-| `POST_NOTIFICATIONS` | Booster status notifications (Android 13+) |
-| `MODIFY_AUDIO_SETTINGS` | Volume optimization during gaming |
+| Permission | Purpose | How to Grant |
+|---|---|---|
+| `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games | App prompt |
+| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | Background boosting services | Auto |
+| `WRITE_SETTINGS` | Brightness at animation control | App prompt |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service alive during sessions | App prompt |
+| `ACCESS_WIFI_STATE` / `CHANGE_WIFI_STATE` | WiFi low-latency lock | Auto |
+| `ACCESS_NETWORK_STATE` / `CHANGE_NETWORK_STATE` | Dual WiFi+Data stack | Auto |
+| `ACCESS_NOTIFICATIONS` | DND control during gaming | App prompt |
+| `PACKAGE_USAGE_STATS` | Auto game detection (UsageStatsManager) | App prompt |
+| `QUERY_ALL_PACKAGES` | Scan installed apps for games | Auto |
+| `POST_NOTIFICATIONS` | Booster status notifications (Android 13+) | App prompt |
+| `MODIFY_AUDIO_SETTINGS` | Volume optimization during gaming | Auto |
+| `READ_PHONE_STATE` | 5G / LTE network type detection | App prompt |
+| `WAKE_LOCK` | Prevent CPU sleep during gaming | Auto |
+
+### ⚡ ADB Advanced Permissions (One-Time Setup — Unlocks Full Non-Root Mode)
+
+```bash
+# Grant on PC via USB — only needed once
+adb shell pm grant com.gamelauncher android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant com.gamelauncher android.permission.WRITE_SETTINGS
+adb shell pm grant com.gamelauncher android.permission.READ_PHONE_STATE
+```
+
+> After granting `WRITE_SECURE_SETTINGS`, the app automatically:
+> - Kills battery saver on boost start
+> - Disables animations
+> - Forces game GPU driver
+> - Enables mobile data always-on (WiFi + Data dual stack)
+> - Disables background sync & location scanning during gaming
 
 ---
 
@@ -370,9 +435,16 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | ADPF Performance Session (Android 12+) | ✅ | ✅ |
 | Wake Lock (PowerManager) | ✅ | ✅ |
 | Thread Priority Boost | ✅ | ✅ |
-| FPS/Hz Monitoring | ✅ | ✅ |
+| FPS/Hz Monitoring + Jank Detection | ✅ | ✅ |
+| Max Hz Force (Settings.System) | ✅ | ✅ |
 | Performance Benchmark | ✅ | ✅ |
-| Jank Detection & Frame Timing | ✅ ✅ | ✅ ✅ |
+| Battery Saver Disable (Layer 1+2) | ✅ (WRITE_SECURE_SETTINGS via ADB) | ✅ |
+| Battery Saver Disable (Layer 3 nuclear) | ❌ | ✅ |
+| Doze Whitelist | ✅ (ADB grant) | ✅ |
+| Thermal Engine Suspend | ❌ | ✅ |
+| 5G + WiFi Dual-Stack | ✅ | ✅ |
+| WiFi Low-Latency Lock | ✅ | ✅ |
+| Mobile Data Always-On (gaming) | ✅ (WRITE_SECURE_SETTINGS) | ✅ |
 | Refresh Rate Lock | ✅ (via Settings) | ✅ (via sysfs) |
 | Animation Speed Control | ✅ (via ADB/Secure Settings) | ✅ (via sysfs) |
 | Memory Cleanup | ✅ (killBackgroundProcesses) | ✅ (kill + drop caches) |
@@ -384,9 +456,8 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | CPU Governor Control | ❌ | ✅ |
 | CPU Core Control | ❌ | ✅ |
 | GPU Governor Control | ❌ | ✅ |
-| Thermal Throttling Disable | ❌ | ✅ |
-| Hidden Power Unlock | ❌ | ✅ |
-| SoC-Specific Tweaks | ❌ | ✅ |
+| TCP Buffer Tuning | ❌ | ✅ |
+| SoC-Specific Kernel Tweaks | ❌ | ✅ |
 | FPS/Hz System Prop Lock | ❌ | ✅ |
 
 *Root is optional — the app is designed to work great on non-root devices!*
@@ -400,9 +471,30 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 </div>
 
 <details>
+<summary><strong>Battery Saver keeps turning back on during gaming?</strong></summary>
+
+The app now kills battery saver on 3 layers simultaneously. If it still comes back:
+
+1. Grant `WRITE_SECURE_SETTINGS` via ADB (see above) — this is the most reliable non-root method
+2. Enable **Battery → Unrestricted** for Game Launcher in Android settings
+3. For root users: enable **Suspend Thermal Engine** in Settings to prevent power-saving triggers
+4. Samsung devices: Go to **Settings → Battery → Power Saving** and disable "Turn on automatically"
+
+</details>
+
+<details>
+<summary><strong>5G shows as LTE in the overlay?</strong></summary>
+
+1. Grant `READ_PHONE_STATE` permission: `adb shell pm grant com.gamelauncher android.permission.READ_PHONE_STATE`
+2. Make sure your SIM and carrier plan actually supports 5G NR (not 5G icon with LTE fallback)
+3. On Android 11 and below, 5G detection requires location permission — not requested by this app for privacy
+
+</details>
+
+<details>
 <summary><strong>Why are some features marked as "unavailable" in the notification?</strong></summary>
 
-This is normal on non-root devices. The app shows a count of optimizations that require root access (CPU Governor, GPU tuning, etc.). All non-root features (FPS Boost, ADPF, Thread Priority, Animation Control, Memory Cleanup, Touch Optimization, Refresh Rate Lock) are still fully active.
+Normal on non-root devices. Root-only features (CPU Governor, GPU kernel tuning, TCP buffer props, thermal engine control) are disabled. All non-root features are fully active.
 
 </details>
 
@@ -439,6 +531,7 @@ This is normal on non-root devices. The app shows a count of optimizations that 
 1. Go to **Settings → Apps → Game Launcher**
 2. Battery → **Unrestricted** (para di mapatay ng system)
 3. Enable **Auto-Start** kung available sa device
+4. Grant `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` sa app settings
 
 </details>
 
@@ -453,24 +546,29 @@ This is normal on non-root devices. The app shows a count of optimizations that 
 ```
 app/src/main/java/com/gamelauncher/
 ├── core/              # Performance, Device, FPS/Jank, SoC, DND, Network, Touch, Thermals
-│   ├── BenchmarkManager.kt    # CPU/GPU/Memory benchmark
-│   ├── ProfileManager.kt      # Game profile import/export
+│   ├── BatterySaverManager.kt     # 🆕 Triple-layer battery saver kill + Doze whitelist
+│   ├── FPSManager.kt              # 🆕 Jank detection, rolling avg, max Hz forcer
+│   ├── NetworkManager.kt          # 🆕 5G NR, WiFi 6E/7, dual-stack, quality score
+│   ├── PerformanceManager.kt      # CPU/GPU/ADPF + mobile_data_always_on
+│   ├── GameOptimizationCoordinator.kt  # Main orchestrator (now kills battery saver first)
+│   ├── BenchmarkManager.kt        # CPU/GPU/Memory benchmark
+│   ├── ProfileManager.kt          # Game profile import/export
 │   └── ...
 ├── data/              # Database, Models, Repository
 │   ├── local/         # Room Database & DAOs
 │   ├── model/         # Data classes (GameModel, GamingSession, DeviceSpecs)
-│   ├── preference/    # DataStore settings (theme, onboarding, toggles)
+│   ├── preference/    # DataStore settings (theme, onboarding, toggles) 🆕 +5 new keys
 │   └── repository/    # Data layer
 ├── domain/            # Domain Layer (Use Cases)
 │   └── usecase/       # GetInstalledGamesUseCase, LaunchGameAndBoostUseCase
-├── di/                # Hilt Dependency Injection
+├── di/                # Hilt DI — AppModule 🆕 provides DisplayManager
 ├── ml/                # TensorFlow Lite Game Classifier
 ├── receivers/         # Broadcast Receivers (Boot, Package Changes)
 ├── services/          # Background Services
-│   ├── GameBoosterService
-│   ├── GameDetectorService (UsageStatsManager-based, session recording)
-│   ├── OverlayService (draggable FPS counter)
-│   └── GameBoosterTileService
+│   ├── GameBoosterService         # 🆕 Battery saver kill + network monitoring wired in
+│   ├── GameDetectorService        # UsageStatsManager-based, session recording
+│   ├── OverlayService             # Draggable FPS counter
+│   └── GameBoosterTileService     # Quick Settings tile
 ├── ui/                # UI Components (Compose)
 │   ├── components/    # Reusable UI components (GameCard, BoostToggleRow, MiniTag)
 │   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core
@@ -501,7 +599,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v2.3.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.3.0)
+- [Latest Release: v2.4.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.4.0)
 - Or build from source using the instructions above
 
 ---
