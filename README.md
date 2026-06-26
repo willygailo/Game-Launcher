@@ -362,27 +362,33 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 |---|---|---|
 | `SYSTEM_ALERT_WINDOW` | FPS overlay display sa top ng games | App prompt |
 | `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | Background boosting services | Auto |
-| `WRITE_SETTINGS` | Brightness at animation control | App prompt |
+| `WRITE_SETTINGS` | Brightness at animation control | App prompt (manual on Android 16+) |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Keep service alive during sessions | App prompt |
 | `ACCESS_WIFI_STATE` / `CHANGE_WIFI_STATE` | WiFi low-latency lock | Auto |
 | `ACCESS_NETWORK_STATE` / `CHANGE_NETWORK_STATE` | Dual WiFi+Data stack | Auto |
 | `ACCESS_NOTIFICATIONS` | DND control during gaming | App prompt |
-| `PACKAGE_USAGE_STATS` | Auto game detection (UsageStatsManager) | App prompt |
+| `PACKAGE_USAGE_STATS` | Auto game detection (UsageStatsManager) | ADB (`appops`) or Settings → Special app access |
 | `QUERY_ALL_PACKAGES` | Scan installed apps for games | Auto |
 | `POST_NOTIFICATIONS` | Booster status notifications (Android 13+) | App prompt |
 | `MODIFY_AUDIO_SETTINGS` | Volume optimization during gaming | Auto |
-| `READ_PHONE_STATE` | 5G / LTE network type detection | App prompt |
+| `READ_PHONE_STATE` | 5G / LTE network type detection | ADB or App prompt |
 | `WAKE_LOCK` | Prevent CPU sleep during gaming | Auto |
 
 ### ⚡ ADB Advanced Permissions (One-Time Setup — Unlocks Full Non-Root Mode)
 
 ```bash
 # Grant on PC via USB — only needed once
-adb shell pm grant com.gamelauncher android.permission.WRITE_SECURE_SETTINGS
-adb shell pm grant com.gamelauncher android.permission.WRITE_SETTINGS
-adb shell pm grant com.gamelauncher android.permission.READ_PHONE_STATE
+adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant com.gamelauncher.app android.permission.READ_PHONE_STATE
+adb shell appops set com.gamelauncher.app GET_USAGE_STATS allow
 ```
 
+> **Note (Android 16+ / API 36):**
+> - `WRITE_SETTINGS` is now role-managed and **cannot** be granted via ADB.
+>   Grant it manually: **Settings → Apps → Game Launcher → Modify system settings → Allow**
+> - `PACKAGE_USAGE_STATS` is a special permission that requires `appops`, not `pm grant`.
+>   If the Usage Access toggle is hidden on your device, use the ADB command above instead.
+>
 > After granting `WRITE_SECURE_SETTINGS`, the app automatically:
 > - Kills battery saver on boost start
 > - Disables animations
@@ -483,9 +489,28 @@ The app now kills battery saver on 3 layers simultaneously. If it still comes ba
 </details>
 
 <details>
+<summary><strong>Usage Access toggle missing or can't enable?</strong></summary>
+
+On Android 16+ (API 36), the Usage Access toggle may be hidden or unresponsive. Use ADB instead:
+
+```bash
+adb shell appops set com.gamelauncher.app GET_USAGE_STATS allow
+```
+
+To verify it's granted:
+```bash
+adb shell appops get com.gamelauncher.app GET_USAGE_STATS
+# Should show: GET_USAGE_STATS: allow
+```
+
+If ADB is not available, try: **Settings → Apps → Special app access → Usage access → Game Launcher → Allow**
+
+</details>
+
+<details>
 <summary><strong>5G shows as LTE in the overlay?</strong></summary>
 
-1. Grant `READ_PHONE_STATE` permission: `adb shell pm grant com.gamelauncher android.permission.READ_PHONE_STATE`
+1. Grant `READ_PHONE_STATE` permission: `adb shell pm grant com.gamelauncher.app android.permission.READ_PHONE_STATE`
 2. Make sure your SIM and carrier plan actually supports 5G NR (not 5G icon with LTE fallback)
 3. On Android 11 and below, 5G detection requires location permission — not requested by this app for privacy
 
