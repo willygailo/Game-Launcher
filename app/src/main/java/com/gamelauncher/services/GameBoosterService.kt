@@ -3,8 +3,9 @@ package com.gamelauncher.services
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Intent
+import android.content.Context
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.gamelauncher.core.BatterySaverManager
 import com.gamelauncher.core.DndManager
@@ -43,6 +44,9 @@ class GameBoosterService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var gameName: String = ""
     private var notificationPendingIntent: PendingIntent? = null
+    
+    // Network monitoring
+    private lateinit var networkManager: NetworkManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
@@ -78,6 +82,20 @@ class GameBoosterService : Service() {
         enableNetwork: Boolean,
         disableBatterySaver: Boolean
     ) {
+        // Validate input parameters
+        if (pkg.isBlank()) {
+            logError { "Invalid package name: cannot be blank" }
+            stopSelf()
+            return
+        }
+
+        var gameName: String = ""
+        try {
+            gameName = packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+        } catch (e: Exception) {
+            gameName = pkg
+            logError { "Failed to get game name for $pkg: ${e.message}" }
+        }
         gameName = runCatching {
             packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
         }.getOrDefault("Selected Game")
@@ -111,16 +129,23 @@ class GameBoosterService : Service() {
         // Start live network monitoring right away
         networkManager.startMonitoring()
 
-        serviceScope.launch(Dispatchers.IO) {
-            // ── STEP 1: Kill battery saver FIRST (before any other opt) ──
-            if (disableBatterySaver) {
-                val bsKilled = batterySaverManager.disableBatterySaver()
-                // Also whitelist the game from Doze
-                batterySaverManager.whitelistGameFromDoze(pkg)
-
-                // If battery saver was on and charging status is unknown, give OS 200ms to settle
-                if (bsKilled) kotlinx.coroutines.delay(200)
-            }
+            serviceScope.launch(Dispatchers.IO) {
+                // ── STEP 1: Kill battery saver FIRST (before any other opt) ──
+                if (disableBatterySaver) {
+                    var bsKilled = false
+                    try {
+                        bsKilled = batterySaverManager.disableBatterySaver()
+                        // Also whitelist the game from Doze
+                        if (bsKilled) {
+                            batterySaverManager.whitelistGameFromDoze(pkg)
+                            // Give OS time to settle battery saver state
+                            kotlinx.coroutines.delay(200)
+                        }
+                    } catch (e: Exception) {
+                        // Log error but continue with other optimizations
+                        logError { "Battery saver disable failed: ${e.message}" }
+                    }
+                }
 
             // ── STEP 2: Main optimization pipeline ─────────────────────
             val thermalAware = settingsPreferences.thermalAwareBoost.first()

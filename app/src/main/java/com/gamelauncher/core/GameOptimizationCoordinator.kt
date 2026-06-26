@@ -47,16 +47,42 @@ class GameOptimizationCoordinator @Inject constructor(
         val appliedOptimizations = mutableListOf<String>()
         val errors = mutableListOf<String>()
 
-        val gameModel = gameDao.getGameByPackageName(packageName)
-        val socInfo = socManager.getSocInfo()
-        val gameInfo = SupportedGames.findGame(packageName)
-        val thermalStatus = deviceManager.getThermalStatus()
+        val gameModel = try { gameDao.getGameByPackageName(packageName) } catch (e: Exception) {
+            errors.add("Failed to load game data: ${e.message}")
+            gameDao.getGameByPackageName(packageName)
+        }
+        // Load game data with fallback
+        val gameInfo = try { SupportedGames.findGame(packageName) } catch (e: Exception) {
+            errors.add("Failed to find game info: ${e.message}")
+            SupportedGames.GameInfo("", 60)
+        }
+
+        // Auto-detect SOC info with backup
+        val socInfo = try { socManager.getSocInfo() } catch (e: Exception) {
+            errors.add("Failed to get SOC info: ${e.message}")
+            SocInfo()
+        }
+
+        // Get thermal status for throttling decisions
+        val thermalStatus = try { deviceManager.getThermalStatus() } catch (e: Exception) {
+            errors.add("Failed to get thermal status: ${e.message}")
+            PowerManager.THERMAL_STATUS_NONE
+        }
 
         // ── Kill Battery Saver FIRST ─────────────────────────────────
-        val bsKilled = batterySaverManager.disableBatterySaver()
-        if (bsKilled) appliedOptimizations.add("⚡ Battery Saver Disabled")
-        batterySaverManager.whitelistGameFromDoze(packageName)
-        appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
+        var bsSuccess = false
+        try {
+            bsSuccess = batterySaverManager.disableBatterySaver()
+            if (bsSuccess) {
+                appliedOptimizations.add("⚡ Battery Saver Disabled")
+                batterySaverManager.whitelistGameFromDoze(packageName)
+                appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
+            } else {
+                errors.add("Battery Saver controller failed - continuing with other optimizations")
+            }
+        } catch (e: Exception) {
+            errors.add("Battery Saver controller exception: ${e.message}")
+        }
 
         // Use custom target FPS if configured, otherwise fallback to adaptive logic
         val targetFps = gameModel?.targetFps ?: getAdaptiveTargetFps(gameInfo, thermalStatus)
@@ -181,6 +207,7 @@ class GameOptimizationCoordinator @Inject constructor(
         }
 
         val restoredOptimizations = mutableListOf<String>()
+        val errors = mutableListOf<String>()
 
         try {
             val hasRoot = rootShellManager.isRootAvailable()
@@ -218,15 +245,21 @@ class GameOptimizationCoordinator @Inject constructor(
             performanceManager.restoreAnimations()
             restoredOptimizations.add("Animations Restored")
 
-            // Restore battery saver state
-            batterySaverManager.restoreBatterySaver()
-            restoredOptimizations.add("⚡ Battery Saver State Restored")
-        } catch (e: Exception) {}
+            // Restore battery saver state with improved error handling
+            try {
+                batterySaverManager.restoreBatterySaver()
+                restoredOptimizations.add("⚡ Battery Saver State Restored")
+            } catch (e: Exception) {
+                errors.add("Failed to restore battery saver: ${e.message}")
+            }
+        } catch (e: Exception) {
+            errors.add("Error during optimization stop: ${e.message}")
+        }
 
         isOptimizationActive = false
         currentGamePackage = null
 
-        return OptimizationResult(success = true, appliedOptimizations = restoredOptimizations)
+        return OptimizationResult(success = errors.isEmpty(), appliedOptimizations = restoredOptimizations, errors = errors)
     }
 
     private suspend fun applySocSpecificOptimizations(socInfo: SocInfo) {

@@ -136,17 +136,20 @@ class GameDetectorService : Service() {
 
     private fun getForegroundFromProc(): String {
         return try {
-            val pid = File("/proc/self/oom_adj").readText().trim().toIntOrNull() ?: return ""
             // Read all processes, find the one with highest priority
             val procDir = File("/proc")
             val processes = procDir.listFiles { f -> f.name.all { it.isDigit() } } ?: return ""
             for (proc in processes.take(200)) {
-                val cmdline = runCatching { File(proc, "cmdline").readText().trim() }.getOrNull() ?: continue
+                val cmdline = runCatching { File(proc, "cmdline").readText().trim() }.getOrDefault() ?: continue
                 if (cmdline.isNotBlank() && !cmdline.startsWith("com.gamelauncher") && !cmdline.startsWith("system") && !cmdline.startsWith("u:") && cmdline.contains(".")) {
                     return cmdline
                 }
             }
             ""
+        } catch (_: Exception) {
+            ""
+        }
+    }
         } catch (_: Exception) { "" }
     }
 

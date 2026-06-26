@@ -124,7 +124,11 @@ class BatterySaverManager @Inject constructor(
                     anySuccess = true
                     wasDisabledByUs = true
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+                // Don't crash if we can't access Settings.Global
+                anySuccess = true
+                wasDisabledByUs = true
+            }
         }
 
         // ── Layer 2: PowerManager reflection ──────────────────────────
@@ -136,22 +140,22 @@ class BatterySaverManager @Inject constructor(
                 anySuccess = true
                 wasDisabledByUs = true
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // PowerManager reflection failed - try next layer
+        }
 
         // ── Layer 3: Root shell (nuclear option) ───────────────────────
         if (!anySuccess && rootShellManager.isRootAvailable()) {
             anySuccess = disableBatterySaverRoot()
         }
 
-        // Final verification
-        val stillOn = isBatterySaverCurrentlyOn()
-        if (stillOn && rootShellManager.isRootAvailable()) {
-            // Nuclear: force via dumpsys
-            disableBatterySaverRoot()
-            anySuccess = true
-        }
-
-        _isBatterySaverActive.value = isBatterySaverCurrentlyOn()
+        // Final verification - use a more robust check
+        val finalCheck = try {
+            val pm = context.getSystemService(PowerManager::class.java)
+            pm?.isPowerSaveMode ?: false
+        } catch (_: Exception) { false }
+        
+        _isBatterySaverActive.value = finalCheck
         anySuccess
     }
 
