@@ -95,6 +95,22 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_SECURE_SETTINGS_LOCATION_OFF] ?: true }
 
+    val secureSettingsTouchBoost: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_TOUCH_BOOST] ?: true }
+
+    val secureSettingsNetworkJitter: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_NETWORK_JITTER] ?: true }
+
+    val secureSettingsRefreshRateLock: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_REFRESH_RATE_LOCK] ?: true }
+
+    val secureSettingsPhantomKiller: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_PHANTOM_KILLER] ?: true }
+
     // ── NEW: Battery Saver + Network + Thermal ────────────────────────
 
     /** When true, battery saver is automatically killed when boost starts */
@@ -136,6 +152,10 @@ class SettingsPreferences @Inject constructor(
     suspend fun setSecureSettingsMobileData(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_MOBILE_DATA] = enabled } }
     suspend fun setSecureSettingsBatterySaver(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_BATTERY_SAVER] = enabled } }
     suspend fun setSecureSettingsLocationOff(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_LOCATION_OFF] = enabled } }
+    suspend fun setSecureSettingsTouchBoost(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_TOUCH_BOOST] = enabled } }
+    suspend fun setSecureSettingsNetworkJitter(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_NETWORK_JITTER] = enabled } }
+    suspend fun setSecureSettingsRefreshRateLock(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_REFRESH_RATE_LOCK] = enabled } }
+    suspend fun setSecureSettingsPhantomKiller(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_PHANTOM_KILLER] = enabled } }
     suspend fun setDisableBatterySaverOnBoost(enabled: Boolean) { dataStore.edit { it[KEY_DISABLE_BATTERY_SAVER_ON_BOOST] = enabled } }
     suspend fun setNetworkDualStackEnabled(enabled: Boolean) { dataStore.edit { it[KEY_NETWORK_DUAL_STACK] = enabled } }
     suspend fun setDozeWhitelistEnabled(enabled: Boolean) { dataStore.edit { it[KEY_DOZE_WHITELIST] = enabled } }
@@ -161,6 +181,10 @@ class SettingsPreferences @Inject constructor(
         private val KEY_SECURE_SETTINGS_MOBILE_DATA = booleanPreferencesKey("secure_settings_mobile_data")
         private val KEY_SECURE_SETTINGS_BATTERY_SAVER = booleanPreferencesKey("secure_settings_battery_saver")
         private val KEY_SECURE_SETTINGS_LOCATION_OFF = booleanPreferencesKey("secure_settings_location_off")
+        private val KEY_SECURE_SETTINGS_TOUCH_BOOST = booleanPreferencesKey("secure_settings_touch_boost")
+        private val KEY_SECURE_SETTINGS_NETWORK_JITTER = booleanPreferencesKey("secure_settings_network_jitter")
+        private val KEY_SECURE_SETTINGS_REFRESH_RATE_LOCK = booleanPreferencesKey("secure_settings_refresh_rate_lock")
+        private val KEY_SECURE_SETTINGS_PHANTOM_KILLER = booleanPreferencesKey("secure_settings_phantom_killer")
         // New keys
         private val KEY_DISABLE_BATTERY_SAVER_ON_BOOST = booleanPreferencesKey("disable_battery_saver_on_boost")
         private val KEY_NETWORK_DUAL_STACK = booleanPreferencesKey("network_dual_stack_enabled")

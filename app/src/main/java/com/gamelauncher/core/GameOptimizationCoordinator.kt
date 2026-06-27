@@ -244,8 +244,7 @@ class GameOptimizationCoordinator @Inject constructor(
             performanceManager.stopPerformanceSession()
             restoredOptimizations.add("ADPF Session Stopped")
 
-            val defaultHz = performanceManager.getSupportedRefreshRates().firstOrNull() ?: 60f
-            performanceManager.lockRefreshRate(defaultHz)
+            performanceManager.restoreRefreshRate()
             restoredOptimizations.add("Refresh Rate Restored")
 
             dndManager.disableGamingDnd()

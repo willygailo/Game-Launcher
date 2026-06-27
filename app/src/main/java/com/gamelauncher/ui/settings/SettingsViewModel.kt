@@ -101,6 +101,30 @@ class SettingsViewModel @Inject constructor(
         initialValue = true
     )
 
+    val secureTouchBoost: StateFlow<Boolean> = settingsPreferences.secureSettingsTouchBoost.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureNetworkJitter: StateFlow<Boolean> = settingsPreferences.secureSettingsNetworkJitter.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val secureRefreshRateLock: StateFlow<Boolean> = settingsPreferences.secureSettingsRefreshRateLock.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val securePhantomKiller: StateFlow<Boolean> = settingsPreferences.secureSettingsPhantomKiller.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
     val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
         hasUsageAccess()
     }
@@ -130,12 +154,11 @@ class SettingsViewModel @Inject constructor(
         pm?.isIgnoringBatteryOptimizations(context.packageName) == true
     }
 
-    /** True when adb granted WRITE_SECURE_SETTINGS — we probe by trying a no-op write */
+    /** True when adb granted WRITE_SECURE_SETTINGS — we probe by writing a dummy setting key */
     val hasWriteSecureSettings: StateFlow<Boolean> = stateFlowFrom {
         try {
             val cr = context.contentResolver
-            val cur = android.provider.Settings.Global.getInt(cr, "adb_enabled", 0)
-            android.provider.Settings.Global.putInt(cr, "adb_enabled", cur) // write same value back
+            android.provider.Settings.Global.putInt(cr, "game_launcher_secure_settings_test", 1)
             true
         } catch (e: SecurityException) { false }
     }
@@ -246,6 +269,22 @@ class SettingsViewModel @Inject constructor(
 
     fun setSecureLocationOff(enabled: Boolean) {
         viewModelScope.launch { settingsPreferences.setSecureSettingsLocationOff(enabled) }
+    }
+
+    fun setSecureTouchBoost(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsTouchBoost(enabled) }
+    }
+
+    fun setSecureNetworkJitter(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsNetworkJitter(enabled) }
+    }
+
+    fun setSecureRefreshRateLock(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsRefreshRateLock(enabled) }
+    }
+
+    fun setSecurePhantomKiller(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsPhantomKiller(enabled) }
     }
 
     fun setGameDetectorEnabled(enabled: Boolean) {

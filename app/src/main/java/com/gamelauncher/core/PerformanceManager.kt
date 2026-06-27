@@ -279,6 +279,34 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalGameDriverOptInApps: String? = null
     @Volatile private var originalMobileDataAlwaysOnPrev: Int? = null
 
+    // Extended non-root backup properties
+    @Volatile private var originalWifiScanAlwaysEnabled: Int? = null
+    @Volatile private var originalBleScanAlwaysEnabled: Int? = null
+    @Volatile private var originalWifiPowerSave: Int? = null
+    @Volatile private var originalWifiLatencyMode: Int? = null
+    @Volatile private var originalWifiLowLatencyMode: Int? = null
+    @Volatile private var originalPointerSpeed: Int? = null
+    @Volatile private var originalTouchSensitivity: Int? = null
+    @Volatile private var originalTouchReportRate: Int? = null
+    @Volatile private var originalStylusTouchBoost: Int? = null
+    @Volatile private var originalTouchBoost: Int? = null
+    @Volatile private var originalPhantomProcsMonitor: String? = null
+    @Volatile private var originalGameDriverAllApps: Int? = null
+    @Volatile private var originalGameDriverFps: Int? = null
+    @Volatile private var originalUpdatableDriverAllApps: Int? = null
+    @Volatile private var originalUpdatableDriverOptInApps: String? = null
+    
+    // Refresh rate locking original states
+    @Volatile private var originalSamsungRefreshMode: Int? = null
+    @Volatile private var originalOneplusRefreshRate: Int? = null
+    @Volatile private var originalXiaomiUserRefreshRate: Int? = null
+    @Volatile private var originalXiaomiPeakRefreshRate: Float? = null
+    @Volatile private var originalHuaweiSmartRefreshRate: Int? = null
+    @Volatile private var originalRealmePeakRefreshRate: Float? = null
+    @Volatile private var originalRealmeMinRefreshRate: Float? = null
+    @Volatile private var originalAospPeakRefreshRate: Float? = null
+    @Volatile private var originalAospMinRefreshRate: Float? = null
+
     /**
      * Force mobile data always-on so the device maintains a cellular background
      * connection even while on WiFi — prevents the WiFi→data handoff lag spike.
@@ -365,7 +393,7 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 6. Force Game Driver for game package name
+                // 6. Force Game Driver for game package name & global gaming drivers
                 if (settingsPreferences.secureSettingsGameDriver.first()) {
                     originalGameDriverOptInApps = Settings.Global.getString(resolver, "game_driver_opt_in_apps") ?: ""
                     val currentApps = originalGameDriverOptInApps ?: ""
@@ -373,9 +401,72 @@ class PerformanceManager @Inject constructor(
                         val newApps = if (currentApps.isEmpty()) packageName else "$currentApps,$packageName"
                         Settings.Global.putString(resolver, "game_driver_opt_in_apps", newApps)
                     }
+
+                    originalUpdatableDriverOptInApps = Settings.Global.getString(resolver, "updatable_driver_production_opt_in_apps") ?: ""
+                    val currentUpdatableApps = originalUpdatableDriverOptInApps ?: ""
+                    if (!currentUpdatableApps.split(",").contains(packageName)) {
+                        val newUpdatableApps = if (currentUpdatableApps.isEmpty()) packageName else "$currentUpdatableApps,$packageName"
+                        Settings.Global.putString(resolver, "updatable_driver_production_opt_in_apps", newUpdatableApps)
+                    }
+
+                    originalGameDriverAllApps = Settings.Global.getInt(resolver, "game_driver_all_apps", 0)
+                    Settings.Global.putInt(resolver, "game_driver_all_apps", 1)
+
+                    originalGameDriverFps = Settings.Global.getInt(resolver, "game_driver_fps", 0)
+                    Settings.Global.putInt(resolver, "game_driver_fps", 1)
+
+                    originalUpdatableDriverAllApps = Settings.Global.getInt(resolver, "updatable_driver_all_apps", 0)
+                    Settings.Global.putInt(resolver, "updatable_driver_all_apps", 1)
                     
-                    // Also force game mode globally if supported
                     Settings.Global.putInt(resolver, "game_mode", 1)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 7. Touch & Input Boost
+                if (settingsPreferences.secureSettingsTouchBoost.first()) {
+                    originalPointerSpeed = Settings.System.getInt(resolver, "pointer_speed", 5)
+                    Settings.System.putInt(resolver, "pointer_speed", 7)
+
+                    originalTouchSensitivity = Settings.System.getInt(resolver, "touch_sensitivity", 100)
+                    Settings.System.putInt(resolver, "touch_sensitivity", 200)
+
+                    originalTouchReportRate = Settings.System.getInt(resolver, "touch_report_rate", 0)
+                    Settings.System.putInt(resolver, "touch_report_rate", 1000)
+
+                    originalTouchBoost = Settings.Global.getInt(resolver, "touch_boost", 0)
+                    Settings.Global.putInt(resolver, "touch_boost", 1)
+
+                    originalStylusTouchBoost = Settings.Global.getInt(resolver, "stylus_touch_boost", 0)
+                    Settings.Global.putInt(resolver, "stylus_touch_boost", 1)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 8. Low Jitter Network (WiFi & Bluetooth Optimization)
+                if (settingsPreferences.secureSettingsNetworkJitter.first()) {
+                    originalWifiScanAlwaysEnabled = Settings.Global.getInt(resolver, "wifi_scan_always_enabled", 1)
+                    Settings.Global.putInt(resolver, "wifi_scan_always_enabled", 0)
+
+                    originalBleScanAlwaysEnabled = Settings.Global.getInt(resolver, "ble_scan_always_enabled", 1)
+                    Settings.Global.putInt(resolver, "ble_scan_always_enabled", 0)
+
+                    originalWifiPowerSave = Settings.Global.getInt(resolver, "wifi_power_save", 1)
+                    Settings.Global.putInt(resolver, "wifi_power_save", 0)
+
+                    originalWifiLatencyMode = Settings.Global.getInt(resolver, "wifi_latency_mode", 0)
+                    Settings.Global.putInt(resolver, "wifi_latency_mode", 1)
+
+                    originalWifiLowLatencyMode = Settings.Global.getInt(resolver, "wifi_low_latency_mode", 0)
+                    Settings.Global.putInt(resolver, "wifi_low_latency_mode", 1)
+                }
+            } catch (_: Exception) {}
+
+            try {
+                // 9. Disable Phantom Process Killer monitor
+                if (settingsPreferences.secureSettingsPhantomKiller.first()) {
+                    originalPhantomProcsMonitor = Settings.Global.getString(resolver, "settings_enable_monitor_phantom_procs") ?: "true"
+                    Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", "false")
                 }
             } catch (_: Exception) {}
         } else {
@@ -428,8 +519,65 @@ class PerformanceManager @Inject constructor(
                     Settings.Global.putString(resolver, "game_driver_opt_in_apps", it)
                 }
                 originalGameDriverOptInApps = null
+
+                originalUpdatableDriverOptInApps?.let {
+                    Settings.Global.putString(resolver, "updatable_driver_production_opt_in_apps", it)
+                }
+                originalUpdatableDriverOptInApps = null
+
+                originalGameDriverAllApps?.let { Settings.Global.putInt(resolver, "game_driver_all_apps", it) }
+                originalGameDriverAllApps = null
+
+                originalGameDriverFps?.let { Settings.Global.putInt(resolver, "game_driver_fps", it) }
+                originalGameDriverFps = null
+
+                originalUpdatableDriverAllApps?.let { Settings.Global.putInt(resolver, "updatable_driver_all_apps", it) }
+                originalUpdatableDriverAllApps = null
+
                 Settings.Global.putInt(resolver, "game_mode", 0)
             } catch (_: Exception) {}
+
+            try {
+                originalPointerSpeed?.let { Settings.System.putInt(resolver, "pointer_speed", it) }
+                originalPointerSpeed = null
+
+                originalTouchSensitivity?.let { Settings.System.putInt(resolver, "touch_sensitivity", it) }
+                originalTouchSensitivity = null
+
+                originalTouchReportRate?.let { Settings.System.putInt(resolver, "touch_report_rate", it) }
+                originalTouchReportRate = null
+
+                originalTouchBoost?.let { Settings.Global.putInt(resolver, "touch_boost", it) }
+                originalTouchBoost = null
+
+                originalStylusTouchBoost?.let { Settings.Global.putInt(resolver, "stylus_touch_boost", it) }
+                originalStylusTouchBoost = null
+            } catch (_: Exception) {}
+
+            try {
+                originalWifiScanAlwaysEnabled?.let { Settings.Global.putInt(resolver, "wifi_scan_always_enabled", it) }
+                originalWifiScanAlwaysEnabled = null
+
+                originalBleScanAlwaysEnabled?.let { Settings.Global.putInt(resolver, "ble_scan_always_enabled", it) }
+                originalBleScanAlwaysEnabled = null
+
+                originalWifiPowerSave?.let { Settings.Global.putInt(resolver, "wifi_power_save", it) }
+                originalWifiPowerSave = null
+
+                originalWifiLatencyMode?.let { Settings.Global.putInt(resolver, "wifi_latency_mode", it) }
+                originalWifiLatencyMode = null
+
+                originalWifiLowLatencyMode?.let { Settings.Global.putInt(resolver, "wifi_low_latency_mode", it) }
+                originalWifiLowLatencyMode = null
+            } catch (_: Exception) {}
+
+            try {
+                originalPhantomProcsMonitor?.let { Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", it) }
+                originalPhantomProcsMonitor = null
+            } catch (_: Exception) {}
+            
+            // Also restore display refresh rate
+            restoreRefreshRate()
         } else {
             restoreAnimations()
             restoreGpuRendering()
@@ -678,13 +826,136 @@ class PerformanceManager @Inject constructor(
     }
 
     fun lockRefreshRate(targetHz: Float): Boolean {
+        val resolver = context.contentResolver
+        val supported = getSupportedRefreshRates()
+        val nearestHz = supported.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
+
         return runCatching {
-            val supported = getSupportedRefreshRates()
-            val nearestHz = supported.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
+            // Backup and set AOSP standard
             try {
-                Settings.System.putFloat(context.contentResolver, "peak_refresh_rate", nearestHz)
-                Settings.System.putFloat(context.contentResolver, "min_refresh_rate", nearestHz)
+                if (originalAospPeakRefreshRate == null) {
+                    originalAospPeakRefreshRate = try { Settings.System.getFloat(resolver, "peak_refresh_rate") } catch (_: Exception) {
+                        try { Settings.Secure.getFloat(resolver, "peak_refresh_rate") } catch (_: Exception) { 60f }
+                    }
+                }
+                if (originalAospMinRefreshRate == null) {
+                    originalAospMinRefreshRate = try { Settings.System.getFloat(resolver, "min_refresh_rate") } catch (_: Exception) {
+                        try { Settings.Secure.getFloat(resolver, "min_refresh_rate") } catch (_: Exception) { 60f }
+                    }
+                }
+                Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz)
+                Settings.System.putFloat(resolver, "min_refresh_rate", nearestHz)
+                Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz)
+                Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz)
             } catch (_: Exception) {}
+
+            // Samsung
+            try {
+                if (originalSamsungRefreshMode == null) {
+                    originalSamsungRefreshMode = Settings.Secure.getInt(resolver, "refresh_rate_mode", 0)
+                }
+                Settings.Secure.putInt(resolver, "refresh_rate_mode", 1) // High/120Hz mode
+            } catch (_: Exception) {}
+
+            // OnePlus / Oppo
+            try {
+                if (originalOneplusRefreshRate == null) {
+                    originalOneplusRefreshRate = Settings.Secure.getInt(resolver, "oneplus_screen_refresh_rate", 0)
+                }
+                Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", 2) // Max rate
+            } catch (_: Exception) {}
+
+            // Xiaomi
+            try {
+                if (originalXiaomiUserRefreshRate == null) {
+                    originalXiaomiUserRefreshRate = Settings.System.getInt(resolver, "user_refresh_rate", 60)
+                }
+                Settings.System.putInt(resolver, "user_refresh_rate", nearestHz.toInt())
+                
+                if (originalXiaomiPeakRefreshRate == null) {
+                    originalXiaomiPeakRefreshRate = Settings.System.getFloat(resolver, "peak_refresh_rate", 60f)
+                }
+                Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz)
+            } catch (_: Exception) {}
+
+            // Huawei
+            try {
+                if (originalHuaweiSmartRefreshRate == null) {
+                    originalHuaweiSmartRefreshRate = Settings.Secure.getInt(resolver, "hw_smart_refresh_rate_key", 1)
+                }
+                Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", 0) // Disable smart/dynamic rate
+            } catch (_: Exception) {}
+
+            // Realme
+            try {
+                if (originalRealmePeakRefreshRate == null) {
+                    originalRealmePeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
+                }
+                Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz)
+
+                if (originalRealmeMinRefreshRate == null) {
+                    originalRealmeMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
+                }
+                Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz)
+            } catch (_: Exception) {}
+
+            true
+        }.getOrDefault(false)
+    }
+
+    fun restoreRefreshRate(): Boolean {
+        val resolver = context.contentResolver
+        return runCatching {
+            // Restore AOSP
+            try {
+                originalAospPeakRefreshRate?.let {
+                    Settings.System.putFloat(resolver, "peak_refresh_rate", it)
+                    Settings.Secure.putFloat(resolver, "peak_refresh_rate", it)
+                }
+                originalAospMinRefreshRate?.let {
+                    Settings.System.putFloat(resolver, "min_refresh_rate", it)
+                    Settings.Secure.putFloat(resolver, "min_refresh_rate", it)
+                }
+            } catch (_: Exception) {}
+
+            // Samsung
+            try {
+                originalSamsungRefreshMode?.let { Settings.Secure.putInt(resolver, "refresh_rate_mode", it) }
+            } catch (_: Exception) {}
+
+            // OnePlus
+            try {
+                originalOneplusRefreshRate?.let { Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", it) }
+            } catch (_: Exception) {}
+
+            // Xiaomi
+            try {
+                originalXiaomiUserRefreshRate?.let { Settings.System.putInt(resolver, "user_refresh_rate", it) }
+                originalXiaomiPeakRefreshRate?.let { Settings.System.putFloat(resolver, "peak_refresh_rate", it) }
+            } catch (_: Exception) {}
+
+            // Huawei
+            try {
+                originalHuaweiSmartRefreshRate?.let { Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", it) }
+            } catch (_: Exception) {}
+
+            // Realme
+            try {
+                originalRealmePeakRefreshRate?.let { Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) }
+                originalRealmeMinRefreshRate?.let { Settings.Secure.putFloat(resolver, "min_refresh_rate", it) }
+            } catch (_: Exception) {}
+
+            // Reset backup values
+            originalAospPeakRefreshRate = null
+            originalAospMinRefreshRate = null
+            originalSamsungRefreshMode = null
+            originalOneplusRefreshRate = null
+            originalXiaomiUserRefreshRate = null
+            originalXiaomiPeakRefreshRate = null
+            originalHuaweiSmartRefreshRate = null
+            originalRealmePeakRefreshRate = null
+            originalRealmeMinRefreshRate = null
+
             true
         }.getOrDefault(false)
     }

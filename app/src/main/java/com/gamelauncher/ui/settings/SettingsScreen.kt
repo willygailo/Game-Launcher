@@ -43,6 +43,10 @@ fun SettingsScreen(
     val secureMobileData by viewModel.secureMobileData.collectAsState()
     val secureBatterySaver by viewModel.secureBatterySaver.collectAsState()
     val secureLocationOff by viewModel.secureLocationOff.collectAsState()
+    val secureTouchBoost by viewModel.secureTouchBoost.collectAsState()
+    val secureNetworkJitter by viewModel.secureNetworkJitter.collectAsState()
+    val secureRefreshRateLock by viewModel.secureRefreshRateLock.collectAsState()
+    val securePhantomKiller by viewModel.securePhantomKiller.collectAsState()
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Column(
@@ -239,6 +243,14 @@ fun SettingsScreen(
                     SecureToggleRow("Battery Saver Override", "Prevents battery saver from throttling performance", secureBatterySaver) { viewModel.setSecureBatterySaver(it) }
                     HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
                     SecureToggleRow("Disable Location Scan", "Stops WiFi/BT scanning to reduce CPU interrupts", secureLocationOff) { viewModel.setSecureLocationOff(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Touch Boost", "Max touch responsiveness & high polling rate", secureTouchBoost) { viewModel.setSecureTouchBoost(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Low Jitter Network", "Disables WiFi/BT scanning & WiFi power save", secureNetworkJitter) { viewModel.setSecureNetworkJitter(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Max Refresh Rate Lock", "Forces display to maximum Hz & locks VSync", secureRefreshRateLock) { viewModel.setSecureRefreshRateLock(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Disable Phantom Killer", "Disables Android 12+ background process monitor", securePhantomKiller) { viewModel.setSecurePhantomKiller(it) }
                 }
             }
         }
