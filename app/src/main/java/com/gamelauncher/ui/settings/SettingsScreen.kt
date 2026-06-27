@@ -33,6 +33,7 @@ fun SettingsScreen(
     val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsState()
     val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsState()
     val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsState()
+    val hasPhoneState by viewModel.hasPhoneStatePermission.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     // Secure toggles
@@ -99,20 +100,38 @@ fun SettingsScreen(
         )
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val notifLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission()
+            ) { /* result handled by state polling */ }
+
             PermissionCard(
                 title = "Notifications",
                 subtitle = "Required for booster status notifications (Android 13+)",
                 buttonText = if (hasNotificationPerm) "Granted ✓" else "Grant Notifications",
                 granted = hasNotificationPerm,
                 onClick = {
-                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = android.net.Uri.parse("package:${context.packageName}")
-                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if (!hasNotificationPerm) {
+                        notifLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                     }
-                    context.startActivity(intent)
                 }
             )
         }
+
+        val phoneLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { /* result handled by state polling */ }
+
+        PermissionCard(
+            title = "Phone State (5G Detection)",
+            subtitle = "Detects 5G network for optimal boost settings",
+            buttonText = if (hasPhoneState) "Granted ✓" else "Grant Phone State",
+            granted = hasPhoneState,
+            onClick = {
+                if (!hasPhoneState) {
+                    phoneLauncher.launch(android.Manifest.permission.READ_PHONE_STATE)
+                }
+            }
+        )
 
         // ── ADB Advanced Unlock Guide ──────────────────────────
         val adbCmd = "adb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS"

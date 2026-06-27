@@ -121,12 +121,7 @@ class GameClassifier @Inject constructor(
     private fun isGameCategory(packageName: String, pm: PackageManager): Boolean {
         return try {
             val appInfo = pm.getApplicationInfo(packageName, 0)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else {
-                @Suppress("DEPRECATION")
-                (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            }
+            appInfo.category == ApplicationInfo.CATEGORY_GAME
         } catch (e: Exception) { false }
     }
 

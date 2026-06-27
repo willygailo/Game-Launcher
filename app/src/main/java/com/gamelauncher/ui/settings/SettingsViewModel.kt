@@ -140,6 +140,11 @@ class SettingsViewModel @Inject constructor(
         } catch (e: SecurityException) { false }
     }
 
+    val hasPhoneStatePermission: StateFlow<Boolean> = stateFlowFrom {
+        context.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
+
     private val _profileMessage = MutableStateFlow<String?>(null)
     val profileMessage: StateFlow<String?> = _profileMessage.asStateFlow()
 

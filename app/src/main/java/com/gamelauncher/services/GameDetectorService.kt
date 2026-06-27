@@ -71,10 +71,18 @@ class GameDetectorService : Service() {
 
     private fun startDetector() {
         try {
-            startForeground(
-                NOTIFICATION_ID,
-                createNotification("Game Detector Active", "Monitoring foreground apps...")
-            )
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    createNotification("Game Detector Active", "Monitoring foreground apps..."),
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                )
+            } else {
+                startForeground(
+                    NOTIFICATION_ID,
+                    createNotification("Game Detector Active", "Monitoring foreground apps...")
+                )
+            }
         } catch (e: Exception) {
             stopSelf()
             return
@@ -140,7 +148,7 @@ class GameDetectorService : Service() {
             val procDir = File("/proc")
             val processes = procDir.listFiles { f -> f.name.all { it.isDigit() } } ?: return ""
             for (proc in processes.take(200)) {
-                val cmdline = runCatching { File(proc, "cmdline").readText().trim() }.getOrDefault() ?: continue
+                val cmdline = runCatching { File(proc, "cmdline").readText().trim() }.getOrDefault("") ?: continue
                 if (cmdline.isNotBlank() && !cmdline.startsWith("com.gamelauncher") && !cmdline.startsWith("system") && !cmdline.startsWith("u:") && cmdline.contains(".")) {
                     return cmdline
                 }
@@ -150,22 +158,15 @@ class GameDetectorService : Service() {
             ""
         }
     }
-        } catch (_: Exception) { "" }
-    }
 
     private fun isKnownGame(packageName: String): Boolean {
         return SupportedGames.isSupportedGame(packageName) || gameClassifier.isGame(packageName, packageManager)
     }
 
-    @Suppress("DEPRECATION")
     private fun isGameCategory(packageName: String): Boolean {
         return runCatching {
             val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else {
-                (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            }
+            appInfo.category == ApplicationInfo.CATEGORY_GAME
         }.getOrDefault(false)
     }
 

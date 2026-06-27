@@ -180,22 +180,19 @@ class NetworkManager @Inject constructor(
      *  - Pre-29: Not detectable without location permission
      */
     private fun detect5G(): Boolean {
-        // Method 1: NR transport capability (API 31+)
+        // Method 1: NR transport capability (API 31+) — no READ_PHONE_STATE needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val cm = connectivityManager ?: return false
                 val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
-                // TRANSPORT_NR = 6 (hidden in some builds, safe via constant)
-                if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                    // Check if 5G via data network type
-                    val tel = telephonyManager ?: return false
-                    val nt = tel.dataNetworkType
-                    return nt == TelephonyManager.NETWORK_TYPE_NR
-                }
+                @Suppress("DEPRECATION")
+                return caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    && caps.hasTransport(6) // TRANSPORT_NR = 6 (API 30+)
             } catch (_: Exception) {}
         }
 
-        // Method 2: TelephonyManager network type (API 29+)
+        // Method 2: TelephonyManager network type (API 29-30)
+        @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 val tel = telephonyManager ?: return false
@@ -335,12 +332,29 @@ class NetworkManager @Inject constructor(
 
     @Suppress("DEPRECATION")
     fun getWifiLinkSpeedMbps(): Int {
-        return try { wifiManager?.connectionInfo?.linkSpeed ?: 0 } catch (_: Exception) { 0 }
+        return try {
+            // API 31+: get WifiInfo from NetworkCapabilities
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val cm = connectivityManager ?: return 0
+                val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return 0
+                (caps.transportInfo as? android.net.wifi.WifiInfo)?.linkSpeed ?: 0
+            } else {
+                wifiManager?.connectionInfo?.linkSpeed ?: 0
+            }
+        } catch (_: Exception) { 0 }
     }
 
     @Suppress("DEPRECATION")
     fun getWifiSignalDbm(): Int {
-        return try { wifiManager?.connectionInfo?.rssi ?: -100 } catch (_: Exception) { -100 }
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val cm = connectivityManager ?: return -100
+                val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return -100
+                (caps.transportInfo as? android.net.wifi.WifiInfo)?.rssi ?: -100
+            } else {
+                wifiManager?.connectionInfo?.rssi ?: -100
+            }
+        } catch (_: Exception) { -100 }
     }
 
     fun getWifiSignalBars(): Int {

@@ -67,12 +67,7 @@ open class GamesRepository @Inject constructor(
 
             try {
                 val appInfo = pm.getApplicationInfo(pkgName, 0)
-                val isSystemGame = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    appInfo.category == ApplicationInfo.CATEGORY_GAME
-                } else {
-                    @Suppress("DEPRECATION")
-                    (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-                }
+                val isSystemGame = appInfo.category == ApplicationInfo.CATEGORY_GAME
 
                 val isClassifierGame = gameClassifier.isGame(pkgName, pm)
 

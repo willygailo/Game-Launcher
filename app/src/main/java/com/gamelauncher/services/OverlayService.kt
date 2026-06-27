@@ -79,7 +79,12 @@ class OverlayService : Service() {
             .build()
 
         try {
-            startForeground(2, notification)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(2, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            } else {
+                @Suppress("DEPRECATION")
+                startForeground(2, notification)
+            }
         } catch (e: Exception) {
             stopSelf()
             return START_NOT_STICKY
