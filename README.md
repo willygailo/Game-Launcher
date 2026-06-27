@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_2.4.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.0.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -72,7 +72,21 @@
 
 ---
 
-### 🆕 v2.4.0: "Nuclear Boost" — Battery Saver Kill + 5G + Max Hz
+### 🆕 v3.0.0: "Bare Metal" — TCP BBR & Zero Swappiness
+
+> Bringing true kernel-level tuning to the masses. Unlocked deep network and memory controls for root users.
+
+| Feature | Description | Status |
+|---|---|---|
+| **TCP BBR Congestion Control** | Replaces cubic with BBR for the lowest ping possible (`sysctl -w net.ipv4.tcp_congestion_control=bbr`) | 🆕 |
+| **TCP Window Scaling** | Enhances data throughput for heavy network traffic | 🆕 |
+| **Extreme Memory Swappiness** | Forces `vm.swappiness=0` to ensure Android NEVER swaps out your game memory | 🆕 |
+| **Cache Dropping** | Clears pagecache, dentries, and inodes right before launch (`echo 3 > /proc/sys/vm/drop_caches`) | 🆕 |
+| **Clean Restoration** | Returns all sysctl network and memory parameters back to normal after gaming | 🆕 |
+
+---
+
+### v2.4.0: "Nuclear Boost" — Battery Saver Kill + 5G + Max Hz
 
 > The biggest performance update yet. Battery saver ang kalaban ng FPS — now it dies first.
 
@@ -624,7 +638,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v2.4.0](https://github.com/willygailo/Game-Launcher/releases/tag/v2.4.0)
+- [Latest Release: v3.0.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.0.0)
 - Or build from source using the instructions above
 
 ---

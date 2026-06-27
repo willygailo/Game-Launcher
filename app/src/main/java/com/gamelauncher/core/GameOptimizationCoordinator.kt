@@ -54,7 +54,7 @@ class GameOptimizationCoordinator @Inject constructor(
         // Load game data with fallback
         val gameInfo = try { SupportedGames.findGame(packageName) } catch (e: Exception) {
             errors.add("Failed to find game info: ${e.message}")
-            SupportedGames.GameInfo("", 60)
+            SupportedGames.GameInfo(packageName, "Unknown", "Global", 60)
         }
 
         // Auto-detect SOC info with backup
@@ -169,7 +169,18 @@ class GameOptimizationCoordinator @Inject constructor(
                 }
             }
 
-            if (hasRoot) applySocSpecificOptimizations(socInfo)
+            if (hasRoot) {
+                applySocSpecificOptimizations(socInfo)
+
+                // Deep Network and Memory Optimizations
+                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_congestion_control=bbr")
+                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_window_scaling=1")
+                appliedOptimizations.add("TCP BBR Congestion Control Active")
+
+                rootShellManager.executeCommand("echo 3 > /proc/sys/vm/drop_caches")
+                rootShellManager.executeCommand("sysctl -w vm.swappiness=0")
+                appliedOptimizations.add("Extreme Memory Swappiness (0%)")
+            }
 
             if (thermalStatus >= PowerManager.THERMAL_STATUS_CRITICAL) {
                 errors.add("Device is overheating - performance limited")
@@ -217,6 +228,11 @@ class GameOptimizationCoordinator @Inject constructor(
                 restoredOptimizations.add("CPU Governor Restored")
                 performanceManager.restoreCpuGpuPerformance()
                 restoredOptimizations.add("GPU Settings Restored")
+
+                // Restore Deep Optimizations
+                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_congestion_control=cubic")
+                rootShellManager.executeCommand("sysctl -w vm.swappiness=60")
+                restoredOptimizations.add("TCP Congestion & Memory Swappiness Restored")
             } else {
                 performanceManager.restoreNonRoot()
                 restoredOptimizations.add("Non-Root Settings Restored")
