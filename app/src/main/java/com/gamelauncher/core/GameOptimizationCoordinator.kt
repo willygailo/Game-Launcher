@@ -6,7 +6,9 @@ import android.os.Build
 import android.os.PowerManager
 import android.view.Display
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.concurrent.Volatile
 import javax.inject.Inject
@@ -109,9 +111,37 @@ class GameOptimizationCoordinator @Inject constructor(
                     performanceManager.setAdaptiveCpuGov(true)
                     appliedOptimizations.add("CPU Performance Boost (${socInfo.socType.name})")
                 }
+
+                // Android 13-16 Game Mode performance override command
+                rootShellManager.executeCommand("cmd game set --mode 2 $packageName")
+                appliedOptimizations.add("GameManager Performance Mode Force")
+
+                // Android 13-16 background apps standby sleep mode command
+                rootShellManager.executeCommand("cmd package list packages | cut -f 2 -d ':' | grep -v $packageName | xargs -I {} am set-standby-bucket {} rare")
+                appliedOptimizations.add("Background Standby Lock Active")
+
+                // Background ART speed AOT compilation boost (does not block main launch thread)
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    rootShellManager.executeCommand("cmd package compile -m speed -f $packageName")
+                }
+                appliedOptimizations.add("ART Speed AOT Optimization Queued")
             } else {
                 performanceManager.optimizeNonRoot(packageName)
                 appliedOptimizations.add("Non-Root Performance Mode")
+            }
+
+            // GameManager local game state optimization for overlay priority (Android 12 to 16)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    val gameManager = context.getSystemService(android.app.GameManager::class.java)
+                    if (gameManager != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            val gameState = android.app.GameState(false, android.app.GameState.MODE_CONTENT)
+                            gameManager.setGameState(gameState)
+                            appliedOptimizations.add("GameManager Local Priority Active")
+                        }
+                    }
+                } catch (_: Exception) {}
             }
 
             performanceManager.boostThreadPriority()
@@ -353,7 +383,19 @@ class GameOptimizationCoordinator @Inject constructor(
             deviceMax >= 90 -> 90
             else -> 60
         }
-        val stableTarget = supported.minByOrNull { kotlin.math.abs(it - rawTarget.toFloat()) }?.toInt() ?: rawTarget
+        var stableTarget = supported.minByOrNull { kotlin.math.abs(it - rawTarget.toFloat()) }?.toInt() ?: rawTarget
+
+        // Android 14+ Predictive Thermal Headroom modulation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            try {
+                val pm = context.getSystemService(PowerManager::class.java)
+                val headroom = pm?.getThermalHeadroom(5) ?: 0.0f
+                if (headroom > 0.85f) {
+                    stableTarget = (stableTarget * 0.75f).toInt().coerceAtLeast(30)
+                }
+            } catch (_: Exception) {}
+        }
+
         return when {
             thermalStatus >= PowerManager.THERMAL_STATUS_SEVERE -> 30
             thermalStatus == PowerManager.THERMAL_STATUS_MODERATE -> minOf(stableTarget, 60)

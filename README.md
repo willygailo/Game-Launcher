@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.0.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.1.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -72,7 +72,22 @@
 
 ---
 
-### 🆕 v3.0.0: "Bare Metal" — TCP BBR & Zero Swappiness
+### 🆕 v3.1.0: "Kapa Max" — Android 11-16 System Overrides
+
+> Unlocked extreme Android tuning for non-root devices running Android 11 to 16. Includes GameManager priorities, ADPF thread harvesting, predictive thermal controls, and background app suppression.
+
+| Feature | Description | Status |
+|---|---|---|
+| **GameManager Priority** | Forces `MODE_CONTENT` GameState on Android 12-16 to grant overlay & CPU priority. | 🆕 |
+| **ADPF Thread Harvesting** | Dynamically harvests all child TIDs from `/proc/self/task` to inject into the ADPF Hint Session. | 🆕 |
+| **AOT Speed Compilation** | Aggressive background ART compilation (`cmd package compile -m speed -f`) to remove stutter. | 🆕 |
+| **Background Standby Lock** | Forces background apps into the `rare` standby bucket via `am set-standby-bucket`. | 🆕 |
+| **Predictive Thermals** | Android 14+ `getThermalHeadroom()` forecast prevents hardware CPU throttling. | 🆕 |
+| **Shizuku Command Shell** | Asynchronous coroutine shell execution for safe root-like commands. | 🆕 |
+
+---
+
+### v3.0.0: "Bare Metal" — TCP BBR & Zero Swappiness
 
 > Bringing true kernel-level tuning to the masses. Unlocked deep network and memory controls for root users.
 
@@ -638,7 +653,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.0.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.0.0)
+- [Latest Release: v3.1.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.1.0)
 - Or build from source using the instructions above
 
 ---

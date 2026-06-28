@@ -70,7 +70,15 @@ class PerformanceManager @Inject constructor(
         try {
             val phm = context.getSystemService(PerformanceHintManager::class.java) ?: return
             val periodNs = 1_000_000_000L / targetFpsHz
-            val tids = intArrayOf(Process.myTid())
+            
+            // Gather all active thread IDs of our process dynamically to boost overlay, rendering, and database tasks together
+            val taskDir = File("/proc/self/task")
+            val tids = if (taskDir.exists() && taskDir.isDirectory) {
+                taskDir.listFiles()?.mapNotNull { it.name.toIntOrNull() }?.toIntArray() ?: intArrayOf(Process.myTid())
+            } else {
+                intArrayOf(Process.myTid())
+            }
+            
             performanceSession?.close()
             performanceSession = phm.createHintSession(tids, periodNs)
 
