@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.gamelauncher.core.BatterySaverManager
+import com.gamelauncher.core.DevicePerformancePlanner
 import com.gamelauncher.core.DndManager
 import com.gamelauncher.core.FpsMonitor
 import com.gamelauncher.core.GameLauncherApp
@@ -41,6 +42,7 @@ class GameBoosterService : Service() {
     @Inject lateinit var settingsPreferences: SettingsPreferences
     @Inject lateinit var fpsMonitor: FpsMonitor
     @Inject lateinit var batterySaverManager: BatterySaverManager  // NEW
+    @Inject lateinit var devicePerformancePlanner: DevicePerformancePlanner
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var gameName: String = ""
@@ -99,7 +101,13 @@ class GameBoosterService : Service() {
         }.getOrDefault("Selected Game")
 
         val gameInfo = SupportedGames.findGame(pkg)
-        val actualTargetFps = gameInfo?.maxFps ?: targetFps
+        val initialPlan = devicePerformancePlanner.planForGame(
+            gameInfo = gameInfo,
+            requestedFps = targetFps.takeIf { it > 0 },
+            requestedHz = null,
+            forceMaxRefreshRate = true
+        )
+        val actualTargetFps = initialPlan.targetFps
 
         val notificationIntent = Intent(this, MainActivity::class.java)
         notificationPendingIntent = PendingIntent.getActivity(
@@ -171,14 +179,16 @@ class GameBoosterService : Service() {
                 performanceManager.forceMobileDataAlwaysOn()
             }
 
-            // ── STEP 4: Max Hz force ────────────────────────────────────
-            val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
-            performanceManager.lockRefreshRate(maxHz)
-            performanceManager.lockFps(actualTargetFps)
+            // ── STEP 4: Device-planned FPS/Hz request ───────────────────
+            if (settingsPreferences.forceMaxHzOnBoost.first()) {
+                val refreshLocked = performanceManager.lockRefreshRate(result.targetHz)
+                if (!refreshLocked) {
+                    Log.i(TAG, "Refresh request limited by Android/OEM permissions")
+                }
+            }
+            performanceManager.lockFps(result.targetFps)
             performanceManager.boostThreadPriority()
-            performanceManager.maximizeCpuGpuPerformance()
-            performanceManager.startPerformanceSession(actualTargetFps)
-            performanceManager.disableAnimations()
+            performanceManager.startPerformanceSession(result.targetFps)
 
             // Start live notification updates
             launchNotificationUpdater(gameName, result.targetFps)

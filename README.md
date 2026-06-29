@@ -42,10 +42,10 @@
 | **Live Boost Notification** | Real-time FPS, Hz, network type & battery sa notification | ✅ |
 | **Battery Saver Killer** | Auto-disable battery saver + Doze whitelist on boost start | ✅ 🆕 |
 | **5G / WiFi Dual Stack** | 5G NR detection + WiFi 6E/7 + simultaneous WiFi+Data mode | ✅ 🆕 |
-| **Max Hz Forcer** | Force peak_refresh_rate to device maximum (no root needed) | ✅ 🆕 |
+| **Max Hz Forcer** | Requests device maximum Hz through supported Settings APIs / ADB grants where OEM allows | ✅ 🆕 |
 | **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ 🆕 |
 | **Game Library** | Auto-detect ng lahat ng installed games | ✅ |
-| **Per-Game Boosts** | Custom FPS (30-240), WiFi lock per game | ✅ |
+| **Per-Game Boosts** | Custom FPS capped to the real device panel, game cap, and thermal state | ✅ |
 | **Immersive Controls** | DND mode (INTERRUPTION_FILTER_NONE), max brightness automation | ✅ |
 | **Home Widget** | Quick Boost at Open buttons sa home screen | ✅ |
 | **Quick Settings Tile** | Toggle booster sa notification panel | ✅ |
@@ -69,6 +69,35 @@
 | **Dark/Light Theme** | Toggle between dark and light theme | ✅ |
 | **Profile Import/Export** | Backup & restore per-game settings as JSON | ✅ |
 | **Onboarding Walkthrough** | Guided 4-step intro sa unang open ng app | ✅ |
+
+---
+
+## ✅ Real-World Android Support Plan
+
+This project now follows a legitimate Android-first boost model:
+
+| Layer | Works on non-root? | What it can safely do |
+|---|---:|---|
+| **Basic App Mode** | ✅ | Wake lock, foreground boost service, ADPF hint session, FPS overlay, WiFi low-latency lock, RAM cleanup requests, game detection |
+| **WRITE_SETTINGS Mode** | ✅ | Request `peak_refresh_rate` / `min_refresh_rate` and supported display settings after the user grants Modify System Settings |
+| **ADB Advanced Mode** | ✅ | Uses one-time `WRITE_SECURE_SETTINGS` grant for secure settings such as animations, game driver opt-in, mobile data always-on, and OEM refresh keys |
+| **Root Mode** | Optional | Applies kernel/sysfs/vendor props only when root is actually available and granted |
+
+The app plans FPS/Hz from the real device, not a fixed number. It detects supported panel modes, current thermal status, game max FPS metadata, and per-game settings, then chooses a safe target such as `60`, `90`, `120`, `144`, `165`, or `240` only when the device really exposes that mode.
+
+Important reality check: non-root Android apps cannot force another game engine to render above its own FPS cap, cannot bypass OEM thermal throttling, and cannot write protected kernel nodes. Game Launcher Pro requests every legal Android-side optimization it can, then reports limited states instead of pretending a locked setting succeeded.
+
+SDK path is already set for local builds:
+
+```properties
+sdk.dir=/home/willygailo/Documents/Game_Launcher_Pro/android-sdk
+```
+
+ADB advanced unlock command:
+
+```bash
+adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
+```
 
 ---
 
@@ -310,7 +339,7 @@
 | **Annotation Processing** | KSP (Room + Hilt compiler) |
 | **ML** | TensorFlow Lite 2.17 (game classification) |
 | **Background Tasks** | WorkManager 2.10 |
-| **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) + SurfaceFlinger unlock |
+| **Performance API** | ADPF v2 (Android 15+) + ADPF v1 (Android 12+) + optional root SurfaceFlinger requests |
 | **Frame Analysis** | Choreographer — raw FPS (500ms) + 2s rolling avg + jank detection |
 | **Network** | ConnectivityManager NetworkCallback + WifiInfo (WiFi 6E/7) + TelephonyManager (5G NR) |
 | **Battery** | PowerManager + Settings.Global + root shell (triple-layer) |
@@ -460,7 +489,7 @@ adb shell appops set com.gamelauncher.app GET_USAGE_STATS allow
 
 ## 🔓 Root vs Non-Root Features
 
-> The app is **fully designed for non-root devices**. 80% of features work without root.
+> The app is **fully designed for non-root devices**. Core boost features work without root.
 > Root users get additional low-level optimizations, but the core gaming boost experience is complete without it.
 
 </div>
@@ -471,16 +500,16 @@ adb shell appops set com.gamelauncher.app GET_USAGE_STATS allow
 | Wake Lock (PowerManager) | ✅ | ✅ |
 | Thread Priority Boost | ✅ | ✅ |
 | FPS/Hz Monitoring + Jank Detection | ✅ | ✅ |
-| Max Hz Force (Settings.System) | ✅ | ✅ |
+| Max Hz Force (Settings.System) | ✅ (WRITE_SETTINGS + OEM support) | ✅ |
 | Performance Benchmark | ✅ | ✅ |
 | Battery Saver Disable (Layer 1+2) | ✅ (WRITE_SECURE_SETTINGS via ADB) | ✅ |
 | Battery Saver Disable (Layer 3 nuclear) | ❌ | ✅ |
-| Doze Whitelist | ✅ (ADB grant) | ✅ |
+| Doze Whitelist | ✅ (ADB / secure shell grant) | ✅ |
 | Thermal Engine Suspend | ❌ | ✅ |
 | 5G + WiFi Dual-Stack | ✅ | ✅ |
 | WiFi Low-Latency Lock | ✅ | ✅ |
 | Mobile Data Always-On (gaming) | ✅ (WRITE_SECURE_SETTINGS) | ✅ |
-| Refresh Rate Lock | ✅ (via Settings) | ✅ (via sysfs) |
+| Refresh Rate Lock | ✅ (via Settings when OEM allows) | ✅ (via sysfs/props when available) |
 | Animation Speed Control | ✅ (via ADB/Secure Settings) | ✅ (via sysfs) |
 | Memory Cleanup | ✅ (killBackgroundProcesses) | ✅ (kill + drop caches) |
 | Touch Optimization | ✅ (12 overrides via ADB/Secure) | ✅ (20+ sysfs/props) |

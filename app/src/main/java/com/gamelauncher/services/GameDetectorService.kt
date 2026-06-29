@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.gamelauncher.core.DevicePerformancePlanner
 import com.gamelauncher.core.DndManager
 import com.gamelauncher.core.GameLauncherApp
 import com.gamelauncher.core.GameOptimizationCoordinator
@@ -47,6 +48,7 @@ class GameDetectorService : Service() {
     @Inject lateinit var deviceManager: com.gamelauncher.core.DeviceManager
     @Inject lateinit var networkManager: com.gamelauncher.core.NetworkManager
     @Inject lateinit var gameDao: GameDao
+    @Inject lateinit var devicePerformancePlanner: DevicePerformancePlanner
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var detectorJob: Job? = null
@@ -222,17 +224,35 @@ class GameDetectorService : Service() {
         }
 
         val gameInfo = SupportedGames.findGame(packageName)
-        val targetFps = gameModel?.targetFps ?: (gameInfo?.maxFps ?: result.targetFps)
+        val requestedFps = when (gameModel?.graphicsMode) {
+            "PERFORMANCE" -> null
+            "BALANCED" -> 90
+            "BATTERY_SAVER" -> 30
+            "CUSTOM" -> gameModel.targetFps
+            else -> gameModel?.targetFps?.takeIf { it != 60 } ?: result.targetFps
+        }
+        val shouldForceMaxRefresh = (gameModel?.forceMaxRefreshRate ?: true) &&
+            settingsPreferences.forceMaxHzOnBoost.first()
+        val framePlan = devicePerformancePlanner.planForGame(
+            gameInfo = gameInfo,
+            requestedFps = requestedFps,
+            requestedHz = if (shouldForceMaxRefresh) {
+                gameModel?.targetHz ?: result.targetHz
+            } else {
+                gameModel?.targetHz?.takeIf { it > 0f && it != 60f }
+            },
+            forceMaxRefreshRate = shouldForceMaxRefresh,
+            thermalStatusOverride = deviceManager.getThermalStatus()
+        )
+        val targetFps = framePlan.targetFps
 
         performanceManager.startPerformanceSession(targetFps)
         performanceManager.boostThreadPriority()
         performanceManager.disableAnimations()
 
-        val supportedRates = performanceManager.getSupportedRefreshRates()
-        val maxHz = supportedRates.maxOrNull() ?: 60f
-        val targetHz = if (gameModel?.forceMaxRefreshRate == true) maxHz else maxHz
-        val stableHz = supportedRates.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
-        performanceManager.lockRefreshRate(stableHz)
+        if (shouldForceMaxRefresh || framePlan.requestedHz != null) {
+            performanceManager.lockRefreshRate(framePlan.targetHz)
+        }
         performanceManager.lockFps(targetFps)
 
         if (networkEnabled) {

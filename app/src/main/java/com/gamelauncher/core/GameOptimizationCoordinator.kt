@@ -1,13 +1,12 @@
 package com.gamelauncher.core
 
 import android.content.Context
-import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.PowerManager
-import android.view.Display
+import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.concurrent.Volatile
@@ -24,6 +23,8 @@ class GameOptimizationCoordinator @Inject constructor(
     private val touchLatencyOptimizer: TouchLatencyOptimizer,
     private val rootShellManager: RootShellManager,
     private val socManager: SocManager,
+    private val devicePerformancePlanner: DevicePerformancePlanner,
+    private val settingsPreferences: SettingsPreferences,
     private val gameDao: com.gamelauncher.data.local.GameDao,
     private val batterySaverManager: BatterySaverManager  // ── NEW
 ) {
@@ -86,14 +87,20 @@ class GameOptimizationCoordinator @Inject constructor(
             errors.add("Battery Saver controller exception: ${e.message}")
         }
 
-        // Use custom target FPS if configured, otherwise fallback to adaptive logic
-        val targetFps = gameModel?.targetFps ?: getAdaptiveTargetFps(gameInfo, thermalStatus)
-        val supportedRates = performanceManager.getSupportedRefreshRates()
-        val maxRefreshRate = supportedRates.maxOrNull() ?: 60f
-
-        // Use maximum rate if forceMaxRefreshRate is true, otherwise fallback to adaptive
-        val targetHz = if (gameModel?.forceMaxRefreshRate == true) maxRefreshRate else getAdaptiveRefreshRate(maxRefreshRate, thermalStatus)
-        val stableHz = performanceManager.getNearestSupportedRefreshRate(targetHz)
+        val requestedFps = getRequestedFps(gameModel)
+        val shouldForceMaxRefresh = (gameModel?.forceMaxRefreshRate ?: true) &&
+            settingsPreferences.forceMaxHzOnBoost.first()
+        val framePlan = devicePerformancePlanner.planForGame(
+            gameInfo = gameInfo,
+            requestedFps = requestedFps,
+            requestedHz = gameModel?.targetHz,
+            forceMaxRefreshRate = shouldForceMaxRefresh,
+            thermalStatusOverride = thermalStatus
+        )
+        val targetFps = framePlan.targetFps
+        val targetHz = framePlan.targetHz
+        val stableHz = framePlan.targetHz
+        appliedOptimizations.add("Device Plan: ${targetFps}FPS @ ${stableHz.toInt()}Hz (${framePlan.reason})")
 
         try {
             val hasRoot = rootShellManager.isRootAvailable()
@@ -365,6 +372,17 @@ class GameOptimizationCoordinator @Inject constructor(
         rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
         rootShellManager.executeCommand("echo noop > /sys/block/mmcblk0/queue/scheduler")
         rootShellManager.executeCommand("echo 1 > /sys/class/misc/mali0/device/power_policy")
+    }
+
+    private fun getRequestedFps(gameModel: com.gamelauncher.data.model.GameModel?): Int? {
+        if (gameModel == null) return null
+        return when (gameModel.graphicsMode) {
+            "PERFORMANCE" -> null
+            "BALANCED" -> 90
+            "BATTERY_SAVER" -> 30
+            "CUSTOM" -> gameModel.targetFps
+            else -> gameModel.targetFps.takeIf { it != 60 }
+        }
     }
 
     private fun getAdaptiveTargetFps(gameInfo: SupportedGames.GameInfo?, thermalStatus: Int): Int {

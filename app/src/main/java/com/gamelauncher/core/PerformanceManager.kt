@@ -347,6 +347,10 @@ class PerformanceManager @Inject constructor(
         return context.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
     }
 
+    fun canWriteSystemSettings(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(context)
+    }
+
     suspend fun optimizeNonRoot(packageName: String) {
         boostThreadPriority()
         acquireWakeLock()
@@ -837,120 +841,162 @@ class PerformanceManager @Inject constructor(
         val resolver = context.contentResolver
         val supported = getSupportedRefreshRates()
         val nearestHz = supported.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
+        val canWriteSystem = canWriteSystemSettings()
+        val canWriteSecure = hasSecureSettingsPermission()
 
-        return runCatching {
-            // Backup and set AOSP standard
+        var changed = false
+
+        runCatching {
+            // AOSP standard. Settings.System needs the user-granted WRITE_SETTINGS app-op.
             try {
-                if (originalAospPeakRefreshRate == null) {
-                    originalAospPeakRefreshRate = try { Settings.System.getFloat(resolver, "peak_refresh_rate") } catch (_: Exception) {
-                        try { Settings.Secure.getFloat(resolver, "peak_refresh_rate") } catch (_: Exception) { 60f }
+                if (canWriteSystem) {
+                    if (originalAospPeakRefreshRate == null) {
+                        originalAospPeakRefreshRate = Settings.System.getFloat(resolver, "peak_refresh_rate", 60f)
                     }
-                }
-                if (originalAospMinRefreshRate == null) {
-                    originalAospMinRefreshRate = try { Settings.System.getFloat(resolver, "min_refresh_rate") } catch (_: Exception) {
-                        try { Settings.Secure.getFloat(resolver, "min_refresh_rate") } catch (_: Exception) { 60f }
+                    if (originalAospMinRefreshRate == null) {
+                        originalAospMinRefreshRate = Settings.System.getFloat(resolver, "min_refresh_rate", 60f)
                     }
+                    changed = Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
+                    changed = Settings.System.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
+                } else if (canWriteSecure) {
+                    if (originalAospPeakRefreshRate == null) {
+                        originalAospPeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
+                    }
+                    if (originalAospMinRefreshRate == null) {
+                        originalAospMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
+                    }
+                    changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
+                    changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
                 }
-                Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz)
-                Settings.System.putFloat(resolver, "min_refresh_rate", nearestHz)
-                Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz)
-                Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz)
             } catch (_: Exception) {}
 
             // Samsung
             try {
-                if (originalSamsungRefreshMode == null) {
+                if (canWriteSecure && originalSamsungRefreshMode == null) {
                     originalSamsungRefreshMode = Settings.Secure.getInt(resolver, "refresh_rate_mode", 0)
                 }
-                Settings.Secure.putInt(resolver, "refresh_rate_mode", 1) // High/120Hz mode
+                if (canWriteSecure) {
+                    changed = Settings.Secure.putInt(resolver, "refresh_rate_mode", 1) || changed
+                }
             } catch (_: Exception) {}
 
             // OnePlus / Oppo
             try {
-                if (originalOneplusRefreshRate == null) {
+                if (canWriteSecure && originalOneplusRefreshRate == null) {
                     originalOneplusRefreshRate = Settings.Secure.getInt(resolver, "oneplus_screen_refresh_rate", 0)
                 }
-                Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", 2) // Max rate
+                if (canWriteSecure) {
+                    changed = Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", 2) || changed
+                }
             } catch (_: Exception) {}
 
             // Xiaomi
             try {
-                if (originalXiaomiUserRefreshRate == null) {
+                if (canWriteSystem && originalXiaomiUserRefreshRate == null) {
                     originalXiaomiUserRefreshRate = Settings.System.getInt(resolver, "user_refresh_rate", 60)
                 }
-                Settings.System.putInt(resolver, "user_refresh_rate", nearestHz.toInt())
-                
-                if (originalXiaomiPeakRefreshRate == null) {
+                if (canWriteSystem) {
+                    changed = Settings.System.putInt(resolver, "user_refresh_rate", nearestHz.toInt()) || changed
+                }
+
+                if (canWriteSystem && originalXiaomiPeakRefreshRate == null) {
                     originalXiaomiPeakRefreshRate = Settings.System.getFloat(resolver, "peak_refresh_rate", 60f)
                 }
-                Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz)
+                if (canWriteSystem) {
+                    changed = Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
+                }
             } catch (_: Exception) {}
 
             // Huawei
             try {
-                if (originalHuaweiSmartRefreshRate == null) {
+                if (canWriteSecure && originalHuaweiSmartRefreshRate == null) {
                     originalHuaweiSmartRefreshRate = Settings.Secure.getInt(resolver, "hw_smart_refresh_rate_key", 1)
                 }
-                Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", 0) // Disable smart/dynamic rate
+                if (canWriteSecure) {
+                    changed = Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", 0) || changed
+                }
             } catch (_: Exception) {}
 
             // Realme
             try {
-                if (originalRealmePeakRefreshRate == null) {
+                if (canWriteSecure && originalRealmePeakRefreshRate == null) {
                     originalRealmePeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
                 }
-                Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz)
+                if (canWriteSecure) {
+                    changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
+                }
 
-                if (originalRealmeMinRefreshRate == null) {
+                if (canWriteSecure && originalRealmeMinRefreshRate == null) {
                     originalRealmeMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
                 }
-                Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz)
+                if (canWriteSecure) {
+                    changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
+                }
             } catch (_: Exception) {}
+        }
 
-            true
-        }.getOrDefault(false)
+        val alreadyAtTarget = kotlin.math.abs(getCurrentRefreshRate() - nearestHz) < 0.5f
+        return changed || alreadyAtTarget
     }
 
     fun restoreRefreshRate(): Boolean {
         val resolver = context.contentResolver
-        return runCatching {
+        val canWriteSystem = canWriteSystemSettings()
+        val canWriteSecure = hasSecureSettingsPermission()
+        var changed = false
+
+        runCatching {
             // Restore AOSP
             try {
                 originalAospPeakRefreshRate?.let {
-                    Settings.System.putFloat(resolver, "peak_refresh_rate", it)
-                    Settings.Secure.putFloat(resolver, "peak_refresh_rate", it)
+                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "peak_refresh_rate", it) || changed
+                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) || changed
                 }
                 originalAospMinRefreshRate?.let {
-                    Settings.System.putFloat(resolver, "min_refresh_rate", it)
-                    Settings.Secure.putFloat(resolver, "min_refresh_rate", it)
+                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "min_refresh_rate", it) || changed
+                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", it) || changed
                 }
             } catch (_: Exception) {}
 
             // Samsung
             try {
-                originalSamsungRefreshMode?.let { Settings.Secure.putInt(resolver, "refresh_rate_mode", it) }
+                originalSamsungRefreshMode?.let {
+                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "refresh_rate_mode", it) || changed
+                }
             } catch (_: Exception) {}
 
             // OnePlus
             try {
-                originalOneplusRefreshRate?.let { Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", it) }
+                originalOneplusRefreshRate?.let {
+                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", it) || changed
+                }
             } catch (_: Exception) {}
 
             // Xiaomi
             try {
-                originalXiaomiUserRefreshRate?.let { Settings.System.putInt(resolver, "user_refresh_rate", it) }
-                originalXiaomiPeakRefreshRate?.let { Settings.System.putFloat(resolver, "peak_refresh_rate", it) }
+                originalXiaomiUserRefreshRate?.let {
+                    if (canWriteSystem) changed = Settings.System.putInt(resolver, "user_refresh_rate", it) || changed
+                }
+                originalXiaomiPeakRefreshRate?.let {
+                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "peak_refresh_rate", it) || changed
+                }
             } catch (_: Exception) {}
 
             // Huawei
             try {
-                originalHuaweiSmartRefreshRate?.let { Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", it) }
+                originalHuaweiSmartRefreshRate?.let {
+                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", it) || changed
+                }
             } catch (_: Exception) {}
 
             // Realme
             try {
-                originalRealmePeakRefreshRate?.let { Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) }
-                originalRealmeMinRefreshRate?.let { Settings.Secure.putFloat(resolver, "min_refresh_rate", it) }
+                originalRealmePeakRefreshRate?.let {
+                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) || changed
+                }
+                originalRealmeMinRefreshRate?.let {
+                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", it) || changed
+                }
             } catch (_: Exception) {}
 
             // Reset backup values
@@ -963,14 +1009,13 @@ class PerformanceManager @Inject constructor(
             originalHuaweiSmartRefreshRate = null
             originalRealmePeakRefreshRate = null
             originalRealmeMinRefreshRate = null
+        }
 
-            true
-        }.getOrDefault(false)
+        return changed
     }
 
     suspend fun lockFps(targetFps: Int) = withContext(Dispatchers.IO) {
         startPerformanceSession(targetFps)
-        lockRefreshRate(targetFps.toFloat())
         if (rootShellManager.isRootAvailable()) {
             val props = listOf(
                 "persist.sys.app.fps" to "$targetFps",
