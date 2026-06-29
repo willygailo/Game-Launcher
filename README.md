@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.1.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.2-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -98,6 +98,16 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.2: "Device-Planned FPS/Hz" & SDK 36 Upgrade
+
+> Added smart target calculations using the new `DevicePerformancePlanner` which dynamically adjusts game FPS/Hz based on real-time device specs and thermal conditions. Added full support resources for Android 14 (API 34) and Android 16 (API 36).
+
+| Feature | Description | Status |
+|---|---|---|
+| **DevicePerformancePlanner** | Dynamically plans optimal FPS and refresh rates using device panel modes and thermal headrooms. | 🆕 |
+| **Android 14 & 16 Resources** | Added platform layout, localization assets, and complete SDK platform target support. | 🆕 |
+| **Target Upgrade (v3.2.2)** | Build configuration bumped to versionCode 322 / versionName 3.2.2. | 🆕 |
 
 ---
 
@@ -682,7 +692,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.1.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.1.0)
+- [Latest Release: v3.2.2](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.2)
 - Or build from source using the instructions above
 
 ---
