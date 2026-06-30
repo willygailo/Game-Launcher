@@ -399,11 +399,15 @@ cd Game-Launcher
 # Build debug APK (clean)
 ./gradlew clean assembleDebug
 
+# Build release APK
+./gradlew assembleRelease
+
 # Or incremental build
 ./gradlew assembleDebug
 
-# APK location:
-# app/build/outputs/apk/debug/app-debug.apk
+# APK locations:
+# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.3-debug.apk
+# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.3-release.apk
 ```
 
 ### Install sa Device
@@ -413,7 +417,7 @@ cd Game-Launcher
 # Settings > About Phone > Tap "Build Number" 7 times
 # Settings > System > Developer Options > Enable USB Debugging
 
-adb install app/build/outputs/apk/debug/app-debug.apk
+adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.3-debug.apk
 ```
 
 ### Run Tests
@@ -708,7 +712,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.2](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.2)
+- [Latest Release: v3.2.3](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.3)
 - Or build from source using the instructions above
 
 ---
