@@ -78,7 +78,7 @@ open class GamesRepository @Inject constructor(
                         name = isKnown.second,
                         isKnownGame = true,
                         customCategory = isKnown.third,
-                        targetFps = knownGame?.maxFps?.coerceIn(30, 165) ?: 60
+                        targetFps = knownGame?.maxFps?.coerceIn(30, 240) ?: 60
                     )
                 } else if (isSystemGame) {
                     val appName = pm.getApplicationLabel(appInfo).toString()

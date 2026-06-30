@@ -13,7 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.TouchApp
@@ -129,22 +132,24 @@ fun GameCard(
                     }
                 }
 
-                // Play Button with gradient
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            if (game.highPerformanceMode)
-                                Brush.horizontalGradient(listOf(PrimaryNeon, SecondaryNeon.copy(alpha = 0.8f)))
-                            else
-                                Brush.horizontalGradient(listOf(SurfaceVariantDark, SurfaceVariantDark))
-                        )
-                        .clickable { onLaunch() }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                Button(
+                    onClick = onLaunch,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (game.highPerformanceMode) PrimaryNeon else SurfaceVariantDark,
+                        contentColor = if (game.highPerformanceMode) BackgroundDark else TextPrimary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.height(38.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        "PLAY",
-                        color = if (game.highPerformanceMode) BackgroundDark else TextPrimary,
+                        "Play",
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp
                     )
@@ -160,12 +165,18 @@ fun GameCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(modifier = Modifier.weight(1f).height(1.dp).background(SurfaceVariantDark))
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = WarningOrange,
+                    modifier = Modifier.size(18.dp)
+                )
                 Text(
-                    if (expanded) "▲ Boost Settings" else "▼ Boost Settings",
+                    "Boost Settings",
                     color = WarningOrange,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, end = 8.dp)
                 )
                 Box(modifier = Modifier.weight(1f).height(1.dp).background(SurfaceVariantDark))
             }
@@ -192,7 +203,23 @@ fun GameCard(
                         subtitle = "Apply all settings on game start",
                         checked = game.highPerformanceMode,
                         color = PrimaryNeon,
-                        onCheckedChange = { onUpdate(game.copy(highPerformanceMode = it)) }
+                        onCheckedChange = {
+                            onUpdate(
+                                if (it) {
+                                    game.copy(
+                                        highPerformanceMode = true,
+                                        graphicsMode = "PERFORMANCE",
+                                        forceMaxRefreshRate = true,
+                                        touchLatencyBoost = true,
+                                        gpuTuning = true,
+                                        wifiLockEnabled = true,
+                                        ramAggressiveness = "AGGRESSIVE"
+                                    )
+                                } else {
+                                    game.copy(highPerformanceMode = false)
+                                }
+                            )
+                        }
                     )
 
                     BoostToggleRow(

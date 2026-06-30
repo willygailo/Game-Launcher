@@ -61,6 +61,9 @@ class NetworkManager @Inject constructor(
     /** e.g. "5G", "4G LTE", "3G" */
     val cellularGenLabel: StateFlow<String> = _cellularGenLabel
 
+    private val _networkSnapshot = MutableStateFlow(NetworkSnapshot())
+    val networkSnapshot: StateFlow<NetworkSnapshot> = _networkSnapshot
+
     // ── Internal ───────────────────────────────────────────────────────
 
     private val wifiManager: WifiManager? =
@@ -82,11 +85,35 @@ class NetworkManager @Inject constructor(
         WIFI_AND_CELLULAR, ETHERNET
     }
 
+    data class NetworkSnapshot(
+        val summary: String = "Offline",
+        val bestTransport: String = "Offline",
+        val networkType: NetworkType = NetworkType.OFFLINE,
+        val qualityScore: Int = 0,
+        val hasValidatedInternet: Boolean = false,
+        val isMetered: Boolean = true,
+        val isWifiConnected: Boolean = false,
+        val isCellularConnected: Boolean = false,
+        val is5G: Boolean = false,
+        val is5GPlus: Boolean = false,
+        val wifiLabel: String = "",
+        val wifiLinkSpeedMbps: Int = 0,
+        val wifiSignalDbm: Int = -100,
+        val wifiSignalBars: Int = 0,
+        val wifiFrequencyMhz: Int = 0,
+        val wifiBandLabel: String = "",
+        val cellularLabel: String = "",
+        val cellularSignalDbm: Int = -120,
+        val cellularSignalBars: Int = 0,
+        val downstreamKbps: Int = 0,
+        val upstreamKbps: Int = 0
+    )
+
     // ── Network Callback (live monitoring) ────────────────────────────
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-            scope.launch { updateNetworkState(caps) }
+            scope.launch { refreshNetworkStatus() }
         }
         override fun onLost(network: Network) {
             scope.launch { refreshNetworkStatus() }
@@ -120,55 +147,111 @@ class NetworkManager @Inject constructor(
     fun refreshNetworkStatus() {
         try {
             val cm = connectivityManager ?: return
-            val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: run {
+            val allCaps = cm.allNetworks.mapNotNull { network ->
+                cm.getNetworkCapabilities(network)
+            }
+            if (allCaps.isEmpty()) {
                 _networkType.value = NetworkType.OFFLINE
                 _networkQualityScore.value = 0
                 _isWifiConnected.value = false
                 _isCellularConnected.value = false
+                _is5G.value = false
+                _wifiGenerationLabel.value = "WiFi"
+                _cellularGenLabel.value = ""
+                _networkSnapshot.value = NetworkSnapshot()
                 return
             }
-            updateNetworkState(caps)
+
+            updateNetworkState(allCaps)
         } catch (_: Exception) {}
     }
 
-    private fun updateNetworkState(caps: NetworkCapabilities) {
-        val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-        val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-        val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+    private fun updateNetworkState(allCaps: List<NetworkCapabilities>) {
+        val wifiCaps = allCaps.firstOrNull { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+        val cellularCaps = allCaps.firstOrNull { it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) }
+        val ethernetCaps = allCaps.firstOrNull { it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) }
+        val bestCaps = ethernetCaps ?: wifiCaps ?: cellularCaps ?: allCaps.first()
+
+        val hasWifi = wifiCaps != null
+        val hasCellular = cellularCaps != null
+        val hasEthernet = ethernetCaps != null
+        val hasValidatedInternet = allCaps.any {
+            it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                it.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        }
+        val isMetered = allCaps.none { it.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) }
 
         _isWifiConnected.value = hasWifi
         _isCellularConnected.value = hasCellular
 
-        // Determine WiFi generation (API 30+)
-        if (hasWifi && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val wifiInfo = caps.transportInfo as? android.net.wifi.WifiInfo
+        val wifiInfo = wifiCaps?.transportInfo as? android.net.wifi.WifiInfo
+        val wifiLabel = if (hasWifi && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val wifiStandard = wifiInfo?.wifiStandard ?: 0
-            _wifiGenerationLabel.value = wifiStandardToLabel(wifiStandard)
+            wifiStandardToLabel(wifiStandard, wifiInfo?.frequency ?: 0)
         } else if (hasWifi) {
-            _wifiGenerationLabel.value = "WiFi"
-        }
+            "WiFi"
+        } else ""
+        if (hasWifi) _wifiGenerationLabel.value = wifiLabel else _wifiGenerationLabel.value = "WiFi"
 
         // 5G detection
-        val is5gNow = hasCellular && detect5G()
+        val cellularNetworkType = getCellularDataNetworkType()
+        val is5gNow = hasCellular && cellularNetworkType == TelephonyManager.NETWORK_TYPE_NR
+        val is5gPlusNow = is5gNow && isLikely5GPlus(cellularCaps)
         _is5G.value = is5gNow
 
         // Cellular generation label
+        val cellularLabel = if (hasCellular) getCellularGenerationLabel(cellularNetworkType, is5gPlusNow) else ""
         if (hasCellular) {
-            _cellularGenLabel.value = getCellularGenerationLabel()
+            _cellularGenLabel.value = cellularLabel
+        } else {
+            _cellularGenLabel.value = ""
         }
 
         // Derive network type
-        _networkType.value = when {
+        val networkTypeNow = when {
             hasEthernet -> NetworkType.ETHERNET
             hasWifi && hasCellular -> NetworkType.WIFI_AND_CELLULAR
             hasWifi -> NetworkType.WIFI
             is5gNow -> NetworkType.CELLULAR_5G
-            hasCellular -> deriveCellularType()
+            hasCellular -> deriveCellularType(cellularNetworkType)
             else -> NetworkType.OFFLINE
         }
+        _networkType.value = networkTypeNow
 
         // Network quality score
-        _networkQualityScore.value = computeQualityScore(caps, hasWifi, hasCellular, is5gNow)
+        val qualityScore = computeQualityScore(bestCaps, hasWifi, hasCellular, is5gNow, hasValidatedInternet)
+        _networkQualityScore.value = qualityScore
+
+        val wifiRssi = getWifiSignalDbmFrom(wifiInfo)
+        val wifiSpeed = getWifiLinkSpeedMbpsFrom(wifiInfo, wifiCaps)
+        val cellularDbm = getCellularSignalDbm()
+        val cellularBars = getCellularSignalBars()
+        val downstreamKbps = allCaps.maxOfOrNull { it.linkDownstreamBandwidthKbps } ?: 0
+        val upstreamKbps = allCaps.maxOfOrNull { it.linkUpstreamBandwidthKbps } ?: 0
+
+        _networkSnapshot.value = NetworkSnapshot(
+            summary = buildNetworkSummary(wifiLabel, cellularLabel, hasEthernet, hasValidatedInternet),
+            bestTransport = buildBestTransportLabel(networkTypeNow, wifiLabel, cellularLabel, is5gPlusNow),
+            networkType = networkTypeNow,
+            qualityScore = qualityScore,
+            hasValidatedInternet = hasValidatedInternet,
+            isMetered = isMetered,
+            isWifiConnected = hasWifi,
+            isCellularConnected = hasCellular,
+            is5G = is5gNow,
+            is5GPlus = is5gPlusNow,
+            wifiLabel = wifiLabel,
+            wifiLinkSpeedMbps = wifiSpeed,
+            wifiSignalDbm = wifiRssi,
+            wifiSignalBars = signalBarsFromWifiRssi(wifiRssi),
+            wifiFrequencyMhz = wifiInfo?.frequency ?: 0,
+            wifiBandLabel = wifiBandLabel(wifiInfo?.frequency ?: 0),
+            cellularLabel = cellularLabel,
+            cellularSignalDbm = cellularDbm,
+            cellularSignalBars = cellularBars,
+            downstreamKbps = downstreamKbps,
+            upstreamKbps = upstreamKbps
+        )
     }
 
     // ── 5G Detection ──────────────────────────────────────────────────
@@ -179,84 +262,66 @@ class NetworkManager @Inject constructor(
      *  - API 29-30: TelephonyManager.getDataNetworkType() == NETWORK_TYPE_NR
      *  - Pre-29: Not detectable without location permission
      */
-    private fun detect5G(): Boolean {
-        // Method 1: NR transport capability (API 31+) — no READ_PHONE_STATE needed
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                val cm = connectivityManager ?: return false
-                val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
-                @Suppress("DEPRECATION")
-                return caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-                    && caps.hasTransport(6) // TRANSPORT_NR = 6 (API 30+)
-            } catch (_: Exception) {}
+    private fun getCellularDataNetworkType(): Int {
+        return try {
+            telephonyManager?.dataNetworkType ?: TelephonyManager.NETWORK_TYPE_UNKNOWN
+        } catch (_: Exception) {
+            TelephonyManager.NETWORK_TYPE_UNKNOWN
         }
-
-        // Method 2: TelephonyManager network type (API 29-30)
-        @Suppress("DEPRECATION")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            try {
-                val tel = telephonyManager ?: return false
-                return tel.dataNetworkType == TelephonyManager.NETWORK_TYPE_NR
-            } catch (_: Exception) {}
-        }
-
-        return false
     }
 
     @Suppress("DEPRECATION")
-    private fun deriveCellularType(): NetworkType {
-        val tel = telephonyManager ?: return NetworkType.CELLULAR_4G
-        return try {
-            when (tel.dataNetworkType) {
-                TelephonyManager.NETWORK_TYPE_NR -> NetworkType.CELLULAR_5G
-                TelephonyManager.NETWORK_TYPE_LTE,
-                TelephonyManager.NETWORK_TYPE_IWLAN -> NetworkType.CELLULAR_4G
-                TelephonyManager.NETWORK_TYPE_HSPA,
-                TelephonyManager.NETWORK_TYPE_HSPAP,
-                TelephonyManager.NETWORK_TYPE_HSDPA,
-                TelephonyManager.NETWORK_TYPE_HSUPA,
-                TelephonyManager.NETWORK_TYPE_UMTS,
-                TelephonyManager.NETWORK_TYPE_EVDO_0,
-                TelephonyManager.NETWORK_TYPE_EVDO_A,
-                TelephonyManager.NETWORK_TYPE_EVDO_B -> NetworkType.CELLULAR_3G
-                TelephonyManager.NETWORK_TYPE_GPRS,
-                TelephonyManager.NETWORK_TYPE_EDGE,
-                TelephonyManager.NETWORK_TYPE_CDMA,
-                TelephonyManager.NETWORK_TYPE_1xRTT -> NetworkType.CELLULAR_2G
-                else -> NetworkType.CELLULAR_4G
-            }
-        } catch (_: Exception) { NetworkType.CELLULAR_4G }
+    private fun deriveCellularType(networkType: Int): NetworkType {
+        return when (networkType) {
+            TelephonyManager.NETWORK_TYPE_NR -> NetworkType.CELLULAR_5G
+            TelephonyManager.NETWORK_TYPE_LTE,
+            TelephonyManager.NETWORK_TYPE_IWLAN -> NetworkType.CELLULAR_4G
+            TelephonyManager.NETWORK_TYPE_HSPA,
+            TelephonyManager.NETWORK_TYPE_HSPAP,
+            TelephonyManager.NETWORK_TYPE_HSDPA,
+            TelephonyManager.NETWORK_TYPE_HSUPA,
+            TelephonyManager.NETWORK_TYPE_UMTS,
+            TelephonyManager.NETWORK_TYPE_EVDO_0,
+            TelephonyManager.NETWORK_TYPE_EVDO_A,
+            TelephonyManager.NETWORK_TYPE_EVDO_B,
+            TelephonyManager.NETWORK_TYPE_EHRPD -> NetworkType.CELLULAR_3G
+            TelephonyManager.NETWORK_TYPE_GPRS,
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            TelephonyManager.NETWORK_TYPE_CDMA,
+            TelephonyManager.NETWORK_TYPE_1xRTT,
+            TelephonyManager.NETWORK_TYPE_IDEN -> NetworkType.CELLULAR_2G
+            else -> NetworkType.CELLULAR_4G
+        }
     }
 
-    private fun getCellularGenerationLabel(): String {
-        val tel = telephonyManager ?: return "LTE"
-        return try {
-            when (tel.dataNetworkType) {
-                TelephonyManager.NETWORK_TYPE_NR -> "5G NR"
-                TelephonyManager.NETWORK_TYPE_LTE -> "4G LTE"
-                TelephonyManager.NETWORK_TYPE_HSPA,
-                TelephonyManager.NETWORK_TYPE_HSPAP -> "H+"
-                TelephonyManager.NETWORK_TYPE_HSUPA,
-                TelephonyManager.NETWORK_TYPE_HSDPA,
-                TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
-                TelephonyManager.NETWORK_TYPE_EDGE -> "E"
-                TelephonyManager.NETWORK_TYPE_GPRS -> "G"
-                else -> "LTE"
-            }
-        } catch (_: Exception) { "LTE" }
+    private fun getCellularGenerationLabel(networkType: Int, is5GPlus: Boolean): String {
+        return when (networkType) {
+            TelephonyManager.NETWORK_TYPE_NR -> if (is5GPlus) "5G+" else "5G NR"
+            TelephonyManager.NETWORK_TYPE_LTE -> "4G LTE"
+            TelephonyManager.NETWORK_TYPE_HSPA,
+            TelephonyManager.NETWORK_TYPE_HSPAP -> "H+"
+            TelephonyManager.NETWORK_TYPE_HSUPA,
+            TelephonyManager.NETWORK_TYPE_HSDPA,
+            TelephonyManager.NETWORK_TYPE_UMTS,
+            TelephonyManager.NETWORK_TYPE_EHRPD -> "3G"
+            TelephonyManager.NETWORK_TYPE_EDGE -> "E"
+            TelephonyManager.NETWORK_TYPE_GPRS -> "G"
+            TelephonyManager.NETWORK_TYPE_CDMA,
+            TelephonyManager.NETWORK_TYPE_1xRTT,
+            TelephonyManager.NETWORK_TYPE_IDEN -> "2G"
+            else -> "Mobile Data"
+        }
     }
 
     // ── WiFi Standard Label ────────────────────────────────────────────
 
-    private fun wifiStandardToLabel(standard: Int): String {
-        // android.net.wifi.ScanResult constants — use raw int to avoid API < 30 issues
+    private fun wifiStandardToLabel(standard: Int, frequencyMhz: Int): String {
         return when (standard) {
-            6 -> "WiFi 7"   // WIFI_STANDARD_11BE (802.11be) = 8 in some builds — try both
-            7 -> "WiFi 7"
-            5 -> "WiFi 6E"  // WIFI_STANDARD_11AX with 6GHz
-            4 -> "WiFi 6"   // WIFI_STANDARD_11AX = 6
-            3 -> "WiFi 5"   // WIFI_STANDARD_11AC = 5
-            2 -> "WiFi 4"   // WIFI_STANDARD_11N = 4
+            8 -> "WiFi 7"
+            7 -> "WiGig"
+            6 -> if (frequencyMhz in 5925..7125) "WiFi 6E" else "WiFi 6"
+            5 -> "WiFi 5"
+            4 -> "WiFi 4"
             1 -> "WiFi (g)" // WIFI_STANDARD_LEGACY = 1
             else -> "WiFi"
         }
@@ -268,7 +333,8 @@ class NetworkManager @Inject constructor(
         caps: NetworkCapabilities,
         hasWifi: Boolean,
         hasCellular: Boolean,
-        is5g: Boolean
+        is5g: Boolean,
+        hasValidatedInternet: Boolean
     ): Int {
         var score = 0
 
@@ -299,6 +365,7 @@ class NetworkManager @Inject constructor(
         val upBw = caps.linkUpstreamBandwidthKbps
         if (upBw >= 10_000) score += 5  // ≥10 Mbps up = solid gaming upload
         if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)) score += 5
+        if (!hasValidatedInternet) score -= 30
 
         return score.coerceIn(0, 100)
     }
@@ -332,34 +399,19 @@ class NetworkManager @Inject constructor(
 
     @Suppress("DEPRECATION")
     fun getWifiLinkSpeedMbps(): Int {
-        return try {
-            // API 31+: get WifiInfo from NetworkCapabilities
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val cm = connectivityManager ?: return 0
-                val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return 0
-                (caps.transportInfo as? android.net.wifi.WifiInfo)?.linkSpeed ?: 0
-            } else {
-                wifiManager?.connectionInfo?.linkSpeed ?: 0
-            }
-        } catch (_: Exception) { 0 }
+        refreshNetworkStatus()
+        return _networkSnapshot.value.wifiLinkSpeedMbps
     }
 
     @Suppress("DEPRECATION")
     fun getWifiSignalDbm(): Int {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val cm = connectivityManager ?: return -100
-                val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return -100
-                (caps.transportInfo as? android.net.wifi.WifiInfo)?.rssi ?: -100
-            } else {
-                wifiManager?.connectionInfo?.rssi ?: -100
-            }
-        } catch (_: Exception) { -100 }
+        refreshNetworkStatus()
+        return _networkSnapshot.value.wifiSignalDbm
     }
 
     fun getWifiSignalBars(): Int {
-        val rssi = getWifiSignalDbm()
-        return WifiManager.calculateSignalLevel(rssi, 5)  // 0-4
+        refreshNetworkStatus()
+        return _networkSnapshot.value.wifiSignalBars
     }
 
     // ── Active Network Summary ─────────────────────────────────────────
@@ -369,14 +421,8 @@ class NetworkManager @Inject constructor(
      * e.g. "WiFi 6E + 5G NR", "4G LTE", "WiFi 5"
      */
     fun getNetworkSummary(): String {
-        val wifi = if (_isWifiConnected.value) _wifiGenerationLabel.value else ""
-        val cell = if (_isCellularConnected.value) _cellularGenLabel.value else ""
-        return when {
-            wifi.isNotEmpty() && cell.isNotEmpty() -> "$wifi + $cell"
-            wifi.isNotEmpty() -> wifi
-            cell.isNotEmpty() -> cell
-            else -> "Offline"
-        }
+        refreshNetworkStatus()
+        return _networkSnapshot.value.summary
     }
 
     /**
@@ -384,21 +430,122 @@ class NetworkManager @Inject constructor(
      * Prefers WiFi Low-Latency > 5G NR > 4G LTE.
      */
     fun getBestTransportLabel(): String {
-        return when (_networkType.value) {
-            NetworkType.WIFI_AND_CELLULAR ->
-                if (_is5G.value) "${_wifiGenerationLabel.value} + 5G" else _wifiGenerationLabel.value
-            NetworkType.CELLULAR_5G -> "5G NR"
-            NetworkType.WIFI -> _wifiGenerationLabel.value
-            NetworkType.CELLULAR_4G -> "4G LTE"
-            NetworkType.CELLULAR_3G -> "3G"
-            NetworkType.CELLULAR_2G -> "2G"
-            NetworkType.ETHERNET -> "Ethernet"
-            NetworkType.OFFLINE -> "Offline"
-        }
+        refreshNetworkStatus()
+        return _networkSnapshot.value.bestTransport
+    }
+
+    fun getNetworkSnapshot(): NetworkSnapshot {
+        refreshNetworkStatus()
+        return _networkSnapshot.value
     }
 
     // ── Deprecated compat ─────────────────────────────────────────────
 
     /** @deprecated Use networkType.value instead */
     fun getNetworkType(): String = getNetworkSummary()
+
+    private fun getWifiLinkSpeedMbpsFrom(
+        wifiInfo: android.net.wifi.WifiInfo?,
+        wifiCaps: NetworkCapabilities?
+    ): Int {
+        return try {
+            val infoSpeed = wifiInfo?.linkSpeed ?: 0
+            if (infoSpeed > 0) infoSpeed else (wifiCaps?.linkDownstreamBandwidthKbps ?: 0) / 1000
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    private fun getWifiSignalDbmFrom(wifiInfo: android.net.wifi.WifiInfo?): Int {
+        return try {
+            val rssi = wifiInfo?.rssi ?: wifiManager?.connectionInfo?.rssi ?: -100
+            if (rssi in -120..0) rssi else -100
+        } catch (_: Exception) {
+            -100
+        }
+    }
+
+    private fun getCellularSignalDbm(): Int {
+        return try {
+            val dbm = telephonyManager
+                ?.signalStrength
+                ?.cellSignalStrengths
+                ?.map { it.dbm }
+                ?.firstOrNull { it in -150..-20 }
+            dbm ?: -120
+        } catch (_: Exception) {
+            -120
+        }
+    }
+
+    private fun getCellularSignalBars(): Int {
+        return try {
+            telephonyManager?.signalStrength?.level?.coerceIn(0, 4) ?: 0
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    private fun signalBarsFromWifiRssi(rssi: Int): Int {
+        return try {
+            @Suppress("DEPRECATION")
+            WifiManager.calculateSignalLevel(rssi, 5).coerceIn(0, 4)
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    private fun wifiBandLabel(frequencyMhz: Int): String {
+        return when (frequencyMhz) {
+            in 2400..2500 -> "2.4GHz"
+            in 4900..5900 -> "5GHz"
+            in 5925..7125 -> "6GHz"
+            in 57000..71000 -> "60GHz"
+            else -> ""
+        }
+    }
+
+    private fun isLikely5GPlus(cellularCaps: NetworkCapabilities?): Boolean {
+        val downKbps = cellularCaps?.linkDownstreamBandwidthKbps ?: 0
+        val upKbps = cellularCaps?.linkUpstreamBandwidthKbps ?: 0
+        val signalLevel = getCellularSignalBars()
+        return downKbps >= 500_000 || upKbps >= 50_000 || signalLevel >= 4
+    }
+
+    private fun buildNetworkSummary(
+        wifiLabel: String,
+        cellularLabel: String,
+        hasEthernet: Boolean,
+        hasValidatedInternet: Boolean
+    ): String {
+        val base = when {
+            hasEthernet -> "Ethernet"
+            wifiLabel.isNotEmpty() && cellularLabel.isNotEmpty() -> "$wifiLabel + $cellularLabel"
+            wifiLabel.isNotEmpty() -> wifiLabel
+            cellularLabel.isNotEmpty() -> cellularLabel
+            else -> "Offline"
+        }
+        return if (base != "Offline" && !hasValidatedInternet) "$base (No Internet)" else base
+    }
+
+    private fun buildBestTransportLabel(
+        networkType: NetworkType,
+        wifiLabel: String,
+        cellularLabel: String,
+        is5GPlus: Boolean
+    ): String {
+        return when (networkType) {
+            NetworkType.WIFI_AND_CELLULAR -> {
+                val cell = if (is5GPlus) "5G+" else cellularLabel.ifBlank { "Mobile Data" }
+                "${wifiLabel.ifBlank { "WiFi" }} + $cell"
+            }
+            NetworkType.CELLULAR_5G -> if (is5GPlus) "5G+" else cellularLabel.ifBlank { "5G NR" }
+            NetworkType.WIFI -> wifiLabel.ifBlank { "WiFi" }
+            NetworkType.CELLULAR_4G -> cellularLabel.ifBlank { "4G LTE" }
+            NetworkType.CELLULAR_3G -> cellularLabel.ifBlank { "3G" }
+            NetworkType.CELLULAR_2G -> cellularLabel.ifBlank { "2G" }
+            NetworkType.ETHERNET -> "Ethernet"
+            NetworkType.OFFLINE -> "Offline"
+        }
+    }
 }

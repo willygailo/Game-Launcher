@@ -11,37 +11,37 @@ val Typography = Typography(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Black,
         fontSize = 57.sp,
-        letterSpacing = (-0.25).sp
+        letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
-        letterSpacing = 1.5.sp // Wide letter spacing for headers gives a premium gaming vibe
+        letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = FontFamily.Monospace, // Monospace for technical/gaming stats (e.g. FPS, RAM)
+        fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
-        letterSpacing = 1.sp
+        letterSpacing = 0.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        letterSpacing = 0.25.sp,
+        letterSpacing = 0.sp,
         color = TextSecondary
     )
 )

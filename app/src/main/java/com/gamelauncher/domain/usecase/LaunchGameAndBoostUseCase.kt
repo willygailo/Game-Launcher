@@ -34,10 +34,15 @@ class LaunchGameAndBoostUseCase @Inject constructor(
 
         // 2. Start Booster Service if needed
         if (game.highPerformanceMode) {
+            val requestedFps = if (game.graphicsMode == "PERFORMANCE" || game.graphicsMode == "BALANCED") {
+                0
+            } else {
+                game.targetFps
+            }
             val boostIntent = Intent(context, GameBoosterService::class.java).apply {
                 action = GameBoosterService.ACTION_START_BOOST
                 putExtra(GameBoosterService.EXTRA_PACKAGE, game.packageName)
-                putExtra(GameBoosterService.EXTRA_TARGET_FPS, game.targetFps)
+                putExtra(GameBoosterService.EXTRA_TARGET_FPS, requestedFps)
                 putExtra(GameBoosterService.EXTRA_ENABLE_NETWORK, game.wifiLockEnabled)
             }
             try {

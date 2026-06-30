@@ -73,6 +73,7 @@ class DashboardViewModel @Inject constructor(
     val hasWriteSecureSettings: StateFlow<Boolean> = _hasWriteSecure.asStateFlow()
 
     init {
+        networkManager.startMonitoring()
         startMonitoring()
         startFpsMonitoring()
         checkRootStatus()
@@ -126,6 +127,7 @@ class DashboardViewModel @Inject constructor(
             while (isActive) {
                 val (ramTotal, ramUsed, ramFree) = deviceManager.getRamInfo()
                 val socInfo = deviceManager.getSocInfo()
+                val networkSnapshot = networkManager.getNetworkSnapshot()
                 
                 _deviceSpecs.value = _deviceSpecs.value.copy(
                     socName = socInfo.socName,
@@ -150,11 +152,29 @@ class DashboardViewModel @Inject constructor(
                     batteryHealth = deviceManager.getBatteryHealth(),
                     batteryVoltage = deviceManager.getBatteryVoltage(),
                     thermalStatus = deviceManager.getThermalStatus(),
-                    networkType = networkManager.getNetworkType(),
-                    networkStrengthDbm = networkManager.getWifiSignalDbm(),
-                    wifiLinkSpeedMbps = networkManager.getWifiLinkSpeedMbps(),
+                    networkType = networkSnapshot.summary,
+                    networkStrengthDbm = if (networkSnapshot.isWifiConnected) {
+                        networkSnapshot.wifiSignalDbm
+                    } else {
+                        networkSnapshot.cellularSignalDbm
+                    },
+                    wifiLinkSpeedMbps = networkSnapshot.wifiLinkSpeedMbps,
+                    networkQualityScore = networkSnapshot.qualityScore,
+                    hasValidatedInternet = networkSnapshot.hasValidatedInternet,
+                    isNetworkMetered = networkSnapshot.isMetered,
+                    wifiLabel = networkSnapshot.wifiLabel,
+                    wifiSignalBars = networkSnapshot.wifiSignalBars,
+                    wifiBandLabel = networkSnapshot.wifiBandLabel,
+                    cellularLabel = networkSnapshot.cellularLabel,
+                    cellularSignalDbm = networkSnapshot.cellularSignalDbm,
+                    cellularSignalBars = networkSnapshot.cellularSignalBars,
+                    is5G = networkSnapshot.is5G,
+                    is5GPlus = networkSnapshot.is5GPlus,
+                    networkDownstreamKbps = networkSnapshot.downstreamKbps,
+                    networkUpstreamKbps = networkSnapshot.upstreamKbps,
                     displayRefreshRateHz = performanceManager.getCurrentRefreshRate(),
-                    supportedRefreshRates = performanceManager.getSupportedRefreshRates()
+                    supportedRefreshRates = performanceManager.getSupportedRefreshRates(),
+                    timestamp = System.currentTimeMillis()
                 )
                 delay(1000)
             }
@@ -282,5 +302,10 @@ class DashboardViewModel @Inject constructor(
             deviceManager.setCoreOnline(coreIndex, online)
             _coreOnlineStatus.value = deviceManager.getPerCoreOnlineStatus()
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        networkManager.stopMonitoring()
     }
 }

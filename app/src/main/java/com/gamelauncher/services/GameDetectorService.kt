@@ -224,12 +224,18 @@ class GameDetectorService : Service() {
         }
 
         val gameInfo = SupportedGames.findGame(packageName)
-        val requestedFps = when (gameModel?.graphicsMode) {
-            "PERFORMANCE" -> null
-            "BALANCED" -> 90
-            "BATTERY_SAVER" -> 30
-            "CUSTOM" -> gameModel.targetFps
-            else -> gameModel?.targetFps?.takeIf { it != 60 } ?: result.targetFps
+        val maxPerformanceRequested = gameModel?.highPerformanceMode == true &&
+            (gameModel.graphicsMode == "PERFORMANCE" || gameModel.graphicsMode == "BALANCED")
+        val requestedFps = if (maxPerformanceRequested) {
+            null
+        } else {
+            when (gameModel?.graphicsMode) {
+                "PERFORMANCE" -> null
+                "BALANCED" -> 90
+                "BATTERY_SAVER" -> 30
+                "CUSTOM" -> gameModel.targetFps
+                else -> gameModel?.targetFps?.takeIf { it != 60 } ?: result.targetFps
+            }
         }
         val shouldForceMaxRefresh = (gameModel?.forceMaxRefreshRate ?: true) &&
             settingsPreferences.forceMaxHzOnBoost.first()

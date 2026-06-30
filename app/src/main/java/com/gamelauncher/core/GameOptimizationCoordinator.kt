@@ -376,6 +376,9 @@ class GameOptimizationCoordinator @Inject constructor(
 
     private fun getRequestedFps(gameModel: com.gamelauncher.data.model.GameModel?): Int? {
         if (gameModel == null) return null
+        val maxPerformanceRequested = gameModel.highPerformanceMode &&
+            (gameModel.graphicsMode == "PERFORMANCE" || gameModel.graphicsMode == "BALANCED")
+        if (maxPerformanceRequested) return null
         return when (gameModel.graphicsMode) {
             "PERFORMANCE" -> null
             "BALANCED" -> 90

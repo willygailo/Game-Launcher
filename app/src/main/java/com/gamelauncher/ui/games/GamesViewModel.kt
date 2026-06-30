@@ -17,11 +17,21 @@ import javax.inject.Inject
 
 data class GamesUiState(
     val isScanning: Boolean = true,
+    val scanProgressPercent: Int = 0,
+    val lastScannedAt: Long = 0L,
     val searchQuery: String = "",
     val selectedCategory: String = "All",
+    val selectedSortMode: GameSortMode = GameSortMode.NAME,
     val availableCategories: List<String> = listOf("All"),
     val filteredGames: List<GameModel> = emptyList()
 )
+
+enum class GameSortMode(val displayName: String) {
+    NAME("Name"),
+    RECENTLY_PLAYED("Recent"),
+    MOST_BOOSTED("Most Boosted"),
+    PERFORMANCE_MODE("Boost On")
+}
 
 @HiltViewModel
 class GamesViewModel @Inject constructor(
@@ -55,15 +65,31 @@ class GamesViewModel @Inject constructor(
         updateFilteredGames()
     }
 
+    fun setSortMode(sortMode: GameSortMode) {
+        _uiState.update { it.copy(selectedSortMode = sortMode) }
+        updateFilteredGames()
+    }
+
     fun refreshGames() {
         viewModelScope.launch {
             gamesRepository.scanAndSaveGames().collect { progress ->
                 when (progress) {
                     is ScanProgress.Scanning -> {
-                        _uiState.update { it.copy(isScanning = true) }
+                        _uiState.update {
+                            it.copy(
+                                isScanning = true,
+                                scanProgressPercent = progress.percentage.coerceIn(0, 100)
+                            )
+                        }
                     }
                     ScanProgress.Completed -> {
-                        _uiState.update { it.copy(isScanning = false) }
+                        _uiState.update {
+                            it.copy(
+                                isScanning = false,
+                                scanProgressPercent = 100,
+                                lastScannedAt = System.currentTimeMillis()
+                            )
+                        }
                     }
                     ScanProgress.Idle -> {}
                 }
@@ -74,6 +100,7 @@ class GamesViewModel @Inject constructor(
     private fun updateFilteredGames() {
         val query = _uiState.value.searchQuery
         val category = _uiState.value.selectedCategory
+        val sortMode = _uiState.value.selectedSortMode
         val allGames = _allGames.value
 
         val filtered = allGames.filter { game ->
@@ -84,11 +111,24 @@ class GamesViewModel @Inject constructor(
             matchesQuery && matchesCategory
         }
 
+        val sorted = when (sortMode) {
+            GameSortMode.NAME -> filtered.sortedBy { it.name.lowercase() }
+            GameSortMode.RECENTLY_PLAYED -> filtered.sortedWith(
+                compareByDescending<GameModel> { it.lastLaunched }.thenBy { it.name.lowercase() }
+            )
+            GameSortMode.MOST_BOOSTED -> filtered.sortedWith(
+                compareByDescending<GameModel> { it.totalBoostSessions }.thenBy { it.name.lowercase() }
+            )
+            GameSortMode.PERFORMANCE_MODE -> filtered.sortedWith(
+                compareByDescending<GameModel> { it.highPerformanceMode }.thenBy { it.name.lowercase() }
+            )
+        }
+
         val categories = listOf("All") + allGames.map { it.customCategory }.distinct().sorted()
 
         _uiState.update {
             it.copy(
-                filteredGames = filtered,
+                filteredGames = sorted,
                 availableCategories = categories
             )
         }

@@ -14,39 +14,42 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gamelauncher.ui.components.StatusBadge
 import com.gamelauncher.ui.theme.*
 
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val autoBoost by viewModel.globalAutoBoost.collectAsState()
-    val overlayEnabled by viewModel.isOverlayEnabled.collectAsState()
-    val detectorEnabled by viewModel.isGameDetectorEnabled.collectAsState()
-    val hasUsageAccess by viewModel.hasUsageAccessPermission.collectAsState()
-    val hasOverlayPerm by viewModel.hasOverlayPermission.collectAsState()
-    val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsState()
-    val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsState()
-    val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsState()
-    val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsState()
-    val hasPhoneState by viewModel.hasPhoneStatePermission.collectAsState()
+    val autoBoost by viewModel.globalAutoBoost.collectAsStateWithLifecycle()
+    val overlayEnabled by viewModel.isOverlayEnabled.collectAsStateWithLifecycle()
+    val detectorEnabled by viewModel.isGameDetectorEnabled.collectAsStateWithLifecycle()
+    val hasUsageAccess by viewModel.hasUsageAccessPermission.collectAsStateWithLifecycle()
+    val hasOverlayPerm by viewModel.hasOverlayPermission.collectAsStateWithLifecycle()
+    val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsStateWithLifecycle()
+    val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsStateWithLifecycle()
+    val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsStateWithLifecycle()
+    val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsStateWithLifecycle()
+    val hasPhoneState by viewModel.hasPhoneStatePermission.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     // Secure toggles
-    val secureAnimScale by viewModel.secureAnimScale.collectAsState()
-    val secureGameDriver by viewModel.secureGameDriver.collectAsState()
-    val secureSyncOff by viewModel.secureSyncOff.collectAsState()
-    val secureMobileData by viewModel.secureMobileData.collectAsState()
-    val secureBatterySaver by viewModel.secureBatterySaver.collectAsState()
-    val secureLocationOff by viewModel.secureLocationOff.collectAsState()
-    val secureTouchBoost by viewModel.secureTouchBoost.collectAsState()
-    val secureNetworkJitter by viewModel.secureNetworkJitter.collectAsState()
-    val secureRefreshRateLock by viewModel.secureRefreshRateLock.collectAsState()
-    val securePhantomKiller by viewModel.securePhantomKiller.collectAsState()
+    val secureAnimScale by viewModel.secureAnimScale.collectAsStateWithLifecycle()
+    val secureGameDriver by viewModel.secureGameDriver.collectAsStateWithLifecycle()
+    val secureSyncOff by viewModel.secureSyncOff.collectAsStateWithLifecycle()
+    val secureMobileData by viewModel.secureMobileData.collectAsStateWithLifecycle()
+    val secureBatterySaver by viewModel.secureBatterySaver.collectAsStateWithLifecycle()
+    val secureLocationOff by viewModel.secureLocationOff.collectAsStateWithLifecycle()
+    val secureTouchBoost by viewModel.secureTouchBoost.collectAsStateWithLifecycle()
+    val secureNetworkJitter by viewModel.secureNetworkJitter.collectAsStateWithLifecycle()
+    val secureRefreshRateLock by viewModel.secureRefreshRateLock.collectAsStateWithLifecycle()
+    val securePhantomKiller by viewModel.securePhantomKiller.collectAsStateWithLifecycle()
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Column(
@@ -68,6 +71,18 @@ fun SettingsScreen(
             text = "Compatibility Mode: Android 7+ | Works on Snapdragon, MediaTek, Exynos, Kirin, Tensor, and Unisoc",
             color = TextSecondary,
             style = MaterialTheme.typography.bodySmall
+        )
+
+        PermissionHealthCard(
+            permissions = listOf(
+                "System settings" to hasWriteSettings,
+                "Overlay" to hasOverlayPerm,
+                "Usage access" to hasUsageAccess,
+                "Battery exemption" to hasBatteryExempt,
+                "Notifications" to hasNotificationPerm,
+                "Phone state" to hasPhoneState
+            ),
+            advancedUnlocked = hasWriteSecure
         )
 
         // ── Standard Permissions ──────────────────────────────
@@ -126,8 +141,8 @@ fun SettingsScreen(
         ) { /* result handled by state polling */ }
 
         PermissionCard(
-            title = "Phone State (5G Detection)",
-            subtitle = "Detects 5G network for optimal boost settings",
+            title = "Phone State (5G / 5G+ Detection)",
+            subtitle = "Detects mobile data generation, 5G/5G+, and cellular signal for network boost status",
             buttonText = if (hasPhoneState) "Granted ✓" else "Grant Phone State",
             granted = hasPhoneState,
             onClick = {
@@ -277,7 +292,7 @@ fun SettingsScreen(
             onCheckedChange = { viewModel.setGameDetectorEnabled(it) }
         )
 
-        val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+        val isDarkTheme by viewModel.isDarkTheme.collectAsStateWithLifecycle()
         SettingCard(
             title = "Dark Theme",
             subtitle = "Toggle between dark and light theme",
@@ -285,7 +300,7 @@ fun SettingsScreen(
             onCheckedChange = { viewModel.setDarkTheme(it) }
         )
 
-        viewModel.profileMessage.collectAsState().value?.let { msg ->
+        viewModel.profileMessage.collectAsStateWithLifecycle().value?.let { msg ->
             LaunchedEffect(msg) {
                 kotlinx.coroutines.delay(3000)
                 viewModel.clearProfileMessage()
@@ -327,6 +342,72 @@ fun SettingsScreen(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text("Stop All Active Boosts", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun PermissionHealthCard(
+    permissions: List<Pair<String, Boolean>>,
+    advancedUnlocked: Boolean
+) {
+    val grantedCount = permissions.count { it.second }
+    val totalCount = permissions.size
+    val ready = grantedCount == totalCount
+    val accent = when {
+        ready && advancedUnlocked -> SuccessGreen
+        ready -> PrimaryNeon
+        grantedCount >= totalCount / 2 -> WarningOrange
+        else -> ErrorRed
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.35f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Setup Health", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                    Text(
+                        "$grantedCount of $totalCount standard permissions granted",
+                        color = TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                StatusBadge(
+                    text = if (ready) "READY" else "ACTION NEEDED",
+                    color = accent
+                )
+            }
+
+            LinearProgressIndicator(
+                progress = { grantedCount.toFloat() / totalCount.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(50)),
+                color = accent,
+                trackColor = SurfaceVariantDark
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                StatusBadge(
+                    text = if (advancedUnlocked) "ADB+ UNLOCKED" else "ADB+ LOCKED",
+                    color = if (advancedUnlocked) PrimaryNeon else TextSecondary,
+                    modifier = Modifier.weight(1f)
+                )
+                StatusBadge(
+                    text = if (ready) "CORE READY" else "CHECK PERMS",
+                    color = accent,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
@@ -390,10 +471,13 @@ fun PermissionCard(
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onClick,
+                enabled = !granted,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (granted) SuccessGreen else SecondaryNeon,
-                    contentColor = Color.White
+                    contentColor = Color.White,
+                    disabledContainerColor = SuccessGreen.copy(alpha = 0.18f),
+                    disabledContentColor = SuccessGreen
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {

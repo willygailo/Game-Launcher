@@ -6,6 +6,7 @@ import com.gamelauncher.data.local.GameDao
 import com.gamelauncher.data.model.GameModel
 import com.gamelauncher.data.model.GamingSession
 import com.gamelauncher.data.repository.GamesRepository
+import com.gamelauncher.domain.usecase.LaunchGameAndBoostUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GameDetailsViewModel @Inject constructor(
     private val gamesRepository: GamesRepository,
-    private val gameDao: GameDao
+    private val gameDao: GameDao,
+    private val launchGameAndBoostUseCase: LaunchGameAndBoostUseCase
 ) : ViewModel() {
 
     private val _game = MutableStateFlow<GameModel?>(null)
@@ -48,6 +50,17 @@ class GameDetailsViewModel @Inject constructor(
     }
 
     fun updateGame(game: GameModel) {
-        viewModelScope.launch { gamesRepository.updateGame(game) }
+        viewModelScope.launch {
+            gamesRepository.updateGame(game)
+            _game.value = game
+        }
+    }
+
+    fun launchGame() {
+        val currentGame = _game.value ?: return
+        viewModelScope.launch {
+            launchGameAndBoostUseCase(currentGame)
+            _game.value = gamesRepository.getGame(currentGame.packageName) ?: currentGame
+        }
     }
 }

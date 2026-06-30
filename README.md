@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.2-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.3-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -46,6 +46,7 @@
 | **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ 🆕 |
 | **Game Library** | Auto-detect ng lahat ng installed games | ✅ |
 | **Per-Game Boosts** | Custom FPS capped to the real device panel, game cap, and thermal state | ✅ |
+| **Max Performance Profile** | Boost ON now switches games to max safe device/game planning with max Hz, GPU, touch, network, and aggressive RAM defaults | ✅ 🆕 |
 | **Immersive Controls** | DND mode (INTERRUPTION_FILTER_NONE), max brightness automation | ✅ |
 | **Home Widget** | Quick Boost at Open buttons sa home screen | ✅ |
 | **Quick Settings Tile** | Toggle booster sa notification panel | ✅ |
@@ -98,6 +99,21 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.3: "Performance Maintenance" Max Device/Game Boost
+
+> Maintenance release focused on making Boost ON behave like a real max-performance profile while still respecting Android, OEM, game-engine, and thermal limits.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Version Bump** | Build updated to versionCode `323` / versionName `3.2.3`, producing a unique APK name on every build. | ✅ |
+| **Boost ON Max Profile** | Turning Boost ON now enables `PERFORMANCE` graphics mode, max refresh request, GPU tuning, touch boost, network boost, and aggressive RAM cleanup defaults. | ✅ |
+| **Game/Device Specific Planning** | FPS and Hz are planned from supported display modes, known game max FPS metadata, requested profile, and current thermal status. | ✅ |
+| **240 FPS Metadata Path** | Known-game discovery now allows game FPS metadata up to `240` instead of hard-capping at `165`. | ✅ |
+| **Manual + Auto Detector Parity** | Manual launch and auto game detection now use the same max-safe planning behavior. | ✅ |
+| **Network Stack UI** | Dashboard shows WiFi, mobile data, dual-network, validated internet, 5G/5G+, signal, bandwidth, and quality score. | ✅ |
+
+Performance reality: the app unlocks every supported Android-side boost it can request. True kernel/GPU governor forcing still requires root, and protected secure settings still require the documented one-time ADB grant.
 
 ### 🆕 v3.2.2: "Device-Planned FPS/Hz" & SDK 36 Upgrade
 

@@ -1,6 +1,7 @@
 package com.gamelauncher.ui
 
 import android.os.Bundle
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 
@@ -97,37 +98,42 @@ fun MainScreen() {
         Screen.Games,
         Screen.Settings
     )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = items.any { screen ->
+        currentDestination?.hierarchy?.any { it.route == screen.route } == true
+    }
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = com.gamelauncher.ui.theme.SurfaceDark,
-                contentColor = Color.White
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = null) },
-                        label = { Text(screen.title, fontWeight = FontWeight.Bold) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = com.gamelauncher.ui.theme.SurfaceDark,
+                    contentColor = Color.White
+                ) {
+                    items.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon, contentDescription = screen.title) },
+                            label = { Text(screen.title, fontWeight = FontWeight.Bold) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.Black,
-                            selectedTextColor = PrimaryNeon,
-                            indicatorColor = PrimaryNeon,
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.Black,
+                                selectedTextColor = PrimaryNeon,
+                                indicatorColor = PrimaryNeon,
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -146,7 +152,7 @@ fun MainScreen() {
                 route = Screen.GameDetails.route + "/{packageName}",
                 arguments = listOf(navArgument("packageName") { type = NavType.StringType })
             ) { backStackEntry ->
-                val packageName = backStackEntry.arguments?.getString("packageName") ?: return@composable
+                val packageName = backStackEntry.arguments?.getString("packageName")?.let(Uri::decode) ?: return@composable
                 GameDetailsScreen(
                     packageName = packageName,
                     onBack = { navController.popBackStack() }

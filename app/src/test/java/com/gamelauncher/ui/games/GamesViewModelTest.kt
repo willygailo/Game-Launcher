@@ -38,12 +38,18 @@ class GamesViewModelTest {
             GameModel(
                 packageName = "com.test.game1",
                 name = "Test Game 1",
-                customCategory = "RPG"
+                customCategory = "RPG",
+                lastLaunched = 1_000L,
+                totalBoostSessions = 4,
+                highPerformanceMode = false
             ),
             GameModel(
                 packageName = "com.test.game2",
                 name = "Test Game 2",
-                customCategory = "Action"
+                customCategory = "Action",
+                lastLaunched = 2_000L,
+                totalBoostSessions = 1,
+                highPerformanceMode = true
             )
         )
 
@@ -70,6 +76,7 @@ class GamesViewModelTest {
         assertThat(state.filteredGames).hasSize(2)
         assertThat(state.availableCategories).containsExactly("All", "Action", "RPG").inOrder()
         assertThat(state.isScanning).isFalse()
+        assertThat(state.scanProgressPercent).isEqualTo(100)
     }
 
     @Test
@@ -111,5 +118,29 @@ class GamesViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         verify(gamesRepository, times(2)).scanAndSaveGames()
+    }
+
+    @Test
+    fun `sort by recently played orders games by last launched descending`() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.setSortMode(GameSortMode.RECENTLY_PLAYED)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.filteredGames.map { it.packageName })
+            .containsExactly("com.test.game2", "com.test.game1")
+            .inOrder()
+    }
+
+    @Test
+    fun `sort by performance mode puts boosted games first`() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.setSortMode(GameSortMode.PERFORMANCE_MODE)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.filteredGames.first().packageName).isEqualTo("com.test.game2")
     }
 }
