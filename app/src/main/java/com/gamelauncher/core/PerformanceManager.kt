@@ -661,7 +661,7 @@ class PerformanceManager @Inject constructor(
         val props = listOf(
             "debug.hwui.overdraw" to "false",
             "debug.performance.tuning" to "1",
-            "ro.sys.fw.bg_apps_limit" to "3",
+            "ro.sys.fw.bg_apps_limit" to "60",
             "persist.sys.purgeable_assets" to "1",
             "ro.hwui.texture_cache_size" to "144",
             "ro.hwui.layer_cache_size" to "96",
@@ -727,7 +727,12 @@ class PerformanceManager @Inject constructor(
             "windowsmgr.max_events_per_sec" to "275",
             "ro.min.fling_velocity" to "8000",
             "ro.max.fling_velocity" to "12000",
-            "touch.presure.scale" to "0.001"
+            "touch.presure.scale" to "0.001",
+            // Explicitly disable any FPS limit
+            "persist.sys.NV_FPSLIMIT" to "0",
+            "debug.sf.max_fps" to "0",
+            "persist.sys.app.fps" to "0",
+            "vendor.display.forced_max_fps" to "240"
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")
