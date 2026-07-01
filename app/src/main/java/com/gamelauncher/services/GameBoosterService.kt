@@ -89,16 +89,11 @@ class GameBoosterService : Service() {
             return
         }
 
-        var gameName: String = ""
-        try {
-            gameName = packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-        } catch (e: Exception) {
-            gameName = pkg
-            Log.e(TAG, "Failed to get game name for $pkg: ${e.message}")
-        }
-        gameName = runCatching {
+        val gameName = runCatching {
             packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-        }.getOrDefault("Selected Game")
+        }.onFailure {
+            Log.e(TAG, "Failed to get game name for $pkg: ${it.message}")
+        }.getOrDefault(pkg)
 
         val gameInfo = SupportedGames.findGame(pkg)
         val initialPlan = devicePerformancePlanner.planForGame(

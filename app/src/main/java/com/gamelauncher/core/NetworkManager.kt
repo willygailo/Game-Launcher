@@ -8,10 +8,10 @@ import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
+import com.gamelauncher.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -33,7 +33,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class NetworkManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    @ApplicationScope private val appScope: CoroutineScope
 ) {
     // ── StateFlows ─────────────────────────────────────────────────────
 
@@ -76,8 +77,6 @@ class NetworkManager @Inject constructor(
         context.getSystemService(TelephonyManager::class.java)
 
     private var wifiLock: WifiManager.WifiLock? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
     // ── Enum ───────────────────────────────────────────────────────────
 
     enum class NetworkType {
@@ -113,13 +112,13 @@ class NetworkManager @Inject constructor(
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-            scope.launch { refreshNetworkStatus() }
+            appScope.launch { refreshNetworkStatus() }
         }
         override fun onLost(network: Network) {
-            scope.launch { refreshNetworkStatus() }
+            appScope.launch { refreshNetworkStatus() }
         }
         override fun onAvailable(network: Network) {
-            scope.launch { refreshNetworkStatus() }
+            appScope.launch { refreshNetworkStatus() }
         }
     }
 

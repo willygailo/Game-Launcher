@@ -4,7 +4,9 @@ import android.content.Context
 import android.os.Build
 import android.os.PowerManager
 import com.gamelauncher.data.preference.SettingsPreferences
+import com.gamelauncher.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -26,7 +28,8 @@ class GameOptimizationCoordinator @Inject constructor(
     private val devicePerformancePlanner: DevicePerformancePlanner,
     private val settingsPreferences: SettingsPreferences,
     private val gameDao: com.gamelauncher.data.local.GameDao,
-    private val batterySaverManager: BatterySaverManager  // ── NEW
+    private val batterySaverManager: BatterySaverManager,
+    @ApplicationScope private val appScope: CoroutineScope
 ) {
     data class OptimizationResult(
         val success: Boolean,
@@ -128,7 +131,8 @@ class GameOptimizationCoordinator @Inject constructor(
                 appliedOptimizations.add("Background Standby Lock Active")
 
                 // Background ART speed AOT compilation boost (does not block main launch thread)
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                // Uses the app-scoped supervised scope — no zombie jobs or leaks.
+                appScope.launch(Dispatchers.IO) {
                     rootShellManager.executeCommand("cmd package compile -m speed -f $packageName")
                 }
                 appliedOptimizations.add("ART Speed AOT Optimization Queued")
