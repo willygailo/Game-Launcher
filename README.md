@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.3-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.4-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -99,6 +99,17 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.4: "Raw Performance & No Limits"
+
+> Focuses on delivering unrestricted raw performance. We stripped out artificial limits, FPS capping algorithms, and background process killers to ensure the hardware runs completely unchained.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Raw Uncapped FPS** | Removed all FPS snapping and limits from the monitoring engine to display the true, raw frame timings from the Choreographer. | ✅ |
+| **Absolute Performance** | Elevated background app limits to 60 and completely zeroed out system-level limits (`NV_FPSLIMIT`, `max_fps`, `app.fps`) to let games run at max potential. | ✅ |
+| **Battery Precision Fix** | Fixed a bug where battery status could get stuck at 100%. Now queries `BatteryManager` directly on initialization for immediate, accurate readings. | ✅ |
+| **Target Upgrade (v3.2.4)** | Build configuration bumped to versionCode 324 / versionName 3.2.4. | ✅ |
 
 ### 🆕 v3.2.3: "Performance Maintenance" Max Device/Game Boost
 
@@ -406,8 +417,8 @@ cd Game-Launcher
 ./gradlew assembleDebug
 
 # APK locations:
-# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.3-debug.apk
-# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.3-release.apk
+# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.4-debug.apk
+# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.4-release.apk
 ```
 
 ### Install sa Device
@@ -417,7 +428,7 @@ cd Game-Launcher
 # Settings > About Phone > Tap "Build Number" 7 times
 # Settings > System > Developer Options > Enable USB Debugging
 
-adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.3-debug.apk
+adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.4-debug.apk
 ```
 
 ### Run Tests
@@ -712,7 +723,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.3](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.3)
+- [Latest Release: v3.2.4](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.4)
 - Or build from source using the instructions above
 
 ---
