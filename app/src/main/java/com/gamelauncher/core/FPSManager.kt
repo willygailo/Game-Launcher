@@ -218,21 +218,11 @@ class FPSManager @Inject constructor(
         val sinceLastCalc = frameTimeNanos - lastFpsCalcTimeNanos
         if (sinceLastCalc >= FPS_SAMPLE_WINDOW_NS) {
             val rawFps = (frameCount * 1_000_000_000f) / sinceLastCalc
-            
-            var finalFps = rawFps
-            val knownHz = intArrayOf(60, 90, 120, 144, 165, 240)
-            for (hz in knownHz) {
-                if (abs(rawFps - hz) <= hz * 0.15f) {
-                    finalFps = hz.toFloat()
-                    break
-                }
-            }
-            
-            _fps.value = finalFps
+            _fps.value = rawFps
 
             // Frame drop alert
             val dropThreshold = targetFps * 0.85f
-            _frameDropAlert.value = finalFps < dropThreshold && targetFps > 0
+            _frameDropAlert.value = rawFps < dropThreshold && targetFps > 0
 
             frameCount = 0
             lastFpsCalcTimeNanos += FPS_SAMPLE_WINDOW_NS
@@ -245,16 +235,7 @@ class FPSManager @Inject constructor(
         val sinceAvgCalc = frameTimeNanos - lastAvgCalcTimeNanos
         if (sinceAvgCalc >= AVG_SAMPLE_WINDOW_NS) {
             val avg = (avgWindowCount * 1_000_000_000f) / sinceAvgCalc
-            
-            var finalAvgFps = avg
-            val knownHz = intArrayOf(60, 90, 120, 144, 165, 240)
-            for (hz in knownHz) {
-                if (abs(avg - hz) <= hz * 0.15f) {
-                    finalAvgFps = hz.toFloat()
-                    break
-                }
-            }
-            _avgFps.value = finalAvgFps
+            _avgFps.value = avg
             avgWindowCount = 0
             
             lastAvgCalcTimeNanos += AVG_SAMPLE_WINDOW_NS
