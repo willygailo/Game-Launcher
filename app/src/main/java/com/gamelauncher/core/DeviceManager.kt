@@ -37,7 +37,18 @@ class DeviceManager @Inject constructor(
     private var thermalHistory = mutableListOf<Int>()
 
     init {
+        initInitialBatteryState()
         registerBatteryReceiver()
+    }
+
+    private fun initInitialBatteryState() {
+        try {
+            val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            if (level in 1..100) {
+                batteryLevel = level
+            }
+        } catch (_: Exception) {}
     }
 
     private fun registerBatteryReceiver() {

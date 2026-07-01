@@ -708,7 +708,26 @@ class PerformanceManager @Inject constructor(
             "net.rmnet0.dns2" to "8.8.4.4",
             // Battery saver system-level kill (root layer)
             "persist.sys.power_save_mode" to "0",
-            "persist.sys.battery_saver" to "0"
+            "persist.sys.battery_saver" to "0",
+            // Advanced extra tweaks to control 50% android system overhead
+            "debug.sf.enable_hwc_vds" to "1",
+            "debug.cpurend.vsync" to "false",
+            "ro.surface_flinger.use_smart_90_for_video" to "0",
+            "debug.performance.tuning" to "1",
+            "video.accelerate.hw" to "1",
+            "ro.vendor.qti.core_ctl_max_cpu" to "4",
+            "ro.vendor.qti.sys.fw.bg_apps_limit" to "60",
+            "persist.sys.performance" to "true",
+            "persist.sys.performance.profile" to "1",
+            "ro.kernel.android.checkjni" to "0",
+            "ro.config.nocheckin" to "1",
+            "profiler.force_disable_ulog" to "1",
+            "profiler.force_disable_err_rpt" to "1",
+            "debug.sf.disable_backoff" to "1",
+            "windowsmgr.max_events_per_sec" to "275",
+            "ro.min.fling_velocity" to "8000",
+            "ro.max.fling_velocity" to "12000",
+            "touch.presure.scale" to "0.001"
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")

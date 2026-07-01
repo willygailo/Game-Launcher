@@ -72,10 +72,25 @@ class FpsMonitor @Inject constructor() : Choreographer.FrameCallback {
         val timeSinceLastReportNs = frameTimeNanos - lastFpsReportNs
         frameCount++
         if (timeSinceLastReportNs >= 1_000_000_000L) {
-            currentFps = (frameCount * 1_000_000_000f) / timeSinceLastReportNs
+            val rawFps = (frameCount * 1_000_000_000f) / timeSinceLastReportNs
+            
+            var finalFps = rawFps
+            val knownHz = intArrayOf(60, 90, 120, 144, 165, 240)
+            for (hz in knownHz) {
+                if (kotlin.math.abs(rawFps - hz) <= hz * 0.15f) {
+                    finalFps = hz.toFloat()
+                    break
+                }
+            }
+
+            currentFps = finalFps
             _fps.value = currentFps
             frameCount = 0
-            lastFpsReportNs = frameTimeNanos
+            
+            lastFpsReportNs += 1_000_000_000L
+            if (frameTimeNanos - lastFpsReportNs > 1_000_000_000L) {
+                lastFpsReportNs = frameTimeNanos
+            }
         }
 
         lastFrameTimeNanos = frameTimeNanos
