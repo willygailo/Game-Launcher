@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.4-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.6-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -41,6 +41,7 @@
 | **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
 | **Live Boost Notification** | Real-time FPS, Hz, network type & battery sa notification | ✅ |
 | **Battery Saver Killer** | Auto-disable battery saver + Doze whitelist on boost start | ✅ 🆕 |
+| **Bypass Charging** | Pauses battery charging via Shizuku (non-root) or root shell to reduce heat during gaming | ✅ 🆕 |
 | **5G / WiFi Dual Stack** | 5G NR detection + WiFi 6E/7 + simultaneous WiFi+Data mode | ✅ 🆕 |
 | **Max Hz Forcer** | Requests device maximum Hz through supported Settings APIs / ADB grants where OEM allows | ✅ 🆕 |
 | **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ 🆕 |
@@ -99,6 +100,27 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.6: "Bypass Charging & Shizuku Integration"
+
+> Introduces Shizuku (ADB-shell level access) integration to support rootless Bypass Charging for all Android models, preventing battery heat and degradation during intense gaming.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Bypass Charging** | Stops battery cell charging while keeping the device powered through the charger. Works on Android 10-16. | ✅ |
+| **Shizuku Integration** | Wraps the Shizuku API to execute shell commands without root, fallback to Root shell if available. | ✅ |
+| **Bypass Charging UI** | Added a toggle card in the Dashboard with clear Wireless Debugging / Shizuku setup steps. | ✅ |
+| **Reflection API Hook** | Resolved compilation constraints with Shizuku remote process creation. | ✅ |
+
+### 🆕 v3.2.5: "Architecture Cleanup & Build Stabilization"
+
+> Focused on standardizing the project's build structure and eliminating memory leaks through coroutine lifecycle optimizations.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Hilt Application Scope** | Replaced unmanaged CoroutineScopes with an injected SupervisorJob-backed `@ApplicationScope` across BootReceivers, NetworkManager, and Optimization Coords. | ✅ |
+| **Root build.gradle.kts** | Added the standard top-level project build script with plugin management definitions to comply with Android Gradle guidelines. | ✅ |
+| **Redundant Cleanups** | Removed double PackageManager calls in `GameBoosterService` for clean package resolution. | ✅ |
 
 ### 🆕 v3.2.4: "Raw Performance & No Limits"
 
