@@ -163,6 +163,17 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="game_booster_channel" />
 
+        <!-- Shizuku provider — REQUIRED for app to bind to Shizuku binder service.
+             Without this, Shizuku.pingBinder() always returns false and the
+             "NEEDS SETUP" state is permanently shown. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+
     </application>
 
 </manifest>

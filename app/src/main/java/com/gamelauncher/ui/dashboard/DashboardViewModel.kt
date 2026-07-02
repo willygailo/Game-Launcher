@@ -1,8 +1,12 @@
 package com.gamelauncher.ui.dashboard
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
+import android.os.Build
+import com.gamelauncher.core.GameLauncherApp
 import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -76,6 +80,15 @@ class DashboardViewModel @Inject constructor(
     private val _hasWriteSecure = MutableStateFlow(false)
     val hasWriteSecureSettings: StateFlow<Boolean> = _hasWriteSecure.asStateFlow()
 
+    // Listens for Shizuku binder connect/disconnect broadcasts from GameLauncherApp
+    private val shizukuStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+            if (intent?.action == GameLauncherApp.ACTION_SHIZUKU_CHANGED) {
+                refreshBypassChargingState()
+            }
+        }
+    }
+
     init {
         networkManager.startMonitoring()
         startMonitoring()
@@ -85,6 +98,13 @@ class DashboardViewModel @Inject constructor(
         loadSessionStats()
         checkWriteSecure()
         refreshBypassChargingState()
+        // Register Shizuku state receiver so bypass card auto-refreshes on connect
+        val filter = IntentFilter(GameLauncherApp.ACTION_SHIZUKU_CHANGED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(shizukuStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            context.registerReceiver(shizukuStateReceiver, filter)
+        }
     }
 
     private fun checkWriteSecure() {
@@ -338,5 +358,7 @@ class DashboardViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         networkManager.stopMonitoring()
+        try { context.unregisterReceiver(shizukuStateReceiver) } catch (_: Exception) {}
     }
 }
+
