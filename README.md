@@ -107,20 +107,32 @@ adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 
 | Feature | Description | Status |
 |---|---|---|
-| **Bypass Charging** | Stops battery cell charging while keeping the device powered through the charger. Works on Android 10-16. | ✅ |
-| **Shizuku Integration** | Wraps the Shizuku API to execute shell commands without root, fallback to Root shell if available. | ✅ |
-| **Bypass Charging UI** | Added a toggle card in the Dashboard with clear Wireless Debugging / Shizuku setup steps. | ✅ |
-| **Reflection API Hook** | Resolved compilation constraints with Shizuku remote process creation. | ✅ |
+| **Bypass Charging** | Stops battery cell charging while keeping device powered via charger. Works on Android 10-16, all OEMs. | ✅ |
+| **Shizuku Integration** | `ShizukuShellManager` wraps the Shizuku API for ADB-shell-level command execution without root. Falls back to `RootShellManager` if root is available. | ✅ |
+| **3-Layer Bypass Strategy** | Android 14+ HAL (`cmd battery disable charging`) → universal `dumpsys battery` override → device-specific sysfs paths (Samsung/Xiaomi/ASUS ROG/Sony/Pixel). | ✅ |
+| **Bypass Charging UI** | Toggle card in Dashboard with live status (ACTIVE / NEEDS SETUP / UNAVAILABLE), grant-permission button, and inline setup instructions. | ✅ |
 
-### 🆕 v3.2.5: "Architecture Cleanup & Build Stabilization"
+### 🆕 v3.2.5: "Shizuku Binder Fix"
 
-> Focused on standardizing the project's build structure and eliminating memory leaks through coroutine lifecycle optimizations.
+> Critical fix: Bypass Charging card was permanently stuck on NEEDS SETUP even after starting Shizuku via ADB, because `ShizukuProvider` was missing from `AndroidManifest.xml`.
 
-| Feature | Description | Status |
+| Fix | Description | Status |
 |---|---|---|
-| **Hilt Application Scope** | Replaced unmanaged CoroutineScopes with an injected SupervisorJob-backed `@ApplicationScope` across BootReceivers, NetworkManager, and Optimization Coords. | ✅ |
-| **Root build.gradle.kts** | Added the standard top-level project build script with plugin management definitions to comply with Android Gradle guidelines. | ✅ |
-| **Redundant Cleanups** | Removed double PackageManager calls in `GameBoosterService` for clean package resolution. | ✅ |
+| **ShizukuProvider in Manifest** | Added `rikka.shizuku.ShizukuProvider` — the required ContentProvider that establishes the IPC binder between the app and the Shizuku service. Without it, `pingBinder()` always returns `false`. | ✅ |
+| **Binder Lifecycle Listeners** | `addBinderReceivedListenerSticky()` + `addBinderDeadListener()` registered in `Application.onCreate()` so binder state is tracked from first launch. | ✅ |
+| **Auto-Refresh on Connect** | `DashboardViewModel` registers a `BroadcastReceiver` for `ACTION_SHIZUKU_CHANGED` — the bypass card transitions from NEEDS SETUP → READY automatically the moment Shizuku connects, no restart required. | ✅ |
+
+#### ⚡ Bypass Charging Setup (non-root)
+
+```bash
+# One-time setup via USB or Wireless ADB:
+adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
+
+# Then inside the app:
+# Dashboard → ⚡ Bypass Charging → tap "Grant Shizuku Permission"
+```
+
+> Shizuku stays active even after USB disconnect (as a background process). The app will automatically reconnect via the binder listener the next time it starts.
 
 ### 🆕 v3.2.4: "Raw Performance & No Limits"
 
@@ -439,8 +451,8 @@ cd Game-Launcher
 ./gradlew assembleDebug
 
 # APK locations:
-# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.4-debug.apk
-# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.4-release.apk
+# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.6-debug.apk
+# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.6-release.apk
 ```
 
 ### Install sa Device
@@ -450,7 +462,7 @@ cd Game-Launcher
 # Settings > About Phone > Tap "Build Number" 7 times
 # Settings > System > Developer Options > Enable USB Debugging
 
-adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.4-debug.apk
+adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.6-debug.apk
 ```
 
 ### Run Tests
@@ -559,6 +571,7 @@ adb shell appops set com.gamelauncher.app GET_USAGE_STATS allow
 
 | Feature | Without Root | With Root |
 |---|---|---|
+| **Bypass Charging (Shizuku)** | ✅ (ADB one-time setup) | ✅ (direct sysfs) |
 | ADPF Performance Session (Android 12+) | ✅ | ✅ |
 | Wake Lock (PowerManager) | ✅ | ✅ |
 | Thread Priority Boost | ✅ | ✅ |
@@ -681,6 +694,26 @@ Normal on non-root devices. Root-only features (CPU Governor, GPU kernel tuning,
 
 </details>
 
+<details>
+<summary><strong>Bypass Charging shows "NEEDS SETUP" even after starting Shizuku?</strong></summary>
+
+This was fixed in v3.2.5. Make sure you installed the latest APK, then:
+
+1. Start Shizuku via ADB:
+```bash
+adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
+```
+2. Open Game Launcher → Dashboard → tap **Grant Shizuku Permission**
+3. The card automatically transitions from NEEDS SETUP → ACTIVE
+
+If still stuck, verify Shizuku is running:
+```bash
+adb shell ps | grep shizuku
+# Should show: shizuku_server
+```
+
+</details>
+
 ---
 
 <div align="center">
@@ -693,12 +726,15 @@ Normal on non-root devices. Root-only features (CPU Governor, GPU kernel tuning,
 app/src/main/java/com/gamelauncher/
 ├── core/              # Performance, Device, FPS/Jank, SoC, DND, Network, Touch, Thermals
 │   ├── BatterySaverManager.kt     # 🆕 Triple-layer battery saver kill + Doze whitelist
+│   ├── BypassChargingManager.kt   # 🆕 Non-root bypass charging (Shizuku / dumpsys / sysfs)
+│   ├── ShizukuShellManager.kt     # 🆕 ADB-shell-level command executor via Shizuku API
 │   ├── FPSManager.kt              # 🆕 Jank detection, rolling avg, max Hz forcer
 │   ├── NetworkManager.kt          # 🆕 5G NR, WiFi 6E/7, dual-stack, quality score
 │   ├── PerformanceManager.kt      # CPU/GPU/ADPF + mobile_data_always_on
 │   ├── GameOptimizationCoordinator.kt  # Main orchestrator (now kills battery saver first)
 │   ├── BenchmarkManager.kt        # CPU/GPU/Memory benchmark
 │   ├── ProfileManager.kt          # Game profile import/export
+│   ├── GameLauncherApp.kt         # 🆕 Shizuku binder listeners registered on startup
 │   └── ...
 ├── data/              # Database, Models, Repository
 │   ├── local/         # Room Database & DAOs
@@ -717,7 +753,7 @@ app/src/main/java/com/gamelauncher/
 │   └── GameBoosterTileService     # Quick Settings tile
 ├── ui/                # UI Components (Compose)
 │   ├── components/    # Reusable UI components (GameCard, BoostToggleRow, MiniTag)
-│   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core
+│   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core, Bypass Charging
 │   ├── games/         # Games Library screen and search functionality
 │   ├── onboarding/    # 4-step onboarding walkthrough
 │   ├── settings/      # Settings w/ permissions, theme toggle, import/export
@@ -745,7 +781,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.6](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.6)
+- [Latest Release: v3.2.5](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.5)
 - Or build from source using the instructions above
 
 ---
