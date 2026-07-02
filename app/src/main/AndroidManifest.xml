@@ -41,6 +41,10 @@
     <!-- Network connectivity change (needed for dual WiFi+Data) -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
+    <!-- Shizuku package visibility (Android 11+ needs this to detect Shizuku is installed) -->
+    <queries>
+        <package android:name="moe.shizuku.privileged.api" />
+    </queries>
 
     <application
         android:name=".core.GameLauncherApp"

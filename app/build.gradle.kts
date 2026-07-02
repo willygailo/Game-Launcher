@@ -15,8 +15,8 @@ android {
         applicationId = "com.gamelauncher.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = 325
-        versionName = "3.2.5"
+        versionCode = 326
+        versionName = "3.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -199,6 +199,10 @@ dependencies {
 
     // Security
     implementation(libs.tink.android)
+
+    // Shizuku (non-root ADB shell access — runs adb shell-level cmds from app)
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)

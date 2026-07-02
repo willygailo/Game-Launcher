@@ -47,6 +47,8 @@ fun DashboardScreen(
     val benchmarkResult by viewModel.benchmarkResult.collectAsStateWithLifecycle()
     val isBenchmarking by viewModel.isBenchmarking.collectAsStateWithLifecycle()
     val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsStateWithLifecycle()
+    val isBypassChargingEnabled by viewModel.isBypassChargingEnabled.collectAsStateWithLifecycle()
+    val isBypassShellAvailable by viewModel.isBypassShellAvailable.collectAsStateWithLifecycle()
     var advancedExpanded by remember { mutableStateOf(false) }
 
     LifecycleResumeEffect(Unit) {
@@ -358,6 +360,115 @@ fun DashboardScreen(
                         valueRange = 0.1f..1f,
                         colors = SliderDefaults.colors(thumbColor = SecondaryNeon, activeTrackColor = SecondaryNeon, inactiveTrackColor = SurfaceVariantDark)
                     )
+                }
+            }
+        }
+
+        // ── Bypass Charging Card ────────────────────────────
+        Card(
+            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (isBypassChargingEnabled) WarningOrange.copy(alpha = 0.6f)
+                else PrimaryNeon.copy(alpha = 0.25f)
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "\u26a1 Bypass Charging",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (isBypassChargingEnabled) WarningOrange else PrimaryNeon,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    StatusBadge(
+                        text = when {
+                            isBypassChargingEnabled -> "ACTIVE"
+                            isBypassShellAvailable  -> "READY"
+                            else                    -> "NEEDS SETUP"
+                        },
+                        color = when {
+                            isBypassChargingEnabled -> WarningOrange
+                            isBypassShellAvailable  -> SuccessGreen
+                            else                    -> TextSecondary
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    "Pauses battery cell charging while device stays powered via cable. " +
+                    "Prevents heat during gaming. Requires Shizuku or ADB access.",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (isBypassShellAvailable) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                if (isBypassChargingEnabled) "Bypass ON — Not Charging"
+                                else "Bypass OFF — Charging normally",
+                                color = if (isBypassChargingEnabled) WarningOrange else TextPrimary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Battery % paused, device powered via cable",
+                                color = TextSecondary,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        Switch(
+                            checked = isBypassChargingEnabled,
+                            onCheckedChange = viewModel::toggleBypassCharging,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = WarningOrange,
+                                checkedTrackColor = WarningOrange.copy(alpha = 0.4f)
+                            )
+                        )
+                    }
+                } else {
+                    // Shizuku not available — show setup instructions
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(SurfaceVariantDark)
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            "Setup Required (one-time only):",
+                            color = WarningOrange,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "1. Install Shizuku from Play Store\n" +
+                            "2. Enable Wireless Debugging in Developer Options\n" +
+                            "3. Tap \"Pair\" inside Shizuku\n" +
+                            "4. Or run once via USB:\n   adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.labelSmall,
+                            lineHeight = 18.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = viewModel::requestShizukuPermission,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryNeon),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Grant Shizuku Permission", color = PrimaryNeon, style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
                 }
             }
         }

@@ -8,12 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gamelauncher.core.BenchmarkManager
 import com.gamelauncher.core.BenchmarkResult
+import com.gamelauncher.core.BypassChargingManager
 import com.gamelauncher.core.DeviceManager
 import com.gamelauncher.core.FpsMonitor
 import com.gamelauncher.core.ImmersiveModeManager
 import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.core.RootShellManager
+import com.gamelauncher.core.ShizukuShellManager
 import com.gamelauncher.data.local.GameDao
 import com.gamelauncher.data.model.DeviceSpecs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +38,9 @@ class DashboardViewModel @Inject constructor(
     private val rootShellManager: RootShellManager,
     private val fpsMonitor: FpsMonitor,
     private val gameDao: GameDao,
-    private val benchmarkManager: BenchmarkManager
+    private val benchmarkManager: BenchmarkManager,
+    private val bypassChargingManager: BypassChargingManager,
+    private val shizukuShellManager: ShizukuShellManager
 ) : ViewModel() {
 
     private val _deviceSpecs = MutableStateFlow(DeviceSpecs())
@@ -80,6 +84,7 @@ class DashboardViewModel @Inject constructor(
         refreshPermissionStates()
         loadSessionStats()
         checkWriteSecure()
+        refreshBypassChargingState()
     }
 
     private fun checkWriteSecure() {
@@ -302,6 +307,32 @@ class DashboardViewModel @Inject constructor(
             deviceManager.setCoreOnline(coreIndex, online)
             _coreOnlineStatus.value = deviceManager.getPerCoreOnlineStatus()
         }
+    }
+
+    // ── Bypass Charging ───────────────────────────────────────────────
+
+    /** Whether Shizuku (or root fallback) is available to run shell cmds */
+    val isBypassShellAvailable: StateFlow<Boolean> =
+        bypassChargingManager.isShellAvailable
+
+    /** Whether bypass charging is currently active */
+    val isBypassChargingEnabled: StateFlow<Boolean> =
+        bypassChargingManager.isEnabled
+
+    private fun refreshBypassChargingState() {
+        viewModelScope.launch {
+            bypassChargingManager.refreshAvailability()
+        }
+    }
+
+    fun toggleBypassCharging(enable: Boolean) {
+        viewModelScope.launch {
+            bypassChargingManager.setBypassCharging(enable)
+        }
+    }
+
+    fun requestShizukuPermission() {
+        shizukuShellManager.requestPermission()
     }
 
     override fun onCleared() {
