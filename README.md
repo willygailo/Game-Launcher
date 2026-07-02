@@ -745,7 +745,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.4](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.4)
+- [Latest Release: v3.2.6](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.6)
 - Or build from source using the instructions above
 
 ---
