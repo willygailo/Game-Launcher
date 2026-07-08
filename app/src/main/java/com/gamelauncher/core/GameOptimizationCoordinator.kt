@@ -29,6 +29,7 @@ class GameOptimizationCoordinator @Inject constructor(
     private val settingsPreferences: SettingsPreferences,
     private val gameDao: com.gamelauncher.data.local.GameDao,
     private val batterySaverManager: BatterySaverManager,
+    private val shizukuShellManager: ShizukuShellManager,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
     data class OptimizationResult(
@@ -121,24 +122,31 @@ class GameOptimizationCoordinator @Inject constructor(
                     performanceManager.setAdaptiveCpuGov(true)
                     appliedOptimizations.add("CPU Performance Boost (${socInfo.socType.name})")
                 }
-
-                // Android 13-16 Game Mode performance override command
-                rootShellManager.executeCommand("cmd game set --mode 2 $packageName")
-                appliedOptimizations.add("GameManager Performance Mode Force")
-
-                // Android 13-16 background apps standby sleep mode command
-                rootShellManager.executeCommand("cmd package list packages | cut -f 2 -d ':' | grep -v $packageName | xargs -I {} am set-standby-bucket {} rare")
-                appliedOptimizations.add("Background Standby Lock Active")
-
-                // Background ART speed AOT compilation boost (does not block main launch thread)
-                // Uses the app-scoped supervised scope — no zombie jobs or leaks.
-                appScope.launch(Dispatchers.IO) {
-                    rootShellManager.executeCommand("cmd package compile -m speed -f $packageName")
-                }
-                appliedOptimizations.add("ART Speed AOT Optimization Queued")
             } else {
                 performanceManager.optimizeNonRoot(packageName)
                 appliedOptimizations.add("Non-Root Performance Mode")
+            }
+
+            if (shizukuShellManager.isAvailable() || hasRoot) {
+                // Android 13-16 Game Mode performance override command
+                shizukuShellManager.executeCommand("cmd game set --mode 2 $packageName")
+                appliedOptimizations.add("GameManager Performance Mode Force")
+
+                // Android 13-16 background apps standby sleep mode command
+                shizukuShellManager.executeCommand("cmd package list packages | cut -f 2 -d ':' | grep -v $packageName | xargs -I {} am set-standby-bucket {} rare")
+                appliedOptimizations.add("Background Standby Lock Active")
+
+                // Background ART speed AOT compilation boost
+                appScope.launch(Dispatchers.IO) {
+                    shizukuShellManager.executeCommand("cmd package compile -m speed -f $packageName")
+                }
+                appliedOptimizations.add("ART Speed AOT Optimization Queued")
+                
+                // Suspend thermal throttling engines
+                val (thermalOk, _) = shizukuShellManager.suspendThermalEngines()
+                if (thermalOk) {
+                    appliedOptimizations.add("Thermal Engines Suspended (Max Performance)")
+                }
             }
 
             // GameManager local game state optimization for overlay priority (Android 12 to 16)

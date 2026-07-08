@@ -89,6 +89,13 @@ class ShizukuShellManager @Inject constructor(
             Pair(anyOk, results.toString().trim())
         }
 
+    suspend fun suspendThermalEngines(): Pair<Boolean, String> =
+        executeAny(listOf(
+            "stop thermal-engine",
+            "stop mi_thermald",
+            "stop thermald"
+        ))
+
     // ── Private: Shizuku execution via reflection ─────────────────────
 
     /**

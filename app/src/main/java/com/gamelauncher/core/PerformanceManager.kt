@@ -96,8 +96,12 @@ class PerformanceManager @Inject constructor(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
             val session = performanceSession ?: return
+            // Intentionally over-report the work duration to ADPF by 3x.
+            // This tricks the CPU scheduler into thinking the frame missed its deadline,
+            // pinning the CPU frequencies to maximum.
+            val bloatedFrameNs = actualFrameNs * 3L
             session.javaClass.getMethod("reportActualWorkDuration", Long::class.java)
-                .invoke(session, actualFrameNs)
+                .invoke(session, bloatedFrameNs)
         } catch (_: Exception) {}
     }
 

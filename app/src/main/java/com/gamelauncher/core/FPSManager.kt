@@ -8,8 +8,14 @@ import android.os.Looper
 import android.view.Choreographer
 import android.view.Display
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
@@ -29,7 +35,8 @@ import kotlin.math.abs
 @Singleton
 class FPSManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val displayManager: DisplayManager
+    private val displayManager: DisplayManager,
+    private val shizukuShellManager: ShizukuShellManager
 ) : Choreographer.FrameCallback {
 
     // ── Public StateFlows ──────────────────────────────────────────────
@@ -75,6 +82,11 @@ class FPSManager @Inject constructor(
 
     private var jankCount = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
+    
+    // Shizuku true FPS tracking
+    private val trackerScope = CoroutineScope(Dispatchers.IO)
+    private var trackerJob: Job? = null
+    private var lastFrameCountTotal = 0L
 
     // ── Display Hz queries ─────────────────────────────────────────────
 
@@ -156,6 +168,14 @@ class FPSManager @Inject constructor(
         // Method 3: Window LayoutParams.preferredRefreshRate — handled by caller via WindowManager
         // This is the only 100% public API but needs a Window reference.
 
+        // Method 4: Bare-metal SurfaceFlinger Service Call (Root/Shizuku)
+        // 1035 is typically the transaction code to set display refresh rate on many AOSP builds.
+        trackerScope.launch {
+            shizukuShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
+            // Also attempt to write generic sysfs nodes if available
+            shizukuShellManager.executeCommand("echo $nearest > /sys/class/graphics/fb0/dynamic_fps")
+        }
+
         if (success) _currentHz.value = nearest
         return success
     }
@@ -185,10 +205,14 @@ class FPSManager @Inject constructor(
         _frameJankCount.value = 0L
         _frameDropAlert.value = false
         mainHandler.post { Choreographer.getInstance().postFrameCallback(this) }
+        
+        startTrueFpsTracker()
     }
 
     fun stopTracking() {
         isTracking = false
+        trackerJob?.cancel()
+        trackerJob = null
         mainHandler.post { Choreographer.getInstance().removeFrameCallback(this) }
         _fps.value = 0f
         _avgFps.value = 0f
@@ -245,6 +269,49 @@ class FPSManager @Inject constructor(
         }
 
         Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    // ── True Hardware FPS Polling via SurfaceFlinger ───────────────────
+
+    private fun startTrueFpsTracker() {
+        trackerJob?.cancel()
+        trackerJob = trackerScope.launch {
+            if (!shizukuShellManager.isAvailable()) return@launch
+            
+            while (isActive && isTracking) {
+                // Get latency data from SurfaceFlinger.
+                // The output usually has 128 lines. Each line is 3 timestamps (desired, actual, ready).
+                // We count non-zero 'actual' timestamps to count rendered frames.
+                val (ok, out) = shizukuShellManager.executeCommand("dumpsys SurfaceFlinger --latency")
+                if (ok && out.isNotBlank()) {
+                    var currentFrameCount = 0L
+                    val lines = out.split("\n")
+                    for (i in 1 until lines.size) { // Skip line 0 (refresh period)
+                        val parts = lines[i].trim().split("\\s+".toRegex())
+                        if (parts.size >= 2) {
+                            val actualPresentTime = parts[1].toLongOrNull() ?: continue
+                            // 0x7fffffffffffffff means an invalid/pending frame timestamp
+                            if (actualPresentTime > 0 && actualPresentTime != Long.MAX_VALUE) {
+                                currentFrameCount++
+                            }
+                        }
+                    }
+                    
+                    if (lastFrameCountTotal > 0 && currentFrameCount > lastFrameCountTotal) {
+                        val diff = currentFrameCount - lastFrameCountTotal
+                        // Roughly 1 second polling interval, so diff is the FPS
+                        val trueFps = diff.toFloat()
+                        // Ensure we don't spike artificially if dumpsys clears its buffer
+                        if (trueFps in 10f..240f) {
+                            _fps.value = trueFps
+                            _avgFps.value = trueFps // Lock avg to true for overlay
+                        }
+                    }
+                    lastFrameCountTotal = currentFrameCount
+                }
+                delay(1000)
+            }
+        }
     }
 
     // ── Helpers ────────────────────────────────────────────────────────
