@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // Esports / Cyberpunk inspired Dark Theme Colors
 val BackgroundDark = Color(0xFF09090B)       // Very dark, almost black
+val OledBlack = Color(0xFF000000)            // Pure Black for OLED
 val SurfaceDark = Color(0xFF18181B)          // Slightly lighter for cards
 val SurfaceVariantDark = Color(0xFF27272A)   // For borders or secondary surfaces
 

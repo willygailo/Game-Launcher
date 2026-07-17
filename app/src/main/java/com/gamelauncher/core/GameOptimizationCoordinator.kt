@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.concurrent.Volatile
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,15 +40,16 @@ class GameOptimizationCoordinator @Inject constructor(
         val targetHz: Float = 60f
     )
 
-    @Volatile private var isOptimizationActive = false
+    // AtomicBoolean prevents race condition when two coroutines call startOptimization concurrently.
+    // compareAndSet(false, true) is an atomic operation — only one caller proceeds, others get "Already optimized".
+    private val _optimizationActive = AtomicBoolean(false)
     @Volatile private var currentGamePackage: String? = null
 
     suspend fun startOptimization(packageName: String): OptimizationResult {
-        if (isOptimizationActive) {
+        if (!_optimizationActive.compareAndSet(false, true)) {
             return OptimizationResult(true, listOf("Already optimized"))
         }
 
-        isOptimizationActive = true
         currentGamePackage = packageName
 
         val appliedOptimizations = mutableListOf<String>()
@@ -76,19 +77,13 @@ class GameOptimizationCoordinator @Inject constructor(
             PowerManager.THERMAL_STATUS_NONE
         }
 
-        // ── Kill Battery Saver FIRST ─────────────────────────────────
-        var bsSuccess = false
+        // ── Battery Saver: owned by GameBoosterService.startBoost() ──
+        // Whitelisting game from Doze is still done here since we have packageName context.
         try {
-            bsSuccess = batterySaverManager.disableBatterySaver()
-            if (bsSuccess) {
-                appliedOptimizations.add("⚡ Battery Saver Disabled")
-                batterySaverManager.whitelistGameFromDoze(packageName)
-                appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
-            } else {
-                errors.add("Battery Saver controller failed - continuing with other optimizations")
-            }
+            batterySaverManager.whitelistGameFromDoze(packageName)
+            appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
         } catch (e: Exception) {
-            errors.add("Battery Saver controller exception: ${e.message}")
+            errors.add("Doze whitelist exception: ${e.message}")
         }
 
         val requestedFps = getRequestedFps(gameModel)
@@ -248,21 +243,30 @@ class GameOptimizationCoordinator @Inject constructor(
         )
     }
 
+    /**
+     * Thermal-aware optimization: checks thermal state BEFORE starting.
+     * If device is already critical, starts with a stripped-down optimization profile
+     * instead of starting full boost then immediately stopping and restarting.
+     */
     suspend fun startThermalAwareOptimization(packageName: String): OptimizationResult {
-        val result = startOptimization(packageName)
         val thermalStatus = deviceManager.getThermalStatus()
-        if (thermalStatus >= PowerManager.THERMAL_STATUS_CRITICAL) {
-            stopOptimization()
-            val limitedResult = startOptimization(packageName)
-            return limitedResult.copy(
-                appliedOptimizations = limitedResult.appliedOptimizations + "Thermal Safe Mode Active"
+        return if (thermalStatus >= PowerManager.THERMAL_STATUS_CRITICAL) {
+            // Don't boost at all on critical thermal state — return a safe no-op result
+            OptimizationResult(
+                success = true,
+                appliedOptimizations = listOf("Thermal Safe Mode: boost skipped — device overheating"),
+                errors = listOf("Device is in CRITICAL thermal state — full boost suppressed"),
+                targetFps = 30,
+                targetHz = 30f
             )
+        } else {
+            val result = startOptimization(packageName)
+            result
         }
-        return result
     }
 
     suspend fun stopOptimization(): OptimizationResult {
-        if (!isOptimizationActive) {
+        if (!_optimizationActive.compareAndSet(true, false)) {
             return OptimizationResult(true, listOf("Not active"))
         }
 
@@ -316,11 +320,19 @@ class GameOptimizationCoordinator @Inject constructor(
             } catch (e: Exception) {
                 errors.add("Failed to restore battery saver: ${e.message}")
             }
+
+            // Resume thermal engines that were suspended during gaming.
+            // Critical: without this, device has no thermal protection until reboot.
+            try {
+                val (resumeOk, _) = shizukuShellManager.resumeThermalEngines()
+                if (resumeOk) restoredOptimizations.add("Thermal Engines Resumed")
+            } catch (e: Exception) {
+                errors.add("Failed to resume thermal engines: ${e.message}")
+            }
         } catch (e: Exception) {
             errors.add("Error during optimization stop: ${e.message}")
         }
 
-        isOptimizationActive = false
         currentGamePackage = null
 
         return OptimizationResult(success = errors.isEmpty(), appliedOptimizations = restoredOptimizations, errors = errors)
@@ -400,55 +412,9 @@ class GameOptimizationCoordinator @Inject constructor(
         }
     }
 
-    private fun getAdaptiveTargetFps(gameInfo: SupportedGames.GameInfo?, thermalStatus: Int): Int {
-        val gameMax = gameInfo?.maxFps ?: 0
-        val deviceMax = performanceManager.getMaxRefreshRate().toInt()
-        val supported = performanceManager.getSupportedRefreshRates()
-        val rawTarget = when {
-            gameMax > 0 && gameMax <= deviceMax -> gameMax
-            gameMax > 0 -> deviceMax
-            deviceMax >= 240 -> 240
-            deviceMax >= 200 -> 200
-            deviceMax >= 180 -> 180
-            deviceMax >= 165 -> 165
-            deviceMax >= 144 -> 144
-            deviceMax >= 120 -> 120
-            deviceMax >= 90 -> 90
-            else -> 60
-        }
-        var stableTarget = supported.minByOrNull { kotlin.math.abs(it - rawTarget.toFloat()) }?.toInt() ?: rawTarget
 
-        // Android 14+ Predictive Thermal Headroom modulation
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            try {
-                val pm = context.getSystemService(PowerManager::class.java)
-                val headroom = pm?.getThermalHeadroom(5) ?: 0.0f
-                if (headroom > 0.85f) {
-                    stableTarget = (stableTarget * 0.75f).toInt().coerceAtLeast(30)
-                }
-            } catch (_: Exception) {}
-        }
 
-        return when {
-            thermalStatus >= PowerManager.THERMAL_STATUS_SEVERE -> 30
-            thermalStatus == PowerManager.THERMAL_STATUS_MODERATE -> minOf(stableTarget, 60)
-            thermalStatus == PowerManager.THERMAL_STATUS_LIGHT -> minOf(stableTarget, 90)
-            else -> stableTarget
-        }
-    }
-
-    private fun getAdaptiveRefreshRate(maxRate: Float, thermalStatus: Int): Float {
-        val supported = performanceManager.getSupportedRefreshRates()
-        val stableRate = supported.minByOrNull { kotlin.math.abs(it - maxRate) } ?: maxRate
-        return when {
-            thermalStatus >= PowerManager.THERMAL_STATUS_SEVERE -> 30f
-            thermalStatus == PowerManager.THERMAL_STATUS_MODERATE -> minOf(stableRate, 60f)
-            thermalStatus == PowerManager.THERMAL_STATUS_LIGHT -> minOf(stableRate, 90f)
-            else -> stableRate
-        }
-    }
-
-    fun isOptimizationActive(): Boolean = isOptimizationActive
+    fun isOptimizationActive(): Boolean = _optimizationActive.get()
     fun getCurrentGamePackage(): String? = currentGamePackage
 
     fun getSupportedFps(): List<Int> {

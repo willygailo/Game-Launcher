@@ -17,6 +17,8 @@ import com.gamelauncher.core.GameOptimizationCoordinator
 import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.core.SupportedGames
+import com.gamelauncher.core.ThermalWatcher
+import com.gamelauncher.core.AndroidGameModeApiManager
 import com.gamelauncher.core.TouchLatencyOptimizer
 import com.gamelauncher.data.preference.SettingsPreferences
 import com.gamelauncher.ui.MainActivity
@@ -41,12 +43,16 @@ class GameBoosterService : Service() {
     @Inject lateinit var touchLatencyOptimizer: TouchLatencyOptimizer
     @Inject lateinit var settingsPreferences: SettingsPreferences
     @Inject lateinit var fpsMonitor: FpsMonitor
-    @Inject lateinit var batterySaverManager: BatterySaverManager  // NEW
+    @Inject lateinit var batterySaverManager: BatterySaverManager
     @Inject lateinit var devicePerformancePlanner: DevicePerformancePlanner
+    @Inject lateinit var thermalWatcher: ThermalWatcher
+    @Inject lateinit var gameModeApiManager: AndroidGameModeApiManager
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var gameName: String = ""
     private var notificationPendingIntent: PendingIntent? = null
+    // Guard against stopBoost() being called twice (ACTION_STOP_BOOST + onDestroy)
+    private val stopGuard = java.util.concurrent.atomic.AtomicBoolean(false)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
@@ -113,7 +119,7 @@ class GameBoosterService : Service() {
         val notification: Notification = NotificationCompat.Builder(this, GameLauncherApp.CHANNEL_BOOSTER)
             .setContentTitle("🚀 Game Boost Active")
             .setContentText("Optimizing $gameName @ ${actualTargetFps} FPS")
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentIntent(notificationPendingIntent)
             .setOngoing(true)
             .build()
@@ -153,7 +159,15 @@ class GameBoosterService : Service() {
                     }
                 }
 
-            // ── STEP 2: Main optimization pipeline ─────────────────────
+            // ── STEP 2: Start push-based thermal listener ───────────────
+            thermalWatcher.start()
+
+            // ── STEP 3: Request Android 13+ GameMode PERFORMANCE ────────
+            try {
+                gameModeApiManager.enablePerformanceMode(pkg)
+            } catch (_: Exception) {}
+
+            // ── STEP 4: Main optimization pipeline ─────────────────────
             val thermalAware = settingsPreferences.thermalAwareBoost.first()
             val result = if (thermalAware)
                 optimizationCoordinator.startThermalAwareOptimization(pkg)
@@ -244,6 +258,8 @@ class GameBoosterService : Service() {
     }
 
     private fun stopBoost() {
+        // Prevent double-execution: onDestroy() calls this after ACTION_STOP_BOOST already did
+        if (!stopGuard.compareAndSet(false, true)) return
         fpsMonitor.stopTracking()
         networkManager.stopMonitoring()
         serviceScope.launch {
@@ -262,6 +278,12 @@ class GameBoosterService : Service() {
             performanceManager.restoreFps()
             val defaultHz = performanceManager.getSupportedRefreshRates().firstOrNull() ?: 60f
             performanceManager.lockRefreshRate(defaultHz)
+            // Stop push-based thermal listener — no longer needed outside gaming session
+            thermalWatcher.stop()
+            // Restore Android 13+ game mode to STANDARD
+            optimizationCoordinator.getCurrentGamePackage()?.let { pkg ->
+                try { gameModeApiManager.restoreStandardMode(pkg) } catch (_: Exception) {}
+            }
         }
         stopForeground(STOP_FOREGROUND_REMOVE)
     }

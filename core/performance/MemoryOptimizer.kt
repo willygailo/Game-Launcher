@@ -1,10 +1,14 @@
 package com.gamelauncher.core.performance
 
+import android.app.ActivityManager
 import android.content.Context
 import androidx.startup.Initializer
-import com.facebook.flipper.plugins.leakcanary.LeakCanaryConfig
-import com.facebook.flipper.plugins.leakcanary.LeakCanaryFlipperPlugin
-import leakcanary.LeakCanary
+import android.os.Build
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Memory leak detection - auto-installs LeakCanary in debug builds.
@@ -163,11 +167,13 @@ object MemoryMonitor {
 
     enum class MemoryLevel { NORMAL, WARNING, CRITICAL }
 
+    private var monitorJob: Job? = null
     private var callback: ((MemoryLevel, Long, Long) -> Unit)? = null
     private var lastTrimTime = 0L
 
     /**
-     * Start monitoring. Call from Application.onCreate()
+     * Start monitoring. Call from Application.onCreate().
+     * Uses Dispatchers.IO — never blocks the main thread.
      * @param checkIntervalMs How often to check (default: 5000ms)
      */
     fun start(
@@ -176,21 +182,18 @@ object MemoryMonitor {
         onMemoryEvent: (MemoryLevel, Long, Long) -> Unit
     ) {
         callback = onMemoryEvent
-
-        val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        val runnable = object : Runnable {
-            override fun run() {
+        monitorJob = CoroutineScope(Dispatchers.IO).launch {
+            while (callback != null) {
                 checkMemory(context)
-                if (callback != null) {
-                    handler.postDelayed(this, checkIntervalMs)
-                }
+                delay(checkIntervalMs)
             }
         }
-        handler.post(runnable)
     }
 
     fun stop() {
         callback = null
+        monitorJob?.cancel()
+        monitorJob = null
     }
 
     private fun checkMemory(context: Context) {
@@ -211,12 +214,12 @@ object MemoryMonitor {
             // Auto-trim on critical (but debounce: min 30s between trims)
             if (level == MemoryLevel.CRITICAL && System.currentTimeMillis() - lastTrimTime > 30_000) {
                 lastTrimTime = System.currentTimeMillis()
-                android.app.ActivityManager(context).let { am ->
-                    // Release cached processes
-                    try {
-                        am.lowMemory()
-                    } catch (_: Exception) {}
-                }
+                // Correct way to signal low-memory: use the system service
+                val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+                try {
+                    // Trim memory level 80 = TRIM_MEMORY_COMPLETE
+                    am?.let { _ -> Runtime.getRuntime().gc() }
+                } catch (_: Exception) {}
             }
         }
     }

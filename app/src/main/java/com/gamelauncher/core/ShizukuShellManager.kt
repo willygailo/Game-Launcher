@@ -96,6 +96,18 @@ class ShizukuShellManager @Inject constructor(
             "stop thermald"
         ))
 
+    /**
+     * Resumes thermal engines that were suspended during gaming.
+     * MUST be called in stopOptimization() to restore thermal protection.
+     * Without this, device has no thermal management until reboot.
+     */
+    suspend fun resumeThermalEngines(): Pair<Boolean, String> =
+        executeAny(listOf(
+            "start thermal-engine",
+            "start mi_thermald",
+            "start thermald"
+        ))
+
     // ── Private: Shizuku execution via reflection ─────────────────────
 
     /**
@@ -104,6 +116,8 @@ class ShizukuShellManager @Inject constructor(
      */
     private fun executeViaShizuku(command: String): Pair<Boolean, String> {
         var process: Process? = null
+        var stdout: java.io.BufferedReader? = null
+        var stderr: java.io.BufferedReader? = null
         return try {
             val method = resolveNewProcess()
                 ?: return Pair(false, "Shizuku newProcess not accessible")
@@ -112,17 +126,21 @@ class ShizukuShellManager @Inject constructor(
             process = method.invoke(null, args, null, null) as? Process
                 ?: return Pair(false, "Shizuku process launch returned null")
 
-            val stdout = BufferedReader(InputStreamReader(process.inputStream))
-                .readText().trim()
-            val stderr = BufferedReader(InputStreamReader(process.errorStream))
-                .readText().trim()
+            stdout = java.io.BufferedReader(java.io.InputStreamReader(process.inputStream))
+            stderr = java.io.BufferedReader(java.io.InputStreamReader(process.errorStream))
+
+            val outText = stdout.readText().trim()
+            val errText = stderr.readText().trim()
 
             val exitCode = process.waitFor()
             val success = exitCode == 0
-            Pair(success, if (success) stdout else stderr)
+            Pair(success, if (success) outText else errText)
         } catch (e: Exception) {
             Pair(false, e.message ?: "Shizuku execution failed")
         } finally {
+            // Close streams BEFORE destroy to prevent FD leaks
+            try { stdout?.close() } catch (_: Exception) {}
+            try { stderr?.close() } catch (_: Exception) {}
             process?.destroy()
         }
     }

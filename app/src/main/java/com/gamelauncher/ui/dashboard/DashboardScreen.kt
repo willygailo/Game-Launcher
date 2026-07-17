@@ -87,12 +87,25 @@ fun DashboardScreen(
             specs.batteryTemperature >= 39f || specs.thermalStatus == 2 -> WarningOrange
             else -> SuccessGreen
         }
+        val thermalLabel = when (specs.thermalStatus) {
+            0 -> "COOL"
+            1 -> "WARM"
+            2 -> "HOT"
+            3 -> "SEVERE"
+            4 -> "CRITICAL"
+            5 -> "EMERGENCY"
+            6 -> "SHUTDOWN"
+            else -> "COOL"
+        }
 
         ScreenHeader(
             title = "System Monitor",
             subtitle = deviceTierLabel,
             trailing = {
-                StatusBadge(text = accessMode, color = accessColor)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatusBadge(text = thermalLabel, color = thermalColor)
+                    StatusBadge(text = accessMode, color = accessColor)
+                }
             }
         )
 

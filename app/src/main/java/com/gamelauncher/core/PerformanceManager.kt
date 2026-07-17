@@ -71,13 +71,10 @@ class PerformanceManager @Inject constructor(
             val phm = context.getSystemService(PerformanceHintManager::class.java) ?: return
             val periodNs = 1_000_000_000L / targetFpsHz
             
-            // Gather all active thread IDs of our process dynamically to boost overlay, rendering, and database tasks together
-            val taskDir = File("/proc/self/task")
-            val tids = if (taskDir.exists() && taskDir.isDirectory) {
-                taskDir.listFiles()?.mapNotNull { it.name.toIntOrNull() }?.toIntArray() ?: intArrayOf(Process.myTid())
-            } else {
-                intArrayOf(Process.myTid())
-            }
+            // Gather only render-critical thread IDs. Including all /proc/self/task threads
+            // sends GC threads, Firebase, WorkManager etc. into the ADPF hint window, which
+            // wastes thermal/power budget on background work and inflates scheduling hints.
+            val tids = getRenderThreadIds()
             
             performanceSession?.close()
             performanceSession = phm.createHintSession(tids, periodNs)
@@ -92,16 +89,42 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    fun reportFrameTime(actualFrameNs: Long) {
+    /**
+     * Returns thread IDs for render-critical threads only.
+     * Excludes GC, pool, firebase, worker, and binder threads from the ADPF session
+     * to avoid wasting thermal budget on background threads.
+     */
+    private fun getRenderThreadIds(): IntArray {
+        val excludePatterns = listOf("gc", "pool", "firebase", "worker", "binder",
+            "dog", "ref", "finalizer", "jit", "logcat", "okio")
+        val taskDir = java.io.File("/proc/self/task")
+        return if (taskDir.exists() && taskDir.isDirectory) {
+            taskDir.listFiles()?.mapNotNull { taskFile ->
+                val tid = taskFile.name.toIntOrNull() ?: return@mapNotNull null
+                // Read thread name from /proc/self/task/<tid>/comm
+                val commFile = java.io.File(taskFile, "comm")
+                val threadName = try { commFile.readText().trim().lowercase() } catch (_: Exception) { "" }
+                if (excludePatterns.none { threadName.contains(it) }) tid else null
+            }?.toIntArray() ?: intArrayOf(android.os.Process.myTid())
+        } else {
+            intArrayOf(android.os.Process.myTid())
+        }
+    }
+
+    fun reportFrameTime(actualFrameNs: Long, socType: SocType = SocType.UNKNOWN) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
             val session = performanceSession ?: return
-            // Intentionally over-report the work duration to ADPF by 3x.
-            // This tricks the CPU scheduler into thinking the frame missed its deadline,
-            // pinning the CPU frequencies to maximum.
-            val bloatedFrameNs = actualFrameNs * 3L
+            // Intentionally over-report frame duration to trick ADPF into pinning CPU clocks.
+            // SNAPDRAGON ONLY: this is documented to work on Qualcomm DCVS/CPU scheduler.
+            // On MediaTek/Exynos/Tensor, ADPF respects work duration for DVFS, so over-reporting
+            // causes erratic clock scaling and potential thermal issues on those SoCs.
+            val reportedNs = when (socType) {
+                SocType.SNAPDRAGON -> actualFrameNs * 3L   // bloat only on Snapdragon
+                else -> actualFrameNs                       // accurate on all other SoCs
+            }
             session.javaClass.getMethod("reportActualWorkDuration", Long::class.java)
-                .invoke(session, bloatedFrameNs)
+                .invoke(session, reportedNs)
         } catch (_: Exception) {}
     }
 
@@ -663,17 +686,11 @@ class PerformanceManager @Inject constructor(
             rootShellManager.executeCommand(cmd)
         }
         val props = listOf(
+            // debug.* props are writable at runtime
             "debug.hwui.overdraw" to "false",
             "debug.performance.tuning" to "1",
-            "ro.sys.fw.bg_apps_limit" to "60",
-            "persist.sys.purgeable_assets" to "1",
-            "ro.hwui.texture_cache_size" to "144",
-            "ro.hwui.layer_cache_size" to "96",
-            "ro.hwui.path_cache_size" to "64",
-            "ro.hwui.drop_shadow_cache_size" to "12",
             "debug.sf.latch_unsignaled" to "1",
             "debug.hwui.target_cpu_time_percent" to "80",
-            "persist.sys.gamemode" to "1",
             // SurfaceFlinger max FPS unlock props
             "debug.sf.frame_rate_multiple_threshold" to "0",
             "debug.sf.showupdates" to "0",
@@ -682,61 +699,51 @@ class PerformanceManager @Inject constructor(
             "debug.sf.early_phase_in_ns" to "1000000",
             "debug.sf.late_phase_in_ns" to "1000000",
             "debug.sf.phase_offset_threshold_for_next_vsync" to "0",
+            // vendor.* display props
             "vendor.display.enable_force_max_fps" to "1",
             "vendor.display.forced_max_fps" to "240",
-            "persist.vendor.max_fps" to "240",
             "vendor.perf.gaming.driver" to "1",
             "vendor.perf.gaming.scheduler" to "1",
             "vendor.perf.gaming.opt" to "1",
+            // persist.* (OEM-specific, may need root on some builds)
+            "persist.vendor.max_fps" to "240",
             "persist.vendor.dfps.level.max" to "240",
-            // Real no fake extra boosting properties
+            "persist.sys.purgeable_assets" to "1",
+            "persist.sys.gamemode" to "1",
             "persist.sys.use_dithering" to "0",
             "persist.sys.ui.hw" to "1",
+            "persist.sys.performance" to "true",
+            "persist.sys.performance.profile" to "1",
+            "persist.sys.NV_FPSLIMIT" to "0",
+            "persist.sys.app.fps" to "0",
+            "persist.sys.power_save_mode" to "0",
+            "persist.sys.battery_saver" to "0",
+            // debug.egl props
             "debug.egl.hw" to "1",
             "debug.egl.profiler" to "1",
             "debug.gr.num_framebuffers" to "3",
             "debug.composition.type" to "gpu",
-            "persist.sys.composition.type" to "gpu",
-            "wifi.supplicant_scan_interval" to "300",
-            // Additional turbo props for max FPS unlock
             "debug.sf.disable_client_composition_cache" to "1",
             "debug.sf.enable_gl_backpressure" to "0",
-            "ro.surface_flinger.max_frame_buffer_acquired_buffers" to "3",
             "debug.sf.recomputecrop" to "0",
-            "persist.vendor.camera.preview.fps" to "240",
-            // 5G/network performance tweaks
+            "debug.sf.max_fps" to "0",
+            "debug.sf.disable_backoff" to "1",
+            "debug.cpurend.vsync" to "false",
+            // network performance tweaks
+            "wifi.supplicant_scan_interval" to "300",
             "net.tcp.buffersize.5g" to "4096,87380,4194304,4096,65536,4194304",
             "net.tcp.buffersize.lte" to "4096,87380,4194304,4096,65536,4194304",
             "net.tcp.buffersize.wifi" to "524288,1048576,4194304,524288,1048576,4194304",
-            "net.rmnet0.dns1" to "8.8.8.8",
-            "net.rmnet0.dns2" to "8.8.4.4",
-            // Battery saver system-level kill (root layer)
-            "persist.sys.power_save_mode" to "0",
-            "persist.sys.battery_saver" to "0",
-            // Advanced extra tweaks to control 50% android system overhead
-            "debug.sf.enable_hwc_vds" to "1",
-            "debug.cpurend.vsync" to "false",
-            "ro.surface_flinger.use_smart_90_for_video" to "0",
-            "debug.performance.tuning" to "1",
-            "video.accelerate.hw" to "1",
-            "ro.vendor.qti.core_ctl_max_cpu" to "4",
-            "ro.vendor.qti.sys.fw.bg_apps_limit" to "60",
-            "persist.sys.performance" to "true",
-            "persist.sys.performance.profile" to "1",
-            "ro.kernel.android.checkjni" to "0",
-            "ro.config.nocheckin" to "1",
+            // profiler noise
             "profiler.force_disable_ulog" to "1",
             "profiler.force_disable_err_rpt" to "1",
-            "debug.sf.disable_backoff" to "1",
+            // misc
+            "video.accelerate.hw" to "1",
             "windowsmgr.max_events_per_sec" to "275",
-            "ro.min.fling_velocity" to "8000",
-            "ro.max.fling_velocity" to "12000",
             "touch.presure.scale" to "0.001",
-            // Explicitly disable any FPS limit
-            "persist.sys.NV_FPSLIMIT" to "0",
-            "debug.sf.max_fps" to "0",
-            "persist.sys.app.fps" to "0",
             "vendor.display.forced_max_fps" to "240"
+            // NOTE: ro.* properties deliberately excluded — they are read-only
+            // since Android 10+ even with root, and setprop silently fails on them.
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -959,6 +966,17 @@ class PerformanceManager @Inject constructor(
                 }
                 if (canWriteSecure) {
                     changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
+                }
+
+                // ColorOS-specific: Realme/OPPO use Global settings for display refresh mode
+                // display.refresh_rate_mode: 0=auto, 1=standard, 2=high, 3=custom
+                // custom_refresh_rate: the actual rate when mode=3
+                if (canWriteSystem) {
+                    Settings.System.putInt(resolver, "custom_refresh_rate", nearestHz.toInt())
+                }
+                if (canWriteSystem) {
+                    // Mode 3 = Custom refresh rate (honors custom_refresh_rate value)
+                    Settings.System.putInt(resolver, "display.refresh_rate_mode", 3)
                 }
             } catch (_: Exception) {}
         }

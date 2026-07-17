@@ -20,6 +20,7 @@ import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.core.PerformanceManager
 import com.gamelauncher.core.RootShellManager
 import com.gamelauncher.core.ShizukuShellManager
+import com.gamelauncher.core.ThermalWatcher
 import com.gamelauncher.data.local.GameDao
 import com.gamelauncher.data.model.DeviceSpecs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +45,8 @@ class DashboardViewModel @Inject constructor(
     private val gameDao: GameDao,
     private val benchmarkManager: BenchmarkManager,
     private val bypassChargingManager: BypassChargingManager,
-    private val shizukuShellManager: ShizukuShellManager
+    private val shizukuShellManager: ShizukuShellManager,
+    private val thermalWatcher: ThermalWatcher
 ) : ViewModel() {
 
     private val _deviceSpecs = MutableStateFlow(DeviceSpecs())
@@ -52,6 +54,12 @@ class DashboardViewModel @Inject constructor(
 
     private val _isDndEnabled = MutableStateFlow(false)
     val isDndEnabled: StateFlow<Boolean> = _isDndEnabled.asStateFlow()
+
+    // Expose push-based thermal status from ThermalWatcher for the dashboard thermal badge
+    val thermalStatus: StateFlow<Int> = thermalWatcher.thermalStatus
+
+    // Pause flag: set by the composable when lifecycle is STOPPED (screen off / background)
+    private val _isMonitoringPaused = MutableStateFlow(false)
 
     private val _isBrightnessLocked = MutableStateFlow(false)
     val isBrightnessLocked: StateFlow<Boolean> = _isBrightnessLocked.asStateFlow()
@@ -150,6 +158,11 @@ class DashboardViewModel @Inject constructor(
     private fun startMonitoring() {
         viewModelScope.launch {
             while (isActive) {
+                // Skip expensive device queries when screen is off / app is in background
+                if (_isMonitoringPaused.value) {
+                    delay(500)
+                    continue
+                }
                 val (ramTotal, ramUsed, ramFree) = deviceManager.getRamInfo()
                 val socInfo = deviceManager.getSocInfo()
                 val networkSnapshot = networkManager.getNetworkSnapshot()
@@ -205,6 +218,12 @@ class DashboardViewModel @Inject constructor(
             }
         }
     }
+
+    /** Called from DashboardScreen's DisposableEffect when lifecycle goes to STOPPED. */
+    fun pauseMonitoring() { _isMonitoringPaused.value = true }
+
+    /** Called from DashboardScreen's DisposableEffect when lifecycle resumes to STARTED. */
+    fun resumeMonitoring() { _isMonitoringPaused.value = false }
 
     fun optimizeRam() {
         viewModelScope.launch {

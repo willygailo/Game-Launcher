@@ -1,22 +1,20 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
 }
 
 android {
     namespace = "com.gamelauncher"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.gamelauncher.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = 327
-        versionName = "3.2.7"
+        versionCode = 328
+        versionName = "3.2.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -47,27 +45,10 @@ android {
         }
     }
 
-    // Rename output APK to GameLauncherPro-v<version>-<buildType>.apk
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "GameLauncherPro-v${variant.versionName}-${variant.buildType.name}.apk"
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs = freeCompilerArgs + listOf(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-Xjvm-default=all"
-        )
     }
 
     buildFeatures {
@@ -75,9 +56,8 @@ android {
         buildConfig = true
     }
 
-    @Suppress("DEPRECATION")
-    aaptOptions {
-        additionalParameters("--no-version-vectors", "--no-version-transitions")
+    androidResources {
+        additionalParameters += listOf("--no-version-vectors", "--no-version-transitions")
     }
 
     packaging {
@@ -133,6 +113,8 @@ dependencies {
     implementation(libs.com.google.android.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.startup)
+    // Baseline Profile: pre-compiles hot paths at install time for faster cold starts
+    implementation(libs.androidx.profileinstaller)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -184,6 +166,8 @@ dependencies {
     // Network
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+    // OkHttp 5 BOM governs okhttp + logging-interceptor transitive versions
+    implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
@@ -192,10 +176,10 @@ dependencies {
 
     // Firebase
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics.ktx)
-    implementation(libs.firebase.crashlytics.ktx)
-    implementation(libs.firebase.messaging.ktx)
-    implementation(libs.firebase.perf.ktx)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.perf)
 
     // Security
     implementation(libs.tink.android)
@@ -216,3 +200,12 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso)
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xjvm-default=all"
+        )
+    }
+}

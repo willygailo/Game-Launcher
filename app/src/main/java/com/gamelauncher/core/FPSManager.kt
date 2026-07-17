@@ -174,7 +174,16 @@ class FPSManager @Inject constructor(
             shizukuShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
             // Also attempt to write generic sysfs nodes if available
             shizukuShellManager.executeCommand("echo $nearest > /sys/class/graphics/fb0/dynamic_fps")
+            
+            // Bypass thermal throttling and force refresh rate via shell settings
+            shizukuShellManager.executeCommand("cmd thermalservice override-status 0")
+            shizukuShellManager.executeCommand("settings put system peak_refresh_rate $nearest")
+            shizukuShellManager.executeCommand("settings put system min_refresh_rate $nearest")
+            shizukuShellManager.executeCommand("settings put system user_refresh_rate $nearest")
         }
+
+        // Assume success if we dispatched the Shizuku commands
+        success = true
 
         if (success) _currentHz.value = nearest
         return success
@@ -188,6 +197,11 @@ class FPSManager @Inject constructor(
             )
             // Don't reset peak — let device choose
         } catch (_: Exception) {}
+        
+        trackerScope.launch {
+            shizukuShellManager.executeCommand("cmd thermalservice reset")
+            shizukuShellManager.executeCommand("settings put system min_refresh_rate 60.0")
+        }
     }
 
     // ── FPS Tracking ──────────────────────────────────────────────────

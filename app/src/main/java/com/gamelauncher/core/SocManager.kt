@@ -149,7 +149,8 @@ class SocManager @Inject constructor() {
 
             combined.contains("tensor") || combined.contains("gs101") ||
             combined.contains("gs201") || combined.contains("gs301") ||
-            combined.contains("gs501") || combined.contains("gs601") -> SocType.TENSOR
+            combined.contains("gs401") || combined.contains("gs501") ||
+            combined.contains("zuma") || combined.contains("gs601") -> SocType.TENSOR
 
             combined.contains("rockchip") || combined.contains("rk") -> SocType.UNKNOWN
             combined.contains("allwinner") || combined.contains("sun") -> SocType.UNKNOWN
@@ -223,8 +224,14 @@ class SocManager @Inject constructor() {
     private fun isGamingSoc(socType: SocType): Boolean {
         return when (socType) {
             SocType.SNAPDRAGON -> {
-                val model = getSocModel().uppercase()
-                listOf("8", "7", "6", "4").any { model.contains(it) }
+                val model = getSocModel().lowercase()
+                // Match specific high-performance Snapdragon branding.
+                // DO NOT use single digit checks like "8", "7" etc. — those match everything.
+                // All current flagship/upper-mid Gen-branded chips are gaming-grade.
+                listOf(
+                    "8 elite", "8 gen", "7+ gen", "7 gen",
+                    "6 gen", "sm8", "sm7", "sm6"
+                ).any { model.contains(it) }
             }
             SocType.MEDIATEK -> {
                 val model = getSocModel().uppercase()
@@ -270,15 +277,16 @@ class SocManager @Inject constructor() {
             SocType.SNAPDRAGON -> {
                 val m = model.lowercase()
                 when {
+                    m.contains("8s gen 3") || m.contains("sm8475") -> "Snapdragon 8s Gen 3"
                     m.contains("8 elite gen 2") || m.contains("sm8900") -> "Snapdragon 8 Elite Gen 2"
                     m.contains("8 elite") || m.contains("sm8750") -> "Snapdragon 8 Elite"
                     m.contains("8 gen 5") || m.contains("sm8850") -> "Snapdragon 8 Gen 5"
-                    m.contains("8 gen 4") || m.contains("sm8750") -> "Snapdragon 8 Gen 4"
+                    m.contains("8 gen 4") -> "Snapdragon 8 Gen 4"
                     m.contains("8 gen 3") || m.contains("sm8650") -> "Snapdragon 8 Gen 3"
                     m.contains("8 gen 2") || m.contains("sm8550") -> "Snapdragon 8 Gen 2"
                     m.contains("8 gen 1") || m.contains("sm8450") -> "Snapdragon 8 Gen 1"
                     m.contains("888") || m.contains("sm8350") -> "Snapdragon 888"
-                    m.contains("870") || m.contains("sm8250") -> "Snapdragon 870"
+                    m.contains("870") -> "Snapdragon 870"
                     m.contains("865") || m.contains("sm8250") -> "Snapdragon 865"
                     m.contains("7+ gen 3") || m.contains("sm7675") -> "Snapdragon 7+ Gen 3"
                     m.contains("7 gen 3") || m.contains("sm7550") -> "Snapdragon 7 Gen 3"
@@ -297,12 +305,13 @@ class SocManager @Inject constructor() {
                 val m = model.uppercase()
                 when {
                     m.contains("9500") || m.contains("MT9500") -> "Dimensity 9500"
-                    m.contains("9400") || m.contains("MT9400") -> "Dimensity 9400"
+                    m.contains("9400 ULTRA") || m.contains("MT9400U") -> "Dimensity 9400 Ultra"
                     m.contains("9400+") || m.contains("MT9400P") -> "Dimensity 9400+"
-                    m.contains("9300") || m.contains("MT9300") -> "Dimensity 9300"
+                    m.contains("9400") || m.contains("MT9400") -> "Dimensity 9400"
                     m.contains("9300+") || m.contains("MT9300P") -> "Dimensity 9300+"
-                    m.contains("9200") || m.contains("MT9200") -> "Dimensity 9200"
+                    m.contains("9300") || m.contains("MT9300") -> "Dimensity 9300"
                     m.contains("9200+") || m.contains("MT9200P") -> "Dimensity 9200+"
+                    m.contains("9200") || m.contains("MT9200") -> "Dimensity 9200"
                     m.contains("9000") || m.contains("MT9000") -> "Dimensity 9000"
                     m.contains("8400") || m.contains("MT8400") -> "Dimensity 8400"
                     m.contains("8300") || m.contains("MT8300") -> "Dimensity 8300"
@@ -376,6 +385,7 @@ class SocManager @Inject constructor() {
             SocType.TENSOR -> {
                 val m = model.uppercase()
                 when {
+                    m.contains("G6") || m.contains("GS701") || m.contains("ZUMA PRO") -> "Google Tensor G6"
                     m.contains("G5") || m.contains("GS601") -> "Google Tensor G5"
                     m.contains("G4") || m.contains("GS501") -> "Google Tensor G4"
                     m.contains("G3") || m.contains("GS301") -> "Google Tensor G3"

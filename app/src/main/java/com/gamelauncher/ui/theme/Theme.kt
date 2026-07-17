@@ -44,17 +44,29 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun GameLauncherTheme(
     darkTheme: Boolean = true,
+    oledPureBlack: Boolean = true, // Default to true for the OLED pure black theme option
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val baseColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    
+    val colorScheme = if (oledPureBlack && darkTheme) {
+        baseColorScheme.copy(
+            background = OledBlack,
+            surface = OledBlack,
+            onPrimary = OledBlack
+        )
+    } else {
+        baseColorScheme
+    }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             @Suppress("DEPRECATION")
-            window.statusBarColor = if (darkTheme) BackgroundDark.toArgb() else android.graphics.Color.WHITE
+            window.statusBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
             @Suppress("DEPRECATION")
-            window.navigationBarColor = if (darkTheme) BackgroundDark.toArgb() else android.graphics.Color.WHITE
+            window.navigationBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
             WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
