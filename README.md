@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.6-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.8-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -100,6 +100,16 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.8: "Unlocked Max FPS & Thermal Bypass"
+
+> Achieves maximum device performance utilizing Shizuku for deep system configuration overwrites, completely unlocking frame rates and bypassing Android's built-in thermal throttling. Now fully compiled for Android SDK 37 (Android 16).
+
+| Feature | Description | Status |
+|---|---|---|
+| **Shizuku Thermal Bypass** | Injects `cmd thermalservice override-status 0` to permanently tell the Android system the device is cool, disabling all artificial CPU/GPU thermal throttling during gameplay. | ✅ |
+| **Max FPS Forcer** | Uses Shizuku to lock `peak_refresh_rate` and `min_refresh_rate` to the maximum supported device panel limits, forcing games to render at the absolute highest frame rates available. | ✅ |
+| **SDK 37 Compatibility** | Target and Compile SDK upgraded to 37. Safely utilizes Reflection to access hidden `@SystemApi` `GameManager` methods, ensuring backward compatibility without breaking compilation. | ✅ |
 
 ### 🆕 v3.2.6: "Bypass Charging & Shizuku Integration"
 
@@ -451,8 +461,8 @@ cd Game-Launcher
 ./gradlew assembleDebug
 
 # APK locations:
-# Debug:  app/build/outputs/apk/debug/GameLauncherPro-v3.2.6-debug.apk
-# Release: app/build/outputs/apk/release/GameLauncherPro-v3.2.6-release.apk
+# Debug:  app/build/outputs/apk/debug/app-debug.apk
+# Release: app/build/outputs/apk/release/app-release.apk
 ```
 
 ### Install sa Device
@@ -462,7 +472,7 @@ cd Game-Launcher
 # Settings > About Phone > Tap "Build Number" 7 times
 # Settings > System > Developer Options > Enable USB Debugging
 
-adb install app/build/outputs/apk/debug/GameLauncherPro-v3.2.6-debug.apk
+adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### Run Tests
@@ -781,7 +791,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.5](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.5)
+- [Latest Release: v3.2.8](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.8)
 - Or build from source using the instructions above
 
 ---
