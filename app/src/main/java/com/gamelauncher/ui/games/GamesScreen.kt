@@ -46,7 +46,7 @@ import androidx.navigation.NavController
 import android.os.Build
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gamelauncher.data.model.GameModel
-import com.gamelauncher.ui.Screen
+
 import com.gamelauncher.ui.components.EmptyState
 import com.gamelauncher.ui.components.GameCard
 import com.gamelauncher.ui.components.LoadingState
@@ -281,7 +281,7 @@ fun GameListScreen(
                             onLaunch = { viewModel.launchGame(game) },
                             onUpdate = { viewModel.updateGameSettings(it) },
                             onDetails = {
-                                navController?.navigate("${Screen.GameDetails.route}/${Uri.encode(game.packageName)}")
+                                navController?.navigate("game_details/${Uri.encode(game.packageName)}")
                             }
                         )
                     }

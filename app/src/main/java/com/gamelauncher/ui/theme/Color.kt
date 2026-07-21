@@ -19,3 +19,13 @@ val ErrorRed = Color(0xFFFF3333)
 
 val TextPrimary = Color(0xFFFAFAFA)
 val TextSecondary = Color(0xFFA1A1AA)
+
+enum class PerformanceMode {
+    ECO, BALANCED, PRO
+}
+
+fun getModeColor(mode: PerformanceMode): Color = when(mode) {
+    PerformanceMode.ECO -> SuccessGreen
+    PerformanceMode.BALANCED -> PrimaryNeon
+    PerformanceMode.PRO -> TertiaryAccent
+}
