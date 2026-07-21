@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat
 import com.gamelauncher.core.FPSManager
 import com.gamelauncher.core.GameLauncherApp
 import com.gamelauncher.core.PerformanceManager
+import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -35,6 +37,7 @@ class OverlayService : Service() {
 
     @Inject lateinit var fpsManager: FPSManager
     @Inject lateinit var performanceManager: PerformanceManager
+    @Inject lateinit var networkManager: NetworkManager
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var windowManager: WindowManager
@@ -46,6 +49,8 @@ class OverlayService : Service() {
     private var initialTouchY = 0f
     private var fpsText: TextView? = null
     private var hzText: TextView? = null
+    private var ramText: TextView? = null
+    private var pingText: TextView? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -136,6 +141,20 @@ class OverlayService : Service() {
                 setPadding(4, 0, 4, 2)
             }.also { addView(it) }
 
+            ramText = TextView(context).apply {
+                text = "RAM: --"
+                setTextColor(Color.parseColor("#FFA500"))
+                textSize = 10f
+                setPadding(4, 0, 4, 2)
+            }.also { addView(it) }
+
+            pingText = TextView(context).apply {
+                text = "Net: --"
+                setTextColor(Color.parseColor("#00BFFF")) // Deep sky blue
+                textSize = 10f
+                setPadding(4, 0, 4, 2)
+            }.also { addView(it) }
+
             setOnTouchListener { _, event ->
                 val params = overlayParams ?: return@setOnTouchListener false
                 when (event.action) {
@@ -173,6 +192,41 @@ class OverlayService : Service() {
                         else -> Color.RED
                     }
                     fpsText?.setTextColor(color)
+                }
+            }
+
+            serviceScope.launch {
+                val activityManager = getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                val memoryInfo = android.app.ActivityManager.MemoryInfo()
+                while (isActive) {
+                    activityManager.getMemoryInfo(memoryInfo)
+                    val availableMegs = memoryInfo.availMem / 1048576L
+                    val totalMegs = memoryInfo.totalMem / 1048576L
+                    val usedMegs = totalMegs - availableMegs
+                    ramText?.text = "RAM: ${usedMegs}MB / ${totalMegs}MB"
+
+                    // Try to get actual ping via shell, fallback to quality score
+                    var pingResult = "--"
+                    try {
+                        val process = Runtime.getRuntime().exec("ping -c 1 -W 1 8.8.8.8")
+                        process.waitFor()
+                        if (process.exitValue() == 0) {
+                            val output = process.inputStream.bufferedReader().readText()
+                            val match = "time=([0-9.]+) ms".toRegex().find(output)
+                            if (match != null) {
+                                pingResult = "${match.groupValues[1]}ms"
+                            }
+                        }
+                    } catch (e: Exception) {}
+                    
+                    if (pingResult == "--") {
+                        val netSnap = networkManager.networkSnapshot.value
+                        val quality = netSnap.qualityScore
+                        pingResult = "Q:$quality"
+                    }
+                    pingText?.text = "Net: $pingResult"
+                    
+                    kotlinx.coroutines.delay(2000)
                 }
             }
         } catch (e: Exception) {

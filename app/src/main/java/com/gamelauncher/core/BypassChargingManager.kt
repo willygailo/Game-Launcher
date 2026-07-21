@@ -85,8 +85,8 @@ class BypassChargingManager @Inject constructor(
 
         // ── Layer 1: Android 14+ charge_control (most reliable, HAL-level) ──
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val (ok, _) = shellManager.executeCommand("cmd battery set charge_control stop")
-            if (ok) {
+            val (ok, output) = shellManager.executeCommand("cmd battery set charge_control stop")
+            if (ok && !output.contains("Unknown", ignoreCase = true) && !output.contains("Error", ignoreCase = true) && !output.contains("Exception", ignoreCase = true)) {
                 anyOk = true
                 return true // HAL-level success → done
             }
@@ -119,8 +119,10 @@ class BypassChargingManager @Inject constructor(
 
         // Layer 1: Android 14+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val (ok, _) = shellManager.executeCommand("cmd battery set charge_control resume")
-            if (ok) anyOk = true
+            val (ok, output) = shellManager.executeCommand("cmd battery set charge_control resume")
+            if (ok && !output.contains("Unknown", ignoreCase = true) && !output.contains("Error", ignoreCase = true) && !output.contains("Exception", ignoreCase = true)) {
+                anyOk = true
+            }
         }
 
         // Layer 2: reset dumpsys battery to real hardware values
@@ -143,8 +145,8 @@ class BypassChargingManager @Inject constructor(
                 else -> if (enable) "1" else "0"
             }
             // Check if path exists first (avoids writing to non-existent nodes)
-            val (exists, _) = shellManager.executeCommand("[ -f $path ] && echo 1 || echo 0")
-            if (exists && value.isNotBlank()) {
+            val (existsOk, output) = shellManager.executeCommand("[ -f $path ] && echo 1 || echo 0")
+            if (existsOk && output.trim() == "1" && value.isNotBlank()) {
                 val (ok, _) = shellManager.executeCommand("echo $value > $path")
                 if (ok) return true
             }

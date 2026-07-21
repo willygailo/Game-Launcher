@@ -367,10 +367,23 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun requestUsageAccessPermission() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            try {
+                val fallbackIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(fallbackIntent)
+            } catch (e2: Exception) {
+                // If even the fallback fails, we can't open usage access settings
+                _profileMessage.value = "Usage access settings not available on this device"
+            }
         }
-        context.startActivity(intent)
     }
 
     fun requestBatteryOptimizationExemption() {
@@ -410,14 +423,22 @@ class SettingsViewModel @Inject constructor(
 
     private fun hasUsageAccess(): Boolean {
         return try {
-            val usageStatsManager = context.getSystemService(UsageStatsManager::class.java)
-            val now = System.currentTimeMillis()
-            val stats = usageStatsManager?.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                now - 10000,
-                now
-            )
-            stats != null && stats.isNotEmpty()
+            val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    context.packageName
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                appOps.checkOpNoThrow(
+                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    context.packageName
+                )
+            }
+            mode == android.app.AppOpsManager.MODE_ALLOWED
         } catch (e: Exception) {
             false
         }
