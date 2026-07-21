@@ -50,6 +50,7 @@ fun SettingsScreen(
     val secureNetworkJitter by viewModel.secureNetworkJitter.collectAsStateWithLifecycle()
     val secureRefreshRateLock by viewModel.secureRefreshRateLock.collectAsStateWithLifecycle()
     val securePhantomKiller by viewModel.securePhantomKiller.collectAsStateWithLifecycle()
+    val secureAggressiveNetwork by viewModel.secureAggressiveNetwork.collectAsStateWithLifecycle()
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Column(
@@ -266,6 +267,8 @@ fun SettingsScreen(
                     SecureToggleRow("Max Refresh Rate Lock", "Forces display to maximum Hz & locks VSync", secureRefreshRateLock) { viewModel.setSecureRefreshRateLock(it) }
                     HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
                     SecureToggleRow("Disable Phantom Killer", "Disables Android 12+ background process monitor", securePhantomKiller) { viewModel.setSecurePhantomKiller(it) }
+                    HorizontalDivider(color = SurfaceVariantDark, modifier = Modifier.padding(vertical = 4.dp))
+                    SecureToggleRow("Aggressive Net Restrictor", "Blocks background app network access completely to lower game ping", secureAggressiveNetwork) { viewModel.setSecureAggressiveNetwork(it) }
                 }
             }
         }

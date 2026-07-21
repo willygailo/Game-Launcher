@@ -111,6 +111,10 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_SECURE_SETTINGS_PHANTOM_KILLER] ?: true }
 
+    val secureSettingsAggressiveNetwork: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SECURE_SETTINGS_AGGRESSIVE_NETWORK] ?: false }
+
     // ── NEW: Battery Saver + Network + Thermal ────────────────────────
 
     /** When true, battery saver is automatically killed when boost starts */
@@ -156,6 +160,7 @@ class SettingsPreferences @Inject constructor(
     suspend fun setSecureSettingsNetworkJitter(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_NETWORK_JITTER] = enabled } }
     suspend fun setSecureSettingsRefreshRateLock(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_REFRESH_RATE_LOCK] = enabled } }
     suspend fun setSecureSettingsPhantomKiller(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_PHANTOM_KILLER] = enabled } }
+    suspend fun setSecureSettingsAggressiveNetwork(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_AGGRESSIVE_NETWORK] = enabled } }
     suspend fun setDisableBatterySaverOnBoost(enabled: Boolean) { dataStore.edit { it[KEY_DISABLE_BATTERY_SAVER_ON_BOOST] = enabled } }
     suspend fun setNetworkDualStackEnabled(enabled: Boolean) { dataStore.edit { it[KEY_NETWORK_DUAL_STACK] = enabled } }
     suspend fun setDozeWhitelistEnabled(enabled: Boolean) { dataStore.edit { it[KEY_DOZE_WHITELIST] = enabled } }
@@ -185,6 +190,7 @@ class SettingsPreferences @Inject constructor(
         private val KEY_SECURE_SETTINGS_NETWORK_JITTER = booleanPreferencesKey("secure_settings_network_jitter")
         private val KEY_SECURE_SETTINGS_REFRESH_RATE_LOCK = booleanPreferencesKey("secure_settings_refresh_rate_lock")
         private val KEY_SECURE_SETTINGS_PHANTOM_KILLER = booleanPreferencesKey("secure_settings_phantom_killer")
+        private val KEY_SECURE_SETTINGS_AGGRESSIVE_NETWORK = booleanPreferencesKey("secure_settings_aggressive_network")
         // New keys
         private val KEY_DISABLE_BATTERY_SAVER_ON_BOOST = booleanPreferencesKey("disable_battery_saver_on_boost")
         private val KEY_NETWORK_DUAL_STACK = booleanPreferencesKey("network_dual_stack_enabled")

@@ -508,6 +508,13 @@ class PerformanceManager @Inject constructor(
                     Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", "false")
                 }
             } catch (_: Exception) {}
+
+            try {
+                // 10. Aggressive Network Restrictor (Data Saver)
+                if (settingsPreferences.secureSettingsAggressiveNetwork.first()) {
+                    rootShellManager.executeCommand("cmd netpolicy set restrict-background true")
+                }
+            } catch (_: Exception) {}
         } else {
             // Fallback to basic non-root optimizations (which only write Settings.System if WRITE_SETTINGS is granted)
             disableAnimations()
@@ -613,6 +620,12 @@ class PerformanceManager @Inject constructor(
             try {
                 originalPhantomProcsMonitor?.let { Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", it) }
                 originalPhantomProcsMonitor = null
+            } catch (_: Exception) {}
+            
+            try {
+                // Restore Aggressive Network Restrictor (Disable Data Saver)
+                // We just turn it off unconditionally if secure permissions exist, to be safe.
+                rootShellManager.executeCommand("cmd netpolicy set restrict-background false")
             } catch (_: Exception) {}
             
             // Also restore display refresh rate

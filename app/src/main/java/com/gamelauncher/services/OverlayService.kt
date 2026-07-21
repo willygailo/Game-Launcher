@@ -51,10 +51,24 @@ class OverlayService : Service() {
     private var hzText: TextView? = null
     private var ramText: TextView? = null
     private var pingText: TextView? = null
+    private var cpuTempText: TextView? = null
+    private var batTempText: TextView? = null
+
+    private var currentBatteryTemp: Float = 0f
+
+    private val batteryReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_BATTERY_CHANGED) {
+                val temp = intent.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, 0)
+                currentBatteryTemp = temp / 10f
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        registerReceiver(batteryReceiver, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -155,6 +169,20 @@ class OverlayService : Service() {
                 setPadding(4, 0, 4, 2)
             }.also { addView(it) }
 
+            cpuTempText = TextView(context).apply {
+                text = "CPU: --°C"
+                setTextColor(Color.parseColor("#FF4500")) // OrangeRed
+                textSize = 10f
+                setPadding(4, 0, 4, 2)
+            }.also { addView(it) }
+
+            batTempText = TextView(context).apply {
+                text = "BAT: --°C"
+                setTextColor(Color.parseColor("#32CD32")) // LimeGreen
+                textSize = 10f
+                setPadding(4, 0, 4, 2)
+            }.also { addView(it) }
+
             setOnTouchListener { _, event ->
                 val params = overlayParams ?: return@setOnTouchListener false
                 when (event.action) {
@@ -226,6 +254,30 @@ class OverlayService : Service() {
                     }
                     pingText?.text = "Net: $pingResult"
                     
+                    // CPU Temp
+                    var cpuTemp = 0f
+                    try {
+                        // Commonly zone 0 is CPU, but this varies heavily.
+                        val cpuFile = java.io.File("/sys/class/thermal/thermal_zone0/temp")
+                        if (cpuFile.exists()) {
+                            val tempStr = cpuFile.readText().trim()
+                            cpuTemp = tempStr.toFloat() / 1000f
+                        }
+                    } catch (e: Exception) {}
+                    
+                    if (cpuTemp > 0) {
+                        cpuTempText?.text = "CPU: ${String.format("%.1f", cpuTemp)}°C"
+                    } else {
+                        cpuTempText?.text = "CPU: --°C"
+                    }
+
+                    // Battery Temp
+                    if (currentBatteryTemp > 0) {
+                        batTempText?.text = "BAT: ${currentBatteryTemp}°C"
+                    } else {
+                        batTempText?.text = "BAT: --°C"
+                    }
+
                     kotlinx.coroutines.delay(2000)
                 }
             }
@@ -237,6 +289,9 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(batteryReceiver)
+        } catch (e: Exception) {}
         fpsManager.stopTracking()
         serviceScope.cancel()
         overlayView?.let {

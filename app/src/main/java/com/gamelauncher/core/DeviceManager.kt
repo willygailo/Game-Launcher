@@ -26,7 +26,7 @@ class DeviceManager @Inject constructor(
     private val activityManager = context.getSystemService(ActivityManager::class.java)
     private val powerManager = context.getSystemService(PowerManager::class.java)
     @Volatile private var batteryLevel: Int = 100
-    @Volatile private var batteryTemp: Float = 25f
+    @Volatile private var batteryTemp: Float = 40f
     @Volatile private var batteryStatus: String = "Unknown"
     @Volatile private var batteryVoltage: Int = 4200
     @Volatile private var batteryHealth: String = "Unknown"
