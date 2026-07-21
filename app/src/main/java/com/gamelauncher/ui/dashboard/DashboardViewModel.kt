@@ -375,6 +375,16 @@ class DashboardViewModel @Inject constructor(
         shizukuShellManager.requestPermission()
     }
 
+    fun autoGrantAllPermissionsWithShizuku(onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val packageName = context.packageName
+            val (success, message) = shizukuShellManager.grantAllPermissions(packageName)
+            refreshPermissionStates()
+            onResult(success, message)
+        }
+    }
+
+
     override fun onCleared() {
         super.onCleared()
         networkManager.stopMonitoring()

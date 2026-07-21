@@ -123,15 +123,31 @@ class GameOptimizationCoordinator @Inject constructor(
             }
 
             if (shizukuShellManager.isAvailable() || hasRoot) {
-                // Android 13-16 Game Mode performance override command
+                // 1. Android Game Mode performance override & driver opt-in for Max FPS
+                shizukuShellManager.executeCommand("cmd game mode performance $packageName")
                 shizukuShellManager.executeCommand("cmd game set --mode 2 $packageName")
-                appliedOptimizations.add("GameManager Performance Mode Force")
+                shizukuShellManager.executeCommand("settings put global game_driver_opt_in_apps $packageName")
+                appliedOptimizations.add("GameManager Performance Mode Force (Max FPS)")
 
-                // Android 13-16 background apps standby sleep mode command
+                // 2. Unlock & Force Maximum Panel Hz (90Hz / 120Hz / 144Hz / 165Hz)
+                val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
+                shizukuShellManager.executeCommand("settings put system peak_refresh_rate $maxHz")
+                shizukuShellManager.executeCommand("settings put system min_refresh_rate $maxHz")
+                shizukuShellManager.executeCommand("settings put system user_refresh_rate $maxHz")
+                shizukuShellManager.executeCommand("settings put system miui_refresh_rate $maxHz")
+                shizukuShellManager.executeCommand("settings put system high_refresh_rate 1")
+                shizukuShellManager.executeCommand("settings put secure refresh_rate_mode 2")
+                appliedOptimizations.add("Unlocked Max Hz Panel Target (${maxHz.toInt()}Hz)")
+
+                // 3. Thermal Throttling Bypass
+                shizukuShellManager.executeCommand("cmd thermalservice override-status 0")
+                appliedOptimizations.add("Thermal Service Override Active (No Throttling)")
+
+                // 4. Background apps standby sleep mode command
                 shizukuShellManager.executeCommand("cmd package list packages | cut -f 2 -d ':' | grep -v $packageName | xargs -I {} am set-standby-bucket {} rare")
                 appliedOptimizations.add("Background Standby Lock Active")
 
-                // Background ART speed AOT compilation boost
+                // 5. Background ART speed AOT compilation boost
                 appScope.launch(Dispatchers.IO) {
                     shizukuShellManager.executeCommand("cmd package compile -m speed -f $packageName")
                 }

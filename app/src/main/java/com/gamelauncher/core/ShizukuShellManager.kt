@@ -108,6 +108,24 @@ class ShizukuShellManager @Inject constructor(
             "start thermald"
         ))
 
+    /**
+     * Batch grant all sensitive permissions (Usage Stats, Overlay, Restricted Settings, Auto-Start)
+     * via Shizuku. Works across Infinix (XOS), Tecno (HiOS), Xiaomi (MIUI/HyperOS), Samsung, OPPO, etc.
+     */
+    suspend fun grantAllPermissions(packageName: String): Pair<Boolean, String> =
+        executeAny(listOf(
+            "pm grant $packageName android.permission.PACKAGE_USAGE_STATS",
+            "appops set $packageName GET_USAGE_STATS allow",
+            "appops set $packageName ACCESS_RESTRICTED_SETTINGS allow",
+            "appops set $packageName SYSTEM_ALERT_WINDOW allow",
+            "pm grant $packageName android.permission.WRITE_SECURE_SETTINGS",
+            "appops set $packageName AUTO_START allow",
+            "appops set $packageName OP_BACKGROUND_START_ACTIVITY allow",
+            "appops set $packageName RUN_IN_BACKGROUND allow",
+            "cmd appops set $packageName RUN_ANY_IN_BACKGROUND allow"
+        ))
+
+
     // ── Private: Shizuku execution via reflection ─────────────────────
 
     /**
