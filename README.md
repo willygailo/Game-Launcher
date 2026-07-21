@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.8-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.2.9-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -100,6 +100,17 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.2.9: "Extreme Gaming Mode"
+
+> This release brings several highly requested features and optimizations to unlock the absolute maximum performance from your device.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Force Max Performance** | A new "Danger Mode" setting that completely bypasses OS thermal throttling, locks the CPU/GPU to maximum frequencies, and forces hardware acceleration properties. | ✅ |
+| **Aggressive Network Restrictor** | Blocks background network activity from other apps to ensure the lowest ping for your active game. | ✅ |
+| **Enhanced Overlay** | The in-game overlay now displays real-time CPU & Battery Temperatures, as well as RAM and Network status. | ✅ |
+| **Usage Access Fix** | Ensured proper usage of `AppOpsManager` so the app correctly requests and handles usage access for Android 10+. | ✅ |
 
 ### 🆕 v3.2.8: "Unlocked Max FPS & Thermal Bypass"
 
@@ -791,8 +802,15 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.8](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.8)
+- [Latest Release: v3.2.9](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.9)
 - Or build from source using the instructions above
+
+---
+
+## 🌐 Connect with the Developer
+
+- **Facebook:** [Willy Gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+- **GitHub:** [willygailo](https://github.com/willygailo)
 
 ---
 
