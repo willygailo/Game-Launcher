@@ -261,6 +261,7 @@ class NetworkManager @Inject constructor(
      *  - API 29-30: TelephonyManager.getDataNetworkType() == NETWORK_TYPE_NR
      *  - Pre-29: Not detectable without location permission
      */
+    @android.annotation.SuppressLint("MissingPermission")
     private fun getCellularDataNetworkType(): Int {
         return try {
             telephonyManager?.dataNetworkType ?: TelephonyManager.NETWORK_TYPE_UNKNOWN

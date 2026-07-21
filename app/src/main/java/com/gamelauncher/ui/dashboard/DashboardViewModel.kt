@@ -108,11 +108,12 @@ class DashboardViewModel @Inject constructor(
         refreshBypassChargingState()
         // Register Shizuku state receiver so bypass card auto-refreshes on connect
         val filter = IntentFilter(GameLauncherApp.ACTION_SHIZUKU_CHANGED)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(shizukuStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            context.registerReceiver(shizukuStateReceiver, filter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            context,
+            shizukuStateReceiver,
+            filter,
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun checkWriteSecure() {
