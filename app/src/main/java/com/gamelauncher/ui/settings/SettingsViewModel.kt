@@ -309,11 +309,11 @@ class SettingsViewModel @Inject constructor(
 
     fun setGameDetectorEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            settingsPreferences.setGameDetectorEnabled(enabled)
             if (enabled && !hasUsageAccess()) {
                 requestUsageAccessPermission()
                 return@launch
             }
+            settingsPreferences.setGameDetectorEnabled(enabled)
             val intent = Intent(context, GameDetectorService::class.java).apply {
                 action = if (enabled) {
                     GameDetectorService.ACTION_START_DETECTOR
@@ -389,20 +389,11 @@ class SettingsViewModel @Inject constructor(
     fun requestUsageAccessPermission() {
         try {
             val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                data = Uri.parse("package:${context.packageName}")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            try {
-                val fallbackIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(fallbackIntent)
-            } catch (e2: Exception) {
-                // If even the fallback fails, we can't open usage access settings
-                _profileMessage.value = "Usage access settings not available on this device"
-            }
+            _profileMessage.value = "Usage access settings not available on this device"
         }
     }
 
