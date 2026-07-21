@@ -131,6 +131,12 @@ class SettingsViewModel @Inject constructor(
         initialValue = false
     )
 
+    val secureForceMaxPerf: StateFlow<Boolean> = settingsPreferences.secureSettingsForceMaxPerf.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+
     val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
         hasUsageAccess()
     }
@@ -295,6 +301,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setSecureAggressiveNetwork(enabled: Boolean) {
         viewModelScope.launch { settingsPreferences.setSecureSettingsAggressiveNetwork(enabled) }
+    }
+
+    fun setSecureForceMaxPerf(enabled: Boolean) {
+        viewModelScope.launch { settingsPreferences.setSecureSettingsForceMaxPerf(enabled) }
     }
 
     fun setGameDetectorEnabled(enabled: Boolean) {

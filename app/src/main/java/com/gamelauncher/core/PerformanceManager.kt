@@ -515,6 +515,24 @@ class PerformanceManager @Inject constructor(
                     rootShellManager.executeCommand("cmd netpolicy set restrict-background true")
                 }
             } catch (_: Exception) {}
+
+            try {
+                // 11. Force Max Performance Tweaks (Extreme Gaming Mode)
+                if (settingsPreferences.secureSettingsForceMaxPerf.first()) {
+                    // Bypass thermal throttling
+                    rootShellManager.executeCommand("cmd thermalservice override-status 0")
+                    
+                    // Lock CPU to performance/fixed mode
+                    rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled true")
+                    
+                    // Force hardware rendering flags
+                    rootShellManager.executeCommand("setprop debug.egl.hw 1")
+                    rootShellManager.executeCommand("setprop debug.sf.hw 1")
+                    rootShellManager.executeCommand("setprop debug.performance.tuning 1")
+                    rootShellManager.executeCommand("setprop video.accelerate.hw 1")
+                    rootShellManager.executeCommand("setprop debug.hwui.overdraw false")
+                }
+            } catch (_: Exception) {}
         } else {
             // Fallback to basic non-root optimizations (which only write Settings.System if WRITE_SETTINGS is granted)
             disableAnimations()
@@ -626,6 +644,17 @@ class PerformanceManager @Inject constructor(
                 // Restore Aggressive Network Restrictor (Disable Data Saver)
                 // We just turn it off unconditionally if secure permissions exist, to be safe.
                 rootShellManager.executeCommand("cmd netpolicy set restrict-background false")
+            } catch (_: Exception) {}
+            
+            try {
+                // Restore Force Max Performance Tweaks
+                rootShellManager.executeCommand("cmd thermalservice reset")
+                rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled false")
+                rootShellManager.executeCommand("setprop debug.egl.hw 0")
+                rootShellManager.executeCommand("setprop debug.sf.hw 0")
+                rootShellManager.executeCommand("setprop debug.performance.tuning 0")
+                rootShellManager.executeCommand("setprop video.accelerate.hw 0")
+                rootShellManager.executeCommand("setprop debug.hwui.overdraw true")
             } catch (_: Exception) {}
             
             // Also restore display refresh rate
