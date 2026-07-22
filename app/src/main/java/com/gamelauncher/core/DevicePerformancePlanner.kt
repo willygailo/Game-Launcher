@@ -5,6 +5,7 @@ import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.Display
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -114,7 +115,9 @@ class DevicePerformancePlanner @Inject constructor(
         return runCatching {
             val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY)
             val rawRates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                display?.supportedModes?.map { normalizeRate(it.refreshRate) }.orEmpty()
+                val modes = display?.supportedModes.orEmpty()
+                Log.d("DevicePerformancePlanner", "RAW Display.getSupportedModes() count=${modes.size}: ${modes.joinToString { "${it.refreshRate}Hz (${it.physicalWidth}x${it.physicalHeight})" }}")
+                modes.map { normalizeRate(it.refreshRate) }
             } else {
                 listOfNotNull(display?.refreshRate?.let(::normalizeRate))
             }
@@ -122,8 +125,8 @@ class DevicePerformancePlanner @Inject constructor(
                 .filter { it >= 30f }
                 .distinct()
                 .sorted()
-                .ifEmpty { listOf(60f) }
-        }.getOrDefault(listOf(60f))
+                .ifEmpty { listOf(60f, 90f, 120f, 144f) }
+        }.getOrDefault(listOf(60f, 90f, 120f, 144f))
     }
 
     fun nearestSupportedRate(desired: Float, supportedRates: List<Float> = getSupportedRefreshRates()): Float {

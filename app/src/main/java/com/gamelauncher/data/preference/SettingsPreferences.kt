@@ -62,7 +62,7 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_ONBOARDING_COMPLETED] ?: false }
 
-    // NEW: Adaptive performance settings
+    // Adaptive performance settings
     val adaptivePerformanceEnabled: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_ADAPTIVE_PERF] ?: true }
@@ -70,6 +70,11 @@ class SettingsPreferences @Inject constructor(
     val thermalAwareBoost: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_THERMAL_AWARE] ?: true }
+
+    // GPU rendering option toggle
+    val forceGpuRenderingEnabled: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_FORCE_GPU_RENDERING] ?: true }
 
     val secureSettingsAnimScale: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
@@ -119,29 +124,22 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_SECURE_SETTINGS_FORCE_MAX_PERF] ?: false }
 
-    // ── NEW: Battery Saver + Network + Thermal ────────────────────────
-
-    /** When true, battery saver is automatically killed when boost starts */
     val disableBatterySaverOnBoost: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_DISABLE_BATTERY_SAVER_ON_BOOST] ?: true }
 
-    /** When true, enable mobile_data_always_on for WiFi+Data dual stack during gaming */
     val networkDualStackEnabled: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_NETWORK_DUAL_STACK] ?: true }
 
-    /** When true, whitelists the game package from Doze mode */
     val dozeWhitelistEnabled: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_DOZE_WHITELIST] ?: true }
 
-    /** When true (root only), suspends thermal-engine during gaming for max perf */
     val suspendThermalOnBoost: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_SUSPEND_THERMAL] ?: false }
 
-    /** Force max Hz on display during boost */
     val forceMaxHzOnBoost: Flow<Boolean> = dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_FORCE_MAX_HZ] ?: true }
@@ -153,6 +151,7 @@ class SettingsPreferences @Inject constructor(
     suspend fun setOverlayEnabled(enabled: Boolean) { dataStore.edit { it[KEY_OVERLAY_ENABLED] = enabled } }
     suspend fun setGameDetectorEnabled(enabled: Boolean) { dataStore.edit { it[KEY_GAME_DETECTOR_ENABLED] = enabled } }
     suspend fun setThermalAwareBoost(enabled: Boolean) { dataStore.edit { it[KEY_THERMAL_AWARE] = enabled } }
+    suspend fun setForceGpuRenderingEnabled(enabled: Boolean) { dataStore.edit { it[KEY_FORCE_GPU_RENDERING] = enabled } }
 
     suspend fun setSecureSettingsAnimScale(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_ANIM_SCALE] = enabled } }
     suspend fun setSecureSettingsGameDriver(enabled: Boolean) { dataStore.edit { it[KEY_SECURE_SETTINGS_GAME_DRIVER] = enabled } }
@@ -184,6 +183,7 @@ class SettingsPreferences @Inject constructor(
         private val KEY_OVERLAY_ENABLED = booleanPreferencesKey("overlay_enabled")
         private val KEY_GAME_DETECTOR_ENABLED = booleanPreferencesKey("game_detector_enabled")
         private val KEY_THERMAL_AWARE = booleanPreferencesKey("thermal_aware_boost")
+        private val KEY_FORCE_GPU_RENDERING = booleanPreferencesKey("force_gpu_rendering_enabled")
 
         private val KEY_SECURE_SETTINGS_ANIM_SCALE = booleanPreferencesKey("secure_settings_anim_scale")
         private val KEY_SECURE_SETTINGS_GAME_DRIVER = booleanPreferencesKey("secure_settings_game_driver")
@@ -197,7 +197,6 @@ class SettingsPreferences @Inject constructor(
         private val KEY_SECURE_SETTINGS_PHANTOM_KILLER = booleanPreferencesKey("secure_settings_phantom_killer")
         private val KEY_SECURE_SETTINGS_AGGRESSIVE_NETWORK = booleanPreferencesKey("secure_settings_aggressive_network")
         private val KEY_SECURE_SETTINGS_FORCE_MAX_PERF = booleanPreferencesKey("secure_settings_force_max_perf")
-        // New keys
         private val KEY_DISABLE_BATTERY_SAVER_ON_BOOST = booleanPreferencesKey("disable_battery_saver_on_boost")
         private val KEY_NETWORK_DUAL_STACK = booleanPreferencesKey("network_dual_stack_enabled")
         private val KEY_DOZE_WHITELIST = booleanPreferencesKey("doze_whitelist_enabled")

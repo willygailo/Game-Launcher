@@ -11,22 +11,27 @@ import android.os.PerformanceHintManager
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
+import android.util.Log
 import android.view.Display
 import android.view.Surface
 import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.concurrent.Volatile
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 class PerformanceManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val rootShellManager: RootShellManager,
+    private val shizukuShellManager: ShizukuShellManager,
     private val socManager: SocManager,
     private val settingsPreferences: SettingsPreferences
 ) {
@@ -71,9 +76,6 @@ class PerformanceManager @Inject constructor(
             val phm = context.getSystemService(PerformanceHintManager::class.java) ?: return
             val periodNs = 1_000_000_000L / targetFpsHz
             
-            // Gather only render-critical thread IDs. Including all /proc/self/task threads
-            // sends GC threads, Firebase, WorkManager etc. into the ADPF hint window, which
-            // wastes thermal/power budget on background work and inflates scheduling hints.
             val tids = getRenderThreadIds()
             
             performanceSession?.close()
@@ -89,11 +91,6 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    /**
-     * Returns thread IDs for render-critical threads only.
-     * Excludes GC, pool, firebase, worker, and binder threads from the ADPF session
-     * to avoid wasting thermal budget on background threads.
-     */
     private fun getRenderThreadIds(): IntArray {
         val excludePatterns = listOf("gc", "pool", "firebase", "worker", "binder",
             "dog", "ref", "finalizer", "jit", "logcat", "okio")
@@ -101,7 +98,6 @@ class PerformanceManager @Inject constructor(
         return if (taskDir.exists() && taskDir.isDirectory) {
             taskDir.listFiles()?.mapNotNull { taskFile ->
                 val tid = taskFile.name.toIntOrNull() ?: return@mapNotNull null
-                // Read thread name from /proc/self/task/<tid>/comm
                 val commFile = java.io.File(taskFile, "comm")
                 val threadName = try { commFile.readText().trim().lowercase() } catch (_: Exception) { "" }
                 if (excludePatterns.none { threadName.contains(it) }) tid else null
@@ -115,13 +111,9 @@ class PerformanceManager @Inject constructor(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
             val session = performanceSession ?: return
-            // Intentionally over-report frame duration to trick ADPF into pinning CPU clocks.
-            // SNAPDRAGON ONLY: this is documented to work on Qualcomm DCVS/CPU scheduler.
-            // On MediaTek/Exynos/Tensor, ADPF respects work duration for DVFS, so over-reporting
-            // causes erratic clock scaling and potential thermal issues on those SoCs.
             val reportedNs = when (socType) {
-                SocType.SNAPDRAGON -> actualFrameNs * 3L   // bloat only on Snapdragon
-                else -> actualFrameNs                       // accurate on all other SoCs
+                SocType.SNAPDRAGON -> actualFrameNs * 3L
+                else -> actualFrameNs
             }
             session.javaClass.getMethod("reportActualWorkDuration", Long::class.java)
                 .invoke(session, reportedNs)
@@ -147,13 +139,23 @@ class PerformanceManager @Inject constructor(
     fun getSupportedRefreshRates(): List<Float> {
         return try {
             val dm = context.getSystemService(DisplayManager::class.java)
-            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f)
+            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f, 90f, 120f, 144f)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                display.supportedModes.map { it.refreshRate }.distinct().sorted()
+                val rawModes = display.supportedModes
+                Log.d("PerformanceManager", "RAW Display.getSupportedModes() count=${rawModes.size}: ${rawModes.joinToString { "${it.refreshRate}Hz (${it.physicalWidth}x${it.physicalHeight})" }}")
+                val rates = rawModes
+                    .map { (it.refreshRate * 100f).roundToInt() / 100f }
+                    .filter { it >= 30f }
+                    .distinct()
+                    .sorted()
+                if (rates.isNotEmpty()) rates else listOf(60f, 90f, 120f, 144f)
             } else {
                 listOf(display.refreshRate)
             }
-        } catch (e: Exception) { listOf(60f) }
+        } catch (e: Exception) {
+            Log.e("PerformanceManager", "Error querying getSupportedRefreshRates()", e)
+            listOf(60f, 90f, 120f, 144f)
+        }
     }
 
     fun getCurrentRefreshRate(): Float {
@@ -280,6 +282,15 @@ class PerformanceManager @Inject constructor(
         try {
             Settings.Global.putString(context.contentResolver, "hwui.renderer", "opengl")
         } catch (_: Exception) {}
+
+        // Shizuku shell fallback execution for OEMs blocking direct ContentResolver writes
+        if (shizukuShellManager.isAvailable()) {
+            GlobalScope.launch(Dispatchers.IO) {
+                shizukuShellManager.executeCommand("settings put global force_gpu_rendering 1")
+                shizukuShellManager.executeCommand("settings put system force_hw_ui 1")
+                shizukuShellManager.executeCommand("settings put global hwui.renderer opengl")
+            }
+        }
     }
 
     fun restoreGpuRendering() {
@@ -289,6 +300,13 @@ class PerformanceManager @Inject constructor(
         try {
             Settings.System.putInt(context.contentResolver, "force_hw_ui", 0)
         } catch (_: Exception) {}
+
+        if (shizukuShellManager.isAvailable()) {
+            GlobalScope.launch(Dispatchers.IO) {
+                shizukuShellManager.executeCommand("settings put global force_gpu_rendering 0")
+                shizukuShellManager.executeCommand("settings put system force_hw_ui 0")
+            }
+        }
     }
 
     fun setHighPerformanceMode() {
@@ -303,7 +321,6 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    // Cache for original system settings states (restored after boost stops)
     @Volatile private var originalLowPowerMode: Int? = null
     @Volatile private var originalMasterSync: Boolean? = null
     @Volatile private var originalMobileDataAlwaysOn: Int? = null
@@ -314,7 +331,6 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalGameDriverOptInApps: String? = null
     @Volatile private var originalMobileDataAlwaysOnPrev: Int? = null
 
-    // Extended non-root backup properties
     @Volatile private var originalWifiScanAlwaysEnabled: Int? = null
     @Volatile private var originalBleScanAlwaysEnabled: Int? = null
     @Volatile private var originalWifiPowerSave: Int? = null
@@ -331,7 +347,6 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalUpdatableDriverAllApps: Int? = null
     @Volatile private var originalUpdatableDriverOptInApps: String? = null
     
-    // Refresh rate locking original states
     @Volatile private var originalSamsungRefreshMode: Int? = null
     @Volatile private var originalOneplusRefreshRate: Int? = null
     @Volatile private var originalXiaomiUserRefreshRate: Int? = null
@@ -342,18 +357,12 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalAospPeakRefreshRate: Float? = null
     @Volatile private var originalAospMinRefreshRate: Float? = null
 
-    /**
-     * Force mobile data always-on so the device maintains a cellular background
-     * connection even while on WiFi — prevents the WiFi→data handoff lag spike.
-     * Requires WRITE_SECURE_SETTINGS.
-     */
     fun forceMobileDataAlwaysOn() {
         if (!hasSecureSettingsPermission()) return
         try {
             val resolver = context.contentResolver
             originalMobileDataAlwaysOnPrev = Settings.Global.getInt(resolver, "mobile_data_always_on", 0)
             Settings.Global.putInt(resolver, "mobile_data_always_on", 1)
-            // Also tell the network stack to keep WiFi + LTE both alive
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 Settings.Global.putInt(resolver, "wifi_is_usable_score_cache_timeout_millis", 5000)
             }
@@ -387,7 +396,6 @@ class PerformanceManager @Inject constructor(
 
         if (hasSecurePerm) {
             try {
-                // 1. Disable Animations globally if enabled in preferences
                 if (settingsPreferences.secureSettingsAnimScale.first()) {
                     originalWindowAnimScale = Settings.Global.getFloat(resolver, "window_animation_scale", 1.0f)
                     originalTransitionAnimScale = Settings.Global.getFloat(resolver, "transition_animation_scale", 1.0f)
@@ -400,7 +408,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 2. Force Battery/Power Saver Mode OFF
                 if (settingsPreferences.secureSettingsBatterySaver.first()) {
                     originalLowPowerMode = Settings.Global.getInt(resolver, "low_power", 0)
                     Settings.Global.putInt(resolver, "low_power", 0)
@@ -408,7 +415,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 3. Keep Mobile Data Always On (for fast WiFi-mobile handoff / dual-net stability)
                 if (settingsPreferences.secureSettingsMobileData.first()) {
                     originalMobileDataAlwaysOn = Settings.Global.getInt(resolver, "mobile_data_always_on", 0)
                     Settings.Global.putInt(resolver, "mobile_data_always_on", 1)
@@ -416,7 +422,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 4. Disable Master Auto-Sync temporarily to avoid background sync lag/ping spikes
                 if (settingsPreferences.secureSettingsSyncOff.first()) {
                     originalMasterSync = ContentResolver.getMasterSyncAutomatically()
                     ContentResolver.setMasterSyncAutomatically(false)
@@ -424,7 +429,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 5. Disable Location/GPS Scanning temporarily to avoid background localization CPU spikes
                 if (settingsPreferences.secureSettingsLocationOff.first()) {
                     originalLocationMode = Settings.Secure.getInt(resolver, "location_mode", 3)
                     Settings.Secure.putInt(resolver, "location_mode", 0)
@@ -432,7 +436,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 6. Force Game Driver for game package name & global gaming drivers
                 if (settingsPreferences.secureSettingsGameDriver.first()) {
                     originalGameDriverOptInApps = Settings.Global.getString(resolver, "game_driver_opt_in_apps") ?: ""
                     val currentApps = originalGameDriverOptInApps ?: ""
@@ -462,7 +465,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 7. Touch & Input Boost
                 if (settingsPreferences.secureSettingsTouchBoost.first()) {
                     originalPointerSpeed = Settings.System.getInt(resolver, "pointer_speed", 5)
                     Settings.System.putInt(resolver, "pointer_speed", 7)
@@ -482,7 +484,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 8. Low Jitter Network (WiFi & Bluetooth Optimization)
                 if (settingsPreferences.secureSettingsNetworkJitter.first()) {
                     originalWifiScanAlwaysEnabled = Settings.Global.getInt(resolver, "wifi_scan_always_enabled", 1)
                     Settings.Global.putInt(resolver, "wifi_scan_always_enabled", 0)
@@ -502,7 +503,6 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 9. Disable Phantom Process Killer monitor
                 if (settingsPreferences.secureSettingsPhantomKiller.first()) {
                     originalPhantomProcsMonitor = Settings.Global.getString(resolver, "settings_enable_monitor_phantom_procs") ?: "true"
                     Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", "false")
@@ -510,22 +510,15 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
 
             try {
-                // 10. Aggressive Network Restrictor (Data Saver)
                 if (settingsPreferences.secureSettingsAggressiveNetwork.first()) {
                     rootShellManager.executeCommand("cmd netpolicy set restrict-background true")
                 }
             } catch (_: Exception) {}
 
             try {
-                // 11. Force Max Performance Tweaks (Extreme Gaming Mode)
                 if (settingsPreferences.secureSettingsForceMaxPerf.first()) {
-                    // Bypass thermal throttling
                     rootShellManager.executeCommand("cmd thermalservice override-status 0")
-                    
-                    // Lock CPU to performance/fixed mode
                     rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled true")
-                    
-                    // Force hardware rendering flags
                     rootShellManager.executeCommand("setprop debug.egl.hw 1")
                     rootShellManager.executeCommand("setprop debug.sf.hw 1")
                     rootShellManager.executeCommand("setprop debug.performance.tuning 1")
@@ -534,7 +527,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
         } else {
-            // Fallback to basic non-root optimizations (which only write Settings.System if WRITE_SETTINGS is granted)
             disableAnimations()
             forceGpuRendering()
             setHighPerformanceMode()
@@ -641,13 +633,10 @@ class PerformanceManager @Inject constructor(
             } catch (_: Exception) {}
             
             try {
-                // Restore Aggressive Network Restrictor (Disable Data Saver)
-                // We just turn it off unconditionally if secure permissions exist, to be safe.
                 rootShellManager.executeCommand("cmd netpolicy set restrict-background false")
             } catch (_: Exception) {}
             
             try {
-                // Restore Force Max Performance Tweaks
                 rootShellManager.executeCommand("cmd thermalservice reset")
                 rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled false")
                 rootShellManager.executeCommand("setprop debug.egl.hw 0")
@@ -657,7 +646,6 @@ class PerformanceManager @Inject constructor(
                 rootShellManager.executeCommand("setprop debug.hwui.overdraw true")
             } catch (_: Exception) {}
             
-            // Also restore display refresh rate
             restoreRefreshRate()
         } else {
             restoreAnimations()
@@ -668,7 +656,12 @@ class PerformanceManager @Inject constructor(
     // ── Root Hardware Tuning ─────────────────────────────────────────
     suspend fun setCpuGovernor(governor: String): Boolean = withContext(Dispatchers.IO) {
         if (!rootShellManager.isRootAvailable()) return@withContext false
-        val cmd = "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $governor > \$i; done"
+        val sanitizedGov = governor.lowercase().trim()
+        
+        // Grant write permissions across all CPU cores sysfs nodes
+        rootShellManager.executeCommand("chmod 0664 /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        
+        val cmd = "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $sanitizedGov > \$i; done"
         val (success, _) = rootShellManager.executeCommand(cmd)
         success
     }
@@ -728,12 +721,10 @@ class PerformanceManager @Inject constructor(
             rootShellManager.executeCommand(cmd)
         }
         val props = listOf(
-            // debug.* props are writable at runtime
             "debug.hwui.overdraw" to "false",
             "debug.performance.tuning" to "1",
             "debug.sf.latch_unsignaled" to "1",
             "debug.hwui.target_cpu_time_percent" to "80",
-            // SurfaceFlinger max FPS unlock props
             "debug.sf.frame_rate_multiple_threshold" to "0",
             "debug.sf.showupdates" to "0",
             "debug.sf.high_fps_early_phase_duration" to "1",
@@ -741,13 +732,11 @@ class PerformanceManager @Inject constructor(
             "debug.sf.early_phase_in_ns" to "1000000",
             "debug.sf.late_phase_in_ns" to "1000000",
             "debug.sf.phase_offset_threshold_for_next_vsync" to "0",
-            // vendor.* display props
             "vendor.display.enable_force_max_fps" to "1",
             "vendor.display.forced_max_fps" to "240",
             "vendor.perf.gaming.driver" to "1",
             "vendor.perf.gaming.scheduler" to "1",
             "vendor.perf.gaming.opt" to "1",
-            // persist.* (OEM-specific, may need root on some builds)
             "persist.vendor.max_fps" to "240",
             "persist.vendor.dfps.level.max" to "240",
             "persist.sys.purgeable_assets" to "1",
@@ -760,7 +749,6 @@ class PerformanceManager @Inject constructor(
             "persist.sys.app.fps" to "0",
             "persist.sys.power_save_mode" to "0",
             "persist.sys.battery_saver" to "0",
-            // debug.egl props
             "debug.egl.hw" to "1",
             "debug.egl.profiler" to "1",
             "debug.gr.num_framebuffers" to "3",
@@ -771,21 +759,16 @@ class PerformanceManager @Inject constructor(
             "debug.sf.max_fps" to "0",
             "debug.sf.disable_backoff" to "1",
             "debug.cpurend.vsync" to "false",
-            // network performance tweaks
             "wifi.supplicant_scan_interval" to "300",
             "net.tcp.buffersize.5g" to "4096,87380,4194304,4096,65536,4194304",
             "net.tcp.buffersize.lte" to "4096,87380,4194304,4096,65536,4194304",
             "net.tcp.buffersize.wifi" to "524288,1048576,4194304,524288,1048576,4194304",
-            // profiler noise
             "profiler.force_disable_ulog" to "1",
             "profiler.force_disable_err_rpt" to "1",
-            // misc
             "video.accelerate.hw" to "1",
             "windowsmgr.max_events_per_sec" to "275",
             "touch.presure.scale" to "0.001",
             "vendor.display.forced_max_fps" to "240"
-            // NOTE: ro.* properties deliberately excluded — they are read-only
-            // since Android 10+ even with root, and setprop silently fails on them.
         )
         for ((key, value) in props) {
             rootShellManager.executeCommand("setprop $key $value")
@@ -807,7 +790,6 @@ class PerformanceManager @Inject constructor(
             "persist.vendor.max_fps" to "",
             "debug.sf.frame_rate_multiple_threshold" to "",
             "persist.vendor.dfps.level.max" to "",
-            // Restore extra boosting properties
             "persist.sys.use_dithering" to "1",
             "persist.sys.ui.hw" to "0",
             "debug.egl.hw" to "0",
@@ -843,12 +825,10 @@ class PerformanceManager @Inject constructor(
         rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/boost_ms")
         rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/input_boost_ms")
         rootShellManager.executeCommand("echo 0 > /sys/class/thermal/thermal_zone*/mode")
-        // GPU pre-emption boost for reduced latency
         rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/preempt_level")
         rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/sync_fence")
         rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/deep_nap")
         rootShellManager.executeCommand("echo 1 > /sys/module/adreno_idler/parameters/adreno_idler_active")
-        // Force SurfaceFlinger to use max rate
         rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
 
         val socInfo = socManager.getSocInfo()
@@ -924,7 +904,6 @@ class PerformanceManager @Inject constructor(
         var changed = false
 
         runCatching {
-            // AOSP standard. Settings.System needs the user-granted WRITE_SETTINGS app-op.
             try {
                 if (canWriteSystem) {
                     if (originalAospPeakRefreshRate == null) {
@@ -947,7 +926,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Samsung
             try {
                 if (canWriteSecure && originalSamsungRefreshMode == null) {
                     originalSamsungRefreshMode = Settings.Secure.getInt(resolver, "refresh_rate_mode", 0)
@@ -957,7 +935,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // OnePlus / Oppo
             try {
                 if (canWriteSecure && originalOneplusRefreshRate == null) {
                     originalOneplusRefreshRate = Settings.Secure.getInt(resolver, "oneplus_screen_refresh_rate", 0)
@@ -967,7 +944,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Xiaomi
             try {
                 if (canWriteSystem && originalXiaomiUserRefreshRate == null) {
                     originalXiaomiUserRefreshRate = Settings.System.getInt(resolver, "user_refresh_rate", 60)
@@ -984,7 +960,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Huawei
             try {
                 if (canWriteSecure && originalHuaweiSmartRefreshRate == null) {
                     originalHuaweiSmartRefreshRate = Settings.Secure.getInt(resolver, "hw_smart_refresh_rate_key", 1)
@@ -994,7 +969,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Realme
             try {
                 if (canWriteSecure && originalRealmePeakRefreshRate == null) {
                     originalRealmePeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
@@ -1007,20 +981,27 @@ class PerformanceManager @Inject constructor(
                     originalRealmeMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
                 }
                 if (canWriteSecure) {
-                    changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
+                    changed = Settings.Secure.putInt(resolver, "min_refresh_rate", nearestHz.toInt()) || changed
                 }
 
-                // ColorOS-specific: Realme/OPPO use Global settings for display refresh mode
-                // display.refresh_rate_mode: 0=auto, 1=standard, 2=high, 3=custom
-                // custom_refresh_rate: the actual rate when mode=3
                 if (canWriteSystem) {
                     Settings.System.putInt(resolver, "custom_refresh_rate", nearestHz.toInt())
                 }
                 if (canWriteSystem) {
-                    // Mode 3 = Custom refresh rate (honors custom_refresh_rate value)
                     Settings.System.putInt(resolver, "display.refresh_rate_mode", 3)
                 }
             } catch (_: Exception) {}
+        }
+
+        // Shizuku shell fallback execution for OEMs blocking direct ContentResolver writes
+        if (shizukuShellManager.isAvailable()) {
+            GlobalScope.launch(Dispatchers.IO) {
+                shizukuShellManager.executeCommand("settings put system peak_refresh_rate $nearestHz")
+                shizukuShellManager.executeCommand("settings put system min_refresh_rate $nearestHz")
+                shizukuShellManager.executeCommand("settings put secure peak_refresh_rate $nearestHz")
+                shizukuShellManager.executeCommand("settings put secure min_refresh_rate $nearestHz")
+            }
+            changed = true
         }
 
         val alreadyAtTarget = kotlin.math.abs(getCurrentRefreshRate() - nearestHz) < 0.5f
@@ -1034,7 +1015,6 @@ class PerformanceManager @Inject constructor(
         var changed = false
 
         runCatching {
-            // Restore AOSP
             try {
                 originalAospPeakRefreshRate?.let {
                     if (canWriteSystem) changed = Settings.System.putFloat(resolver, "peak_refresh_rate", it) || changed
@@ -1046,21 +1026,18 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Samsung
             try {
                 originalSamsungRefreshMode?.let {
                     if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "refresh_rate_mode", it) || changed
                 }
             } catch (_: Exception) {}
 
-            // OnePlus
             try {
                 originalOneplusRefreshRate?.let {
                     if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", it) || changed
                 }
             } catch (_: Exception) {}
 
-            // Xiaomi
             try {
                 originalXiaomiUserRefreshRate?.let {
                     if (canWriteSystem) changed = Settings.System.putInt(resolver, "user_refresh_rate", it) || changed
@@ -1070,14 +1047,12 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Huawei
             try {
                 originalHuaweiSmartRefreshRate?.let {
                     if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", it) || changed
                 }
             } catch (_: Exception) {}
 
-            // Realme
             try {
                 originalRealmePeakRefreshRate?.let {
                     if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) || changed
@@ -1087,7 +1062,6 @@ class PerformanceManager @Inject constructor(
                 }
             } catch (_: Exception) {}
 
-            // Reset backup values
             originalAospPeakRefreshRate = null
             originalAospMinRefreshRate = null
             originalSamsungRefreshMode = null
@@ -1118,7 +1092,6 @@ class PerformanceManager @Inject constructor(
             for ((key, value) in props) {
                 rootShellManager.executeCommand("setprop $key $value")
             }
-            // SurfaceFlinger seamless mode unlock via service call
             rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
         }
     }

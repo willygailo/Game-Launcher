@@ -57,6 +57,7 @@ fun DashboardScreen(
     val specs by viewModel.deviceSpecs.collectAsStateWithLifecycle()
     val isDndEnabled by viewModel.isDndEnabled.collectAsStateWithLifecycle()
     val isBrightnessLocked by viewModel.isBrightnessLocked.collectAsStateWithLifecycle()
+    val isGpuRenderingEnabled by viewModel.isGpuRenderingEnabled.collectAsStateWithLifecycle()
     val gamesUiState by gamesViewModel.uiState.collectAsStateWithLifecycle()
 
     var currentMode by remember { mutableStateOf(PerformanceMode.BALANCED) }
@@ -73,8 +74,6 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(BackgroundDark)
     ) {
-        // Futuristic background overlay pattern could go here
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -274,6 +273,17 @@ fun DashboardScreen(
                         Switch(
                             checked = isBrightnessLocked,
                             onCheckedChange = viewModel::toggleBrightnessLock,
+                            colors = SwitchDefaults.colors(checkedThumbColor = modeColor, checkedTrackColor = modeColor.copy(alpha = 0.4f))
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = SurfaceVariantDark)
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Force GPU Acceleration", color = TextSecondary)
+                        Switch(
+                            checked = isGpuRenderingEnabled,
+                            onCheckedChange = viewModel::toggleGpuRendering,
                             colors = SwitchDefaults.colors(checkedThumbColor = modeColor, checkedTrackColor = modeColor.copy(alpha = 0.4f))
                         )
                     }

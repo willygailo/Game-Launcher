@@ -9,6 +9,8 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import com.gamelauncher.core.ProfileManager
+import com.gamelauncher.core.ShizukuShellManager
+import com.gamelauncher.core.permissions.RuntimePermissionManager
 import com.gamelauncher.core.startManagedService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,7 +39,9 @@ class SettingsViewModel @Inject constructor(
     private val performanceManager: PerformanceManager,
     private val immersiveModeManager: ImmersiveModeManager,
     private val networkManager: NetworkManager,
-    private val profileManager: ProfileManager
+    private val profileManager: ProfileManager,
+    private val runtimePermissionManager: RuntimePermissionManager,
+    private val shizukuShellManager: ShizukuShellManager
 ) : ViewModel() {
 
     val globalAutoBoost: StateFlow<Boolean> = settingsPreferences.globalAutoBoost.stateIn(
@@ -59,6 +63,12 @@ class SettingsViewModel @Inject constructor(
     )
 
     val isDarkTheme: StateFlow<Boolean> = settingsPreferences.isDarkTheme.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val forceGpuRenderingEnabled: StateFlow<Boolean> = settingsPreferences.forceGpuRenderingEnabled.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = true
@@ -166,13 +176,16 @@ class SettingsViewModel @Inject constructor(
         pm?.isIgnoringBatteryOptimizations(context.packageName) == true
     }
 
-    /** True when adb granted WRITE_SECURE_SETTINGS — we probe by writing a dummy setting key */
     val hasWriteSecureSettings: StateFlow<Boolean> = stateFlowFrom {
         try {
             val cr = context.contentResolver
             android.provider.Settings.Global.putInt(cr, "game_launcher_secure_settings_test", 1)
             true
         } catch (e: SecurityException) { false }
+    }
+
+    val isShizukuAvailable: StateFlow<Boolean> = stateFlowFrom {
+        shizukuShellManager.isAvailable()
     }
 
     val hasPhoneStatePermission: StateFlow<Boolean> = stateFlowFrom {
@@ -184,6 +197,26 @@ class SettingsViewModel @Inject constructor(
     val profileMessage: StateFlow<String?> = _profileMessage.asStateFlow()
 
     fun clearProfileMessage() { _profileMessage.value = null }
+
+    fun grantWriteSecureViaShizuku() {
+        viewModelScope.launch {
+            val ok = runtimePermissionManager.grantPermissionViaShizuku("android.permission.WRITE_SECURE_SETTINGS")
+            if (ok) {
+                _profileMessage.value = "WRITE_SECURE_SETTINGS granted via Shizuku!"
+            } else {
+                val (batchOk, batchMsg) = shizukuShellManager.grantAllPermissions(context.packageName)
+                if (batchOk) {
+                    _profileMessage.value = "All permissions granted via Shizuku!"
+                } else {
+                    _profileMessage.value = "Shizuku grant failed: $batchMsg"
+                }
+            }
+        }
+    }
+
+    fun requestShizukuPermission() {
+        shizukuShellManager.requestPermission()
+    }
 
     fun exportProfiles() {
         viewModelScope.launch {
@@ -249,6 +282,17 @@ class SettingsViewModel @Inject constructor(
                     action = OverlayService.ACTION_STOP
                 }
                 context.startManagedService(intent)
+            }
+        }
+    }
+
+    fun setForceGpuRenderingEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPreferences.setForceGpuRenderingEnabled(enabled)
+            if (enabled) {
+                performanceManager.forceGpuRendering()
+            } else {
+                performanceManager.restoreGpuRendering()
             }
         }
     }
@@ -327,25 +371,21 @@ class SettingsViewModel @Inject constructor(
 
     fun stopAllBoosts() {
         viewModelScope.launch {
-            // Stop all performance boosting
             performanceManager.restoreThreadPriority()
             performanceManager.restoreAnimations()
+            performanceManager.restoreGpuRendering()
             performanceManager.stopPerformanceSession()
             
-            // Stop WiFi lock
             networkManager.releaseWifiLock()
             
-            // Restore brightness if locked
             try {
                 immersiveModeManager.restoreBrightness()
             } catch (e: Exception) {}
             
-            // Stop DND
             try {
                 immersiveModeManager.disableGamingDnd()
             } catch (e: Exception) {}
             
-            // Stop Game Booster Service
             try {
                 val boostIntent = Intent(context, GameBoosterService::class.java).apply {
                     action = GameBoosterService.ACTION_STOP_BOOST
@@ -353,7 +393,6 @@ class SettingsViewModel @Inject constructor(
                 context.startManagedService(boostIntent)
             } catch (e: Exception) {}
             
-            // Stop Overlay Service
             try {
                 val overlayIntent = Intent(context, OverlayService::class.java).apply {
                     action = OverlayService.ACTION_STOP
@@ -361,7 +400,6 @@ class SettingsViewModel @Inject constructor(
                 context.startManagedService(overlayIntent)
             } catch (e: Exception) {}
             
-            // Stop Game Detector
             try {
                 val detectorIntent = Intent(context, GameDetectorService::class.java).apply {
                     action = GameDetectorService.ACTION_STOP_DETECTOR
@@ -369,10 +407,10 @@ class SettingsViewModel @Inject constructor(
                 context.startManagedService(detectorIntent)
             } catch (e: Exception) {}
             
-            // Reset preferences
             settingsPreferences.setGlobalAutoBoost(false)
             settingsPreferences.setOverlayEnabled(false)
             settingsPreferences.setGameDetectorEnabled(false)
+            settingsPreferences.setForceGpuRenderingEnabled(false)
         }
     }
 
@@ -419,7 +457,6 @@ class SettingsViewModel @Inject constructor(
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            // Try alternative
             val altIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.parse("package:${context.packageName}")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

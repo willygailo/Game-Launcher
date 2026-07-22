@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -129,6 +130,7 @@ fun TweaksScreen(
                                 accentColor = accentColor,
                                 onRefreshRateSelected = { viewModel.applyRefreshRate(it) },
                                 onCpuGovernorSelected = { viewModel.applyCpuGovernor(it) },
+                                onGpuRenderingToggled = { viewModel.applyGpuRendering(it) },
                                 onThermalBypassToggled = { viewModel.applyThermalThrottlingBypass(it) },
                                 onGameModeToggled = { viewModel.applyGameModeBooster(it) }
                             )
@@ -147,6 +149,7 @@ fun TweakCardItem(
     accentColor: Color,
     onRefreshRateSelected: (Float) -> Unit,
     onCpuGovernorSelected: (String) -> Unit,
+    onGpuRenderingToggled: (Boolean) -> Unit,
     onThermalBypassToggled: (Boolean) -> Unit,
     onGameModeToggled: (Boolean) -> Unit
 ) {
@@ -173,15 +176,18 @@ fun TweakCardItem(
                 )
 
                 if (!tweak.isSupportedByDevice) {
+                    val labelText = tweak.badgeNote
+                        ?: if (tweak.category == TweakCategory.CPU_GOVERNOR) "Requires Root" else "Unsupported"
                     Box(
                         modifier = Modifier
                             .background(Color(0xFF334155), RoundedCornerShape(8.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "Unsupported",
+                            text = labelText,
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
+                            color = if (tweak.category == TweakCategory.CPU_GOVERNOR) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -197,27 +203,55 @@ fun TweakCardItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (tweak.isSupportedByDevice) {
-                when (tweak.category) {
-                    TweakCategory.REFRESH_RATE -> {
+            when (tweak.category) {
+                TweakCategory.REFRESH_RATE -> {
+                    if (tweak.isSupportedByDevice) {
                         DropdownSelector(
                             currentValue = tweak.selectedValue ?: "Default",
                             options = tweak.supportedValues,
+                            enabled = true,
                             onOptionSelected = { value ->
                                 value.toFloatOrNull()?.let { onRefreshRateSelected(it) }
                             }
                         )
                     }
+                }
 
-                    TweakCategory.CPU_GOVERNOR -> {
-                        DropdownSelector(
-                            currentValue = tweak.selectedValue ?: "schedutil",
-                            options = tweak.supportedValues,
-                            onOptionSelected = { onCpuGovernorSelected(it) }
-                        )
+                TweakCategory.CPU_GOVERNOR -> {
+                    DropdownSelector(
+                        currentValue = tweak.selectedValue ?: "schedutil",
+                        options = tweak.supportedValues,
+                        enabled = tweak.isSupportedByDevice,
+                        onOptionSelected = { onCpuGovernorSelected(it) }
+                    )
+                }
+
+                TweakCategory.GPU_RENDERING -> {
+                    if (tweak.isSupportedByDevice) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (tweak.isToggleActive) "2D Hardware Acceleration Active" else "Standard UI Rendering",
+                                fontSize = 12.sp,
+                                color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                            )
+                            Switch(
+                                checked = tweak.isToggleActive,
+                                onCheckedChange = onGpuRenderingToggled,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = accentColor
+                                )
+                            )
+                        }
                     }
+                }
 
-                    TweakCategory.THERMAL_THROTTLING -> {
+                TweakCategory.THERMAL_THROTTLING -> {
+                    if (tweak.isSupportedByDevice) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -238,8 +272,10 @@ fun TweakCardItem(
                             )
                         }
                     }
+                }
 
-                    TweakCategory.GAME_MODE -> {
+                TweakCategory.GAME_MODE -> {
+                    if (tweak.isSupportedByDevice) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -270,16 +306,18 @@ fun TweakCardItem(
 fun DropdownSelector(
     currentValue: String,
     options: List<String>,
+    enabled: Boolean = true,
     onOptionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
+    Box(modifier = Modifier.alpha(if (enabled) 1.0f else 0.5f)) {
         OutlinedButton(
-            onClick = { expanded = true },
+            onClick = { if (enabled) expanded = true },
+            enabled = enabled,
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = "Option: $currentValue", color = Color.White, fontSize = 12.sp)
+            Text(text = "Option: $currentValue", color = if (enabled) Color.White else Color(0xFF94A3B8), fontSize = 12.sp)
         }
 
         DropdownMenu(

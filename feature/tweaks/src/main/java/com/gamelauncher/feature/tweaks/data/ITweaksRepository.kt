@@ -10,6 +10,7 @@ interface ITweaksRepository {
     fun getAvailableTweaks(): Flow<List<TweakItem>>
     suspend fun applyRefreshRateTweak(refreshRateHz: Float): Boolean
     suspend fun applyCpuGovernorTweak(governor: String): Boolean
+    suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): Boolean
     suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): Boolean
     suspend fun applyGameModeTweak(enableGameMode: Boolean): Boolean
 }

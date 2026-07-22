@@ -6,6 +6,7 @@ import com.gamelauncher.core.permissions.RuntimePermissionManager
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.core.shizuku.ShellResult
+import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -21,7 +22,9 @@ class TweaksRepositoryImplTest {
     @Test
     fun testGetAvailableTweaks_ReturnsNonEmptyList() = runTest {
         val fakeShellExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
+            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
+                return if (command == "id") ShellResult(0, "uid=0(root)") else ShellResult(0, "")
+            }
             override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
         }
 
@@ -40,7 +43,36 @@ class TweaksRepositoryImplTest {
 
         val tweaks = repository.getAvailableTweaks().first()
         assertNotNull(tweaks)
-        assertEquals(4, tweaks.size)
+        assertEquals(5, tweaks.size)
+    }
+
+    @Test
+    fun testGetAvailableTweaks_ShizukuOnly_ReportsGranularRootBadgeNote() = runTest {
+        val fakeShellExecutor = object : IShellExecutor {
+            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
+                return if (command == "id") ShellResult(0, "uid=2000(shell) gid=2000(shell)") else ShellResult(0, "")
+            }
+            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
+        }
+
+        val detector = DeviceProfileDetector(fakeShellExecutor)
+        val capabilityMap = OemCapabilityMap(detector)
+        val mockPermissionManager = Mockito.mock(RuntimePermissionManager::class.java)
+
+        val repository = TweaksRepositoryImpl(
+            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
+            deviceProfileDetector = detector,
+            capabilityMap = capabilityMap,
+            permissionManager = mockPermissionManager,
+            shellExecutor = fakeShellExecutor,
+            ioDispatcher = Dispatchers.Unconfined
+        )
+
+        val tweaks = repository.getAvailableTweaks().first()
+        val cpuGovernorTweak = tweaks.first { it.category == TweakCategory.CPU_GOVERNOR }
+        
+        assertFalse(cpuGovernorTweak.isSupportedByDevice)
+        assertEquals("Requires Root (Shizuku active)", cpuGovernorTweak.badgeNote)
     }
 
     @Test
@@ -51,7 +83,7 @@ class TweaksRepositoryImplTest {
         val fakeShellExecutor = object : IShellExecutor {
             override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
                 executedCommands.add(command)
-                return ShellResult(0, "")
+                return if (command == "id") ShellResult(0, "uid=0(root)") else ShellResult(0, "")
             }
 
             override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult {
@@ -77,9 +109,9 @@ class TweaksRepositoryImplTest {
 
         assertTrue(success)
 
-        // Verify executeCommand was invoked for shell redirection
-        assertEquals(1, executedCommands.size)
-        assertEquals("echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", executedCommands[0])
+        // Verify executeCommand was invoked for root check, chmod, and multi-core governor loop
+        assertTrue(executedCommands.size >= 2)
+        assertTrue(executedCommands.any { it.contains("scaling_governor") })
 
         // Verify executeArgs NEVER received '>' as a literal string argument
         val containsLiteralRedirectionArg = executedArgsList.any { args -> args.contains(">") }
@@ -92,8 +124,8 @@ class TweaksRepositoryImplTest {
 
         val fakeShellExecutor = object : IShellExecutor {
             override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
-                commandExecuted = true
-                return ShellResult(0, "")
+                if (command != "id") commandExecuted = true
+                return ShellResult(0, "uid=0(root)")
             }
 
             override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")

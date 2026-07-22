@@ -2,7 +2,9 @@ package com.gamelauncher.core
 
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.media.AudioManager
+import android.os.Build
 import android.provider.Settings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -21,16 +23,28 @@ class DndManager @Inject constructor(
 
     fun isDndPermissionGranted(): Boolean {
         return try {
-            notificationManager?.isNotificationPolicyAccessGranted ?: false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                notificationManager?.isNotificationPolicyAccessGranted == true
+            } else {
+                true
+            }
         } catch (_: Exception) { false }
     }
 
     fun openDndPermissionSettings() {
         try {
-            val intent = android.content.Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
             context.startActivity(intent)
         } catch (_: Exception) {}
+    }
+
+    fun isGamingDndActive(): Boolean {
+        if (!isDndPermissionGranted()) return false
+        return runCatching {
+            notificationManager?.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_NONE
+        }.getOrDefault(false)
     }
 
     suspend fun enableGamingDnd(): Boolean = withContext(Dispatchers.IO) {
@@ -41,8 +55,9 @@ class DndManager @Inject constructor(
                 notificationManager?.currentInterruptionFilter ?: NotificationManager.INTERRUPTION_FILTER_ALL
             }.getOrDefault(NotificationManager.INTERRUPTION_FILTER_ALL)
 
+            // INTERRUPTION_FILTER_NONE blocks all notifications & calls as requested in v1.7.2
             notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
-            audioManager?.ringerMode = AudioManager.RINGER_MODE_SILENT
+            runCatching { audioManager?.ringerMode = AudioManager.RINGER_MODE_SILENT }
 
             true
         } catch (_: Exception) { false }
@@ -50,8 +65,10 @@ class DndManager @Inject constructor(
 
     suspend fun disableGamingDnd(): Boolean = withContext(Dispatchers.IO) {
         try {
-            notificationManager?.setInterruptionFilter(originalFilter)
-            audioManager?.ringerMode = AudioManager.RINGER_MODE_NORMAL
+            if (isDndPermissionGranted()) {
+                notificationManager?.setInterruptionFilter(originalFilter)
+            }
+            runCatching { audioManager?.ringerMode = AudioManager.RINGER_MODE_NORMAL }
             true
         } catch (_: Exception) { false }
     }

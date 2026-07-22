@@ -1,6 +1,5 @@
 package com.gamelauncher.core
 
-import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -14,31 +13,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manages Immersive Gaming features such as Do Not Disturb,
+ * Manages Immersive Gaming features such as Do Not Disturb (via DndManager),
  * Auto-Brightness disabling, and Volume Locking.
  */
 @Singleton
 class ImmersiveModeManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dndManager: DndManager
 ) {
-    private val notificationManager = context.getSystemService(NotificationManager::class.java)
     private val audioManager = context.getSystemService(AudioManager::class.java)
     private val powerManager = context.getSystemService(PowerManager::class.java)
     private val contentResolver: ContentResolver = context.contentResolver
 
     // State preservation to restore after gaming
-    private var originalDndState: Int = NotificationManager.INTERRUPTION_FILTER_ALL
     private var originalBrightnessMode: Int = Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
     private var originalBrightness: Int = 127
     
-    // ── DND / Notification Blocker ───────────────────────────────────────
-    fun hasDndPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            notificationManager.isNotificationPolicyAccessGranted
-        } else {
-            true
-        }
-    }
+    // ── DND / Notification Blocker (Delegated to DndManager) ────────────
+    fun hasDndPermission(): Boolean = dndManager.isDndPermissionGranted()
 
     fun getDndPermissionIntent(): Intent {
         return Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
@@ -46,37 +38,11 @@ class ImmersiveModeManager @Inject constructor(
         }
     }
 
-    fun enableGamingDnd(): Boolean {
-        if (!hasDndPermission()) return false
-        return try {
-            originalDndState = notificationManager.currentInterruptionFilter
-            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
+    suspend fun enableGamingDnd(): Boolean = dndManager.enableGamingDnd()
 
-    fun isGamingDndActive(): Boolean {
-        if (!hasDndPermission()) return false
-        return runCatching {
-            notificationManager.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_NONE
-        }.getOrDefault(false)
-    }
+    fun isGamingDndActive(): Boolean = dndManager.isGamingDndActive()
 
-    fun disableGamingDnd(): Boolean {
-        if (!hasDndPermission()) return false
-        return try {
-            notificationManager.setInterruptionFilter(originalDndState)
-            true
-        } catch (e: Exception) {
-            try {
-                notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-            } catch (_: Exception) {}
-            false
-        }
-    }
+    suspend fun disableGamingDnd(): Boolean = dndManager.disableGamingDnd()
 
     // ── Brightness Control ───────────────────────────────────────────────
     fun hasWriteSettingsPermission(): Boolean {

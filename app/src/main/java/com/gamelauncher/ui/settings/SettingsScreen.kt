@@ -30,12 +30,14 @@ fun SettingsScreen(
     val autoBoost by viewModel.globalAutoBoost.collectAsStateWithLifecycle()
     val overlayEnabled by viewModel.isOverlayEnabled.collectAsStateWithLifecycle()
     val detectorEnabled by viewModel.isGameDetectorEnabled.collectAsStateWithLifecycle()
+    val forceGpuEnabled by viewModel.forceGpuRenderingEnabled.collectAsStateWithLifecycle()
     val hasUsageAccess by viewModel.hasUsageAccessPermission.collectAsStateWithLifecycle()
     val hasOverlayPerm by viewModel.hasOverlayPermission.collectAsStateWithLifecycle()
     val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsStateWithLifecycle()
     val hasNotificationPerm by viewModel.hasNotificationPermission.collectAsStateWithLifecycle()
     val hasBatteryExempt by viewModel.hasBatteryExemption.collectAsStateWithLifecycle()
     val hasWriteSecure by viewModel.hasWriteSecureSettings.collectAsStateWithLifecycle()
+    val isShizukuAvailable by viewModel.isShizukuAvailable.collectAsStateWithLifecycle()
     val hasPhoneState by viewModel.hasPhoneStatePermission.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -160,7 +162,7 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = if (hasWriteSecure) SuccessGreen.copy(alpha = 0.08f)
-                                 else PrimaryNeon.copy(alpha = 0.06f)
+                                  else PrimaryNeon.copy(alpha = 0.06f)
             ),
             shape = RoundedCornerShape(16.dp),
             border = androidx.compose.foundation.BorderStroke(
@@ -187,13 +189,40 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 if (!hasWriteSecure) {
+                    if (isShizukuAvailable) {
+                        Text(
+                            "Shizuku is active! Grant WRITE_SECURE_SETTINGS with a single tap to unlock deep performance tweaks without needing a PC.",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = { viewModel.grantWriteSecureViaShizuku() },
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen, contentColor = BackgroundDark),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("⚡  One-Tap Grant via Shizuku", fontWeight = FontWeight.Black)
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    } else {
+                        Button(
+                            onClick = { viewModel.requestShizukuPermission() },
+                            colors = ButtonDefaults.buttonColors(containerColor = SecondaryNeon, contentColor = Color.White),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Connect Shizuku", fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
                     Text(
-                        "Run this one-time ADB command from a PC to unlock deep system tweaks: animation scale, game driver, sync freeze, network priority, battery optimizer, and touch latency.",
+                        "Or run this one-time ADB command from a PC to unlock deep system tweaks: animation scale, game driver, sync freeze, network priority, battery optimizer, and touch latency.",
                         color = TextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    // Copyable command box
                     Card(
                         colors = CardDefaults.cardColors(containerColor = BackgroundDark),
                         shape = RoundedCornerShape(8.dp),
@@ -282,6 +311,13 @@ fun SettingsScreen(
             subtitle = "Boost performance globally for all games",
             checked = autoBoost,
             onCheckedChange = { viewModel.setGlobalAutoBoost(it) }
+        )
+
+        SettingCard(
+            title = "Force GPU Rendering",
+            subtitle = "Forces 2D hardware acceleration & GPU drawing for lower rendering latency",
+            checked = forceGpuEnabled,
+            onCheckedChange = { viewModel.setForceGpuRenderingEnabled(it) }
         )
         
         SettingCard(

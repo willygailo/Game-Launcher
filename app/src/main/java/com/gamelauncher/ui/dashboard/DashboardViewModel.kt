@@ -14,6 +14,7 @@ import com.gamelauncher.core.BenchmarkManager
 import com.gamelauncher.core.BenchmarkResult
 import com.gamelauncher.core.BypassChargingManager
 import com.gamelauncher.core.DeviceManager
+import com.gamelauncher.core.DndManager
 import com.gamelauncher.core.FpsMonitor
 import com.gamelauncher.core.ImmersiveModeManager
 import com.gamelauncher.core.NetworkManager
@@ -23,12 +24,14 @@ import com.gamelauncher.core.ShizukuShellManager
 import com.gamelauncher.core.ThermalWatcher
 import com.gamelauncher.data.local.GameDao
 import com.gamelauncher.data.model.DeviceSpecs
+import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,13 +43,15 @@ class DashboardViewModel @Inject constructor(
     private val performanceManager: PerformanceManager,
     private val networkManager: NetworkManager,
     private val immersiveModeManager: ImmersiveModeManager,
+    private val dndManager: DndManager,
     private val rootShellManager: RootShellManager,
     private val fpsMonitor: FpsMonitor,
     private val gameDao: GameDao,
     private val benchmarkManager: BenchmarkManager,
     private val bypassChargingManager: BypassChargingManager,
     private val shizukuShellManager: ShizukuShellManager,
-    private val thermalWatcher: ThermalWatcher
+    private val thermalWatcher: ThermalWatcher,
+    private val settingsPreferences: SettingsPreferences
 ) : ViewModel() {
 
     private val _deviceSpecs = MutableStateFlow(DeviceSpecs())
@@ -55,10 +60,13 @@ class DashboardViewModel @Inject constructor(
     private val _isDndEnabled = MutableStateFlow(false)
     val isDndEnabled: StateFlow<Boolean> = _isDndEnabled.asStateFlow()
 
-    // Expose push-based thermal status from ThermalWatcher for the dashboard thermal badge
+    private var pendingDndEnable: Boolean = false
+
+    private val _isGpuRenderingEnabled = MutableStateFlow(false)
+    val isGpuRenderingEnabled: StateFlow<Boolean> = _isGpuRenderingEnabled.asStateFlow()
+
     val thermalStatus: StateFlow<Int> = thermalWatcher.thermalStatus
 
-    // Pause flag: set by the composable when lifecycle is STOPPED (screen off / background)
     private val _isMonitoringPaused = MutableStateFlow(false)
 
     private val _isBrightnessLocked = MutableStateFlow(false)
@@ -88,7 +96,6 @@ class DashboardViewModel @Inject constructor(
     private val _hasWriteSecure = MutableStateFlow(false)
     val hasWriteSecureSettings: StateFlow<Boolean> = _hasWriteSecure.asStateFlow()
 
-    // Listens for Shizuku binder connect/disconnect broadcasts from GameLauncherApp
     private val shizukuStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
             if (intent?.action == GameLauncherApp.ACTION_SHIZUKU_CHANGED) {
@@ -106,7 +113,8 @@ class DashboardViewModel @Inject constructor(
         loadSessionStats()
         checkWriteSecure()
         refreshBypassChargingState()
-        // Register Shizuku state receiver so bypass card auto-refreshes on connect
+        observeGpuPref()
+
         val filter = IntentFilter(GameLauncherApp.ACTION_SHIZUKU_CHANGED)
         androidx.core.content.ContextCompat.registerReceiver(
             context,
@@ -114,6 +122,14 @@ class DashboardViewModel @Inject constructor(
             filter,
             androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
         )
+    }
+
+    private fun observeGpuPref() {
+        viewModelScope.launch {
+            settingsPreferences.forceGpuRenderingEnabled.collect { enabled ->
+                _isGpuRenderingEnabled.value = enabled
+            }
+        }
     }
 
     private fun checkWriteSecure() {
@@ -129,7 +145,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadSessionStats() {
         viewModelScope.launch {
-            val allSessions = gameDao.getAllSessions().collect { sessions ->
+            gameDao.getAllSessions().collect { sessions ->
                 _totalSessions.value = sessions.size
                 _totalPlayTimeMinutes.value = sessions.sumOf { it.durationMs } / 60_000
             }
@@ -146,7 +162,13 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun refreshPermissionStates() {
-        _isDndEnabled.value = immersiveModeManager.isGamingDndActive()
+        val granted = dndManager.isDndPermissionGranted()
+        if (granted && pendingDndEnable) {
+            pendingDndEnable = false
+            enableDnd()
+        } else {
+            _isDndEnabled.value = granted && dndManager.isGamingDndActive()
+        }
         _isBrightnessLocked.value = immersiveModeManager.isBrightnessLocked()
     }
 
@@ -159,7 +181,6 @@ class DashboardViewModel @Inject constructor(
     private fun startMonitoring() {
         viewModelScope.launch {
             while (isActive) {
-                // Skip expensive device queries when screen is off / app is in background
                 if (_isMonitoringPaused.value) {
                     delay(500)
                     continue
@@ -220,20 +241,13 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    /** Called from DashboardScreen's DisposableEffect when lifecycle goes to STOPPED. */
     fun pauseMonitoring() { _isMonitoringPaused.value = true }
-
-    /** Called from DashboardScreen's DisposableEffect when lifecycle resumes to STARTED. */
     fun resumeMonitoring() { _isMonitoringPaused.value = false }
 
     fun optimizeRam() {
         viewModelScope.launch {
-            // Force garbage collection first
             val freedGC = deviceManager.optimizeMemory()
-            
-            // Then try to kill background apps
             val freedApps = deviceManager.killBackgroundApps()
-            
             val totalFreed = maxOf(freedGC, freedApps)
             _deviceSpecs.value = _deviceSpecs.value.copy(freedRamMb = totalFreed)
         }
@@ -241,26 +255,24 @@ class DashboardViewModel @Inject constructor(
 
     // DND Methods
     fun requestDndPermission() {
-        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            // Permission denied or not found
-        }
+        pendingDndEnable = true
+        dndManager.openDndPermissionSettings()
     }
 
     fun enableDnd() {
-        val success = immersiveModeManager.enableGamingDnd()
-        if (success) {
-            _isDndEnabled.value = true
+        viewModelScope.launch {
+            val success = dndManager.enableGamingDnd()
+            if (success) {
+                _isDndEnabled.value = true
+            }
         }
     }
 
     fun disableDnd() {
-        immersiveModeManager.disableGamingDnd()
-        _isDndEnabled.value = false
+        viewModelScope.launch {
+            dndManager.disableGamingDnd()
+            _isDndEnabled.value = false
+        }
     }
 
     // Brightness Methods
@@ -271,9 +283,7 @@ class DashboardViewModel @Inject constructor(
         }
         try {
             context.startActivity(intent)
-        } catch (e: Exception) {
-            // Permission denied or not found
-        }
+        } catch (_: Exception) {}
     }
 
     fun enableBrightness() {
@@ -297,15 +307,16 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    // Legacy toggle methods
+    // Toggle methods
     fun toggleDnd(enabled: Boolean) {
         if (enabled) {
-            if (immersiveModeManager.hasDndPermission()) {
+            if (dndManager.isDndPermissionGranted()) {
                 enableDnd()
             } else {
                 requestDndPermission()
             }
         } else {
+            pendingDndEnable = false
             disableDnd()
         }
     }
@@ -319,6 +330,18 @@ class DashboardViewModel @Inject constructor(
             }
         } else {
             disableBrightness()
+        }
+    }
+
+    fun toggleGpuRendering(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPreferences.setForceGpuRenderingEnabled(enabled)
+            if (enabled) {
+                performanceManager.forceGpuRendering()
+            } else {
+                performanceManager.restoreGpuRendering()
+            }
+            _isGpuRenderingEnabled.value = enabled
         }
     }
 
@@ -349,15 +372,8 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    // ── Bypass Charging ───────────────────────────────────────────────
-
-    /** Whether Shizuku (or root fallback) is available to run shell cmds */
-    val isBypassShellAvailable: StateFlow<Boolean> =
-        bypassChargingManager.isShellAvailable
-
-    /** Whether bypass charging is currently active */
-    val isBypassChargingEnabled: StateFlow<Boolean> =
-        bypassChargingManager.isEnabled
+    val isBypassShellAvailable: StateFlow<Boolean> = bypassChargingManager.isShellAvailable
+    val isBypassChargingEnabled: StateFlow<Boolean> = bypassChargingManager.isEnabled
 
     private fun refreshBypassChargingState() {
         viewModelScope.launch {
@@ -384,11 +400,9 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-
     override fun onCleared() {
         super.onCleared()
         networkManager.stopMonitoring()
         try { context.unregisterReceiver(shizukuStateReceiver) } catch (_: Exception) {}
     }
 }
-

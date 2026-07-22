@@ -58,7 +58,15 @@ class TweaksViewModel @Inject constructor(
     fun applyCpuGovernor(governor: String) {
         viewModelScope.launch {
             val success = repository.applyCpuGovernorTweak(governor)
-            updateTweakState("cpu_governor", success, selectedValue = governor)
+            val msg = if (!success) "CPU Governor scaling requires Root access" else null
+            updateTweakState("cpu_governor", success, selectedValue = governor, customMessage = msg)
+        }
+    }
+
+    fun applyGpuRendering(enable: Boolean) {
+        viewModelScope.launch {
+            val success = repository.applyGpuRenderingTweak(enable)
+            updateTweakState("gpu_rendering", success, toggleState = enable)
         }
     }
 
@@ -80,7 +88,8 @@ class TweaksViewModel @Inject constructor(
         tweakId: String,
         success: Boolean,
         selectedValue: String? = null,
-        toggleState: Boolean? = null
+        toggleState: Boolean? = null,
+        customMessage: String? = null
     ) {
         val currentState = _uiState.value
         if (currentState is TweaksUiState.Success) {
@@ -95,10 +104,10 @@ class TweaksViewModel @Inject constructor(
                     tweak
                 }
             }
-            val message = if (success) {
+            val message = customMessage ?: if (success) {
                 "Applied tweak successfully"
             } else {
-                "Failed to apply tweak via Shizuku"
+                "Failed to apply tweak"
             }
             _uiState.value = TweaksUiState.Success(tweaks = updatedList, userMessage = message)
         }
