@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -24,6 +25,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.gamelauncher.data.preference.SettingsPreferences
+import com.gamelauncher.feature.network.ui.NetworkScreen
+import com.gamelauncher.feature.network.ui.NetworkViewModel
+import com.gamelauncher.feature.tweaks.ui.TweaksScreen
+import com.gamelauncher.feature.tweaks.ui.TweaksViewModel
 import com.gamelauncher.ui.dashboard.DashboardScreen
 import com.gamelauncher.ui.games.GameDetailsScreen
 import com.gamelauncher.ui.onboarding.OnboardingScreen
@@ -83,19 +88,32 @@ fun MainScreen() {
             navController = navController,
             startDestination = "dashboard",
             modifier = Modifier.fillMaxSize()
-            // We ignore innerPadding here to draw truly edge-to-edge if desired,
-            // but the DashboardScreen will handle its own padding for system bars.
         ) {
             composable("dashboard") { 
                 DashboardScreen(
                     onNavigateToSettings = { navController.navigate("settings") },
+                    onNavigateToTweaks = { navController.navigate("tweaks") },
+                    onNavigateToNetwork = { navController.navigate("network") },
+                    onNavigateToMonitor = { navController.navigate("monitor") },
                     onNavigateToGameDetails = { packageName -> 
                         navController.navigate("game_details/$packageName") 
                     }
                 ) 
             }
             composable("settings") { 
-                SettingsScreen() // assuming it exists
+                SettingsScreen()
+            }
+            composable("tweaks") {
+                val viewModel: TweaksViewModel = hiltViewModel()
+                TweaksScreen(viewModel = viewModel)
+            }
+            composable("network") {
+                val viewModel: NetworkViewModel = hiltViewModel()
+                NetworkScreen(viewModel = viewModel)
+            }
+            composable("monitor") {
+                val viewModel: com.gamelauncher.feature.monitor.ui.MonitorViewModel = hiltViewModel()
+                com.gamelauncher.feature.monitor.ui.MonitorScreen(viewModel = viewModel)
             }
             composable(
                 route = "game_details/{packageName}",

@@ -41,10 +41,11 @@ class ThermalWatcher @Inject constructor(
         if (isListening) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return  // API 29 minimum
         try {
-            powerManager = context.getSystemService(PowerManager::class.java) ?: return
-            powerManager!!.addThermalStatusListener(thermalListener)
+            val pm = context.getSystemService(PowerManager::class.java) ?: return
+            powerManager = pm
+            pm.addThermalStatusListener(thermalListener)
             // Immediately populate current state so collectors get an initial value
-            _thermalStatus.value = powerManager!!.currentThermalStatus
+            _thermalStatus.value = pm.currentThermalStatus
             isListening = true
         } catch (_: Exception) {}
     }

@@ -117,7 +117,7 @@ class OverlayService : Service() {
     private fun showOverlay() {
         if (overlayView != null) return
 
-        overlayParams = WindowManager.LayoutParams(
+        val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -129,11 +129,12 @@ class OverlayService : Service() {
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
-        )
-
-        overlayParams!!.gravity = Gravity.TOP or Gravity.START
-        overlayParams!!.x = initialX
-        overlayParams!!.y = initialY
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = initialX
+            y = initialY
+        }
+        overlayParams = params
 
         overlayView = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

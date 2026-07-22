@@ -49,6 +49,9 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     gamesViewModel: GamesViewModel = hiltViewModel(),
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToTweaks: () -> Unit = {},
+    onNavigateToNetwork: () -> Unit = {},
+    onNavigateToMonitor: () -> Unit = {},
     onNavigateToGameDetails: (String) -> Unit = {}
 ) {
     val specs by viewModel.deviceSpecs.collectAsStateWithLifecycle()
@@ -199,6 +202,47 @@ fun DashboardScreen(
                     valueText = "${specs.batteryLevel}%",
                     size = 110.dp
                 )
+            }
+
+            // Booster Modules Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onNavigateToTweaks,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = modeColor.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, modeColor),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+                ) {
+                    Text("⚡ Tweaks", color = modeColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = onNavigateToNetwork,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = modeColor.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, modeColor),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+                ) {
+                    Text("🌐 Network", color = modeColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = onNavigateToMonitor,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = modeColor.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, modeColor),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+                ) {
+                    Text("📊 FPS & Stats", color = modeColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
