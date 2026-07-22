@@ -36,6 +36,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.gamelauncher.ui.theme.PerformanceMode
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -53,6 +58,37 @@ class DashboardViewModel @Inject constructor(
     private val thermalWatcher: ThermalWatcher,
     private val settingsPreferences: SettingsPreferences
 ) : ViewModel() {
+
+    val performanceMode: StateFlow<PerformanceMode> = settingsPreferences.performanceMode
+        .map { modeStr ->
+            try {
+                PerformanceMode.valueOf(modeStr)
+            } catch (e: Exception) {
+                PerformanceMode.BALANCED
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PerformanceMode.BALANCED
+        )
+
+    fun setPerformanceMode(mode: PerformanceMode) {
+        viewModelScope.launch {
+            settingsPreferences.setPerformanceMode(mode.name)
+            when (mode) {
+                PerformanceMode.PRO -> {
+                    performanceManager.setHighPerformanceMode()
+                }
+                PerformanceMode.BALANCED -> {
+                    // Standard performance mode
+                }
+                PerformanceMode.ECO -> {
+                    // Eco power saving mode
+                }
+            }
+        }
+    }
 
     private val _deviceSpecs = MutableStateFlow(DeviceSpecs())
     val deviceSpecs: StateFlow<DeviceSpecs> = _deviceSpecs.asStateFlow()

@@ -60,7 +60,7 @@ fun DashboardScreen(
     val isGpuRenderingEnabled by viewModel.isGpuRenderingEnabled.collectAsStateWithLifecycle()
     val gamesUiState by gamesViewModel.uiState.collectAsStateWithLifecycle()
 
-    var currentMode by remember { mutableStateOf(PerformanceMode.BALANCED) }
+    val currentMode by viewModel.performanceMode.collectAsStateWithLifecycle()
     val modeColor = getModeColor(currentMode)
 
     LifecycleResumeEffect(Unit) {
@@ -159,7 +159,7 @@ fun DashboardScreen(
             // Performance Mode Selector
             SegmentedModeSelector(
                 currentMode = currentMode,
-                onModeSelected = { currentMode = it }
+                onModeSelected = { viewModel.setPerformanceMode(it) }
             )
 
             Spacer(modifier = Modifier.height(32.dp))

@@ -10,6 +10,7 @@ import com.gamelauncher.core.device.OemCapabilityMap
 import com.gamelauncher.core.permissions.RuntimePermissionManager
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.settings.SettingsKeys
+import com.gamelauncher.core.settings.SettingsPreferences
 import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.core.di.IoDispatcher
 import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
@@ -17,6 +18,7 @@ import com.gamelauncher.feature.tweaks.domain.model.TweakItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -40,7 +42,8 @@ class TweaksRepositoryImpl @Inject constructor(
     private val permissionManager: RuntimePermissionManager,
     private val shellExecutor: IShellExecutor,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    @ApplicationContext private val context: Context? = null
+    @ApplicationContext private val context: Context? = null,
+    private val settingsPreferences: SettingsPreferences? = null
 ) : ITweaksRepository {
 
     companion object {
@@ -68,11 +71,16 @@ class TweaksRepositoryImpl @Inject constructor(
         val isRefreshRateSupported = capabilityMap.supportsPeakRefreshRateOverride()
         val isThermalBypassSupported = capabilityMap.supportsThermalThrottlingOverride()
         val isTranssionGameModeSupported = capabilityMap.supportsTranssionGameMode()
-        
+
+        val isThermalBypassActive = settingsPreferences?.suspendThermalOnBoost?.first() ?: false
+        val isGpuActive = settingsPreferences?.forceGpuRenderingEnabled?.first() ?: true
+        val isGameModeActive = settingsPreferences?.globalAutoBoost?.first() ?: true
+        val isForceMaxHzActive = settingsPreferences?.forceMaxHzOnBoost?.first() ?: false
+
         // Dynamically fetch supported refresh rates from Display.getSupportedModes()
         val detectedRates = querySupportedRefreshRates()
         val roundedRatesInt = detectedRates.map { it.roundToInt() }
-        
+
         // If max rate is >= 120Hz or device supports high refresh rate, ensure 144Hz is included if display supports it
         val rateStrings = if (roundedRatesInt.maxOrNull() ?: 60 >= 120 && !roundedRatesInt.contains(144)) {
             (roundedRatesInt + 144).distinct().sorted().map { it.toString() }
@@ -102,7 +110,7 @@ class TweaksRepositoryImpl @Inject constructor(
                 title = "Peak Display Refresh Rate",
                 description = "Force high display refresh rate (60Hz–144Hz+) during gameplay.",
                 category = TweakCategory.REFRESH_RATE,
-                isToggleActive = false,
+                isToggleActive = isForceMaxHzActive,
                 selectedValue = rateStrings.lastOrNull(),
                 supportedValues = rateStrings,
                 isSupportedByDevice = isRefreshRateSupported
@@ -123,7 +131,7 @@ class TweaksRepositoryImpl @Inject constructor(
                 title = "GPU Hardware Acceleration",
                 description = "Force 2D GPU rendering and HW UI drawing for lower latency.",
                 category = TweakCategory.GPU_RENDERING,
-                isToggleActive = true,
+                isToggleActive = isGpuActive,
                 isSupportedByDevice = true
             ),
             TweakItem(
@@ -131,7 +139,7 @@ class TweaksRepositoryImpl @Inject constructor(
                 title = "OEM Thermal Throttling Bypass",
                 description = "Bypass aggressive OEM thermal throttling parameters.",
                 category = TweakCategory.THERMAL_THROTTLING,
-                isToggleActive = false,
+                isToggleActive = isThermalBypassActive,
                 isSupportedByDevice = isThermalBypassSupported
             ),
             TweakItem(
@@ -139,7 +147,7 @@ class TweaksRepositoryImpl @Inject constructor(
                 title = "System Game Mode Booster",
                 description = "Activate system game mode optimizations.",
                 category = TweakCategory.GAME_MODE,
-                isToggleActive = true,
+                isToggleActive = isGameModeActive,
                 isSupportedByDevice = isTranssionGameModeSupported || true
             )
         )
@@ -170,6 +178,7 @@ class TweaksRepositoryImpl @Inject constructor(
     }
 
     override suspend fun applyRefreshRateTweak(refreshRateHz: Float): Boolean = withContext(ioDispatcher) {
+        settingsPreferences?.setForceMaxHzOnBoost(true)
         val ok1 = settingsRepository.putString(
             scope = SettingsKeys.Scope.SYSTEM,
             key = "peak_refresh_rate",
@@ -180,7 +189,6 @@ class TweaksRepositoryImpl @Inject constructor(
             key = "min_refresh_rate",
             value = refreshRateHz.toString()
         )
-        // Shizuku shell fallback if direct settings repository call returned false
         if (!ok1 && !ok2) {
             shellExecutor.executeArgs("settings", "put", "system", "peak_refresh_rate", refreshRateHz.toString())
             shellExecutor.executeArgs("settings", "put", "system", "min_refresh_rate", refreshRateHz.toString())
@@ -217,39 +225,66 @@ class TweaksRepositoryImpl @Inject constructor(
     }
 
     override suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): Boolean = withContext(ioDispatcher) {
+        settingsPreferences?.setForceGpuRenderingEnabled(enableGpuRendering)
         val valInt = if (enableGpuRendering) "1" else "0"
-        val ok1 = settingsRepository.putString(
+        settingsRepository.putString(
             scope = SettingsKeys.Scope.GLOBAL,
             key = "force_gpu_rendering",
             value = valInt
         )
-        val ok2 = settingsRepository.putString(
+        settingsRepository.putString(
             scope = SettingsKeys.Scope.SYSTEM,
             key = "force_hw_ui",
             value = valInt
         )
-        if (!ok1 && !ok2) {
-            shellExecutor.executeArgs("settings", "put", "global", "force_gpu_rendering", valInt)
-            shellExecutor.executeArgs("settings", "put", "system", "force_hw_ui", valInt)
-        }
+        shellExecutor.executeArgs("settings", "put", "global", "force_gpu_rendering", valInt)
+        shellExecutor.executeArgs("settings", "put", "system", "force_hw_ui", valInt)
         true
     }
 
     override suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): Boolean = withContext(ioDispatcher) {
+        settingsPreferences?.setSuspendThermalOnBoost(enableBypass)
         val value = if (enableBypass) "0" else "1"
+
         settingsRepository.putString(
             scope = SettingsKeys.Scope.GLOBAL,
             key = "thermal_limit_enabled",
             value = value
         )
+        settingsRepository.putString(
+            scope = SettingsKeys.Scope.SECURE,
+            key = SettingsKeys.THERMAL_THROTTLING_DISABLED,
+            value = if (enableBypass) "1" else "0"
+        )
+        settingsRepository.putString(
+            scope = SettingsKeys.Scope.GLOBAL,
+            key = "thermal_control_limit",
+            value = value
+        )
+
+        val thermalserviceCmd = if (enableBypass) "cmd thermalservice override-status 0" else "cmd thermalservice reset"
+        shellExecutor.executeCommand(thermalserviceCmd)
+
+        if (enableBypass) {
+            shellExecutor.executeCommand("settings put global thermal_limit_enabled 0")
+            shellExecutor.executeCommand("settings put secure thermal_throttling_disabled 1")
+            shellExecutor.executeCommand("settings put global thermal_control_limit 0")
+        } else {
+            shellExecutor.executeCommand("settings put global thermal_limit_enabled 1")
+            shellExecutor.executeCommand("settings put secure thermal_throttling_disabled 0")
+        }
+        true
     }
 
     override suspend fun applyGameModeTweak(enableGameMode: Boolean): Boolean = withContext(ioDispatcher) {
+        settingsPreferences?.setGlobalAutoBoost(enableGameMode)
         val value = if (enableGameMode) "1" else "0"
         settingsRepository.putString(
             scope = SettingsKeys.Scope.GLOBAL,
             key = "game_mode_type",
             value = value
         )
+        shellExecutor.executeArgs("settings", "put", "global", "game_mode_type", value)
+        true
     }
 }
