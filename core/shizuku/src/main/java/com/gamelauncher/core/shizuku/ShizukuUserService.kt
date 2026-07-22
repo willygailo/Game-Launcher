@@ -4,14 +4,10 @@ package com.gamelauncher.core.shizuku
 import android.content.ContentResolver
 import android.content.Context
 import android.os.Binder
-import android.provider.DeviceConfig
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.Keep
 import com.gamelauncher.core.shizuku.aidl.IShellCommandService
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 /**
@@ -20,23 +16,21 @@ import kotlin.system.exitProcess
  * Features server-side Binder caller package verification, permission allowlists, and deadlock-safe stream draining.
  */
 @Keep
-class ShizukuUserService : IShellCommandService.Stub() {
+class ShizukuUserService(
+    private val callingUidProvider: () -> Int = { Binder.getCallingUid() },
+    private val packageResolver: ((Int) -> List<String>?)? = null,
+    private val processLauncher: ProcessLauncher = ProcessLauncher()
+) : IShellCommandService.Stub() {
 
     companion object {
-        /**
-         * Server-side defense-in-depth allowlist for permission grants.
-         */
-        private val ALLOWED_PERMISSIONS = setOf(
+        val ALLOWED_PERMISSIONS = setOf(
             "android.permission.WRITE_SECURE_SETTINGS",
             "android.permission.DUMP",
             "android.permission.PACKAGE_USAGE_STATS",
             "android.permission.CHANGE_CONFIGURATION"
         )
 
-        /**
-         * Server-side defense-in-depth allowlist for AppOps modifications.
-         */
-        private val ALLOWED_APPOPS = setOf(
+        val ALLOWED_APPOPS = setOf(
             "GET_USAGE_STATS",
             "android:get_usage_stats",
             "SYSTEM_ALERT_WINDOW"
@@ -57,6 +51,11 @@ class ShizukuUserService : IShellCommandService.Stub() {
 
     private val contentResolver: ContentResolver?
         get() = systemContext?.contentResolver
+
+    private fun getPackagesForUid(uid: Int): List<String>? {
+        return packageResolver?.invoke(uid)
+            ?: systemContext?.packageManager?.getPackagesForUid(uid)?.toList()
+    }
 
     override fun destroy() {
         exitProcess(0)
@@ -135,8 +134,10 @@ class ShizukuUserService : IShellCommandService.Stub() {
     override fun setDeviceConfig(namespace: String, key: String, value: String): Boolean {
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                val success = DeviceConfig.setProperty(namespace, key, value, false)
-                if (success) return true
+                val clazz = Class.forName("android.provider.DeviceConfig")
+                val method = clazz.getMethod("setProperty", String::class.java, String::class.java, String::class.java, Boolean::class.javaPrimitiveType)
+                val success = method.invoke(null, namespace, key, value, false) as? Boolean
+                if (success == true) return true
             }
         } catch (e: SecurityException) {
             throw e
@@ -148,7 +149,9 @@ class ShizukuUserService : IShellCommandService.Stub() {
     override fun readDeviceConfig(namespace: String, key: String): String? {
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                val valProp = DeviceConfig.getProperty(namespace, key)
+                val clazz = Class.forName("android.provider.DeviceConfig")
+                val method = clazz.getMethod("getProperty", String::class.java, String::class.java)
+                val valProp = method.invoke(null, namespace, key) as? String
                 if (valProp != null) return valProp
             }
         } catch (e: SecurityException) {
@@ -165,8 +168,8 @@ class ShizukuUserService : IShellCommandService.Stub() {
     }
 
     override fun grantPermission(packageName: String, permissionName: String): Boolean {
-        val callingUid = Binder.getCallingUid()
-        val callerPackages = systemContext?.packageManager?.getPackagesForUid(callingUid)
+        val callingUid = callingUidProvider()
+        val callerPackages = getPackagesForUid(callingUid)
         if (callerPackages == null || packageName !in callerPackages) {
             Log.w("ShizukuUserService", "Rejected grantPermission: packageName mismatch for uid $callingUid (target: $packageName)")
             return false
@@ -180,8 +183,8 @@ class ShizukuUserService : IShellCommandService.Stub() {
     }
 
     override fun setAppOp(packageName: String, opName: String, mode: String): Boolean {
-        val callingUid = Binder.getCallingUid()
-        val callerPackages = systemContext?.packageManager?.getPackagesForUid(callingUid)
+        val callingUid = callingUidProvider()
+        val callerPackages = getPackagesForUid(callingUid)
         if (callerPackages == null || packageName !in callerPackages) {
             Log.w("ShizukuUserService", "Rejected setAppOp: packageName mismatch for uid $callingUid (target: $packageName)")
             return false
@@ -195,43 +198,10 @@ class ShizukuUserService : IShellCommandService.Stub() {
     }
 
     private fun execProcess(cmdArray: Array<String>): Int {
-        return try {
-            val pb = ProcessBuilder(*cmdArray).redirectErrorStream(true)
-            val proc = pb.start()
-            val reader = BufferedReader(InputStreamReader(proc.inputStream))
-            while (reader.readLine() != null) {
-                // Drain combined stdout/stderr to prevent pipe buffer deadlock
-            }
-            if (proc.waitFor(3000L, TimeUnit.MILLISECONDS)) {
-                proc.exitValue()
-            } else {
-                proc.destroyForcibly()
-                -1
-            }
-        } catch (_: Exception) {
-            -1
-        }
+        return processLauncher.execProcess(cmdArray)
     }
 
     private fun execProcessWithOutput(cmdArray: Array<String>, output: Array<String?>): Int {
-        return try {
-            val pb = ProcessBuilder(*cmdArray).redirectErrorStream(true)
-            val proc = pb.start()
-            val reader = BufferedReader(InputStreamReader(proc.inputStream))
-            val sb = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                sb.append(line).append("\n")
-            }
-            if (proc.waitFor(3000L, TimeUnit.MILLISECONDS)) {
-                output[0] = sb.toString()
-                proc.exitValue()
-            } else {
-                proc.destroyForcibly()
-                -1
-            }
-        } catch (_: Exception) {
-            -1
-        }
+        return processLauncher.execProcessWithOutput(cmdArray, output)
     }
 }
