@@ -38,7 +38,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "gamelauncher.db"
-        ).fallbackToDestructiveMigration().build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
     }
 
     @Provides

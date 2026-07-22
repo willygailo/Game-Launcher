@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.gamelauncher"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.gamelauncher.app"
-        minSdk = 29
+        minSdk = 33
         targetSdk = 36
-        versionCode = 330
-        versionName = "3.3.0"
+        versionCode = 350
+        versionName = "3.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -93,6 +93,18 @@ android {
 }
 
 dependencies {
+    // Project Modules
+    implementation(project(":core:shizuku"))
+    implementation(project(":core:settings"))
+    implementation(project(":core:device"))
+    implementation(project(":core:permissions"))
+    implementation(project(":core:database"))
+    implementation(project(":core:di"))
+
+    implementation(project(":feature:tweaks"))
+    implementation(project(":feature:network"))
+    implementation(project(":feature:monitor"))
+
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -6,9 +6,10 @@ appcompat = "1.7.1"
 material = "1.12.0"
 constraintlayout = "2.2.1"
 startup = "1.2.0"
-lifecycle = "2.11.0"
+lifecycle = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2026.06.01"
+composeCompiler = "1.5.14"
 hilt = "2.60.1"
 hiltNavigationCompose = "1.2.0"
 navigationCompose = "2.9.8"
@@ -149,6 +150,7 @@ shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
