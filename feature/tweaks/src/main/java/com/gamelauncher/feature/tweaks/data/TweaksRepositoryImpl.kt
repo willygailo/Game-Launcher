@@ -1,167 +1,123 @@
+// feature/tweaks/src/main/java/com/gamelauncher/feature/tweaks/data/TweaksRepositoryImpl.kt
 package com.gamelauncher.feature.tweaks.data
 
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Build
-import android.util.Log
 import android.view.Display
 import com.gamelauncher.core.device.DeviceProfileDetector
 import com.gamelauncher.core.device.OemCapabilityMap
-import com.gamelauncher.core.permissions.RuntimePermissionManager
-import com.gamelauncher.core.settings.SecureSettingsRepository
-import com.gamelauncher.core.settings.SettingsKeys
-import com.gamelauncher.core.settings.SettingsPreferences
-import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.core.di.IoDispatcher
+import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
 import com.gamelauncher.feature.tweaks.domain.model.TweakItem
+import com.gamelauncher.feature.tweaks.domain.model.TweakResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
-enum class ShellPrivilegeLevel {
-    NONE,
-    SHIZUKU_ONLY,
-    ROOT
-}
-
 /**
  * TweaksRepositoryImpl — Repository implementation orchestrating system performance tweaks
- * across core foundation modules with injected CoroutineDispatcher threading.
+ * with read-back verification and OEM key routing.
  */
 class TweaksRepositoryImpl @Inject constructor(
-    private val settingsRepository: SecureSettingsRepository,
     private val deviceProfileDetector: DeviceProfileDetector,
     private val capabilityMap: OemCapabilityMap,
-    private val permissionManager: RuntimePermissionManager,
     private val shellExecutor: IShellExecutor,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    @ApplicationContext private val context: Context? = null,
-    private val settingsPreferences: SettingsPreferences? = null
+    @ApplicationContext private val context: Context
 ) : ITweaksRepository {
 
-    companion object {
-        private val ALLOWED_GOVERNORS = setOf("performance", "powersave", "schedutil", "interactive", "ondemand")
-        private const val CPU_GOVERNOR_SYSFS_PATH = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
-    }
-
-    private suspend fun checkShellPrivilegeLevel(): ShellPrivilegeLevel = withContext(ioDispatcher) {
-        val res = shellExecutor.executeCommand("id")
-        if (res.exitCode == 0) {
-            if (res.stdout.contains("uid=0(root)")) {
-                ShellPrivilegeLevel.ROOT
-            } else if (res.stdout.contains("uid=2000") || res.stdout.contains("shell")) {
-                ShellPrivilegeLevel.SHIZUKU_ONLY
-            } else {
-                ShellPrivilegeLevel.SHIZUKU_ONLY
-            }
-        } else {
-            ShellPrivilegeLevel.NONE
-        }
-    }
-
     override fun getAvailableTweaks(): Flow<List<TweakItem>> = flow {
-        val brand = deviceProfileDetector.detectOemBrand()
-        val isRefreshRateSupported = capabilityMap.supportsPeakRefreshRateOverride()
-        val isThermalBypassSupported = capabilityMap.supportsThermalThrottlingOverride()
-        val isTranssionGameModeSupported = capabilityMap.supportsTranssionGameMode()
-
-        val isThermalBypassActive = settingsPreferences?.suspendThermalOnBoost?.first() ?: false
-        val isGpuActive = settingsPreferences?.forceGpuRenderingEnabled?.first() ?: true
-        val isGameModeActive = settingsPreferences?.globalAutoBoost?.first() ?: true
-        val isForceMaxHzActive = settingsPreferences?.forceMaxHzOnBoost?.first() ?: false
-
-        // Dynamically fetch supported refresh rates from Display.getSupportedModes()
+        val oemKeys = deviceProfileDetector.getTweakKeys()
         val detectedRates = querySupportedRefreshRates()
         val roundedRatesInt = detectedRates.map { it.roundToInt() }
-
-        // If max rate is >= 120Hz or device supports high refresh rate, ensure 144Hz is included if display supports it
-        val rateStrings = if (roundedRatesInt.maxOrNull() ?: 60 >= 120 && !roundedRatesInt.contains(144)) {
-            (roundedRatesInt + 144).distinct().sorted().map { it.toString() }
-        } else {
-            roundedRatesInt.distinct().sorted().map { it.toString() }
-        }.ifEmpty { listOf("60", "90", "120", "144") }
-
-        // Privilege level evaluation
-        val privilegeLevel = checkShellPrivilegeLevel()
-        val isRootAvailable = privilegeLevel == ShellPrivilegeLevel.ROOT
-
-        val governorDescription = when (privilegeLevel) {
-            ShellPrivilegeLevel.ROOT -> "Force CPU scaling governor to performance mode."
-            ShellPrivilegeLevel.SHIZUKU_ONLY -> "Force CPU scaling governor (Requires Root — Shizuku ADB shell privilege level is insufficient for sysfs kernel writes)."
-            ShellPrivilegeLevel.NONE -> "Force CPU scaling governor (Requires Root — unsupported on non-root device)."
-        }
-
-        val governorBadgeNote = when (privilegeLevel) {
-            ShellPrivilegeLevel.ROOT -> null
-            ShellPrivilegeLevel.SHIZUKU_ONLY -> "Requires Root (Shizuku active)"
-            ShellPrivilegeLevel.NONE -> "Requires Root"
-        }
+        val rateStrings = roundedRatesInt.distinct().sorted().map { it.toString() }.ifEmpty { listOf("60", "90", "120", "144") }
 
         val tweaks = listOf(
             TweakItem(
                 id = "refresh_rate",
                 title = "Peak Display Refresh Rate",
-                description = "Force high display refresh rate (60Hz–144Hz+) during gameplay.",
+                description = "Force high display refresh rate using target OEM key (${oemKeys.refreshRateKey}).",
                 category = TweakCategory.REFRESH_RATE,
-                isToggleActive = isForceMaxHzActive,
+                isToggleActive = true,
                 selectedValue = rateStrings.lastOrNull(),
                 supportedValues = rateStrings,
-                isSupportedByDevice = isRefreshRateSupported
+                isSupportedByDevice = true
             ),
             TweakItem(
-                id = "cpu_governor",
-                title = "CPU Governor Scaling",
-                description = governorDescription,
-                category = TweakCategory.CPU_GOVERNOR,
+                id = "high_refresh_rate_blacklist",
+                title = "Clear Refresh Rate Blacklist",
+                description = "Remove app package restrictions blocking high FPS rendering.",
+                category = TweakCategory.REFRESH_RATE,
                 isToggleActive = false,
-                selectedValue = "schedutil",
-                supportedValues = listOf("schedutil", "performance", "powersave"),
-                isSupportedByDevice = isRootAvailable,
-                badgeNote = governorBadgeNote
+                isSupportedByDevice = true
             ),
             TweakItem(
                 id = "gpu_rendering",
                 title = "GPU Hardware Acceleration",
                 description = "Force 2D GPU rendering and HW UI drawing for lower latency.",
                 category = TweakCategory.GPU_RENDERING,
-                isToggleActive = isGpuActive,
+                isToggleActive = true,
                 isSupportedByDevice = true
+            ),
+            TweakItem(
+                id = "game_driver_clear",
+                title = "Clear Game Driver Restrictions",
+                description = "Reset Game Driver opt-out and global override app configurations.",
+                category = TweakCategory.GPU_RENDERING,
+                isToggleActive = false,
+                isSupportedByDevice = oemKeys.gameDriverSupported
             ),
             TweakItem(
                 id = "thermal_bypass",
                 title = "OEM Thermal Throttling Bypass",
-                description = "Bypass aggressive OEM thermal throttling parameters.",
+                description = "Bypass framework thermal throttling via cmd thermalservice override-status.",
                 category = TweakCategory.THERMAL_THROTTLING,
-                isToggleActive = isThermalBypassActive,
-                isSupportedByDevice = isThermalBypassSupported
+                isToggleActive = false,
+                isSupportedByDevice = oemKeys.thermalOverrideSupported,
+                badgeNote = "Requires on-device verification"
             ),
             TweakItem(
                 id = "game_mode",
                 title = "System Game Mode Booster",
                 description = "Activate system game mode optimizations.",
                 category = TweakCategory.GAME_MODE,
-                isToggleActive = isGameModeActive,
-                isSupportedByDevice = isTranssionGameModeSupported || true
+                isToggleActive = true,
+                isSupportedByDevice = true
+            ),
+            TweakItem(
+                id = "phantom_procs",
+                title = "Disable Phantom Process Killing",
+                description = "Prevent Android 12+ child process monitor from killing background games.",
+                category = TweakCategory.MEMORY,
+                isToggleActive = false,
+                isSupportedByDevice = Build.VERSION.SDK_INT >= 31,
+                badgeNote = "Requires on-device verification"
+            ),
+            TweakItem(
+                id = "adaptive_battery",
+                title = "Disable Adaptive Battery",
+                description = "Disable OS power throttling on active background game threads.",
+                category = TweakCategory.POWER,
+                isToggleActive = false,
+                isSupportedByDevice = true
             )
         )
         emit(tweaks)
     }.flowOn(ioDispatcher)
 
     private fun querySupportedRefreshRates(): List<Float> {
-        val ctx = context ?: return listOf(60f, 90f, 120f, 144f)
         return try {
-            val dm = ctx.getSystemService(DisplayManager::class.java)
+            val dm = context.getSystemService(DisplayManager::class.java)
             val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f, 90f, 120f, 144f)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val rawModes = display.supportedModes
-                Log.d("TweaksRepository", "RAW Display.getSupportedModes() count=${rawModes.size}: ${rawModes.joinToString { "${it.refreshRate}Hz (${it.physicalWidth}x${it.physicalHeight})" }}")
                 val rates = rawModes
                     .map { (it.refreshRate * 100f).roundToInt() / 100f }
                     .filter { it >= 30f }
@@ -172,119 +128,183 @@ class TweaksRepositoryImpl @Inject constructor(
                 listOf(display.refreshRate)
             }
         } catch (e: Exception) {
-            Log.e("TweaksRepository", "Error querying supported refresh rates", e)
             listOf(60f, 90f, 120f, 144f)
         }
     }
 
-    override suspend fun applyRefreshRateTweak(refreshRateHz: Float): Boolean = withContext(ioDispatcher) {
-        settingsPreferences?.setForceMaxHzOnBoost(true)
-        val ok1 = settingsRepository.putString(
-            scope = SettingsKeys.Scope.SYSTEM,
-            key = "peak_refresh_rate",
-            value = refreshRateHz.toString()
-        )
-        val ok2 = settingsRepository.putString(
-            scope = SettingsKeys.Scope.SYSTEM,
-            key = "min_refresh_rate",
-            value = refreshRateHz.toString()
-        )
-        if (!ok1 && !ok2) {
-            shellExecutor.executeArgs("settings", "put", "system", "peak_refresh_rate", refreshRateHz.toString())
-            shellExecutor.executeArgs("settings", "put", "system", "min_refresh_rate", refreshRateHz.toString())
-        }
-        true
-    }
+    override suspend fun applyRefreshRateTweak(refreshRateHz: Float): TweakResult = withContext(ioDispatcher) {
+        val oemKeys = deviceProfileDetector.getTweakKeys()
+        val key = oemKeys.refreshRateKey
+        val targetValue = refreshRateHz.toString()
 
-    override suspend fun applyCpuGovernorTweak(governor: String): Boolean = withContext(ioDispatcher) {
-        val sanitizedGovernor = governor.lowercase().trim()
-        if (!ALLOWED_GOVERNORS.contains(sanitizedGovernor)) {
-            return@withContext false
+        val written = shellExecutor.writeSetting("system", key, targetValue)
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for key '$key'")
         }
 
-        if (checkShellPrivilegeLevel() != ShellPrivilegeLevel.ROOT) {
-            Log.w("TweaksRepository", "CPU Governor tweak rejected: Root access (uid 0) required")
-            return@withContext false
+        val readValue = shellExecutor.readSetting("system", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
         }
 
-        // Grant write access (0664) across all CPU cores before sysfs write
-        shellExecutor.executeCommand("chmod 0664 /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
-
-        // Write to all CPU cores sysfs paths when root is available
-        val multiCoreCmd = "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $sanitizedGovernor > \$i; done"
-        val writeResult = shellExecutor.executeCommand(multiCoreCmd)
-        if (writeResult.exitCode == 0) {
-            return@withContext true
-        }
-
-        // Single core fallback for unit tests & legacy single-core sysfs nodes
-        val fallbackResult = shellExecutor.executeCommand(
-            "echo $sanitizedGovernor > $CPU_GOVERNOR_SYSFS_PATH"
-        )
-        fallbackResult.exitCode == 0
-    }
-
-    override suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): Boolean = withContext(ioDispatcher) {
-        settingsPreferences?.setForceGpuRenderingEnabled(enableGpuRendering)
-        val valInt = if (enableGpuRendering) "1" else "0"
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.GLOBAL,
-            key = "force_gpu_rendering",
-            value = valInt
-        )
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.SYSTEM,
-            key = "force_hw_ui",
-            value = valInt
-        )
-        shellExecutor.executeArgs("settings", "put", "global", "force_gpu_rendering", valInt)
-        shellExecutor.executeArgs("settings", "put", "system", "force_hw_ui", valInt)
-        true
-    }
-
-    override suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): Boolean = withContext(ioDispatcher) {
-        settingsPreferences?.setSuspendThermalOnBoost(enableBypass)
-        val value = if (enableBypass) "0" else "1"
-
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.GLOBAL,
-            key = "thermal_limit_enabled",
-            value = value
-        )
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.SECURE,
-            key = SettingsKeys.THERMAL_THROTTLING_DISABLED,
-            value = if (enableBypass) "1" else "0"
-        )
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.GLOBAL,
-            key = "thermal_control_limit",
-            value = value
-        )
-
-        val thermalserviceCmd = if (enableBypass) "cmd thermalservice override-status 0" else "cmd thermalservice reset"
-        shellExecutor.executeCommand(thermalserviceCmd)
-
-        if (enableBypass) {
-            shellExecutor.executeCommand("settings put global thermal_limit_enabled 0")
-            shellExecutor.executeCommand("settings put secure thermal_throttling_disabled 1")
-            shellExecutor.executeCommand("settings put global thermal_control_limit 0")
+        if (readValue.trim() == targetValue || readValue.toFloatOrNull() == refreshRateHz) {
+            TweakResult.Confirmed
         } else {
-            shellExecutor.executeCommand("settings put global thermal_limit_enabled 1")
-            shellExecutor.executeCommand("settings put secure thermal_throttling_disabled 0")
+            TweakResult.SilentlyIgnored(key)
         }
-        true
     }
 
-    override suspend fun applyGameModeTweak(enableGameMode: Boolean): Boolean = withContext(ioDispatcher) {
-        settingsPreferences?.setGlobalAutoBoost(enableGameMode)
-        val value = if (enableGameMode) "1" else "0"
-        settingsRepository.putString(
-            scope = SettingsKeys.Scope.GLOBAL,
-            key = "game_mode_type",
-            value = value
-        )
-        shellExecutor.executeArgs("settings", "put", "global", "game_mode_type", value)
-        true
+    override suspend fun clearHighRefreshRateBlacklist(): TweakResult = withContext(ioDispatcher) {
+        val key = "high_refresh_rate_blacklist"
+        val written = shellExecutor.writeSetting("system", key, "")
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for key '$key'")
+        }
+
+        val readValue = shellExecutor.readSetting("system", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
+        }
+
+        if (readValue.trim().isEmpty() || readValue.trim() == "null") {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(key)
+        }
+    }
+
+    override suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): TweakResult = withContext(ioDispatcher) {
+        val key = "force_gpu_rendering"
+        val targetValue = if (enableGpuRendering) "1" else "0"
+
+        val written = shellExecutor.writeSetting("global", key, targetValue)
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for key '$key'")
+        }
+
+        val readValue = shellExecutor.readSetting("global", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
+        }
+
+        if (readValue.trim() == targetValue) {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(key)
+        }
+    }
+
+    override suspend fun clearGameDriverConfig(): TweakResult = withContext(ioDispatcher) {
+        val key1 = "game_driver_all_apps"
+        val key2 = "game_driver_opt_out_apps"
+
+        val written1 = shellExecutor.writeSetting("global", key1, "")
+        val written2 = shellExecutor.writeSetting("global", key2, "")
+
+        if (!written1 || !written2) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for Game Driver settings")
+        }
+
+        val read1 = shellExecutor.readSetting("global", key1)
+        val read2 = shellExecutor.readSetting("global", key2)
+
+        val clean1 = read1 == null || read1.trim().isEmpty() || read1.trim() == "null"
+        val clean2 = read2 == null || read2.trim().isEmpty() || read2.trim() == "null"
+
+        if (clean1 && clean2) {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(if (!clean1) key1 else key2)
+        }
+    }
+
+    override suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): TweakResult = withContext(ioDispatcher) {
+        val key = "thermal_limit_enabled"
+        val targetValue = if (enableBypass) "0" else "1"
+
+        val written = shellExecutor.setThermalOverride(enableBypass)
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service thermal override call failed")
+        }
+
+        val readValue = shellExecutor.readSetting("global", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
+        }
+
+        if (readValue.trim() == targetValue) {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(key)
+        }
+    }
+
+    override suspend fun applyGameModeTweak(enableGameMode: Boolean): TweakResult = withContext(ioDispatcher) {
+        val key = "game_mode_type"
+        val targetValue = if (enableGameMode) "1" else "0"
+
+        val written = shellExecutor.writeSetting("global", key, targetValue)
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for key '$key'")
+        }
+
+        val readValue = shellExecutor.readSetting("global", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
+        }
+
+        if (readValue.trim() == targetValue) {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(key)
+        }
+    }
+
+    override suspend fun disablePhantomProcessKilling(disable: Boolean): TweakResult = withContext(ioDispatcher) {
+        val key = "settings_enable_monitor_phantom_procs"
+        val targetValue = if (disable) "false" else "true"
+
+        return@withContext try {
+            val written = shellExecutor.setDeviceConfig("activity_manager", key, targetValue)
+            if (!written) {
+                return@withContext TweakResult.Failed("Shizuku service device_config write call failed for key '$key'")
+            }
+
+            val readValue = shellExecutor.readDeviceConfig("activity_manager", key)
+            if (readValue == null) {
+                return@withContext TweakResult.Failed("Shizuku read-back operation failed for DeviceConfig key '$key'")
+            }
+
+            if (readValue.trim().equals(targetValue, ignoreCase = true)) {
+                TweakResult.Confirmed
+            } else {
+                TweakResult.SilentlyIgnored(key)
+            }
+        } catch (e: SecurityException) {
+            TweakResult.Failed("SecurityException: Write/Read denied for activity_manager DeviceConfig namespace (${e.localizedMessage})")
+        } catch (e: Exception) {
+            TweakResult.Failed("Failed to set DeviceConfig '$key': ${e.localizedMessage}")
+        }
+    }
+
+    override suspend fun disableAdaptiveBattery(disable: Boolean): TweakResult = withContext(ioDispatcher) {
+        val key = "adaptive_battery_management_enabled"
+        val targetValue = if (disable) "0" else "1"
+
+        val written = shellExecutor.writeSetting("global", key, targetValue)
+        if (!written) {
+            return@withContext TweakResult.Failed("Shizuku service write call failed for key '$key'")
+        }
+
+        val readValue = shellExecutor.readSetting("global", key)
+        if (readValue == null) {
+            return@withContext TweakResult.Failed("Shizuku read-back operation failed for key '$key'")
+        }
+
+        if (readValue.trim() == targetValue) {
+            TweakResult.Confirmed
+        } else {
+            TweakResult.SilentlyIgnored(key)
+        }
     }
 }

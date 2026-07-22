@@ -1,3 +1,4 @@
+// core/permissions/src/main/java/com/gamelauncher/core/permissions/RuntimePermissionManager.kt
 package com.gamelauncher.core.permissions
 
 import android.app.AppOpsManager
@@ -13,7 +14,7 @@ import javax.inject.Singleton
 
 /**
  * RuntimePermissionManager — Checks and grants privileged AppOps & system permissions
- * strictly for our own app (context.packageName) using Shizuku (pm grant / appops set).
+ * strictly for our own app (context.packageName) using Shizuku AIDL (grantPermission / setAppOp).
  * Enforces strict permission allowlist to prevent privilege escalation vectors.
  */
 @Singleton
@@ -64,8 +65,8 @@ class RuntimePermissionManager @Inject constructor(
     }
 
     /**
-     * Attempts to grant a manifest permission to OUR APP ONLY via Shizuku ADB bridge (`pm grant <myPackage> <permission>`).
-     * - Uses array-based IShellExecutor.executeArgs() to prevent command injection.
+     * Attempts to grant a manifest permission to OUR APP ONLY via Shizuku AIDL (`grantPermission`).
+     * - Uses typed AIDL method to prevent command injection.
      * - Enforces context.packageName scope (cannot target third-party packages).
      * - Validates permissionName against ALLOWED_PERMISSIONS whitelist.
      */
@@ -78,12 +79,11 @@ class RuntimePermissionManager @Inject constructor(
         }
 
         // Strictly targets context.packageName (our own app package)
-        val result = shellExecutor.executeArgs("pm", "grant", context.packageName, permissionName)
-        result.exitCode == 0
+        shellExecutor.grantPermission(context.packageName, permissionName)
     }
 
     /**
-     * Attempts to set an AppOps permission to allow for OUR APP ONLY via Shizuku (`appops set <myPackage> <op> allow`).
+     * Attempts to set an AppOps permission to allow for OUR APP ONLY via Shizuku AIDL (`setAppOp`).
      */
     suspend fun setAppOpViaShizuku(opName: String): Boolean = withContext(Dispatchers.IO) {
         if (!ALLOWED_APPOPS.contains(opName)) {
@@ -94,7 +94,6 @@ class RuntimePermissionManager @Inject constructor(
         }
 
         // Strictly targets context.packageName (our own app package)
-        val result = shellExecutor.executeArgs("appops", "set", context.packageName, opName, "allow")
-        result.exitCode == 0
+        shellExecutor.setAppOp(context.packageName, opName, "allow")
     }
 }

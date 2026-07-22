@@ -1,10 +1,13 @@
+// feature/tweaks/src/main/java/com/gamelauncher/feature/tweaks/ui/TweaksViewModel.kt
 package com.gamelauncher.feature.tweaks.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gamelauncher.core.shizuku.ShizukuAvailability
+import com.gamelauncher.core.shizuku.ShizukuState
 import com.gamelauncher.feature.tweaks.data.ITweaksRepository
-import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
 import com.gamelauncher.feature.tweaks.domain.model.TweakItem
+import com.gamelauncher.feature.tweaks.domain.model.TweakResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,11 +28,14 @@ sealed interface TweaksUiState {
 
 @HiltViewModel
 class TweaksViewModel @Inject constructor(
-    private val repository: ITweaksRepository
+    private val repository: ITweaksRepository,
+    private val shizukuAvailability: ShizukuAvailability
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TweaksUiState>(TweaksUiState.Loading)
     val uiState: StateFlow<TweaksUiState> = _uiState.asStateFlow()
+
+    val shizukuState: StateFlow<ShizukuState> = shizukuAvailability.state
 
     init {
         loadTweaks()
@@ -48,67 +54,108 @@ class TweaksViewModel @Inject constructor(
         }
     }
 
+    private fun checkShizukuConnected(): Boolean {
+        if (shizukuState.value !is ShizukuState.Connected) {
+            val msg = "Operation blocked: Shizuku is not connected. Current state: ${shizukuState.value.javaClass.simpleName}"
+            val currentState = _uiState.value
+            if (currentState is TweaksUiState.Success) {
+                _uiState.value = currentState.copy(userMessage = msg)
+            }
+            return false
+        }
+        return true
+    }
+
     fun applyRefreshRate(refreshRateHz: Float) {
+        if (!checkShizukuConnected()) return
         viewModelScope.launch {
-            val success = repository.applyRefreshRateTweak(refreshRateHz)
-            updateTweakState("refresh_rate", success, selectedValue = refreshRateHz.toInt().toString())
+            val result = repository.applyRefreshRateTweak(refreshRateHz)
+            handleTweakResult("refresh_rate", result, selectedValue = refreshRateHz.toInt().toString())
         }
     }
 
-    fun applyCpuGovernor(governor: String) {
+    fun clearHighRefreshRateBlacklist() {
+        if (!checkShizukuConnected()) return
         viewModelScope.launch {
-            val success = repository.applyCpuGovernorTweak(governor)
-            val msg = if (!success) "CPU Governor scaling requires Root access" else null
-            updateTweakState("cpu_governor", success, selectedValue = governor, customMessage = msg)
+            val result = repository.clearHighRefreshRateBlacklist()
+            handleTweakResult("high_refresh_rate_blacklist", result)
         }
     }
 
     fun applyGpuRendering(enable: Boolean) {
+        if (!checkShizukuConnected()) return
         viewModelScope.launch {
-            val success = repository.applyGpuRenderingTweak(enable)
-            updateTweakState("gpu_rendering", success, toggleState = enable)
+            val result = repository.applyGpuRenderingTweak(enable)
+            handleTweakResult("gpu_rendering", result, toggleState = enable)
+        }
+    }
+
+    fun clearGameDriverConfig() {
+        if (!checkShizukuConnected()) return
+        viewModelScope.launch {
+            val result = repository.clearGameDriverConfig()
+            handleTweakResult("game_driver_clear", result)
         }
     }
 
     fun applyThermalThrottlingBypass(enable: Boolean) {
+        if (!checkShizukuConnected()) return
         viewModelScope.launch {
-            val success = repository.applyThermalThrottlingBypass(enable)
-            updateTweakState("thermal_bypass", success, toggleState = enable)
+            val result = repository.applyThermalThrottlingBypass(enable)
+            handleTweakResult("thermal_bypass", result, toggleState = enable)
         }
     }
 
     fun applyGameModeBooster(enable: Boolean) {
+        if (!checkShizukuConnected()) return
         viewModelScope.launch {
-            val success = repository.applyGameModeTweak(enable)
-            updateTweakState("game_mode", success, toggleState = enable)
+            val result = repository.applyGameModeTweak(enable)
+            handleTweakResult("game_mode", result, toggleState = enable)
         }
     }
 
-    private fun updateTweakState(
+    fun disablePhantomProcessKilling(disable: Boolean) {
+        if (!checkShizukuConnected()) return
+        viewModelScope.launch {
+            val result = repository.disablePhantomProcessKilling(disable)
+            handleTweakResult("phantom_procs", result, toggleState = disable)
+        }
+    }
+
+    fun disableAdaptiveBattery(disable: Boolean) {
+        if (!checkShizukuConnected()) return
+        viewModelScope.launch {
+            val result = repository.disableAdaptiveBattery(disable)
+            handleTweakResult("adaptive_battery", result, toggleState = disable)
+        }
+    }
+
+    private fun handleTweakResult(
         tweakId: String,
-        success: Boolean,
+        result: TweakResult,
         selectedValue: String? = null,
-        toggleState: Boolean? = null,
-        customMessage: String? = null
+        toggleState: Boolean? = null
     ) {
         val currentState = _uiState.value
         if (currentState is TweaksUiState.Success) {
+            val message = when (result) {
+                is TweakResult.Confirmed -> "Applied tweak successfully and verified read-back."
+                is TweakResult.SilentlyIgnored -> "Warning: Setting '${result.key}' was written but silently ignored by OEM ROM."
+                is TweakResult.Failed -> "Failed to apply tweak: ${result.reason}"
+            }
+
             val updatedList = currentState.tweaks.map { tweak ->
                 if (tweak.id == tweakId) {
                     tweak.copy(
-                        isToggleActive = if (success && toggleState != null) toggleState else tweak.isToggleActive,
-                        selectedValue = if (success && selectedValue != null) selectedValue else tweak.selectedValue,
-                        lastApplySuccessful = success
+                        isToggleActive = if (result is TweakResult.Confirmed && toggleState != null) toggleState else tweak.isToggleActive,
+                        selectedValue = if (result is TweakResult.Confirmed && selectedValue != null) selectedValue else tweak.selectedValue,
+                        lastResult = result
                     )
                 } else {
                     tweak
                 }
             }
-            val message = customMessage ?: if (success) {
-                "Applied tweak successfully"
-            } else {
-                "Failed to apply tweak"
-            }
+
             _uiState.value = TweaksUiState.Success(tweaks = updatedList, userMessage = message)
         }
     }

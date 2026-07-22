@@ -1,3 +1,4 @@
+// core/settings/src/main/java/com/gamelauncher/core/settings/SecureSettingsRepository.kt
 package com.gamelauncher.core.settings
 
 import com.gamelauncher.core.shizuku.IShellExecutor
@@ -7,37 +8,34 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * SecureSettingsRepository — Privileged settings reader and writer using Shizuku ADB bridge.
- * Uses array-based execve execution via IShellExecutor.executeArgs() to prevent command injection vulnerabilities.
+ * SecureSettingsRepository — Privileged settings reader and writer using Shizuku AIDL bridge.
+ * Uses typed writeSetting and readSetting methods to prevent command injection vulnerabilities.
  */
 @Singleton
 class SecureSettingsRepository @Inject constructor(
     private val shellExecutor: IShellExecutor
 ) {
     /**
-     * Writes a key-value setting entry to Global, System, or Secure scope via ADB shell.
-     * Uses array arguments ("settings", "put", scope, key, value) to prevent shell command injection.
+     * Writes a key-value setting entry to Global, System, or Secure scope via Shizuku AIDL.
      */
     suspend fun putString(
         scope: SettingsKeys.Scope,
         key: String,
         value: String
     ): Boolean = withContext(Dispatchers.IO) {
-        val result = shellExecutor.executeArgs("settings", "put", scope.namespace, key, value)
-        result.exitCode == 0
+        shellExecutor.writeSetting(scope.namespace, key, value)
     }
 
     /**
-     * Reads a setting value from Global, System, or Secure scope via ADB shell.
-     * Uses array arguments ("settings", "get", scope, key) to prevent shell command injection.
+     * Reads a setting value from Global, System, or Secure scope via Shizuku AIDL.
      */
     suspend fun getString(
         scope: SettingsKeys.Scope,
         key: String
     ): String? = withContext(Dispatchers.IO) {
-        val result = shellExecutor.executeArgs("settings", "get", scope.namespace, key)
-        if (result.exitCode == 0 && result.stdout.isNotBlank() && result.stdout != "null") {
-            result.stdout.trim()
+        val result = shellExecutor.readSetting(scope.namespace, key)
+        if (result != null && result.isNotBlank() && result != "null") {
+            result.trim()
         } else {
             null
         }
@@ -90,14 +88,12 @@ class SecureSettingsRepository @Inject constructor(
     }
 
     /**
-     * Deletes a setting entry from Global, System, or Secure scope via ADB shell.
-     * Uses array arguments ("settings", "delete", scope, key) to prevent shell command injection.
+     * Deletes a setting entry from Global, System, or Secure scope via Shizuku AIDL.
      */
     suspend fun delete(
         scope: SettingsKeys.Scope,
         key: String
     ): Boolean = withContext(Dispatchers.IO) {
-        val result = shellExecutor.executeArgs("settings", "delete", scope.namespace, key)
-        result.exitCode == 0
+        shellExecutor.writeSetting(scope.namespace, key, "")
     }
 }

@@ -1,3 +1,4 @@
+// app/src/main/java/com/gamelauncher/ui/dashboard/DashboardScreen.kt
 package com.gamelauncher.ui.dashboard
 
 import android.net.Uri
@@ -74,7 +75,7 @@ fun DashboardScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        RogDarkBg,
+                        DockBgDark,
                         Color(0xFF060709)
                     )
                 )
@@ -87,7 +88,7 @@ fun DashboardScreen(
                 .padding(bottom = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ROG Cyber HUD Header
+            // Cyber HUD Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,7 +105,7 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "ROG GAME SPACE",
+                            "GAME LAUNCHER PRO",
                             color = TextPrimary,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
@@ -382,7 +383,7 @@ fun GameCoverCard(
             .width(140.dp)
             .height(190.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(RogSurfaceDark)
+            .background(DockSurfaceDark)
             .border(2.dp, if (game.highPerformanceMode) accentColor else accentColor.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
             .combinedClickable(
                 onClick = onClick,
@@ -443,8 +444,8 @@ fun SegmentedModeSelector(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(RogSurfaceDark)
-            .border(1.dp, RogCardBorder, RoundedCornerShape(24.dp))
+            .background(DockSurfaceDark)
+            .border(1.dp, DockCardBorder, RoundedCornerShape(24.dp))
             .padding(4.dp)
     ) {
         PerformanceMode.values().forEach { mode ->

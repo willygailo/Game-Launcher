@@ -1,6 +1,8 @@
+// feature/tweaks/src/main/java/com/gamelauncher/feature/tweaks/data/ITweaksRepository.kt
 package com.gamelauncher.feature.tweaks.data
 
 import com.gamelauncher.feature.tweaks.domain.model.TweakItem
+import com.gamelauncher.feature.tweaks.domain.model.TweakResult
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -8,9 +10,12 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ITweaksRepository {
     fun getAvailableTweaks(): Flow<List<TweakItem>>
-    suspend fun applyRefreshRateTweak(refreshRateHz: Float): Boolean
-    suspend fun applyCpuGovernorTweak(governor: String): Boolean
-    suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): Boolean
-    suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): Boolean
-    suspend fun applyGameModeTweak(enableGameMode: Boolean): Boolean
+    suspend fun applyRefreshRateTweak(refreshRateHz: Float): TweakResult
+    suspend fun clearHighRefreshRateBlacklist(): TweakResult
+    suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): TweakResult
+    suspend fun clearGameDriverConfig(): TweakResult
+    suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): TweakResult
+    suspend fun applyGameModeTweak(enableGameMode: Boolean): TweakResult
+    suspend fun disablePhantomProcessKilling(disable: Boolean): TweakResult
+    suspend fun disableAdaptiveBattery(disable: Boolean): TweakResult
 }

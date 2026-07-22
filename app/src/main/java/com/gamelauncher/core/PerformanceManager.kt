@@ -1,6 +1,6 @@
+// app/src/main/java/com/gamelauncher/core/PerformanceManager.kt
 package com.gamelauncher.core
 
-import android.Manifest
 import android.app.ActivityManager
 import android.content.ContentResolver
 import android.content.Context
@@ -11,9 +11,8 @@ import android.os.PerformanceHintManager
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
-import android.util.Log
 import android.view.Display
-import android.view.Surface
+import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +29,7 @@ import kotlin.math.roundToInt
 @Singleton
 class PerformanceManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val rootShellManager: RootShellManager,
-    private val shizukuShellManager: ShizukuShellManager,
+    private val shellExecutor: IShellExecutor,
     private val socManager: SocManager,
     private val settingsPreferences: SettingsPreferences
 ) {
@@ -69,25 +67,15 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    // ── ADPF v1 + v2: PerformanceHintManager (Android 12+ / API 31+) ─────
     fun startPerformanceSession(targetFpsHz: Int = 60) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
             val phm = context.getSystemService(PerformanceHintManager::class.java) ?: return
             val periodNs = 1_000_000_000L / targetFpsHz
-            
             val tids = getRenderThreadIds()
             
             performanceSession?.close()
             performanceSession = phm.createHintSession(tids, periodNs)
-
-            // ADPF v2: Set preferred update rate for SurfaceFlinger (Android 15+)
-            if (Build.VERSION.SDK_INT >= 35) {
-                try {
-                    val sf = Class.forName("android.view.SurfaceControl")
-                    val setRate = sf.getMethod("setDisplayPowerMode", Int::class.java, Int::class.java)
-                } catch (_: Exception) {}
-            }
         } catch (_: Exception) {}
     }
 
@@ -135,14 +123,12 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
-    // ── Display Refresh Rate ─────────────────────────────────────────
     fun getSupportedRefreshRates(): List<Float> {
         return try {
             val dm = context.getSystemService(DisplayManager::class.java)
             val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f, 90f, 120f, 144f)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val rawModes = display.supportedModes
-                Log.d("PerformanceManager", "RAW Display.getSupportedModes() count=${rawModes.size}: ${rawModes.joinToString { "${it.refreshRate}Hz (${it.physicalWidth}x${it.physicalHeight})" }}")
                 val rates = rawModes
                     .map { (it.refreshRate * 100f).roundToInt() / 100f }
                     .filter { it >= 30f }
@@ -153,7 +139,6 @@ class PerformanceManager @Inject constructor(
                 listOf(display.refreshRate)
             }
         } catch (e: Exception) {
-            Log.e("PerformanceManager", "Error querying getSupportedRefreshRates()", e)
             listOf(60f, 90f, 120f, 144f)
         }
     }
@@ -169,7 +154,36 @@ class PerformanceManager @Inject constructor(
         return getSupportedRefreshRates().maxOrNull() ?: 60f
     }
 
-    // ── Enhanced GPU Info for All Vendors ────────────────────────────
+    fun lockRefreshRate(hz: Float): Boolean {
+        GlobalScope.launch(Dispatchers.IO) {
+            shellExecutor.setPeakRefreshRate(hz)
+            shellExecutor.setMinRefreshRate(hz)
+        }
+        return true
+    }
+
+    fun restoreRefreshRate() {
+        GlobalScope.launch(Dispatchers.IO) {
+            shellExecutor.writeSetting("system", "peak_refresh_rate", "")
+            shellExecutor.writeSetting("system", "min_refresh_rate", "")
+        }
+    }
+
+    fun lockFps(fps: Int) {
+        startPerformanceSession(fps)
+    }
+
+    fun maximizeCpuGpuPerformance(): Boolean {
+        return false
+    }
+
+    fun restoreCpuGpuPerformance() {
+    }
+
+    fun triggerHeapCompaction() {
+        System.gc()
+    }
+
     fun getGpuRenderer(): String {
         val socInfo = socManager.getSocInfo()
         val paths = listOf(
@@ -258,7 +272,6 @@ class PerformanceManager @Inject constructor(
         } catch (e: Exception) { 0f }
     }
 
-    // ── Animation Scale Toggle ───────────────────────────────────────
     fun disableAnimations() {
         try { Settings.Global.putFloat(context.contentResolver, "window_animation_scale", 0f) } catch (_: Exception) {}
         try { Settings.Global.putFloat(context.contentResolver, "transition_animation_scale", 0f) } catch (_: Exception) {}
@@ -271,7 +284,6 @@ class PerformanceManager @Inject constructor(
         try { Settings.Global.putFloat(context.contentResolver, "animator_duration_scale", 1f) } catch (_: Exception) {}
     }
 
-    // ── Non-Root Performance Optimizations ──────────────────────────
     fun forceGpuRendering() {
         try {
             Settings.Global.putInt(context.contentResolver, "force_gpu_rendering", 1)
@@ -279,17 +291,10 @@ class PerformanceManager @Inject constructor(
         try {
             Settings.System.putInt(context.contentResolver, "force_hw_ui", 1)
         } catch (_: Exception) {}
-        try {
-            Settings.Global.putString(context.contentResolver, "hwui.renderer", "opengl")
-        } catch (_: Exception) {}
 
-        // Shizuku shell fallback execution for OEMs blocking direct ContentResolver writes
-        if (shizukuShellManager.isAvailable()) {
-            GlobalScope.launch(Dispatchers.IO) {
-                shizukuShellManager.executeCommand("settings put global force_gpu_rendering 1")
-                shizukuShellManager.executeCommand("settings put system force_hw_ui 1")
-                shizukuShellManager.executeCommand("settings put global hwui.renderer opengl")
-            }
+        GlobalScope.launch(Dispatchers.IO) {
+            shellExecutor.writeSetting("global", "force_gpu_rendering", "1")
+            shellExecutor.writeSetting("system", "force_hw_ui", "1")
         }
     }
 
@@ -301,11 +306,9 @@ class PerformanceManager @Inject constructor(
             Settings.System.putInt(context.contentResolver, "force_hw_ui", 0)
         } catch (_: Exception) {}
 
-        if (shizukuShellManager.isAvailable()) {
-            GlobalScope.launch(Dispatchers.IO) {
-                shizukuShellManager.executeCommand("settings put global force_gpu_rendering 0")
-                shizukuShellManager.executeCommand("settings put system force_hw_ui 0")
-            }
+        GlobalScope.launch(Dispatchers.IO) {
+            shellExecutor.writeSetting("global", "force_gpu_rendering", "0")
+            shellExecutor.writeSetting("system", "force_hw_ui", "0")
         }
     }
 
@@ -328,34 +331,7 @@ class PerformanceManager @Inject constructor(
     @Volatile private var originalWindowAnimScale: Float? = null
     @Volatile private var originalTransitionAnimScale: Float? = null
     @Volatile private var originalAnimatorDurationScale: Float? = null
-    @Volatile private var originalGameDriverOptInApps: String? = null
     @Volatile private var originalMobileDataAlwaysOnPrev: Int? = null
-
-    @Volatile private var originalWifiScanAlwaysEnabled: Int? = null
-    @Volatile private var originalBleScanAlwaysEnabled: Int? = null
-    @Volatile private var originalWifiPowerSave: Int? = null
-    @Volatile private var originalWifiLatencyMode: Int? = null
-    @Volatile private var originalWifiLowLatencyMode: Int? = null
-    @Volatile private var originalPointerSpeed: Int? = null
-    @Volatile private var originalTouchSensitivity: Int? = null
-    @Volatile private var originalTouchReportRate: Int? = null
-    @Volatile private var originalStylusTouchBoost: Int? = null
-    @Volatile private var originalTouchBoost: Int? = null
-    @Volatile private var originalPhantomProcsMonitor: String? = null
-    @Volatile private var originalGameDriverAllApps: Int? = null
-    @Volatile private var originalGameDriverFps: Int? = null
-    @Volatile private var originalUpdatableDriverAllApps: Int? = null
-    @Volatile private var originalUpdatableDriverOptInApps: String? = null
-    
-    @Volatile private var originalSamsungRefreshMode: Int? = null
-    @Volatile private var originalOneplusRefreshRate: Int? = null
-    @Volatile private var originalXiaomiUserRefreshRate: Int? = null
-    @Volatile private var originalXiaomiPeakRefreshRate: Float? = null
-    @Volatile private var originalHuaweiSmartRefreshRate: Int? = null
-    @Volatile private var originalRealmePeakRefreshRate: Float? = null
-    @Volatile private var originalRealmeMinRefreshRate: Float? = null
-    @Volatile private var originalAospPeakRefreshRate: Float? = null
-    @Volatile private var originalAospMinRefreshRate: Float? = null
 
     fun forceMobileDataAlwaysOn() {
         if (!hasSecureSettingsPermission()) return
@@ -363,9 +339,6 @@ class PerformanceManager @Inject constructor(
             val resolver = context.contentResolver
             originalMobileDataAlwaysOnPrev = Settings.Global.getInt(resolver, "mobile_data_always_on", 0)
             Settings.Global.putInt(resolver, "mobile_data_always_on", 1)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Settings.Global.putInt(resolver, "wifi_is_usable_score_cache_timeout_millis", 5000)
-            }
         } catch (_: Exception) {}
     }
 
@@ -434,98 +407,6 @@ class PerformanceManager @Inject constructor(
                     Settings.Secure.putInt(resolver, "location_mode", 0)
                 }
             } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsGameDriver.first()) {
-                    originalGameDriverOptInApps = Settings.Global.getString(resolver, "game_driver_opt_in_apps") ?: ""
-                    val currentApps = originalGameDriverOptInApps ?: ""
-                    if (!currentApps.split(",").contains(packageName)) {
-                        val newApps = if (currentApps.isEmpty()) packageName else "$currentApps,$packageName"
-                        Settings.Global.putString(resolver, "game_driver_opt_in_apps", newApps)
-                    }
-
-                    originalUpdatableDriverOptInApps = Settings.Global.getString(resolver, "updatable_driver_production_opt_in_apps") ?: ""
-                    val currentUpdatableApps = originalUpdatableDriverOptInApps ?: ""
-                    if (!currentUpdatableApps.split(",").contains(packageName)) {
-                        val newUpdatableApps = if (currentUpdatableApps.isEmpty()) packageName else "$currentUpdatableApps,$packageName"
-                        Settings.Global.putString(resolver, "updatable_driver_production_opt_in_apps", newUpdatableApps)
-                    }
-
-                    originalGameDriverAllApps = Settings.Global.getInt(resolver, "game_driver_all_apps", 0)
-                    Settings.Global.putInt(resolver, "game_driver_all_apps", 1)
-
-                    originalGameDriverFps = Settings.Global.getInt(resolver, "game_driver_fps", 0)
-                    Settings.Global.putInt(resolver, "game_driver_fps", 1)
-
-                    originalUpdatableDriverAllApps = Settings.Global.getInt(resolver, "updatable_driver_all_apps", 0)
-                    Settings.Global.putInt(resolver, "updatable_driver_all_apps", 1)
-                    
-                    Settings.Global.putInt(resolver, "game_mode", 1)
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsTouchBoost.first()) {
-                    originalPointerSpeed = Settings.System.getInt(resolver, "pointer_speed", 5)
-                    Settings.System.putInt(resolver, "pointer_speed", 7)
-
-                    originalTouchSensitivity = Settings.System.getInt(resolver, "touch_sensitivity", 100)
-                    Settings.System.putInt(resolver, "touch_sensitivity", 200)
-
-                    originalTouchReportRate = Settings.System.getInt(resolver, "touch_report_rate", 0)
-                    Settings.System.putInt(resolver, "touch_report_rate", 1000)
-
-                    originalTouchBoost = Settings.Global.getInt(resolver, "touch_boost", 0)
-                    Settings.Global.putInt(resolver, "touch_boost", 1)
-
-                    originalStylusTouchBoost = Settings.Global.getInt(resolver, "stylus_touch_boost", 0)
-                    Settings.Global.putInt(resolver, "stylus_touch_boost", 1)
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsNetworkJitter.first()) {
-                    originalWifiScanAlwaysEnabled = Settings.Global.getInt(resolver, "wifi_scan_always_enabled", 1)
-                    Settings.Global.putInt(resolver, "wifi_scan_always_enabled", 0)
-
-                    originalBleScanAlwaysEnabled = Settings.Global.getInt(resolver, "ble_scan_always_enabled", 1)
-                    Settings.Global.putInt(resolver, "ble_scan_always_enabled", 0)
-
-                    originalWifiPowerSave = Settings.Global.getInt(resolver, "wifi_power_save", 1)
-                    Settings.Global.putInt(resolver, "wifi_power_save", 0)
-
-                    originalWifiLatencyMode = Settings.Global.getInt(resolver, "wifi_latency_mode", 0)
-                    Settings.Global.putInt(resolver, "wifi_latency_mode", 1)
-
-                    originalWifiLowLatencyMode = Settings.Global.getInt(resolver, "wifi_low_latency_mode", 0)
-                    Settings.Global.putInt(resolver, "wifi_low_latency_mode", 1)
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsPhantomKiller.first()) {
-                    originalPhantomProcsMonitor = Settings.Global.getString(resolver, "settings_enable_monitor_phantom_procs") ?: "true"
-                    Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", "false")
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsAggressiveNetwork.first()) {
-                    rootShellManager.executeCommand("cmd netpolicy set restrict-background true")
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (settingsPreferences.secureSettingsForceMaxPerf.first()) {
-                    rootShellManager.executeCommand("cmd thermalservice override-status 0")
-                    rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled true")
-                    rootShellManager.executeCommand("setprop debug.egl.hw 1")
-                    rootShellManager.executeCommand("setprop debug.sf.hw 1")
-                    rootShellManager.executeCommand("setprop debug.performance.tuning 1")
-                    rootShellManager.executeCommand("setprop video.accelerate.hw 1")
-                    rootShellManager.executeCommand("setprop debug.hwui.overdraw false")
-                }
-            } catch (_: Exception) {}
         } else {
             disableAnimations()
             forceGpuRendering()
@@ -570,82 +451,6 @@ class PerformanceManager @Inject constructor(
                 originalLocationMode = null
             } catch (_: Exception) {}
 
-            try {
-                originalGameDriverOptInApps?.let {
-                    Settings.Global.putString(resolver, "game_driver_opt_in_apps", it)
-                }
-                originalGameDriverOptInApps = null
-
-                originalUpdatableDriverOptInApps?.let {
-                    Settings.Global.putString(resolver, "updatable_driver_production_opt_in_apps", it)
-                }
-                originalUpdatableDriverOptInApps = null
-
-                originalGameDriverAllApps?.let { Settings.Global.putInt(resolver, "game_driver_all_apps", it) }
-                originalGameDriverAllApps = null
-
-                originalGameDriverFps?.let { Settings.Global.putInt(resolver, "game_driver_fps", it) }
-                originalGameDriverFps = null
-
-                originalUpdatableDriverAllApps?.let { Settings.Global.putInt(resolver, "updatable_driver_all_apps", it) }
-                originalUpdatableDriverAllApps = null
-
-                Settings.Global.putInt(resolver, "game_mode", 0)
-            } catch (_: Exception) {}
-
-            try {
-                originalPointerSpeed?.let { Settings.System.putInt(resolver, "pointer_speed", it) }
-                originalPointerSpeed = null
-
-                originalTouchSensitivity?.let { Settings.System.putInt(resolver, "touch_sensitivity", it) }
-                originalTouchSensitivity = null
-
-                originalTouchReportRate?.let { Settings.System.putInt(resolver, "touch_report_rate", it) }
-                originalTouchReportRate = null
-
-                originalTouchBoost?.let { Settings.Global.putInt(resolver, "touch_boost", it) }
-                originalTouchBoost = null
-
-                originalStylusTouchBoost?.let { Settings.Global.putInt(resolver, "stylus_touch_boost", it) }
-                originalStylusTouchBoost = null
-            } catch (_: Exception) {}
-
-            try {
-                originalWifiScanAlwaysEnabled?.let { Settings.Global.putInt(resolver, "wifi_scan_always_enabled", it) }
-                originalWifiScanAlwaysEnabled = null
-
-                originalBleScanAlwaysEnabled?.let { Settings.Global.putInt(resolver, "ble_scan_always_enabled", it) }
-                originalBleScanAlwaysEnabled = null
-
-                originalWifiPowerSave?.let { Settings.Global.putInt(resolver, "wifi_power_save", it) }
-                originalWifiPowerSave = null
-
-                originalWifiLatencyMode?.let { Settings.Global.putInt(resolver, "wifi_latency_mode", it) }
-                originalWifiLatencyMode = null
-
-                originalWifiLowLatencyMode?.let { Settings.Global.putInt(resolver, "wifi_low_latency_mode", it) }
-                originalWifiLowLatencyMode = null
-            } catch (_: Exception) {}
-
-            try {
-                originalPhantomProcsMonitor?.let { Settings.Global.putString(resolver, "settings_enable_monitor_phantom_procs", it) }
-                originalPhantomProcsMonitor = null
-            } catch (_: Exception) {}
-            
-            try {
-                rootShellManager.executeCommand("cmd netpolicy set restrict-background false")
-            } catch (_: Exception) {}
-            
-            try {
-                rootShellManager.executeCommand("cmd thermalservice reset")
-                rootShellManager.executeCommand("cmd power set-fixed-performance-mode-enabled false")
-                rootShellManager.executeCommand("setprop debug.egl.hw 0")
-                rootShellManager.executeCommand("setprop debug.sf.hw 0")
-                rootShellManager.executeCommand("setprop debug.performance.tuning 0")
-                rootShellManager.executeCommand("setprop video.accelerate.hw 0")
-                rootShellManager.executeCommand("setprop debug.hwui.overdraw true")
-            } catch (_: Exception) {}
-            
             restoreRefreshRate()
         } else {
             restoreAnimations()
@@ -653,473 +458,18 @@ class PerformanceManager @Inject constructor(
         }
     }
 
-    // ── Root Hardware Tuning ─────────────────────────────────────────
     suspend fun setCpuGovernor(governor: String): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        val sanitizedGov = governor.lowercase().trim()
-        
-        // Grant write permissions across all CPU cores sysfs nodes
-        rootShellManager.executeCommand("chmod 0664 /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
-        
-        val cmd = "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $sanitizedGov > \$i; done"
-        val (success, _) = rootShellManager.executeCommand(cmd)
-        success
+        false
     }
 
     suspend fun optimizeStorageFstrim(): Boolean = withContext(Dispatchers.IO) {
-        if (rootShellManager.isRootAvailable()) {
-            val (success, _) = rootShellManager.executeCommand("sm fstrim")
-            if (success) return@withContext true
-        }
         System.gc()
-        runCatching {
-            val files = listOf("/cache", "/data")
-            files.forEach { path ->
-                runCatching { File(path).listFiles()?.firstOrNull()?.delete() }
-            }
-            true
-        }.getOrDefault(false)
+        true
     }
 
     suspend fun setAdaptiveCpuGov(enabled: Boolean): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) {
-            if (enabled) boostThreadPriority()
-            else restoreThreadPriority()
-            return@withContext true
-        }
-        val gov = if (enabled) "performance" else "schedutil"
-        setCpuGovernor(gov)
-    }
-
-    // ── Hidden Power Unlock (Root Only) ─────────────────────────────
-    suspend fun unlockHiddenPower(): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        val commands = listOf(
-            "echo deadline > /sys/block/sda/queue/scheduler",
-            "echo deadline > /sys/block/sdb/queue/scheduler",
-            "echo deadline > /sys/block/mmcblk0/queue/scheduler",
-            "echo 0 > /sys/block/sda/queue/iostats",
-            "echo 0 > /sys/block/sdb/queue/iostats",
-            "echo 2048 > /sys/block/sda/queue/read_ahead_kb",
-            "echo 2048 > /sys/block/sdb/queue/read_ahead_kb",
-            "echo 2048 > /sys/block/mmcblk0/queue/read_ahead_kb",
-            "echo 0 > /proc/sys/vm/swappiness",
-            "echo 100 > /proc/sys/vm/vfs_cache_pressure",
-            "echo 10 > /proc/sys/vm/dirty_ratio",
-            "echo 5 > /proc/sys/vm/dirty_background_ratio",
-            "echo 0 > /proc/sys/vm/page-cluster",
-            "echo 4096 > /proc/sys/vm/min_free_kbytes",
-            "echo 0 > /proc/sys/vm/compact_memory",
-            "echo bbr > /proc/sys/net/ipv4/tcp_congestion_control",
-            "echo 1 > /proc/sys/net/ipv4/tcp_fastopen",
-            "echo 1 > /proc/sys/net/ipv4/tcp_low_latency",
-            "echo 0 > /proc/sys/net/ipv4/tcp_slow_start_after_idle",
-            "echo 0 > /sys/module/logger/parameters/log_mode",
-            "echo 0 > /sys/kernel/debug/tracing/tracing_on"
-        )
-        for (cmd in commands) {
-            rootShellManager.executeCommand(cmd)
-        }
-        val props = listOf(
-            "debug.hwui.overdraw" to "false",
-            "debug.performance.tuning" to "1",
-            "debug.sf.latch_unsignaled" to "1",
-            "debug.hwui.target_cpu_time_percent" to "80",
-            "debug.sf.frame_rate_multiple_threshold" to "0",
-            "debug.sf.showupdates" to "0",
-            "debug.sf.high_fps_early_phase_duration" to "1",
-            "debug.sf.high_fps_late_phase_duration" to "1",
-            "debug.sf.early_phase_in_ns" to "1000000",
-            "debug.sf.late_phase_in_ns" to "1000000",
-            "debug.sf.phase_offset_threshold_for_next_vsync" to "0",
-            "vendor.display.enable_force_max_fps" to "1",
-            "vendor.display.forced_max_fps" to "240",
-            "vendor.perf.gaming.driver" to "1",
-            "vendor.perf.gaming.scheduler" to "1",
-            "vendor.perf.gaming.opt" to "1",
-            "persist.vendor.max_fps" to "240",
-            "persist.vendor.dfps.level.max" to "240",
-            "persist.sys.purgeable_assets" to "1",
-            "persist.sys.gamemode" to "1",
-            "persist.sys.use_dithering" to "0",
-            "persist.sys.ui.hw" to "1",
-            "persist.sys.performance" to "true",
-            "persist.sys.performance.profile" to "1",
-            "persist.sys.NV_FPSLIMIT" to "0",
-            "persist.sys.app.fps" to "0",
-            "persist.sys.power_save_mode" to "0",
-            "persist.sys.battery_saver" to "0",
-            "debug.egl.hw" to "1",
-            "debug.egl.profiler" to "1",
-            "debug.gr.num_framebuffers" to "3",
-            "debug.composition.type" to "gpu",
-            "debug.sf.disable_client_composition_cache" to "1",
-            "debug.sf.enable_gl_backpressure" to "0",
-            "debug.sf.recomputecrop" to "0",
-            "debug.sf.max_fps" to "0",
-            "debug.sf.disable_backoff" to "1",
-            "debug.cpurend.vsync" to "false",
-            "wifi.supplicant_scan_interval" to "300",
-            "net.tcp.buffersize.5g" to "4096,87380,4194304,4096,65536,4194304",
-            "net.tcp.buffersize.lte" to "4096,87380,4194304,4096,65536,4194304",
-            "net.tcp.buffersize.wifi" to "524288,1048576,4194304,524288,1048576,4194304",
-            "profiler.force_disable_ulog" to "1",
-            "profiler.force_disable_err_rpt" to "1",
-            "video.accelerate.hw" to "1",
-            "windowsmgr.max_events_per_sec" to "275",
-            "touch.presure.scale" to "0.001",
-            "vendor.display.forced_max_fps" to "240"
-        )
-        for ((key, value) in props) {
-            rootShellManager.executeCommand("setprop $key $value")
-        }
+        if (enabled) boostThreadPriority()
+        else restoreThreadPriority()
         true
-    }
-
-    suspend fun restoreHiddenPower(): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        val restoreProps = listOf(
-            "debug.hwui.overdraw" to "false",
-            "debug.performance.tuning" to "0",
-            "debug.sf.latch_unsignaled" to "0",
-            "persist.sys.gamemode" to "0",
-            "vendor.perf.gaming.driver" to "0",
-            "vendor.perf.gaming.scheduler" to "0",
-            "vendor.display.enable_force_max_fps" to "0",
-            "vendor.display.forced_max_fps" to "0",
-            "persist.vendor.max_fps" to "",
-            "debug.sf.frame_rate_multiple_threshold" to "",
-            "persist.vendor.dfps.level.max" to "",
-            "persist.sys.use_dithering" to "1",
-            "persist.sys.ui.hw" to "0",
-            "debug.egl.hw" to "0",
-            "debug.egl.profiler" to "0",
-            "debug.gr.num_framebuffers" to "2",
-            "debug.composition.type" to "",
-            "persist.sys.composition.type" to "",
-            "wifi.supplicant_scan_interval" to ""
-        )
-        for ((key, value) in restoreProps) {
-            rootShellManager.executeCommand("setprop $key $value")
-        }
-        true
-    }
-
-    // ── Max Performance & FPS/HZ Lock ────────────────────────────────
-    suspend fun maximizeCpuGpuPerformance(): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        var success = true
-        success = success && unlockHiddenPower()
-        success = success && setCpuGovernor("performance")
-
-        val coreCount = Runtime.getRuntime().availableProcessors()
-        for (i in 0 until coreCount) {
-            rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor")
-            val (_, maxFreqStr) = rootShellManager.executeCommand("cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq")
-            if (maxFreqStr.isNotBlank() && maxFreqStr.trim().toLongOrNull() != null) {
-                rootShellManager.executeCommand("echo ${maxFreqStr.trim()} > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq")
-                rootShellManager.executeCommand("echo ${maxFreqStr.trim()} > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq")
-            }
-        }
-        rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/boost")
-        rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/boost_ms")
-        rootShellManager.executeCommand("echo 1 > /sys/module/cpu_boost/parameters/input_boost_ms")
-        rootShellManager.executeCommand("echo 0 > /sys/class/thermal/thermal_zone*/mode")
-        rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/preempt_level")
-        rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/sync_fence")
-        rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/deep_nap")
-        rootShellManager.executeCommand("echo 1 > /sys/module/adreno_idler/parameters/adreno_idler_active")
-        rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
-
-        val socInfo = socManager.getSocInfo()
-        when (socInfo.gpuVendor) {
-            GpuVendor.ADRENO -> {
-                rootShellManager.executeCommand("echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on")
-                rootShellManager.executeCommand("echo 10000000 > /sys/class/kgsl/kgsl-3d0/idle_timer")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/bus_split")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/throttling")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/popp")
-                rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/pwrnap")
-            }
-            GpuVendor.MALI -> {
-                rootShellManager.executeCommand("echo performance > /sys/devices/platform/mali.0/devfreq/mali.0/governor")
-                rootShellManager.executeCommand("echo 1 > /sys/module/mali/parameters/force_no_nap")
-                rootShellManager.executeCommand("echo 0 > /sys/module/mali_kbase/parameters/mali_gpu_clock_off")
-                rootShellManager.executeCommand("echo 1 > /sys/module/mali_kbase/parameters/mali_job_cycle")
-                rootShellManager.executeCommand("echo 1 > /sys/module/mali_kbase/parameters/mali_defer_job_submission")
-            }
-            GpuVendor.IMMORTAL -> {
-                rootShellManager.executeCommand("echo performance > /sys/devices/platform/mali.0/devfreq/mali.0/governor")
-                rootShellManager.executeCommand("echo 0 > /sys/module/mali_kbase/parameters/mali_gpu_clock_off")
-            }
-            GpuVendor.POWERVR -> {
-                rootShellManager.executeCommand("echo performance > /sys/kernel/gpu/gpu_governor")
-                rootShellManager.executeCommand("echo 1 > /sys/kernel/gpu/gpu_busy")
-            }
-            GpuVendor.UNKNOWN -> {
-                rootShellManager.executeCommand("echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor")
-                rootShellManager.executeCommand("echo performance > /sys/devices/platform/mali.0/devfreq/mali.0/governor")
-                rootShellManager.executeCommand("echo performance > /sys/kernel/gpu/gpu_governor")
-            }
-        }
-        success
-    }
-
-    suspend fun restoreCpuGpuPerformance(): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        setCpuGovernor("schedutil")
-        val socInfo = socManager.getSocInfo()
-        when (socInfo.gpuVendor) {
-            GpuVendor.ADRENO -> {
-                rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/force_no_nap")
-                rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/force_bus_on")
-                rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/force_rail_on")
-                rootShellManager.executeCommand("echo 0 > /sys/class/kgsl/kgsl-3d0/force_clk_on")
-                rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/pwrnap")
-            }
-            GpuVendor.MALI -> {
-                rootShellManager.executeCommand("echo 0 > /sys/module/mali/parameters/force_no_nap")
-            }
-            else -> {}
-        }
-        restoreHiddenPower()
-        true
-    }
-
-    fun getNearestSupportedRefreshRate(targetHz: Float): Float {
-        return getSupportedRefreshRates().minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
-    }
-
-    fun lockRefreshRate(targetHz: Float): Boolean {
-        val resolver = context.contentResolver
-        val supported = getSupportedRefreshRates()
-        val nearestHz = supported.minByOrNull { kotlin.math.abs(it - targetHz) } ?: 60f
-        val canWriteSystem = canWriteSystemSettings()
-        val canWriteSecure = hasSecureSettingsPermission()
-
-        var changed = false
-
-        runCatching {
-            try {
-                if (canWriteSystem) {
-                    if (originalAospPeakRefreshRate == null) {
-                        originalAospPeakRefreshRate = Settings.System.getFloat(resolver, "peak_refresh_rate", 60f)
-                    }
-                    if (originalAospMinRefreshRate == null) {
-                        originalAospMinRefreshRate = Settings.System.getFloat(resolver, "min_refresh_rate", 60f)
-                    }
-                    changed = Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
-                    changed = Settings.System.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
-                } else if (canWriteSecure) {
-                    if (originalAospPeakRefreshRate == null) {
-                        originalAospPeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
-                    }
-                    if (originalAospMinRefreshRate == null) {
-                        originalAospMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
-                    }
-                    changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
-                    changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", nearestHz) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (canWriteSecure && originalSamsungRefreshMode == null) {
-                    originalSamsungRefreshMode = Settings.Secure.getInt(resolver, "refresh_rate_mode", 0)
-                }
-                if (canWriteSecure) {
-                    changed = Settings.Secure.putInt(resolver, "refresh_rate_mode", 1) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (canWriteSecure && originalOneplusRefreshRate == null) {
-                    originalOneplusRefreshRate = Settings.Secure.getInt(resolver, "oneplus_screen_refresh_rate", 0)
-                }
-                if (canWriteSecure) {
-                    changed = Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", 2) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (canWriteSystem && originalXiaomiUserRefreshRate == null) {
-                    originalXiaomiUserRefreshRate = Settings.System.getInt(resolver, "user_refresh_rate", 60)
-                }
-                if (canWriteSystem) {
-                    changed = Settings.System.putInt(resolver, "user_refresh_rate", nearestHz.toInt()) || changed
-                }
-
-                if (canWriteSystem && originalXiaomiPeakRefreshRate == null) {
-                    originalXiaomiPeakRefreshRate = Settings.System.getFloat(resolver, "peak_refresh_rate", 60f)
-                }
-                if (canWriteSystem) {
-                    changed = Settings.System.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (canWriteSecure && originalHuaweiSmartRefreshRate == null) {
-                    originalHuaweiSmartRefreshRate = Settings.Secure.getInt(resolver, "hw_smart_refresh_rate_key", 1)
-                }
-                if (canWriteSecure) {
-                    changed = Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", 0) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                if (canWriteSecure && originalRealmePeakRefreshRate == null) {
-                    originalRealmePeakRefreshRate = Settings.Secure.getFloat(resolver, "peak_refresh_rate", 60f)
-                }
-                if (canWriteSecure) {
-                    changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", nearestHz) || changed
-                }
-
-                if (canWriteSecure && originalRealmeMinRefreshRate == null) {
-                    originalRealmeMinRefreshRate = Settings.Secure.getFloat(resolver, "min_refresh_rate", 60f)
-                }
-                if (canWriteSecure) {
-                    changed = Settings.Secure.putInt(resolver, "min_refresh_rate", nearestHz.toInt()) || changed
-                }
-
-                if (canWriteSystem) {
-                    Settings.System.putInt(resolver, "custom_refresh_rate", nearestHz.toInt())
-                }
-                if (canWriteSystem) {
-                    Settings.System.putInt(resolver, "display.refresh_rate_mode", 3)
-                }
-            } catch (_: Exception) {}
-        }
-
-        // Shizuku shell fallback execution for OEMs blocking direct ContentResolver writes
-        if (shizukuShellManager.isAvailable()) {
-            GlobalScope.launch(Dispatchers.IO) {
-                shizukuShellManager.executeCommand("settings put system peak_refresh_rate $nearestHz")
-                shizukuShellManager.executeCommand("settings put system min_refresh_rate $nearestHz")
-                shizukuShellManager.executeCommand("settings put secure peak_refresh_rate $nearestHz")
-                shizukuShellManager.executeCommand("settings put secure min_refresh_rate $nearestHz")
-            }
-            changed = true
-        }
-
-        val alreadyAtTarget = kotlin.math.abs(getCurrentRefreshRate() - nearestHz) < 0.5f
-        return changed || alreadyAtTarget
-    }
-
-    fun restoreRefreshRate(): Boolean {
-        val resolver = context.contentResolver
-        val canWriteSystem = canWriteSystemSettings()
-        val canWriteSecure = hasSecureSettingsPermission()
-        var changed = false
-
-        runCatching {
-            try {
-                originalAospPeakRefreshRate?.let {
-                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "peak_refresh_rate", it) || changed
-                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) || changed
-                }
-                originalAospMinRefreshRate?.let {
-                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "min_refresh_rate", it) || changed
-                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                originalSamsungRefreshMode?.let {
-                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "refresh_rate_mode", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                originalOneplusRefreshRate?.let {
-                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "oneplus_screen_refresh_rate", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                originalXiaomiUserRefreshRate?.let {
-                    if (canWriteSystem) changed = Settings.System.putInt(resolver, "user_refresh_rate", it) || changed
-                }
-                originalXiaomiPeakRefreshRate?.let {
-                    if (canWriteSystem) changed = Settings.System.putFloat(resolver, "peak_refresh_rate", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                originalHuaweiSmartRefreshRate?.let {
-                    if (canWriteSecure) changed = Settings.Secure.putInt(resolver, "hw_smart_refresh_rate_key", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            try {
-                originalRealmePeakRefreshRate?.let {
-                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "peak_refresh_rate", it) || changed
-                }
-                originalRealmeMinRefreshRate?.let {
-                    if (canWriteSecure) changed = Settings.Secure.putFloat(resolver, "min_refresh_rate", it) || changed
-                }
-            } catch (_: Exception) {}
-
-            originalAospPeakRefreshRate = null
-            originalAospMinRefreshRate = null
-            originalSamsungRefreshMode = null
-            originalOneplusRefreshRate = null
-            originalXiaomiUserRefreshRate = null
-            originalXiaomiPeakRefreshRate = null
-            originalHuaweiSmartRefreshRate = null
-            originalRealmePeakRefreshRate = null
-            originalRealmeMinRefreshRate = null
-        }
-
-        return changed
-    }
-
-    suspend fun lockFps(targetFps: Int) = withContext(Dispatchers.IO) {
-        startPerformanceSession(targetFps)
-        if (rootShellManager.isRootAvailable()) {
-            val props = listOf(
-                "persist.sys.app.fps" to "$targetFps",
-                "persist.vendor.dfps.level" to "$targetFps",
-                "persist.vendor.fps.max" to "$targetFps",
-                "debug.ow.force_fps" to "$targetFps",
-                "vendor.display.forced_max_fps" to "$targetFps",
-                "persist.sys.NV_FPSLIMIT" to "$targetFps",
-                "persist.sys.fps" to "$targetFps",
-                "debug.sf.max_fps" to "$targetFps"
-            )
-            for ((key, value) in props) {
-                rootShellManager.executeCommand("setprop $key $value")
-            }
-            rootShellManager.executeCommand("service call SurfaceFlinger 1035 i32 1")
-        }
-    }
-
-    suspend fun restoreFps() = withContext(Dispatchers.IO) {
-        stopPerformanceSession()
-        if (rootShellManager.isRootAvailable()) {
-            val restoreProps = listOf(
-                "persist.sys.app.fps" to "",
-                "persist.vendor.dfps.level" to "",
-                "persist.vendor.fps.max" to "",
-                "debug.ow.force_fps" to "",
-                "vendor.display.forced_max_fps" to "",
-                "persist.sys.NV_FPSLIMIT" to "",
-                "persist.sys.fps" to "",
-                "debug.sf.max_fps" to ""
-            )
-            for ((key, value) in restoreProps) {
-                rootShellManager.executeCommand("setprop $key $value")
-            }
-        }
-    }
-
-    fun triggerHeapCompaction() {
-        try {
-            System.gc()
-            System.runFinalization()
-            Runtime.getRuntime().gc()
-        } catch (_: Exception) {}
     }
 }

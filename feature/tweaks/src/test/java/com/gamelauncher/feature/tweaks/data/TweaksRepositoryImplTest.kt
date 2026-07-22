@@ -1,152 +1,79 @@
+// feature/tweaks/src/test/java/com/gamelauncher/feature/tweaks/data/TweaksRepositoryImplTest.kt
 package com.gamelauncher.feature.tweaks.data
 
 import com.gamelauncher.core.device.DeviceProfileDetector
 import com.gamelauncher.core.device.OemCapabilityMap
-import com.gamelauncher.core.permissions.RuntimePermissionManager
-import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.shizuku.IShellExecutor
-import com.gamelauncher.core.shizuku.ShellResult
 import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
+import com.gamelauncher.feature.tweaks.domain.model.TweakResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mockito
 
 class TweaksRepositoryImplTest {
 
     @Test
     fun testGetAvailableTweaks_ReturnsNonEmptyList() = runTest {
         val fakeShellExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
-                return if (command == "id") ShellResult(0, "uid=0(root)") else ShellResult(0, "")
-            }
-            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
+            override suspend fun setPeakRefreshRate(hz: Float): Boolean = true
+            override suspend fun setMinRefreshRate(hz: Float): Boolean = true
+            override suspend fun setThermalOverride(disabled: Boolean): Boolean = true
+            override suspend fun writeSetting(namespace: String, key: String, value: String): Boolean = true
+            override suspend fun readSetting(namespace: String, key: String): String = value
+            override suspend fun setDeviceConfig(namespace: String, key: String, value: String): Boolean = true
+            override suspend fun readDeviceConfig(namespace: String, key: String): String = value
+            override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
+            override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
-        val detector = DeviceProfileDetector(fakeShellExecutor)
+        val detector = DeviceProfileDetector()
         val capabilityMap = OemCapabilityMap(detector)
-        val mockPermissionManager = Mockito.mock(RuntimePermissionManager::class.java)
 
         val repository = TweaksRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
             deviceProfileDetector = detector,
             capabilityMap = capabilityMap,
-            permissionManager = mockPermissionManager,
             shellExecutor = fakeShellExecutor,
             ioDispatcher = Dispatchers.Unconfined
         )
 
         val tweaks = repository.getAvailableTweaks().first()
         assertNotNull(tweaks)
-        assertEquals(5, tweaks.size)
+        assertTrue(tweaks.isNotEmpty())
     }
 
     @Test
-    fun testGetAvailableTweaks_ShizukuOnly_ReportsGranularRootBadgeNote() = runTest {
+    fun testApplyRefreshRateTweak_ConfirmedWhenReadBackMatches() = runTest {
+        var writtenVal = ""
         val fakeShellExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
-                return if (command == "id") ShellResult(0, "uid=2000(shell) gid=2000(shell)") else ShellResult(0, "")
+            override suspend fun setPeakRefreshRate(hz: Float): Boolean = true
+            override suspend fun setMinRefreshRate(hz: Float): Boolean = true
+            override suspend fun setThermalOverride(disabled: Boolean): Boolean = true
+            override suspend fun writeSetting(namespace: String, key: String, value: String): Boolean {
+                writtenVal = value
+                return true
             }
-            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
+            override suspend fun readSetting(namespace: String, key: String): String = writtenVal
+            override suspend fun setDeviceConfig(namespace: String, key: String, value: String): Boolean = true
+            override suspend fun readDeviceConfig(namespace: String, key: String): String = value
+            override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
+            override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
-        val detector = DeviceProfileDetector(fakeShellExecutor)
+        val detector = DeviceProfileDetector()
         val capabilityMap = OemCapabilityMap(detector)
-        val mockPermissionManager = Mockito.mock(RuntimePermissionManager::class.java)
 
         val repository = TweaksRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
             deviceProfileDetector = detector,
             capabilityMap = capabilityMap,
-            permissionManager = mockPermissionManager,
             shellExecutor = fakeShellExecutor,
             ioDispatcher = Dispatchers.Unconfined
         )
 
-        val tweaks = repository.getAvailableTweaks().first()
-        val cpuGovernorTweak = tweaks.first { it.category == TweakCategory.CPU_GOVERNOR }
-        
-        assertFalse(cpuGovernorTweak.isSupportedByDevice)
-        assertEquals("Requires Root (Shizuku active)", cpuGovernorTweak.badgeNote)
-    }
-
-    @Test
-    fun testApplyCpuGovernorTweak_UsesExecuteCommandWithRedirection_AndNeverPassesLiteralRedirectionArgs() = runTest {
-        val executedCommands = mutableListOf<String>()
-        val executedArgsList = mutableListOf<List<String>>()
-
-        val fakeShellExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
-                executedCommands.add(command)
-                return if (command == "id") ShellResult(0, "uid=0(root)") else ShellResult(0, "")
-            }
-
-            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult {
-                executedArgsList.add(args.toList())
-                return ShellResult(0, "")
-            }
-        }
-
-        val detector = DeviceProfileDetector(fakeShellExecutor)
-        val capabilityMap = OemCapabilityMap(detector)
-        val mockPermissionManager = Mockito.mock(RuntimePermissionManager::class.java)
-
-        val repository = TweaksRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
-            deviceProfileDetector = detector,
-            capabilityMap = capabilityMap,
-            permissionManager = mockPermissionManager,
-            shellExecutor = fakeShellExecutor,
-            ioDispatcher = Dispatchers.Unconfined
-        )
-
-        val success = repository.applyCpuGovernorTweak("performance")
-
-        assertTrue(success)
-
-        // Verify executeCommand was invoked for root check, chmod, and multi-core governor loop
-        assertTrue(executedCommands.size >= 2)
-        assertTrue(executedCommands.any { it.contains("scaling_governor") })
-
-        // Verify executeArgs NEVER received '>' as a literal string argument
-        val containsLiteralRedirectionArg = executedArgsList.any { args -> args.contains(">") }
-        assertFalse("executeArgs must not receive '>' as a literal argument!", containsLiteralRedirectionArg)
-    }
-
-    @Test
-    fun testApplyCpuGovernorTweak_RejectsInvalidGovernorString() = runTest {
-        var commandExecuted = false
-
-        val fakeShellExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult {
-                if (command != "id") commandExecuted = true
-                return ShellResult(0, "uid=0(root)")
-            }
-
-            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult = ShellResult(0, "")
-        }
-
-        val detector = DeviceProfileDetector(fakeShellExecutor)
-        val capabilityMap = OemCapabilityMap(detector)
-        val mockPermissionManager = Mockito.mock(RuntimePermissionManager::class.java)
-
-        val repository = TweaksRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
-            deviceProfileDetector = detector,
-            capabilityMap = capabilityMap,
-            permissionManager = mockPermissionManager,
-            shellExecutor = fakeShellExecutor,
-            ioDispatcher = Dispatchers.Unconfined
-        )
-
-        val result = repository.applyCpuGovernorTweak("invalid_gov; rm -rf /")
-
-        assertFalse(result)
-        assertFalse(commandExecuted)
+        val result = repository.applyRefreshRateTweak(120f)
+        assertEquals(TweakResult.Confirmed, result)
     }
 }

@@ -1,3 +1,4 @@
+// app/src/main/java/com/gamelauncher/ui/theme/Theme.kt
 package com.gamelauncher.ui.theme
 
 import android.app.Activity
@@ -8,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -44,7 +44,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun GameLauncherTheme(
     darkTheme: Boolean = true,
-    oledPureBlack: Boolean = true, // Default to true for the OLED pure black theme option
+    oledPureBlack: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val baseColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -62,12 +62,15 @@ fun GameLauncherTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            @Suppress("DEPRECATION")
-            window.statusBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
-            @Suppress("DEPRECATION")
-            window.navigationBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
-            WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = !darkTheme
+            val context = view.context
+            if (context is Activity) {
+                val window = context.window
+                @Suppress("DEPRECATION")
+                window.statusBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
+                @Suppress("DEPRECATION")
+                window.navigationBarColor = if (darkTheme) colorScheme.background.toArgb() else android.graphics.Color.WHITE
+                WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = !darkTheme
+            }
         }
     }
 

@@ -1,3 +1,4 @@
+// feature/tweaks/src/main/java/com/gamelauncher/feature/tweaks/ui/TweaksScreen.kt
 package com.gamelauncher.feature.tweaks.ui
 
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -129,10 +131,13 @@ fun TweaksScreen(
                                 cardBackground = cardBackground,
                                 accentColor = accentColor,
                                 onRefreshRateSelected = { viewModel.applyRefreshRate(it) },
-                                onCpuGovernorSelected = { viewModel.applyCpuGovernor(it) },
+                                onClearHighRefreshRateBlacklist = { viewModel.clearHighRefreshRateBlacklist() },
                                 onGpuRenderingToggled = { viewModel.applyGpuRendering(it) },
+                                onClearGameDriver = { viewModel.clearGameDriverConfig() },
                                 onThermalBypassToggled = { viewModel.applyThermalThrottlingBypass(it) },
-                                onGameModeToggled = { viewModel.applyGameModeBooster(it) }
+                                onGameModeToggled = { viewModel.applyGameModeBooster(it) },
+                                onPhantomProcsToggled = { viewModel.disablePhantomProcessKilling(it) },
+                                onAdaptiveBatteryToggled = { viewModel.disableAdaptiveBattery(it) }
                             )
                         }
                     }
@@ -148,10 +153,13 @@ fun TweakCardItem(
     cardBackground: Color,
     accentColor: Color,
     onRefreshRateSelected: (Float) -> Unit,
-    onCpuGovernorSelected: (String) -> Unit,
+    onClearHighRefreshRateBlacklist: () -> Unit,
     onGpuRenderingToggled: (Boolean) -> Unit,
+    onClearGameDriver: () -> Unit,
     onThermalBypassToggled: (Boolean) -> Unit,
-    onGameModeToggled: (Boolean) -> Unit
+    onGameModeToggled: (Boolean) -> Unit,
+    onPhantomProcsToggled: (Boolean) -> Unit,
+    onAdaptiveBatteryToggled: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -176,8 +184,7 @@ fun TweakCardItem(
                 )
 
                 if (!tweak.isSupportedByDevice) {
-                    val labelText = tweak.badgeNote
-                        ?: if (tweak.category == TweakCategory.CPU_GOVERNOR) "Requires Root" else "Unsupported"
+                    val labelText = tweak.badgeNote ?: "Unsupported"
                     Box(
                         modifier = Modifier
                             .background(Color(0xFF334155), RoundedCornerShape(8.dp))
@@ -186,7 +193,7 @@ fun TweakCardItem(
                         Text(
                             text = labelText,
                             fontSize = 11.sp,
-                            color = if (tweak.category == TweakCategory.CPU_GOVERNOR) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                            color = Color(0xFF94A3B8),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -205,7 +212,15 @@ fun TweakCardItem(
 
             when (tweak.category) {
                 TweakCategory.REFRESH_RATE -> {
-                    if (tweak.isSupportedByDevice) {
+                    if (tweak.id == "high_refresh_rate_blacklist") {
+                        Button(
+                            onClick = onClearHighRefreshRateBlacklist,
+                            enabled = tweak.isSupportedByDevice,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Clear Blacklist")
+                        }
+                    } else if (tweak.isSupportedByDevice) {
                         DropdownSelector(
                             currentValue = tweak.selectedValue ?: "Default",
                             options = tweak.supportedValues,
@@ -217,24 +232,23 @@ fun TweakCardItem(
                     }
                 }
 
-                TweakCategory.CPU_GOVERNOR -> {
-                    DropdownSelector(
-                        currentValue = tweak.selectedValue ?: "schedutil",
-                        options = tweak.supportedValues,
-                        enabled = tweak.isSupportedByDevice,
-                        onOptionSelected = { onCpuGovernorSelected(it) }
-                    )
-                }
-
                 TweakCategory.GPU_RENDERING -> {
-                    if (tweak.isSupportedByDevice) {
+                    if (tweak.id == "game_driver_clear") {
+                        Button(
+                            onClick = onClearGameDriver,
+                            enabled = tweak.isSupportedByDevice,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Reset Game Driver Settings")
+                        }
+                    } else if (tweak.isSupportedByDevice) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (tweak.isToggleActive) "2D Hardware Acceleration Active" else "Standard UI Rendering",
+                                text = if (tweak.isToggleActive) "2D Acceleration Active" else "Standard UI Rendering",
                                 fontSize = 12.sp,
                                 color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
                             )
@@ -289,6 +303,54 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onGameModeToggled,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = accentColor
+                                )
+                            )
+                        }
+                    }
+                }
+
+                TweakCategory.MEMORY -> {
+                    if (tweak.isSupportedByDevice) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (tweak.isToggleActive) "Killing Disabled" else "Standard Android Monitor",
+                                fontSize = 12.sp,
+                                color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                            )
+                            Switch(
+                                checked = tweak.isToggleActive,
+                                onCheckedChange = onPhantomProcsToggled,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = accentColor
+                                )
+                            )
+                        }
+                    }
+                }
+
+                TweakCategory.POWER -> {
+                    if (tweak.isSupportedByDevice) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (tweak.isToggleActive) "Battery Throttling Disabled" else "Adaptive Battery Active",
+                                fontSize = 12.sp,
+                                color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                            )
+                            Switch(
+                                checked = tweak.isToggleActive,
+                                onCheckedChange = onAdaptiveBatteryToggled,
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = accentColor

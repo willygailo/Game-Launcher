@@ -1,12 +1,15 @@
+// core/device/src/main/java/com/gamelauncher/core/device/OemBrand.kt
 package com.gamelauncher.core.device
 
 /**
  * OemBrand — Enum categorizing detected OEM device manufacturer / ROM skin.
  */
 enum class OemBrand(val displayName: String) {
-    INFINIX_HIOS("Infinix (HiOS)"),
-    TECNO_XOS("Tecno (XOS)"),
-    SAMSUNG_ONEUI("Samsung (One UI)"),
-    XIAOMI_HYPEROS("Xiaomi (MIUI/HyperOS)"),
-    GENERIC_AOSP("Generic Android (AOSP)")
+    PIXEL("Google Pixel"),
+    XIAOMI("Xiaomi (MIUI/HyperOS)"),
+    ONEPLUS("OnePlus (OxygenOS)"),
+    OPPO_REALME("Oppo/Realme (ColorOS)"),
+    SAMSUNG("Samsung (One UI)"),
+    TRANSSION("Infinix/Tecno (HiOS/XOS)"),
+    GENERIC("Generic Android (AOSP)")
 }

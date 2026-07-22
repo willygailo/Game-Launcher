@@ -1,22 +1,21 @@
+// app/src/main/java/com/gamelauncher/core/TouchLatencyOptimizer.kt
 package com.gamelauncher.core
 
 import android.content.Context
 import android.os.Build
 import android.os.PerformanceHintManager
 import android.util.Log
+import com.gamelauncher.core.shizuku.IShellExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * TouchLatencyOptimizer — reduces touch input latency during intense gaming.
- *
- * Utilizes:
- * 1. ADPF (Android Dynamic Performance Framework) PerformanceHintSession for CPU core touch boost (API 31+)
- * 2. Vendor input touch sampling rate property tweaks via Shizuku/ADB
+ * Uses typed IShellExecutor AIDL writes.
  */
 @Singleton
 class TouchLatencyOptimizer @Inject constructor(
-    private val shizukuShellManager: ShizukuShellManager
+    private val shellExecutor: IShellExecutor
 ) {
     companion object {
         private const val TAG = "TouchLatencyOptimizer"
@@ -25,57 +24,30 @@ class TouchLatencyOptimizer @Inject constructor(
 
     private var hintSession: Any? = null
 
-    /**
-     * Enables high-performance touch response mode.
-     */
     suspend fun enableTouchOptimizations() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeAny(
-                listOf(
-                    "setprop persist.vendor.qti.input.touch_rate 240",
-                    "setprop debug.input.velocity_tracker_strategy lsq2",
-                    "settings put global touch_responsiveness_level max"
-                )
-            )
-        }
+        shellExecutor.writeSetting("global", "touch_responsiveness_level", "max")
     }
 
     suspend fun enableHighFrequencyTouch() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeCommand("settings put system touch_prediction_enabled 1")
-        }
+        shellExecutor.writeSetting("system", "touch_prediction_enabled", "1")
     }
 
     suspend fun enableGameModeTouch() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeCommand("settings put global game_touch_optimization 1")
-        }
+        shellExecutor.writeSetting("global", "game_touch_optimization", "1")
     }
 
-    /**
-     * Disables touch optimizations when gaming session ends.
-     */
     suspend fun disableTouchOptimizations() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeCommand("settings put global touch_responsiveness_level default")
-        }
+        shellExecutor.writeSetting("global", "touch_responsiveness_level", "default")
     }
 
     suspend fun disableHighFrequencyTouch() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeCommand("settings put system touch_prediction_enabled 0")
-        }
+        shellExecutor.writeSetting("system", "touch_prediction_enabled", "0")
     }
 
     suspend fun disableGameModeTouch() {
-        if (shizukuShellManager.isAvailable()) {
-            shizukuShellManager.executeCommand("settings put global game_touch_optimization 0")
-        }
+        shellExecutor.writeSetting("global", "game_touch_optimization", "0")
     }
 
-    /**
-     * Enables ADPF touch hint session on Android 12+.
-     */
     fun enableAdpfTouchHint(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
@@ -91,9 +63,6 @@ class TouchLatencyOptimizer @Inject constructor(
         }
     }
 
-    /**
-     * Reports active workload to ADPF to ensure CPU remains boosted during touch inputs.
-     */
     fun reportWorkload(actualDurationNs: Long) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {

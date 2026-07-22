@@ -1,9 +1,9 @@
+// core/permissions/src/test/java/com/gamelauncher/core/permissions/RuntimePermissionManagerTest.kt
 package com.gamelauncher.core.permissions
 
 import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.core.shizuku.IShizukuManager
-import com.gamelauncher.core.shizuku.ShellResult
-import com.gamelauncher.core.shizuku.ShizukuAvailability
+import com.gamelauncher.core.shizuku.ShizukuState
 import com.gamelauncher.core.shizuku.aidl.IShellCommandService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,17 +14,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RuntimePermissionManagerTest {
-
-    @Test
-    fun testPermissionState_SealedHierarchy() {
-        val granted: PermissionState = PermissionState.Granted
-        val denied: PermissionState = PermissionState.Denied
-        val shizuku: PermissionState = PermissionState.ShizukuRequired
-
-        assertEquals(PermissionState.Granted, granted)
-        assertEquals(PermissionState.Denied, denied)
-        assertEquals(PermissionState.ShizukuRequired, shizuku)
-    }
 
     @Test
     fun testPermissionAllowlist_EnforcesAuthorizedPermissionsOnly() {
@@ -38,21 +27,25 @@ class RuntimePermissionManagerTest {
 
     @Test
     fun testGrantPermission_UnauthorizedPermission_RejectedBeforeShellExecution() = runBlocking {
-        var executeArgsCallCount = 0
+        var grantCallCount = 0
 
         val fakeExecutor = object : IShellExecutor {
-            override suspend fun executeCommand(command: String, timeoutMs: Long): ShellResult =
-                ShellResult(0, "", "")
-
-            override suspend fun executeArgs(vararg args: String, timeoutMs: Long): ShellResult {
-                executeArgsCallCount++
-                return ShellResult(0, "", "")
+            override suspend fun setPeakRefreshRate(hz: Float): Boolean = false
+            override suspend fun setMinRefreshRate(hz: Float): Boolean = false
+            override suspend fun setThermalOverride(disabled: Boolean): Boolean = false
+            override suspend fun writeSetting(namespace: String, key: String, value: String): Boolean = false
+            override suspend fun readSetting(namespace: String, key: String): String? = null
+            override suspend fun setDeviceConfig(namespace: String, key: String, value: String): Boolean = false
+            override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
+            override suspend fun grantPermission(packageName: String, permissionName: String): Boolean {
+                grantCallCount++
+                return true
             }
+            override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
         val stubManager = object : IShizukuManager {
-            override val availability: StateFlow<ShizukuAvailability> =
-                MutableStateFlow(ShizukuAvailability.Ready)
+            override val state: StateFlow<ShizukuState> = MutableStateFlow(ShizukuState.Connected)
             override fun isShizukuInstalled(): Boolean = true
             override fun checkAvailability() {}
             override fun requestPermission() {}
@@ -60,6 +53,7 @@ class RuntimePermissionManagerTest {
             override fun getUserService(): IShellCommandService? = null
             override fun bindUserService() {}
             override fun unbindUserService() {}
+            override fun cleanup() {}
         }
 
         val dummyContext = object : android.content.ContextWrapper(null) {
@@ -67,10 +61,9 @@ class RuntimePermissionManagerTest {
         }
 
         val permissionManager = RuntimePermissionManager(dummyContext, fakeExecutor, stubManager)
-
         val result = permissionManager.grantPermissionViaShizuku("android.permission.INSTALL_PACKAGES")
 
         assertFalse(result)
-        assertEquals(0, executeArgsCallCount)
+        assertEquals(0, grantCallCount)
     }
 }

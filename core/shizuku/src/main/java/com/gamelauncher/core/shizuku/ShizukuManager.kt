@@ -1,3 +1,4 @@
+// core/shizuku/src/main/java/com/gamelauncher/core/shizuku/ShizukuManager.kt
 package com.gamelauncher.core.shizuku
 
 import android.content.ComponentName
@@ -16,15 +17,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * ShizukuManager — Manages Shizuku lifecycle, sticky Binder listeners, permission flow,
+ * ShizukuManager — Manages Shizuku lifecycle, binder-death listeners, permission flow,
  * and AIDL UserService binding state with atomic binding guards.
  */
 @Singleton
 class ShizukuManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) : IShizukuManager {
-    private val _availability = MutableStateFlow<ShizukuAvailability>(ShizukuAvailability.Stopped)
-    override val availability: StateFlow<ShizukuAvailability> = _availability.asStateFlow()
+
+    private val _state = MutableStateFlow<ShizukuState>(ShizukuState.Disconnected)
+    override val state: StateFlow<ShizukuState> = _state.asStateFlow()
 
     @Volatile
     private var userService: IShellCommandService? = null
@@ -38,16 +40,16 @@ class ShizukuManager @Inject constructor(
     private val binderDeadListener = Shizuku.OnBinderDeadListener {
         userService = null
         isBinding.set(false)
-        _availability.value = ShizukuAvailability.Stopped
+        _state.value = ShizukuState.Disconnected
     }
 
     private val permissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == SHIZUKU_PERMISSION_REQUEST_CODE) {
             if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                _availability.value = ShizukuAvailability.Ready
+                _state.value = ShizukuState.Connected
                 bindUserService()
             } else {
-                _availability.value = ShizukuAvailability.PermissionDenied
+                _state.value = ShizukuState.RunningNoPermission
             }
         }
     }
@@ -66,16 +68,17 @@ class ShizukuManager @Inject constructor(
             isBinding.set(false)
             if (service != null && service.isBinderAlive) {
                 userService = IShellCommandService.Stub.asInterface(service)
-                _availability.value = ShizukuAvailability.Ready
+                _state.value = ShizukuState.Connected
             } else {
                 userService = null
+                _state.value = ShizukuState.Disconnected
             }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             userService = null
             isBinding.set(false)
-            _availability.value = ShizukuAvailability.Stopped
+            _state.value = ShizukuState.Disconnected
         }
     }
 
@@ -86,8 +89,17 @@ class ShizukuManager @Inject constructor(
             Shizuku.addRequestPermissionResultListener(permissionResultListener)
             checkAvailability()
         } catch (_: Exception) {
-            _availability.value = ShizukuAvailability.NotInstalled
+            _state.value = ShizukuState.NotInstalled
         }
+    }
+
+    override fun cleanup() {
+        try {
+            Shizuku.removeBinderReceivedListener(binderReceivedListener)
+            Shizuku.removeBinderDeadListener(binderDeadListener)
+            Shizuku.removeRequestPermissionResultListener(permissionResultListener)
+        } catch (_: Exception) {}
+        unbindUserService()
     }
 
     override fun isShizukuInstalled(): Boolean {
@@ -104,23 +116,23 @@ class ShizukuManager @Inject constructor(
     override fun checkAvailability() {
         try {
             if (!isShizukuInstalled() || Shizuku.isPreV11()) {
-                _availability.value = ShizukuAvailability.NotInstalled
+                _state.value = ShizukuState.NotInstalled
                 return
             }
 
             if (!Shizuku.pingBinder()) {
-                _availability.value = ShizukuAvailability.Stopped
+                _state.value = ShizukuState.InstalledNotRunning
                 return
             }
 
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                _availability.value = ShizukuAvailability.Ready
+                _state.value = ShizukuState.Connected
                 bindUserService()
             } else {
-                _availability.value = ShizukuAvailability.PermissionDenied
+                _state.value = ShizukuState.RunningNoPermission
             }
-        } catch (e: Throwable) {
-            _availability.value = ShizukuAvailability.Stopped
+        } catch (_: Throwable) {
+            _state.value = ShizukuState.Disconnected
         }
     }
 
@@ -130,16 +142,20 @@ class ShizukuManager @Inject constructor(
                 Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE)
             }
         } catch (_: Exception) {
-            _availability.value = ShizukuAvailability.NotInstalled
+            _state.value = ShizukuState.NotInstalled
         }
     }
 
-    override fun isReady(): Boolean = availability.value is ShizukuAvailability.Ready
+    override fun isReady(): Boolean {
+        return state.value is ShizukuState.Connected && userService?.asBinder()?.isBinderAlive == true
+    }
 
     override fun getUserService(): IShellCommandService? = userService
 
     override fun bindUserService() {
-        if (userService != null) return
+        // HARD CONSTRAINTS: Do not let any UserService bind call happen while state != Connected
+        if (_state.value != ShizukuState.Connected) return
+        if (userService != null && userService?.asBinder()?.isBinderAlive == true) return
         if (!isBinding.compareAndSet(false, true)) return
 
         try {

@@ -1,7 +1,17 @@
+// core/device/src/main/java/com/gamelauncher/core/device/OemCapabilityMap.kt
 package com.gamelauncher.core.device
 
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/**
+ * OemTweakKeys — Data class holding OEM-specific system setting keys and capabilities.
+ */
+data class OemTweakKeys(
+    val refreshRateKey: String,
+    val thermalOverrideSupported: Boolean,
+    val gameDriverSupported: Boolean
+)
 
 /**
  * OemCapabilityMap — Feature flags mapping OEM capabilities based on detected brand.
@@ -10,30 +20,56 @@ import javax.inject.Singleton
 class OemCapabilityMap @Inject constructor(
     private val detector: DeviceProfileDetector
 ) {
-    suspend fun currentBrand(): OemBrand = detector.detectOemBrand()
+    fun currentBrand(): OemBrand = detector.detectOemBrand()
 
-    /**
-     * Indicates whether the device supports Transsion (Infinix/Tecno) proprietary performance flags.
-     */
-    suspend fun supportsTranssionGameMode(): Boolean {
-        val brand = currentBrand()
-        return brand == OemBrand.INFINIX_HIOS || brand == OemBrand.TECNO_XOS
+    fun getTweakKeysForBrand(brand: OemBrand): OemTweakKeys {
+        return when (brand) {
+            OemBrand.PIXEL -> OemTweakKeys(
+                refreshRateKey = "peak_refresh_rate",
+                thermalOverrideSupported = true,
+                gameDriverSupported = true
+            )
+            OemBrand.XIAOMI -> OemTweakKeys(
+                refreshRateKey = "user_refresh_rate",
+                thermalOverrideSupported = true,
+                gameDriverSupported = true
+            )
+            OemBrand.ONEPLUS -> OemTweakKeys(
+                refreshRateKey = "oneplus_screen_refresh_rate",
+                thermalOverrideSupported = false,
+                gameDriverSupported = true
+            )
+            OemBrand.OPPO_REALME -> OemTweakKeys(
+                refreshRateKey = "oppo_display_refresh_rate",
+                thermalOverrideSupported = false,
+                gameDriverSupported = true
+            )
+            OemBrand.SAMSUNG -> OemTweakKeys(
+                refreshRateKey = "refresh_rate_mode",
+                thermalOverrideSupported = false,
+                gameDriverSupported = false
+            )
+            OemBrand.TRANSSION -> OemTweakKeys(
+                refreshRateKey = "peak_refresh_rate",
+                thermalOverrideSupported = true,
+                gameDriverSupported = true
+            )
+            OemBrand.GENERIC -> OemTweakKeys(
+                refreshRateKey = "peak_refresh_rate",
+                thermalOverrideSupported = true,
+                gameDriverSupported = true
+            )
+        }
     }
 
-    /**
-     * Indicates whether thermal throttling override is supported via system settings or ADB.
-     */
-    suspend fun supportsThermalThrottlingOverride(): Boolean {
-        val brand = currentBrand()
-        return brand == OemBrand.INFINIX_HIOS || brand == OemBrand.TECNO_XOS || brand == OemBrand.GENERIC_AOSP
+    fun supportsTranssionGameMode(): Boolean {
+        return currentBrand() == OemBrand.TRANSSION
     }
 
-    /**
-     * Indicates whether 120Hz/144Hz high refresh rate forcing is supported.
-     * NOTE: Currently synchronous because it returns static support capability. If dynamic per-device
-     * display mode hardware probing (e.g., via dumpsys display) is added in future steps, this method
-     * MUST be refactored into a suspend function for non-blocking I/O consistency.
-     */
+    fun supportsThermalThrottlingOverride(): Boolean {
+        return detector.getTweakKeys().thermalOverrideSupported
+    }
+
     fun supportsPeakRefreshRateOverride(): Boolean {
         return true
     }

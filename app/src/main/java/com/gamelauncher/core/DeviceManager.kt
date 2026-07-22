@@ -1,3 +1,4 @@
+// app/src/main/java/com/gamelauncher/core/DeviceManager.kt
 package com.gamelauncher.core
 
 import android.app.ActivityManager
@@ -20,7 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class DeviceManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val rootShellManager: RootShellManager,
+    private val shizukuShellManager: ShizukuShellManager,
     private val socManager: SocManager
 ) {
     private val activityManager = context.getSystemService(ActivityManager::class.java)
@@ -34,7 +35,6 @@ class DeviceManager @Inject constructor(
 
     private var lastCpuTime: Long = 0
     private var lastCpuIdle: Long = 0
-    private var thermalHistory = mutableListOf<Int>()
 
     init {
         initInitialBatteryState()
@@ -83,7 +83,7 @@ class DeviceManager @Inject constructor(
             }
             val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             context.registerReceiver(batteryReceiver, filter)
-        } catch (e: Exception) {}
+        } catch (_: Exception) {}
     }
 
     fun getCpuUsagePercent(): Float {
@@ -102,12 +102,12 @@ class DeviceManager @Inject constructor(
             val diffIdle = idle - lastCpuIdle
             lastCpuTime = cpu; lastCpuIdle = idle
             if (diffCpu + diffIdle > 0) ((diffCpu.toFloat() / (diffCpu + diffIdle)) * 100f).coerceIn(0f, 100f) else 0f
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             try {
                 val total = Runtime.getRuntime().totalMemory()
                 val free = Runtime.getRuntime().freeMemory()
                 ((total - free).toFloat() / total.toFloat() * 100f).coerceIn(0f, 100f)
-            } catch (e2: Exception) { 0f }
+            } catch (_: Exception) { 0f }
         }
     }
 
@@ -115,14 +115,14 @@ class DeviceManager @Inject constructor(
         return try {
             val freqFile = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
             if (freqFile.exists()) freqFile.readText().trim().toLongOrNull()?.div(1000) ?: 0L else 0L
-        } catch (e: Exception) { 0L }
+        } catch (_: Exception) { 0L }
     }
 
     fun getCpuGovernor(): String {
         return try {
             val govFile = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
             if (govFile.exists()) govFile.readText().trim().ifEmpty { "sched" } else "sched"
-        } catch (e: Exception) { "sched" }
+        } catch (_: Exception) { "sched" }
     }
 
     fun getCoreCount(): Int = Runtime.getRuntime().availableProcessors()
@@ -137,10 +137,7 @@ class DeviceManager @Inject constructor(
     }
 
     suspend fun setCoreOnline(coreIndex: Int, online: Boolean): Boolean = withContext(Dispatchers.IO) {
-        if (!rootShellManager.isRootAvailable()) return@withContext false
-        val value = if (online) "1" else "0"
-        val (success, _) = rootShellManager.executeCommand("echo $value > /sys/devices/system/cpu/cpu$coreIndex/online")
-        success
+        false
     }
 
     fun getRamInfo(): Triple<Long, Long, Long> {
@@ -150,7 +147,7 @@ class DeviceManager @Inject constructor(
             val totalMb = info.totalMem / 1_048_576L
             val freeMb = info.availMem / 1_048_576L
             Triple(totalMb, totalMb - freeMb, freeMb)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             val total = Runtime.getRuntime().totalMemory() / 1_048_576L
             val free = Runtime.getRuntime().freeMemory() / 1_048_576L
             Triple(total, total - free, free)
@@ -170,7 +167,7 @@ class DeviceManager @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 powerManager?.currentThermalStatus ?: PowerManager.THERMAL_STATUS_NONE
             } else PowerManager.THERMAL_STATUS_NONE
-        } catch (e: Exception) { PowerManager.THERMAL_STATUS_NONE }
+        } catch (_: Exception) { PowerManager.THERMAL_STATUS_NONE }
     }
 
     fun getCpuTemperature(): Float {
@@ -225,41 +222,12 @@ class DeviceManager @Inject constructor(
             }
         } catch (_: Exception) {}
         System.gc()
-        try { Thread.sleep(200) } catch (e: Exception) {}
+        try { Thread.sleep(200) } catch (_: Exception) {}
         val (_, usedAfter, _) = getRamInfo()
         return (usedBefore - usedAfter).coerceAtLeast(0L)
     }
 
     suspend fun killBackgroundApps(): Long = withContext(Dispatchers.IO) {
-        val (_, usedBefore, _) = getRamInfo()
-        if (rootShellManager.isRootAvailable()) {
-            rootShellManager.executeCommand("am kill-all")
-            rootShellManager.executeCommand("sync")
-            rootShellManager.executeCommand("echo 3 > /proc/sys/vm/drop_caches")
-            rootShellManager.executeCommand("echo 1 > /proc/sys/vm/compact_memory")
-            try { Thread.sleep(300) } catch (e: Exception) {}
-        } else {
-            try {
-                val am = context.getSystemService(ActivityManager::class.java)
-                val pm = context.packageManager
-                val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-                val apps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    pm.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong()))
-                } else {
-                    @Suppress("DEPRECATION")
-                    pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-                }
-                for (app in apps) {
-                    val pkg = app.activityInfo.packageName
-                    if (pkg != context.packageName) {
-                        try { am?.killBackgroundProcesses(pkg) } catch (_: Exception) {}
-                    }
-                }
-            } catch (_: Exception) {}
-            System.gc()
-            try { Thread.sleep(200) } catch (e: Exception) {}
-        }
-        val (_, usedAfter, _) = getRamInfo()
-        (usedBefore - usedAfter).coerceAtLeast(0L)
+        killBackgroundAppsSync()
     }
 }

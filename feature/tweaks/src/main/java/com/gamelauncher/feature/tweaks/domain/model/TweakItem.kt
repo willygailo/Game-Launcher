@@ -1,20 +1,29 @@
+// feature/tweaks/src/main/java/com/gamelauncher/feature/tweaks/domain/model/TweakItem.kt
 package com.gamelauncher.feature.tweaks.domain.model
 
+/**
+ * TweakResult — Represents the explicit outcome of applying a system tweak.
+ */
+sealed interface TweakResult {
+    object Confirmed : TweakResult
+    data class SilentlyIgnored(val key: String) : TweakResult
+    data class Failed(val reason: String) : TweakResult
+}
+
+/**
+ * TweakCategory — System category classification for performance tweaks.
+ */
 enum class TweakCategory {
     REFRESH_RATE,
-    CPU_GOVERNOR,
     GPU_RENDERING,
     THERMAL_THROTTLING,
-    GAME_MODE
+    GAME_MODE,
+    MEMORY,
+    POWER
 }
 
 /**
  * TweakItem — Represents a system performance tweak configuration.
- *
- * @param isToggleActive Active state for binary toggle category switches (GPU_RENDERING, THERMAL_THROTTLING, GAME_MODE).
- * @param selectedValue Active selected option string for dropdown categories (REFRESH_RATE, CPU_GOVERNOR).
- * @param lastApplySuccessful Outcome of the most recent apply operation, or null if un-attempted.
- * @param badgeNote Custom UI badge label when unsupported (e.g., "Requires Root (Shizuku active)").
  */
 data class TweakItem(
     val id: String,
@@ -25,6 +34,6 @@ data class TweakItem(
     val selectedValue: String? = null,
     val supportedValues: List<String> = emptyList(),
     val isSupportedByDevice: Boolean = true,
-    val lastApplySuccessful: Boolean? = null,
+    val lastResult: TweakResult? = null,
     val badgeNote: String? = null
 )

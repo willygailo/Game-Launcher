@@ -1,8 +1,10 @@
+// app/src/main/java/com/gamelauncher/core/GameOptimizationCoordinator.kt
 package com.gamelauncher.core
 
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
+import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.data.preference.SettingsPreferences
 import com.gamelauncher.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -10,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,13 +24,12 @@ class GameOptimizationCoordinator @Inject constructor(
     private val networkManager: NetworkManager,
     private val dndManager: DndManager,
     private val touchLatencyOptimizer: TouchLatencyOptimizer,
-    private val rootShellManager: RootShellManager,
     private val socManager: SocManager,
     private val devicePerformancePlanner: DevicePerformancePlanner,
     private val settingsPreferences: SettingsPreferences,
     private val gameDao: com.gamelauncher.data.local.GameDao,
     private val batterySaverManager: BatterySaverManager,
-    private val shizukuShellManager: ShizukuShellManager,
+    private val shellExecutor: IShellExecutor,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
     data class OptimizationResult(
@@ -40,8 +40,6 @@ class GameOptimizationCoordinator @Inject constructor(
         val targetHz: Float = 60f
     )
 
-    // AtomicBoolean prevents race condition when two coroutines call startOptimization concurrently.
-    // compareAndSet(false, true) is an atomic operation — only one caller proceeds, others get "Already optimized".
     private val _optimizationActive = AtomicBoolean(false)
     @Volatile private var currentGamePackage: String? = null
 
@@ -59,26 +57,21 @@ class GameOptimizationCoordinator @Inject constructor(
             errors.add("Failed to load game data: ${e.message}")
             gameDao.getGameByPackageName(packageName)
         }
-        // Load game data with fallback
         val gameInfo = try { SupportedGames.findGame(packageName) } catch (e: Exception) {
             errors.add("Failed to find game info: ${e.message}")
             SupportedGames.GameInfo(packageName, "Unknown", "Global", 60)
         }
 
-        // Auto-detect SOC info with backup
         val socInfo = try { socManager.getSocInfo() } catch (e: Exception) {
             errors.add("Failed to get SOC info: ${e.message}")
             SocInfo()
         }
 
-        // Get thermal status for throttling decisions
         val thermalStatus = try { deviceManager.getThermalStatus() } catch (e: Exception) {
             errors.add("Failed to get thermal status: ${e.message}")
             PowerManager.THERMAL_STATUS_NONE
         }
 
-        // ── Battery Saver: owned by GameBoosterService.startBoost() ──
-        // Whitelisting game from Doze is still done here since we have packageName context.
         try {
             batterySaverManager.whitelistGameFromDoze(packageName)
             appliedOptimizations.add("⏫ Doze Whitelist: $packageName")
@@ -102,65 +95,26 @@ class GameOptimizationCoordinator @Inject constructor(
         appliedOptimizations.add("Device Plan: ${targetFps}FPS @ ${stableHz.toInt()}Hz (${framePlan.reason})")
 
         try {
-            val hasRoot = rootShellManager.isRootAvailable()
+            performanceManager.optimizeNonRoot(packageName)
+            appliedOptimizations.add("Non-Root Performance Mode")
 
-            if (hasRoot) {
-                val forceGpu = gameModel?.gpuTuning ?: true
-                if (forceGpu) {
-                    val cpuResult = performanceManager.maximizeCpuGpuPerformance()
-                    if (cpuResult) {
-                        appliedOptimizations.add("CPU/GPU Performance Boost (${socInfo.socType.name})")
-                    } else {
-                        errors.add("CPU/GPU boost not available (requires root)")
-                    }
-                } else {
-                    performanceManager.setAdaptiveCpuGov(true)
-                    appliedOptimizations.add("CPU Performance Boost (${socInfo.socType.name})")
-                }
-            } else {
-                performanceManager.optimizeNonRoot(packageName)
-                appliedOptimizations.add("Non-Root Performance Mode")
-            }
+            shellExecutor.writeSetting("global", "game_driver_opt_in_apps", packageName)
+            appliedOptimizations.add("GameManager Performance Mode Force (Max FPS)")
 
-            if (shizukuShellManager.isAvailable() || hasRoot) {
-                // 1. Android Game Mode performance override & driver opt-in for Max FPS
-                shizukuShellManager.executeCommand("cmd game mode performance $packageName")
-                shizukuShellManager.executeCommand("cmd game set --mode 2 $packageName")
-                shizukuShellManager.executeCommand("settings put global game_driver_opt_in_apps $packageName")
-                appliedOptimizations.add("GameManager Performance Mode Force (Max FPS)")
+            val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
+            shellExecutor.setPeakRefreshRate(maxHz)
+            shellExecutor.setMinRefreshRate(maxHz)
+            shellExecutor.writeSetting("system", "user_refresh_rate", maxHz.toString())
+            shellExecutor.writeSetting("system", "miui_refresh_rate", maxHz.toString())
+            shellExecutor.writeSetting("system", "high_refresh_rate", "1")
+            shellExecutor.writeSetting("secure", "refresh_rate_mode", "2")
+            appliedOptimizations.add("Unlocked Max Hz Panel Target (${maxHz.toInt()}Hz)")
 
-                // 2. Unlock & Force Maximum Panel Hz (90Hz / 120Hz / 144Hz / 165Hz)
-                val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
-                shizukuShellManager.executeCommand("settings put system peak_refresh_rate $maxHz")
-                shizukuShellManager.executeCommand("settings put system min_refresh_rate $maxHz")
-                shizukuShellManager.executeCommand("settings put system user_refresh_rate $maxHz")
-                shizukuShellManager.executeCommand("settings put system miui_refresh_rate $maxHz")
-                shizukuShellManager.executeCommand("settings put system high_refresh_rate 1")
-                shizukuShellManager.executeCommand("settings put secure refresh_rate_mode 2")
-                appliedOptimizations.add("Unlocked Max Hz Panel Target (${maxHz.toInt()}Hz)")
-
-                // 3. Thermal Throttling Bypass
-                shizukuShellManager.executeCommand("cmd thermalservice override-status 0")
+            val thermalOk = shellExecutor.setThermalOverride(true)
+            if (thermalOk) {
                 appliedOptimizations.add("Thermal Service Override Active (No Throttling)")
-
-                // 4. Background apps standby sleep mode command
-                shizukuShellManager.executeCommand("cmd package list packages | cut -f 2 -d ':' | grep -v $packageName | xargs -I {} am set-standby-bucket {} rare")
-                appliedOptimizations.add("Background Standby Lock Active")
-
-                // 5. Background ART speed AOT compilation boost
-                appScope.launch(Dispatchers.IO) {
-                    shizukuShellManager.executeCommand("cmd package compile -m speed -f $packageName")
-                }
-                appliedOptimizations.add("ART Speed AOT Optimization Queued")
-                
-                // Suspend thermal throttling engines
-                val (thermalOk, _) = shizukuShellManager.suspendThermalEngines()
-                if (thermalOk) {
-                    appliedOptimizations.add("Thermal Engines Suspended (Max Performance)")
-                }
             }
 
-            // GameManager local game state optimization for overlay priority (Android 12 to 16)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 try {
                     val gameManager = context.getSystemService(android.app.GameManager::class.java)
@@ -229,19 +183,6 @@ class GameOptimizationCoordinator @Inject constructor(
                 }
             }
 
-            if (hasRoot) {
-                applySocSpecificOptimizations(socInfo)
-
-                // Deep Network and Memory Optimizations
-                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_congestion_control=bbr")
-                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_window_scaling=1")
-                appliedOptimizations.add("TCP BBR Congestion Control Active")
-
-                rootShellManager.executeCommand("echo 3 > /proc/sys/vm/drop_caches")
-                rootShellManager.executeCommand("sysctl -w vm.swappiness=0")
-                appliedOptimizations.add("Extreme Memory Swappiness (0%)")
-            }
-
             if (thermalStatus >= PowerManager.THERMAL_STATUS_CRITICAL) {
                 errors.add("Device is overheating - performance limited")
             }
@@ -259,15 +200,9 @@ class GameOptimizationCoordinator @Inject constructor(
         )
     }
 
-    /**
-     * Thermal-aware optimization: checks thermal state BEFORE starting.
-     * If device is already critical, starts with a stripped-down optimization profile
-     * instead of starting full boost then immediately stopping and restarting.
-     */
     suspend fun startThermalAwareOptimization(packageName: String): OptimizationResult {
         val thermalStatus = deviceManager.getThermalStatus()
         return if (thermalStatus >= PowerManager.THERMAL_STATUS_CRITICAL) {
-            // Don't boost at all on critical thermal state — return a safe no-op result
             OptimizationResult(
                 success = true,
                 appliedOptimizations = listOf("Thermal Safe Mode: boost skipped — device overheating"),
@@ -276,8 +211,7 @@ class GameOptimizationCoordinator @Inject constructor(
                 targetHz = 30f
             )
         } else {
-            val result = startOptimization(packageName)
-            result
+            startOptimization(packageName)
         }
     }
 
@@ -290,22 +224,8 @@ class GameOptimizationCoordinator @Inject constructor(
         val errors = mutableListOf<String>()
 
         try {
-            val hasRoot = rootShellManager.isRootAvailable()
-
-            if (hasRoot) {
-                performanceManager.setCpuGovernor("schedutil")
-                restoredOptimizations.add("CPU Governor Restored")
-                performanceManager.restoreCpuGpuPerformance()
-                restoredOptimizations.add("GPU Settings Restored")
-
-                // Restore Deep Optimizations
-                rootShellManager.executeCommand("sysctl -w net.ipv4.tcp_congestion_control=cubic")
-                rootShellManager.executeCommand("sysctl -w vm.swappiness=60")
-                restoredOptimizations.add("TCP Congestion & Memory Swappiness Restored")
-            } else {
-                performanceManager.restoreNonRoot()
-                restoredOptimizations.add("Non-Root Settings Restored")
-            }
+            performanceManager.restoreNonRoot()
+            restoredOptimizations.add("Non-Root Settings Restored")
 
             performanceManager.restoreThreadPriority()
             restoredOptimizations.add("Thread Priority Restored")
@@ -329,7 +249,6 @@ class GameOptimizationCoordinator @Inject constructor(
             performanceManager.restoreAnimations()
             restoredOptimizations.add("Animations Restored")
 
-            // Restore battery saver state with improved error handling
             try {
                 batterySaverManager.restoreBatterySaver()
                 restoredOptimizations.add("⚡ Battery Saver State Restored")
@@ -337,11 +256,9 @@ class GameOptimizationCoordinator @Inject constructor(
                 errors.add("Failed to restore battery saver: ${e.message}")
             }
 
-            // Resume thermal engines that were suspended during gaming.
-            // Critical: without this, device has no thermal protection until reboot.
             try {
-                val (resumeOk, _) = shizukuShellManager.resumeThermalEngines()
-                if (resumeOk) restoredOptimizations.add("Thermal Engines Resumed")
+                shellExecutor.setThermalOverride(false)
+                restoredOptimizations.add("Thermal Engines Resumed")
             } catch (e: Exception) {
                 errors.add("Failed to resume thermal engines: ${e.message}")
             }
@@ -352,66 +269,6 @@ class GameOptimizationCoordinator @Inject constructor(
         currentGamePackage = null
 
         return OptimizationResult(success = errors.isEmpty(), appliedOptimizations = restoredOptimizations, errors = errors)
-    }
-
-    private suspend fun applySocSpecificOptimizations(socInfo: SocInfo) {
-        if (!rootShellManager.isRootAvailable()) return
-        withContext(Dispatchers.IO) {
-            when (socInfo.socType) {
-                SocType.SNAPDRAGON -> applySnapdragonOptimizations()
-                SocType.MEDIATEK -> applyMediaTekOptimizations()
-                SocType.EXYNOS -> applyExynosOptimizations()
-                SocType.KIRIN -> applyKirinOptimizations()
-                SocType.TENSOR -> applyTensorOptimizations()
-                SocType.UNISOC -> applyUnisocOptimizations()
-                else -> {}
-            }
-        }
-    }
-
-    private suspend fun applySnapdragonOptimizations() {
-        rootShellManager.executeCommand("echo 'high_performance' > /sys/class/devfreq/soc:qcom,cpu-llcc-bw/governor")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/boost")
-        rootShellManager.executeCommand("echo 1 > /sys/kernel/debug/sched_energy_aware")
-        rootShellManager.executeCommand("echo 100 > /sys/class/devfreq/soc:qcom,cpu-llcc-bw/max_freq")
-        rootShellManager.executeCommand("echo 100 > /sys/class/devfreq/soc:qcom,cpubw/max_freq")
-        // Snapdragon 8 Elite Gen 2 / 8 Elite specific
-        rootShellManager.executeCommand("echo 1 > /sys/class/devfreq/soc:qcom,compute-cdsb/governor")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/mem_latency")
-        rootShellManager.executeCommand("echo 1 > /sys/module/qti_cpu_boost/parameters/boost_enabled")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/soc/*/qcom,cpufreq-hw/boost")
-    }
-
-    private suspend fun applyMediaTekOptimizations() {
-        rootShellManager.executeCommand("echo 1 > /sys/module/mtk_vcore_debug/parameters/enable")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/game_mode")
-        rootShellManager.executeCommand("echo 1 > /sys/kernel/ged/boost_gpu_enable")
-        rootShellManager.executeCommand("echo performance > /sys/class/misc/mtk-vpu/devfreq/mtk-vpu/governor")
-        rootShellManager.executeCommand("echo 1 > /proc/cpufreq/cpufreq_power_mode")
-        rootShellManager.executeCommand("echo 0 > /proc/cpufreq/cpufreq_cci_mode")
-    }
-
-    private suspend fun applyExynosOptimizations() {
-        rootShellManager.executeCommand("echo 1 > /sys/class/kgsl/kgsl-3d0/gpu_governor")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/gpu.0/devfreq/gpu.0/boost")
-    }
-
-    private suspend fun applyKirinOptimizations() {
-        rootShellManager.executeCommand("echo 1 > /sys/class/dss/display/turbo")
-        rootShellManager.executeCommand("echo 1 > /sys/kernel/hisi/npu/boost")
-    }
-
-    private suspend fun applyTensorOptimizations() {
-        rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
-        rootShellManager.executeCommand("echo performance > /sys/class/devfreq/*mali*/governor")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/vertex.0/boost")
-        rootShellManager.executeCommand("echo 1 > /sys/devices/platform/edge.0/boost")
-    }
-
-    private suspend fun applyUnisocOptimizations() {
-        rootShellManager.executeCommand("echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
-        rootShellManager.executeCommand("echo noop > /sys/block/mmcblk0/queue/scheduler")
-        rootShellManager.executeCommand("echo 1 > /sys/class/misc/mali0/device/power_policy")
     }
 
     private fun getRequestedFps(gameModel: com.gamelauncher.data.model.GameModel?): Int? {
@@ -427,8 +284,6 @@ class GameOptimizationCoordinator @Inject constructor(
             else -> gameModel.targetFps.takeIf { it != 60 }
         }
     }
-
-
 
     fun isOptimizationActive(): Boolean = _optimizationActive.get()
     fun getCurrentGamePackage(): String? = currentGamePackage
