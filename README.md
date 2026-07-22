@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.5.0-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.5.1-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -27,7 +27,7 @@
 | | | |
 |---|---|---|
 | ![SS1](assets/Screenshot_20260512-134350.jpg) | ![SS2](assets/Screenshot_20260512-134359.jpg) | ![SS3](assets/Screenshot_20260512-134411.jpg) |
-| ![SS4](assets/Screenshot_20260512-134423.jpg) | ![SS5](assets/Screenshot_20260512-134441.jpg) | ![SS6](assets/Screenshot_20260512-134449.jpg) |
+| ![SS4](assets/Screenshot_20260512-134359.jpg) | ![SS5](assets/Screenshot_20260512-134441.jpg) | ![SS6](assets/Screenshot_20260512-134449.jpg) |
 | ![SS7](assets/Screenshot_20260512-134531.jpg) | ![SS8](assets/Screenshot_20260512-134608.jpg) | ![SS9](assets/Screenshot_20260512-134619.jpg) |
 | ![SS10](assets/Screenshot_20260512-134638.jpg) | ![SS11](assets/Screenshot_20260512-134712.jpg) | ![SS12](assets/Screenshot_20260512-134830.jpg) |
 
@@ -37,9 +37,13 @@
 
 | Feature | Description | Status |
 |---|---|---|
-| **Modular Architecture** | Clean separation of `:core:*` and `:feature:*` Gradle submodules | ✅ 🆕 |
-| **Private DNS Switcher** | Fast non-destructive DNS mode switching (Cloudflare/Google/AdGuard) | ✅ 🆕 |
-| **FPS Telemetry Overlay** | `/proc/stat` CPU usage, RAM gauge & Choreographer frame pacing | ✅ 🆕 |
+| **Dynamic 144Hz+ Display** | Queries `Display.getSupportedModes()` dynamically for high-refresh 144Hz+ panels | ✅ 🆕 |
+| **1-Tap Shizuku Grant** | 1-tap `WRITE_SECURE_SETTINGS` grant directly from Settings screen via Shizuku | ✅ 🆕 |
+| **3-Tier Privilege Audit** | Granular status badging (`NONE` / `SHIZUKU_ONLY` / `ROOT`) for sysfs & shell actions | ✅ 🆕 |
+| **OEM Shell Fallbacks** | Executes `settings put` via Shizuku shell to bypass OEM ROM restrictions | ✅ 🆕 |
+| **Modular Architecture** | Clean separation of `:core:*` and `:feature:*` Gradle submodules | ✅ |
+| **Private DNS Switcher** | Fast non-destructive DNS mode switching (Cloudflare/Google/AdGuard) | ✅ |
+| **FPS Telemetry Overlay** | `/proc/stat` CPU usage, RAM gauge & Choreographer frame pacing | ✅ |
 | **Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ |
 | **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
 | **Live Boost Notification** | Real-time FPS, Hz, network type & battery sa notification | ✅ |
@@ -103,6 +107,17 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.5.1: "Dynamic 144Hz & Shizuku 1-Tap Grant"
+
+> Added dynamic display refresh rate discovery supporting 144Hz+ high refresh rate panels, 1-tap `WRITE_SECURE_SETTINGS` privilege grant via Shizuku, granular 3-tier privilege classification (`NONE`, `SHIZUKU_ONLY`, `ROOT`), and Shizuku shell fallbacks for OEM ROMs.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Dynamic 144Hz Refresh Rate** | Dynamically queries `Display.getSupportedModes()` for 144Hz+ high-refresh-rate display panels. | ✅ 🆕 |
+| **1-Tap Shizuku Permission Grant** | Single-tap `WRITE_SECURE_SETTINGS` privilege grant in Settings card when Shizuku ADB shell is active. | ✅ 🆕 |
+| **3-Tier Privilege Audit** | Evaluates shell privilege levels (`NONE` / `SHIZUKU_ONLY` / `ROOT`) with explicit UI status badging (**Requires Root (Shizuku active)**). | ✅ 🆕 |
+| **OEM Shizuku Shell Fallbacks** | Executes `settings put global/system/secure` via Shizuku ADB shell when direct `ContentResolver` calls fail on OEM ROMs (Xiaomi, Tecno, Samsung, Realme). | ✅ 🆕 |
 
 ### 🆕 v3.5.0: "Modular Architecture & Hardware Boosters"
 
@@ -793,7 +808,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.5.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0)
+- [Latest Release: v3.5.1](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.1)
 - Or build from source using the instructions above
 
 ---
