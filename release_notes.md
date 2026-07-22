@@ -1,12 +1,17 @@
-# v3.2.9 - Extreme Gaming Mode Update
+# v3.5.2 - Performance Profile Persistence & System Tweaks Fixes
 
-This release brings several highly requested features and optimizations to unlock the absolute maximum performance from your device. 
+This release resolves key UI persistence issues and improves OEM thermal throttling bypass and FPS overlay controls.
 
-## What's New
-- **Force Max Performance (Danger Mode):** A new setting in Secure Settings that completely bypasses OS thermal throttling, locks the CPU/GPU to maximum frequencies, and forces hardware acceleration properties for the smoothest gaming experience possible. 
-- **Aggressive Network Restrictor:** Block background network activity from other apps to ensure the lowest ping for your active game.
-- **Enhanced Overlay:** The in-game overlay now displays real-time **CPU & Battery Temperatures**, as well as RAM and Network status.
-- **Improved Bypass Charging:** Refactored command execution checks and sysfs path handling to ensure Bypass Charging functions more reliably across various devices.
-- **Usage Access Fix:** Ensured proper usage of `AppOpsManager` so the app correctly requests and handles usage access for Android 10+.
+## 🚀 What's New & Fixed in v3.5.2
 
-**Warning:** The new *Force Max Performance* toggle is intended for extreme scenarios. It forces `thermalservice override-status 0` and locks the power mode. This will generate significant heat and drain the battery faster. Use at your own risk!
+- **Persistent Performance Profiles (ECO / BALANCED / PRO):**
+  - Performance mode selections (ECO, BALANCED, PRO) are now saved directly in DataStore (`SettingsPreferences`) and managed by `DashboardViewModel`.
+  - Selecting **PRO** mode or **ECO** mode persists when navigating away from the Dashboard and pressing Back.
+
+- **FPS Telemetry Overlay Toggle Fix:**
+  - Integrated `SettingsPreferences` with `MonitorViewModel` to persist the overlay state across updates and screen re-entry.
+  - Toggling FPS overlay in the Monitor screen immediately controls `OverlayService` (starts if enabled, stops if disabled).
+
+- **OEM Thermal Throttling Bypass Enhancements:**
+  - `TweaksRepositoryImpl` now reads saved tweak preferences on screen initialization.
+  - Toggling OEM Thermal Throttling Bypass executes multi-tier fallback commands (`cmd thermalservice override-status 0`, global/secure `thermal_limit_enabled`, `thermal_throttling_disabled`, `thermal_control_limit`).

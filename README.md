@@ -6,7 +6,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin_2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)]()
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.5.1-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.5.2-00C853?style=for-the-badge)]()
 
 **The ultimate Android gaming performance booster — designed for non-root & root devices alike!**
 
@@ -86,6 +86,6 @@ Built with clean architecture patterns and Gradle submodules:
 
 ## 📜 License & Links
 
-- **Download Releases:** [v3.5.1 Latest Release](https://github.com/willygailo/Game-Launcher/releases)
+- **Download Releases:** [v3.5.2 Latest Release](https://github.com/willygailo/Game-Launcher/releases)
 - **License:** [MIT License](LICENSE)
 - **Developer:** Willy Gailo (Philippines 🇵🇭)
