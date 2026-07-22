@@ -29,6 +29,15 @@
 
 ---
 
+## 🆕 What's New in v3.5.2
+
+- **⚡ Persistent Performance Modes**: ECO, BALANCED, and PRO selections now persist across screen navigation and app restarts via DataStore.
+- **📊 Interactive Telemetry Overlay**: Real-time FPS overlay toggle state is saved continuously and controls `OverlayService` lifecycle directly.
+- **🛠️ Enhanced OEM Thermal Throttling Bypass**: Multi-tier system settings & Shizuku ADB shell fallback commands (`cmd thermalservice override-status 0`).
+- **📦 Clean Architecture Modularization**: Refactored settings data flow into `:core:settings` for uniform preference access across all feature modules.
+
+---
+
 ## ⚡ Core Features
 
 - **⚡ Performance Modes**: Instant switching and persistent profile management between **ECO** (Power Saver), **BALANCED** (Standard Boost), and **PRO** (Unrestricted Max Hardware Performance).
@@ -60,6 +69,20 @@ adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
 
 Or launch Shizuku and tap **Grant Shizuku Permission** inside the app Settings screen.
+
+---
+
+## 🛠️ Build from Source
+
+Clone the repository and compile using Android Studio or Gradle wrapper:
+
+```bash
+git clone https://github.com/willygailo/Game-Launcher.git
+cd Game-Launcher
+./gradlew assembleRelease
+```
+
+The compiled APK will be available in `app/build/outputs/apk/release/app-release.apk`.
 
 ---
 
