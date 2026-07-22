@@ -20,6 +20,11 @@ val ErrorRed = Color(0xFFFF3333)
 val TextPrimary = Color(0xFFFAFAFA)
 val TextSecondary = Color(0xFFA1A1AA)
 
+// ROG Cyberpunk Gaming Tokens
+val RogDarkBg = Color(0xFF0A0C10)
+val RogSurfaceDark = Color(0xFF121620)
+val RogCardBorder = Color(0xFF232A3B)
+
 enum class PerformanceMode {
     ECO, BALANCED, PRO
 }
