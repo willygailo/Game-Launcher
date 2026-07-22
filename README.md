@@ -7,7 +7,7 @@
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite_2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.2.9-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.5.0-00C853?style=for-the-badge)]()
 
 > **Ang pinaka-powerful na Android performance booster para sa mobile gaming — designed for non-root devices!**
 
@@ -37,17 +37,20 @@
 
 | Feature | Description | Status |
 |---|---|---|
+| **Modular Architecture** | Clean separation of `:core:*` and `:feature:*` Gradle submodules | ✅ 🆕 |
+| **Private DNS Switcher** | Fast non-destructive DNS mode switching (Cloudflare/Google/AdGuard) | ✅ 🆕 |
+| **FPS Telemetry Overlay** | `/proc/stat` CPU usage, RAM gauge & Choreographer frame pacing | ✅ 🆕 |
 | **Real-time Monitoring** | CPU, RAM, GPU, battery, network, display stats | ✅ |
 | **Floating FPS Counter** | Live FPS overlay habang naglalaro | ✅ |
 | **Live Boost Notification** | Real-time FPS, Hz, network type & battery sa notification | ✅ |
-| **Battery Saver Killer** | Auto-disable battery saver + Doze whitelist on boost start | ✅ 🆕 |
-| **Bypass Charging** | Pauses battery charging via Shizuku (non-root) or root shell to reduce heat during gaming | ✅ 🆕 |
-| **5G / WiFi Dual Stack** | 5G NR detection + WiFi 6E/7 + simultaneous WiFi+Data mode | ✅ 🆕 |
-| **Max Hz Forcer** | Requests device maximum Hz through supported Settings APIs / ADB grants where OEM allows | ✅ 🆕 |
-| **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ 🆕 |
+| **Battery Saver Killer** | Auto-disable battery saver + Doze whitelist on boost start | ✅ |
+| **Bypass Charging** | Pauses battery charging via Shizuku (non-root) or root shell to reduce heat during gaming | ✅ |
+| **5G / WiFi Dual Stack** | 5G NR detection + WiFi 6E/7 + simultaneous WiFi+Data mode | ✅ |
+| **Max Hz Forcer** | Requests device maximum Hz through supported Settings APIs / ADB grants where OEM allows | ✅ |
+| **Jank Detection** | Real-time frame jank counter + drop alert in overlay | ✅ |
 | **Game Library** | Auto-detect ng lahat ng installed games | ✅ |
 | **Per-Game Boosts** | Custom FPS capped to the real device panel, game cap, and thermal state | ✅ |
-| **Max Performance Profile** | Boost ON now switches games to max safe device/game planning with max Hz, GPU, touch, network, and aggressive RAM defaults | ✅ 🆕 |
+| **Max Performance Profile** | Boost ON now switches games to max safe device/game planning with max Hz, GPU, touch, network, and aggressive RAM defaults | ✅ |
 | **Immersive Controls** | DND mode (INTERRUPTION_FILTER_NONE), max brightness automation | ✅ |
 | **Home Widget** | Quick Boost at Open buttons sa home screen | ✅ |
 | **Quick Settings Tile** | Toggle booster sa notification panel | ✅ |
@@ -100,6 +103,18 @@ ADB advanced unlock command:
 ```bash
 adb shell pm grant com.gamelauncher.app android.permission.WRITE_SECURE_SETTINGS
 ```
+
+### 🆕 v3.5.0: "Modular Architecture & Hardware Boosters"
+
+> Full architectural refactoring into modular Gradle submodules (`:core:*` and `:feature:*`), non-destructive Private DNS switching, socket RTT latency probing, real-time FPS/hardware telemetry overlay, and zero forced null assertion crashes.
+
+| Feature | Description | Status |
+|---|---|---|
+| **Modular Gradle Architecture** | Clean separation of core modules (`:core:shizuku`, `:core:settings`, `:core:device`, `:core:permissions`, `:core:database`, `:core:di`) and feature modules (`:feature:tweaks`, `:feature:network`, `:feature:monitor`). | ✅ 🆕 |
+| **Private DNS Booster** | Non-destructive DNS mode switching (`Settings.Global.PRIVATE_DNS_MODE` / `PRIVATE_DNS_SPECIFIER`) supporting Cloudflare, Google, AdGuard, and Quad9. | ✅ 🆕 |
+| **Socket Ping Prober** | Real-time TCP/UDP RTT latency probing with jitter calculations and quality scoring. | ✅ 🆕 |
+| **Telemetry Overlay & FPS Gauge** | `/proc/stat` CPU usage meter, `ActivityManager` RAM gauge, battery thermals, and Choreographer frame pacing. | ✅ 🆕 |
+| **Zero Null Assertions** | Complete audit and removal of forced null assertions (`!!`), preventing NPE crashes on diverse device profiles. | ✅ 🆕 |
 
 ### 🆕 v3.2.9: "Extreme Gaming Mode"
 
