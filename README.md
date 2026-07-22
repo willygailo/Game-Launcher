@@ -759,42 +759,18 @@ adb shell ps | grep shizuku
 </div>
 
 ```
-app/src/main/java/com/gamelauncher/
-├── core/              # Performance, Device, FPS/Jank, SoC, DND, Network, Touch, Thermals
-│   ├── BatterySaverManager.kt     # 🆕 Triple-layer battery saver kill + Doze whitelist
-│   ├── BypassChargingManager.kt   # 🆕 Non-root bypass charging (Shizuku / dumpsys / sysfs)
-│   ├── ShizukuShellManager.kt     # 🆕 ADB-shell-level command executor via Shizuku API
-│   ├── FPSManager.kt              # 🆕 Jank detection, rolling avg, max Hz forcer
-│   ├── NetworkManager.kt          # 🆕 5G NR, WiFi 6E/7, dual-stack, quality score
-│   ├── PerformanceManager.kt      # CPU/GPU/ADPF + mobile_data_always_on
-│   ├── GameOptimizationCoordinator.kt  # Main orchestrator (now kills battery saver first)
-│   ├── BenchmarkManager.kt        # CPU/GPU/Memory benchmark
-│   ├── ProfileManager.kt          # Game profile import/export
-│   ├── GameLauncherApp.kt         # 🆕 Shizuku binder listeners registered on startup
-│   └── ...
-├── data/              # Database, Models, Repository
-│   ├── local/         # Room Database & DAOs
-│   ├── model/         # Data classes (GameModel, GamingSession, DeviceSpecs)
-│   ├── preference/    # DataStore settings (theme, onboarding, toggles) 🆕 +5 new keys
-│   └── repository/    # Data layer
-├── domain/            # Domain Layer (Use Cases)
-│   └── usecase/       # GetInstalledGamesUseCase, LaunchGameAndBoostUseCase
-├── di/                # Hilt DI — AppModule 🆕 provides DisplayManager
-├── ml/                # TensorFlow Lite Game Classifier
-├── receivers/         # Broadcast Receivers (Boot, Package Changes)
-├── services/          # Background Services
-│   ├── GameBoosterService         # 🆕 Battery saver kill + network monitoring wired in
-│   ├── GameDetectorService        # UsageStatsManager-based, session recording
-│   ├── OverlayService             # Draggable FPS counter
-│   └── GameBoosterTileService     # Quick Settings tile
-├── ui/                # UI Components (Compose)
-│   ├── components/    # Reusable UI components (GameCard, BoostToggleRow, MiniTag)
-│   ├── dashboard/     # Dashboard w/ Device Tier, Network, FPS, Benchmark, CPU Core, Bypass Charging
-│   ├── games/         # Games Library screen and search functionality
-│   ├── onboarding/    # 4-step onboarding walkthrough
-│   ├── settings/      # Settings w/ permissions, theme toggle, import/export
-│   └── theme/         # App Theme & Colors (dark/light)
-└── widgets/           # Home Screen Widget (Boost + Open buttons)
+├── core/
+│   ├── shizuku/       # Non-root ADB shell execution via Shizuku API & AIDL service
+│   ├── settings/      # System Settings read/write abstraction (System, Global, Secure)
+│   ├── device/        # Hardware specs, thermal headroom & OEM brand capability mapping
+│   ├── permissions/   # Special app access permissions & runtime status tracking
+│   ├── database/      # Room AppDatabase, GameProfileDao & Room database entities
+│   └── di/            # Coroutine Dispatchers (@IoDispatcher, @MainDispatcher)
+├── feature/
+│   ├── tweaks/        # System Performance Tweaks screen & ViewModel
+│   ├── network/       # Private DNS switcher & low-latency socket ping prober
+│   └── monitor/       # FPS gauge & CPU /proc/stat, RAM & thermal telemetry overlay
+└── app/               # Main application UI, Hilt setup & navigation routes
 ```
 
 ---
@@ -817,7 +793,7 @@ Contributions are welcome! Here's how:
 
 ## 📥 Download
 
-- [Latest Release: v3.2.9](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.9)
+- [Latest Release: v3.5.0](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0)
 - Or build from source using the instructions above
 
 ---
