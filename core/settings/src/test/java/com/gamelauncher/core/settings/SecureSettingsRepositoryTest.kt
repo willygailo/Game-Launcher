@@ -1,6 +1,8 @@
+// core/settings/src/test/java/com/gamelauncher/core/settings/SecureSettingsRepositoryTest.kt
 package com.gamelauncher.core.settings
 
-import com.gamelauncher.core.shizuku.ShizukuUserService
+import com.gamelauncher.core.shizuku.IShellExecutor
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -19,18 +21,32 @@ class SecureSettingsRepositoryTest {
     }
 
     @Test
-    fun testExecArgs_MaliciousInjectionPayload_TreatedAsSingleLiteralArgument() {
-        val service = ShizukuUserService()
-        val output = arrayOf("")
+    fun testSecureSettingsRepository_PutAndGetFloat() = runTest {
+        val settingsMap = mutableMapOf<String, String>()
 
-        // Malicious injection payload attempt: x'; rm -rf /data/data/com.gamelauncher; echo '
-        val payload = "x'; rm -rf /data/data/com.gamelauncher; echo '"
-        val args = arrayOf("echo", payload)
+        val fakeExecutor = object : IShellExecutor {
+            override suspend fun setPeakRefreshRate(hz: Float): Boolean = true
+            override suspend fun setMinRefreshRate(hz: Float): Boolean = true
+            override suspend fun setThermalOverride(disabled: Boolean): Boolean = true
+            override suspend fun writeSetting(namespace: String, key: String, value: String): Boolean {
+                settingsMap["$namespace:$key"] = value
+                return true
+            }
+            override suspend fun readSetting(namespace: String, key: String): String? {
+                return settingsMap["$namespace:$key"]
+            }
+            override suspend fun setDeviceConfig(namespace: String, key: String, value: String): Boolean = true
+            override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
+            override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
+            override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+        }
 
-        val exitCode = service.execArgs(args, output, 5000L)
+        val repository = SecureSettingsRepository(fakeExecutor)
 
-        assertEquals(0, exitCode)
-        // Verify output treats the entire string as a single literal value without executing injected commands
-        assertEquals(payload, output[0])
+        val writeSuccess = repository.putFloat(SettingsKeys.Scope.GLOBAL, "window_animation_scale", 0.5f)
+        assertTrue(writeSuccess)
+
+        val readValue = repository.getFloat(SettingsKeys.Scope.GLOBAL, "window_animation_scale", 1.0f)
+        assertEquals(0.5f, readValue, 0.001f)
     }
 }

@@ -26,6 +26,9 @@ val DockBgDark = Color(0xFF0C0F17)
 val DockSurfaceDark = Color(0xFF161B26)
 val DockCardBorder = Color(0xFF252D3F)
 
+val RogSurfaceDark = DockSurfaceDark
+val RogCardBorder = DockCardBorder
+
 enum class PerformanceMode {
     ECO, BALANCED, PRO
 }

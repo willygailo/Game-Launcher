@@ -1,3 +1,4 @@
+// app/src/main/java/com/gamelauncher/core/ThermalWatcher.kt
 package com.gamelauncher.core
 
 import android.content.Context
@@ -14,9 +15,6 @@ import javax.inject.Singleton
  * Push-based thermal status watcher using PowerManager.OnThermalStatusChangedListener
  * (Android 10+ / API 29+). Replaces polling with instant-reaction callbacks,
  * firing immediately when the kernel reports a thermal zone change — no 1-second delay.
- *
- * Usage:
- *   thermalWatcher.thermalStatus.collect { status -> adaptFpsToThermal(status) }
  */
 @Singleton
 class ThermalWatcher @Inject constructor(
@@ -28,24 +26,22 @@ class ThermalWatcher @Inject constructor(
     private var isListening = false
     private var powerManager: PowerManager? = null
 
-    private val thermalListener = PowerManager.OnThermalStatusChangedListener { status ->
-        _thermalStatus.value = status
-    }
-
     /**
-     * Start listening for thermal events.
-     * Call from GameBoosterService.onCreate() or GameOptimizationCoordinator.startOptimization().
-     * Safe to call multiple times — idempotent.
+     * Start listening for thermal events. Firing callback if provided.
      */
-    fun start() {
+    fun start(onStatusChanged: ((Int) -> Unit)? = null) {
         if (isListening) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return  // API 29 minimum
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         try {
             val pm = context.getSystemService(PowerManager::class.java) ?: return
             powerManager = pm
-            pm.addThermalStatusListener(thermalListener)
-            // Immediately populate current state so collectors get an initial value
+            val listener = PowerManager.OnThermalStatusChangedListener { status ->
+                _thermalStatus.value = status
+                onStatusChanged?.invoke(status)
+            }
+            pm.addThermalStatusListener(listener)
             _thermalStatus.value = pm.currentThermalStatus
+            onStatusChanged?.invoke(pm.currentThermalStatus)
             isListening = true
         } catch (_: Exception) {}
     }
@@ -56,16 +52,12 @@ class ThermalWatcher @Inject constructor(
     fun stop() {
         if (!isListening) return
         try {
-            powerManager?.removeThermalStatusListener(thermalListener)
+            powerManager?.removeThermalStatusListener { }
         } catch (_: Exception) {}
         isListening = false
         _thermalStatus.value = PowerManager.THERMAL_STATUS_NONE
     }
 
-    /**
-     * Human-readable status label for UI display.
-     * Returns emoji + label pairs for the thermal badge.
-     */
     fun statusLabel(status: Int): Pair<String, String> = when (status) {
         PowerManager.THERMAL_STATUS_NONE      -> "🟢" to "Normal"
         PowerManager.THERMAL_STATUS_LIGHT     -> "🟡" to "Warm"
@@ -77,15 +69,13 @@ class ThermalWatcher @Inject constructor(
         else -> "⚪" to "Unknown"
     }
 
-    /** True if device should throttle FPS (moderate or worse). */
     fun isThrottling(status: Int): Boolean =
         status >= PowerManager.THERMAL_STATUS_MODERATE
 
-    /** Suggested max FPS cap for this thermal state. */
     fun suggestedMaxFps(status: Int): Int = when {
         status >= PowerManager.THERMAL_STATUS_CRITICAL  -> 30
         status >= PowerManager.THERMAL_STATUS_SEVERE    -> 45
         status >= PowerManager.THERMAL_STATUS_MODERATE  -> 60
-        else -> Int.MAX_VALUE  // no cap at light/none
+        else -> Int.MAX_VALUE
     }
 }

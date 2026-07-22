@@ -1,35 +1,30 @@
+// app/src/main/java/com/gamelauncher/services/GameBoosterService.kt
 package com.gamelauncher.services
 
-import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.gamelauncher.R
+import com.gamelauncher.core.AndroidGameModeApiManager
 import com.gamelauncher.core.BatterySaverManager
-import com.gamelauncher.core.DevicePerformancePlanner
+import com.gamelauncher.core.DeviceManager
 import com.gamelauncher.core.DndManager
-import com.gamelauncher.core.FpsMonitor
-import com.gamelauncher.core.GameLauncherApp
 import com.gamelauncher.core.GameOptimizationCoordinator
 import com.gamelauncher.core.NetworkManager
 import com.gamelauncher.core.PerformanceManager
-import com.gamelauncher.core.SupportedGames
 import com.gamelauncher.core.ThermalWatcher
-import com.gamelauncher.core.AndroidGameModeApiManager
 import com.gamelauncher.core.TouchLatencyOptimizer
-import com.gamelauncher.data.preference.SettingsPreferences
-import com.gamelauncher.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,233 +32,143 @@ import javax.inject.Inject
 class GameBoosterService : Service() {
 
     @Inject lateinit var performanceManager: PerformanceManager
+    @Inject lateinit var deviceManager: DeviceManager
     @Inject lateinit var networkManager: NetworkManager
-    @Inject lateinit var optimizationCoordinator: GameOptimizationCoordinator
     @Inject lateinit var dndManager: DndManager
     @Inject lateinit var touchLatencyOptimizer: TouchLatencyOptimizer
-    @Inject lateinit var settingsPreferences: SettingsPreferences
-    @Inject lateinit var fpsMonitor: FpsMonitor
+    @Inject lateinit var optimizationCoordinator: GameOptimizationCoordinator
     @Inject lateinit var batterySaverManager: BatterySaverManager
-    @Inject lateinit var devicePerformancePlanner: DevicePerformancePlanner
     @Inject lateinit var thermalWatcher: ThermalWatcher
     @Inject lateinit var gameModeApiManager: AndroidGameModeApiManager
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var gameName: String = ""
-    private var notificationPendingIntent: PendingIntent? = null
-    // Guard against stopBoost() being called twice (ACTION_STOP_BOOST + onDestroy)
-    private val stopGuard = java.util.concurrent.atomic.AtomicBoolean(false)
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.action
-        when (action) {
-            ACTION_START_BOOST -> {
-                val pkg = intent.getStringExtra(EXTRA_PACKAGE) ?: ""
-                val targetFps = intent.getIntExtra(EXTRA_TARGET_FPS, 60)
-                val enableDnd = intent.getBooleanExtra(EXTRA_ENABLE_DND, true)
-                val enableTouch = intent.getBooleanExtra(EXTRA_ENABLE_TOUCH, true)
-                val enableNetwork = intent.getBooleanExtra(EXTRA_ENABLE_NETWORK, true)
-                val disableBatterySaver = intent.getBooleanExtra(EXTRA_DISABLE_BATTERY_SAVER, true)
-                startBoost(pkg, targetFps, enableDnd, enableTouch, enableNetwork, disableBatterySaver)
+    companion object {
+        private const val NOTIFICATION_ID = 1001
+        private const val CHANNEL_ID = "game_booster_channel"
+
+        const val ACTION_START_BOOST = "com.gamelauncher.action.START_BOOST"
+        const val ACTION_STOP_BOOST = "com.gamelauncher.action.STOP_BOOST"
+        const val EXTRA_PACKAGE_NAME = "extra_package_name"
+        const val EXTRA_PACKAGE = EXTRA_PACKAGE_NAME
+        const val EXTRA_TARGET_FPS = "extra_target_fps"
+        const val EXTRA_ENABLE_NETWORK = "extra_enable_network"
+
+        fun startBoost(context: Context, packageName: String) {
+            val intent = Intent(context, GameBoosterService::class.java).apply {
+                action = ACTION_START_BOOST
+                putExtra(EXTRA_PACKAGE_NAME, packageName)
             }
-            ACTION_STOP_BOOST -> {
-                stopBoost()
-                stopSelf()
-            }
-            ACTION_TOGGLE_DND -> {
-                serviceScope.launch {
-                    if (dndManager.isDndPermissionGranted()) dndManager.enableGamingDnd()
-                    else dndManager.disableGamingDnd()
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
             }
         }
-        return START_NOT_STICKY
+
+        fun stopBoost(context: Context) {
+            val intent = Intent(context, GameBoosterService::class.java).apply {
+                action = ACTION_STOP_BOOST
+            }
+            context.startService(intent)
+        }
     }
 
-    private fun startBoost(
-        pkg: String,
-        targetFps: Int,
-        enableDnd: Boolean,
-        enableTouch: Boolean,
-        enableNetwork: Boolean,
-        disableBatterySaver: Boolean
-    ) {
-        // Validate input parameters
-        if (pkg.isBlank()) {
-            Log.e(TAG, "Invalid package name: cannot be blank")
-            stopSelf()
-            return
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_START_BOOST -> {
+                val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
+                    ?: intent.getStringExtra(EXTRA_PACKAGE)
+                    ?: ""
+                startBoostInternal(packageName)
+            }
+            ACTION_STOP_BOOST -> {
+                stopBoostInternal()
+            }
         }
+        return START_STICKY
+    }
 
-        val gameName = runCatching {
-            packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-        }.onFailure {
-            Log.e(TAG, "Failed to get game name for $pkg: ${it.message}")
-        }.getOrDefault(pkg)
+    override fun onBind(intent: Intent?): IBinder? = null
 
-        val gameInfo = SupportedGames.findGame(pkg)
-        val initialPlan = devicePerformancePlanner.planForGame(
-            gameInfo = gameInfo,
-            requestedFps = targetFps.takeIf { it > 0 },
-            requestedHz = null,
-            forceMaxRefreshRate = true
-        )
-        val actualTargetFps = initialPlan.targetFps
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
+    }
 
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationPendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Game Booster Service",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Active game optimization service"
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager?.createNotificationChannel(channel)
+        }
+    }
 
-        val notification: Notification = NotificationCompat.Builder(this, GameLauncherApp.CHANNEL_BOOSTER)
-            .setContentTitle("🚀 Game Boost Active")
-            .setContentText("Optimizing $gameName @ ${actualTargetFps} FPS")
-            .setSmallIcon(android.R.drawable.ic_media_play)
-            .setContentIntent(notificationPendingIntent)
+    private fun startBoostInternal(packageName: String) {
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Game Booster Active")
+            .setContentText("Optimizing performance for $packageName")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
             .build()
 
-        try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        startForeground(NOTIFICATION_ID, notification)
+
+        serviceScope.launch {
+            batterySaverManager.disableBatterySaver()
+
+            val thermalStatus = deviceManager.getThermalStatus()
+            val isOverheating = thermalStatus >= android.os.PowerManager.THERMAL_STATUS_CRITICAL
+
+            if (isOverheating) {
+                optimizationCoordinator.startThermalAwareOptimization(packageName)
             } else {
-                @Suppress("DEPRECATION")
-                startForeground(1, notification)
+                optimizationCoordinator.startOptimization(packageName)
             }
-        } catch (e: Exception) {
-            stopSelf()
-            return
-        }
 
-        fpsMonitor.startTracking()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                try { gameModeApiManager.forcePerformanceMode(packageName) } catch (_: Exception) {}
+            }
 
-        // Start live network monitoring right away
-        networkManager.startMonitoring()
-
-            serviceScope.launch(Dispatchers.IO) {
-                // ── STEP 1: Kill battery saver FIRST (before any other opt) ──
-                if (disableBatterySaver) {
-                    var bsKilled = false
-                    try {
-                        bsKilled = batterySaverManager.disableBatterySaver()
-                        // Also whitelist the game from Doze
-                        if (bsKilled) {
-                            batterySaverManager.whitelistGameFromDoze(pkg)
-                            // Give OS time to settle battery saver state
-                            kotlinx.coroutines.delay(200)
-                        }
-                    } catch (e: Exception) {
-                        // Log error but continue with other optimizations
-                        Log.e(TAG, "Battery saver disable failed: ${e.message}")
-                    }
+            thermalWatcher.start { thermalStatusInt: Int ->
+                if (thermalStatusInt >= android.os.PowerManager.THERMAL_STATUS_CRITICAL) {
+                    val targetFps = 30
+                    val targetHz = 30f
+                    performanceManager.lockFps(targetFps)
+                    performanceManager.lockRefreshRate(targetHz)
+                } else if (thermalStatusInt <= android.os.PowerManager.THERMAL_STATUS_LIGHT) {
+                    val targetFps = 60
+                    val targetHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
+                    performanceManager.lockFps(targetFps)
+                    performanceManager.lockRefreshRate(targetHz)
                 }
+            }
 
-            // ── STEP 2: Start push-based thermal listener ───────────────
-            thermalWatcher.start()
-
-            // ── STEP 3: Request Android 13+ GameMode PERFORMANCE ────────
             try {
-                gameModeApiManager.enablePerformanceMode(pkg)
+                val overlayIntent = Intent(this@GameBoosterService, OverlayService::class.java)
+                startService(overlayIntent)
             } catch (_: Exception) {}
-
-            // ── STEP 4: Main optimization pipeline ─────────────────────
-            val thermalAware = settingsPreferences.thermalAwareBoost.first()
-            val result = if (thermalAware)
-                optimizationCoordinator.startThermalAwareOptimization(pkg)
-            else
-                optimizationCoordinator.startOptimization(pkg)
-
-            if (enableDnd) dndManager.enableGamingDnd()
-            if (enableTouch) {
-                touchLatencyOptimizer.enableTouchOptimizations()
-                touchLatencyOptimizer.enableHighFrequencyTouch()
-                touchLatencyOptimizer.enableGameModeTouch()
-            }
-
-            // ── STEP 3: Network — WiFi + Data dual support ──────────────
-            if (enableNetwork) {
-                networkManager.acquireWifiLowLatencyLock("GameBoost")
-                // Force mobile data always-on if we have WRITE_SECURE_SETTINGS
-                performanceManager.forceMobileDataAlwaysOn()
-            }
-
-            // ── STEP 4: Device-planned FPS/Hz request ───────────────────
-            if (settingsPreferences.forceMaxHzOnBoost.first()) {
-                val refreshLocked = performanceManager.lockRefreshRate(result.targetHz)
-                if (!refreshLocked) {
-                    Log.i(TAG, "Refresh request limited by Android/OEM permissions")
-                }
-            }
-            performanceManager.lockFps(result.targetFps)
-            performanceManager.boostThreadPriority()
-            performanceManager.startPerformanceSession(result.targetFps)
-
-            // Start live notification updates
-            launchNotificationUpdater(gameName, result.targetFps)
         }
     }
 
-    private fun launchNotificationUpdater(name: String, targetFps: Int) {
+    private fun stopBoostInternal() {
+        try {
+            val overlayIntent = Intent(this, OverlayService::class.java)
+            stopService(overlayIntent)
+        } catch (_: Exception) {}
+
         serviceScope.launch {
-            val nm = getSystemService(android.app.NotificationManager::class.java)
-            while (isActive) {
-                val currentFps = fpsMonitor.fps.value.toInt()
-                val currentHz = performanceManager.getCurrentRefreshRate().toInt()
-                val netSummary = networkManager.getNetworkSummary()
-                val netScore = networkManager.networkQualityScore.value
-                val isBsOff = !batterySaverManager.isBatterySaverCurrentlyOn()
-                val battLevel = batterySaverManager.batteryLevel.value
-                val isCharging = batterySaverManager.isCharging.value
-
-                val battLabel = when {
-                    isCharging -> "⚡ ${battLevel}%"
-                    battLevel <= 20 -> "🔋 ${battLevel}%"
-                    else -> "🔋 ${battLevel}%"
-                }
-                val bsLabel = if (isBsOff) "⚡ Boost On" else "🔋 Saver!"
-
-                val notificationText = buildString {
-                    append(name)
-                    if (currentFps > 0) append("  |  $currentFps FPS")
-                    if (currentHz > 0) append("  @  ${currentHz}Hz")
-                }
-
-                val bigText = buildString {
-                    appendLine("$name")
-                    appendLine("FPS: $currentFps / Target: ${targetFps}FPS | Hz: ${currentHz}Hz")
-                    appendLine("Network: $netSummary (Quality: $netScore/100)")
-                    appendLine("$battLabel | $bsLabel")
-                }
-
-                val notification = NotificationCompat.Builder(
-                    this@GameBoosterService, GameLauncherApp.CHANNEL_BOOSTER
-                )
-                    .setContentTitle("🚀 Game Boost Active")
-                    .setContentText(notificationText)
-                    .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
-                    .setSmallIcon(android.R.drawable.ic_menu_compass)
-                    .setContentIntent(notificationPendingIntent)
-                    .setOngoing(true)
-                    .build()
-
-                try { nm?.notify(1, notification) } catch (_: Exception) {}
-
-                // Refresh battery status every cycle
-                batterySaverManager.refreshBatteryStatus()
-
-                delay(2000)
-            }
-        }
-    }
-
-    private fun stopBoost() {
-        // Prevent double-execution: onDestroy() calls this after ACTION_STOP_BOOST already did
-        if (!stopGuard.compareAndSet(false, true)) return
-        fpsMonitor.stopTracking()
-        networkManager.stopMonitoring()
-        serviceScope.launch {
-            // Restore battery saver state
             batterySaverManager.restoreBatterySaver()
 
             optimizationCoordinator.stopOptimization()
@@ -275,37 +180,13 @@ class GameBoosterService : Service() {
             performanceManager.restoreThreadPriority()
             performanceManager.stopPerformanceSession()
             performanceManager.restoreAnimations()
-            performanceManager.restoreFps()
             val defaultHz = performanceManager.getSupportedRefreshRates().firstOrNull() ?: 60f
             performanceManager.lockRefreshRate(defaultHz)
-            // Stop push-based thermal listener — no longer needed outside gaming session
             thermalWatcher.stop()
-            // Restore Android 13+ game mode to STANDARD
             optimizationCoordinator.getCurrentGamePackage()?.let { pkg ->
                 try { gameModeApiManager.restoreStandardMode(pkg) } catch (_: Exception) {}
             }
         }
         stopForeground(STOP_FOREGROUND_REMOVE)
-    }
-
-    override fun onDestroy() {
-        stopBoost()
-        serviceScope.cancel()
-        super.onDestroy()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
-    companion object {
-        private const val TAG = "GameBoosterService"
-        const val ACTION_START_BOOST = "START_BOOST"
-        const val ACTION_STOP_BOOST = "STOP_BOOST"
-        const val ACTION_TOGGLE_DND = "TOGGLE_DND"
-        const val EXTRA_PACKAGE = "PACKAGE"
-        const val EXTRA_TARGET_FPS = "TARGET_FPS"
-        const val EXTRA_ENABLE_DND = "ENABLE_DND"
-        const val EXTRA_ENABLE_TOUCH = "ENABLE_TOUCH"
-        const val EXTRA_ENABLE_NETWORK = "ENABLE_NETWORK"
-        const val EXTRA_DISABLE_BATTERY_SAVER = "DISABLE_BATTERY_SAVER"  // NEW
     }
 }

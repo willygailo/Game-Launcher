@@ -133,7 +133,7 @@ fun SettingsScreen(
                 buttonText = if (hasNotificationPerm) "Granted ✓" else "Grant Notifications",
                 granted = hasNotificationPerm,
                 onClick = {
-                    if (!hasNotificationPerm) {
+                    if (hasNotificationPerm == false) {
                         notifLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
@@ -150,7 +150,7 @@ fun SettingsScreen(
             buttonText = if (hasPhoneState) "Granted ✓" else "Grant Phone State",
             granted = hasPhoneState,
             onClick = {
-                if (!hasPhoneState) {
+                if (hasPhoneState == false) {
                     phoneLauncher.launch(android.Manifest.permission.READ_PHONE_STATE)
                 }
             }
@@ -188,7 +188,7 @@ fun SettingsScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                if (!hasWriteSecure) {
+                if (hasWriteSecure == false) {
                     if (isShizukuAvailable) {
                         Text(
                             "Shizuku is active! Grant WRITE_SECURE_SETTINGS with a single tap to unlock deep performance tweaks without needing a PC.",

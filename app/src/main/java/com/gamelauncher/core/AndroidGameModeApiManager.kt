@@ -1,3 +1,4 @@
+// app/src/main/java/com/gamelauncher/core/AndroidGameModeApiManager.kt
 package com.gamelauncher.core
 
 import android.app.GameManager
@@ -11,18 +12,6 @@ import javax.inject.Singleton
 
 /**
  * Full Android 13+ (API 33) GameManager API integration.
- *
- * The existing code only uses GameManager.setGameState(). This class adds:
- *  - getGameMode(): read current mode (STANDARD / PERFORMANCE / BATTERY)
- *  - setGameMode(PERFORMANCE): request performance mode for a package
- *  - getGameModeInfo(): check OEM allows the override (Android 14+ / API 34)
- *
- * OEM support matrix (as of 2025):
- *  - Samsung One UI 6+: ✅ full support
- *  - Xiaomi HyperOS:    ✅ PERFORMANCE mode honored
- *  - OPPO/Realme:       ✅ ColorOS 14+
- *  - OnePlus:           ✅ OxygenOS 14+
- *  - Google Pixel:      ✅ Android 13+
  */
 @Singleton
 class AndroidGameModeApiManager @Inject constructor(
@@ -42,13 +31,8 @@ class AndroidGameModeApiManager @Inject constructor(
         val set: Boolean = false
     )
 
-    /**
-     * Query + set performance mode for a package.
-     * On Android 14+, checks OEM support before attempting to set.
-     * Safe to call on Android 13 (API 33) — falls back gracefully on older APIs.
-     *
-     * @return null if GameManager is unavailable (Android < 13)
-     */
+    suspend fun forcePerformanceMode(packageName: String): GameModeResult? = enablePerformanceMode(packageName)
+
     suspend fun enablePerformanceMode(packageName: String): GameModeResult? =
         withContext(Dispatchers.IO) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@withContext null
@@ -57,13 +41,11 @@ class AndroidGameModeApiManager @Inject constructor(
                 context.getSystemService(GameManager::class.java) ?: return@withContext null
             } catch (_: Exception) { return@withContext null }
 
-            // Current mode
             val currentMode = try {
                 val method = gm.javaClass.getMethod("getGameMode", String::class.java)
                 method.invoke(gm, packageName) as? Int ?: GAME_MODE_STANDARD
             } catch (_: Exception) { GAME_MODE_STANDARD }
 
-            // Android 14+: check OEM capability before setting
             var performanceSupported = true
             var batterySupported = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -81,7 +63,6 @@ class AndroidGameModeApiManager @Inject constructor(
                 } catch (_: Exception) {}
             }
 
-            // Attempt to set PERFORMANCE mode if supported
             var setSuccess = false
             if (performanceSupported && currentMode != GAME_MODE_PERFORMANCE) {
                 try {
@@ -100,9 +81,6 @@ class AndroidGameModeApiManager @Inject constructor(
             )
         }
 
-    /**
-     * Restore standard game mode when the session ends.
-     */
     suspend fun restoreStandardMode(packageName: String): Boolean =
         withContext(Dispatchers.IO) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@withContext false
@@ -114,9 +92,6 @@ class AndroidGameModeApiManager @Inject constructor(
             } catch (_: Exception) { false }
         }
 
-    /**
-     * Get raw game mode for diagnostic display.
-     */
     fun getGameModeLabel(mode: Int): String = when (mode) {
         GAME_MODE_STANDARD    -> "Standard"
         GAME_MODE_PERFORMANCE -> "Performance"

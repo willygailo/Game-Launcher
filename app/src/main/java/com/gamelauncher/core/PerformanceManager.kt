@@ -472,4 +472,20 @@ class PerformanceManager @Inject constructor(
         else restoreThreadPriority()
         true
     }
+
+    fun clearMemory() {
+        try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            am?.let {
+                val runningProcs = it.runningAppProcesses ?: return@let
+                for (proc in runningProcs) {
+                    if (proc.pkgList != null && proc.pkgList.isNotEmpty() && proc.pkgList[0] != context.packageName) {
+                        it.killBackgroundProcesses(proc.pkgList[0])
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun clearBackgroundProcesses() = clearMemory()
 }

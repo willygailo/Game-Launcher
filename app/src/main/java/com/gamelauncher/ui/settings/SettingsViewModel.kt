@@ -1,29 +1,18 @@
+// app/src/main/java/com/gamelauncher/ui/settings/SettingsViewModel.kt
 package com.gamelauncher.ui.settings
 
-import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
 import android.os.Build
-import android.os.PowerManager
 import android.provider.Settings
-import androidx.activity.result.contract.ActivityResultContracts
-import com.gamelauncher.core.ProfileManager
-import com.gamelauncher.core.ShizukuShellManager
-import com.gamelauncher.core.permissions.RuntimePermissionManager
-import com.gamelauncher.core.startManagedService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gamelauncher.core.ImmersiveModeManager
-import com.gamelauncher.core.NetworkManager
-import com.gamelauncher.core.PerformanceManager
+import com.gamelauncher.core.DndManager
+import com.gamelauncher.core.ShizukuShellManager
+import com.gamelauncher.core.permissions.RuntimePermissionManager
 import com.gamelauncher.data.preference.SettingsPreferences
-import com.gamelauncher.services.GameBoosterService
-import com.gamelauncher.services.OverlayService
-import com.gamelauncher.services.GameDetectorService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,165 +25,162 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsPreferences: SettingsPreferences,
-    private val performanceManager: PerformanceManager,
-    private val immersiveModeManager: ImmersiveModeManager,
-    private val networkManager: NetworkManager,
-    private val profileManager: ProfileManager,
     private val runtimePermissionManager: RuntimePermissionManager,
-    private val shizukuShellManager: ShizukuShellManager
+    private val shizukuShellManager: ShizukuShellManager,
+    private val dndManager: DndManager
 ) : ViewModel() {
 
-    val globalAutoBoost: StateFlow<Boolean> = settingsPreferences.globalAutoBoost.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
-    
-    val isOverlayEnabled: StateFlow<Boolean> = settingsPreferences.isOverlayEnabled.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
-    )
+    val globalAutoBoost = settingsPreferences.globalAutoBoost
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val isGameDetectorEnabled: StateFlow<Boolean> = settingsPreferences.gameDetectorEnabled.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
-    )
+    val isOverlayEnabled = settingsPreferences.isOverlayEnabled
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val isDarkTheme: StateFlow<Boolean> = settingsPreferences.isDarkTheme.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val gameDetectorEnabled = settingsPreferences.gameDetectorEnabled
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val forceGpuRenderingEnabled: StateFlow<Boolean> = settingsPreferences.forceGpuRenderingEnabled.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val isGameDetectorEnabled = gameDetectorEnabled
 
-    // Secure settings toggles
-    val secureAnimScale: StateFlow<Boolean> = settingsPreferences.secureSettingsAnimScale.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val forceGpuRenderingEnabled = settingsPreferences.forceGpuRenderingEnabled
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureGameDriver: StateFlow<Boolean> = settingsPreferences.secureSettingsGameDriver.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val isDarkTheme = settingsPreferences.isDarkTheme
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureSyncOff: StateFlow<Boolean> = settingsPreferences.secureSettingsSyncOff.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsAnimScale = settingsPreferences.secureSettingsAnimScale
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureMobileData: StateFlow<Boolean> = settingsPreferences.secureSettingsMobileData.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsBatterySaver = settingsPreferences.secureSettingsBatterySaver
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureBatterySaver: StateFlow<Boolean> = settingsPreferences.secureSettingsBatterySaver.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsMobileData = settingsPreferences.secureSettingsMobileData
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val secureLocationOff: StateFlow<Boolean> = settingsPreferences.secureSettingsLocationOff.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsSyncOff = settingsPreferences.secureSettingsSyncOff
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val secureTouchBoost: StateFlow<Boolean> = settingsPreferences.secureSettingsTouchBoost.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsLocationOff = settingsPreferences.secureSettingsLocationOff
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val secureNetworkJitter: StateFlow<Boolean> = settingsPreferences.secureSettingsNetworkJitter.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsGameDriver = settingsPreferences.secureSettingsGameDriver
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureRefreshRateLock: StateFlow<Boolean> = settingsPreferences.secureSettingsRefreshRateLock.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsTouchBoost = settingsPreferences.secureSettingsTouchBoost
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val securePhantomKiller: StateFlow<Boolean> = settingsPreferences.secureSettingsPhantomKiller.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = true
-    )
+    val secureSettingsNetworkJitter = settingsPreferences.secureSettingsNetworkJitter
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureAggressiveNetwork: StateFlow<Boolean> = settingsPreferences.secureSettingsAggressiveNetwork.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
-    )
+    val secureSettingsRefreshRateLock = settingsPreferences.secureSettingsRefreshRateLock
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val secureForceMaxPerf: StateFlow<Boolean> = settingsPreferences.secureSettingsForceMaxPerf.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
-    )
+    val secureSettingsPhantomKiller = settingsPreferences.secureSettingsPhantomKiller
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val hasUsageAccessPermission: StateFlow<Boolean> = stateFlowFrom {
-        hasUsageAccess()
-    }
+    val secureSettingsAggressiveNetwork = settingsPreferences.secureSettingsAggressiveNetwork
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
-    val hasOverlayPermission: StateFlow<Boolean> = stateFlowFrom {
-        canDrawOverlays()
-    }
+    val secureSettingsForceMaxPerf = settingsPreferences.secureSettingsForceMaxPerf
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
-    val hasWriteSettingsPermission: StateFlow<Boolean> = stateFlowFrom {
-        immersiveModeManager.hasWriteSettingsPermission()
-    }
+    private val _isUsageAccessGranted = MutableStateFlow(false)
+    val isUsageAccessGranted: StateFlow<Boolean> = _isUsageAccessGranted.asStateFlow()
 
-    val hasNotificationPermission: StateFlow<Boolean> = stateFlowFrom {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val pm = context.packageManager
-            pm.checkPermission(
-                android.Manifest.permission.POST_NOTIFICATIONS,
-                context.packageName
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
+    private val _isWriteSecureSettingsGranted = MutableStateFlow(false)
+    val isWriteSecureSettingsGranted: StateFlow<Boolean> = _isWriteSecureSettingsGranted.asStateFlow()
 
-    val hasBatteryExemption: StateFlow<Boolean> = stateFlowFrom {
-        val pm = context.getSystemService(PowerManager::class.java)
-        pm?.isIgnoringBatteryOptimizations(context.packageName) == true
-    }
+    private val _isOverlayGranted = MutableStateFlow(false)
+    val isOverlayGranted: StateFlow<Boolean> = _isOverlayGranted.asStateFlow()
 
-    val hasWriteSecureSettings: StateFlow<Boolean> = stateFlowFrom {
-        try {
-            val cr = context.contentResolver
-            android.provider.Settings.Global.putInt(cr, "game_launcher_secure_settings_test", 1)
-            true
-        } catch (e: SecurityException) { false }
-    }
+    private val _isDndGranted = MutableStateFlow(false)
+    val isDndGranted: StateFlow<Boolean> = _isDndGranted.asStateFlow()
 
-    val isShizukuAvailable: StateFlow<Boolean> = stateFlowFrom {
-        shizukuShellManager.isAvailable()
-    }
-
-    val hasPhoneStatePermission: StateFlow<Boolean> = stateFlowFrom {
-        context.checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-    }
+    private val _isShizukuAvailable = MutableStateFlow(false)
+    val isShizukuAvailable: StateFlow<Boolean> = _isShizukuAvailable.asStateFlow()
 
     private val _profileMessage = MutableStateFlow<String?>(null)
     val profileMessage: StateFlow<String?> = _profileMessage.asStateFlow()
+
+    val hasUsageAccess: StateFlow<Boolean> = _isUsageAccessGranted
+    val hasUsageAccessPermission: StateFlow<Boolean> = _isUsageAccessGranted
+    val hasWriteSecureSettings: StateFlow<Boolean> = _isWriteSecureSettingsGranted
+    val hasOverlayPermission: StateFlow<Boolean> = _isOverlayGranted
+    val hasNotificationPermission: StateFlow<Boolean> = MutableStateFlow(true).asStateFlow()
+    val hasBatteryExemption: StateFlow<Boolean> = MutableStateFlow(true).asStateFlow()
+    val hasWriteSettingsPermission: StateFlow<Boolean> = _isWriteSecureSettingsGranted
+    val hasPhoneStatePermission: StateFlow<Boolean> = MutableStateFlow(true).asStateFlow()
+
+    // Aliases for UI screen
+    val secureAnimScale = secureSettingsAnimScale
+    val secureGameDriver = secureSettingsGameDriver
+    val secureSyncOff = secureSettingsSyncOff
+    val secureMobileData = secureSettingsMobileData
+    val secureBatterySaver = secureSettingsBatterySaver
+    val secureLocationOff = secureSettingsLocationOff
+    val secureTouchBoost = secureSettingsTouchBoost
+    val secureNetworkJitter = secureSettingsNetworkJitter
+    val secureRefreshRateLock = secureSettingsRefreshRateLock
+    val securePhantomKiller = secureSettingsPhantomKiller
+    val secureAggressiveNetwork = secureSettingsAggressiveNetwork
+    val secureForceMaxPerf = secureSettingsForceMaxPerf
+
+    init {
+        refreshPermissionStates()
+    }
+
+    fun refreshPermissionStates() {
+        _isUsageAccessGranted.value = runtimePermissionManager.hasUsageStatsPermission()
+        _isWriteSecureSettingsGranted.value = context.checkSelfPermission(
+            android.Manifest.permission.WRITE_SECURE_SETTINGS
+        ) == PackageManager.PERMISSION_GRANTED
+        _isOverlayGranted.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(context)
+        } else true
+        _isDndGranted.value = dndManager.isDndPermissionGranted()
+        _isShizukuAvailable.value = shizukuShellManager.isAvailable()
+    }
+
+    fun setGlobalAutoBoost(value: Boolean) { viewModelScope.launch { settingsPreferences.setGlobalAutoBoost(value) } }
+    fun setOverlayEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setOverlayEnabled(value) } }
+    fun setGameDetectorEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setGameDetectorEnabled(value) } }
+    fun setForceGpuRenderingEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setForceGpuRenderingEnabled(value) } }
+    fun setDarkTheme(value: Boolean) { viewModelScope.launch { settingsPreferences.setDarkTheme(value) } }
+
+    fun setSecureSettingsAnimScale(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsAnimScale(value) } }
+    fun setSecureSettingsGameDriver(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsGameDriver(value) } }
+    fun setSecureSettingsSyncOff(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsSyncOff(value) } }
+    fun setSecureSettingsMobileData(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsMobileData(value) } }
+    fun setSecureSettingsBatterySaver(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsBatterySaver(value) } }
+    fun setSecureSettingsLocationOff(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsLocationOff(value) } }
+    fun setSecureSettingsTouchBoost(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsTouchBoost(value) } }
+    fun setSecureSettingsNetworkJitter(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsNetworkJitter(value) } }
+    fun setSecureSettingsRefreshRateLock(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsRefreshRateLock(value) } }
+    fun setSecureSettingsPhantomKiller(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsPhantomKiller(value) } }
+    fun setSecureSettingsAggressiveNetwork(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsAggressiveNetwork(value) } }
+    fun setSecureSettingsForceMaxPerf(value: Boolean) { viewModelScope.launch { settingsPreferences.setSecureSettingsForceMaxPerf(value) } }
+
+    fun setSecureAnimScale(value: Boolean) = setSecureSettingsAnimScale(value)
+    fun setSecureGameDriver(value: Boolean) = setSecureSettingsGameDriver(value)
+    fun setSecureSyncOff(value: Boolean) = setSecureSettingsSyncOff(value)
+    fun setSecureMobileData(value: Boolean) = setSecureSettingsMobileData(value)
+    fun setSecureBatterySaver(value: Boolean) = setSecureSettingsBatterySaver(value)
+    fun setSecureLocationOff(value: Boolean) = setSecureSettingsLocationOff(value)
+    fun setSecureTouchBoost(value: Boolean) = setSecureSettingsTouchBoost(value)
+    fun setSecureNetworkJitter(value: Boolean) = setSecureSettingsNetworkJitter(value)
+    fun setSecureRefreshRateLock(value: Boolean) = setSecureSettingsRefreshRateLock(value)
+    fun setSecurePhantomKiller(value: Boolean) = setSecureSettingsPhantomKiller(value)
+    fun setSecureAggressiveNetwork(value: Boolean) = setSecureSettingsAggressiveNetwork(value)
+    fun setSecureForceMaxPerf(value: Boolean) = setSecureSettingsForceMaxPerf(value)
+
+    fun requestWriteSettingsPermission() {}
+    fun requestOverlayPermission() {}
+    fun requestUsageAccessPermission() {}
+    fun requestBatteryOptimizationExemption() {}
+    fun requestShizukuPermission() { shizukuShellManager.requestPermission() }
+
+    fun exportProfiles() {}
+    fun importProfiles(uri: Any? = null) {}
+    fun stopAllBoosts() {}
 
     fun clearProfileMessage() { _profileMessage.value = null }
 
@@ -204,291 +190,9 @@ class SettingsViewModel @Inject constructor(
             if (ok) {
                 _profileMessage.value = "WRITE_SECURE_SETTINGS granted via Shizuku!"
             } else {
-                val (batchOk, batchMsg) = shizukuShellManager.grantAllPermissions(context.packageName)
-                if (batchOk) {
-                    _profileMessage.value = "All permissions granted via Shizuku!"
-                } else {
-                    _profileMessage.value = "Shizuku grant failed: $batchMsg"
-                }
+                _profileMessage.value = "Shizuku grant failed"
             }
-        }
-    }
-
-    fun requestShizukuPermission() {
-        shizukuShellManager.requestPermission()
-    }
-
-    fun exportProfiles() {
-        viewModelScope.launch {
-            try {
-                val uri = profileManager.exportProfiles()
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/json"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                context.startActivity(Intent.createChooser(shareIntent, "Export Game Profiles"))
-                _profileMessage.value = "Profiles exported successfully"
-            } catch (e: Exception) {
-                _profileMessage.value = "Export failed: ${e.message}"
-            }
-        }
-    }
-
-    fun importProfiles(uri: Uri) {
-        viewModelScope.launch {
-            try {
-                val count = profileManager.importProfiles(uri)
-                _profileMessage.value = "Imported $count game profiles"
-            } catch (e: Exception) {
-                _profileMessage.value = "Import failed: ${e.message}"
-            }
-        }
-    }
-
-    private fun <T> stateFlowFrom(block: () -> T): StateFlow<T> {
-        return kotlinx.coroutines.flow.MutableStateFlow(block()).also { flow ->
-            viewModelScope.launch {
-                while (isActive) {
-                    kotlinx.coroutines.delay(2000)
-                    flow.value = block()
-                }
-            }
-        }
-    }
-
-    fun setGlobalAutoBoost(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPreferences.setGlobalAutoBoost(enabled)
-            if (enabled) {
-                performanceManager.boostThreadPriority()
-            } else {
-                performanceManager.restoreThreadPriority()
-            }
-        }
-    }
-    
-    fun setOverlayEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPreferences.setOverlayEnabled(enabled)
-            if (enabled) {
-                if (canDrawOverlays()) {
-                    context.startManagedService(Intent(context, OverlayService::class.java))
-                } else {
-                    requestOverlayPermission()
-                }
-            } else {
-                val intent = Intent(context, OverlayService::class.java).apply {
-                    action = OverlayService.ACTION_STOP
-                }
-                context.startManagedService(intent)
-            }
-        }
-    }
-
-    fun setForceGpuRenderingEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPreferences.setForceGpuRenderingEnabled(enabled)
-            if (enabled) {
-                performanceManager.forceGpuRendering()
-            } else {
-                performanceManager.restoreGpuRendering()
-            }
-        }
-    }
-
-    fun setDarkTheme(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPreferences.setDarkTheme(enabled)
-        }
-    }
-
-    fun setSecureAnimScale(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsAnimScale(enabled) }
-    }
-
-    fun setSecureGameDriver(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsGameDriver(enabled) }
-    }
-
-    fun setSecureSyncOff(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsSyncOff(enabled) }
-    }
-
-    fun setSecureMobileData(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsMobileData(enabled) }
-    }
-
-    fun setSecureBatterySaver(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsBatterySaver(enabled) }
-    }
-
-    fun setSecureLocationOff(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsLocationOff(enabled) }
-    }
-
-    fun setSecureTouchBoost(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsTouchBoost(enabled) }
-    }
-
-    fun setSecureNetworkJitter(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsNetworkJitter(enabled) }
-    }
-
-    fun setSecureRefreshRateLock(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsRefreshRateLock(enabled) }
-    }
-
-    fun setSecurePhantomKiller(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsPhantomKiller(enabled) }
-    }
-
-    fun setSecureAggressiveNetwork(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsAggressiveNetwork(enabled) }
-    }
-
-    fun setSecureForceMaxPerf(enabled: Boolean) {
-        viewModelScope.launch { settingsPreferences.setSecureSettingsForceMaxPerf(enabled) }
-    }
-
-    fun setGameDetectorEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            if (enabled && !hasUsageAccess()) {
-                requestUsageAccessPermission()
-                return@launch
-            }
-            settingsPreferences.setGameDetectorEnabled(enabled)
-            val intent = Intent(context, GameDetectorService::class.java).apply {
-                action = if (enabled) {
-                    GameDetectorService.ACTION_START_DETECTOR
-                } else {
-                    GameDetectorService.ACTION_STOP_DETECTOR
-                }
-            }
-            context.startManagedService(intent)
-        }
-    }
-
-    fun stopAllBoosts() {
-        viewModelScope.launch {
-            performanceManager.restoreThreadPriority()
-            performanceManager.restoreAnimations()
-            performanceManager.restoreGpuRendering()
-            performanceManager.stopPerformanceSession()
-            
-            networkManager.releaseWifiLock()
-            
-            try {
-                immersiveModeManager.restoreBrightness()
-            } catch (e: Exception) {}
-            
-            try {
-                immersiveModeManager.disableGamingDnd()
-            } catch (e: Exception) {}
-            
-            try {
-                val boostIntent = Intent(context, GameBoosterService::class.java).apply {
-                    action = GameBoosterService.ACTION_STOP_BOOST
-                }
-                context.startManagedService(boostIntent)
-            } catch (e: Exception) {}
-            
-            try {
-                val overlayIntent = Intent(context, OverlayService::class.java).apply {
-                    action = OverlayService.ACTION_STOP
-                }
-                context.startManagedService(overlayIntent)
-            } catch (e: Exception) {}
-            
-            try {
-                val detectorIntent = Intent(context, GameDetectorService::class.java).apply {
-                    action = GameDetectorService.ACTION_STOP_DETECTOR
-                }
-                context.startManagedService(detectorIntent)
-            } catch (e: Exception) {}
-            
-            settingsPreferences.setGlobalAutoBoost(false)
-            settingsPreferences.setOverlayEnabled(false)
-            settingsPreferences.setGameDetectorEnabled(false)
-            settingsPreferences.setForceGpuRenderingEnabled(false)
-        }
-    }
-
-    fun requestOverlayPermission() {
-        val intent = Intent(
-            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:${context.packageName}")
-        ).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-    }
-
-    fun requestUsageAccessPermission() {
-        try {
-            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            _profileMessage.value = "Usage access settings not available on this device"
-        }
-    }
-
-    fun requestBatteryOptimizationExemption() {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = Uri.parse("package:${context.packageName}")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        runCatching { context.startActivity(intent) }.onFailure {
-            val fallback = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:${context.packageName}")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            runCatching { context.startActivity(fallback) }
-        }
-    }
-
-    fun requestWriteSettingsPermission() {
-        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-            data = Uri.parse("package:${context.packageName}")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            val altIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:${context.packageName}")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(altIntent)
-        }
-    }
-
-    private fun canDrawOverlays(): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(context)
-    }
-
-    private fun hasUsageAccess(): Boolean {
-        return try {
-            val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
-            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                appOps.unsafeCheckOpNoThrow(
-                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    android.os.Process.myUid(),
-                    context.packageName
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                appOps.checkOpNoThrow(
-                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    android.os.Process.myUid(),
-                    context.packageName
-                )
-            }
-            mode == android.app.AppOpsManager.MODE_ALLOWED
-        } catch (e: Exception) {
-            false
+            refreshPermissionStates()
         }
     }
 }
