@@ -13,8 +13,8 @@ android {
         applicationId = "com.gamelauncher.app"
         minSdk = 33
         targetSdk = 36
-        versionCode = 350
-        versionName = "3.5.0"
+        versionCode = 351
+        versionName = "3.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
