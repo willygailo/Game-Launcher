@@ -25,6 +25,10 @@ android {
         buildConfigField("boolean", "ENABLE_CRASHLYTICS", "true")
     }
 
+base {
+    archivesName.set("Game_Launcher_Pro_v3.5.2")
+}
+
     buildTypes {
         debug {
             isMinifyEnabled = false
