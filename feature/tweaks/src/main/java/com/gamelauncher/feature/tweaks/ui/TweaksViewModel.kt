@@ -39,7 +39,11 @@ class TweaksViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<TweaksUiState>(TweaksUiState.Loading)
     val uiState: StateFlow<TweaksUiState> = _uiState.asStateFlow()
 
+    private val _activeArmouryMode = MutableStateFlow("Dynamic")
+    val activeArmouryMode: StateFlow<String> = _activeArmouryMode.asStateFlow()
+
     val shizukuState: StateFlow<ShizukuState> = shizukuAvailability.state
+
 
     init {
         loadTweaks()
@@ -73,11 +77,13 @@ class TweaksViewModel @Inject constructor(
 
     fun applyRogArmouryMode(modeName: String) {
         if (!checkExecutionPermitted()) return
+        _activeArmouryMode.value = modeName
         viewModelScope.launch {
             val result = repository.applyRogArmouryMode(modeName)
             handleTweakResult("rog_armoury_mode", result, selectedValue = modeName)
         }
     }
+
 
     fun applyTouchUltra(enable: Boolean) {
         if (!checkExecutionPermitted()) return

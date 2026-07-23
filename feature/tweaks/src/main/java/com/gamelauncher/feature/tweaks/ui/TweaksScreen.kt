@@ -31,7 +31,9 @@ fun TweaksScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val shizukuState by viewModel.shizukuState.collectAsState()
+    val activeArmouryMode by viewModel.activeArmouryMode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
     var selectedCategoryFilter by remember { mutableStateOf<TweakCategory?>(null) }
 
     val darkBackground = Color(0xFF0B0F19)
@@ -160,9 +162,8 @@ fun TweaksScreen(
 
                         // ── ROG Armoury Mode Preset Header ──────────────────────
                         item {
-                            val currentRogMode = state.tweaks.find { it.id == "rog_armoury_mode" }?.selectedValue ?: "Dynamic"
                             RogArmouryHeaderCard(
-                                selectedMode = currentRogMode,
+                                selectedMode = activeArmouryMode,
                                 onSelectMode = { modeName ->
                                     viewModel.applyRogArmouryMode(modeName)
                                 },
