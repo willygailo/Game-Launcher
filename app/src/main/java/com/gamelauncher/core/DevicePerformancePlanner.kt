@@ -12,6 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import com.gamelauncher.core.shizuku.ShizukuAvailability
 
 enum class NonRootCapabilityLevel {
     BASIC,
@@ -47,8 +48,10 @@ data class FrameRatePlan(
 @Singleton
 class DevicePerformancePlanner @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val displayManager: DisplayManager
+    private val displayManager: DisplayManager,
+    private val shizukuAvailability: ShizukuAvailability
 ) {
+
     fun snapshot(thermalStatusOverride: Int? = null): DevicePerformanceSnapshot {
         val rates = getSupportedRefreshRates()
         val canWriteSystem = canWriteSystemSettings()
@@ -181,9 +184,11 @@ class DevicePerformancePlanner @Inject constructor(
     }
 
     private fun hasSecureSettingsPermission(): Boolean {
-        return context.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) ==
+        val appPerm = context.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) ==
             android.content.pm.PackageManager.PERMISSION_GRANTED
+        return appPerm || shizukuAvailability.isReady
     }
+
 
     private fun normalizeRate(rate: Float): Float {
         return (rate * 100f).roundToInt() / 100f

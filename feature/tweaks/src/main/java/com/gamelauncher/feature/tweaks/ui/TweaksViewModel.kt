@@ -63,7 +63,7 @@ class TweaksViewModel @Inject constructor(
     }
 
     private fun checkExecutionPermitted(): Boolean {
-        val shizukuActive = shizukuState.value is ShizukuState.Connected
+        val shizukuActive = shizukuAvailability.isReady
         val hasWriteSecure = context.checkSelfPermission("android.permission.WRITE_SECURE_SETTINGS") == PackageManager.PERMISSION_GRANTED
         if (!shizukuActive && !hasWriteSecure) {
             val msg = "Notice: Running in standard non-rooted mode. Grant WRITE_SECURE_SETTINGS via ADB or start Shizuku for deep system tweaks."
@@ -74,6 +74,7 @@ class TweaksViewModel @Inject constructor(
         }
         return true
     }
+
 
     fun applyRogArmouryMode(modeName: String) {
         if (!checkExecutionPermitted()) return

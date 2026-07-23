@@ -1,4 +1,3 @@
-// core/shizuku/src/main/java/com/gamelauncher/core/shizuku/ShizukuAvailability.kt
 package com.gamelauncher.core.shizuku
 
 import kotlinx.coroutines.flow.StateFlow
@@ -6,30 +5,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * ShizukuState — Represents the explicit lifecycle and authorization states of Shizuku.
- */
-sealed class ShizukuState {
-    object NotInstalled : ShizukuState()
-    object InstalledNotRunning : ShizukuState()
-    object RunningNoPermission : ShizukuState()
-    object Connected : ShizukuState()
-    object Disconnected : ShizukuState()
-}
-
-/**
- * ShizukuAvailability — Single source of truth for Shizuku service status consumed by ViewModels.
+ * ShizukuAvailability — Backward-compatible facade delegating 100% to ShizukuStateRepository.
  */
 @Singleton
 class ShizukuAvailability @Inject constructor(
-    private val shizukuManager: IShizukuManager
+    private val repository: ShizukuStateRepository
 ) {
-    /**
-     * Observable state flow representing current Shizuku lifecycle status.
-     */
-    val state: StateFlow<ShizukuState> = shizukuManager.state
-
-    /**
-     * Returns whether Shizuku is currently connected and AIDL user service is ready.
-     */
-    val isReady: Boolean get() = shizukuManager.isReady()
+    val state: StateFlow<ShizukuState> get() = repository.state
+    val isReady: Boolean get() = repository.isConnected
 }
+

@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.gamelauncher.core.shizuku.ShizukuState
+import com.gamelauncher.core.shizuku.ShizukuStateRepository
 
 sealed interface NetworkUiState {
     object Loading : NetworkUiState
@@ -25,12 +27,17 @@ sealed interface NetworkUiState {
 }
 
 @HiltViewModel
+
 class NetworkViewModel @Inject constructor(
-    private val repository: INetworkRepository
+    private val repository: INetworkRepository,
+    private val shizukuStateRepository: ShizukuStateRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NetworkUiState>(NetworkUiState.Loading)
     val uiState: StateFlow<NetworkUiState> = _uiState.asStateFlow()
+
+    val shizukuState: StateFlow<ShizukuState> = shizukuStateRepository.state
+
 
     init {
         loadNetworkState()

@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.gamelauncher.core.shizuku.ShizukuState
+import com.gamelauncher.core.shizuku.ShizukuStateRepository
+
 data class GameSpaceUiState(
     val detectedOemBrand: OemBrand = OemBrand.GENERIC,
     val isShizukuReady: Boolean = false,
@@ -28,6 +31,7 @@ data class GameSpaceUiState(
 class GameSpaceViewModel @Inject constructor(
     private val detector: DeviceProfileDetector,
     private val probeEngine: OemFlagProbeEngine,
+    private val shizukuStateRepository: ShizukuStateRepository,
     private val shizukuManager: IShizukuManager
 ) : ViewModel() {
 
@@ -35,14 +39,26 @@ class GameSpaceViewModel @Inject constructor(
     val uiState: StateFlow<GameSpaceUiState> = _uiState.asStateFlow()
 
     init {
+        observeShizukuState()
         refreshState()
     }
+
+    private fun observeShizukuState() {
+        viewModelScope.launch {
+            shizukuStateRepository.state.collect { state ->
+                _uiState.value = _uiState.value.copy(
+                    isShizukuReady = state is ShizukuState.Connected
+                )
+            }
+        }
+    }
+
 
     fun refreshState() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 detectedOemBrand = detector.detectOemBrand(),
-                isShizukuReady = shizukuManager.isReady(),
+                isShizukuReady = shizukuStateRepository.isConnected,
                 isLoading = true
             )
             val probedFlags = probeEngine.probeDeviceFlags()
@@ -58,6 +74,8 @@ class GameSpaceViewModel @Inject constructor(
             shizukuManager.requestPermission()
         } catch (_: Exception) {}
     }
+
+
 
     fun toggleFlag(flag: OemFlag, enable: Boolean) {
         viewModelScope.launch {
