@@ -149,8 +149,15 @@ class ShizukuManager @Inject constructor(
     }
 
     override fun isReady(): Boolean {
-        return state.value is ShizukuState.Connected && userService?.asBinder()?.isBinderAlive == true
+        return try {
+            val isConnectedState = _state.value is ShizukuState.Connected
+            val isBinderAlive = Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            isConnectedState || isBinderAlive
+        } catch (_: Exception) {
+            false
+        }
     }
+
 
     override fun getUserService(): IShellCommandService? = userService
 

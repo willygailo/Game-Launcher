@@ -238,7 +238,7 @@ class TweaksRepositoryImpl @Inject constructor(
         secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "pointer_speed", if (enable) "7" else "0")
         secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "view.touch_slop", if (enable) "2" else "8")
 
-        if (anySuccess) TweakResult.Confirmed else TweakResult.SilentlyIgnored("touch_responsiveness")
+        if (anySuccess) TweakResult.Confirmed else TweakResult.Failed("Failed to set touch responsiveness via Shizuku/ADB")
     }
 
     override suspend fun applySuperFastGameLaunch(): TweakResult = withContext(ioDispatcher) {
@@ -288,7 +288,7 @@ class TweaksRepositoryImpl @Inject constructor(
         if (successCount > 0) {
             TweakResult.Confirmed
         } else {
-            TweakResult.Failed("Failed to set refresh rate on all keys")
+            TweakResult.Failed("Failed to set refresh rate on system keys via Shizuku/ADB")
         }
     }
 
@@ -301,13 +301,13 @@ class TweaksRepositoryImpl @Inject constructor(
             shellExecutor.setDeviceConfig("game_overlay", "fps", fpsTarget)
         } catch (_: Exception) {}
 
-        if (ok1 || ok2) TweakResult.Confirmed else TweakResult.SilentlyIgnored("fps_unlock")
+        if (ok1 || ok2) TweakResult.Confirmed else TweakResult.Failed("Failed to enable FPS unlock via Shizuku/ADB")
     }
 
     override suspend fun clearHighRefreshRateBlacklist(): TweakResult = withContext(ioDispatcher) {
         val key = "high_refresh_rate_blacklist"
         val written = secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, key, "")
-        if (written) TweakResult.Confirmed else TweakResult.Failed("Failed to clear high refresh rate blacklist")
+        if (written) TweakResult.Confirmed else TweakResult.Failed("Failed to clear high refresh rate blacklist via Shizuku/ADB")
     }
 
     override suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): TweakResult = withContext(ioDispatcher) {
@@ -317,13 +317,13 @@ class TweaksRepositoryImpl @Inject constructor(
         secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "debug.composition.type", if (enableGpuRendering) "gpu" else "c2d")
         secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "disable_overlays", targetVal)
 
-        if (ok1) TweakResult.Confirmed else TweakResult.SilentlyIgnored("force_gpu_rendering")
+        if (ok1) TweakResult.Confirmed else TweakResult.Failed("Failed to set force_gpu_rendering via Shizuku/ADB")
     }
 
     override suspend fun clearGameDriverConfig(): TweakResult = withContext(ioDispatcher) {
         val written1 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_all_apps", "")
         val written2 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_opt_out_apps", "")
-        if (written1 && written2) TweakResult.Confirmed else TweakResult.SilentlyIgnored("game_driver_all_apps")
+        if (written1 || written2) TweakResult.Confirmed else TweakResult.Failed("Failed to clear game driver config via Shizuku/ADB")
     }
 
     override suspend fun applyCpuPerformanceBoost(enable: Boolean): TweakResult = withContext(ioDispatcher) {
@@ -338,13 +338,13 @@ class TweaksRepositoryImpl @Inject constructor(
     override suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): TweakResult = withContext(ioDispatcher) {
         val okShizuku = shellExecutor.setThermalOverride(enableBypass)
         val okRepo = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "thermal_limit_enabled", if (enableBypass) "0" else "1")
-        if (okShizuku || okRepo) TweakResult.Confirmed else TweakResult.Failed("Thermal override rejected")
+        if (okShizuku || okRepo) TweakResult.Confirmed else TweakResult.Failed("Thermal override rejected by system")
     }
 
     override suspend fun applyGameModeTweak(enableGameMode: Boolean): TweakResult = withContext(ioDispatcher) {
         val targetValue = if (enableGameMode) "1" else "0"
         val ok = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_mode_type", targetValue)
-        if (ok) TweakResult.Confirmed else TweakResult.SilentlyIgnored("game_mode_type")
+        if (ok) TweakResult.Confirmed else TweakResult.Failed("Failed to set game_mode_type via Shizuku/ADB")
     }
 
     override suspend fun applyNetworkSpeedBoost(enable: Boolean): TweakResult = withContext(ioDispatcher) {
@@ -361,7 +361,7 @@ class TweaksRepositoryImpl @Inject constructor(
         val targetValue = if (disable) "false" else "true"
         return@withContext try {
             val written = shellExecutor.setDeviceConfig("activity_manager", key, targetValue)
-            if (written) TweakResult.Confirmed else TweakResult.SilentlyIgnored(key)
+            if (written) TweakResult.Confirmed else TweakResult.Failed("Failed to update phantom process monitor via Shizuku/ADB")
         } catch (e: Exception) {
             TweakResult.Failed("Failed to set DeviceConfig: ${e.localizedMessage}")
         }
@@ -371,6 +371,6 @@ class TweaksRepositoryImpl @Inject constructor(
         val key = "adaptive_battery_management_enabled"
         val targetValue = if (disable) "0" else "1"
         val ok = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, key, targetValue)
-        if (ok) TweakResult.Confirmed else TweakResult.SilentlyIgnored(key)
+        if (ok) TweakResult.Confirmed else TweakResult.Failed("Failed to toggle adaptive battery via Shizuku/ADB")
     }
 }

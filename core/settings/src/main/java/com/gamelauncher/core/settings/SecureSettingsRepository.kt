@@ -10,6 +10,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import android.util.Log
+
 /**
  * SecureSettingsRepository — Privileged settings reader and writer supporting
  * dual-engine execution: Shizuku AIDL bridge and direct ADB ContentResolver fallback.
@@ -30,7 +32,8 @@ class SecureSettingsRepository @Inject constructor(
     ): Boolean = withContext(Dispatchers.IO) {
         val shizukuSuccess = try {
             shellExecutor.writeSetting(scope.namespace, key, value)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("SecureSettingsRepo", "Shizuku writeSetting failed for $scope/$key=$value", e)
             false
         }
         if (shizukuSuccess) return@withContext true
@@ -38,15 +41,21 @@ class SecureSettingsRepository @Inject constructor(
         // Fallback: Direct ContentResolver write for ADB-granted permissions on non-rooted devices
         return@withContext try {
             val resolver = context.contentResolver
-            when (scope) {
+            val ok = when (scope) {
                 SettingsKeys.Scope.SYSTEM -> Settings.System.putString(resolver, key, value)
                 SettingsKeys.Scope.SECURE -> Settings.Secure.putString(resolver, key, value)
                 SettingsKeys.Scope.GLOBAL -> Settings.Global.putString(resolver, key, value)
             }
-        } catch (_: Exception) {
+            if (!ok) {
+                Log.e("SecureSettingsRepo", "ContentResolver putString returned false for $scope/$key=$value")
+            }
+            ok
+        } catch (e: Exception) {
+            Log.e("SecureSettingsRepo", "ContentResolver putString exception for $scope/$key=$value", e)
             false
         }
     }
+
 
     /**
      * Reads a setting value from Global, System, or Secure scope.

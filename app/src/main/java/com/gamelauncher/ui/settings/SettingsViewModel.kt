@@ -153,6 +153,7 @@ class SettingsViewModel @Inject constructor(
     private fun observeShizukuStateForAutoGrant() {
         viewModelScope.launch {
             shizukuAvailability.state.collect { state ->
+                _isShizukuAvailable.value = (state is ShizukuState.Connected) || shizukuAvailability.isReady
                 if (state is ShizukuState.Connected) {
                     val autoGrantOn = shizukuAutoGrantEnabled.first()
                     if (autoGrantOn) {
@@ -162,6 +163,7 @@ class SettingsViewModel @Inject constructor(
             }
         }
     }
+
 
     fun autoGrantAllPermissionsAndApplyTweaks() {
         viewModelScope.launch {
@@ -210,8 +212,9 @@ class SettingsViewModel @Inject constructor(
         } else true
 
         _isDndGranted.value = dndManager.isDndPermissionGranted()
-        _isShizukuAvailable.value = shizukuShellManager.isAvailable()
+        _isShizukuAvailable.value = (shizukuAvailability.state.value is ShizukuState.Connected) || shizukuAvailability.isReady
     }
+
 
     fun setShizukuAutoGrantEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setShizukuAutoGrantEnabled(value) } }
     fun setGlobalAutoBoost(value: Boolean) { viewModelScope.launch { settingsPreferences.setGlobalAutoBoost(value) } }
