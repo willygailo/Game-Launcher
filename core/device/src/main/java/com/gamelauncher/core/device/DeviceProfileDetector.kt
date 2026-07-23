@@ -45,10 +45,15 @@ class DeviceProfileDetector @Inject constructor() {
                 thermalOverrideSupported = false,
                 gameDriverSupported = false
             )
-            OemBrand.TRANSSION -> OemTweakKeys(
+            OemBrand.INFINIX, OemBrand.TECNO, OemBrand.TRANSSION -> OemTweakKeys(
                 refreshRateKey = "peak_refresh_rate",
                 thermalOverrideSupported = true,
                 gameDriverSupported = true
+            )
+            OemBrand.HUAWEI -> OemTweakKeys(
+                refreshRateKey = "refresh_rate_type",
+                thermalOverrideSupported = false,
+                gameDriverSupported = false
             )
             OemBrand.GENERIC -> OemTweakKeys(
                 refreshRateKey = "peak_refresh_rate",
@@ -68,8 +73,12 @@ class DeviceProfileDetector @Inject constructor() {
             manufacturer.contains("ONEPLUS") || brand.contains("ONEPLUS") -> OemBrand.ONEPLUS
             manufacturer.contains("OPPO") || brand.contains("OPPO") || manufacturer.contains("REALME") || brand.contains("REALME") -> OemBrand.OPPO_REALME
             manufacturer.contains("SAMSUNG") || brand.contains("SAMSUNG") -> OemBrand.SAMSUNG
-            manufacturer.contains("INFINIX") || brand.contains("INFINIX") || manufacturer.contains("TECNO") || brand.contains("TECNO") || manufacturer.contains("ITEL") || brand.contains("ITEL") -> OemBrand.TRANSSION
+            manufacturer.contains("HUAWEI") || brand.contains("HUAWEI") || manufacturer.contains("HONOR") || brand.contains("HONOR") -> OemBrand.HUAWEI
+            manufacturer.contains("INFINIX") || brand.contains("INFINIX") -> OemBrand.INFINIX
+            manufacturer.contains("TECNO") || brand.contains("TECNO") -> OemBrand.TECNO
+            manufacturer.contains("ITEL") || brand.contains("ITEL") -> OemBrand.TRANSSION
             else -> OemBrand.GENERIC
         }
     }
+
 }

@@ -115,6 +115,25 @@ fun MainScreen() {
                 val viewModel: com.gamelauncher.feature.monitor.ui.MonitorViewModel = hiltViewModel()
                 com.gamelauncher.feature.monitor.ui.MonitorScreen(viewModel = viewModel)
             }
+            composable("gamespace") {
+                val viewModel: com.gamelauncher.feature.gamespace.ui.GameSpaceViewModel = hiltViewModel()
+                com.gamelauncher.feature.gamespace.ui.GameSpaceDashboardScreen(
+                    viewModel = viewModel,
+                    onNavigateToTweaks = { navController.navigate("tweaks") },
+                    onNavigateToHuaweiGuide = { navController.navigate("huawei_pairing_guide") }
+                )
+            }
+            composable("huawei_pairing_guide") {
+                com.gamelauncher.feature.gamespace.ui.HuaweiPairingGuideScreen(
+                    onBack = { navController.popBackStack() },
+                    onLaunchShizuku = {
+                        try {
+                            val intent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                            if (intent != null) context.startActivity(intent)
+                        } catch (_: Exception) {}
+                    }
+                )
+            }
             composable(
                 route = "game_details/{packageName}",
                 arguments = listOf(navArgument("packageName") { type = NavType.StringType })
@@ -128,3 +147,4 @@ fun MainScreen() {
         }
     }
 }
+

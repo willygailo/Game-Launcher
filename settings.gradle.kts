@@ -23,8 +23,11 @@ include(":core:device")
 include(":core:permissions")
 include(":core:database")
 include(":core:di")
+include(":core:oem-flags")
 
 // Feature modules
 include(":feature:tweaks")
 include(":feature:network")
 include(":feature:monitor")
+include(":feature:gamespace")
+

@@ -49,10 +49,15 @@ class OemCapabilityMap @Inject constructor(
                 thermalOverrideSupported = false,
                 gameDriverSupported = false
             )
-            OemBrand.TRANSSION -> OemTweakKeys(
+            OemBrand.INFINIX, OemBrand.TECNO, OemBrand.TRANSSION -> OemTweakKeys(
                 refreshRateKey = "peak_refresh_rate",
                 thermalOverrideSupported = true,
                 gameDriverSupported = true
+            )
+            OemBrand.HUAWEI -> OemTweakKeys(
+                refreshRateKey = "refresh_rate_type",
+                thermalOverrideSupported = false,
+                gameDriverSupported = false
             )
             OemBrand.GENERIC -> OemTweakKeys(
                 refreshRateKey = "peak_refresh_rate",
@@ -63,8 +68,10 @@ class OemCapabilityMap @Inject constructor(
     }
 
     fun supportsTranssionGameMode(): Boolean {
-        return currentBrand() == OemBrand.TRANSSION
+        val brand = currentBrand()
+        return brand == OemBrand.INFINIX || brand == OemBrand.TECNO || brand == OemBrand.TRANSSION
     }
+
 
     fun supportsThermalThrottlingOverride(): Boolean {
         return detector.getTweakKeys().thermalOverrideSupported

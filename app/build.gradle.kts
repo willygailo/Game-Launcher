@@ -104,10 +104,13 @@ dependencies {
     implementation(project(":core:permissions"))
     implementation(project(":core:database"))
     implementation(project(":core:di"))
+    implementation(project(":core:oem-flags"))
 
     implementation(project(":feature:tweaks"))
     implementation(project(":feature:network"))
     implementation(project(":feature:monitor"))
+    implementation(project(":feature:gamespace"))
+
 
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
