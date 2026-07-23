@@ -236,11 +236,12 @@ class OemFlagRegistry @Inject constructor() {
             scope = FlagScope.GLOBAL,
             targetOem = OemBrand.GENERIC,
             title = "Force 2D GPU Hardware Acceleration",
-            description = "Forces GPU rendering for all UI layouts.",
+            description = "Forces GPU rendering (Legacy setting; HWUI Skia renderer active on Android 13-16).",
             activeValue = "1",
             defaultValue = "0",
-            confidence = FlagConfidence.CONFIRMED_WORKING
+            confidence = FlagConfidence.NEEDS_TESTING
         ),
+
         OemFlag(
             id = "aosp_mobile_data",
             key = "mobile_data_always_on",
