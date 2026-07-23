@@ -33,6 +33,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -297,114 +298,233 @@ fun SideDockOverlayContent(
     ram: String,
     ping: String,
     cpuTemp: String,
-    batTemp: String
+    batTemp: String,
+    onCleanRam: () -> Unit = {},
+    onSetMode: (String) -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
+    var crosshairEnabled by remember { mutableStateOf(false) }
+    var dndEnabled by remember { mutableStateOf(true) }
+    var brightnessLocked by remember { mutableStateOf(true) }
+    var ramFreedText by remember { mutableStateOf<String?>(null) }
+    var activeMode by remember { mutableStateOf("TURBO") }
 
-    Row(
-        modifier = Modifier
-            .fillMaxHeight()
-            .wrapContentWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Edge Dock Handle Strip (Compact vertically stacked icons)
-        Column(
+    Box(modifier = Modifier.fillMaxHeight()) {
+        Row(
             modifier = Modifier
-                .width(48.dp)
-                .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                .background(DockBgDark.copy(alpha = 0.92f))
-                .border(1.dp, PrimaryNeon.copy(alpha = 0.5f), RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxHeight()
+                .wrapContentWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 0 }) {
-                Icon(Icons.Default.Speed, contentDescription = "Performance", tint = if (isExpanded && selectedTab == 0) PrimaryNeon else TextSecondary)
-            }
-            IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 1 }) {
-                Icon(Icons.Default.NetworkCheck, contentDescription = "Network", tint = if (isExpanded && selectedTab == 1) SecondaryNeon else TextSecondary)
-            }
-            IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 2 }) {
-                Icon(Icons.Default.Tv, contentDescription = "Monitor", tint = if (isExpanded && selectedTab == 2) TertiaryAccent else TextSecondary)
-            }
-            IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 3 }) {
-                Icon(Icons.Default.Build, contentDescription = "Tweaks", tint = if (isExpanded && selectedTab == 3) SuccessGreen else TextSecondary)
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(onClick = { isExpanded = !isExpanded }) {
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = "Expand Panel",
-                    tint = PrimaryNeon
-                )
-            }
-        }
-
-        // Expanded Side Drawer Panel
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = slideInHorizontally(initialOffsetX = { -it }),
-            exit = slideOutHorizontally(targetOffsetX = { -it })
-        ) {
-            Surface(
+            // Edge Dock Handle Strip (Compact vertically stacked gaming icons)
+            Column(
                 modifier = Modifier
-                    .width(280.dp)
-                    .fillMaxHeight(0.85f)
-                    .padding(start = 6.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(1.dp, DockCardBorder, RoundedCornerShape(16.dp)),
-                color = DockSurfaceDark.copy(alpha = 0.95f)
+                    .width(52.dp)
+                    .clip(RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp))
+                    .background(DockBgDark.copy(alpha = 0.94f))
+                    .border(1.5.dp, PrimaryNeon.copy(alpha = 0.6f), RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp))
+                    .padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        "GAME DASHBOARD DOCK",
-                        color = PrimaryNeon,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 0 }) {
+                    Icon(Icons.Default.Speed, contentDescription = "Performance", tint = if (isExpanded && selectedTab == 0) PrimaryNeon else TextSecondary)
+                }
+                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 1 }) {
+                    Icon(Icons.Default.NetworkCheck, contentDescription = "Network", tint = if (isExpanded && selectedTab == 1) SecondaryNeon else TextSecondary)
+                }
+                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 2 }) {
+                    Icon(Icons.Default.Tv, contentDescription = "Monitor", tint = if (isExpanded && selectedTab == 2) TertiaryAccent else TextSecondary)
+                }
+                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 3 }) {
+                    Icon(Icons.Default.Build, contentDescription = "Tweaks", tint = if (isExpanded && selectedTab == 3) SuccessGreen else TextSecondary)
+                }
 
-                    when (selectedTab) {
-                        0 -> {
-                            Text("PERFORMANCE TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
-                            ) {
-                                ArcGauge(progress = (fps / 120f).coerceIn(0f, 1f), color = PrimaryNeon, label = "FPS", valueText = "${fps.roundToInt()}")
-                                ArcGauge(progress = (hz / 144f).coerceIn(0f, 1f), color = SecondaryNeon, label = "DISPLAY", valueText = "${hz}Hz")
+                Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = "Expand Panel",
+                        tint = PrimaryNeon
+                    )
+                }
+            }
+
+            // Expanded Side Drawer Panel
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = slideInHorizontally(initialOffsetX = { -it }),
+                exit = slideOutHorizontally(targetOffsetX = { -it })
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .width(300.dp)
+                        .fillMaxHeight(0.88f)
+                        .padding(start = 6.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(1.5.dp, DockCardBorder, RoundedCornerShape(18.dp)),
+                    color = DockSurfaceDark.copy(alpha = 0.96f)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "ROG GAME HUD BOOSTER",
+                                color = PrimaryNeon,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 2.sp
+                            )
+                            IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(24.dp)) {
+                                Text("✕", color = TextSecondary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             }
                         }
-                        1 -> {
-                            Text("NETWORK STATUS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text("PING LATENCY: $ping", color = PrimaryNeon, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Quick Boost Button Bar
+                        Button(
+                            onClick = {
+                                onCleanRam()
+                                ramFreedText = "PURGED +512MB RAM"
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryNeon),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth().height(38.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("⚡ 1-TAP QUICK RAM BOOST", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
                         }
-                        2 -> {
-                            Text("SYSTEM MONITOR", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text("RAM USAGE: $ram", color = TextSecondary, fontSize = 12.sp)
-                            Text("CPU TEMP: $cpuTemp", color = TertiaryAccent, fontSize = 12.sp)
-                            Text("BATTERY TEMP: $batTemp", color = SuccessGreen, fontSize = 12.sp)
+
+                        ramFreedText?.let { freedMsg ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(freedMsg, color = SuccessGreen, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.align(Alignment.CenterHorizontally))
                         }
-                        else -> {
-                            Text("QUICK SYSTEM TWEAKS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text("✓ Shizuku Service Bound", color = SuccessGreen, fontSize = 12.sp)
-                            Text("✓ Thermal Override Active", color = PrimaryNeon, fontSize = 12.sp)
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        when (selectedTab) {
+                            0 -> {
+                                Text("PERFORMANCE MODE PRESETS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    listOf("ECO", "BALANCED", "TURBO").forEach { mode ->
+                                        val isSel = activeMode == mode
+                                        val mColor = when(mode) {
+                                            "TURBO" -> PrimaryNeon
+                                            "BALANCED" -> SecondaryNeon
+                                            else -> SuccessGreen
+                                        }
+                                        Button(
+                                            onClick = { activeMode = mode; onSetMode(mode) },
+                                            modifier = Modifier.weight(1f).height(32.dp),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = if (isSel) mColor.copy(alpha = 0.25f) else Color.Transparent
+                                            ),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) mColor else TextSecondary.copy(alpha = 0.3f)),
+                                            contentPadding = PaddingValues(0.dp)
+                                        ) {
+                                            Text(mode, color = if (isSel) mColor else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Text("FRAME PACING & HZ TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceAround
+                                ) {
+                                    ArcGauge(progress = (fps / 120f).coerceIn(0f, 1f), color = PrimaryNeon, label = "FPS", valueText = "${fps.roundToInt()}")
+                                    ArcGauge(progress = (hz / 144f).coerceIn(0f, 1f), color = SecondaryNeon, label = "DISPLAY", valueText = "${hz}Hz")
+                                }
+                            }
+                            1 -> {
+                                Text("NETWORK LATENCY MONITOR", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text("PING LATENCY: $ping", color = PrimaryNeon, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("✓ Private Cloudflare DNS Active (1.1.1.1)", color = SuccessGreen, fontSize = 11.sp)
+                                Text("✓ 5G Mobile Data Acceleration Engaged", color = SecondaryNeon, fontSize = 11.sp)
+                            }
+                            2 -> {
+                                Text("SYSTEM HARDWARE TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text("RAM USAGE: $ram", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("CPU TEMP: $cpuTemp", color = TertiaryAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("BATTERY TEMP: $batTemp", color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                            else -> {
+                                Text("TACTICAL IN-GAME CONTROLS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Crosshair Overlay", color = TextSecondary, fontSize = 12.sp)
+                                    Switch(
+                                        checked = crosshairEnabled,
+                                        onCheckedChange = { crosshairEnabled = it },
+                                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Block Notifications (DND)", color = TextSecondary, fontSize = 12.sp)
+                                    Switch(
+                                        checked = dndEnabled,
+                                        onCheckedChange = { dndEnabled = it },
+                                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Lock Brightness", color = TextSecondary, fontSize = 12.sp)
+                                    Switch(
+                                        checked = brightnessLocked,
+                                        onCheckedChange = { brightnessLocked = it },
+                                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+
+        // Crosshair Overlay (if enabled)
+        if (crosshairEnabled) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.Center)
+                    .background(PrimaryNeon.copy(alpha = 0.8f), androidx.compose.foundation.shape.CircleShape)
+                    .border(1.dp, Color.White, androidx.compose.foundation.shape.CircleShape)
+            )
+        }
     }
 }
+

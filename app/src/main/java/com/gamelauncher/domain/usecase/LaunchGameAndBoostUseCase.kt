@@ -32,7 +32,7 @@ class LaunchGameAndBoostUseCase @Inject constructor(
             )
         } catch (_: Exception) {}
 
-        // 2. Start Booster Service if needed
+        // 2. Start Booster Service & Overlay HUD if needed
         if (game.highPerformanceMode) {
             val requestedFps = if (game.graphicsMode == "PERFORMANCE" || game.graphicsMode == "BALANCED") {
                 0
@@ -45,11 +45,19 @@ class LaunchGameAndBoostUseCase @Inject constructor(
                 putExtra(GameBoosterService.EXTRA_TARGET_FPS, requestedFps)
                 putExtra(GameBoosterService.EXTRA_ENABLE_NETWORK, game.wifiLockEnabled)
             }
+            val overlayIntent = Intent(context, com.gamelauncher.services.OverlayService::class.java)
+
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(boostIntent)
+                    if (android.provider.Settings.canDrawOverlays(context)) {
+                        context.startForegroundService(overlayIntent)
+                    }
                 } else {
                     context.startService(boostIntent)
+                    if (android.provider.Settings.canDrawOverlays(context)) {
+                        context.startService(overlayIntent)
+                    }
                 }
             } catch (_: Exception) {}
         }
