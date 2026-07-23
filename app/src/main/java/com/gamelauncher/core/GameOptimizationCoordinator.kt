@@ -79,13 +79,19 @@ class GameOptimizationCoordinator @Inject constructor(
             errors.add("Doze whitelist exception: ${e.message}")
         }
 
-        val requestedFps = getRequestedFps(gameModel)
+        // Check for dedicated custom game presets (PUBG, MLBB, CODM)
+        val customPreset = com.gamelauncher.data.model.GamePreset.findPresetForPackage(packageName)
+        if (customPreset != null) {
+            appliedOptimizations.add("🎯 Dedicated Profile Active: ${customPreset.badgeLabel}")
+        }
+
+        val requestedFps = customPreset?.targetFps ?: getRequestedFps(gameModel)
         val shouldForceMaxRefresh = (gameModel?.forceMaxRefreshRate ?: true) &&
             settingsPreferences.forceMaxHzOnBoost.first()
         val framePlan = devicePerformancePlanner.planForGame(
             gameInfo = gameInfo,
             requestedFps = requestedFps,
-            requestedHz = gameModel?.targetHz,
+            requestedHz = customPreset?.targetHz ?: gameModel?.targetHz,
             forceMaxRefreshRate = shouldForceMaxRefresh,
             thermalStatusOverride = thermalStatus
         )
@@ -101,7 +107,7 @@ class GameOptimizationCoordinator @Inject constructor(
             shellExecutor.writeSetting("global", "game_driver_opt_in_apps", packageName)
             appliedOptimizations.add("GameManager Performance Mode Force (Max FPS)")
 
-            val maxHz = performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f
+            val maxHz = customPreset?.targetHz ?: (performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f)
             shellExecutor.setPeakRefreshRate(maxHz)
             shellExecutor.setMinRefreshRate(maxHz)
             shellExecutor.writeSetting("system", "user_refresh_rate", maxHz.toString())

@@ -111,9 +111,14 @@ fun GameCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(game.name, color = TextPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
                     Text(game.customCategory, color = TextSecondary, style = MaterialTheme.typography.labelSmall)
-                    if (game.highPerformanceMode) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val preset = remember(game.packageName) {
+                        com.gamelauncher.data.model.GamePreset.findPresetForPackage(game.packageName)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (preset != null) {
+                            MiniTag(preset.badgeLabel, SecondaryNeon)
+                        } else if (game.highPerformanceMode) {
                             MiniTag("${game.targetFps}FPS", PrimaryNeon)
                             if (game.forceMaxRefreshRate) MiniTag("MAX Hz", SecondaryNeon)
                             if (game.touchLatencyBoost) MiniTag("TOUCH+", TertiaryAccent)
