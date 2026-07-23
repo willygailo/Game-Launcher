@@ -49,6 +49,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     gamesViewModel: GamesViewModel = hiltViewModel(),
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToGameSpace: () -> Unit = {},
     onNavigateToTweaks: () -> Unit = {},
     onNavigateToNetwork: () -> Unit = {},
     onNavigateToMonitor: () -> Unit = {},
@@ -237,6 +238,27 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ⚡ ROG Game Space Feature Banner Button
+            Button(
+                onClick = onNavigateToGameSpace,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0055)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    "⚡  ROG GAME SPACE TUNER HUB",
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 13.sp,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             // Quick Booster Modules Row
             Row(
                 modifier = Modifier
@@ -277,6 +299,7 @@ fun DashboardScreen(
                     Text("📊 FPS HUD", color = modeColor, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
                 }
             }
+
 
             Spacer(modifier = Modifier.height(20.dp))
 

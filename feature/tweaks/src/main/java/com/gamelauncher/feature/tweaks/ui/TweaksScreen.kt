@@ -160,7 +160,9 @@ fun TweaksScreen(
 
                         // ── ROG Armoury Mode Preset Header ──────────────────────
                         item {
+                            val currentRogMode = state.tweaks.find { it.id == "rog_armoury_mode" }?.selectedValue ?: "Dynamic"
                             RogArmouryHeaderCard(
+                                selectedMode = currentRogMode,
                                 onSelectMode = { modeName ->
                                     viewModel.applyRogArmouryMode(modeName)
                                 },
@@ -169,6 +171,7 @@ fun TweaksScreen(
                                 accentGreen = accentGreen
                             )
                         }
+
 
                         // ── Category Filter Chips ─────────────────────────────
                         item {
@@ -249,6 +252,7 @@ fun TweaksScreen(
 
 @Composable
 fun RogArmouryHeaderCard(
+    selectedMode: String,
     onSelectMode: (String) -> Unit,
     accentNeonRed: Color,
     accentNeonBlue: Color,
@@ -284,41 +288,65 @@ fun RogArmouryHeaderCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // X-Mode Button
+                val isXMode = selectedMode == "X-Mode"
                 Button(
                     onClick = { onSelectMode("X-Mode") },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = accentNeonRed, contentColor = Color.White),
-                    shape = RoundedCornerShape(10.dp)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isXMode) accentNeonRed else Color(0xFF0F172A),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        if (isXMode) 2.dp else 1.dp,
+                        if (isXMode) accentNeonRed else Color(0xFF334155)
+                    )
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🔴 X-MODE", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                        Text("165 FPS ULTRA", fontSize = 9.sp)
+                        Text("🔴 X-MODE", fontWeight = FontWeight.Black, fontSize = 12.sp, color = if (isXMode) Color.White else accentNeonRed)
+                        Text("165 FPS ULTRA", fontSize = 9.sp, color = if (isXMode) Color.White.copy(alpha = 0.9f) else Color(0xFF94A3B8))
                     }
                 }
 
                 // Dynamic Mode Button
+                val isDynamic = selectedMode == "Dynamic"
                 Button(
                     onClick = { onSelectMode("Dynamic") },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = accentNeonBlue, contentColor = Color.Black),
-                    shape = RoundedCornerShape(10.dp)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isDynamic) accentNeonBlue else Color(0xFF0F172A),
+                        contentColor = if (isDynamic) Color.Black else Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        if (isDynamic) 2.dp else 1.dp,
+                        if (isDynamic) accentNeonBlue else Color(0xFF334155)
+                    )
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🔵 DYNAMIC", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                        Text("BALANCED 120Hz", fontSize = 9.sp)
+                        Text("🔵 DYNAMIC", fontWeight = FontWeight.Black, fontSize = 12.sp, color = if (isDynamic) Color.Black else accentNeonBlue)
+                        Text("BALANCED 120Hz", fontSize = 9.sp, color = if (isDynamic) Color.Black.copy(alpha = 0.8f) else Color(0xFF94A3B8))
                     }
                 }
 
                 // Esports Mode Button
+                val isEsports = selectedMode == "Esports"
                 Button(
                     onClick = { onSelectMode("Esports") },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = accentGreen, contentColor = Color.Black),
-                    shape = RoundedCornerShape(10.dp)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isEsports) accentGreen else Color(0xFF0F172A),
+                        contentColor = if (isEsports) Color.Black else Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        if (isEsports) 2.dp else 1.dp,
+                        if (isEsports) accentGreen else Color(0xFF334155)
+                    )
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🟢 ESPORTS", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                        Text("STABLE 60Hz", fontSize = 9.sp)
+                        Text("🟢 ESPORTS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = if (isEsports) Color.Black else accentGreen)
+                        Text("STABLE 60Hz", fontSize = 9.sp, color = if (isEsports) Color.Black.copy(alpha = 0.8f) else Color(0xFF94A3B8))
                     }
                 }
             }
@@ -432,7 +460,7 @@ fun TweakCardItem(
                         Switch(
                             checked = tweak.isToggleActive,
                             onCheckedChange = onTouchUltraToggled,
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                         )
                     }
                 }
@@ -501,7 +529,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onGpuRenderingToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                             )
                         }
                     }
@@ -521,7 +549,7 @@ fun TweakCardItem(
                         Switch(
                             checked = tweak.isToggleActive,
                             onCheckedChange = onCpuBoostToggled,
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                         )
                     }
                 }
@@ -540,7 +568,7 @@ fun TweakCardItem(
                         Switch(
                             checked = tweak.isToggleActive,
                             onCheckedChange = onNetworkSpeedToggled,
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                         )
                     }
                 }
@@ -560,7 +588,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onThermalBypassToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                             )
                         }
                     }
@@ -581,7 +609,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onGameModeToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                             )
                         }
                     }
@@ -602,7 +630,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onPhantomProcsToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                             )
                         }
                     }
@@ -623,7 +651,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onAdaptiveBatteryToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
                             )
                         }
                     }
@@ -656,11 +684,27 @@ fun DropdownSelector(
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(Color(0xFF151C2C))
+                .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+            containerColor = Color(0xFF151C2C),
+            shadowElevation = 8.dp
         ) {
             options.forEach { option ->
+                val isSelected = option == currentValue
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = {
+                        Text(
+                            text = option,
+                            color = if (isSelected) Color(0xFF00E5FF) else Color.White,
+                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
+                            fontSize = 13.sp
+                        )
+                    },
+                    colors = MenuDefaults.itemColors(
+                        textColor = Color.White
+                    ),
                     onClick = {
                         expanded = false
                         onOptionSelected(option)
@@ -668,5 +712,6 @@ fun DropdownSelector(
                 )
             }
         }
+
     }
 }

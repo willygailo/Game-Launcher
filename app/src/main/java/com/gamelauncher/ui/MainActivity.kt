@@ -94,6 +94,7 @@ fun MainScreen() {
             composable("dashboard") { 
                 DashboardScreen(
                     onNavigateToSettings = { navController.navigate("settings") },
+                    onNavigateToGameSpace = { navController.navigate("gamespace") },
                     onNavigateToTweaks = { navController.navigate("tweaks") },
                     onNavigateToNetwork = { navController.navigate("network") },
                     onNavigateToMonitor = { navController.navigate("monitor") },
