@@ -180,15 +180,7 @@ fun DashboardScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
 
-            // Performance Mode Selector (ECO / BALANCED / PRO)
-            SegmentedModeSelector(
-                currentMode = currentMode,
-                onModeSelected = { viewModel.setPerformanceMode(it) }
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
 
             // Telemetry Gauge HUD Cluster
             RogArmorCard(
@@ -436,43 +428,4 @@ fun GameCoverCard(
     }
 }
 
-@Composable
-fun SegmentedModeSelector(
-    currentMode: PerformanceMode,
-    onModeSelected: (PerformanceMode) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(24.dp))
-            .background(DockSurfaceDark)
-            .border(1.dp, DockCardBorder, RoundedCornerShape(24.dp))
-            .padding(4.dp)
-    ) {
-        PerformanceMode.values().forEach { mode ->
-            val isSelected = currentMode == mode
-            val modeColor = getModeColor(mode)
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isSelected) modeColor.copy(alpha = 0.22f) else Color.Transparent)
-                    .border(
-                        width = if (isSelected) 1.dp else 0.dp,
-                        color = if (isSelected) modeColor else Color.Transparent,
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .clickable { onModeSelected(mode) }
-                    .padding(horizontal = 22.dp, vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = mode.name,
-                    color = if (isSelected) modeColor else TextSecondary,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 13.sp,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-    }
-}
