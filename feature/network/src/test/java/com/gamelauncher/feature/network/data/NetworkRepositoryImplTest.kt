@@ -1,6 +1,7 @@
 // feature/network/src/test/java/com/gamelauncher/feature/network/data/NetworkRepositoryImplTest.kt
 package com.gamelauncher.feature.network.data
 
+import android.content.Context
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.feature.network.domain.model.DnsProvider
@@ -11,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.Mockito
 
 class NetworkRepositoryImplTest {
 
@@ -28,8 +30,9 @@ class NetworkRepositoryImplTest {
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
+        val mockContext = Mockito.mock(Context::class.java)
         val repository = NetworkRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
+            settingsRepository = SecureSettingsRepository(mockContext, fakeShellExecutor),
             ioDispatcher = Dispatchers.Unconfined
         )
 
@@ -58,8 +61,9 @@ class NetworkRepositoryImplTest {
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
+        val mockContext = Mockito.mock(Context::class.java)
         val repository = NetworkRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
+            settingsRepository = SecureSettingsRepository(mockContext, fakeShellExecutor),
             ioDispatcher = Dispatchers.Unconfined
         )
 
@@ -91,8 +95,9 @@ class NetworkRepositoryImplTest {
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
+        val mockContext = Mockito.mock(Context::class.java)
         val repository = NetworkRepositoryImpl(
-            settingsRepository = SecureSettingsRepository(fakeShellExecutor),
+            settingsRepository = SecureSettingsRepository(mockContext, fakeShellExecutor),
             ioDispatcher = Dispatchers.Unconfined
         )
 
@@ -100,3 +105,4 @@ class NetworkRepositoryImplTest {
         assertEquals(2, results.size)
     }
 }
+

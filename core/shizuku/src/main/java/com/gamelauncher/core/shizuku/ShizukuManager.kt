@@ -54,13 +54,15 @@ class ShizukuManager @Inject constructor(
         }
     }
 
-    private val serviceArgs = Shizuku.UserServiceArgs(
-        ComponentName("com.gamelauncher", ShizukuUserService::class.java.name)
-    ).apply {
-        daemon(false)
-        processNameSuffix("shell_service")
-        debuggable(false)
-        version(1)
+    private val serviceArgs by lazy {
+        Shizuku.UserServiceArgs(
+            ComponentName(context.packageName, ShizukuUserService::class.java.name)
+        ).apply {
+            daemon(false)
+            processNameSuffix("shell_service")
+            debuggable(false)
+            version(1)
+        }
     }
 
     private val userServiceConnection = object : ServiceConnection {

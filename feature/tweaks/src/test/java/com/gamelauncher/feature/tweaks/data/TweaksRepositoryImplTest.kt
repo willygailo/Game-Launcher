@@ -35,10 +35,13 @@ class TweaksRepositoryImplTest {
         val capabilityMap = OemCapabilityMap(detector)
         val mockContext = Mockito.mock(Context::class.java)
 
+        val secureSettingsRepo = com.gamelauncher.core.settings.SecureSettingsRepository(mockContext, fakeShellExecutor)
+
         val repository = TweaksRepositoryImpl(
             deviceProfileDetector = detector,
             capabilityMap = capabilityMap,
             shellExecutor = fakeShellExecutor,
+            secureSettingsRepository = secureSettingsRepo,
             ioDispatcher = Dispatchers.Unconfined,
             context = mockContext
         )
@@ -70,10 +73,13 @@ class TweaksRepositoryImplTest {
         val capabilityMap = OemCapabilityMap(detector)
         val mockContext = Mockito.mock(Context::class.java)
 
+        val secureSettingsRepo = com.gamelauncher.core.settings.SecureSettingsRepository(mockContext, fakeShellExecutor)
+
         val repository = TweaksRepositoryImpl(
             deviceProfileDetector = detector,
             capabilityMap = capabilityMap,
             shellExecutor = fakeShellExecutor,
+            secureSettingsRepository = secureSettingsRepo,
             ioDispatcher = Dispatchers.Unconfined,
             context = mockContext
         )

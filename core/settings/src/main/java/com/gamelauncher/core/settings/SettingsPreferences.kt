@@ -148,7 +148,12 @@ class SettingsPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[KEY_FORCE_MAX_HZ] ?: true }
 
+    val shizukuAutoGrantEnabled: Flow<Boolean> = dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[KEY_SHIZUKU_AUTO_GRANT] ?: true }
+
     // Setters
+    suspend fun setShizukuAutoGrantEnabled(enabled: Boolean) { dataStore.edit { it[KEY_SHIZUKU_AUTO_GRANT] = enabled } }
     suspend fun setPerformanceMode(mode: String) { dataStore.edit { it[KEY_PERFORMANCE_MODE] = mode } }
     suspend fun setDarkTheme(enabled: Boolean) { dataStore.edit { it[KEY_DARK_THEME] = enabled } }
     suspend fun setOnboardingCompleted() { dataStore.edit { it[KEY_ONBOARDING_COMPLETED] = true } }
@@ -208,5 +213,6 @@ class SettingsPreferences @Inject constructor(
         private val KEY_DOZE_WHITELIST = booleanPreferencesKey("doze_whitelist_enabled")
         private val KEY_SUSPEND_THERMAL = booleanPreferencesKey("suspend_thermal_on_boost")
         private val KEY_FORCE_MAX_HZ = booleanPreferencesKey("force_max_hz_on_boost")
+        private val KEY_SHIZUKU_AUTO_GRANT = booleanPreferencesKey("shizuku_auto_grant_enabled")
     }
 }

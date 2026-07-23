@@ -16,6 +16,8 @@ import com.gamelauncher.core.ShizukuShellManager
 import com.gamelauncher.core.permissions.RuntimePermissionManager
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.settings.SettingsKeys
+import com.gamelauncher.core.shizuku.ShizukuAvailability
+import com.gamelauncher.core.shizuku.ShizukuState
 import com.gamelauncher.data.preference.SettingsPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,6 +36,7 @@ class SettingsViewModel @Inject constructor(
     private val settingsPreferences: SettingsPreferences,
     private val runtimePermissionManager: RuntimePermissionManager,
     private val shizukuShellManager: ShizukuShellManager,
+    private val shizukuAvailability: ShizukuAvailability,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val gameOptimizationCoordinator: GameOptimizationCoordinator,
     private val dndManager: DndManager
@@ -53,6 +57,9 @@ class SettingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
     val isDarkTheme = settingsPreferences.isDarkTheme
+        .stateIn(viewModelScope, SharingStarted.Lazily, true)
+
+    val shizukuAutoGrantEnabled = settingsPreferences.shizukuAutoGrantEnabled
         .stateIn(viewModelScope, SharingStarted.Lazily, true)
 
     val secureSettingsAnimScale = settingsPreferences.secureSettingsAnimScale
@@ -140,6 +147,49 @@ class SettingsViewModel @Inject constructor(
 
     init {
         refreshPermissionStates()
+        observeShizukuStateForAutoGrant()
+    }
+
+    private fun observeShizukuStateForAutoGrant() {
+        viewModelScope.launch {
+            shizukuAvailability.state.collect { state ->
+                if (state is ShizukuState.Connected) {
+                    val autoGrantOn = shizukuAutoGrantEnabled.first()
+                    if (autoGrantOn) {
+                        autoGrantAllPermissionsAndApplyTweaks()
+                    }
+                }
+            }
+        }
+    }
+
+    fun autoGrantAllPermissionsAndApplyTweaks() {
+        viewModelScope.launch {
+            if (shizukuShellManager.isAvailable()) {
+                val ok1 = runtimePermissionManager.grantPermissionViaShizuku("android.permission.WRITE_SECURE_SETTINGS")
+                val ok2 = runtimePermissionManager.grantPermissionViaShizuku("android.permission.PACKAGE_USAGE_STATS")
+                val ok3 = runtimePermissionManager.grantPermissionViaShizuku("android.permission.DUMP")
+                val ok4 = runtimePermissionManager.grantPermissionViaShizuku("android.permission.CHANGE_CONFIGURATION")
+                runtimePermissionManager.setAppOpViaShizuku("SYSTEM_ALERT_WINDOW")
+                runtimePermissionManager.setAppOpViaShizuku("GET_USAGE_STATS")
+
+                // Automatically apply hidden performance tweaks
+                secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "window_animation_scale", "0")
+                secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "transition_animation_scale", "0")
+                secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "animator_duration_scale", "0")
+                secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "force_gpu_rendering", "1")
+                secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_all_apps", "1")
+                secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "touch_responsiveness", "1")
+                secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "pointer_speed", "7")
+                secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "peak_refresh_rate", "165")
+                secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "user_refresh_rate", "165")
+
+                _profileMessage.value = "⚡ Shizuku Auto-Grant Complete! All permissions granted & hidden tweaks active."
+            } else {
+                _profileMessage.value = "Shizuku service is not active. Connect Shizuku first."
+            }
+            refreshPermissionStates()
+        }
     }
 
     fun refreshPermissionStates() {
@@ -163,6 +213,7 @@ class SettingsViewModel @Inject constructor(
         _isShizukuAvailable.value = shizukuShellManager.isAvailable()
     }
 
+    fun setShizukuAutoGrantEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setShizukuAutoGrantEnabled(value) } }
     fun setGlobalAutoBoost(value: Boolean) { viewModelScope.launch { settingsPreferences.setGlobalAutoBoost(value) } }
     fun setOverlayEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setOverlayEnabled(value) } }
     fun setGameDetectorEnabled(value: Boolean) { viewModelScope.launch { settingsPreferences.setGameDetectorEnabled(value) } }
@@ -337,14 +388,6 @@ class SettingsViewModel @Inject constructor(
     fun clearProfileMessage() { _profileMessage.value = null }
 
     fun grantWriteSecureViaShizuku() {
-        viewModelScope.launch {
-            val ok = runtimePermissionManager.grantPermissionViaShizuku("android.permission.WRITE_SECURE_SETTINGS")
-            if (ok) {
-                _profileMessage.value = "WRITE_SECURE_SETTINGS granted via Shizuku!"
-            } else {
-                _profileMessage.value = "Shizuku grant failed"
-            }
-            refreshPermissionStates()
-        }
+        autoGrantAllPermissionsAndApplyTweaks()
     }
 }

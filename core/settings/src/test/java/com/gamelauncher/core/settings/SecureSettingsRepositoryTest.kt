@@ -1,6 +1,7 @@
 // core/settings/src/test/java/com/gamelauncher/core/settings/SecureSettingsRepositoryTest.kt
 package com.gamelauncher.core.settings
 
+import android.content.Context
 import com.gamelauncher.core.shizuku.IShellExecutor
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -41,7 +42,8 @@ class SecureSettingsRepositoryTest {
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
         }
 
-        val repository = SecureSettingsRepository(fakeExecutor)
+        val mockContext = org.mockito.Mockito.mock(Context::class.java)
+        val repository = SecureSettingsRepository(mockContext, fakeExecutor)
 
         val writeSuccess = repository.putFloat(SettingsKeys.Scope.GLOBAL, "window_animation_scale", 0.5f)
         assertTrue(writeSuccess)

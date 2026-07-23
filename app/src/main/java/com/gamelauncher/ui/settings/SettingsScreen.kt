@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -48,6 +49,8 @@ fun SettingsScreen(
     val overlayEnabled by viewModel.isOverlayEnabled.collectAsStateWithLifecycle()
     val detectorEnabled by viewModel.isGameDetectorEnabled.collectAsStateWithLifecycle()
     val forceGpuEnabled by viewModel.forceGpuRenderingEnabled.collectAsStateWithLifecycle()
+    val shizukuAutoGrant by viewModel.shizukuAutoGrantEnabled.collectAsStateWithLifecycle()
+
     val hasUsageAccess by viewModel.hasUsageAccessPermission.collectAsStateWithLifecycle()
     val hasOverlayPerm by viewModel.hasOverlayPermission.collectAsStateWithLifecycle()
     val hasWriteSettings by viewModel.hasWriteSettingsPermission.collectAsStateWithLifecycle()
@@ -82,7 +85,7 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Text(
-            text = "Settings",
+            text = "Settings & Shizuku Combo",
             style = MaterialTheme.typography.headlineMedium,
             color = TextPrimary,
             fontWeight = FontWeight.Bold
@@ -93,6 +96,78 @@ fun SettingsScreen(
             color = TextSecondary,
             style = MaterialTheme.typography.bodySmall
         )
+
+        // ── ⚡ SHIZUKU AUTO-GRANT & HIDDEN TWEAKS COMBO CARD ──────────────────
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+            shape = RoundedCornerShape(16.dp),
+            border = androidx.compose.foundation.BorderStroke(1.5.dp, PrimaryNeon)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "⚡ SHIZUKU AUTO-GRANT & HIDDEN TWEAKS",
+                        color = PrimaryNeon,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (isShizukuAvailable) SuccessGreen.copy(alpha = 0.2f) else SecondaryNeon.copy(alpha = 0.2f),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = if (isShizukuAvailable) "SHIZUKU READY" else "SHIZUKU OFFLINE",
+                            color = if (isShizukuAvailable) SuccessGreen else SecondaryNeon,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "When Shizuku is connected, the app automatically grants WRITE_SECURE_SETTINGS, USAGE_STATS, and unlocks hidden GPU, CPU, Touch, and 165Hz performance tweaks automatically.",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Auto-Grant Permissions on Connect", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Triggers full permission grant & tweak application when Shizuku starts", color = TextSecondary, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = shizukuAutoGrant,
+                        onCheckedChange = { viewModel.setShizukuAutoGrantEnabled(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { viewModel.autoGrantAllPermissionsAndApplyTweaks() },
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen, contentColor = BackgroundDark),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("⚡  One-Tap Auto Grant & Apply Hidden Tweaks Now", fontWeight = FontWeight.Black)
+                }
+            }
+        }
 
         PermissionHealthCard(
             permissions = listOf(
