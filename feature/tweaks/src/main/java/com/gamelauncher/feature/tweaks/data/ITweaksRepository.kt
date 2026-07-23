@@ -10,12 +10,19 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ITweaksRepository {
     fun getAvailableTweaks(): Flow<List<TweakItem>>
+    suspend fun applyRogArmouryMode(modeName: String): TweakResult
+    suspend fun applyTouchUltraTweaks(enable: Boolean): TweakResult
+    suspend fun applySuperFastGameLaunch(): TweakResult
     suspend fun applyRefreshRateTweak(refreshRateHz: Float): TweakResult
+    suspend fun applyFpsUnlockTweak(fpsTarget: String): TweakResult
     suspend fun clearHighRefreshRateBlacklist(): TweakResult
     suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): TweakResult
     suspend fun clearGameDriverConfig(): TweakResult
+    suspend fun applyCpuPerformanceBoost(enable: Boolean): TweakResult
     suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): TweakResult
     suspend fun applyGameModeTweak(enableGameMode: Boolean): TweakResult
+    suspend fun applyNetworkSpeedBoost(enable: Boolean): TweakResult
     suspend fun disablePhantomProcessKilling(disable: Boolean): TweakResult
     suspend fun disableAdaptiveBattery(disable: Boolean): TweakResult
 }
+

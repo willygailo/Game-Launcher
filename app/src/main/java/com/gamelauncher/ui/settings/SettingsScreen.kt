@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,9 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gamelauncher.ui.components.StatusBadge
 import com.gamelauncher.ui.theme.*
@@ -27,6 +31,19 @@ import com.gamelauncher.ui.theme.*
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshPermissionStates()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val autoBoost by viewModel.globalAutoBoost.collectAsStateWithLifecycle()
     val overlayEnabled by viewModel.isOverlayEnabled.collectAsStateWithLifecycle()
     val detectorEnabled by viewModel.isGameDetectorEnabled.collectAsStateWithLifecycle()
@@ -125,7 +142,7 @@ fun SettingsScreen(
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             val notifLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
-            ) { /* result handled by state polling */ }
+            ) { viewModel.refreshPermissionStates() }
 
             PermissionCard(
                 title = "Notifications",
@@ -142,7 +159,7 @@ fun SettingsScreen(
 
         val phoneLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) { /* result handled by state polling */ }
+        ) { viewModel.refreshPermissionStates() }
 
         PermissionCard(
             title = "Phone State (5G / 5G+ Detection)",

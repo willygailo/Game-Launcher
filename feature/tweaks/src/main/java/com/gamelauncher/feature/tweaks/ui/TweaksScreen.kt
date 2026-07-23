@@ -2,48 +2,24 @@
 package com.gamelauncher.feature.tweaks.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gamelauncher.core.shizuku.ShizukuState
 import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
 import com.gamelauncher.feature.tweaks.domain.model.TweakItem
 
@@ -54,26 +30,36 @@ fun TweaksScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val shizukuState by viewModel.shizukuState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var selectedCategoryFilter by remember { mutableStateOf<TweakCategory?>(null) }
 
-    val darkBackground = Color(0xFF0F172A)
-    val cardBackground = Color(0xFF1E293B)
-    val accentColor = Color(0xFF38BDF8)
+    val darkBackground = Color(0xFF0B0F19)
+    val cardBackground = Color(0xFF151C2C)
+    val accentNeonRed = Color(0xFFFF2A5F)
+    val accentNeonBlue = Color(0xFF00E5FF)
+    val accentGreen = Color(0xFF00E676)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "System Performance Tweaks",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Column {
+                        Text(
+                            text = "ROG GAME SPACE TUNING",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Shizuku + ADB Secure Performance Engine",
+                            fontSize = 11.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = darkBackground
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = darkBackground)
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -88,7 +74,7 @@ fun TweaksScreen(
                 is TweaksUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = accentColor
+                        color = accentNeonBlue
                     )
                 }
 
@@ -119,20 +105,134 @@ fun TweaksScreen(
                         }
                     }
 
+                    val filteredTweaks = remember(state.tweaks, selectedCategoryFilter) {
+                        if (selectedCategoryFilter == null) state.tweaks
+                        else state.tweaks.filter { it.category == selectedCategoryFilter }
+                    }
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        items(state.tweaks, key = { it.id }) { tweak ->
+                        // ── Engine Active Banner ──────────────────────────────
+                        item {
+                            val shizukuActive = shizukuState is ShizukuState.Connected
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (shizukuActive) accentNeonBlue.copy(alpha = 0.6f) else Color(0xFF475569)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (shizukuActive) "⚡ ENGINE: SHIZUKU ACTIVE" else "🔓 ENGINE: ADB WRITE SECURE / DUAL-MODE",
+                                        color = if (shizukuActive) accentNeonBlue else accentGreen,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                if (shizukuActive) accentNeonBlue.copy(alpha = 0.2f) else accentGreen.copy(alpha = 0.2f),
+                                                RoundedCornerShape(6.dp)
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "UNLOCKED",
+                                            color = if (shizukuActive) accentNeonBlue else accentGreen,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── ROG Armoury Mode Preset Header ──────────────────────
+                        item {
+                            RogArmouryHeaderCard(
+                                onSelectMode = { modeName ->
+                                    viewModel.applyRogArmouryMode(modeName)
+                                },
+                                accentNeonRed = accentNeonRed,
+                                accentNeonBlue = accentNeonBlue,
+                                accentGreen = accentGreen
+                            )
+                        }
+
+                        // ── Category Filter Chips ─────────────────────────────
+                        item {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                item {
+                                    FilterChipItem(
+                                        text = "ALL",
+                                        isSelected = selectedCategoryFilter == null,
+                                        onClick = { selectedCategoryFilter = null },
+                                        accentColor = accentNeonBlue
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "120/144/165 HZ & FPS",
+                                        isSelected = selectedCategoryFilter == TweakCategory.REFRESH_RATE || selectedCategoryFilter == TweakCategory.FPS_UNLOCK,
+                                        onClick = { selectedCategoryFilter = TweakCategory.REFRESH_RATE },
+                                        accentColor = accentNeonRed
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "TOUCH ULTRA",
+                                        isSelected = selectedCategoryFilter == TweakCategory.TOUCH,
+                                        onClick = { selectedCategoryFilter = TweakCategory.TOUCH },
+                                        accentColor = accentNeonBlue
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "GPU & CPU",
+                                        isSelected = selectedCategoryFilter == TweakCategory.GPU_RENDERING || selectedCategoryFilter == TweakCategory.CPU_PERFORMANCE,
+                                        onClick = { selectedCategoryFilter = TweakCategory.GPU_RENDERING },
+                                        accentColor = accentGreen
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "NETWORK SPEED",
+                                        isSelected = selectedCategoryFilter == TweakCategory.NETWORK_SPEED,
+                                        onClick = { selectedCategoryFilter = TweakCategory.NETWORK_SPEED },
+                                        accentColor = accentNeonBlue
+                                    )
+                                }
+                            }
+                        }
+
+                        // ── Tweak Cards List ──────────────────────────────────
+                        items(filteredTweaks, key = { it.id }) { tweak ->
                             TweakCardItem(
                                 tweak = tweak,
                                 cardBackground = cardBackground,
-                                accentColor = accentColor,
+                                accentColor = accentNeonBlue,
                                 onRefreshRateSelected = { viewModel.applyRefreshRate(it) },
+                                onFpsUnlockSelected = { viewModel.applyFpsUnlock(it) },
                                 onClearHighRefreshRateBlacklist = { viewModel.clearHighRefreshRateBlacklist() },
                                 onGpuRenderingToggled = { viewModel.applyGpuRendering(it) },
+                                onCpuBoostToggled = { viewModel.applyCpuPerformanceBoost(it) },
+                                onTouchUltraToggled = { viewModel.applyTouchUltra(it) },
+                                onSuperFastLaunchClicked = { viewModel.applySuperFastLaunch() },
+                                onNetworkSpeedToggled = { viewModel.applyNetworkSpeedBoost(it) },
                                 onClearGameDriver = { viewModel.clearGameDriverConfig() },
                                 onThermalBypassToggled = { viewModel.applyThermalThrottlingBypass(it) },
                                 onGameModeToggled = { viewModel.applyGameModeBooster(it) },
@@ -148,13 +248,120 @@ fun TweaksScreen(
 }
 
 @Composable
+fun RogArmouryHeaderCard(
+    onSelectMode: (String) -> Unit,
+    accentNeonRed: Color,
+    accentNeonBlue: Color,
+    accentGreen: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, accentNeonRed.copy(alpha = 0.7f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "🔥 ROG GAME SPACE MODES",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 15.sp,
+                    color = accentNeonRed,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "ONE-TAP TUNER",
+                    fontSize = 10.sp,
+                    color = Color(0xFF94A3B8),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // X-Mode Button
+                Button(
+                    onClick = { onSelectMode("X-Mode") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentNeonRed, contentColor = Color.White),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🔴 X-MODE", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("165 FPS ULTRA", fontSize = 9.sp)
+                    }
+                }
+
+                // Dynamic Mode Button
+                Button(
+                    onClick = { onSelectMode("Dynamic") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentNeonBlue, contentColor = Color.Black),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🔵 DYNAMIC", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("BALANCED 120Hz", fontSize = 9.sp)
+                    }
+                }
+
+                // Esports Mode Button
+                Button(
+                    onClick = { onSelectMode("Esports") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = accentGreen, contentColor = Color.Black),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("🟢 ESPORTS", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("STABLE 60Hz", fontSize = 9.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterChipItem(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    accentColor: Color
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (isSelected) accentColor else Color(0xFF1E293B))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color.Black else Color.White
+        )
+    }
+}
+
+@Composable
 fun TweakCardItem(
     tweak: TweakItem,
     cardBackground: Color,
     accentColor: Color,
     onRefreshRateSelected: (Float) -> Unit,
+    onFpsUnlockSelected: (String) -> Unit,
     onClearHighRefreshRateBlacklist: () -> Unit,
     onGpuRenderingToggled: (Boolean) -> Unit,
+    onCpuBoostToggled: (Boolean) -> Unit,
+    onTouchUltraToggled: (Boolean) -> Unit,
+    onSuperFastLaunchClicked: () -> Unit,
+    onNetworkSpeedToggled: (Boolean) -> Unit,
     onClearGameDriver: () -> Unit,
     onThermalBypassToggled: (Boolean) -> Unit,
     onGameModeToggled: (Boolean) -> Unit,
@@ -165,7 +372,7 @@ fun TweakCardItem(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = cardBackground),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -178,7 +385,7 @@ fun TweakCardItem(
                 Text(
                     text = tweak.title,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
@@ -204,13 +411,43 @@ fun TweakCardItem(
 
             Text(
                 text = tweak.description,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = Color(0xFF94A3B8)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             when (tweak.category) {
+                TweakCategory.TOUCH -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (tweak.isToggleActive) "Ultra Latency Active (Pointer Max)" else "Standard Touch Response",
+                            fontSize = 12.sp,
+                            color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                        )
+                        Switch(
+                            checked = tweak.isToggleActive,
+                            onCheckedChange = onTouchUltraToggled,
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                        )
+                    }
+                }
+
+                TweakCategory.SUPER_FAST_LAUNCH -> {
+                    Button(
+                        onClick = onSuperFastLaunchClicked,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF), contentColor = Color.Black),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🚀  Purge RAM & Accelerate Launch", fontWeight = FontWeight.Bold)
+                    }
+                }
+
                 TweakCategory.REFRESH_RATE -> {
                     if (tweak.id == "high_refresh_rate_blacklist") {
                         Button(
@@ -218,18 +455,27 @@ fun TweakCardItem(
                             enabled = tweak.isSupportedByDevice,
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Clear Blacklist")
+                            Text("Clear High Refresh Rate Blacklist")
                         }
                     } else if (tweak.isSupportedByDevice) {
                         DropdownSelector(
-                            currentValue = tweak.selectedValue ?: "Default",
+                            label = "Target Hz",
+                            currentValue = tweak.selectedValue ?: "165",
                             options = tweak.supportedValues,
-                            enabled = true,
                             onOptionSelected = { value ->
                                 value.toFloatOrNull()?.let { onRefreshRateSelected(it) }
                             }
                         )
                     }
+                }
+
+                TweakCategory.FPS_UNLOCK -> {
+                    DropdownSelector(
+                        label = "Unlocked Target FPS",
+                        currentValue = tweak.selectedValue ?: "165",
+                        options = tweak.supportedValues,
+                        onOptionSelected = onFpsUnlockSelected
+                    )
                 }
 
                 TweakCategory.GPU_RENDERING -> {
@@ -248,19 +494,54 @@ fun TweakCardItem(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (tweak.isToggleActive) "2D Acceleration Active" else "Standard UI Rendering",
+                                text = if (tweak.isToggleActive) "2D GPU & Skia Vulkan HW Active" else "Standard UI Rendering",
                                 fontSize = 12.sp,
                                 color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
                             )
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onGpuRenderingToggled,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = accentColor
-                                )
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
                             )
                         }
+                    }
+                }
+
+                TweakCategory.CPU_PERFORMANCE -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (tweak.isToggleActive) "CPU Max Governor Boost Active" else "Standard Power Scaling",
+                            fontSize = 12.sp,
+                            color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                        )
+                        Switch(
+                            checked = tweak.isToggleActive,
+                            onCheckedChange = onCpuBoostToggled,
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                        )
+                    }
+                }
+
+                TweakCategory.NETWORK_SPEED -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (tweak.isToggleActive) "Low Latency Wi-Fi & Mobile Data On" else "Standard Wi-Fi Mode",
+                            fontSize = 12.sp,
+                            color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
+                        )
+                        Switch(
+                            checked = tweak.isToggleActive,
+                            onCheckedChange = onNetworkSpeedToggled,
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
+                        )
                     }
                 }
 
@@ -272,17 +553,14 @@ fun TweakCardItem(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (tweak.isToggleActive) "Bypass Active" else "Standard Thermal Throttling",
+                                text = if (tweak.isToggleActive) "Thermal Override Active" else "Standard Thermal Throttling",
                                 fontSize = 12.sp,
                                 color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
                             )
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onThermalBypassToggled,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = accentColor
-                                )
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
                             )
                         }
                     }
@@ -303,10 +581,7 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onGameModeToggled,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = accentColor
-                                )
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
                             )
                         }
                     }
@@ -320,17 +595,14 @@ fun TweakCardItem(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (tweak.isToggleActive) "Killing Disabled" else "Standard Android Monitor",
+                                text = if (tweak.isToggleActive) "Phantom Killer Disabled" else "Standard Android Monitor",
                                 fontSize = 12.sp,
                                 color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
                             )
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onPhantomProcsToggled,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = accentColor
-                                )
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
                             )
                         }
                     }
@@ -351,14 +623,13 @@ fun TweakCardItem(
                             Switch(
                                 checked = tweak.isToggleActive,
                                 onCheckedChange = onAdaptiveBatteryToggled,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = accentColor
-                                )
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor)
                             )
                         }
                     }
                 }
+
+                else -> {}
             }
         }
     }
@@ -366,6 +637,7 @@ fun TweakCardItem(
 
 @Composable
 fun DropdownSelector(
+    label: String,
     currentValue: String,
     options: List<String>,
     enabled: Boolean = true,
@@ -379,7 +651,7 @@ fun DropdownSelector(
             enabled = enabled,
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = "Option: $currentValue", color = if (enabled) Color.White else Color(0xFF94A3B8), fontSize = 12.sp)
+            Text(text = "$label: $currentValue", color = if (enabled) Color.White else Color(0xFF94A3B8), fontSize = 12.sp)
         }
 
         DropdownMenu(

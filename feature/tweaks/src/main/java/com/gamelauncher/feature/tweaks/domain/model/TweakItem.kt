@@ -14,8 +14,14 @@ sealed interface TweakResult {
  * TweakCategory — System category classification for performance tweaks.
  */
 enum class TweakCategory {
+    ROG_MODE,
+    TOUCH,
+    SUPER_FAST_LAUNCH,
     REFRESH_RATE,
+    FPS_UNLOCK,
     GPU_RENDERING,
+    CPU_PERFORMANCE,
+    NETWORK_SPEED,
     THERMAL_THROTTLING,
     GAME_MODE,
     MEMORY,
@@ -37,3 +43,4 @@ data class TweakItem(
     val lastResult: TweakResult? = null,
     val badgeNote: String? = null
 )
+
