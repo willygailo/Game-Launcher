@@ -14,7 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -124,6 +126,7 @@ fun MainScreen() {
                 )
             }
             composable("huawei_pairing_guide") {
+                val context = LocalContext.current
                 com.gamelauncher.feature.gamespace.ui.HuaweiPairingGuideScreen(
                     onBack = { navController.popBackStack() },
                     onLaunchShizuku = {
@@ -134,6 +137,7 @@ fun MainScreen() {
                     }
                 )
             }
+
             composable(
                 route = "game_details/{packageName}",
                 arguments = listOf(navArgument("packageName") { type = NavType.StringType })
