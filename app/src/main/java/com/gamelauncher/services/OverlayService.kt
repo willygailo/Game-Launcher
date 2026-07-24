@@ -1,6 +1,6 @@
-// app/src/main/java/com/gamelauncher/services/OverlayService.kt
 package com.gamelauncher.services
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
@@ -20,11 +21,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.NetworkCheck
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Tv
@@ -133,7 +136,7 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
 
         val notification: Notification = NotificationCompat.Builder(this, GameLauncherApp.CHANNEL_OVERLAY)
             .setContentTitle("In-Game Performance Side Panel Active")
-            .setContentText("Slide-in overlay active")
+            .setContentText("Draggable floating overlay active")
             .setSmallIcon(android.R.drawable.ic_menu_view)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -155,6 +158,7 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
         return START_NOT_STICKY
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun showSidePanelOverlay() {
         if (composeView != null) return
 
@@ -167,14 +171,12 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
                 @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.CENTER_VERTICAL or Gravity.START
-            x = 0
-            y = 0
-            screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            gravity = Gravity.TOP or Gravity.START
+            x = 30
+            y = 150
         }
         overlayParams = params
 
@@ -192,25 +194,47 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
                         ping = pingVal,
                         cpuTemp = cpuTempVal,
                         batTemp = batTempVal,
-                        onCleanRam = { performanceManager.clearMemory() }
+                        onCleanRam = { performanceManager.clearMemory() },
+                        onCloseOverlay = { stopSelf() }
                     )
                 }
             }
         }
 
+        // Add touch dragging listener so the floating overlay can be moved anywhere on screen!
+        var initialX = 0
+        var initialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
+
+        composeView?.setOnTouchListener { _, event ->
+            val p = overlayParams ?: return@setOnTouchListener false
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    initialX = p.x
+                    initialY = p.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    false
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = (event.rawX - initialTouchX).roundToInt()
+                    val deltaY = (event.rawY - initialTouchY).roundToInt()
+                    if (kotlin.math.abs(deltaX) > 4 || kotlin.math.abs(deltaY) > 4) {
+                        p.x = initialX + deltaX
+                        p.y = initialY + deltaY
+                        try {
+                            windowManager.updateViewLayout(composeView, p)
+                        } catch (_: Exception) {}
+                    }
+                    false
+                }
+                else -> false
+            }
+        }
+
         try {
             windowManager.addView(composeView, overlayParams)
-
-            val listener = object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    val actualOrientation = resources.configuration.orientation
-                    if (actualOrientation != Configuration.ORIENTATION_LANDSCAPE) {
-                        Log.w("OverlayService", "Device not in landscape after overlay request (actual: $actualOrientation)")
-                    }
-                    composeView?.viewTreeObserver?.removeOnGlobalLayoutListener(this)
-                }
-            }
-            composeView?.viewTreeObserver?.addOnGlobalLayoutListener(listener)
 
             fpsManager.startTracking()
             startTelemetryLoop()
@@ -221,7 +245,6 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
     }
 
     private fun startTelemetryLoop() {
-        // FPS collector stays on Main since it receives updates from UI Choreographer
         serviceScope.launch {
             fpsManager.fps.collectLatest { currentFps ->
                 fpsVal = currentFps
@@ -229,7 +252,6 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
             }
         }
 
-        // Blocking ping, RAM memory info, and thermal sysfs file reading dispatched to Dispatchers.IO
         serviceScope.launch(Dispatchers.IO) {
             val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
             val memoryInfo = android.app.ActivityManager.MemoryInfo()
@@ -302,78 +324,95 @@ fun SideDockOverlayContent(
     cpuTemp: String,
     batTemp: String,
     onCleanRam: () -> Unit = {},
-    onSetMode: (String) -> Unit = {}
+    onSetMode: (String) -> Unit = {},
+    onCloseOverlay: () -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
     var crosshairEnabled by remember { mutableStateOf(false) }
-    var dndEnabled by remember { mutableStateOf(true) }
-    var brightnessLocked by remember { mutableStateOf(true) }
     var ramFreedText by remember { mutableStateOf<String?>(null) }
     var activeMode by remember { mutableStateOf("TURBO") }
 
-    Box(modifier = Modifier.fillMaxHeight()) {
-        Row(
-            modifier = Modifier
-                .fillMaxHeight()
-                .wrapContentWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Edge Dock Handle Strip (Compact vertically stacked gaming icons)
-            Column(
+    Box(modifier = Modifier.wrapContentSize()) {
+        if (!isExpanded) {
+            // COMPACT DRAGGABLE FLOATING BUBBLE (Default collapsed mode - small & non-blocking!)
+            Surface(
                 modifier = Modifier
-                    .width(52.dp)
-                    .clip(RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp))
-                    .background(DockBgDark.copy(alpha = 0.94f))
-                    .border(1.5.dp, PrimaryNeon.copy(alpha = 0.6f), RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp))
-                    .padding(vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { isExpanded = true },
+                color = DockBgDark.copy(alpha = 0.85f),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, PrimaryNeon)
             ) {
-                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 0 }) {
-                    Icon(Icons.Default.Speed, contentDescription = "Performance", tint = if (isExpanded && selectedTab == 0) PrimaryNeon else TextSecondary)
-                }
-                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 1 }) {
-                    Icon(Icons.Default.NetworkCheck, contentDescription = "Network", tint = if (isExpanded && selectedTab == 1) SecondaryNeon else TextSecondary)
-                }
-                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 2 }) {
-                    Icon(Icons.Default.Tv, contentDescription = "Monitor", tint = if (isExpanded && selectedTab == 2) TertiaryAccent else TextSecondary)
-                }
-                IconButton(onClick = { isExpanded = !isExpanded; selectedTab = 3 }) {
-                    Icon(Icons.Default.Build, contentDescription = "Tweaks", tint = if (isExpanded && selectedTab == 3) SuccessGreen else TextSecondary)
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                IconButton(onClick = { isExpanded = !isExpanded }) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Icon(
-                        Icons.Default.ChevronRight,
-                        contentDescription = "Expand Panel",
-                        tint = PrimaryNeon
+                        imageVector = Icons.Default.DragHandle,
+                        contentDescription = "Drag overlay",
+                        tint = PrimaryNeon,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        "${fps.roundToInt()} FPS",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        "| ${hz}Hz",
+                        color = PrimaryNeon,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
-
-            // Expanded Side Drawer Panel
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = slideInHorizontally(initialOffsetX = { -it }),
-                exit = slideOutHorizontally(targetOffsetX = { -it })
+        } else {
+            // EXPANDED HUD SIDE DRAWER
+            Row(
+                modifier = Modifier.wrapContentSize(),
+                verticalAlignment = Alignment.Top
             ) {
+                // Collapsed edge action strip
+                Column(
+                    modifier = Modifier
+                        .width(44.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                        .background(DockBgDark.copy(alpha = 0.95f))
+                        .border(1.5.dp, PrimaryNeon, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                        .padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    IconButton(onClick = { selectedTab = 0 }) {
+                        Icon(Icons.Default.Speed, contentDescription = "Performance", tint = if (selectedTab == 0) PrimaryNeon else TextSecondary)
+                    }
+                    IconButton(onClick = { selectedTab = 1 }) {
+                        Icon(Icons.Default.NetworkCheck, contentDescription = "Network", tint = if (selectedTab == 1) SecondaryNeon else TextSecondary)
+                    }
+                    IconButton(onClick = { selectedTab = 2 }) {
+                        Icon(Icons.Default.Tv, contentDescription = "Monitor", tint = if (selectedTab == 2) TertiaryAccent else TextSecondary)
+                    }
+                    IconButton(onClick = { selectedTab = 3 }) {
+                        Icon(Icons.Default.Build, contentDescription = "Tweaks", tint = if (selectedTab == 3) SuccessGreen else TextSecondary)
+                    }
+                }
+
+                // Expanded content container
                 Surface(
                     modifier = Modifier
-                        .width(300.dp)
-                        .fillMaxHeight(0.88f)
-                        .padding(start = 6.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .border(1.5.dp, DockCardBorder, RoundedCornerShape(18.dp)),
+                        .width(280.dp)
+                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                        .border(1.5.dp, DockCardBorder, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)),
                     color = DockSurfaceDark.copy(alpha = 0.96f)
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .padding(14.dp)
                     ) {
+                        // HEADER WITH HIDE AND CLOSE BUTTONS
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -382,41 +421,49 @@ fun SideDockOverlayContent(
                             Text(
                                 "GAME SPACE HUD",
                                 color = PrimaryNeon,
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 2.sp
+                                letterSpacing = 1.5.sp
                             )
-                            IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(24.dp)) {
-                                Text("✕", color = TextSecondary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                TextButton(
+                                    onClick = { isExpanded = false },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text("HIDE", color = PrimaryNeon, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                                IconButton(onClick = onCloseOverlay, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.Close, contentDescription = "Close HUD", tint = ErrorRed)
+                                }
                             }
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                        // Quick Boost Button Bar
+                        // Quick Boost Button
                         Button(
                             onClick = {
                                 onCleanRam()
-                                ramFreedText = "PURGED +512MB RAM"
+                                ramFreedText = "PURGED RAM"
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryNeon),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.fillMaxWidth().height(38.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth().height(34.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("⚡ 1-TAP QUICK RAM BOOST", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
+                            Text("⚡ 1-TAP RAM BOOST", color = Color.Black, fontWeight = FontWeight.Black, fontSize = 10.sp)
                         }
 
                         ramFreedText?.let { freedMsg ->
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(freedMsg, color = SuccessGreen, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.align(Alignment.CenterHorizontally))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(freedMsg, color = SuccessGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         when (selectedTab) {
                             0 -> {
-                                Text("PERFORMANCE MODE PRESETS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("PERFORMANCE PRESETS", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -430,21 +477,19 @@ fun SideDockOverlayContent(
                                         }
                                         Button(
                                             onClick = { activeMode = mode; onSetMode(mode) },
-                                            modifier = Modifier.weight(1f).height(32.dp),
+                                            modifier = Modifier.weight(1f).height(30.dp),
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = if (isSel) mColor.copy(alpha = 0.25f) else Color.Transparent
                                             ),
                                             border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) mColor else TextSecondary.copy(alpha = 0.3f)),
                                             contentPadding = PaddingValues(0.dp)
                                         ) {
-                                            Text(mode, color = if (isSel) mColor else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                            Text(mode, color = if (isSel) mColor else TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Black)
                                         }
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(14.dp))
-                                Text("OVERLAY FRAME PACING & DISPLAY HZ", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceAround
@@ -454,38 +499,34 @@ fun SideDockOverlayContent(
                                 }
                             }
                             1 -> {
-                                Text("NETWORK LATENCY MONITOR", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text("PING LATENCY: $ping", color = PrimaryNeon, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Network quality is sampled while the overlay is active.", color = TextSecondary, fontSize = 11.sp)
-                                Text("DNS and radio settings are controlled from Game Space, not forced here.", color = TextSecondary, fontSize = 11.sp)
+                                Text("NETWORK LATENCY MONITOR", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text("PING: $ping", color = PrimaryNeon, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("Sampled live while in-game.", color = TextSecondary, fontSize = 10.sp)
                             }
                             2 -> {
-                                Text("SYSTEM HARDWARE TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text("RAM USAGE: $ram", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text("CPU TEMP: $cpuTemp", color = TertiaryAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text("BATTERY TEMP: $batTemp", color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("SYSTEM TELEMETRY", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text("RAM: $ram", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("CPU TEMP: $cpuTemp", color = TertiaryAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("BATTERY TEMP: $batTemp", color = SuccessGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             else -> {
-                                Text("TACTICAL IN-GAME CONTROLS", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(10.dp))
-
+                                Text("TACTICAL CONTROLS", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Crosshair Overlay", color = TextSecondary, fontSize = 12.sp)
+                                    Text("Crosshair Overlay", color = TextSecondary, fontSize = 11.sp)
                                     Switch(
                                         checked = crosshairEnabled,
                                         onCheckedChange = { crosshairEnabled = it },
                                         colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
                                     )
                                 }
-
-                                Text("DND and brightness are configured from Game Space and require their respective Android permissions.", color = TextSecondary, fontSize = 11.sp)
                             }
                         }
                     }
@@ -497,7 +538,7 @@ fun SideDockOverlayContent(
         if (crosshairEnabled) {
             Box(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(20.dp)
                     .align(Alignment.Center)
                     .background(PrimaryNeon.copy(alpha = 0.8f), androidx.compose.foundation.shape.CircleShape)
                     .border(1.dp, Color.White, androidx.compose.foundation.shape.CircleShape)

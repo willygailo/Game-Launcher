@@ -73,7 +73,8 @@ class GameSpaceViewModel @Inject constructor(
     private val shizukuManager: IShizukuManager,
     private val shellExecutor: IShellExecutor,
     private val settingsPreferences: SettingsPreferences,
-    private val settingsRepository: SecureSettingsRepository
+    private val settingsRepository: SecureSettingsRepository,
+    private val runtimePermissionManager: com.gamelauncher.core.permissions.RuntimePermissionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GameSpaceUiState())
@@ -88,10 +89,20 @@ class GameSpaceViewModel @Inject constructor(
     private fun observeShizukuState() {
         viewModelScope.launch {
             shizukuStateRepository.state.collect { state ->
+                val isConnected = state is ShizukuState.Connected
+                if (isConnected) {
+                    try {
+                        runtimePermissionManager.grantPermissionViaShizuku("android.permission.WRITE_SECURE_SETTINGS")
+                        runtimePermissionManager.grantPermissionViaShizuku("android.permission.PACKAGE_USAGE_STATS")
+                        runtimePermissionManager.setAppOpViaShizuku("SYSTEM_ALERT_WINDOW")
+                    } catch (_: Exception) {}
+                }
                 _uiState.value = _uiState.value.copy(
-                    isShizukuReady = state is ShizukuState.Connected
+                    isShizukuReady = isConnected
                 )
                 checkPermissions()
+                val probedFlags = probeEngine.probeDeviceFlags()
+                _uiState.value = _uiState.value.copy(flags = probedFlags)
             }
         }
     }

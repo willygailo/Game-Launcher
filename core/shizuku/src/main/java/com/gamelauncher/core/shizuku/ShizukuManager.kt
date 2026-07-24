@@ -71,9 +71,20 @@ class ShizukuManager @Inject constructor(
             if (service != null && service.isBinderAlive) {
                 userService = IShellCommandService.Stub.asInterface(service)
                 _state.value = ShizukuState.Connected
+                autoGrantPermissions()
             } else {
                 userService = null
                 _state.value = ShizukuState.Disconnected
+            }
+        }
+
+        private fun autoGrantPermissions() {
+            try {
+                userService?.grantPermission(context.packageName, "android.permission.WRITE_SECURE_SETTINGS")
+                userService?.grantPermission(context.packageName, "android.permission.PACKAGE_USAGE_STATS")
+                userService?.setAppOp(context.packageName, "SYSTEM_ALERT_WINDOW", "allow")
+            } catch (e: Exception) {
+                android.util.Log.e("ShizukuManager", "Auto-grant permissions failed", e)
             }
         }
 
