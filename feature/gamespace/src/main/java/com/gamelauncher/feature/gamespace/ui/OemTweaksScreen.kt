@@ -21,6 +21,12 @@ import com.gamelauncher.core.oemflags.FlagConfidence
 import com.gamelauncher.core.oemflags.OemFlag
 import com.gamelauncher.core.oemflags.ProbeStatus
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+
 private val NeonCyan = Color(0xFF00F0FF)
 private val NeonPink = Color(0xFFFF0055)
 private val DarkBg = Color(0xFF0B0E14)
@@ -36,6 +42,19 @@ fun OemTweaksScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,23 +67,28 @@ fun OemTweaksScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
                 Text(
                     "ROG GAME SPACE TUNER",
                     color = NeonCyan,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
+                    letterSpacing = 2.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     "OEM: ${state.detectedOemBrand.displayName} (${state.detectedOemBrand.osName})",
                     color = MutedText,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
+
             if (!state.isShizukuReady) {
+
                 Button(
                     onClick = { viewModel.requestShizukuPermission() },
                     colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
@@ -142,10 +166,13 @@ fun OemFlagCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        flag.title,
+                        text = flag.title,
                         color = Color.White,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(
@@ -157,9 +184,12 @@ fun OemFlagCard(
                             color = if (isSupported) NeonCyan else WarningAmber,
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                         )
                     }
+
 
                     if (flag.confidence == FlagConfidence.NEEDS_TESTING && !isSamsungGos) {
                         Spacer(modifier = Modifier.width(4.dp))

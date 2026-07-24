@@ -197,6 +197,14 @@ class ShizukuUserService(
         return exitCode == 0
     }
 
+    override fun executeCommand(command: String): String? {
+        val output = arrayOfNulls<String>(1)
+        val tokens = command.split("\\s+".toRegex()).toTypedArray()
+        val exitCode = execProcessWithOutput(tokens, output)
+        return if (exitCode == 0) output[0]?.trim() else null
+    }
+
+
     private fun execProcess(cmdArray: Array<String>): Int {
         return processLauncher.execProcess(cmdArray)
     }

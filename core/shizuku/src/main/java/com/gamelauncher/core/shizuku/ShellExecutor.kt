@@ -135,4 +135,16 @@ class ShellExecutor @Inject constructor(
             false
         }
     }
+
+    override suspend fun executeCommand(command: String): String? = withContext(Dispatchers.IO) {
+        if (!shizukuManager.isReady()) return@withContext null
+        val service = getService() ?: return@withContext null
+        try {
+            service.executeCommand(command)
+        } catch (e: Exception) {
+            Log.e("ShellExecutor", "AIDL executeCommand exception for '$command'", e)
+            null
+        }
+    }
 }
+

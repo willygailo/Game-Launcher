@@ -22,6 +22,10 @@ import androidx.compose.ui.unit.sp
 import com.gamelauncher.core.shizuku.ShizukuState
 import com.gamelauncher.feature.tweaks.domain.model.TweakCategory
 import com.gamelauncher.feature.tweaks.domain.model.TweakItem
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +37,19 @@ fun TweaksScreen(
     val shizukuState by viewModel.shizukuState.collectAsState()
     val activeArmouryMode by viewModel.activeArmouryMode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadTweaks()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     var selectedCategoryFilter by remember { mutableStateOf<TweakCategory?>(null) }
 

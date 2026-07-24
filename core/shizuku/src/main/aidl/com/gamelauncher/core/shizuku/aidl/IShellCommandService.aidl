@@ -14,5 +14,7 @@ interface IShellCommandService {
     String readDeviceConfig(String namespace, String key);
     boolean grantPermission(String packageName, String permissionName);
     boolean setAppOp(String packageName, String opName, String mode);
+    String executeCommand(String command);
     void destroy();
 }
+

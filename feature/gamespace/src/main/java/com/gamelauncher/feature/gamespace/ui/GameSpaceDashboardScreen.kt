@@ -16,6 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gamelauncher.core.device.OemBrand
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.text.style.TextOverflow
 
 private val NeonCyan = Color(0xFF00F0FF)
 private val NeonPink = Color(0xFFFF0055)
@@ -26,12 +31,26 @@ private val MutedText = Color(0xFF8A99AD)
 private val SuccessGreen = Color(0xFF00FF88)
 
 @Composable
+
 fun GameSpaceDashboardScreen(
     viewModel: GameSpaceViewModel,
     onNavigateToTweaks: () -> Unit = {},
     onNavigateToHuaweiGuide: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     if (state.showResetConfirmationDialog) {
         AlertDialog(
@@ -67,20 +86,24 @@ fun GameSpaceDashboardScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
                 Text(
                     "ROG GAME SPACE HUB",
                     color = NeonPink,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
+                    letterSpacing = 2.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     "ARMOURY CRATE HARDWARE DASHBOARD",
                     color = MutedText,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -127,8 +150,12 @@ fun GameSpaceDashboardScreen(
                     "BASELINE SNAPSHOT RESTORE",
                     color = Color.White,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
+
 
                 Button(
                     onClick = { viewModel.promptResetAllTweaks() },

@@ -11,10 +11,11 @@ package com.gamelauncher.feature.monitor.domain.model
  * @property timestampMs Sample collection timestamp
  */
 data class SystemHardwareStats(
-    val cpuUsagePercent: Float,
+    val cpuUsagePercent: Float?,
     val ramUsedMb: Long,
     val ramTotalMb: Long,
     val batteryTemperatureCelsius: Float,
     val batteryLevelPercent: Int,
     val timestampMs: Long = System.currentTimeMillis()
 )
+

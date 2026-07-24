@@ -77,6 +77,8 @@ fun SettingsScreen(
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Column(
+
+
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)

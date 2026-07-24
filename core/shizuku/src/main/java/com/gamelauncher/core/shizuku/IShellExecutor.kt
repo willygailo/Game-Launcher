@@ -14,4 +14,6 @@ interface IShellExecutor {
     suspend fun readDeviceConfig(namespace: String, key: String): String?
     suspend fun grantPermission(packageName: String, permissionName: String): Boolean
     suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean
+    suspend fun executeCommand(command: String): String?
 }
+

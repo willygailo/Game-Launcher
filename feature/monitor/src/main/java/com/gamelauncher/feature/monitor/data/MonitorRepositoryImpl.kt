@@ -17,13 +17,16 @@ import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
 import javax.inject.Inject
 
+import com.gamelauncher.core.shizuku.IShellExecutor
+
 /**
  * MonitorRepositoryImpl — Real-time telemetry monitoring repository implementation.
- * Performs safe, non-privileged system reads for CPU, RAM, battery temperature, and frame stats.
+ * Performs system reads for CPU, RAM, battery temperature, and frame stats, routing through Shizuku shell when required.
  */
 class MonitorRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val shellExecutor: IShellExecutor
 ) : IMonitorRepository {
 
     private var previousCpuWorkTime: Long = 0L
@@ -72,41 +75,57 @@ class MonitorRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun readCpuUsagePercent(): Float {
-        return try {
+    private suspend fun readCpuUsagePercent(): Float? {
+        // Step 1: Direct unprivileged read (/proc/stat)
+        val directLine = try {
             val reader = RandomAccessFile("/proc/stat", "r")
-            val line = reader.readLine() ?: return 0f
+            val l = reader.readLine()
             reader.close()
-
-            val tokens = line.split("\\s+".toRegex())
-            if (tokens.size < 8) return 0f
-
-            val user = tokens[1].toLong()
-            val nice = tokens[2].toLong()
-            val system = tokens[3].toLong()
-            val idle = tokens[4].toLong()
-            val iowait = tokens[5].toLong()
-            val irq = tokens[6].toLong()
-            val softirq = tokens[7].toLong()
-
-            val currentCpuWork = user + nice + system + irq + softirq
-            val currentCpuTotal = currentCpuWork + idle + iowait
-
-            val workDiff = currentCpuWork - previousCpuWorkTime
-            val totalDiff = currentCpuTotal - previousCpuTotalTime
-
-            previousCpuWorkTime = currentCpuWork
-            previousCpuTotalTime = currentCpuTotal
-
-            if (totalDiff > 0) {
-                ((workDiff.toFloat() / totalDiff.toFloat()) * 100f).coerceIn(0f, 100f)
-            } else {
-                0f
-            }
+            l
         } catch (_: Exception) {
-            0f
+            null
+        }
+
+        // Step 2: Privileged Shizuku shell read (cat /proc/stat)
+        val line = directLine ?: try {
+            shellExecutor.executeCommand("cat /proc/stat")?.lines()?.firstOrNull()
+        } catch (_: Exception) {
+            null
+        }
+
+        if (line == null) return null
+
+        return try {
+            val tokens = line.split("\\s+".toRegex())
+            if (tokens.size >= 8) {
+                val user = tokens[1].toLong()
+                val nice = tokens[2].toLong()
+                val system = tokens[3].toLong()
+                val idle = tokens[4].toLong()
+                val iowait = tokens[5].toLong()
+                val irq = tokens[6].toLong()
+                val softirq = tokens[7].toLong()
+
+                val currentCpuWork = user + nice + system + irq + softirq
+                val currentCpuTotal = currentCpuWork + idle + iowait
+
+                val workDiff = currentCpuWork - previousCpuWorkTime
+                val totalDiff = currentCpuTotal - previousCpuTotalTime
+
+                previousCpuWorkTime = currentCpuWork
+                previousCpuTotalTime = currentCpuTotal
+
+                if (totalDiff > 0) {
+                    ((workDiff.toFloat() / totalDiff.toFloat()) * 100f).coerceIn(0f, 100f)
+                } else null
+            } else null
+        } catch (_: Exception) {
+            null
         }
     }
+
+
+
 
     private fun readRamInfo(): Pair<Long, Long> {
         return try {

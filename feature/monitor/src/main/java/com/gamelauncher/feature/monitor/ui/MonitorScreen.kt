@@ -36,6 +36,11 @@ import androidx.compose.ui.unit.sp
 import com.gamelauncher.feature.monitor.domain.model.FpsMetrics
 import com.gamelauncher.feature.monitor.domain.model.SystemHardwareStats
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonitorScreen(
@@ -44,7 +49,21 @@ fun MonitorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.startTelemetryObservability()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val darkBackground = Color(0xFF0F172A)
+
     val cardBackground = Color(0xFF1E293B)
     val accentColor = Color(0xFF38BDF8)
     val successColor = Color(0xFF22C55E)
@@ -232,17 +251,23 @@ fun CpuRamMeterCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("CPU Utilization", color = Color.White, fontSize = 13.sp)
-                Text("${stats.cpuUsagePercent.toInt()}%", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(
+                    text = if (stats.cpuUsagePercent != null) "${stats.cpuUsagePercent.toInt()}%" else "UNAVAILABLE (SELinux / No Root)",
+                    color = if (stats.cpuUsagePercent != null) accentColor else Color(0xFFEF4444),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
             }
             Spacer(modifier = Modifier.height(6.dp))
             LinearProgressIndicator(
-                progress = { (stats.cpuUsagePercent / 100f).coerceIn(0f, 1f) },
+                progress = { ((stats.cpuUsagePercent ?: 0f) / 100f).coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
-                color = accentColor,
+                color = if (stats.cpuUsagePercent != null) accentColor else Color.Gray,
                 trackColor = Color(0xFF334155)
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
