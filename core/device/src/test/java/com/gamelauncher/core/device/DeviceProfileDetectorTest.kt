@@ -9,10 +9,10 @@ class DeviceProfileDetectorTest {
 
     @Test
     fun testOemBrand_EnumValuesFormat() {
-        assertEquals("Infinix/Tecno (HiOS/XOS)", OemBrand.TRANSSION.displayName)
-        assertEquals("Samsung (One UI)", OemBrand.SAMSUNG.displayName)
-        assertEquals("Xiaomi (MIUI/HyperOS)", OemBrand.XIAOMI.displayName)
-        assertEquals("Generic Android (AOSP)", OemBrand.GENERIC.displayName)
+        assertEquals("Transsion", OemBrand.TRANSSION.displayName)
+        assertEquals("Samsung", OemBrand.SAMSUNG.displayName)
+        assertEquals("Xiaomi", OemBrand.XIAOMI.displayName)
+        assertEquals("Generic Android", OemBrand.GENERIC.displayName)
     }
 
     @Test

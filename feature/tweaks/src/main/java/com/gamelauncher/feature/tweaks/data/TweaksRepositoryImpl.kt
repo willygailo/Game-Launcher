@@ -41,14 +41,15 @@ class TweaksRepositoryImpl @Inject constructor(
         val oemKeys = deviceProfileDetector.getTweakKeys()
         val detectedRates = querySupportedRefreshRates()
         val roundedRatesInt = detectedRates.map { it.roundToInt() }
-        val rateStrings = (roundedRatesInt.distinct() + listOf(60, 90, 120, 144, 165)).distinct().sorted().map { it.toString() }
-        val fpsStrings = listOf("60", "90", "120", "144", "165")
+        // Never advertise a frame or refresh value that the panel did not report.
+        val rateStrings = roundedRatesInt.distinct().sorted().map { it.toString() }
+        val fpsStrings = rateStrings
 
         val tweaks = listOf(
             TweakItem(
                 id = "rog_armoury_mode",
-                title = "ROG Armoury Performance Mode",
-                description = "Toggle between X-Mode (Ultimate 165/144/120Hz Boost), Dynamic Mode (Balanced), or Esports Mode.",
+                title = "Game Space Performance Profile",
+                description = "Choose a thermal-aware profile. It requests supported display modes only and does not bypass game frame caps.",
                 category = TweakCategory.ROG_MODE,
                 isToggleActive = true,
                 selectedValue = "X-Mode",
@@ -57,24 +58,24 @@ class TweaksRepositoryImpl @Inject constructor(
             ),
             TweakItem(
                 id = "touch_ultra",
-                title = "Touch Ultra Sensitivity & Latency Boost",
-                description = "Forces max touch polling rate, lowers slop threshold, and eliminates touch input lag.",
+                title = "Touch Assistance",
+                description = "Keeps touch optimization as an app preference. Hardware polling rate remains controlled by the device and game.",
                 category = TweakCategory.TOUCH,
                 isToggleActive = true,
                 isSupportedByDevice = true
             ),
             TweakItem(
                 id = "super_fast_launch",
-                title = "Super Fast Game Launch & Purge RAM",
-                description = "Clears background process cache, trims system RAM, and disables launch delay before starting game.",
+                title = "Launch Preparation",
+                description = "Starts the selected game session without killing arbitrary background apps or changing animation settings.",
                 category = TweakCategory.SUPER_FAST_LAUNCH,
                 isToggleActive = false,
                 isSupportedByDevice = true
             ),
             TweakItem(
                 id = "refresh_rate",
-                title = "120 / 144 / 165 Hz Panel Lock",
-                description = "Force peak display refresh rate using target OEM key (${oemKeys.refreshRateKey}).",
+                title = "Supported Display Mode",
+                description = "Request a refresh rate reported by this device's display panel. Requires Shizuku or WRITE_SECURE_SETTINGS when Android blocks the request.",
                 category = TweakCategory.REFRESH_RATE,
                 isToggleActive = true,
                 selectedValue = rateStrings.lastOrNull(),
@@ -83,87 +84,55 @@ class TweaksRepositoryImpl @Inject constructor(
             ),
             TweakItem(
                 id = "fps_unlock",
-                title = "120 / 144 / 165 FPS Game Unlock",
-                description = "Forces system Game Driver, Android Game Mode performance profile, and unlocks frame cap.",
+                title = "Game Frame-Rate Target",
+                description = "Stores the desired target for the session. The game, panel, and thermal state still decide the actual FPS.",
                 category = TweakCategory.FPS_UNLOCK,
                 isToggleActive = true,
-                selectedValue = "165",
+                selectedValue = rateStrings.lastOrNull() ?: "60",
                 supportedValues = fpsStrings,
                 isSupportedByDevice = true
             ),
             TweakItem(
-                id = "high_refresh_rate_blacklist",
-                title = "Clear Refresh Rate Blacklist",
-                description = "Remove app package restrictions blocking high FPS / high Hz rendering.",
-                category = TweakCategory.REFRESH_RATE,
-                isToggleActive = false,
-                isSupportedByDevice = true
-            ),
-            TweakItem(
                 id = "gpu_rendering",
-                title = "GPU Hardware & Skia Vulkan Acceleration",
-                description = "Forces 2D GPU HW rendering, Skia Vulkan UI pipeline, and hardware composition for lower render latency.",
+                title = "GPU Telemetry",
+                description = "GPU utilization is shown only when the OEM exposes a readable source. This app does not force a renderer for other games.",
                 category = TweakCategory.GPU_RENDERING,
-                isToggleActive = true,
-                isSupportedByDevice = true
+                isToggleActive = false,
+                isSupportedByDevice = false,
+                badgeNote = "Unavailable on standard Android"
             ),
             TweakItem(
                 id = "cpu_performance",
-                title = "CPU Governor & Power Boost",
-                description = "Bypasses CPU power limits, locks high frequency scaling hints, and disables process throttling.",
+                title = "Thermal-Aware App Performance",
+                description = "Uses Android's app performance hint where available. CPU governors and thermal limits are not modified.",
                 category = TweakCategory.CPU_PERFORMANCE,
                 isToggleActive = true,
                 isSupportedByDevice = true
             ),
             TweakItem(
                 id = "network_speed",
-                title = "Game Network Speed & Low Jitter",
-                description = "Enforces Low Latency Wi-Fi mode, keeps Mobile Data active, and disables Wi-Fi/BT background scanning.",
+                title = "Low-Latency Network Session",
+                description = "Uses the app's network session controls; it does not change global mobile-data, Wi-Fi, or Bluetooth settings.",
                 category = TweakCategory.NETWORK_SPEED,
                 isToggleActive = true,
                 isSupportedByDevice = true
             ),
             TweakItem(
-                id = "game_driver_clear",
-                title = "Clear Game Driver Restrictions",
-                description = "Reset Game Driver opt-out and global override app configurations.",
-                category = TweakCategory.GPU_RENDERING,
-                isToggleActive = false,
-                isSupportedByDevice = oemKeys.gameDriverSupported
-            ),
-            TweakItem(
-                id = "thermal_bypass",
-                title = "OEM Thermal Throttling Bypass",
-                description = "Bypass framework thermal throttling via cmd thermalservice override-status.",
-                category = TweakCategory.THERMAL_THROTTLING,
-                isToggleActive = false,
-                isSupportedByDevice = oemKeys.thermalOverrideSupported,
-                badgeNote = "Requires on-device verification"
-            ),
-            TweakItem(
                 id = "game_mode",
-                title = "System Game Mode Booster",
-                description = "Activate system game mode optimizations.",
+                title = "Session Game Mode",
+                description = "Records the selected profile for game launch. Android does not provide a universal way to force game mode for another app.",
                 category = TweakCategory.GAME_MODE,
                 isToggleActive = true,
                 isSupportedByDevice = true
             ),
             TweakItem(
-                id = "phantom_procs",
-                title = "Disable Phantom Process Killing",
-                description = "Prevent Android 12+ child process monitor from killing background games.",
-                category = TweakCategory.MEMORY,
-                isToggleActive = false,
-                isSupportedByDevice = Build.VERSION.SDK_INT >= 31,
-                badgeNote = "Requires on-device verification"
-            ),
-            TweakItem(
-                id = "adaptive_battery",
-                title = "Disable Adaptive Battery",
-                description = "Disable OS power throttling on active background game threads.",
-                category = TweakCategory.POWER,
-                isToggleActive = false,
-                isSupportedByDevice = true
+                id = "thermal_protection",
+                title = "Thermal Protection",
+                description = "Always enabled. The profile is reduced when Android reports elevated temperature.",
+                category = TweakCategory.THERMAL_THROTTLING,
+                isToggleActive = true,
+                isSupportedByDevice = true,
+                badgeNote = "Safety control"
             )
         )
         emit(tweaks)
@@ -172,7 +141,7 @@ class TweaksRepositoryImpl @Inject constructor(
     private fun querySupportedRefreshRates(): List<Float> {
         return try {
             val dm = context.getSystemService(DisplayManager::class.java)
-            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f, 90f, 120f, 144f, 165f)
+            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val rawModes = display.supportedModes
                 val rates = rawModes
@@ -180,12 +149,12 @@ class TweaksRepositoryImpl @Inject constructor(
                     .filter { it >= 30f }
                     .distinct()
                     .sorted()
-                if (rates.isNotEmpty()) rates else listOf(60f, 90f, 120f, 144f, 165f)
+                if (rates.isNotEmpty()) rates else listOf(60f)
             } else {
                 listOf(display.refreshRate)
             }
         } catch (e: Exception) {
-            listOf(60f, 90f, 120f, 144f, 165f)
+            listOf(60f)
         }
     }
 
@@ -193,30 +162,13 @@ class TweaksRepositoryImpl @Inject constructor(
         return@withContext try {
             when (modeName.uppercase()) {
                 "X-MODE" -> {
-                    applyTouchUltraTweaks(true)
-                    applyRefreshRateTweak(165f)
-                    applyFpsUnlockTweak("165")
-                    applyGpuRenderingTweak(true)
-                    applyCpuPerformanceBoost(true)
-                    applyNetworkSpeedBoost(true)
-                    applyThermalThrottlingBypass(true)
-                    applyGameModeTweak(true)
-                    TweakResult.Confirmed
+                    applyRefreshRateTweak(querySupportedRefreshRates().maxOrNull() ?: 60f)
                 }
                 "DYNAMIC" -> {
-                    applyTouchUltraTweaks(true)
-                    applyRefreshRateTweak(120f)
-                    applyGpuRenderingTweak(true)
-                    applyGameModeTweak(true)
-                    applyCpuPerformanceBoost(false)
-                    TweakResult.Confirmed
+                    applyRefreshRateTweak(querySupportedRefreshRates().let { rates -> rates.minByOrNull { kotlin.math.abs(it - 60f) } ?: 60f })
                 }
                 "ESPORTS" -> {
-                    applyTouchUltraTweaks(true)
-                    applyRefreshRateTweak(60f)
-                    applyNetworkSpeedBoost(true)
-                    applyGameModeTweak(true)
-                    TweakResult.Confirmed
+                    applyRefreshRateTweak(querySupportedRefreshRates().minOrNull() ?: 60f)
                 }
                 else -> TweakResult.Failed("Unknown ROG Mode '$modeName'")
             }
@@ -226,146 +178,46 @@ class TweaksRepositoryImpl @Inject constructor(
     }
 
     override suspend fun applyTouchUltraTweaks(enable: Boolean): TweakResult = withContext(ioDispatcher) {
-        val valStr = if (enable) "1" else "0"
-        val keys = listOf("touch_responsiveness", "touch_game_mode", "asus_touch_game_mode", "xiaomi_touch_game_mode", "game_touch_boost")
-        var anySuccess = false
-
-        for (k in keys) {
-            val ok = secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, k, valStr)
-            if (ok) anySuccess = true
-        }
-
-        secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "pointer_speed", if (enable) "7" else "0")
-        secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, "view.touch_slop", if (enable) "2" else "8")
-
-        if (anySuccess) TweakResult.Confirmed else TweakResult.Failed("Failed to set touch responsiveness via Shizuku/ADB")
+        TweakResult.SilentlyIgnored("touch_assistance_preference")
     }
 
     override suspend fun applySuperFastGameLaunch(): TweakResult = withContext(ioDispatcher) {
-        return@withContext try {
-            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
-            am?.let {
-                val runningApps = it.runningAppProcesses ?: emptyList()
-                for (proc in runningApps) {
-                    if (proc.pkgList != null && proc.pkgList.isNotEmpty() && proc.pkgList[0] != context.packageName) {
-                        try { it.killBackgroundProcesses(proc.pkgList[0]) } catch (_: Exception) {}
-                    }
-                }
-            }
-            System.gc()
-
-            // Accelerate launch window animations
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "window_animation_scale", "0")
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "transition_animation_scale", "0")
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "animator_duration_scale", "0")
-
-            TweakResult.Confirmed
-        } catch (e: Exception) {
-            TweakResult.Failed("Super fast launch error: ${e.localizedMessage}")
-        }
+        TweakResult.SilentlyIgnored("launch_preparation")
     }
 
     override suspend fun applyRefreshRateTweak(refreshRateHz: Float): TweakResult = withContext(ioDispatcher) {
-        val oemKeys = deviceProfileDetector.getTweakKeys()
-        val targetValue = refreshRateHz.toString()
-
-        val keysToSet = listOf(
-            oemKeys.refreshRateKey,
-            "peak_refresh_rate",
-            "user_refresh_rate",
-            "min_refresh_rate",
-            "oneplus_screen_refresh_rate",
-            "oppo_display_refresh_rate",
-            "asus_refresh_rate"
-        ).distinct()
-
-        var successCount = 0
-        for (k in keysToSet) {
-            val ok = secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, k, targetValue)
-            if (ok) successCount++
+        val supported = querySupportedRefreshRates()
+        if (supported.none { kotlin.math.abs(it - refreshRateHz) < 0.1f }) {
+            return@withContext TweakResult.Failed("${refreshRateHz.toInt()}Hz is not reported by this display")
         }
-
-        if (successCount > 0) {
-            TweakResult.Confirmed
-        } else {
-            TweakResult.Failed("Failed to set refresh rate on system keys via Shizuku/ADB")
-        }
+        val peak = shellExecutor.setPeakRefreshRate(refreshRateHz)
+        val min = shellExecutor.setMinRefreshRate(refreshRateHz)
+        if (peak || min) TweakResult.Confirmed
+        else TweakResult.Failed("Android rejected the display mode request; connect Shizuku or grant WRITE_SECURE_SETTINGS")
     }
 
     override suspend fun applyFpsUnlockTweak(fpsTarget: String): TweakResult = withContext(ioDispatcher) {
-        val ok1 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_all_apps", "1")
-        val ok2 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_mode_type", "1")
-        clearHighRefreshRateBlacklist()
-
-        try {
-            shellExecutor.setDeviceConfig("game_overlay", "fps", fpsTarget)
-        } catch (_: Exception) {}
-
-        if (ok1 || ok2) TweakResult.Confirmed else TweakResult.Failed("Failed to enable FPS unlock via Shizuku/ADB")
+        TweakResult.SilentlyIgnored("frame_rate_target_$fpsTarget")
     }
 
     override suspend fun clearHighRefreshRateBlacklist(): TweakResult = withContext(ioDispatcher) {
-        val key = "high_refresh_rate_blacklist"
-        return@withContext try {
-            val written = secureSettingsRepository.putString(SettingsKeys.Scope.SYSTEM, key, "")
-            if (written) {
-                TweakResult.Confirmed
-            } else {
-                TweakResult.Failed("Failed to clear high_refresh_rate_blacklist: Write returned false. Check Shizuku/ADB permission.")
-            }
-        } catch (e: Exception) {
-            TweakResult.Failed("Failed to clear high_refresh_rate_blacklist: ${e.localizedMessage ?: e.message}")
-        }
+        TweakResult.Failed("Android does not expose a safe universal refresh-rate blacklist to modify")
     }
 
     override suspend fun applyGpuRenderingTweak(enableGpuRendering: Boolean): TweakResult = withContext(ioDispatcher) {
-        val targetVal = if (enableGpuRendering) "1" else "0"
-        return@withContext try {
-            val ok1 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "force_gpu_rendering", targetVal)
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "debug.hwui.renderer", if (enableGpuRendering) "skiavk" else "opengl")
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "debug.composition.type", if (enableGpuRendering) "gpu" else "c2d")
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "disable_overlays", targetVal)
-            if (ok1) TweakResult.Confirmed else TweakResult.Failed("Failed to write force_gpu_rendering: Write returned false.")
-        } catch (e: Exception) {
-            TweakResult.Failed("Failed to set force_gpu_rendering: ${e.localizedMessage ?: e.message}")
-        }
+        TweakResult.Failed("GPU renderer controls are OEM and game specific; no universal setting is applied")
     }
 
     override suspend fun clearGameDriverConfig(): TweakResult = withContext(ioDispatcher) {
-        return@withContext try {
-            val written1 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_all_apps", "")
-            val written2 = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "game_driver_opt_out_apps", "")
-            if (written1 || written2) {
-                TweakResult.Confirmed
-            } else {
-                TweakResult.Failed("Failed to clear game_driver_all_apps: Write returned false. Check Shizuku/ADB permission.")
-            }
-        } catch (e: Exception) {
-            TweakResult.Failed("Failed to clear game_driver_all_apps: ${e.localizedMessage ?: e.message}")
-        }
+        TweakResult.Failed("Game driver configuration is managed by Android and the game publisher")
     }
 
     override suspend fun applyCpuPerformanceBoost(enable: Boolean): TweakResult = withContext(ioDispatcher) {
-        val valStr = if (enable) "0" else "1"
-        return@withContext try {
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "power_check_max_cpu_freq", valStr)
-            secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "thermal_limit_enabled", valStr)
-            disablePhantomProcessKilling(enable)
-            disableAdaptiveBattery(enable)
-            TweakResult.Confirmed
-        } catch (e: Exception) {
-            TweakResult.Failed("Failed to apply CPU performance boost: ${e.localizedMessage ?: e.message}")
-        }
+        TweakResult.SilentlyIgnored("thermal_aware_app_performance")
     }
 
     override suspend fun applyThermalThrottlingBypass(enableBypass: Boolean): TweakResult = withContext(ioDispatcher) {
-        return@withContext try {
-            val okShizuku = shellExecutor.setThermalOverride(enableBypass)
-            val okRepo = secureSettingsRepository.putString(SettingsKeys.Scope.GLOBAL, "thermal_limit_enabled", if (enableBypass) "0" else "1")
-            if (okShizuku || okRepo) TweakResult.Confirmed else TweakResult.Failed("Thermal override rejected by system")
-        } catch (e: Exception) {
-            TweakResult.Failed("Failed thermal bypass: ${e.localizedMessage ?: e.message}")
-        }
+        TweakResult.Failed("Thermal protection cannot be disabled by Game Launcher")
     }
 
     override suspend fun applyGameModeTweak(enableGameMode: Boolean): TweakResult = withContext(ioDispatcher) {
@@ -413,4 +265,3 @@ class TweaksRepositoryImpl @Inject constructor(
         }
     }
 }
-

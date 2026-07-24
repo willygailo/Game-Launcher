@@ -104,21 +104,18 @@ class GameOptimizationCoordinator @Inject constructor(
             performanceManager.optimizeNonRoot(packageName)
             appliedOptimizations.add("Non-Root Performance Mode")
 
-            shellExecutor.writeSetting("global", "game_driver_opt_in_apps", packageName)
-            appliedOptimizations.add("GameManager Performance Mode Force (Max FPS)")
-
-            val maxHz = customPreset?.targetHz ?: (performanceManager.getSupportedRefreshRates().maxOrNull() ?: 60f)
-            shellExecutor.setPeakRefreshRate(maxHz)
-            shellExecutor.setMinRefreshRate(maxHz)
-            shellExecutor.writeSetting("system", "user_refresh_rate", maxHz.toString())
-            shellExecutor.writeSetting("system", "miui_refresh_rate", maxHz.toString())
-            shellExecutor.writeSetting("system", "high_refresh_rate", "1")
-            shellExecutor.writeSetting("secure", "refresh_rate_mode", "2")
-            appliedOptimizations.add("Unlocked Max Hz Panel Target (${maxHz.toInt()}Hz)")
-
-            val thermalOk = shellExecutor.setThermalOverride(true)
-            if (thermalOk) {
-                appliedOptimizations.add("Thermal Service Override Active (No Throttling)")
+            // A display request may only choose a mode that the panel reports.  It does
+            // not bypass a game's own FPS limit and it deliberately keeps thermal
+            // protection enabled.
+            val supportedRates = performanceManager.getSupportedRefreshRates()
+            val requestedHz = customPreset?.targetHz ?: targetHz
+            val safeHz = supportedRates.minByOrNull { kotlin.math.abs(it - requestedHz) } ?: 60f
+            val peakOk = shellExecutor.setPeakRefreshRate(safeHz)
+            val minOk = shellExecutor.setMinRefreshRate(safeHz)
+            if (peakOk || minOk) {
+                appliedOptimizations.add("Requested supported display mode (${safeHz.toInt()}Hz)")
+            } else {
+                errors.add("Display mode request was not accepted; using the system default")
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -128,7 +125,7 @@ class GameOptimizationCoordinator @Inject constructor(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             val gameState = android.app.GameState(false, android.app.GameState.MODE_CONTENT)
                             gameManager.setGameState(gameState)
-                            appliedOptimizations.add("GameManager Local Priority Active")
+                appliedOptimizations.add("GameManager local state updated")
                         }
                     }
                 } catch (_: Exception) {}
@@ -148,7 +145,7 @@ class GameOptimizationCoordinator @Inject constructor(
             }
 
             performanceManager.lockFps(targetFps)
-            appliedOptimizations.add("FPS Target Locked (${targetFps} FPS)")
+                appliedOptimizations.add("App performance target (${targetFps} FPS)")
 
             if (thermalStatus <= PowerManager.THERMAL_STATUS_LIGHT) {
                 val dndResult = dndManager.enableGamingDnd()
@@ -262,12 +259,7 @@ class GameOptimizationCoordinator @Inject constructor(
                 errors.add("Failed to restore battery saver: ${e.message}")
             }
 
-            try {
-                shellExecutor.setThermalOverride(false)
-                restoredOptimizations.add("Thermal Engines Resumed")
-            } catch (e: Exception) {
-                errors.add("Failed to resume thermal engines: ${e.message}")
-            }
+            restoredOptimizations.add("Thermal protection remained enabled")
         } catch (e: Exception) {
             errors.add("Error during optimization stop: ${e.message}")
         }

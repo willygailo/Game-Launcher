@@ -29,6 +29,7 @@ class TweaksRepositoryImplTest {
             override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
             override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val detector = DeviceProfileDetector()
@@ -52,7 +53,7 @@ class TweaksRepositoryImplTest {
     }
 
     @Test
-    fun testApplyRefreshRateTweak_ConfirmedWhenReadBackMatches() = runTest {
+    fun testApplyRefreshRateTweak_ConfirmedForReportedMode() = runTest {
         var writtenVal = ""
         val fakeShellExecutor = object : IShellExecutor {
             override suspend fun setPeakRefreshRate(hz: Float): Boolean = true
@@ -67,6 +68,7 @@ class TweaksRepositoryImplTest {
             override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
             override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val detector = DeviceProfileDetector()
@@ -84,7 +86,8 @@ class TweaksRepositoryImplTest {
             context = mockContext
         )
 
-        val result = repository.applyRefreshRateTweak(120f)
+        // A mocked display has no reported modes, so the safe fallback is 60Hz.
+        val result = repository.applyRefreshRateTweak(60f)
         assertEquals(TweakResult.Confirmed, result)
     }
 }

@@ -114,7 +114,7 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
+        if (intent?.action == ACTION_STOP || intent?.action == ACTION_STOP_OVERLAY) {
             stopSelf()
             return START_NOT_STICKY
         }
@@ -191,7 +191,8 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
                         ram = ramVal,
                         ping = pingVal,
                         cpuTemp = cpuTempVal,
-                        batTemp = batTempVal
+                        batTemp = batTempVal,
+                        onCleanRam = { performanceManager.clearMemory() }
                     )
                 }
             }
@@ -288,6 +289,7 @@ class OverlayService : Service(), SavedStateRegistryOwner, ViewModelStoreOwner {
 
     companion object {
         const val ACTION_STOP = "STOP_OVERLAY"
+        const val ACTION_STOP_OVERLAY = "com.gamelauncher.ACTION_STOP_OVERLAY"
     }
 }
 
@@ -378,7 +380,7 @@ fun SideDockOverlayContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "ROG GAME HUD BOOSTER",
+                                "GAME SPACE HUD",
                                 color = PrimaryNeon,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black,
@@ -441,13 +443,13 @@ fun SideDockOverlayContent(
                                 }
 
                                 Spacer(modifier = Modifier.height(14.dp))
-                                Text("FRAME PACING & HZ TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("OVERLAY FRAME PACING & DISPLAY HZ", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceAround
                                 ) {
-                                    ArcGauge(progress = (fps / 120f).coerceIn(0f, 1f), color = PrimaryNeon, label = "FPS", valueText = "${fps.roundToInt()}")
+                                    ArcGauge(progress = (fps / 120f).coerceIn(0f, 1f), color = PrimaryNeon, label = "HUD FPS", valueText = "${fps.roundToInt()}")
                                     ArcGauge(progress = (hz / 144f).coerceIn(0f, 1f), color = SecondaryNeon, label = "DISPLAY", valueText = "${hz}Hz")
                                 }
                             }
@@ -456,8 +458,8 @@ fun SideDockOverlayContent(
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text("PING LATENCY: $ping", color = PrimaryNeon, fontSize = 14.sp, fontWeight = FontWeight.Black)
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("✓ Private Cloudflare DNS Active (1.1.1.1)", color = SuccessGreen, fontSize = 11.sp)
-                                Text("✓ 5G Mobile Data Acceleration Engaged", color = SecondaryNeon, fontSize = 11.sp)
+                                Text("Network quality is sampled while the overlay is active.", color = TextSecondary, fontSize = 11.sp)
+                                Text("DNS and radio settings are controlled from Game Space, not forced here.", color = TextSecondary, fontSize = 11.sp)
                             }
                             2 -> {
                                 Text("SYSTEM HARDWARE TELEMETRY", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -483,31 +485,7 @@ fun SideDockOverlayContent(
                                     )
                                 }
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("Block Notifications (DND)", color = TextSecondary, fontSize = 12.sp)
-                                    Switch(
-                                        checked = dndEnabled,
-                                        onCheckedChange = { dndEnabled = it },
-                                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
-                                    )
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("Lock Brightness", color = TextSecondary, fontSize = 12.sp)
-                                    Switch(
-                                        checked = brightnessLocked,
-                                        onCheckedChange = { brightnessLocked = it },
-                                        colors = SwitchDefaults.colors(checkedThumbColor = PrimaryNeon, checkedTrackColor = PrimaryNeon.copy(alpha = 0.4f))
-                                    )
-                                }
+                                Text("DND and brightness are configured from Game Space and require their respective Android permissions.", color = TextSecondary, fontSize = 11.sp)
                             }
                         }
                     }
@@ -527,4 +505,3 @@ fun SideDockOverlayContent(
         }
     }
 }
-

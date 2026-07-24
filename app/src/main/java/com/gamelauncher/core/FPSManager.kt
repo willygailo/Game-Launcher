@@ -20,8 +20,9 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 /**
- * FPSManager — production-grade real-time FPS tracker + Hz forcer.
- * Choreographer-based frame timing + typed IShellExecutor AIDL writes.
+ * FPSManager — frame timing for this process plus a best-effort display-rate request.
+ * It never disables Android thermal protection and it never claims to unlock a game's
+ * internal frame cap.
  */
 @Singleton
 class FPSManager @Inject constructor(
@@ -114,10 +115,8 @@ class FPSManager @Inject constructor(
         } catch (_: Exception) {}
 
         trackerScope.launch {
-            shellExecutor.setThermalOverride(true)
             shellExecutor.setPeakRefreshRate(nearest)
             shellExecutor.setMinRefreshRate(nearest)
-            shellExecutor.writeSetting("system", "user_refresh_rate", nearest.toString())
         }
 
         success = true
@@ -133,8 +132,8 @@ class FPSManager @Inject constructor(
         } catch (_: Exception) {}
         
         trackerScope.launch {
-            shellExecutor.setThermalOverride(false)
-            shellExecutor.writeSetting("system", "min_refresh_rate", "60.0")
+            shellExecutor.writeSetting("system", "peak_refresh_rate", "")
+            shellExecutor.writeSetting("system", "min_refresh_rate", "")
         }
     }
 

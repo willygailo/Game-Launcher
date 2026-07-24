@@ -126,7 +126,7 @@ class PerformanceManager @Inject constructor(
     fun getSupportedRefreshRates(): List<Float> {
         return try {
             val dm = context.getSystemService(DisplayManager::class.java)
-            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f, 90f, 120f, 144f)
+            val display = dm?.getDisplay(Display.DEFAULT_DISPLAY) ?: return listOf(60f)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val rawModes = display.supportedModes
                 val rates = rawModes
@@ -134,12 +134,12 @@ class PerformanceManager @Inject constructor(
                     .filter { it >= 30f }
                     .distinct()
                     .sorted()
-                if (rates.isNotEmpty()) rates else listOf(60f, 90f, 120f, 144f)
+                if (rates.isNotEmpty()) rates else listOf(60f)
             } else {
                 listOf(display.refreshRate)
             }
         } catch (e: Exception) {
-            listOf(60f, 90f, 120f, 144f)
+            listOf(60f)
         }
     }
 

@@ -115,7 +115,7 @@ class MonitorViewModel @Inject constructor(
                         context.startService(intent)
                     }
                 } else {
-                    intent.action = "com.gamelauncher.ACTION_STOP_OVERLAY"
+                    intent.action = "com.gamelauncher.services.OverlayService.ACTION_STOP_OVERLAY"
                     context.startService(intent)
                 }
             }

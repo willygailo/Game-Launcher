@@ -28,6 +28,7 @@ class NetworkRepositoryImplTest {
             override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
             override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val mockContext = Mockito.mock(Context::class.java)
@@ -59,6 +60,7 @@ class NetworkRepositoryImplTest {
             override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
             override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val mockContext = Mockito.mock(Context::class.java)
@@ -93,6 +95,7 @@ class NetworkRepositoryImplTest {
             override suspend fun readDeviceConfig(namespace: String, key: String): String? = null
             override suspend fun grantPermission(packageName: String, permissionName: String): Boolean = true
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val mockContext = Mockito.mock(Context::class.java)

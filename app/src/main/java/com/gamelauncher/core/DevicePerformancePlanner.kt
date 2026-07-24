@@ -128,8 +128,9 @@ class DevicePerformancePlanner @Inject constructor(
                 .filter { it >= 30f }
                 .distinct()
                 .sorted()
-                .ifEmpty { listOf(60f, 90f, 120f, 144f) }
-        }.getOrDefault(listOf(60f, 90f, 120f, 144f))
+                // A query failure must not manufacture high-refresh capabilities.
+                .ifEmpty { listOf(60f) }
+        }.getOrDefault(listOf(60f))
     }
 
     fun nearestSupportedRate(desired: Float, supportedRates: List<Float> = getSupportedRefreshRates()): Float {

@@ -88,21 +88,10 @@ fun MainScreen() {
     Scaffold { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "dashboard",
+            // Game Space is the app's single launcher/dashboard home.
+            startDestination = "gamespace",
             modifier = Modifier.fillMaxSize()
         ) {
-            composable("dashboard") { 
-                DashboardScreen(
-                    onNavigateToSettings = { navController.navigate("settings") },
-                    onNavigateToGameSpace = { navController.navigate("gamespace") },
-                    onNavigateToTweaks = { navController.navigate("tweaks") },
-                    onNavigateToNetwork = { navController.navigate("network") },
-                    onNavigateToMonitor = { navController.navigate("monitor") },
-                    onNavigateToGameDetails = { packageName -> 
-                        navController.navigate("game_details/$packageName") 
-                    }
-                ) 
-            }
             composable("settings") { 
                 SettingsScreen()
             }
@@ -122,7 +111,6 @@ fun MainScreen() {
                 val viewModel: com.gamelauncher.feature.gamespace.ui.GameSpaceViewModel = hiltViewModel()
                 com.gamelauncher.feature.gamespace.ui.GameSpaceDashboardScreen(
                     viewModel = viewModel,
-                    onNavigateToTweaks = { navController.navigate("tweaks") },
                     onNavigateToHuaweiGuide = { navController.navigate("huawei_pairing_guide") }
                 )
             }
@@ -152,4 +140,3 @@ fun MainScreen() {
         }
     }
 }
-

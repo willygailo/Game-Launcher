@@ -42,6 +42,7 @@ class RuntimePermissionManagerTest {
                 return true
             }
             override suspend fun setAppOp(packageName: String, opName: String, mode: String): Boolean = true
+            override suspend fun executeCommand(command: String): String? = null
         }
 
         val stubManager = object : IShizukuManager {
