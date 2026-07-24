@@ -252,6 +252,217 @@ class OemFlagRegistry @Inject constructor() {
             activeValue = "1",
             defaultValue = "0",
             confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+
+        // SYSTEM PROPERTY (SETPROP) DEBUG & GRAPHICS TWEAKS
+        OemFlag(
+            id = "prop_sf_latch_unsignaled",
+            key = "debug.sf.latch_unsignaled",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "SurfaceFlinger Unsignaled Latching",
+            description = "Eliminates buffer latching latency for smooth 60-120+ FPS frame pacing.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_hwui_renderer",
+            key = "debug.hwui.renderer",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "HWUI Skia Vulkan Renderer",
+            description = "Forces Vulkan graphics pipeline for 2D UI, Compose & 3D game viewport rendering.",
+            activeValue = "skiavk",
+            defaultValue = "skiagl",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_renderengine_vulkan",
+            key = "debug.renderengine.backend",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Vulkan 3D Composition Engine",
+            description = "Forces SurfaceFlinger to execute 3D display composition using Vulkan backend.",
+            activeValue = "vulkan",
+            defaultValue = "gles",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_game_framerate_unthrottle",
+            key = "debug.graphics.game_default_frame_rate.disabled",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "3D Game Viewport Unthrottle",
+            description = "Disables default OS frame rate caps on 3D game viewports to unlock max GPU FPS.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_sf_backpressure",
+            key = "debug.sf.disable_backpressure",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "SurfaceFlinger Backpressure Bypass",
+            description = "Prevents buffer backpressure stalling during high frame rate rendering.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_fifo_ui",
+            key = "sys.use_fifo_ui",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Realtime UI Thread Priority",
+            description = "Assigns Realtime FIFO scheduling priority to main UI rendering threads.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_egl_hw",
+            key = "debug.egl.hw",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Force EGL Hardware Acceleration",
+            description = "Enforces 100% hardware-accelerated EGL rendering pipeline.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_swapinterval",
+            key = "debug.gr.swapinterval",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Graphics Swap Interval Override",
+            description = "Overrides graphics buffer swap interval to minimize VSync wait latency.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.NEEDS_TESTING
+        ),
+        OemFlag(
+            id = "prop_dex2oat_threads",
+            key = "dalvik.vm.dex2oat-threads",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "JIT Compiler Parallelism",
+            description = "Allocates 4 parallel threads for runtime JIT DEX compilation.",
+            activeValue = "4",
+            defaultValue = "2",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_hwui_profile_visual",
+            key = "debug.hwui.profile",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "HWUI Visual Timing Bars",
+            description = "Renders on-screen GPU frame timing visual overlay bars.",
+            activeValue = "visual_bars",
+            defaultValue = "false",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_hwui_overdraw",
+            key = "debug.hwui.overdraw",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "HWUI Overdraw Heatmap Visualizer",
+            description = "Displays color-coded overdraw heatmap to identify redundant rendering cost.",
+            activeValue = "show",
+            defaultValue = "false",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_hwui_dirty_regions",
+            key = "debug.hwui.show_dirty_regions",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "HWUI Redraw Region Visualizer",
+            description = "Highlights dirty screen regions receiving redraw updates.",
+            activeValue = "true",
+            defaultValue = "false",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_atrace_disable",
+            key = "debug.atrace.tags.enableflags",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable Systrace Overhead",
+            description = "Disables system tracing tag overhead during gaming sessions.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_choreographer_skip_warn",
+            key = "debug.choreographer.skipwarning",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Frame Skip Warning Threshold",
+            description = "Sets Choreographer diagnostic warning threshold for skipped frames.",
+            activeValue = "30",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_jit_debug_info_skip",
+            key = "debug.generate-debug-info",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Skip JIT Debug Symbol Generation",
+            description = "Disables JIT debug symbol table creation overhead for maximum runtime speed.",
+            activeValue = "false",
+            defaultValue = "true",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_wifi_verbose_disable",
+            key = "debug.wifi.enableWifiVerboseLogging",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable Wi-Fi Verbose Logging",
+            description = "Suppresses Wi-Fi driver debug logging to reduce network latency overhead.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+        OemFlag(
+            id = "prop_sf_early_app_phase",
+            key = "debug.sf.early_app_phase_offset_ns",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "SurfaceFlinger Early App Phase Offset",
+            description = "Advances app frame render phase timing to reduce input-to-display latency.",
+            activeValue = "5000000",
+            defaultValue = "0",
+            confidence = FlagConfidence.NEEDS_TESTING
+        ),
+        OemFlag(
+            id = "prop_sf_early_sf_phase",
+            key = "debug.sf.early_sf_phase_offset_ns",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "SurfaceFlinger Early SF Phase Offset",
+            description = "Advances display composition phase timing for high FPS panel output.",
+            activeValue = "3000000",
+            defaultValue = "0",
+            confidence = FlagConfidence.NEEDS_TESTING
+        ),
+        OemFlag(
+            id = "prop_omx_hw_rank",
+            key = "debug.stagefright.omx-default-rank",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Force HW Video Decoder Rank",
+            description = "Prioritizes hardware accelerated OMX video decoding pipeline.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING
         )
     )
 

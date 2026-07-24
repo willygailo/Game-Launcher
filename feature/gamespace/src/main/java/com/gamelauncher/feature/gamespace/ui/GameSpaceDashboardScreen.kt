@@ -288,7 +288,12 @@ private fun TweaksTabContent(
             if (state.detectedOemBrand == OemBrand.HUAWEI) {
                 TextButton(onClick = onNavigateToHuaweiGuide) { Text("HUAWEI GUIDE", color = NeonCyan, fontSize = 10.sp) }
             }
+            TextButton(onClick = viewModel::applyAllTweaks) { Text("APPLY ALL", color = NeonCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
             TextButton(onClick = viewModel::promptResetAllTweaks) { Text("RESTORE", color = NeonPink, fontSize = 10.sp) }
+        }
+        if (state.romBuildInfo.isNotEmpty()) {
+            Spacer(Modifier.height(4.dp))
+            Text(state.romBuildInfo, color = NeonCyan.copy(alpha = 0.8f), fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(10.dp))
 

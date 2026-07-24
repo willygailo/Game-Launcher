@@ -9,7 +9,8 @@ enum class FlagScope(val namespace: String) {
     GLOBAL("global"),
     SYSTEM("system"),
     SECURE("secure"),
-    SHELL_CMD("shell")
+    SHELL_CMD("shell"),
+    SYSTEM_PROP("prop")
 }
 
 /**

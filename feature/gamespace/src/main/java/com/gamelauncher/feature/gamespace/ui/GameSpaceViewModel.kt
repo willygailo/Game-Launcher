@@ -17,6 +17,7 @@ import com.gamelauncher.core.device.DeviceProfileDetector
 import com.gamelauncher.core.device.OemBrand
 import com.gamelauncher.core.oemflags.OemFlag
 import com.gamelauncher.core.oemflags.OemFlagProbeEngine
+import com.gamelauncher.core.oemflags.ProbeStatus
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.settings.SettingsKeys
 import com.gamelauncher.core.settings.SettingsPreferences
@@ -55,7 +56,8 @@ data class GameSpaceUiState(
     val usageStatsGranted: Boolean = false,
     val notificationPermissionGranted: Boolean = false,
     val showResetConfirmationDialog: Boolean = false,
-    val statusMessage: String? = null
+    val statusMessage: String? = null,
+    val romBuildInfo: String = ""
 )
 
 data class GameLibraryItem(
@@ -102,7 +104,11 @@ class GameSpaceViewModel @Inject constructor(
                 )
                 checkPermissions()
                 val probedFlags = probeEngine.probeDeviceFlags()
-                _uiState.value = _uiState.value.copy(flags = probedFlags)
+                val buildInfo = probeEngine.getRomBuildInfo()
+                _uiState.value = _uiState.value.copy(
+                    flags = probedFlags,
+                    romBuildInfo = buildInfo
+                )
             }
         }
     }
@@ -235,6 +241,22 @@ class GameSpaceViewModel @Inject constructor(
             val success = probeEngine.applyFlagState(flag, enable)
             _uiState.value = _uiState.value.copy(
                 statusMessage = if (success) "Applied ${flag.title}" else "Failed to update ${flag.title}"
+            )
+        }
+    }
+
+    fun applyAllTweaks() {
+        viewModelScope.launch {
+            var appliedCount = 0
+            _uiState.value.flags.forEach { flag ->
+                if (flag.status is ProbeStatus.Supported) {
+                    val ok = probeEngine.applyFlagState(flag, true)
+                    if (ok) appliedCount++
+                }
+            }
+            _uiState.value = _uiState.value.copy(
+                flags = probeEngine.probeDeviceFlags(),
+                statusMessage = "Applied $appliedCount performance & setprop debug tweaks."
             )
         }
     }

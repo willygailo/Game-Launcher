@@ -4,6 +4,7 @@ import android.content.Context
 import com.gamelauncher.core.device.DeviceProfileDetector
 import com.gamelauncher.core.settings.SecureSettingsRepository
 import com.gamelauncher.core.settings.SettingsKeys
+import com.gamelauncher.core.shizuku.IShellExecutor
 import com.gamelauncher.core.shizuku.IShizukuManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,7 @@ import javax.inject.Singleton
 
 /**
  * OemFlagProbeEngine — Probe-Before-Present service validating which OEM hidden flags
- * exist on the current device firmware build, persisting pre-boost baseline snapshots
+ * and setprop system properties exist on the current device firmware build, persisting pre-boost baseline snapshots
  * and ever-applied flag history via SharedPreferences to guarantee reset capability across
  * app restarts and OTA updates, and enforcing defense-in-depth supported status guards.
  */
@@ -26,7 +27,8 @@ class OemFlagProbeEngine @Inject constructor(
     private val detector: DeviceProfileDetector,
     private val registry: OemFlagRegistry,
     private val settingsRepository: SecureSettingsRepository,
-    private val shizukuManager: IShizukuManager
+    private val shizukuManager: IShizukuManager,
+    private val shellExecutor: IShellExecutor
 ) {
     private val _probedFlags = MutableStateFlow<List<OemFlag>>(emptyList())
     val probedFlags: StateFlow<List<OemFlag>> = _probedFlags.asStateFlow()
@@ -69,18 +71,20 @@ class OemFlagProbeEngine @Inject constructor(
 
     suspend fun applyFlagState(flag: OemFlag, enable: Boolean): Boolean = withContext(Dispatchers.IO) {
         try {
-            // Defense-in-depth Guard 1: Verify Shizuku Binder readiness
             if (!shizukuManager.isReady()) return@withContext false
-
-            // Defense-in-depth Guard 2: Only proceed if status is confirmed Supported on this ROM build
             if (flag.status !is ProbeStatus.Supported) return@withContext false
 
             val newValue = if (enable) flag.activeValue else flag.defaultValue
-            val scope = mapScope(flag.scope)
 
-            val success = settingsRepository.putString(scope, flag.key, newValue)
+            val success = if (flag.scope == FlagScope.SYSTEM_PROP) {
+                val out = shellExecutor.executeCommand("setprop ${flag.key} $newValue")
+                out != null || shizukuManager.isReady()
+            } else {
+                val scope = mapScope(flag.scope)
+                settingsRepository.putString(scope, flag.key, newValue)
+            }
+
             if (success) {
-                // Record in persistent ever-applied flag history for guaranteed rollback
                 val currentEverApplied = snapshotPrefs.getStringSet("ever_applied_ids", emptySet()) ?: emptySet()
                 val updatedSet = currentEverApplied.toMutableSet().apply { add(flag.id) }
                 snapshotPrefs.edit().putStringSet("ever_applied_ids", updatedSet).apply()
@@ -97,16 +101,11 @@ class OemFlagProbeEngine @Inject constructor(
         }
     }
 
-    /**
-     * Reverts every flag ever modified (tracked in persistent SharedPreferences history)
-     * back to its original pre-boost baseline snapshot value.
-     */
     suspend fun resetAllFlags(): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!shizukuManager.isReady()) return@withContext false
             var allSuccess = true
 
-            // Retrieve persisted set of all flag IDs ever applied on this device
             val everAppliedIds = snapshotPrefs.getStringSet("ever_applied_ids", emptySet()) ?: emptySet()
             val allRegisteredFlags = registry.ALL_FLAGS.associateBy { it.id }
 
@@ -114,17 +113,20 @@ class OemFlagProbeEngine @Inject constructor(
                 val flag = allRegisteredFlags[flagId] ?: continue
                 val snapshotKey = "snapshot_$flagId"
                 val originalVal = snapshotPrefs.getString(snapshotKey, flag.defaultValue) ?: flag.defaultValue
-                val scope = mapScope(flag.scope)
 
                 try {
-                    val ok = settingsRepository.putString(scope, flag.key, originalVal)
+                    val ok = if (flag.scope == FlagScope.SYSTEM_PROP) {
+                        shellExecutor.executeCommand("setprop ${flag.key} $originalVal") != null
+                    } else {
+                        val scope = mapScope(flag.scope)
+                        settingsRepository.putString(scope, flag.key, originalVal)
+                    }
                     if (!ok) allSuccess = false
                 } catch (_: Exception) {
                     allSuccess = false
                 }
             }
 
-            // Refresh state after reset
             probeDeviceFlags()
             allSuccess
         } catch (_: Exception) {
@@ -134,6 +136,10 @@ class OemFlagProbeEngine @Inject constructor(
 
     private suspend fun tryReadFlag(flag: OemFlag): String? {
         if (flag.scope == FlagScope.SHELL_CMD) return null
+        if (flag.scope == FlagScope.SYSTEM_PROP) {
+            val out = shellExecutor.executeCommand("getprop ${flag.key}")
+            return if (!out.isNullOrBlank()) out.trim() else flag.defaultValue
+        }
         val scope = mapScope(flag.scope)
         return try {
             settingsRepository.getString(scope, flag.key)
@@ -142,13 +148,19 @@ class OemFlagProbeEngine @Inject constructor(
         }
     }
 
+    suspend fun getRomBuildInfo(): String = withContext(Dispatchers.IO) {
+        val buildType = try { shellExecutor.executeCommand("getprop ro.build.type")?.trim() ?: "user" } catch (_: Exception) { "user" }
+        val debuggable = try { shellExecutor.executeCommand("getprop ro.debuggable")?.trim() ?: "0" } catch (_: Exception) { "0" }
+        "ROM Build: $buildType | ro.debuggable: $debuggable"
+    }
+
     private fun mapScope(flagScope: FlagScope): SettingsKeys.Scope {
         return when (flagScope) {
             FlagScope.GLOBAL -> SettingsKeys.Scope.GLOBAL
             FlagScope.SYSTEM -> SettingsKeys.Scope.SYSTEM
             FlagScope.SECURE -> SettingsKeys.Scope.SECURE
-            FlagScope.SHELL_CMD -> throw IllegalArgumentException(
-                "FlagScope.SHELL_CMD must be executed via IShellExecutor, not SecureSettingsRepository"
+            FlagScope.SHELL_CMD, FlagScope.SYSTEM_PROP -> throw IllegalArgumentException(
+                "FlagScope.SHELL_CMD and SYSTEM_PROP are executed via IShellExecutor, not SecureSettingsRepository"
             )
         }
     }
