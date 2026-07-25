@@ -1,1 +1,8 @@
- 
+# Game Space Pro — Image Assets Directory
+
+This directory contains image assets used throughout the Game Space Pro app:
+
+- `app_logo.png` — Main futuristic neon shield logo & launcher icon
+- `game_banner.png` — Cyberpunk HUD telemetry hero header banner
+
+Note: Assets declared in `pubspec.yaml` under `assets/images/`.
