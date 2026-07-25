@@ -1,6 +1,8 @@
 package com.gamespace.app.utils
 
 import android.os.Build
+import java.io.BufferedReader
+import java.io.FileReader
 import java.io.RandomAccessFile
 
 object DeviceDetector {
@@ -10,7 +12,8 @@ object DeviceDetector {
         val board = Build.BOARD ?: "Unknown"
         val manufacturer = Build.MANUFACTURER ?: "Unknown"
         val model = Build.MODEL ?: "Unknown"
-        val chipset = detectChipset(hardware, board)
+        val cpuInfoHardware = parseCpuInfoHardware()
+        val chipset = detectChipset(hardware, board, cpuInfoHardware)
         val cores = Runtime.getRuntime().availableProcessors()
         val totalRamMb = getTotalMemoryMb()
 
@@ -27,18 +30,38 @@ object DeviceDetector {
         )
     }
 
-    private fun detectChipset(hardware: String, board: String): String {
-        val hwLower = hardware.lowercase()
-        val boardLower = board.lowercase()
+    private fun parseCpuInfoHardware(): String {
+        return try {
+            val reader = BufferedReader(FileReader("/proc/cpuinfo"))
+            var line: String?
+            var cpuHardware = ""
+            while (reader.readLine().also { line = it } != null) {
+                if (line!!.startsWith("Hardware") || line!!.startsWith("Processor")) {
+                    val parts = line!!.split(":")
+                    if (parts.size > 1) {
+                        cpuHardware = parts[1].trim()
+                        break
+                    }
+                }
+            }
+            reader.close()
+            cpuHardware
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    private fun detectChipset(hardware: String, board: String, cpuInfoHardware: String): String {
+        val combined = "$hardware $board $cpuInfoHardware".lowercase()
 
         return when {
-            hwLower.contains("mt") || boardLower.contains("mt") -> "MediaTek (Helio / Dimensity)"
-            hwLower.contains("qcom") || hwLower.contains("snapdragon") || boardLower.contains("msm") || boardLower.contains("sdm") -> "Qualcomm Snapdragon"
-            hwLower.contains("ums") || hwLower.contains("sp98") || hwLower.contains("unisoc") || boardLower.contains("sc98") -> "Unisoc (Tiger Series)"
-            hwLower.contains("exynos") || boardLower.contains("universal") || boardLower.contains("s5e") -> "Samsung Exynos"
-            hwLower.contains("gs101") || hwLower.contains("gs201") || hwLower.contains("zuma") || boardLower.contains("tensor") -> "Google Tensor"
-            hwLower.contains("kirin") || boardLower.contains("hi36") || boardLower.contains("hi62") -> "HiSilicon Kirin"
-            else -> "$hardware ($board)"
+            combined.contains("mt") || combined.contains("mediatek") || combined.contains("helio") || combined.contains("dimensity") -> "MediaTek (Helio / Dimensity)"
+            combined.contains("qcom") || combined.contains("snapdragon") || combined.contains("msm") || combined.contains("sdm") || combined.contains("sm") -> "Qualcomm Snapdragon"
+            combined.contains("ums") || combined.contains("sp98") || combined.contains("unisoc") || combined.contains("sc98") || combined.contains("spreadtrum") -> "Unisoc (Tiger Series)"
+            combined.contains("exynos") || combined.contains("universal") || combined.contains("s5e") -> "Samsung Exynos"
+            combined.contains("gs101") || combined.contains("gs201") || combined.contains("zuma") || combined.contains("tensor") -> "Google Tensor"
+            combined.contains("kirin") || combined.contains("hi36") || combined.contains("hi62") -> "HiSilicon Kirin"
+            else -> if (cpuInfoHardware.isNotEmpty()) cpuInfoHardware else "$hardware ($board)"
         }
     }
 

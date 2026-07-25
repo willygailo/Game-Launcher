@@ -5,6 +5,7 @@ class TweakItem {
   final String title;
   final String description;
   final String category;
+  final bool isReadOnly; // ro.* properties marked true
 
   const TweakItem({
     required this.key,
@@ -13,11 +14,12 @@ class TweakItem {
     required this.title,
     required this.description,
     required this.category,
+    this.isReadOnly = false,
   });
 }
 
 class TweakConstants {
-  // GPU & Graphics Tweaks
+  // GPU & Graphics Tweaks (Writable debug.* / persist.*)
   static const List<TweakItem> gpuTweaks = [
     TweakItem(
       key: 'debug.composition.type',
@@ -77,7 +79,7 @@ class TweakConstants {
     ),
   ];
 
-  // CPU & Memory Tweaks
+  // CPU & Memory Tweaks (Writable persist.* / dalvik.vm.* / debug.*)
   static const List<TweakItem> cpuTweaks = [
     TweakItem(
       key: 'persist.sys.purgeable_assets',
@@ -104,14 +106,6 @@ class TweakConstants {
       category: 'CPU',
     ),
     TweakItem(
-      key: 'ro.config.low_ram',
-      defaultValue: 'true',
-      tweakValue: 'false',
-      title: 'Disable Low RAM Restrictions',
-      description: 'Prevents system from throttling background processes on budget devices.',
-      category: 'CPU',
-    ),
-    TweakItem(
       key: 'debug.rs.max-threads',
       defaultValue: '4',
       tweakValue: '8',
@@ -119,18 +113,20 @@ class TweakConstants {
       description: 'Increases RenderScript parallel worker thread count to 8.',
       category: 'CPU',
     ),
+    // Read-only specs moved & marked as isReadOnly
+    TweakItem(
+      key: 'ro.config.low_ram',
+      defaultValue: 'false',
+      tweakValue: 'false',
+      title: 'Low RAM Hardware Spec',
+      description: 'Read-only system build property indicating low memory profile.',
+      category: 'CPU',
+      isReadOnly: true,
+    ),
   ];
 
   // Touch Responsiveness Tweaks
   static const List<TweakItem> touchTweaks = [
-    TweakItem(
-      key: 'ro.min_pointer_dur',
-      defaultValue: '16',
-      tweakValue: '8',
-      title: 'Pointer Duration Latency',
-      description: 'Reduces minimum touch sample duration window to 8ms.',
-      category: 'Touch',
-    ),
     TweakItem(
       key: 'windowsmgr.max_events_per_sec',
       defaultValue: '90',
@@ -140,20 +136,30 @@ class TweakConstants {
       category: 'Touch',
     ),
     TweakItem(
-      key: 'ro.max.fling_velocity',
-      defaultValue: '8000',
-      tweakValue: '12000',
-      title: 'Max Fling Velocity',
-      description: 'Increases touch gesture swipe acceleration velocity.',
+      key: 'persist.sys.scrollingcache',
+      defaultValue: '1',
+      tweakValue: '3',
+      title: 'Touch Scrolling Cache',
+      description: 'Disables touch scroll caching overhead during fast gestures.',
       category: 'Touch',
     ),
     TweakItem(
-      key: 'touch.pressure.scale',
-      defaultValue: '0.005',
-      tweakValue: '0.001',
-      title: 'Touch Pressure Scale',
-      description: 'Enhances micro-touch tap responsiveness for gaming controls.',
+      key: 'ro.min_pointer_dur',
+      defaultValue: '16',
+      tweakValue: '16',
+      title: 'Min Pointer Duration (Read-only)',
+      description: 'Read-only kernel touch sampling window property.',
       category: 'Touch',
+      isReadOnly: true,
+    ),
+    TweakItem(
+      key: 'ro.max.fling_velocity',
+      defaultValue: '8000',
+      tweakValue: '8000',
+      title: 'Max Fling Velocity (Read-only)',
+      description: 'Read-only system gesture fling threshold.',
+      category: 'Touch',
+      isReadOnly: true,
     ),
   ];
 
