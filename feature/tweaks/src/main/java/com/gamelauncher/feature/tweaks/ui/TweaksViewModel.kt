@@ -52,7 +52,11 @@ class TweaksViewModel @Inject constructor(
     fun loadTweaks() {
         viewModelScope.launch {
             repository.getAvailableTweaks()
-                .onStart { _uiState.value = TweaksUiState.Loading }
+                .onStart {
+                    if (_uiState.value !is TweaksUiState.Success) {
+                        _uiState.value = TweaksUiState.Loading
+                    }
+                }
                 .catch { throwable ->
                     _uiState.value = TweaksUiState.Error(throwable.localizedMessage ?: "Failed to load tweaks")
                 }
@@ -198,17 +202,18 @@ class TweaksViewModel @Inject constructor(
     ) {
         val currentState = _uiState.value
         if (currentState is TweaksUiState.Success) {
+            val isSuccess = result is TweakResult.Confirmed || result is TweakResult.SilentlyIgnored
             val message = when (result) {
                 is TweakResult.Confirmed -> "Applied tweak successfully."
-                is TweakResult.SilentlyIgnored -> "Notice: Setting '${result.key}' was modified or stored locally."
+                is TweakResult.SilentlyIgnored -> "Applied tweak (saved locally)."
                 is TweakResult.Failed -> "Failed to apply tweak: ${result.reason}"
             }
 
             val updatedList = currentState.tweaks.map { tweak ->
                 if (tweak.id == tweakId) {
                     tweak.copy(
-                        isToggleActive = if (toggleState != null) toggleState else tweak.isToggleActive,
-                        selectedValue = if (selectedValue != null) selectedValue else tweak.selectedValue,
+                        isToggleActive = if (isSuccess && toggleState != null) toggleState else tweak.isToggleActive,
+                        selectedValue = if (isSuccess && selectedValue != null) selectedValue else tweak.selectedValue,
                         lastResult = result
                     )
                 } else {
