@@ -20,4 +20,23 @@ class PermissionService {
       return false;
     }
   }
+
+  Future<bool> hasStoragePermission() async {
+    try {
+      final bool has = await _channel.invokeMethod('hasStoragePermission');
+      return has;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<bool> requestStoragePermission() async {
+    try {
+      final bool granted =
+          await _channel.invokeMethod('requestStoragePermission');
+      return granted;
+    } on PlatformException {
+      return false;
+    }
+  }
 }
