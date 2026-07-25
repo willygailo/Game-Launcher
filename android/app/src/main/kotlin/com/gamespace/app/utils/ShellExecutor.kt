@@ -3,6 +3,7 @@ package com.gamespace.app.utils
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 data class CommandResult(
     val success: Boolean,
@@ -13,12 +14,18 @@ data class CommandResult(
 
 object ShellExecutor {
 
+    private const val COMMAND_TIMEOUT_SECONDS = 5L
+
     fun isRootAvailable(): Boolean {
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             val output = reader.readLine()
-            process.waitFor()
+            val finished = process.waitFor(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            if (!finished) {
+                process.destroy()
+                return false
+            }
             output != null && output.contains("uid=0")
         } catch (e: Exception) {
             false
@@ -27,10 +34,10 @@ object ShellExecutor {
 
     /**
      * Sanitizes input to prevent shell command injection.
+     * Allows alphanumeric, underscores, dots, hyphens, commas, equals signs, and forward slashes.
      */
     private fun sanitizeInput(input: String): String {
-        // Allow alphanumeric, underscores, dots, hyphens, commas, and equal signs
-        return input.replace(Regex("[^a-zA-Z0-9_\\.\\,-=]"), "")
+        return input.replace(Regex("[^a-zA-Z0-9_\\.,\\-=/]"), "")
     }
 
     fun setSystemPropertyRoot(key: String, value: String): Boolean {
@@ -43,7 +50,8 @@ object ShellExecutor {
         }
 
         val result = executeRootCommand("setprop $cleanKey $cleanValue")
-        return result.success && result.exitCode == 0 && result.stderr.isEmpty()
+        // Some Magisk versions write a benign line to stderr even on success — check exit code only.
+        return result.exitCode == 0
     }
 
     fun executeRootCommand(command: String): CommandResult {
@@ -53,6 +61,7 @@ object ShellExecutor {
             os.writeBytes("$command\n")
             os.writeBytes("exit\n")
             os.flush()
+            os.close()
 
             val stdoutReader = BufferedReader(InputStreamReader(process.inputStream))
             val stderrReader = BufferedReader(InputStreamReader(process.errorStream))
@@ -68,14 +77,23 @@ object ShellExecutor {
                 stderrSb.append(line).append("\n")
             }
 
-            val exitCode = process.waitFor()
-            val stderrStr = stderrSb.toString().trim()
+            val finished = process.waitFor(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            if (!finished) {
+                process.destroy()
+                return CommandResult(
+                    success = false,
+                    exitCode = -1,
+                    stdout = stdoutSb.toString().trim(),
+                    stderr = "Command timed out after ${COMMAND_TIMEOUT_SECONDS}s"
+                )
+            }
 
+            val exitCode = process.exitValue()
             CommandResult(
-                success = (exitCode == 0 && stderrStr.isEmpty()),
+                success = exitCode == 0,
                 exitCode = exitCode,
                 stdout = stdoutSb.toString().trim(),
-                stderr = stderrStr
+                stderr = stderrSb.toString().trim()
             )
         } catch (e: Exception) {
             CommandResult(
@@ -95,7 +113,7 @@ object ShellExecutor {
             val process = Runtime.getRuntime().exec(arrayOf("getprop", cleanKey))
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             val value = reader.readLine()
-            process.waitFor()
+            process.waitFor(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             value?.trim() ?: ""
         } catch (e: Exception) {
             ""

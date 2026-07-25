@@ -3,23 +3,34 @@ package com.gamespace.app.channels
 import com.gamespace.app.utils.ShellExecutor
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class RootCommandChannel : MethodChannel.MethodCallHandler {
     companion object {
         const val CHANNEL = "com.gamespace.app/root_command"
     }
 
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "isRootAvailable" -> {
-                result.success(ShellExecutor.isRootAvailable())
+                scope.launch {
+                    val available = ShellExecutor.isRootAvailable()
+                    result.success(available)
+                }
             }
             "setSystemProperty" -> {
                 val key = call.argument<String>("key")
                 val value = call.argument<String>("value")
                 if (key != null && value != null) {
-                    val success = ShellExecutor.setSystemPropertyRoot(key, value)
-                    result.success(success)
+                    scope.launch {
+                        val success = ShellExecutor.setSystemPropertyRoot(key, value)
+                        result.success(success)
+                    }
                 } else {
                     result.error("INVALID_ARGS", "Key or Value is null", null)
                 }
@@ -27,8 +38,10 @@ class RootCommandChannel : MethodChannel.MethodCallHandler {
             "getSystemProperty" -> {
                 val key = call.argument<String>("key")
                 if (key != null) {
-                    val value = ShellExecutor.getSystemProperty(key)
-                    result.success(value)
+                    scope.launch {
+                        val value = ShellExecutor.getSystemProperty(key)
+                        result.success(value)
+                    }
                 } else {
                     result.error("INVALID_ARGS", "Key is null", null)
                 }
@@ -36,13 +49,15 @@ class RootCommandChannel : MethodChannel.MethodCallHandler {
             "executeBatchTweaks" -> {
                 val tweaks = call.argument<Map<String, String>>("tweaks")
                 if (tweaks != null) {
-                    var appliedCount = 0
-                    for ((k, v) in tweaks) {
-                        if (ShellExecutor.setSystemPropertyRoot(k, v)) {
-                            appliedCount++
+                    scope.launch {
+                        var appliedCount = 0
+                        for ((k, v) in tweaks) {
+                            if (ShellExecutor.setSystemPropertyRoot(k, v)) {
+                                appliedCount++
+                            }
                         }
+                        result.success(appliedCount)
                     }
-                    result.success(appliedCount)
                 } else {
                     result.error("INVALID_ARGS", "Tweaks map is null", null)
                 }

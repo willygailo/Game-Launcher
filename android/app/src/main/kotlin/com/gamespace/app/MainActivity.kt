@@ -1,6 +1,9 @@
 package com.gamespace.app
 
 import com.gamespace.app.channels.DeviceInfoChannel
+import com.gamespace.app.channels.GameLibraryChannel
+import com.gamespace.app.channels.MagiskExporterChannel
+import com.gamespace.app.channels.PerformanceChannel
 import com.gamespace.app.channels.PermissionChannel
 import com.gamespace.app.channels.RootCommandChannel
 import io.flutter.embedding.android.FlutterActivity
@@ -18,6 +21,17 @@ class MainActivity: FlutterActivity() {
             .setMethodCallHandler(DeviceInfoChannel())
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PermissionChannel.CHANNEL)
-            .setMethodCallHandler(PermissionChannel())
+            .setMethodCallHandler(PermissionChannel(applicationContext))
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PerformanceChannel.CHANNEL)
+            .setMethodCallHandler(PerformanceChannel(applicationContext))
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, GameLibraryChannel.CHANNEL)
+            .setMethodCallHandler(GameLibraryChannel(applicationContext))
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MagiskExporterChannel.CHANNEL)
+            .setMethodCallHandler(MagiskExporterChannel(applicationContext))
     }
 }
+
+

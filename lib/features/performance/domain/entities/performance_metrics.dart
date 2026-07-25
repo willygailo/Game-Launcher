@@ -7,6 +7,8 @@ class PerformanceMetrics extends Equatable {
   final int gpuFreqMhz;
   final double cpuTempCelsius;
   final double batteryPercent;
+  final double cpuLoadPercent;
+  final double ramUsagePercent;
 
   const PerformanceMetrics({
     required this.chipset,
@@ -14,9 +16,19 @@ class PerformanceMetrics extends Equatable {
     required this.gpuFreqMhz,
     required this.cpuTempCelsius,
     required this.batteryPercent,
+    this.cpuLoadPercent = 0.0,
+    this.ramUsagePercent = 0.0,
   });
 
   @override
-  List<Object?> get props =>
-      [chipset, cpuFreqMhz, gpuFreqMhz, cpuTempCelsius, batteryPercent];
+  List<Object?> get props => [
+        chipset,
+        cpuFreqMhz,
+        gpuFreqMhz,
+        cpuTempCelsius,
+        batteryPercent,
+        cpuLoadPercent,
+        ramUsagePercent,
+      ];
 }
+

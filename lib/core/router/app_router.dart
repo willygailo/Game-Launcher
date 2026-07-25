@@ -11,6 +11,8 @@ import '../../features/profiles/presentation/pages/profiles_page.dart';
 import '../../features/permissions/presentation/pages/permissions_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 
+import '../widgets/main_shell_page.dart';
+
 class AppRouter {
   static const String home = '/';
   static const String cpuTweaks = '/cpu';
@@ -25,9 +27,26 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: home,
     routes: [
-      GoRoute(
-        path: home,
-        builder: (context, state) => const HomePage(),
+      ShellRoute(
+        builder: (context, state, child) => MainShellPage(child: child),
+        routes: [
+          GoRoute(
+            path: home,
+            builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: performance,
+            builder: (context, state) => const PerformancePage(),
+          ),
+          GoRoute(
+            path: profiles,
+            builder: (context, state) => const ProfilesPage(),
+          ),
+          GoRoute(
+            path: settings,
+            builder: (context, state) => const SettingsPage(),
+          ),
+        ],
       ),
       GoRoute(
         path: cpuTweaks,
@@ -46,21 +65,10 @@ class AppRouter {
         builder: (context, state) => const NetworkTweaksPage(),
       ),
       GoRoute(
-        path: performance,
-        builder: (context, state) => const PerformancePage(),
-      ),
-      GoRoute(
-        path: profiles,
-        builder: (context, state) => const ProfilesPage(),
-      ),
-      GoRoute(
         path: permissions,
         builder: (context, state) => const PermissionsPage(),
-      ),
-      GoRoute(
-        path: settings,
-        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );
 }
+

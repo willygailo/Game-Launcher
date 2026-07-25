@@ -2,6 +2,7 @@ package com.gamespace.app.utils
 
 import android.os.Build
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileReader
 import java.io.RandomAccessFile
 
@@ -16,6 +17,9 @@ object DeviceDetector {
         val chipset = detectChipset(hardware, board, cpuInfoHardware)
         val cores = Runtime.getRuntime().availableProcessors()
         val totalRamMb = getTotalMemoryMb()
+        val governor = getCpuGovernor()
+        val availGovernors = getAvailableGovernors()
+        val maxFreqMhz = getCpuMaxFreqMhz()
 
         return mapOf(
             "manufacturer" to manufacturer,
@@ -26,8 +30,35 @@ object DeviceDetector {
             "cpuCores" to cores,
             "totalRamMb" to totalRamMb,
             "androidVersion" to Build.VERSION.RELEASE,
-            "sdkInt" to Build.VERSION.SDK_INT
+            "sdkInt" to Build.VERSION.SDK_INT,
+            "cpuGovernor" to governor,
+            "availableGovernors" to availGovernors,
+            "cpuMaxFreqMhz" to maxFreqMhz
         )
+    }
+
+    fun getCpuGovernor(): String {
+        return readSysFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor").ifEmpty { "performance" }
+    }
+
+    fun getAvailableGovernors(): String {
+        return readSysFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors").ifEmpty { "performance powersave schedutil interactive" }
+    }
+
+    fun getCpuMaxFreqMhz(): Int {
+        val kHzStr = readSysFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+        return (kHzStr.toIntOrNull() ?: 2400000) / 1000
+    }
+
+    private fun readSysFile(path: String): String {
+        return try {
+            val file = File(path)
+            if (file.exists()) {
+                file.readText().trim()
+            } else ""
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     private fun parseCpuInfoHardware(): String {
@@ -77,3 +108,4 @@ object DeviceDetector {
         }
     }
 }
+

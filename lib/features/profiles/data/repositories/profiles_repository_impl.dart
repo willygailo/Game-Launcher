@@ -17,16 +17,21 @@ class ProfilesRepositoryImpl implements ProfilesRepository {
 
   @override
   Future<bool> activateProfile(GameProfile profile) async {
-    for (final entry in profile.tweaks.entries) {
-      final result = await rootCommandService.executeCommand(
-        'setprop ${entry.key} ${entry.value}',
-      );
-      if (result.exitCode != 0) return false;
+    final allProfiles = datasource.getProfiles();
+    for (final p in allProfiles) {
+      if (p.isActive && p.id != profile.id) {
+        await datasource.saveProfile(p.copyWith(isActive: false));
+      }
     }
-    // Mark active in storage.
+
+    final count = await rootCommandService.executeBatchTweaks(profile.tweaks);
+    await datasource.setActiveBootTweaks(profile.tweaks);
+
     final updated = profile.copyWith(isActive: true);
-    return datasource.saveProfile(updated);
+    await datasource.saveProfile(updated);
+    return count > 0 || profile.tweaks.isEmpty;
   }
+
 
   @override
   Future<bool> saveProfile(GameProfile profile) =>

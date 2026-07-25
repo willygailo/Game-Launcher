@@ -7,8 +7,47 @@ import '../../../../core/widgets/neon_button.dart';
 import 'cubit/profiles_cubit.dart';
 import 'cubit/profiles_state.dart';
 
-class ProfilesPage extends StatelessWidget {
+import '../../../../core/platform/magisk_exporter_service.dart';
+import '../../../../injection.dart';
+
+class ProfilesPage extends StatefulWidget {
   const ProfilesPage({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilesPage> createState() => _ProfilesPageState();
+}
+
+class _ProfilesPageState extends State<ProfilesPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfilesCubit>().loadProfiles();
+  }
+
+  Future<void> _exportMagisk(BuildContext context, GameProfile profile) async {
+    final service = sl<MagiskExporterService>();
+    final path = await service.exportMagiskModule(
+      moduleName: profile.name.replaceAll(' ', '_'),
+      tweaks: profile.tweaks,
+    );
+
+    if (!mounted) return;
+    if (path != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Exported Magisk Zip to:\n$path'),
+          backgroundColor: AppColors.neonGreen,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to export Magisk zip.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +57,12 @@ class ProfilesPage extends StatelessWidget {
       ),
       body: BlocBuilder<ProfilesCubit, ProfilesState>(
         builder: (context, state) {
+          if (state.profiles.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.neonCyan),
+            );
+          }
+
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: state.profiles.length,
@@ -60,15 +105,24 @@ class ProfilesPage extends StatelessWidget {
                         style: AppTypography.bodyMedium,
                       ),
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: NeonButton(
-                          label: isActive ? 'PROFILE APPLIED' : 'APPLY PROFILE',
-                          gradient: isActive ? AppColors.primaryGradient : AppColors.boostGradient,
-                          onPressed: () {
-                            context.read<ProfilesCubit>().activateProfile(profile);
-                          },
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: NeonButton(
+                              label: isActive ? 'PROFILE APPLIED' : 'APPLY PROFILE',
+                              gradient: isActive ? AppColors.primaryGradient : AppColors.boostGradient,
+                              onPressed: () {
+                                context.read<ProfilesCubit>().activateProfile(profile);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.archive, color: AppColors.neonCyan),
+                            tooltip: 'Export Magisk Zip',
+                            onPressed: () => _exportMagisk(context, profile),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -81,3 +135,4 @@ class ProfilesPage extends StatelessWidget {
     );
   }
 }
+

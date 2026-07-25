@@ -39,6 +39,10 @@ class ProfilesDatasource {
     );
   }
 
+  Future<bool> setActiveBootTweaks(Map<String, String> tweaks) async {
+    return prefs.setString('active_boot_tweaks', jsonEncode(tweaks));
+  }
+
   GameProfile _fromJson(Map<String, dynamic> json) {
     return GameProfile(
       id: json['id'] as String,
@@ -57,3 +61,4 @@ class ProfilesDatasource {
     'isActive': p.isActive,
   };
 }
+

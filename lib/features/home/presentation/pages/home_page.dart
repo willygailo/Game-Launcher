@@ -9,6 +9,8 @@ import '../../../../core/widgets/glassmorphic_card.dart';
 import '../../../../core/widgets/neon_button.dart';
 import '../../../../core/widgets/performance_gauge.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../performance/presentation/cubit/performance_cubit.dart';
+import '../../../performance/presentation/cubit/performance_state.dart';
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
 
@@ -24,7 +26,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     context.read<HomeCubit>().loadDashboard();
+    context.read<PerformanceCubit>().startPolling();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,15 +151,25 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20),
 
                   // Live Performance Gauges
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: const [
-                      PerformanceGauge(value: 38.0, title: 'CPU Load'),
-                      PerformanceGauge(value: 62.0, title: 'RAM Usage'),
-                      PerformanceGauge(value: 24.0, title: 'FPS Lock'),
-                    ],
+                  BlocBuilder<PerformanceCubit, PerformanceState>(
+                    builder: (context, perfState) {
+                      final m = perfState.metrics;
+                      final cpuLoad = m?.cpuLoadPercent ?? 35.0;
+                      final ramUsage = m?.ramUsagePercent ?? 50.0;
+                      final battery = m?.batteryPercent ?? 85.0;
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          PerformanceGauge(value: cpuLoad, title: 'CPU Load'),
+                          PerformanceGauge(value: ramUsage, title: 'RAM Usage'),
+                          PerformanceGauge(value: battery, title: 'Battery %'),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
+
 
                   // Feature Navigation Grid
                   Text('OPTIMIZATION MODULES', style: AppTypography.titleSection),

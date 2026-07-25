@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/platform/root_command_service.dart';
 import 'core/platform/device_info_service.dart';
 import 'core/platform/permission_service.dart';
+import 'core/platform/performance_service.dart';
+import 'core/platform/magisk_exporter_service.dart';
+import 'core/platform/game_library_service.dart';
 
 // Home
 import 'features/home/data/datasources/device_info_datasource.dart';
@@ -86,6 +89,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<RootCommandService>(() => RootCommandService());
   sl.registerLazySingleton<DeviceInfoService>(() => DeviceInfoService());
   sl.registerLazySingleton<PermissionService>(() => PermissionService());
+  sl.registerLazySingleton<PerformanceService>(() => PerformanceService());
+  sl.registerLazySingleton<MagiskExporterService>(() => MagiskExporterService());
+  sl.registerLazySingleton<GameLibraryService>(() => GameLibraryService());
 
   // ─── Home Feature ─────────────────────────────────────────────────────────
   sl.registerLazySingleton<DeviceInfoDataSource>(
@@ -113,7 +119,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<GetCpuTweaks>(() => GetCpuTweaks(sl()));
   sl.registerLazySingleton<ApplyCpuTweak>(() => ApplyCpuTweak(sl()));
 
-  sl.registerFactory<CpuTweaksCubit>(() => CpuTweaksCubit(sl()));
+  sl.registerFactory<CpuTweaksCubit>(
+    () => CpuTweaksCubit(
+      getCpuTweaks: sl(),
+      applyCpuTweak: sl(),
+      rootCommandService: sl(),
+    ),
+  );
 
   // ─── GPU Tweaks ───────────────────────────────────────────────────────────
   sl.registerLazySingleton<GpuTweaksDatasource>(
@@ -125,7 +137,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<GetGpuTweaks>(() => GetGpuTweaks(sl()));
   sl.registerLazySingleton<ApplyGpuTweak>(() => ApplyGpuTweak(sl()));
 
-  sl.registerFactory<GpuTweaksCubit>(() => GpuTweaksCubit(sl()));
+  sl.registerFactory<GpuTweaksCubit>(
+    () => GpuTweaksCubit(
+      getGpuTweaks: sl(),
+      applyGpuTweak: sl(),
+      rootCommandService: sl(),
+    ),
+  );
 
   // ─── Touch Tweaks ─────────────────────────────────────────────────────────
   sl.registerLazySingleton<TouchTweaksDatasource>(
@@ -137,7 +155,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<GetTouchTweaks>(() => GetTouchTweaks(sl()));
   sl.registerLazySingleton<ApplyTouchTweak>(() => ApplyTouchTweak(sl()));
 
-  sl.registerFactory<TouchTweaksCubit>(() => TouchTweaksCubit(sl()));
+  sl.registerFactory<TouchTweaksCubit>(
+    () => TouchTweaksCubit(
+      getTouchTweaks: sl(),
+      applyTouchTweak: sl(),
+      rootCommandService: sl(),
+    ),
+  );
 
   // ─── Network Tweaks ───────────────────────────────────────────────────────
   sl.registerLazySingleton<NetworkTweaksDatasource>(
@@ -149,11 +173,20 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<GetNetworkTweaks>(() => GetNetworkTweaks(sl()));
   sl.registerLazySingleton<ApplyNetworkTweak>(() => ApplyNetworkTweak(sl()));
 
-  sl.registerFactory<NetworkTweaksCubit>(() => NetworkTweaksCubit(sl()));
+  sl.registerFactory<NetworkTweaksCubit>(
+    () => NetworkTweaksCubit(
+      getNetworkTweaks: sl(),
+      applyNetworkTweak: sl(),
+      rootCommandService: sl(),
+    ),
+  );
 
   // ─── Performance ──────────────────────────────────────────────────────────
   sl.registerLazySingleton<PerformanceDatasource>(
-    () => PerformanceDatasource(deviceInfoService: sl()),
+    () => PerformanceDatasource(
+      deviceInfoService: sl(),
+      performanceService: sl(),
+    ),
   );
   sl.registerLazySingleton<PerformanceRepository>(
     () => PerformanceRepositoryImpl(datasource: sl()),
@@ -162,19 +195,31 @@ Future<void> initDependencies() async {
     () => GetPerformanceMetrics(sl()),
   );
 
-  sl.registerFactory<PerformanceCubit>(() => PerformanceCubit(sl()));
+  sl.registerFactory<PerformanceCubit>(
+    () => PerformanceCubit(
+      getPerformanceMetrics: sl(),
+      rootCommandService: sl(),
+    ),
+  );
 
   // ─── Profiles ─────────────────────────────────────────────────────────────
   sl.registerLazySingleton<ProfilesDatasource>(
     () => ProfilesDatasource(prefs: sl()),
   );
-  sl.registerLazySingleton<ProfilesRepository>(
+  sl.registerLazySingleton<ProfilesRepositoryImpl>(
     () => ProfilesRepositoryImpl(datasource: sl(), rootCommandService: sl()),
   );
+  sl.registerLazySingleton<ProfilesRepository>(() => sl<ProfilesRepositoryImpl>());
   sl.registerLazySingleton<GetProfiles>(() => GetProfiles(sl()));
   sl.registerLazySingleton<ActivateProfile>(() => ActivateProfile(sl()));
 
-  sl.registerFactory<ProfilesCubit>(() => ProfilesCubit(sl()));
+  sl.registerFactory<ProfilesCubit>(
+    () => ProfilesCubit(
+      getProfiles: sl(),
+      activateProfile: sl(),
+      repo: sl<ProfilesRepositoryImpl>(),
+    ),
+  );
 
   // ─── Permissions ──────────────────────────────────────────────────────────
   sl.registerLazySingleton<PermissionsDatasource>(
@@ -203,5 +248,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<GetSettings>(() => GetSettings(sl()));
   sl.registerLazySingleton<SaveSettings>(() => SaveSettings(sl()));
 
-  sl.registerLazySingleton<SettingsCubit>(() => SettingsCubit());
+  sl.registerLazySingleton<SettingsCubit>(
+    () => SettingsCubit(getSettings: sl(), saveSettings: sl()),
+  );
 }

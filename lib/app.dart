@@ -25,7 +25,9 @@ class GameSpaceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<SettingsCubit>(create: (_) => sl<SettingsCubit>()),
+        BlocProvider<SettingsCubit>(
+          create: (_) => sl<SettingsCubit>()..init(),
+        ),
         BlocProvider<HomeCubit>(create: (_) => sl<HomeCubit>()),
         BlocProvider<CpuTweaksCubit>(create: (_) => sl<CpuTweaksCubit>()),
         BlocProvider<GpuTweaksCubit>(create: (_) => sl<GpuTweaksCubit>()),
@@ -40,7 +42,8 @@ class GameSpaceApp extends StatelessWidget {
           return MaterialApp.router(
             title: 'GAME SPACE',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.darkTheme,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
             themeMode: settingsState.themeMode,
             locale: settingsState.locale,
             localizationsDelegates: const [
