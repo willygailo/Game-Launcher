@@ -6,7 +6,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin_2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)]()
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose_2024.06-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)]()
 [![Hilt](https://img.shields.io/badge/Hilt_2.52_(KSP)-FF4088?style=for-the-badge&logo=dagger&logoColor=white)]()
-[![Version](https://img.shields.io/badge/Version_3.5.2-00C853?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version_3.5.3-00C853?style=for-the-badge)]()
 
 **The ultimate Android gaming performance booster — designed for non-root & root devices alike!**
 
@@ -29,12 +29,13 @@
 
 ---
 
-## 🆕 What's New in v3.5.2
+## 🆕 What's New in v3.5.3
 
-- **⚡ Persistent Performance Modes**: ECO, BALANCED, and PRO selections now persist across screen navigation and app restarts via DataStore.
-- **📊 Interactive Telemetry Overlay**: Real-time FPS overlay toggle state is saved continuously and controls `OverlayService` lifecycle directly.
-- **🛠️ Enhanced OEM Thermal Throttling Bypass**: Multi-tier system settings & Shizuku ADB shell fallback commands (`cmd thermalservice override-status 0`).
-- **📦 Clean Architecture Modularization**: Refactored settings data flow into `:core:settings` for uniform preference access across all feature modules.
+- **🎮 Unified ROG Game Space Dashboard**: Consolidated Games, Tweaks, Network, Telemetry, and Readiness into a single high-performance dark HUD experience.
+- **🎯 Dynamic Draggable & Collapsible Overlay**: Floating FPS/Hz bubble with custom touch drag motion, 1-tap **HIDE** collapse, and **STOP HUD** controls.
+- **⚡ Advanced System Property (`setprop`) Tweaks**: Skia Vulkan rendering (`debug.hwui.renderer=skiavk`), SurfaceFlinger backpressure bypass, unsignaled buffer latching, and Realtime FIFO UI scheduling.
+- **🤖 Android 13, 14, 15, and 16 Support**: Native `GameManager` performance mode binding, dynamic ADPF `updateTargetWorkDuration` frame pacing, Phantom Process Killer disable, and Thermal Headroom forecasting.
+- **🔑 Automatic Shizuku Auto-Grant & ROM Audit**: Auto-grants `WRITE_SECURE_SETTINGS` on connection with live `ro.build.type` and `ro.debuggable` auditing.
 
 ---
 
@@ -109,6 +110,6 @@ Built with clean architecture patterns and Gradle submodules:
 
 ## 📜 License & Links
 
-- **Download Releases:** [v3.5.2 Latest Release](https://github.com/willygailo/Game-Launcher/releases)
+- **Download Releases:** [v3.5.3 Latest Release](https://github.com/willygailo/Game-Launcher/releases)
 - **License:** [MIT License](LICENSE)
 - **Developer:** Willy Gailo (Philippines 🇵🇭)

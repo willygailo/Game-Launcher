@@ -123,6 +123,24 @@ class PerformanceManager @Inject constructor(
         } catch (_: Exception) {}
     }
 
+    fun updateTargetFps(targetFpsHz: Int) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+        try {
+            val session = performanceSession ?: return
+            val periodNs = 1_000_000_000L / targetFpsHz
+            session.javaClass.getMethod("updateTargetWorkDuration", Long::class.java)
+                .invoke(session, periodNs)
+        } catch (_: Exception) {}
+    }
+
+    fun getThermalHeadroomForecast(forecastSeconds: Int = 30): Float {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return 0f
+        return try {
+            val pm = context.getSystemService(PowerManager::class.java) ?: return 0f
+            pm.getThermalHeadroom(forecastSeconds)
+        } catch (_: Exception) { 0f }
+    }
+
     fun getSupportedRefreshRates(): List<Float> {
         return try {
             val dm = context.getSystemService(DisplayManager::class.java)

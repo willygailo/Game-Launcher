@@ -463,15 +463,110 @@ class OemFlagRegistry @Inject constructor() {
             activeValue = "0",
             defaultValue = "1",
             confidence = FlagConfidence.CONFIRMED_WORKING
+        ),
+
+        // ANDROID 13 (API 33) ENHANCEMENTS
+        OemFlag(
+            id = "a13_phantom_proc_killer_disable",
+            key = "settings_enable_monitor_phantom_procs",
+            scope = FlagScope.GLOBAL,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable Phantom Process Killer",
+            description = "Prevents Android 13 from terminating background game processes / emulator sub-threads.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 33
+        ),
+        OemFlag(
+            id = "a13_device_config_sync_disable",
+            key = "device_config_sync_disabled",
+            scope = FlagScope.GLOBAL,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable Cloud Config Overrides",
+            description = "Blocks OEM/Google server-side throttling overrides during gameplay.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 33
+        ),
+
+        // ANDROID 14 (API 34) ENHANCEMENTS
+        OemFlag(
+            id = "a14_app_standby_disable",
+            key = "app_standby_enabled",
+            scope = FlagScope.GLOBAL,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable App Standby Throttling",
+            description = "Prevents CPU frequency drops when switching focus between game and launcher.",
+            activeValue = "0",
+            defaultValue = "1",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 34
+        ),
+        OemFlag(
+            id = "a14_game_dashboard_shortcut",
+            key = "game_dashboard_shortcut",
+            scope = FlagScope.SECURE,
+            targetOem = OemBrand.GENERIC,
+            title = "System Game Dashboard Shortcut",
+            description = "Enables Android 14 native system Game Dashboard floating HUD shortcut.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 34
+        ),
+
+        // ANDROID 15 (API 35) ENHANCEMENTS
+        OemFlag(
+            id = "a15_cached_apps_freezer_disable",
+            key = "cached_apps_freezer",
+            scope = FlagScope.GLOBAL,
+            targetOem = OemBrand.GENERIC,
+            title = "Disable Cached Apps Freezer",
+            description = "Prevents Android 15 from freezing companion voice/overlay apps during gaming.",
+            activeValue = "disabled",
+            defaultValue = "enabled",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 35
+        ),
+
+        // ANDROID 16 (API 36) ENHANCEMENTS
+        OemFlag(
+            id = "a16_sf_adpf_cpu_hint",
+            key = "debug.sf.enable_adpf_cpu_hint",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "SurfaceFlinger ADPF CPU Hinting",
+            description = "Integrates SurfaceFlinger directly with kernel ADPF CPU scheduling on Android 16.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 36
+        ),
+        OemFlag(
+            id = "a16_sf_native_vulkan",
+            key = "debug.sf.use_vulkan",
+            scope = FlagScope.SYSTEM_PROP,
+            targetOem = OemBrand.GENERIC,
+            title = "Native Vulkan System Compositor",
+            description = "Forces native Vulkan compositor path for Android 16 display pipeline.",
+            activeValue = "1",
+            defaultValue = "0",
+            confidence = FlagConfidence.CONFIRMED_WORKING,
+            minSdk = 36
         )
     )
 
     fun getFlagsForBrand(brand: OemBrand): List<OemFlag> {
+        val currentSdk = android.os.Build.VERSION.SDK_INT
         return ALL_FLAGS.filter { flag ->
-            flag.targetOem == brand ||
-            flag.targetOem == OemBrand.GENERIC ||
-            (brand == OemBrand.TECNO && flag.targetOem == OemBrand.INFINIX) ||
-            (brand == OemBrand.TRANSSION && flag.targetOem == OemBrand.INFINIX)
+            currentSdk >= flag.minSdk && (
+                flag.targetOem == brand ||
+                flag.targetOem == OemBrand.GENERIC ||
+                (brand == OemBrand.TECNO && flag.targetOem == OemBrand.INFINIX) ||
+                (brand == OemBrand.TRANSSION && flag.targetOem == OemBrand.INFINIX)
+            )
         }
     }
 }
