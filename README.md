@@ -50,3 +50,11 @@ flutter build apk --release
 ```bash
 adb install build/app/outputs/flutter-apk/app-release.apk
 ```
+
+---
+
+## 👤 Developer Profiles
+
+- **Facebook**: [Willy Jr Carnasa Gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+- **GitHub**: [willygailo](https://github.com/willygailo)
+
