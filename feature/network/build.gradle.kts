@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.gamelauncher.feature.network"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 33

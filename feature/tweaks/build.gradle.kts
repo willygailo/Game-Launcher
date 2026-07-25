@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.gamelauncher.feature.tweaks"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 33

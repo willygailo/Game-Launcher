@@ -207,7 +207,7 @@ fun TweaksScreen(
                                 }
                                 item {
                                     FilterChipItem(
-                                        text = "120/144/165 HZ & FPS",
+                                        text = "HZ & FPS",
                                         isSelected = selectedCategoryFilter == TweakCategory.REFRESH_RATE || selectedCategoryFilter == TweakCategory.FPS_UNLOCK,
                                         onClick = { selectedCategoryFilter = TweakCategory.REFRESH_RATE },
                                         accentColor = accentNeonRed
@@ -215,7 +215,7 @@ fun TweaksScreen(
                                 }
                                 item {
                                     FilterChipItem(
-                                        text = "TOUCH ULTRA",
+                                        text = "TOUCH",
                                         isSelected = selectedCategoryFilter == TweakCategory.TOUCH,
                                         onClick = { selectedCategoryFilter = TweakCategory.TOUCH },
                                         accentColor = accentNeonBlue
@@ -231,10 +231,26 @@ fun TweaksScreen(
                                 }
                                 item {
                                     FilterChipItem(
-                                        text = "NETWORK SPEED",
+                                        text = "NETWORK",
                                         isSelected = selectedCategoryFilter == TweakCategory.NETWORK_SPEED,
                                         onClick = { selectedCategoryFilter = TweakCategory.NETWORK_SPEED },
                                         accentColor = accentNeonBlue
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "MEMORY",
+                                        isSelected = selectedCategoryFilter == TweakCategory.MEMORY,
+                                        onClick = { selectedCategoryFilter = TweakCategory.MEMORY },
+                                        accentColor = accentNeonRed
+                                    )
+                                }
+                                item {
+                                    FilterChipItem(
+                                        text = "POWER",
+                                        isSelected = selectedCategoryFilter == TweakCategory.POWER,
+                                        onClick = { selectedCategoryFilter = TweakCategory.POWER },
+                                        accentColor = accentGreen
                                     )
                                 }
                             }
@@ -414,6 +430,8 @@ fun TweakCardItem(
     onPhantomProcsToggled: (Boolean) -> Unit,
     onAdaptiveBatteryToggled: (Boolean) -> Unit
 ) {
+    val accentNeonRed = Color(0xFFFF2A5F)
+    val accentGreen = Color(0xFF00E676)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -464,6 +482,25 @@ fun TweakCardItem(
             Spacer(modifier = Modifier.height(12.dp))
 
             when (tweak.category) {
+
+                TweakCategory.ROG_MODE -> {
+                    // ROG Mode is handled by the header card above — show active mode chip here
+                    Box(
+                        modifier = Modifier
+                            .background(accentNeonRed.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                            .border(1.dp, accentNeonRed.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "🔥 Active: ${tweak.selectedValue ?: "X-Mode"} — use the Mode Preset above to switch",
+                            fontSize = 12.sp,
+                            color = accentNeonRed,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
                 TweakCategory.TOUCH -> {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -525,31 +562,21 @@ fun TweakCardItem(
                 }
 
                 TweakCategory.GPU_RENDERING -> {
-                    if (tweak.id == "game_driver_clear") {
-                        Button(
-                            onClick = onClearGameDriver,
-                            enabled = tweak.isSupportedByDevice,
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Reset Game Driver Settings")
-                        }
-                    } else if (tweak.isSupportedByDevice) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = if (tweak.isToggleActive) "2D GPU & Skia Vulkan HW Active" else "Standard UI Rendering",
-                                fontSize = 12.sp,
-                                color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
-                            )
-                            Switch(
-                                checked = tweak.isToggleActive,
-                                onCheckedChange = onGpuRenderingToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
-                            )
-                        }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (tweak.isToggleActive) "⚡ Skia Vulkan Renderer Active" else "Standard OpenGL Renderer",
+                            fontSize = 12.sp,
+                            color = if (tweak.isToggleActive) accentGreen else Color(0xFF94A3B8)
+                        )
+                        Switch(
+                            checked = tweak.isToggleActive,
+                            onCheckedChange = onGpuRenderingToggled,
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentGreen, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
+                        )
                     }
                 }
 
@@ -560,7 +587,7 @@ fun TweakCardItem(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = if (tweak.isToggleActive) "CPU Max Governor Boost Active" else "Standard Power Scaling",
+                            text = if (tweak.isToggleActive) "🚀 ADPF Performance Hint Active" else "Standard CPU Scaling",
                             fontSize = 12.sp,
                             color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
                         )
@@ -592,23 +619,21 @@ fun TweakCardItem(
                 }
 
                 TweakCategory.THERMAL_THROTTLING -> {
-                    if (tweak.isSupportedByDevice) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = if (tweak.isToggleActive) "Thermal Override Active" else "Standard Thermal Throttling",
-                                fontSize = 12.sp,
-                                color = if (tweak.isToggleActive) accentColor else Color(0xFF94A3B8)
-                            )
-                            Switch(
-                                checked = tweak.isToggleActive,
-                                onCheckedChange = onThermalBypassToggled,
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentColor, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
-                            )
-                        }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (tweak.isToggleActive) "🔥 Thermal Override Active" else "Standard OEM Throttling",
+                            fontSize = 12.sp,
+                            color = if (tweak.isToggleActive) accentNeonRed else Color(0xFF94A3B8)
+                        )
+                        Switch(
+                            checked = tweak.isToggleActive,
+                            onCheckedChange = onThermalBypassToggled,
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accentNeonRed, uncheckedThumbColor = Color(0xFF94A3B8), uncheckedTrackColor = Color(0xFF151C2C))
+                        )
                     }
                 }
 

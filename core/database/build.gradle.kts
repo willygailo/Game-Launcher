@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.gamelauncher.core.database"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 33

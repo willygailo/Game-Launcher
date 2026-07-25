@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.gamelauncher"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.gamelauncher.app"
