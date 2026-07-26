@@ -1,6 +1,6 @@
 # 🎮 GAME SPACE — Ultimate Android Gaming Optimizer & FPS Unlocker
 
-**GAME SPACE** is a high-performance Flutter Android application engineered for system-level gaming optimizations, display refresh rate locking (90Hz / 120Hz / 144Hz), graphics unlocking, CPU/GPU scheduling, touch sampling rate enhancements, and network latency tuning across **all Android chipsets and OEM brands** (Xiaomi, Infinix, Tecno, Samsung, Realme, OnePlus, etc.).
+**GAME SPACE** is a high-performance system-level gaming optimization framework engineered for display refresh rate locking (90Hz / 120Hz / 144Hz), graphics unlocking (4x MSAA & Vulkan HWUI), CPU/GPU scheduling, touch sampling rate enhancements, and thermal throttling bypass across **all Android chipsets and OEM brands** (Xiaomi, Infinix, Tecno, Samsung, Realme, OnePlus, etc.).
 
 ---
 
@@ -34,40 +34,118 @@ GAME SPACE features a **3-Tiered Execution Engine** designed to deliver maximum 
   - Gaming TCP buffer size optimization (`net.tcp.buffersize.wifi`).
   - Extends Wi-Fi background scan intervals (`wifi.supplicant_scan_interval=180`) to eliminate ping spikes.
   - Primary & Secondary Google DNS resolvers (`8.8.8.8` / `8.8.4.4`).
+- **🎮 2D & Pixel Games Profile**:
+  - 300Hz zero-delay touch sampling and zero-lag gesture caching for 2D arcade, RPGs, and platformers.
 
 ---
 
-## 🛠️ Architecture Overview
-
-Built using **Flutter Clean Architecture** + **BLoC/Cubit**:
+## 📂 Full Directory & File Structure
 
 ```
-lib/
-├── core/                  # Core design system, router, theme, and native services
-│   ├── platform/          # RootCommandService, ShizukuService, HzFpsService
-│   ├── router/            # GoRouter navigation rules
-│   └── theme/             # Dark neon glassmorphic design tokens
-├── features/              # Feature modules (Domain, Data, Presentation)
-│   ├── cpu_tweaks/        # CPU governor and heap tuning
-│   ├── gpu_tweaks/        # GPU composition & graphics unlocking
-│   ├── hz_fps_tweaks/     # Refresh rate lock & Game Mode API
-│   ├── home/              # Hero dashboard & live performance gauges
-│   ├── network_tweaks/    # Wi-Fi scan interval & TCP buffer tuning
-│   ├── performance/       # Real-time CPU, RAM, Battery gauges
-│   ├── permissions/       # Root & Shizuku ADB status manager
-│   ├── profiles/          # Custom gaming preset profiles
-│   ├── settings/          # Locale and theme preferences
-│   └── touch_tweaks/      # Touch sampling & fling velocity controls
-└── l10n/                  # Multi-language localization files
+Game_Launcher_Pro/
+├── README.md                                          # Complete project documentation & guide
+├── analysis_options.yaml                              # Strict Dart & Flutter static analysis rules
+├── pubspec.yaml                                       # Project dependencies, assets, and assets declarations
+├── test/                                              # Comprehensive automated unit test suite
+│   └── features/
+│       ├── hz_fps_tweaks/
+│       │   └── hz_fps_tweaks_test.dart                # Unit tests for Hz & FPS state mutations
+│       └── permissions/
+│           └── permissions_test.dart                  # Unit tests for AppPermissions & ExecutionMode
+├── android/                                           # Native Android Project & Shizuku Binder Bridge
+│   ├── build.gradle                                   # Top-level Gradle configuration
+│   ├── settings.gradle                                # Gradle plugins loader & dependency settings
+│   ├── gradle.properties                              # JDK home (/usr/lib/jvm/java-17-openjdk-amd64)
+│   ├── local.properties                               # Android SDK & Flutter paths
+│   └── app/
+│       ├── build.gradle                               # App module compileSdk 35 & Shizuku API dependencies
+│       └── src/
+│           └── main/
+│               ├── AndroidManifest.xml                # ShizukuProvider registration & system permissions
+│               └── kotlin/com/gamespace/app/
+│                   ├── MainActivity.kt                # FlutterActivity & MethodChannel bridge registrar
+│                   ├── BootReceiver.kt                # Re-applies performance tweaks on BOOT_COMPLETED
+│                   ├── channels/
+│                   │   ├── DeviceInfoChannel.kt       # Native hardware & CPU spec channel
+│                   │   ├── GameLibraryChannel.kt      # Installed games scanner & launcher channel
+│                   │   ├── GpuTweaksChannel.kt        # GPU composition & HWUI renderer channel
+│                   │   ├── HzFpsChannel.kt            # Refresh rate locking & thermal bypass channel
+│                   │   ├── MagiskExporterChannel.kt   # Magisk module generator channel
+│                   │   ├── PerformanceChannel.kt      # Real-time CPU, RAM, Battery metrics channel
+│                   │   ├── PermissionChannel.kt       # Root & system permission checker channel
+│                   │   ├── RootCommandChannel.kt      # Shell command executor with Shizuku fallback
+│                   │   └── ShizukuChannel.kt          # Shizuku API binder status & auto-granting channel
+│                   └── utils/
+│                       ├── DeviceDetector.kt          # Snapdragon, MediaTek, Exynos, Tensor chipset detector
+│                       ├── ShellExecutor.kt           # Root shell command execution & SELinux sanitizer
+│                       └── ShizukuExecutor.kt         # Native Shizuku process runner & auto-perm granter
+├── lib/                                               # Clean Architecture Core & Feature Modules
+│   ├── main.dart                                      # Application entry point
+│   ├── app.dart                                       # MaterialApp, MultiBlocProvider, & GoRouter router
+│   ├── injection.dart                                 # GetIt dependency injection registry
+│   ├── core/
+│   │   ├── constants/
+│   │   │   ├── app_constants.dart                     # App branding and global constants
+│   │   │   └── tweak_constants.dart                   # Sysfs paths, setprop keys, and tweak definitions
+│   │   ├── platform/
+│   │   │   ├── device_info_service.dart               # Platform channel for device specs
+│   │   │   ├── game_library_service.dart              # Platform channel for installed games
+│   │   │   ├── hz_fps_service.dart                    # Platform channel for Hz, FPS, and thermal status
+│   │   │   ├── magisk_exporter_service.dart           # Platform channel for Magisk exports
+│   │   │   ├── performance_service.dart               # Platform channel for hardware metrics
+│   │   │   ├── permission_service.dart                # Platform channel for permission checks
+│   │   │   ├── root_command_service.dart              # Platform channel for shell execution
+│   │   │   └── shizuku_service.dart                   # Platform channel for Shizuku binder connection
+│   │   ├── router/
+│   │   │   └── app_router.dart                        # GoRouter navigation rules and page transitions
+│   │   ├── theme/
+│   │   │   ├── app_colors.dart                        # Cyberpunk dark neon palette
+│   │   │   ├── app_theme.dart                         # ThemeData & component styles
+│   │   │   └── app_typography.dart                    # Google Fonts typography tokens
+│   │   └── widgets/
+│   │       ├── glassmorphic_card.dart                 # Glassmorphic card UI component
+│   │       ├── main_shell_page.dart                   # Bottom navigation shell layout
+│   │       ├── neon_button.dart                       # Cyberpunk neon action button
+│   │       ├── performance_gauge.dart                 # Circular hardware metric gauge
+│   │       └── tweak_toggle_tile.dart                 # Interactive tweak switch list tile
+│   ├── features/
+│   │   ├── cpu_tweaks/                                # CPU Governors & Heap Tuning
+│   │   ├── gpu_tweaks/                                # GPU Composition & Graphics Unlocking
+│   │   ├── home/                                      # Hero Dashboard & Live Gauges
+│   │   ├── hz_fps_tweaks/                             # Refresh Rate Locking & Game Mode API
+│   │   ├── network_tweaks/                            # Wi-Fi Scan Interval & TCP Buffers
+│   │   ├── performance/                               # Real-time CPU, RAM, Battery Monitor
+│   │   ├── permissions/                               # Root & Shizuku ADB Permission Manager
+│   │   ├── profiles/                                  # Gaming Preset Profiles (PUBG, 2D Games, Genshin)
+│   │   ├── settings/                                  # Language & Theme Settings
+│   │   └── touch_tweaks/                              # Touch Sampling Rate & Fling Velocity
+│   └── l10n/                                          # Localization files (en, fr, ar, es, id, sw, fil)
+└── web/                                               # Web / JavaScript App Hosting Shell
+    ├── index.html                                     # Web application HTML5 shell
+    ├── manifest.json                                  # Web PWA manifest
+    └── favicon.png                                    # Web icon
 ```
 
-### Native Android Layer (`android/app/src/main/kotlin/com/gamespace/app/`)
-- `ShellExecutor.kt`: Sanitized command input execution, exit code inspection, and SELinux validation.
-- `ShizukuExecutor.kt`: Shizuku binder connection status, permission handling, and privileged process execution.
-- `ShizukuChannel.kt`: `com.gamespace.app/shizuku` MethodChannel bridge.
-- `HzFpsChannel.kt`: `com.gamespace.app/hz_fps` MethodChannel for display modes, FPS locking, and thermal override.
-- `DeviceDetector.kt`: Multi-chipset detector (Qualcomm Snapdragon, MediaTek Helio/Dimensity, Unisoc Tiger, Samsung Exynos, Google Tensor, HiSilicon Kirin) with `/proc/cpuinfo` fallback.
-- `BootReceiver.kt`: Re-applies runtime tweaks on `BOOT_COMPLETED`.
+---
+
+## ☕ 🌐 Java & JavaScript / Web Tech Architecture
+
+If you decide to migrate or extend the project to **Java + JavaScript / Web Tech**:
+
+### ☕ Native Java Layer (`android/app/src/main/java/com/gamespace/app/`)
+- Use **Java (JDK 17)** for native Android execution:
+  - `ShizukuExecutor.java`: Implement `rikka.shizuku.Shizuku` binder connection and process management via `Shizuku.newProcess()`.
+  - `RootExecutor.java`: Execute root commands via `java.lang.ProcessBuilder("su")`.
+  - `SystemSettings.java`: Direct call to `android.provider.Settings.Secure.putString()` and `Settings.System.putInt()`.
+
+### 🌐 JavaScript / Web Frontend (`web/` or `js/`)
+- Use **JavaScript (Vanilla JS, React, or Vite)** inside an Android `WebView` interface or PWA:
+  - `bridge.js`: JavaScript bridge communicating with Native Java via `@JavascriptInterface`:
+  ```javascript
+  // JavaScript to Java Bridge Call
+  window.GameSpaceNative.applyTweak("peak_refresh_rate", "120.0");
+  ```
+  - `app.js`: JavaScript state management for profiles, Hz/FPS locks, and live gauge visualizers.
 
 ---
 
@@ -94,9 +172,9 @@ No manual ADB commands required! GAME SPACE connects directly to the Shizuku app
 
 ## 🚀 Getting Started
 
-### Build APK
+### Build Release APK
 ```bash
-flutter build apk --release
+flutter build apk --release --target-platform android-arm64
 ```
 
 ### Install via ADB
