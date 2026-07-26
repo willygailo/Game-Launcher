@@ -2,10 +2,12 @@ package com.gamespace.app
 
 import com.gamespace.app.channels.DeviceInfoChannel
 import com.gamespace.app.channels.GameLibraryChannel
+import com.gamespace.app.channels.HzFpsChannel
 import com.gamespace.app.channels.MagiskExporterChannel
 import com.gamespace.app.channels.PerformanceChannel
 import com.gamespace.app.channels.PermissionChannel
 import com.gamespace.app.channels.RootCommandChannel
+import com.gamespace.app.channels.ShizukuChannel
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -16,6 +18,12 @@ class MainActivity: FlutterActivity() {
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, RootCommandChannel.CHANNEL)
             .setMethodCallHandler(RootCommandChannel())
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ShizukuChannel.CHANNEL)
+            .setMethodCallHandler(ShizukuChannel(applicationContext))
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, HzFpsChannel.CHANNEL)
+            .setMethodCallHandler(HzFpsChannel(applicationContext))
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DeviceInfoChannel.CHANNEL)
             .setMethodCallHandler(DeviceInfoChannel())
@@ -33,5 +41,6 @@ class MainActivity: FlutterActivity() {
             .setMethodCallHandler(MagiskExporterChannel(applicationContext))
     }
 }
+
 
 

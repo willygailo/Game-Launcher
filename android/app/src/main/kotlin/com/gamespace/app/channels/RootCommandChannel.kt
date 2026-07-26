@@ -1,6 +1,7 @@
 package com.gamespace.app.channels
 
 import com.gamespace.app.utils.ShellExecutor
+import com.gamespace.app.utils.ShizukuExecutor
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +29,7 @@ class RootCommandChannel : MethodChannel.MethodCallHandler {
                 val value = call.argument<String>("value")
                 if (key != null && value != null) {
                     scope.launch {
-                        val success = ShellExecutor.setSystemPropertyRoot(key, value)
+                        val success = setSystemPropUnified(key, value)
                         result.success(success)
                     }
                 } else {
@@ -52,7 +53,7 @@ class RootCommandChannel : MethodChannel.MethodCallHandler {
                     scope.launch {
                         var appliedCount = 0
                         for ((k, v) in tweaks) {
-                            if (ShellExecutor.setSystemPropertyRoot(k, v)) {
+                            if (setSystemPropUnified(k, v)) {
                                 appliedCount++
                             }
                         }
@@ -64,5 +65,17 @@ class RootCommandChannel : MethodChannel.MethodCallHandler {
             }
             else -> result.notImplemented()
         }
+    }
+
+    private fun setSystemPropUnified(key: String, value: String): Boolean {
+        if (key.startsWith("ro.")) return false
+
+        if (ShellExecutor.isRootAvailable()) {
+            return ShellExecutor.setSystemPropertyRoot(key, value)
+        } else if (ShizukuExecutor.isPermissionGranted()) {
+            val res = ShizukuExecutor.executeShizukuCommand("setprop $key $value")
+            return res.success
+        }
+        return false
     }
 }

@@ -10,6 +10,7 @@ import '../../features/performance/presentation/pages/performance_page.dart';
 import '../../features/profiles/presentation/pages/profiles_page.dart';
 import '../../features/permissions/presentation/pages/permissions_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/hz_fps_tweaks/presentation/pages/hz_fps_page.dart';
 
 import '../widgets/main_shell_page.dart';
 
@@ -23,6 +24,7 @@ class AppRouter {
   static const String profiles = '/profiles';
   static const String permissions = '/permissions';
   static const String settings = '/settings';
+  static const String hzFpsTweaks = '/hz_fps';
 
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -68,7 +70,12 @@ class AppRouter {
         path: permissions,
         builder: (context, state) => const PermissionsPage(),
       ),
+      GoRoute(
+        path: hzFpsTweaks,
+        builder: (context, state) => const HzFpsPage(),
+      ),
     ],
   );
 }
+
 

@@ -11,6 +11,9 @@ import '../../../../core/widgets/performance_gauge.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../performance/presentation/cubit/performance_cubit.dart';
 import '../../../performance/presentation/cubit/performance_state.dart';
+import '../../../permissions/presentation/cubit/permissions_cubit.dart';
+import '../../../permissions/presentation/cubit/permissions_state.dart';
+import '../../../permissions/domain/entities/app_permissions.dart';
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
 
@@ -27,6 +30,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     context.read<HomeCubit>().loadDashboard();
     context.read<PerformanceCubit>().startPolling();
+    context.read<PermissionsCubit>().checkPermissions();
   }
 
   @override
@@ -82,38 +86,57 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Root Status Card
-                  GlassmorphicCard(
-                    borderColor: info.isRooted ? AppColors.neonGreen : AppColors.warning,
-                    child: Row(
-                      children: [
-                        Icon(
-                          info.isRooted ? Icons.verified_user : Icons.gpp_maybe,
-                          color: info.isRooted ? AppColors.neonGreen : AppColors.warning,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(l10n.rootStatus, style: AppTypography.caption),
-                              Text(
-                                info.isRooted ? l10n.rootGranted : l10n.rootDenied,
-                                style: AppTypography.bodyLarge.copyWith(
-                                  color: info.isRooted ? AppColors.neonGreen : AppColors.warning,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                  // Execution Engine Status Card
+                  BlocBuilder<PermissionsCubit, PermissionsState>(
+                    builder: (context, permState) {
+                      final mode = permState.executionMode;
+                      final titleStr = mode == ExecutionMode.root
+                          ? 'ROOT (su) ACTIVE'
+                          : mode == ExecutionMode.shizuku
+                              ? 'SHIZUKU (ADB) ACTIVE'
+                              : 'READ-ONLY MODE';
+
+                      final color = mode == ExecutionMode.root
+                          ? AppColors.neonGreen
+                          : mode == ExecutionMode.shizuku
+                              ? AppColors.neonCyan
+                              : AppColors.warning;
+
+                      final icon = mode == ExecutionMode.root
+                          ? Icons.verified_user
+                          : mode == ExecutionMode.shizuku
+                              ? Icons.bolt
+                              : Icons.info_outline;
+
+                      return GlassmorphicCard(
+                        borderColor: color,
+                        child: Row(
+                          children: [
+                            Icon(icon, color: color, size: 32),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('EXECUTION ENGINE', style: AppTypography.caption),
+                                  Text(
+                                    titleStr,
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: color,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.tune, color: AppColors.neonCyan),
+                              onPressed: () => context.push(AppRouter.permissions),
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.security, color: AppColors.neonCyan),
-                          onPressed: () => context.push(AppRouter.permissions),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
 
@@ -204,10 +227,11 @@ class _HomePageState extends State<HomePage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 1.4,
+                    childAspectRatio: 1.35,
                     children: [
                       _buildNavTile(context, l10n.cpuTweaks, Icons.memory, AppColors.neonCyan, AppRouter.cpuTweaks),
                       _buildNavTile(context, l10n.gpuTweaks, Icons.speed, AppColors.neonPurple, AppRouter.gpuTweaks),
+                      _buildNavTile(context, 'Hz & FPS Unlocker', Icons.bolt, AppColors.neonCyan, AppRouter.hzFpsTweaks),
                       _buildNavTile(context, l10n.touchTweaks, Icons.touch_app, AppColors.neonPink, AppRouter.touchTweaks),
                       _buildNavTile(context, l10n.networkTweaks, Icons.wifi_tethering, AppColors.neonGreen, AppRouter.networkTweaks),
                       _buildNavTile(context, l10n.performance, Icons.tune, AppColors.neonOrange, AppRouter.performance),
@@ -243,16 +267,28 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildNavTile(BuildContext context, String title, IconData icon, Color color, String route) {
     return GlassmorphicCard(
+      padding: EdgeInsets.zero,
       borderColor: color.withOpacity(0.4),
       child: InkWell(
+        borderRadius: BorderRadius.circular(16),
         onTap: () => context.push(route),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(title, style: AppTypography.bodyLarge.copyWith(fontSize: 14), textAlign: TextAlign.center),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: AppTypography.bodyLarge.copyWith(fontSize: 13),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

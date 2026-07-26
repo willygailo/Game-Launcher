@@ -12,4 +12,8 @@ class PermissionsRepositoryImpl implements PermissionsRepository {
   @override
   Future<bool> requestStoragePermission() =>
       datasource.requestStoragePermission();
+
+  @override
+  Future<bool> requestShizukuPermission() =>
+      datasource.requestShizukuPermission();
 }

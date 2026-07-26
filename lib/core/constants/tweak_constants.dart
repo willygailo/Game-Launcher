@@ -77,6 +77,22 @@ class TweakConstants {
       description: 'Forces System UI and overlays to use GPU acceleration.',
       category: 'GPU',
     ),
+    TweakItem(
+      key: 'debug.egl.force_msaa',
+      defaultValue: 'false',
+      tweakValue: 'true',
+      title: 'Force 4x MSAA Graphics',
+      description: 'Forces 4x Multi-Sample Anti-Aliasing in OpenGL ES 2.0+ games.',
+      category: 'GPU',
+    ),
+    TweakItem(
+      key: 'debug.hwui.renderer',
+      defaultValue: 'skiagl',
+      tweakValue: 'vulkan',
+      title: 'Vulkan HWUI Graphics Pipeline',
+      description: 'Forces Vulkan graphics renderer backend for HWUI rendering engine.',
+      category: 'GPU',
+    ),
   ];
 
   // CPU & Memory Tweaks (Writable persist.* / dalvik.vm.* / debug.*)

@@ -17,6 +17,7 @@ import 'features/profiles/presentation/cubit/profiles_cubit.dart';
 import 'features/permissions/presentation/cubit/permissions_cubit.dart';
 import 'features/settings/presentation/cubit/settings_cubit.dart';
 import 'features/settings/presentation/cubit/settings_state.dart';
+import 'features/hz_fps_tweaks/presentation/cubit/hz_fps_cubit.dart';
 
 class GameSpaceApp extends StatelessWidget {
   const GameSpaceApp({Key? key}) : super(key: key);
@@ -36,6 +37,7 @@ class GameSpaceApp extends StatelessWidget {
         BlocProvider<PerformanceCubit>(create: (_) => sl<PerformanceCubit>()),
         BlocProvider<ProfilesCubit>(create: (_) => sl<ProfilesCubit>()),
         BlocProvider<PermissionsCubit>(create: (_) => sl<PermissionsCubit>()),
+        BlocProvider<HzFpsCubit>(create: (_) => sl<HzFpsCubit>()),
       ],
       child: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, settingsState) {

@@ -7,6 +7,8 @@ import 'core/platform/permission_service.dart';
 import 'core/platform/performance_service.dart';
 import 'core/platform/magisk_exporter_service.dart';
 import 'core/platform/game_library_service.dart';
+import 'core/platform/shizuku_service.dart';
+import 'core/platform/hz_fps_service.dart';
 
 // Home
 import 'features/home/data/datasources/device_info_datasource.dart';
@@ -70,6 +72,9 @@ import 'features/permissions/domain/usecases/check_permissions.dart';
 import 'features/permissions/domain/usecases/request_storage_permission.dart';
 import 'features/permissions/presentation/cubit/permissions_cubit.dart';
 
+// Hz & FPS Tweaks
+import 'features/hz_fps_tweaks/presentation/cubit/hz_fps_cubit.dart';
+
 // Settings
 import 'features/settings/data/datasources/settings_datasource.dart';
 import 'features/settings/data/repositories/settings_repository_impl.dart';
@@ -92,6 +97,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<PerformanceService>(() => PerformanceService());
   sl.registerLazySingleton<MagiskExporterService>(() => MagiskExporterService());
   sl.registerLazySingleton<GameLibraryService>(() => GameLibraryService());
+  sl.registerLazySingleton<ShizukuService>(() => ShizukuService());
+  sl.registerLazySingleton<HzFpsService>(() => HzFpsService());
 
   // ─── Home Feature ─────────────────────────────────────────────────────────
   sl.registerLazySingleton<DeviceInfoDataSource>(
@@ -226,6 +233,7 @@ Future<void> initDependencies() async {
     () => PermissionsDatasource(
       permissionService: sl(),
       rootCommandService: sl(),
+      shizukuService: sl(),
     ),
   );
   sl.registerLazySingleton<PermissionsRepository>(
@@ -236,7 +244,15 @@ Future<void> initDependencies() async {
     () => RequestStoragePermission(sl()),
   );
 
-  sl.registerFactory<PermissionsCubit>(() => PermissionsCubit(sl()));
+  sl.registerFactory<PermissionsCubit>(
+    () => PermissionsCubit(
+      permissionService: sl(),
+      shizukuService: sl(),
+    ),
+  );
+
+  // ─── Hz & FPS Tweaks ──────────────────────────────────────────────────────
+  sl.registerFactory<HzFpsCubit>(() => HzFpsCubit(sl()));
 
   // ─── Settings ─────────────────────────────────────────────────────────────
   sl.registerLazySingleton<SettingsDatasource>(
