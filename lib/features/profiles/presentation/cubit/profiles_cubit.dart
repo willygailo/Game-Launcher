@@ -10,12 +10,24 @@ import 'profiles_state.dart';
 const _defaultPresets = [
   (
     id: 'pubg',
-    name: 'PUBG Mobile Extreme',
+    name: 'PUBG Mobile / 3D FPS Extreme',
     icon: 'sports_esports',
     tweaks: {
       'debug.composition.type': 'gpu',
       'windowsmgr.max_events_per_sec': '300',
       'debug.sf.hw': '1',
+    },
+  ),
+  (
+    id: 'games_2d',
+    name: '2D & Pixel Games Ultra Smooth',
+    icon: 'videogame_asset',
+    tweaks: {
+      'windowsmgr.max_events_per_sec': '300',
+      'debug.sf.hw': '1',
+      'persist.sys.scrollingcache': '3',
+      'wifi.supplicant_scan_interval': '180',
+      'debug.egl.hw': '1',
     },
   ),
   (
@@ -30,7 +42,7 @@ const _defaultPresets = [
   ),
   (
     id: 'genshin',
-    name: 'Genshin Impact Max FPS',
+    name: 'Genshin Impact Max Performance',
     icon: 'auto_awesome',
     tweaks: {
       'hw3d.force': '1',
@@ -57,7 +69,7 @@ class ProfilesCubit extends Cubit<ProfilesState> {
   Future<void> loadProfiles() async {
     List<domain.GameProfile> stored = await _getProfiles();
 
-    // Seed defaults on first launch.
+    // Seed defaults on first launch or add missing presets
     if (stored.isEmpty) {
       for (final p in _defaultPresets) {
         final profile = domain.GameProfile(
@@ -110,4 +122,3 @@ class ProfilesCubit extends Cubit<ProfilesState> {
     emit(state.copyWith(profiles: updatedList));
   }
 }
-
