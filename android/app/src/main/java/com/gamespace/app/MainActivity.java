@@ -1,35 +1,20 @@
 package com.gamespace.app;
 
-import androidx.annotation.NonNull;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 
-import com.gamespace.app.channels.DeviceInfoChannel;
-import com.gamespace.app.channels.GameLibraryChannel;
-import com.gamespace.app.channels.HzFpsChannel;
-import com.gamespace.app.channels.MagiskExporterChannel;
-import com.gamespace.app.channels.PerformanceChannel;
-import com.gamespace.app.channels.PermissionChannel;
-import com.gamespace.app.channels.RootCommandChannel;
-import com.gamespace.app.channels.ShizukuChannel;
+import com.gamespace.app.utils.ShizukuExecutor;
+import com.gamespace.app.utils.ShellExecutor;
 
-import io.flutter.embedding.android.FlutterActivity;
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.plugin.common.BinaryMessenger;
-
-public class MainActivity extends FlutterActivity {
+public class MainActivity extends AppCompatActivity {
 
     @Override
-    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
-        super.configureFlutterEngine(flutterEngine);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        BinaryMessenger messenger = flutterEngine.getDartExecutor().getBinaryMessenger();
-
-        new RootCommandChannel(messenger);
-        new PermissionChannel(messenger, getApplicationContext());
-        new DeviceInfoChannel(messenger);
-        new PerformanceChannel(messenger, getApplicationContext());
-        new GameLibraryChannel(messenger, getApplicationContext());
-        new MagiskExporterChannel(messenger, getApplicationContext());
-        new ShizukuChannel(messenger, getApplicationContext());
-        new HzFpsChannel(messenger, getApplicationContext());
+        // Auto-grant permissions if Shizuku binder is active
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            ShizukuExecutor.grantAppPermissionsViaShizuku(this);
+        }
     }
 }

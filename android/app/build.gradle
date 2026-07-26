@@ -1,28 +1,9 @@
 plugins {
-    id "com.android.application"
-    id "dev.flutter.flutter-gradle-plugin"
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
-if (flutterVersionCode == null) {
-    flutterVersionCode = "1"
-}
-
-def flutterVersionName = localProperties.getProperty("flutter.versionName")
-if (flutterVersionName == null) {
-    flutterVersionName = "1.0"
+    id 'com.android.application'
 }
 
 android {
-    namespace "com.gamespace.app"
+    namespace 'com.gamespace.app'
     compileSdk 35
 
     compileOptions {
@@ -34,8 +15,8 @@ android {
         applicationId "com.gamespace.app"
         minSdk 24
         targetSdk 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        versionCode 1
+        versionName "1.0.0"
     }
 
     buildTypes {
@@ -47,11 +28,13 @@ android {
     }
 }
 
-flutter {
-    source "../.."
-}
-
 dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.8.7'
+
     def shizuku_version = "13.1.5"
     implementation "dev.rikka.shizuku:api:${shizuku_version}"
     implementation "dev.rikka.shizuku:provider:${shizuku_version}"
