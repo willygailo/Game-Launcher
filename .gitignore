@@ -1,0 +1,45 @@
+# Built Android binaries & APK outputs
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Gradle build cache & output directories
+.gradle/
+build/
+app/build/
+**/build/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration & environment files
+local.properties
+
+# Android Studio & IntelliJ IDE configuration
+.idea/
+*.iml
+.navigation/
+captures/
+.shelf/
+
+# VS Code configuration
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Signing & Keystores
+*.jks
+*.keystore
+
+# Logs & Temporary files
+*.log
+scratch/

@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gamespace.app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- System and Performance Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,7 +12,7 @@
 
     <application
         android:label="GAME SPACE"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <receiver
