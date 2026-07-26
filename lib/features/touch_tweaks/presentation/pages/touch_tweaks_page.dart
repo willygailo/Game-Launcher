@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/tweak_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -21,9 +22,11 @@ class _TouchTweaksPageState extends State<TouchTweaksPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TOUCH RESPONSIVENESS'),
+        title: Text(l10n.touchResponsiveness),
       ),
       body: BlocBuilder<TouchTweaksCubit, TouchTweaksState>(
         builder: (context, state) {
@@ -38,10 +41,10 @@ class _TouchTweaksPageState extends State<TouchTweaksPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('TOUCH SAMPLING RATE SLIDER', style: AppTypography.titleSection),
+                      Text(l10n.touchSamplingRate, style: AppTypography.titleSection),
                       const SizedBox(height: 8),
                       Text(
-                        'Sampling Rate: ${state.samplingRate.toInt()} Hz',
+                        l10n.samplingRateLabel(state.samplingRate.toInt().toString()),
                         style: AppTypography.bodyLarge.copyWith(color: AppColors.neonPink),
                       ),
                       Slider(
@@ -57,7 +60,7 @@ class _TouchTweaksPageState extends State<TouchTweaksPage> {
                       const SizedBox(height: 12),
 
                       // Interactive Touch Test Box
-                      Text('LATENCY TEST PAD (TAP HERE)', style: AppTypography.caption),
+                      Text(l10n.latencyTestPad, style: AppTypography.caption),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTapDown: (details) {
@@ -79,8 +82,8 @@ class _TouchTweaksPageState extends State<TouchTweaksPage> {
                               Center(
                                 child: Text(
                                   _touchPos == null
-                                      ? 'Tap anywhere inside box'
-                                      : 'Registered Taps: $_touchCount\nLast Pos: (${_touchPos!.dx.toInt()}, ${_touchPos!.dy.toInt()})',
+                                      ? l10n.tapAnywhere
+                                      : '${l10n.registeredTaps(_touchCount.toString())}\n${l10n.lastPos(_touchPos!.dx.toInt().toString(), _touchPos!.dy.toInt().toString())}',
                                   textAlign: TextAlign.center,
                                   style: AppTypography.bodyMedium,
                                 ),
@@ -108,7 +111,7 @@ class _TouchTweaksPageState extends State<TouchTweaksPage> {
                 ),
                 const SizedBox(height: 20),
 
-                Text('SETPROP TOUCH SENSITIVITY TWEAKS', style: AppTypography.titleSection),
+                Text(l10n.setpropTouchTweaks, style: AppTypography.titleSection),
                 const SizedBox(height: 12),
                 ...TweakConstants.touchTweaks.map((tweak) {
                   final isEnabled = state.tweakStates[tweak.key] ?? false;

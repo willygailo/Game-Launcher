@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/glassmorphic_card.dart';
@@ -9,6 +10,7 @@ import 'cubit/profiles_state.dart';
 
 import '../../../../core/platform/magisk_exporter_service.dart';
 import '../../../../injection.dart';
+import '../../domain/entities/game_profile.dart';
 
 class ProfilesPage extends StatefulWidget {
   const ProfilesPage({Key? key}) : super(key: key);
@@ -24,7 +26,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
     context.read<ProfilesCubit>().loadProfiles();
   }
 
-  Future<void> _exportMagisk(BuildContext context, GameProfile profile) async {
+  Future<void> _exportMagisk(BuildContext context, GameProfile profile, AppLocalizations l10n) async {
     final service = sl<MagiskExporterService>();
     final path = await service.exportMagiskModule(
       moduleName: profile.name.replaceAll(' ', '_'),
@@ -35,14 +37,14 @@ class _ProfilesPageState extends State<ProfilesPage> {
     if (path != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Exported Magisk Zip to:\n$path'),
+          content: Text(l10n.exportedMagisk(path)),
           backgroundColor: AppColors.neonGreen,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to export Magisk zip.'),
+        SnackBar(
+          content: Text(l10n.failedExportMagisk),
           backgroundColor: AppColors.error,
         ),
       );
@@ -51,9 +53,11 @@ class _ProfilesPageState extends State<ProfilesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GAME TWEAK PROFILES'),
+        title: Text(l10n.gameTweakProfiles),
       ),
       body: BlocBuilder<ProfilesCubit, ProfilesState>(
         builder: (context, state) {
@@ -93,7 +97,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                                 border: Border.all(color: AppColors.neonGreen),
                               ),
                               child: Text(
-                                'ACTIVE',
+                                l10n.active,
                                 style: AppTypography.caption.copyWith(color: AppColors.neonGreen, fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -101,7 +105,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Contains ${profile.tweaks.length} setprop configurations',
+                        l10n.containsTweaks(profile.tweaks.length.toString()),
                         style: AppTypography.bodyMedium,
                       ),
                       const SizedBox(height: 12),
@@ -109,7 +113,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                         children: [
                           Expanded(
                             child: NeonButton(
-                              label: isActive ? 'PROFILE APPLIED' : 'APPLY PROFILE',
+                              label: isActive ? l10n.profileApplied : l10n.applyProfile,
                               gradient: isActive ? AppColors.primaryGradient : AppColors.boostGradient,
                               onPressed: () {
                                 context.read<ProfilesCubit>().activateProfile(profile);
@@ -119,8 +123,8 @@ class _ProfilesPageState extends State<ProfilesPage> {
                           const SizedBox(width: 8),
                           IconButton(
                             icon: const Icon(Icons.archive, color: AppColors.neonCyan),
-                            tooltip: 'Export Magisk Zip',
-                            onPressed: () => _exportMagisk(context, profile),
+                            tooltip: l10n.exportMagiskZip,
+                            onPressed: () => _exportMagisk(context, profile, l10n),
                           ),
                         ],
                       ),
@@ -135,4 +139,3 @@ class _ProfilesPageState extends State<ProfilesPage> {
     );
   }
 }
-

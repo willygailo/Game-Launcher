@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 
@@ -36,6 +37,7 @@ class MainShellPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: child,
@@ -53,26 +55,26 @@ class MainShellPage extends StatelessWidget {
           onDestinationSelected: (index) => _onItemTapped(index, context),
           backgroundColor: isDark ? AppColors.surface : AppColors.lightSurface,
           indicatorColor: isDark ? AppColors.neonCyan.withOpacity(0.2) : AppColors.neonPurple.withOpacity(0.2),
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.speed),
-              selectedIcon: Icon(Icons.speed, color: AppColors.neonCyan),
-              label: 'Dashboard',
+              icon: const Icon(Icons.speed),
+              selectedIcon: const Icon(Icons.speed, color: AppColors.neonCyan),
+              label: l10n.dashboard,
             ),
             NavigationDestination(
-              icon: Icon(Icons.tune),
-              selectedIcon: Icon(Icons.tune, color: AppColors.neonOrange),
-              label: 'Metrics',
+              icon: const Icon(Icons.tune),
+              selectedIcon: const Icon(Icons.tune, color: AppColors.neonOrange),
+              label: l10n.metrics,
             ),
             NavigationDestination(
-              icon: Icon(Icons.folder_special),
-              selectedIcon: Icon(Icons.folder_special, color: AppColors.neonPink),
-              label: 'Profiles',
+              icon: const Icon(Icons.folder_special),
+              selectedIcon: const Icon(Icons.folder_special, color: AppColors.neonPink),
+              label: l10n.profiles,
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings),
-              selectedIcon: Icon(Icons.settings, color: AppColors.neonGreen),
-              label: 'Settings',
+              icon: const Icon(Icons.settings),
+              selectedIcon: const Icon(Icons.settings, color: AppColors.neonGreen),
+              label: l10n.settings,
             ),
           ],
         ),

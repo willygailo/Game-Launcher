@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/tweak_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -13,9 +14,11 @@ class NetworkTweaksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NETWORK & LATENCY'),
+        title: Text(l10n.networkLatency),
       ),
       body: BlocBuilder<NetworkTweaksCubit, NetworkTweaksState>(
         builder: (context, state) {
@@ -30,10 +33,10 @@ class NetworkTweaksPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('GAMING DNS RESOLVER SELECTOR', style: AppTypography.titleSection),
+                      Text(l10n.gamingDnsSelector, style: AppTypography.titleSection),
                       const SizedBox(height: 8),
                       Text(
-                        'Active Resolver: ${state.activeDns}',
+                        l10n.activeResolver(state.activeDns),
                         style: AppTypography.bodyMedium.copyWith(color: AppColors.neonGreen),
                       ),
                       const SizedBox(height: 12),
@@ -51,7 +54,7 @@ class NetworkTweaksPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                Text('SETPROP NETWORK LATENCY TWEAKS', style: AppTypography.titleSection),
+                Text(l10n.setpropNetworkTweaks, style: AppTypography.titleSection),
                 const SizedBox(height: 12),
                 ...TweakConstants.networkTweaks.map((tweak) {
                   final isEnabled = state.tweakStates[tweak.key] ?? false;

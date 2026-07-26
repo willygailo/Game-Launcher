@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/glassmorphic_card.dart';
@@ -23,9 +24,11 @@ class _PermissionsPageState extends State<PermissionsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SYSTEM PERMISSIONS'),
+        title: Text(l10n.systemPermissions),
       ),
       body: BlocBuilder<PermissionsCubit, PermissionsState>(
         builder: (context, state) {
@@ -44,9 +47,9 @@ class _PermissionsPageState extends State<PermissionsPage> {
                           color: state.isRootGranted ? AppColors.neonGreen : AppColors.warning,
                           size: 32,
                         ),
-                        title: Text('Root Access (SU binary)', style: AppTypography.bodyLarge),
+                        title: Text(l10n.rootAccessSu, style: AppTypography.bodyLarge),
                         subtitle: Text(
-                          state.isRootGranted ? 'Granted - setprop tweaks unlocked' : 'Denied - Running in Read-only Info mode',
+                          state.isRootGranted ? l10n.rootGrantedDesc : l10n.rootDeniedDesc,
                           style: AppTypography.bodyMedium,
                         ),
                       ),
@@ -54,7 +57,7 @@ class _PermissionsPageState extends State<PermissionsPage> {
                       SizedBox(
                         width: double.infinity,
                         child: NeonButton(
-                          label: 'REQUEST ROOT ACCESS',
+                          label: l10n.requestRootAccess,
                           onPressed: () {
                             context.read<PermissionsCubit>().requestRoot();
                           },

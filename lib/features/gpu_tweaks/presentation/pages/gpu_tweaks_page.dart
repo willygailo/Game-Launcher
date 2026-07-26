@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/tweak_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -13,9 +14,11 @@ class GpuTweaksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GPU & GRAPHICS TWEAKS'),
+        title: Text(l10n.gpuGraphicsTweaks),
       ),
       body: BlocBuilder<GpuTweaksCubit, GpuTweaksState>(
         builder: (context, state) {
@@ -30,10 +33,10 @@ class GpuTweaksPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('SURFACEFLINGER COMPOSITION', style: AppTypography.titleSection),
+                      Text(l10n.surfaceFlingerComposition, style: AppTypography.titleSection),
                       const SizedBox(height: 8),
                       Text(
-                        'Force hardware GPU composition to offload UI layer rendering from CPU.',
+                        l10n.surfaceFlingerDesc,
                         style: AppTypography.bodyMedium,
                       ),
                       const SizedBox(height: 12),
@@ -63,7 +66,7 @@ class GpuTweaksPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                Text('SETPROP GPU HARDWARE TWEAKS', style: AppTypography.titleSection),
+                Text(l10n.setpropGpuTweaks, style: AppTypography.titleSection),
                 const SizedBox(height: 12),
                 ...TweakConstants.gpuTweaks.map((tweak) {
                   final isEnabled = state.tweakStates[tweak.key] ?? false;

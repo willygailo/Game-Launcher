@@ -16,6 +16,7 @@ class SettingsPage extends StatelessWidget {
 
     final languages = [
       {'code': 'en', 'name': 'English'},
+      {'code': 'fil', 'name': 'Filipino / Tagalog'},
       {'code': 'fr', 'name': 'Français'},
       {'code': 'ar', 'name': 'العربية'},
       {'code': 'es', 'name': 'Español'},
@@ -98,10 +99,10 @@ class SettingsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('GAME SPACE PRO v1.0.0', style: AppTypography.titleSection.copyWith(fontSize: 16)),
+                      Text(l10n.appVersion, style: AppTypography.titleSection.copyWith(fontSize: 16)),
                       const SizedBox(height: 6),
                       Text(
-                        'Supports Infinix, Tecno, Samsung, Xiaomi, Realme, Pixel (MediaTek, Unisoc, Snapdragon, Exynos, Tensor).',
+                        l10n.supportedDevices,
                         style: AppTypography.bodyMedium,
                       ),
                     ],

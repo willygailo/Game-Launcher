@@ -54,6 +54,7 @@ class GameSpaceApp extends StatelessWidget {
             ],
             supportedLocales: const [
               Locale('en'),
+              Locale('fil'),
               Locale('fr'),
               Locale('ar'),
               Locale('es'),

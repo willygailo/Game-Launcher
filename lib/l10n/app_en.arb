@@ -2,6 +2,7 @@
   "@@locale": "en",
   "appTitle": "GAME SPACE",
   "dashboard": "Dashboard",
+  "metrics": "Metrics",
   "quickBoost": "QUICK BOOST",
   "cpuTweaks": "CPU Tweaks",
   "gpuTweaks": "GPU Tweaks",
@@ -23,5 +24,84 @@
   "applyAllTweaks": "Apply Gaming Tweaks",
   "resetTweaks": "Reset Defaults",
   "language": "Language",
-  "theme": "Theme"
+  "theme": "Theme",
+  "cpuOptimizations": "CPU OPTIMIZATIONS",
+  "cpuGovernorMode": "CPU GOVERNOR MODE",
+  "cpuGovernorDesc": "Select governor mode to dictate how CPU frequency scales under load.",
+  "setpropCpuTweaks": "SETPROP CPU TWEAKS",
+  "gpuGraphicsTweaks": "GPU & GRAPHICS TWEAKS",
+  "surfaceFlingerComposition": "SURFACEFLINGER COMPOSITION",
+  "surfaceFlingerDesc": "Force hardware GPU composition to offload UI layer rendering from CPU.",
+  "setpropGpuTweaks": "SETPROP GPU HARDWARE TWEAKS",
+  "touchResponsiveness": "TOUCH RESPONSIVENESS",
+  "touchSamplingRate": "TOUCH SAMPLING RATE SLIDER",
+  "samplingRateLabel": "Sampling Rate: {rate} Hz",
+  "@samplingRateLabel": {
+    "placeholders": {
+      "rate": {}
+    }
+  },
+  "latencyTestPad": "LATENCY TEST PAD (TAP HERE)",
+  "tapAnywhere": "Tap anywhere inside box",
+  "registeredTaps": "Registered Taps: {count}",
+  "@registeredTaps": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lastPos": "Last Pos: ({x}, {y})",
+  "@lastPos": {
+    "placeholders": {
+      "x": {},
+      "y": {}
+    }
+  },
+  "setpropTouchTweaks": "SETPROP TOUCH SENSITIVITY TWEAKS",
+  "networkLatency": "NETWORK & LATENCY",
+  "gamingDnsSelector": "GAMING DNS RESOLVER SELECTOR",
+  "activeResolver": "Active Resolver: {dns}",
+  "@activeResolver": {
+    "placeholders": {
+      "dns": {}
+    }
+  },
+  "setpropNetworkTweaks": "SETPROP NETWORK LATENCY TWEAKS",
+  "systemPerformanceTweaks": "SYSTEM PERFORMANCE TWEAKS",
+  "systemDalvikTweaks": "SYSTEM & DALVIK VM TWEAKS",
+  "gameTweakProfiles": "GAME TWEAK PROFILES",
+  "exportedMagisk": "Exported Magisk Zip to:\n{path}",
+  "@exportedMagisk": {
+    "placeholders": {
+      "path": {}
+    }
+  },
+  "failedExportMagisk": "Failed to export Magisk zip.",
+  "active": "ACTIVE",
+  "containsTweaks": "Contains {count} setprop configurations",
+  "@containsTweaks": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "applyProfile": "APPLY PROFILE",
+  "profileApplied": "PROFILE APPLIED",
+  "exportMagiskZip": "Export Magisk Zip",
+  "systemPermissions": "SYSTEM PERMISSIONS",
+  "rootAccessSu": "Root Access (SU binary)",
+  "rootGrantedDesc": "Granted - setprop tweaks unlocked",
+  "rootDeniedDesc": "Denied - Running in Read-only Info mode",
+  "requestRootAccess": "REQUEST ROOT ACCESS",
+  "cpuLoad": "CPU Load",
+  "ramUsage": "RAM Usage",
+  "batteryPercent": "Battery %",
+  "optimizationModules": "OPTIMIZATION MODULES",
+  "errorLoadingDevice": "Error loading device info: {message}",
+  "@errorLoadingDevice": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "cores": "Cores",
+  "appVersion": "GAME SPACE PRO v1.0.0",
+  "supportedDevices": "Supports Infinix, Tecno, Samsung, Xiaomi, Realme, Pixel (MediaTek, Unisoc, Snapdragon, Exynos, Tensor)."
 }

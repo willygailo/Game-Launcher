@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/tweak_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -13,9 +14,11 @@ class CpuTweaksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CPU OPTIMIZATIONS'),
+        title: Text(l10n.cpuOptimizations),
       ),
       body: BlocBuilder<CpuTweaksCubit, CpuTweaksState>(
         builder: (context, state) {
@@ -30,10 +33,10 @@ class CpuTweaksPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CPU GOVERNOR MODE', style: AppTypography.titleSection),
+                      Text(l10n.cpuGovernorMode, style: AppTypography.titleSection),
                       const SizedBox(height: 8),
                       Text(
-                        'Select governor mode to dictate how CPU frequency scales under load.',
+                        l10n.cpuGovernorDesc,
                         style: AppTypography.bodyMedium,
                       ),
                       const SizedBox(height: 12),
@@ -63,7 +66,7 @@ class CpuTweaksPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                Text('SETPROP CPU TWEAKS', style: AppTypography.titleSection),
+                Text(l10n.setpropCpuTweaks, style: AppTypography.titleSection),
                 const SizedBox(height: 12),
                 ...TweakConstants.cpuTweaks.map((tweak) {
                   final isEnabled = state.tweakStates[tweak.key] ?? false;

@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage> {
     context.read<PerformanceCubit>().startPolling();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -84,7 +83,6 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 16),
 
                   // Root Status Card
-
                   GlassmorphicCard(
                     borderColor: info.isRooted ? AppColors.neonGreen : AppColors.warning,
                     child: Row(
@@ -169,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                         const Divider(color: AppColors.glassBorder),
                         _buildSpecRow(l10n.chipset, info.chipset),
                         const Divider(color: AppColors.glassBorder),
-                        _buildSpecRow(l10n.cpuCores, '${info.cpuCores} Cores'),
+                        _buildSpecRow(l10n.cpuCores, '${info.cpuCores} ${l10n.cores}'),
                         const Divider(color: AppColors.glassBorder),
                         _buildSpecRow(l10n.ramTotal, '${info.totalRamMb} MB'),
                       ],
@@ -188,18 +186,17 @@ class _HomePageState extends State<HomePage> {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          PerformanceGauge(value: cpuLoad, title: 'CPU Load'),
-                          PerformanceGauge(value: ramUsage, title: 'RAM Usage'),
-                          PerformanceGauge(value: battery, title: 'Battery %'),
+                          PerformanceGauge(value: cpuLoad, title: l10n.cpuLoad),
+                          PerformanceGauge(value: ramUsage, title: l10n.ramUsage),
+                          PerformanceGauge(value: battery, title: l10n.batteryPercent),
                         ],
                       );
                     },
                   ),
                   const SizedBox(height: 24),
 
-
                   // Feature Navigation Grid
-                  Text('OPTIMIZATION MODULES', style: AppTypography.titleSection),
+                  Text(l10n.optimizationModules, style: AppTypography.titleSection),
                   const SizedBox(height: 12),
                   GridView.count(
                     shrinkWrap: true,
@@ -222,7 +219,7 @@ class _HomePageState extends State<HomePage> {
             );
           } else if (state is HomeError) {
             return Center(
-              child: Text('Error loading device info: ${state.message}', style: AppTypography.bodyMedium),
+              child: Text(l10n.errorLoadingDevice(state.message), style: AppTypography.bodyMedium),
             );
           }
           return const SizedBox.shrink();
