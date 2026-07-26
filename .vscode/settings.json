@@ -1,5 +1,6 @@
 {
     "powerquery.client.additionalSymbolsDirectories": [
         "/home/willygailo/Documents/Game_Launcher_Pro/.vscode/excel-pq-symbols"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic"
 }
