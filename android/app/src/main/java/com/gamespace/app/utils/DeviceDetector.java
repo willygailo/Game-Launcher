@@ -1,8 +1,8 @@
 package com.gamespace.app.utils;
 
 import android.os.Build;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import com.gamespace.app.core.DeviceSpecModel;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +18,21 @@ public class DeviceDetector {
         GENERIC
     }
 
+    public static DeviceSpecModel getDeviceSpecModel() {
+        ChipsetVendor vendor = detectChipsetVendor();
+        String chipsetName = getChipsetName();
+        return new DeviceSpecModel(
+                Build.MANUFACTURER,
+                Build.MODEL,
+                Build.BOARD,
+                Build.HARDWARE,
+                Build.VERSION.RELEASE,
+                Build.VERSION.SDK_INT,
+                chipsetName,
+                vendor
+        );
+    }
+
     public static Map<String, String> getDeviceSpecs() {
         Map<String, String> specs = new HashMap<>();
         specs.put("model", Build.MODEL);
@@ -29,27 +44,30 @@ public class DeviceDetector {
 
         ChipsetVendor vendor = detectChipsetVendor();
         specs.put("chipset_vendor", vendor.name());
+        specs.put("chipset_name", getChipsetName());
 
+        return specs;
+    }
+
+    private static String getChipsetName() {
         String hardware = Build.HARDWARE.toLowerCase();
         String board = Build.BOARD.toLowerCase();
 
         if (hardware.contains("qcom") || board.contains("sm") || board.contains("sdm")) {
-            specs.put("chipset_name", "Qualcomm Snapdragon");
+            return "Qualcomm Snapdragon";
         } else if (hardware.contains("mt") || board.contains("mt")) {
-            specs.put("chipset_name", "MediaTek Dimensity/Helio");
+            return "MediaTek Dimensity/Helio";
         } else if (hardware.contains("exynos") || board.contains("universal")) {
-            specs.put("chipset_name", "Samsung Exynos");
+            return "Samsung Exynos";
         } else if (hardware.contains("ums") || board.contains("sp")) {
-            specs.put("chipset_name", "Unisoc Tiger");
+            return "Unisoc Tiger";
         } else if (hardware.contains("gs") || board.contains("slider")) {
-            specs.put("chipset_name", "Google Tensor");
+            return "Google Tensor";
         } else if (hardware.contains("kirin") || board.contains("hi")) {
-            specs.put("chipset_name", "HiSilicon Kirin");
+            return "HiSilicon Kirin";
         } else {
-            specs.put("chipset_name", Build.HARDWARE);
+            return Build.HARDWARE;
         }
-
-        return specs;
     }
 
     public static ChipsetVendor detectChipsetVendor() {

@@ -13,8 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
-import com.gamespace.app.utils.ShellExecutor;
-import com.gamespace.app.utils.ShizukuExecutor;
+import com.gamespace.app.data.CommandExecutor;
 
 public class HzFpsFragment extends Fragment {
 
@@ -35,14 +34,8 @@ public class HzFpsFragment extends Fragment {
         btn144.setOnClickListener(v -> setHz(144.0f));
 
         switchThermal.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            boolean isShizuku = ShizukuExecutor.hasShizukuPermission();
             String status = isChecked ? "0" : "-1";
-            String cmd = "cmd thermal override-status " + status;
-            if (isShizuku) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                ShellExecutor.executeCommand(cmd, true);
-            }
+            CommandExecutor.executeSystemCommand("cmd thermal override-status " + status);
             Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
         });
 
@@ -50,18 +43,10 @@ public class HzFpsFragment extends Fragment {
     }
 
     private void setHz(float hz) {
-        boolean isShizuku = ShizukuExecutor.hasShizukuPermission();
         String hzStr = String.valueOf(hz);
-
-        if (isShizuku) {
-            ShizukuExecutor.executeShizukuCommand("settings put system peak_refresh_rate " + hzStr);
-            ShizukuExecutor.executeShizukuCommand("settings put system min_refresh_rate " + hzStr);
-            ShizukuExecutor.executeShizukuCommand("settings put system user_refresh_rate " + hzStr);
-        } else {
-            ShellExecutor.executeCommand("settings put system peak_refresh_rate " + hzStr, true);
-            ShellExecutor.executeCommand("settings put system min_refresh_rate " + hzStr, true);
-            ShellExecutor.executeCommand("settings put system user_refresh_rate " + hzStr, true);
-        }
+        CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
 
         Toast.makeText(getContext(), "Display locked to " + (int) hz + "Hz", Toast.LENGTH_SHORT).show();
     }

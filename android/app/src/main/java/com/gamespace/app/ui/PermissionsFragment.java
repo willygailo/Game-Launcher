@@ -13,7 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
-import com.gamespace.app.utils.ShellExecutor;
+import com.gamespace.app.core.EngineMode;
+import com.gamespace.app.data.CommandExecutor;
 import com.gamespace.app.utils.ShizukuExecutor;
 
 public class PermissionsFragment extends Fragment {
@@ -39,8 +40,9 @@ public class PermissionsFragment extends Fragment {
             }
         });
 
-        boolean isRoot = ShellExecutor.isRootAvailable();
-        tvRootStatus.setText("Status: " + (isRoot ? "Root Granted (su)" : "Non-Rooted / Root Not Available"));
+        EngineMode mode = CommandExecutor.getActiveEngineMode();
+        tvRootStatus.setText("Engine Status: " + mode.getDisplayName());
+        tvRootStatus.setTextColor(mode.getColorHex());
 
         return view;
     }

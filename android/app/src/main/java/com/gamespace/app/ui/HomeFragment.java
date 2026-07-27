@@ -16,11 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
+import com.gamespace.app.core.DeviceSpecModel;
+import com.gamespace.app.core.EngineMode;
+import com.gamespace.app.data.CommandExecutor;
 import com.gamespace.app.utils.DeviceDetector;
-import com.gamespace.app.utils.ShellExecutor;
-import com.gamespace.app.utils.ShizukuExecutor;
-
-import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
@@ -46,23 +45,12 @@ public class HomeFragment extends Fragment {
     private void updateDashboard() {
         if (getContext() == null) return;
 
-        boolean isRoot = ShellExecutor.isRootAvailable();
-        boolean isShizuku = ShizukuExecutor.hasShizukuPermission();
+        EngineMode engineMode = CommandExecutor.getActiveEngineMode();
+        tvEngineMode.setText("EXECUTION ENGINE: " + engineMode.getDisplayName());
+        tvEngineMode.setTextColor(engineMode.getColorHex());
 
-        if (isRoot) {
-            tvEngineMode.setText("EXECUTION ENGINE: ROOT MODE (su)");
-            tvEngineMode.setTextColor(0xFF7000FF);
-        } else if (isShizuku) {
-            tvEngineMode.setText("EXECUTION ENGINE: SHIZUKU ADB MODE");
-            tvEngineMode.setTextColor(0xFF00FF88);
-        } else {
-            tvEngineMode.setText("EXECUTION ENGINE: READ-ONLY MODE");
-            tvEngineMode.setTextColor(0xFFFFCC00);
-        }
-
-        Map<String, String> specs = DeviceDetector.getDeviceSpecs();
-        String chipsetStr = specs.get("chipset_name");
-        tvDeviceInfo.setText("Device: " + specs.get("manufacturer") + " " + specs.get("model") + " (" + chipsetStr + ")");
+        DeviceSpecModel specs = DeviceDetector.getDeviceSpecModel();
+        tvDeviceInfo.setText("Device: " + specs.getFormattedSummary());
 
         ActivityManager actMgr = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
         if (actMgr != null) {

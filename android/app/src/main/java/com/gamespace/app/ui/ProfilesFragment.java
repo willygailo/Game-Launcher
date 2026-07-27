@@ -12,8 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
-import com.gamespace.app.utils.ShellExecutor;
-import com.gamespace.app.utils.ShizukuExecutor;
+import com.gamespace.app.data.CommandExecutor;
 
 public class ProfilesFragment extends Fragment {
 
@@ -32,30 +31,16 @@ public class ProfilesFragment extends Fragment {
     }
 
     private void apply2DProfile() {
-        boolean isShizuku = ShizukuExecutor.hasShizukuPermission();
-        if (isShizuku) {
-            ShizukuExecutor.executeShizukuCommand("setprop windowsmgr.max_events_per_sec 300");
-            ShizukuExecutor.executeShizukuCommand("setprop debug.sf.hw 1");
-            ShizukuExecutor.executeShizukuCommand("setprop persist.sys.scrollingcache 3");
-        } else {
-            ShellExecutor.executeCommand("setprop windowsmgr.max_events_per_sec 300", true);
-            ShellExecutor.executeCommand("setprop debug.sf.hw 1", true);
-            ShellExecutor.executeCommand("setprop persist.sys.scrollingcache 3", true);
-        }
+        CommandExecutor.setSystemProperty("windowsmgr.max_events_per_sec", "300");
+        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+        CommandExecutor.setSystemProperty("persist.sys.scrollingcache", "3");
         Toast.makeText(getContext(), "2D & Pixel Games Profile Applied!", Toast.LENGTH_SHORT).show();
     }
 
     private void applyPubgProfile() {
-        boolean isShizuku = ShizukuExecutor.hasShizukuPermission();
-        if (isShizuku) {
-            ShizukuExecutor.executeShizukuCommand("setprop debug.composition.type gpu");
-            ShizukuExecutor.executeShizukuCommand("setprop windowsmgr.max_events_per_sec 300");
-            ShizukuExecutor.executeShizukuCommand("setprop debug.sf.hw 1");
-        } else {
-            ShellExecutor.executeCommand("setprop debug.composition.type gpu", true);
-            ShellExecutor.executeCommand("setprop windowsmgr.max_events_per_sec 300", true);
-            ShellExecutor.executeCommand("setprop debug.sf.hw 1", true);
-        }
+        CommandExecutor.setSystemProperty("debug.composition.type", "gpu");
+        CommandExecutor.setSystemProperty("windowsmgr.max_events_per_sec", "300");
+        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
         Toast.makeText(getContext(), "PUBG Extreme Profile Applied!", Toast.LENGTH_SHORT).show();
     }
 }

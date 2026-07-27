@@ -1,10 +1,10 @@
 package com.gamespace.app;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.gamespace.app.ui.GamesFragment;
 import com.gamespace.app.ui.HomeFragment;
 import com.gamespace.app.ui.HzFpsFragment;
 import com.gamespace.app.ui.PermissionsFragment;
@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_home) {
                 selectedFragment = new HomeFragment();
+            } else if (itemId == R.id.nav_games) {
+                selectedFragment = new GamesFragment();
             } else if (itemId == R.id.nav_hz_fps) {
                 selectedFragment = new HzFpsFragment();
             } else if (itemId == R.id.nav_profiles) {

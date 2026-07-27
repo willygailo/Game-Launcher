@@ -3,17 +3,21 @@
     <item
         android:id="@+id/nav_home"
         android:icon="@android:drawable/ic_menu_compass"
-        android:title="Home" />
+        android:title="@string/nav_home" />
+    <item
+        android:id="@+id/nav_games"
+        android:icon="@android:drawable/ic_media_play"
+        android:title="@string/nav_games" />
     <item
         android:id="@+id/nav_hz_fps"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Hz &amp; FPS" />
+        android:title="@string/nav_hz_fps" />
     <item
         android:id="@+id/nav_profiles"
         android:icon="@android:drawable/ic_menu_manage"
-        android:title="Profiles" />
+        android:title="@string/nav_profiles" />
     <item
         android:id="@+id/nav_permissions"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Permissions" />
+        android:title="@string/nav_permissions" />
 </menu>

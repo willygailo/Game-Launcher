@@ -2,7 +2,7 @@ package com.gamespace.app.utils;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import dev.rikka.shizuku.Shizuku;
+import rikka.shizuku.Shizuku;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,7 +33,9 @@ public class ShizukuExecutor {
         Process process = null;
         BufferedReader reader = null;
         try {
-            process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+            java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
+            newProcessMethod.setAccessible(true);
+            process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
             String line;
