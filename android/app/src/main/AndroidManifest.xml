@@ -13,7 +13,8 @@
 
     <application
         android:label="GAME SPACE"
-        android:icon="@android:drawable/sym_def_app_icon"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <receiver

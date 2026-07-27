@@ -26,6 +26,16 @@ android {
             shrinkResources false
         }
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == 'debug') {
+                outputFileName = "Game_Space_Debug.apk"
+            } else {
+                outputFileName = "Game_Space.apk"
+            }
+        }
+    }
 }
 
 dependencies {

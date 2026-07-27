@@ -9,6 +9,7 @@ import com.gamespace.app.ui.HomeFragment;
 import com.gamespace.app.ui.HzFpsFragment;
 import com.gamespace.app.ui.PermissionsFragment;
 import com.gamespace.app.ui.ProfilesFragment;
+import com.gamespace.app.ui.TweaksFragment;
 import com.gamespace.app.utils.ShizukuExecutor;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new HomeFragment();
             } else if (itemId == R.id.nav_games) {
                 selectedFragment = new GamesFragment();
+            } else if (itemId == R.id.nav_tweaks) {
+                selectedFragment = new TweaksFragment();
             } else if (itemId == R.id.nav_hz_fps) {
                 selectedFragment = new HzFpsFragment();
             } else if (itemId == R.id.nav_profiles) {

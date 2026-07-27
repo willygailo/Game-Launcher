@@ -9,15 +9,15 @@
         android:icon="@android:drawable/ic_media_play"
         android:title="@string/nav_games" />
     <item
+        android:id="@+id/nav_tweaks"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="@string/nav_tweaks" />
+    <item
         android:id="@+id/nav_hz_fps"
         android:icon="@android:drawable/ic_menu_view"
         android:title="@string/nav_hz_fps" />
     <item
         android:id="@+id/nav_profiles"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="@string/nav_profiles" />
-    <item
-        android:id="@+id/nav_permissions"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="@string/nav_permissions" />
+        android:title="@string/nav_profiles" />
 </menu>

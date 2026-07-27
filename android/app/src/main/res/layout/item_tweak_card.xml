@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/card_bg"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_tweak_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[SHIZUKU]"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:paddingEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tv_tweak_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tweak Title"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <Switch
+            android:id="@+id/switch_tweak_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_tweak_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tweak description details..."
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:paddingTop="4dp" />
+
+</LinearLayout>
