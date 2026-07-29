@@ -13,7 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
-import com.gamespace.app.data.CommandExecutor;
+import com.gamespace.app.channels.HzFpsChannel;
+import com.gamespace.app.channels.ThermalChannel;
 
 public class HzFpsFragment extends Fragment {
 
@@ -34,20 +35,24 @@ public class HzFpsFragment extends Fragment {
         btn144.setOnClickListener(v -> setHz(144.0f));
 
         switchThermal.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            String status = isChecked ? "0" : "-1";
-            CommandExecutor.executeSystemCommand("cmd thermal override-status " + status);
-            Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+            boolean ok = ThermalChannel.setThermalOverride(isChecked);
+            if (ok) {
+                Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Requires Shizuku or Root to override thermal caps", Toast.LENGTH_LONG).show();
+                buttonView.setChecked(!isChecked);
+            }
         });
 
         return view;
     }
 
     private void setHz(float hz) {
-        String hzStr = String.valueOf(hz);
-        CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzStr);
-        CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
-        CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
-
-        Toast.makeText(getContext(), "Display locked to " + (int) hz + "Hz", Toast.LENGTH_SHORT).show();
+        boolean ok = HzFpsChannel.setRefreshRate(hz);
+        if (ok) {
+            Toast.makeText(getContext(), "Display refresh rate locked to " + (int) hz + "Hz", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission to lock refresh rate", Toast.LENGTH_LONG).show();
+        }
     }
 }

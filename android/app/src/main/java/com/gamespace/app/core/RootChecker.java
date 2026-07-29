@@ -25,7 +25,7 @@ public final class RootChecker {
     }
 
     public static boolean isSettingsWriteAvailable(Context context) {
-        return Settings.Global.canWrite(context);
+        return Settings.System.canWrite(context);
     }
 
     public static AccessLevel getBestAccessLevel(Context context) {

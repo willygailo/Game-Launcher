@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#0F111A</color>
-    <color name="card_bg">#1A1D2B</color>
-    <color name="accent_neon_green">#00FF88</color>
+    <color name="bg_dark">#0B0E14</color>
+    <color name="card_bg">#141923</color>
+    <color name="card_stroke">#222A3B</color>
+    <color name="accent_cyan">#00F0FF</color>
+    <color name="accent_neon_green">#00FF66</color>
     <color name="accent_purple">#7000FF</color>
-    <color name="accent_amber">#FFCC00</color>
-    <color name="text_primary">#FFFFFF</color>
+    <color name="accent_amber">#FFB800</color>
+    <color name="accent_red">#FF0055</color>
+    <color name="text_primary">#F1F5F9</color>
     <color name="text_secondary">#94A3B8</color>
-    <color name="nav_bg">#141724</color>
+    <color name="nav_bg">#090C12</color>
 </resources>

@@ -35,12 +35,25 @@ public class CommandExecutor {
     public static boolean setSystemProperty(String key, String value) {
         String cmd = "setprop " + key + " " + value;
         String result = executeSystemCommand(cmd);
-        return result == null || !result.startsWith("ERROR");
+        return isSuccessOutput(result);
     }
 
     public static boolean setSystemSetting(String namespace, String key, String value) {
         String cmd = "settings put " + namespace + " " + key + " " + value;
         String result = executeSystemCommand(cmd);
-        return result == null || !result.startsWith("ERROR");
+        return isSuccessOutput(result);
+    }
+
+    public static boolean isSuccessOutput(String result) {
+        if (result == null) return true;
+        String lower = result.toLowerCase();
+        if (lower.isEmpty() || lower.equals("ok") || lower.equals("0")) return true;
+        if (lower.contains("error") || lower.contains("permission denial") ||
+            lower.contains("securityexception") || lower.contains("permission denied") ||
+            lower.contains("operation not permitted") || lower.contains("failed") ||
+            lower.contains("not found")) {
+            return false;
+        }
+        return true;
     }
 }

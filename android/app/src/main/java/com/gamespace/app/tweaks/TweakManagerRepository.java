@@ -14,18 +14,18 @@ public class TweakManagerRepository {
         // CPU & GPU Tweaks
         TWEAKS.add(new TweakItem(
                 "gpu_hw_composition",
-                "GPU Hardware Acceleration",
-                "Forces GPU composition for all windows to reduce CPU overhead",
-                "setprop debug.composition.type gpu",
-                "setprop debug.composition.type cputext",
+                "Vulkan HWUI Renderer",
+                "Forces Vulkan hardware graphics pipeline to boost rendering throughput",
+                "setprop debug.hwui.renderer vulkan",
+                "setprop debug.hwui.renderer skia",
                 TweakCategory.CPU_GPU,
                 false, true
         ));
 
         TWEAKS.add(new TweakItem(
                 "hw_overlays",
-                "Disable HW Overlays",
-                "Always use GPU for screen compositing",
+                "Force SurfaceFlinger HW Composition",
+                "Forces GPU hardware composition to eliminate CPU rendering overhead",
                 "setprop debug.sf.hw 1",
                 "setprop debug.sf.hw 0",
                 TweakCategory.CPU_GPU,
@@ -34,8 +34,8 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "fifo_audio_render",
-                "FIFO Realtime Rendering",
-                "Forces realtime FIFO scheduling queue for smooth rendering",
+                "FIFO Realtime Scheduling Queue",
+                "Forces realtime FIFO scheduling queue for ultra-low audio & touch latency",
                 "setprop sys.use_fifo 1",
                 "setprop sys.use_fifo 0",
                 TweakCategory.CPU_GPU,
@@ -45,28 +45,18 @@ public class TweakManagerRepository {
         // Touch & Display Tweaks
         TWEAKS.add(new TweakItem(
                 "touch_sample_rate",
-                "300Hz Touch Response",
-                "Boosts touch event rate for instantaneous touch input",
-                "setprop windowsmgr.max_events_per_sec 300",
-                "setprop windowsmgr.max_events_per_sec 60",
-                TweakCategory.TOUCH_DISPLAY,
-                false, true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "touch_slop_sensitivity",
-                "Ultra-Sensitive Touch Threshold",
-                "Reduces touch slop sensitivity for instant swipe detection",
-                "setprop view.touch_slop 2",
-                "setprop view.touch_slop 8",
+                "Touch Slop Sensitivity Boost",
+                "Reduces swipe activation threshold for instant gesture response",
+                "settings put system touch_slop_reduction 1; setprop view.touch_slop 2",
+                "settings put system touch_slop_reduction 0; setprop view.touch_slop 8",
                 TweakCategory.TOUCH_DISPLAY,
                 false, true
         ));
 
         TWEAKS.add(new TweakItem(
                 "scrolling_cache_boost",
-                "Smooth Scroll Cache",
-                "Disables scrolling cache compression to save CPU cycles",
+                "Zero Scroll Cache Latency",
+                "Disables scrolling cache compression to save CPU render cycles",
                 "setprop persist.sys.scrollingcache 3",
                 "setprop persist.sys.scrollingcache 1",
                 TweakCategory.TOUCH_DISPLAY,
@@ -77,7 +67,7 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "root_cpu_performance",
                 "CPU Performance Governor [ROOT]",
-                "Locks CPU cores to maximum frequency governor",
+                "Locks all CPU clusters to maximum scaling frequency governor",
                 "for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $f; done",
                 "for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > $f; done",
                 TweakCategory.ROOT_KERNEL,
@@ -86,19 +76,19 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "root_gpu_power_level",
-                "Adreno GPU Max Power [ROOT]",
-                "Locks GPU frequency to max performance tier",
-                "echo 0 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || true",
-                "echo 1 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || true",
+                "GPU Frequency Tier Lock [ROOT]",
+                "Locks GPU frequency governor to maximum performance level",
+                "echo 0 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || echo performance > /sys/class/misc/mali0/device/dvfs_governor 2>/dev/null || true",
+                "echo 1 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || echo interactive > /sys/class/misc/mali0/device/dvfs_governor 2>/dev/null || true",
                 TweakCategory.ROOT_KERNEL,
                 true, false
         ));
 
         TWEAKS.add(new TweakItem(
                 "root_io_scheduler",
-                "No-Op Disk I/O Scheduler [ROOT]",
-                "Switch internal storage scheduler to lowest latency queue",
-                "for f in /sys/block/sd*/queue/scheduler /sys/block/mmcblk*/queue/scheduler; do echo noop > $f 2>/dev/null || true; done",
+                "Low-Latency Storage I/O Scheduler [ROOT]",
+                "Switches storage queue scheduler to lowest latency noop/none queue",
+                "for f in /sys/block/sd*/queue/scheduler /sys/block/mmcblk*/queue/scheduler; do echo noop > $f 2>/dev/null || echo none > $f 2>/dev/null || true; done",
                 "for f in /sys/block/sd*/queue/scheduler /sys/block/mmcblk*/queue/scheduler; do echo mq-deadline > $f 2>/dev/null || true; done",
                 TweakCategory.ROOT_KERNEL,
                 true, false
@@ -108,7 +98,7 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
                 "0.5x UI Speed Animations",
-                "Speeds up system window transition times",
+                "Reduces system window transition duration",
                 "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5",
                 "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0",
                 TweakCategory.SHIZUKU_SYSTEM,
@@ -118,9 +108,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "shizuku_disable_thermal_throttle",
                 "Thermal Override Bypass",
-                "Overrides thermal throttling status via System Server",
-                "cmd thermal override-status 0",
-                "cmd thermal override-status -1",
+                "Overrides thermal throttling caps via ThermalService",
+                "cmd thermalservice override-status 0 || cmd thermal override-status 0",
+                "cmd thermalservice override-status -1 || cmd thermal override-status -1",
                 TweakCategory.SHIZUKU_SYSTEM,
                 false, true
         ));
@@ -152,7 +142,7 @@ public class TweakManagerRepository {
         }
 
         String res = CommandExecutor.executeSystemCommand(tweak.getApplyCommand());
-        boolean success = (res == null || !res.startsWith("ERROR"));
+        boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(true);
         }
@@ -161,7 +151,7 @@ public class TweakManagerRepository {
 
     public static boolean revertTweak(TweakItem tweak) {
         String res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
-        boolean success = (res == null || !res.startsWith("ERROR"));
+        boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(false);
         }

@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E1A"
+    android:background="@color/bg_dark"
     android:padding="16dp">
 
     <LinearLayout
@@ -10,30 +10,59 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Title -->
+        <!-- Title Header -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="GAME SPACE"
-            android:textColor="#00F0FF"
-            android:textSize="26sp"
+            android:text="🎮 GAME SPACE HUD"
+            android:textColor="@color/accent_cyan"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="System Performance &amp; Refresh Rate Engine"
-            android:textColor="#8F9CAE"
-            android:textSize="14sp" />
+            android:layout_marginTop="2dp"
+            android:text="Real System Gaming Engine &amp; Hz Lock"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
-        <!-- Status Card -->
+        <!-- HERO ONE-TAP BOOST BUTTON CARD -->
         <LinearLayout
-            android:id="@+id/card_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <Button
+                android:id="@+id/btn_hero_boost"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:backgroundTint="@color/accent_cyan"
+                android:text="⚡ ONE-TAP ULTRA BOOST"
+                android:textColor="#000000"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_boost_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="Status: Ready to boost system &amp; lock Hz"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- EXECUTION MODE CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -42,8 +71,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="EXECUTION ENGINE: SHIZUKU ADB MODE"
-                android:textColor="#00FF88"
-                android:textSize="16sp"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -51,45 +80,45 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Device Hardware: Qualcomm Snapdragon"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
+                android:text="Device Hardware: Snapdragon 8 Gen 3"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
         </LinearLayout>
 
-        <!-- Metric Gauges -->
+        <!-- METRICS GAUGES CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
             android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LIVE PERFORMANCE METRICS"
-                android:textColor="#00F0FF"
-                android:textSize="16sp"
+                android:text="LIVE HARDWARE MONITORS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_ram_usage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="RAM Memory Usage: 45%"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
+                android:layout_marginTop="10dp"
+                android:text="RAM Usage: 45%"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/tv_battery_temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:text="Battery Temperature: 34.2 °C"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
         </LinearLayout>
 
     </LinearLayout>

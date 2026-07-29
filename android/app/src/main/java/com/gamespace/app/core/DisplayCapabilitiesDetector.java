@@ -103,7 +103,7 @@ public final class DisplayCapabilitiesDetector {
         boolean hdr = false, wideColor = false;
         try {
             hdr = defaultDisplay.getHdrCapabilities() != null;
-            wideColor = defaultDisplay.getColorGamut() != Display.COLOR_GAMUT_UNSPECIFIED;
+            wideColor = defaultDisplay.isWideColorGamut();
         } catch (Exception ignored) {}
 
         String vendor = "";

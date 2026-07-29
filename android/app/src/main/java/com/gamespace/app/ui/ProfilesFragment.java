@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamespace.app.R;
-import com.gamespace.app.data.CommandExecutor;
+import com.gamespace.app.channels.PerformanceChannel;
 
 public class ProfilesFragment extends Fragment {
 
@@ -24,23 +24,20 @@ public class ProfilesFragment extends Fragment {
         Button btn2D = view.findViewById(R.id.btn_apply_2d_profile);
         Button btnPubg = view.findViewById(R.id.btn_apply_pubg_profile);
 
-        btn2D.setOnClickListener(v -> apply2DProfile());
-        btnPubg.setOnClickListener(v -> applyPubgProfile());
+        btn2D.setOnClickListener(v -> {
+            if (getContext() != null) {
+                PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.ULTRA_SMOOTH_2D);
+                Toast.makeText(getContext(), "2D & Pixel Games Profile Applied!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnPubg.setOnClickListener(v -> {
+            if (getContext() != null) {
+                PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.EXTREME_3D_FPS);
+                Toast.makeText(getContext(), "PUBG / 3D FPS Extreme Profile Applied!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
-    }
-
-    private void apply2DProfile() {
-        CommandExecutor.setSystemProperty("windowsmgr.max_events_per_sec", "300");
-        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
-        CommandExecutor.setSystemProperty("persist.sys.scrollingcache", "3");
-        Toast.makeText(getContext(), "2D & Pixel Games Profile Applied!", Toast.LENGTH_SHORT).show();
-    }
-
-    private void applyPubgProfile() {
-        CommandExecutor.setSystemProperty("debug.composition.type", "gpu");
-        CommandExecutor.setSystemProperty("windowsmgr.max_events_per_sec", "300");
-        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
-        Toast.makeText(getContext(), "PUBG Extreme Profile Applied!", Toast.LENGTH_SHORT).show();
     }
 }
