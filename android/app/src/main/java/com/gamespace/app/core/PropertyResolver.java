@@ -120,7 +120,6 @@ public final class PropertyResolver {
         protected final CommandEngine engine;
         BaseManager(CommandEngine e) { this.engine = e; }
         protected Result exec(String cmd) { return engine.execute(Command.builder(cmd).build()); }
-        protected Result execRoot(String cmd) { return engine.execute(Command.builder(cmd).requiresRoot(true).build()); }
     }
 
     private static class SystemPropertiesManager extends BaseManager {
@@ -161,11 +160,11 @@ public final class PropertyResolver {
         @Override public boolean supports(String k) { return k.startsWith("kernel:") || k.startsWith("/proc/") || k.startsWith("/sys/"); }
         @Override public Result set(String k, String v) {
             String path = k.startsWith("kernel:") ? k.substring(7) : k;
-            return execRoot("echo " + v + " > " + path);
+            return exec("echo " + v + " > " + path);
         }
         @Override public Result get(String k) {
             String path = k.startsWith("kernel:") ? k.substring(7) : k;
-            return execRoot("cat " + path);
+            return exec("cat " + path);
         }
     }
 
@@ -224,14 +223,14 @@ public final class PropertyResolver {
         @Override public Result set(String k, String v) {
             String key = k.startsWith("gpu:") ? k.substring(4) : k;
             if (key.startsWith("/sys/") || key.startsWith("/proc/")) {
-                return execRoot("echo " + v + " > " + key);
+                return exec("echo " + v + " > " + key);
             }
             return exec("setprop " + key + " " + v);
         }
         @Override public Result get(String k) {
             String key = k.startsWith("gpu:") ? k.substring(4) : k;
             if (key.startsWith("/sys/") || key.startsWith("/proc/")) {
-                return execRoot("cat " + key);
+                return exec("cat " + key);
             }
             return exec("getprop " + key);
         }
@@ -246,18 +245,18 @@ public final class PropertyResolver {
         }
         @Override public Result set(String k, String v) {
             String key = k.startsWith("cpu:") ? k.substring(4) : k;
-            if (key.startsWith("/sys/")) return execRoot("echo " + v + " > " + key);
-            if (key.equals("governor")) return execRoot("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo " + v + " > $f; done");
-            if (key.equals("max_freq")) return execRoot("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do echo " + v + " > $f; done");
-            if (key.equals("min_freq")) return execRoot("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do echo " + v + " > $f; done");
+            if (key.startsWith("/sys/")) return exec("echo " + v + " > " + key);
+            if (key.equals("governor")) return exec("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo " + v + " > $f; done");
+            if (key.equals("max_freq")) return exec("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do echo " + v + " > $f; done");
+            if (key.equals("min_freq")) return exec("for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do echo " + v + " > $f; done");
             return exec("setprop " + key + " " + v);
         }
         @Override public Result get(String k) {
             String key = k.startsWith("cpu:") ? k.substring(4) : k;
-            if (key.startsWith("/sys/")) return execRoot("cat " + key);
-            if (key.equals("governor")) return execRoot("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
-            if (key.equals("frequencies")) return execRoot("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies");
-            if (key.equals("governors")) return execRoot("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors");
+            if (key.startsWith("/sys/")) return exec("cat " + key);
+            if (key.equals("governor")) return exec("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
+            if (key.equals("frequencies")) return exec("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies");
+            if (key.equals("governors")) return exec("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors");
             return exec("getprop " + key);
         }
     }
@@ -271,12 +270,12 @@ public final class PropertyResolver {
         }
         @Override public Result set(String k, String v) {
             String key = k.startsWith("mem:") ? k.substring(4) : k;
-            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return execRoot("echo " + v + " > " + key);
+            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return exec("echo " + v + " > " + key);
             return exec("setprop " + key + " " + v);
         }
         @Override public Result get(String k) {
             String key = k.startsWith("mem:") ? k.substring(4) : k;
-            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return execRoot("cat " + key);
+            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return exec("cat " + key);
             return exec("getprop " + key);
         }
     }
@@ -289,12 +288,12 @@ public final class PropertyResolver {
         }
         @Override public Result set(String k, String v) {
             String key = k.startsWith("net:") || k.startsWith("tcp:") || k.startsWith("wifi:") ? k.substring(4) : k;
-            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return execRoot("echo " + v + " > " + key);
+            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return exec("echo " + v + " > " + key);
             return exec("setprop " + key + " " + v);
         }
         @Override public Result get(String k) {
             String key = k.startsWith("net:") || k.startsWith("tcp:") || k.startsWith("wifi:") ? k.substring(4) : k;
-            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return execRoot("cat " + key);
+            if (key.startsWith("/proc/") || key.startsWith("/sys/")) return exec("cat " + key);
             return exec("getprop " + key);
         }
     }
@@ -307,12 +306,12 @@ public final class PropertyResolver {
         }
         @Override public Result set(String k, String v) {
             String key = k.startsWith("fs:") ? k.substring(3) : k;
-            if (key.startsWith("/sys/")) return execRoot("echo " + v + " > " + key);
+            if (key.startsWith("/sys/")) return exec("echo " + v + " > " + key);
             return exec("setprop " + key + " " + v);
         }
         @Override public Result get(String k) {
             String key = k.startsWith("fs:") ? k.substring(3) : k;
-            if (key.startsWith("/sys/")) return execRoot("cat " + key);
+            if (key.startsWith("/sys/")) return exec("cat " + key);
             return exec("getprop " + key);
         }
     }

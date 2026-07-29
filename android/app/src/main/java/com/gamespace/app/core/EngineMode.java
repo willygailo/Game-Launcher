@@ -1,9 +1,9 @@
 package com.gamespace.app.core;
 
 public enum EngineMode {
-    ROOT("ROOT MODE (su)", 0xFF7000FF),
-    SHIZUKU("SHIZUKU ADB MODE", 0xFF00FF88),
-    READ_ONLY("READ-ONLY MODE", 0xFFFFCC00);
+    SHIZUKU("SHIZUKU ADB ENGINE", 0xFF00FF66),
+    SYSTEM_SETTINGS("SYSTEM SETTINGS ENGINE", 0xFF00F0FF),
+    READ_ONLY("HARDWARE MONITOR MODE", 0xFFFFB800);
 
     private final String displayName;
     private final int colorHex;

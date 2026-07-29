@@ -19,7 +19,7 @@ public class TweakManagerRepository {
                 "setprop debug.hwui.renderer vulkan",
                 "setprop debug.hwui.renderer skia",
                 TweakCategory.CPU_GPU,
-                false, true
+                true
         ));
 
         TWEAKS.add(new TweakItem(
@@ -29,7 +29,7 @@ public class TweakManagerRepository {
                 "setprop debug.sf.hw 1",
                 "setprop debug.sf.hw 0",
                 TweakCategory.CPU_GPU,
-                false, true
+                true
         ));
 
         TWEAKS.add(new TweakItem(
@@ -39,7 +39,7 @@ public class TweakManagerRepository {
                 "setprop sys.use_fifo 1",
                 "setprop sys.use_fifo 0",
                 TweakCategory.CPU_GPU,
-                false, true
+                true
         ));
 
         // Touch & Display Tweaks
@@ -50,7 +50,7 @@ public class TweakManagerRepository {
                 "settings put system touch_slop_reduction 1; setprop view.touch_slop 2",
                 "settings put system touch_slop_reduction 0; setprop view.touch_slop 8",
                 TweakCategory.TOUCH_DISPLAY,
-                false, true
+                true
         ));
 
         TWEAKS.add(new TweakItem(
@@ -60,38 +60,7 @@ public class TweakManagerRepository {
                 "setprop persist.sys.scrollingcache 3",
                 "setprop persist.sys.scrollingcache 1",
                 TweakCategory.TOUCH_DISPLAY,
-                false, true
-        ));
-
-        // Rooted Device Kernel Tweaks
-        TWEAKS.add(new TweakItem(
-                "root_cpu_performance",
-                "CPU Performance Governor [ROOT]",
-                "Locks all CPU clusters to maximum scaling frequency governor",
-                "for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $f; done",
-                "for f in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > $f; done",
-                TweakCategory.ROOT_KERNEL,
-                true, false
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "root_gpu_power_level",
-                "GPU Frequency Tier Lock [ROOT]",
-                "Locks GPU frequency governor to maximum performance level",
-                "echo 0 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || echo performance > /sys/class/misc/mali0/device/dvfs_governor 2>/dev/null || true",
-                "echo 1 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null || echo interactive > /sys/class/misc/mali0/device/dvfs_governor 2>/dev/null || true",
-                TweakCategory.ROOT_KERNEL,
-                true, false
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "root_io_scheduler",
-                "Low-Latency Storage I/O Scheduler [ROOT]",
-                "Switches storage queue scheduler to lowest latency noop/none queue",
-                "for f in /sys/block/sd*/queue/scheduler /sys/block/mmcblk*/queue/scheduler; do echo noop > $f 2>/dev/null || echo none > $f 2>/dev/null || true; done",
-                "for f in /sys/block/sd*/queue/scheduler /sys/block/mmcblk*/queue/scheduler; do echo mq-deadline > $f 2>/dev/null || true; done",
-                TweakCategory.ROOT_KERNEL,
-                true, false
+                true
         ));
 
         // Shizuku / ADB System Tweaks
@@ -102,7 +71,7 @@ public class TweakManagerRepository {
                 "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5",
                 "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0",
                 TweakCategory.SHIZUKU_SYSTEM,
-                false, true
+                true
         ));
 
         TWEAKS.add(new TweakItem(
@@ -112,7 +81,7 @@ public class TweakManagerRepository {
                 "cmd thermalservice override-status 0 || cmd thermal override-status 0",
                 "cmd thermalservice override-status -1 || cmd thermal override-status -1",
                 TweakCategory.SHIZUKU_SYSTEM,
-                false, true
+                true
         ));
     }
 
@@ -134,9 +103,6 @@ public class TweakManagerRepository {
 
     public static boolean applyTweak(TweakItem tweak) {
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
-        if (tweak.isRequiresRoot() && engineMode != EngineMode.ROOT) {
-            return false;
-        }
         if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) {
             return false;
         }
@@ -163,7 +129,6 @@ public class TweakManagerRepository {
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
 
         for (TweakItem tweak : TWEAKS) {
-            if (tweak.isRequiresRoot() && engineMode != EngineMode.ROOT) continue;
             if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) continue;
 
             if (applyTweak(tweak)) {

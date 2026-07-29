@@ -21,9 +21,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Auto-grant permissions if Shizuku binder is active
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.grantAppPermissionsViaShizuku(this);
-        }
+        try {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.grantAppPermissionsViaShizuku(this);
+            }
+        } catch (Throwable ignored) {}
 
         BottomNavigationView nav = findViewById(R.id.bottom_navigation);
         nav.setOnItemSelectedListener(item -> {

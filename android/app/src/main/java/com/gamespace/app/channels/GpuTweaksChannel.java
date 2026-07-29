@@ -18,11 +18,7 @@ public class GpuTweaksChannel {
 
     public static boolean setGpuMaxPerformance() {
         boolean ok = enableVulkanRenderer();
-        if (RootCommandChannel.isAvailable()) {
-            RootCommandChannel.writeSysfs("/sys/class/kgsl/kgsl-3d0/default_pwrlevel", "0");
-            RootCommandChannel.writeSysfs("/sys/class/kgsl/kgsl-3d0/devfreq/governor", "performance");
-            RootCommandChannel.writeSysfs("/sys/class/misc/mali0/device/dvfs_governor", "performance");
-        }
+        ok &= enableForceMsaa();
         return ok;
     }
 }

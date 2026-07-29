@@ -37,7 +37,6 @@ public class TweaksFragment extends Fragment {
         Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
-        Button btnFilterRoot = view.findViewById(R.id.btn_filter_root);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
 
         rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -49,13 +48,12 @@ public class TweaksFragment extends Fragment {
         btnApplyAll.setOnClickListener(v -> {
             int appliedCount = TweakManagerRepository.applyAllSupportedTweaks();
             adapter.notifyDataSetChanged();
-            Toast.makeText(getContext(), "Applied " + appliedCount + " system & kernel tweaks!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Applied " + appliedCount + " system optimizations!", Toast.LENGTH_SHORT).show();
         });
 
         btnFilterAll.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getAllTweaks()));
         btnFilterCpuGpu.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.CPU_GPU)));
         btnFilterTouch.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.TOUCH_DISPLAY)));
-        btnFilterRoot.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.ROOT_KERNEL)));
         btnFilterShizuku.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.SHIZUKU_SYSTEM)));
 
         return view;

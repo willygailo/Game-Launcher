@@ -1,6 +1,9 @@
 package com.gamespace.app.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +22,7 @@ import com.gamespace.app.utils.ShizukuExecutor;
 
 public class PermissionsFragment extends Fragment {
 
-    private TextView tvRootStatus;
+    private TextView tvEngineStatus;
 
     @Nullable
     @Override
@@ -27,7 +30,8 @@ public class PermissionsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_permissions, container, false);
 
         Button btnShizuku = view.findViewById(R.id.btn_grant_shizuku);
-        tvRootStatus = view.findViewById(R.id.tv_root_status);
+        Button btnSettings = view.findViewById(R.id.btn_open_settings);
+        tvEngineStatus = view.findViewById(R.id.tv_root_status);
 
         btnShizuku.setOnClickListener(v -> {
             if (getContext() != null) {
@@ -35,15 +39,32 @@ public class PermissionsFragment extends Fragment {
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
                     Toast.makeText(getContext(), "Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "Please open Shizuku app & authorize GAME SPACE first", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Please authorize GAME SPACE in Shizuku app first", Toast.LENGTH_LONG).show();
+                }
+                updateStatus();
+            }
+        });
+
+        btnSettings.setOnClickListener(v -> {
+            if (getContext() != null) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), "Unable to open write settings screen", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        EngineMode mode = CommandExecutor.getActiveEngineMode();
-        tvRootStatus.setText("Engine Status: " + mode.getDisplayName());
-        tvRootStatus.setTextColor(mode.getColorHex());
-
+        updateStatus();
         return view;
+    }
+
+    private void updateStatus() {
+        EngineMode mode = CommandExecutor.getActiveEngineMode();
+        tvEngineStatus.setText("Engine Access: " + mode.getDisplayName());
+        tvEngineStatus.setTextColor(mode.getColorHex());
     }
 }

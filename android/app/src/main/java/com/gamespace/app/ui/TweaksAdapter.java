@@ -46,15 +46,12 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         holder.tvTitle.setText(tweak.getTitle());
         holder.tvDescription.setText(tweak.getDescription());
 
-        if (tweak.isRequiresRoot()) {
-            holder.tvBadge.setText("[ROOT REQUIRED]");
-            holder.tvBadge.setTextColor(Color.parseColor("#7000FF"));
-        } else if (tweak.isRequiresShizuku()) {
+        if (tweak.isRequiresShizuku()) {
             holder.tvBadge.setText("[SHIZUKU/ADB]");
-            holder.tvBadge.setTextColor(Color.parseColor("#00FF88"));
+            holder.tvBadge.setTextColor(Color.parseColor("#00FF66"));
         } else {
-            holder.tvBadge.setText("[SYSTEM]");
-            holder.tvBadge.setTextColor(Color.parseColor("#FFCC00"));
+            holder.tvBadge.setText("[SYSTEM SETTINGS]");
+            holder.tvBadge.setTextColor(Color.parseColor("#00F0FF"));
         }
 
         holder.switchToggle.setOnCheckedChangeListener(null);

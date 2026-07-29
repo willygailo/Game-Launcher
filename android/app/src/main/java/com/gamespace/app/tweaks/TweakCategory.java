@@ -1,11 +1,10 @@
 package com.gamespace.app.tweaks;
 
 public enum TweakCategory {
-    ALL("ALL TWEAKS"),
-    CPU_GPU("CPU & GPU"),
-    TOUCH_DISPLAY("TOUCH & DISPLAY"),
-    ROOT_KERNEL("ROOT KERNEL"),
-    SHIZUKU_SYSTEM("SHIZUKU / ADB");
+    ALL("ALL OPTIMIZATIONS"),
+    CPU_GPU("GRAPHICS & RENDERING"),
+    TOUCH_DISPLAY("TOUCH & REFRESH RATE"),
+    SHIZUKU_SYSTEM("SYSTEM & SHIZUKU ADB");
 
     private final String title;
 

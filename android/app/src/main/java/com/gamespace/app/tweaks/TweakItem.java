@@ -7,20 +7,17 @@ public class TweakItem {
     private final String applyCommand;
     private final String revertCommand;
     private final TweakCategory category;
-    private final boolean requiresRoot;
     private final boolean requiresShizuku;
     private boolean isApplied;
 
     public TweakItem(String id, String title, String description, String applyCommand,
-                     String revertCommand, TweakCategory category,
-                     boolean requiresRoot, boolean requiresShizuku) {
+                     String revertCommand, TweakCategory category, boolean requiresShizuku) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.applyCommand = applyCommand;
         this.revertCommand = revertCommand;
         this.category = category;
-        this.requiresRoot = requiresRoot;
         this.requiresShizuku = requiresShizuku;
         this.isApplied = false;
     }
@@ -47,10 +44,6 @@ public class TweakItem {
 
     public TweakCategory getCategory() {
         return category;
-    }
-
-    public boolean isRequiresRoot() {
-        return requiresRoot;
     }
 
     public boolean isRequiresShizuku() {

@@ -6,7 +6,6 @@ import com.gamespace.app.utils.ShellExecutor;
 import com.gamespace.app.utils.ShizukuExecutor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -16,9 +15,8 @@ import java.util.concurrent.TimeUnit;
 public final class CommandEngine {
 
     public enum Method {
-        ROOT("Root (su)"),
         SHIZUKU("Shizuku/ADB"),
-        ADB_LOCAL("Local Shell (adb/termux)"),
+        ADB_LOCAL("Local Shell"),
         SYSTEM_API("Android Settings API");
 
         public final String displayName;
@@ -29,14 +27,12 @@ public final class CommandEngine {
 
     public static class Command {
         public final String command;
-        public final boolean requiresRoot;
         public final Priority priority;
         public final long timeoutMs;
         public final String description;
 
         private Command(Builder b) {
             this.command = b.command;
-            this.requiresRoot = b.requiresRoot;
             this.priority = b.priority;
             this.timeoutMs = b.timeoutMs;
             this.description = b.description;
@@ -46,13 +42,11 @@ public final class CommandEngine {
 
         public static class Builder {
             private final String command;
-            private boolean requiresRoot = false;
             private Priority priority = Priority.NORMAL;
             private long timeoutMs = 10000;
             private String description = "";
 
             Builder(String command) { this.command = command; }
-            public Builder requiresRoot(boolean v) { requiresRoot = v; return this; }
             public Builder priority(Priority v) { priority = v; return this; }
             public Builder timeoutMs(long v) { timeoutMs = v; return this; }
             public Builder description(String v) { description = v; return this; }
@@ -81,18 +75,16 @@ public final class CommandEngine {
     }
 
     public static class CapabilitySet {
-        public final boolean hasRoot;
         public final boolean hasShizuku;
         public final boolean hasAdbLocal;
         public final boolean hasSystemApi;
         public final Method bestMethod;
 
-        CapabilitySet(boolean root, boolean shizuku, boolean adb, boolean sysApi) {
-            this.hasRoot = root;
+        CapabilitySet(boolean shizuku, boolean adb, boolean sysApi) {
             this.hasShizuku = shizuku;
             this.hasAdbLocal = adb;
             this.hasSystemApi = sysApi;
-            this.bestMethod = root ? Method.ROOT : shizuku ? Method.SHIZUKU : adb ? Method.ADB_LOCAL : Method.SYSTEM_API;
+            this.bestMethod = shizuku ? Method.SHIZUKU : adb ? Method.ADB_LOCAL : Method.SYSTEM_API;
         }
     }
 
@@ -103,21 +95,10 @@ public final class CommandEngine {
         boolean supports(Command cmd);
     }
 
-    private static final class RootExecutor implements ExecutorStrategy {
-        @Override public Method getMethod() { return Method.ROOT; }
-        @Override public boolean isAvailable() { return ShellExecutor.isRootAvailable(); }
-        @Override public boolean supports(Command cmd) { return isAvailable() && cmd.requiresRoot; }
-        @Override public Result execute(Command cmd) {
-            long start = System.currentTimeMillis();
-            ShellExecutor.CommandResult r = ShellExecutor.executeCommand(cmd.command, true);
-            return new Result(r.isSuccess(), r.stdout, r.stderr, Method.ROOT, System.currentTimeMillis() - start, r.exitCode);
-        }
-    }
-
     private static final class ShizukuExecutorStrategy implements ExecutorStrategy {
         @Override public Method getMethod() { return Method.SHIZUKU; }
         @Override public boolean isAvailable() { return ShizukuExecutor.hasShizukuPermission(); }
-        @Override public boolean supports(Command cmd) { return isAvailable() && !cmd.requiresRoot; }
+        @Override public boolean supports(Command cmd) { return isAvailable(); }
         @Override public Result execute(Command cmd) {
             long start = System.currentTimeMillis();
             String out = ShizukuExecutor.executeShizukuCommand(cmd.command);
@@ -129,10 +110,10 @@ public final class CommandEngine {
     private static final class AdbLocalExecutor implements ExecutorStrategy {
         @Override public Method getMethod() { return Method.ADB_LOCAL; }
         @Override public boolean isAvailable() { return true; }
-        @Override public boolean supports(Command cmd) { return !cmd.requiresRoot; }
+        @Override public boolean supports(Command cmd) { return true; }
         @Override public Result execute(Command cmd) {
             long start = System.currentTimeMillis();
-            ShellExecutor.CommandResult r = ShellExecutor.executeCommand(cmd.command, false);
+            ShellExecutor.CommandResult r = ShellExecutor.executeCommand(cmd.command);
             return new Result(r.isSuccess(), r.stdout, r.stderr, Method.ADB_LOCAL, System.currentTimeMillis() - start, r.exitCode);
         }
     }
@@ -182,7 +163,6 @@ public final class CommandEngine {
 
     public static CommandEngine configure(Context ctx) {
         List<ExecutorStrategy> list = new ArrayList<>();
-        list.add(new RootExecutor());
         list.add(new ShizukuExecutorStrategy());
         list.add(new AdbLocalExecutor());
         list.add(new SystemApiExecutor(ctx));
@@ -190,7 +170,7 @@ public final class CommandEngine {
     }
 
     public Result execute(Command cmd) {
-        String cacheKey = cmd.command + ":" + cmd.requiresRoot;
+        String cacheKey = cmd.command;
         Result cached = cache.get(cacheKey);
         if (cached != null && cached.success) return cached;
 
@@ -216,7 +196,6 @@ public final class CommandEngine {
 
     public CapabilitySet getCapabilities() {
         return new CapabilitySet(
-            ShellExecutor.isRootAvailable(),
             ShizukuExecutor.hasShizukuPermission(),
             true,
             context != null

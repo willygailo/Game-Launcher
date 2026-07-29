@@ -7,12 +7,10 @@ import com.gamespace.app.utils.ShizukuExecutor;
 public class CommandExecutor {
 
     public static EngineMode getActiveEngineMode() {
-        if (ShellExecutor.isRootAvailable()) {
-            return EngineMode.ROOT;
-        } else if (ShizukuExecutor.hasShizukuPermission()) {
+        if (ShizukuExecutor.hasShizukuPermission()) {
             return EngineMode.SHIZUKU;
         } else {
-            return EngineMode.READ_ONLY;
+            return EngineMode.SYSTEM_SETTINGS;
         }
     }
 
@@ -22,9 +20,7 @@ public class CommandExecutor {
         switch (mode) {
             case SHIZUKU:
                 return ShizukuExecutor.executeShizukuCommand(command);
-            case ROOT:
-                ShellExecutor.CommandResult rootRes = ShellExecutor.executeCommand(command, true);
-                return rootRes.stdout.isEmpty() ? rootRes.stderr : rootRes.stdout;
+            case SYSTEM_SETTINGS:
             case READ_ONLY:
             default:
                 ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, false);

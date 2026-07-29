@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E1A"
+    android:background="@color/bg_dark"
     android:padding="16dp">
 
     <LinearLayout
@@ -13,25 +13,25 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Execution &amp; Permissions Manager"
-            android:textColor="#00F0FF"
-            android:textSize="24sp"
+            android:text="⚡ EXECUTION &amp; PERMISSIONS"
+            android:textColor="@color/accent_cyan"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="1-Tap Shizuku Connection &amp; Root Access Manager"
-            android:textColor="#8F9CAE"
-            android:textSize="14sp" />
+            android:layout_marginTop="2dp"
+            android:text="100% Non-Rooted Shizuku ADB &amp; System Settings Access"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
         <!-- Shizuku Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -39,44 +39,44 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⚡ 1-TAP SHIZUKU ADB CONNECTION"
-                android:textColor="#00FF88"
-                android:textSize="16sp"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Zero manual ADB commands required! Tap below to connect directly to the Shizuku app API for non-rooted refresh rate locking and thermal overrides."
-                android:textColor="#FFFFFF"
+                android:text="No Root required! Connects directly to Shizuku service for non-rooted refresh rate locking, Vulkan HWUI acceleration, and thermal overrides."
+                android:textColor="@color/text_primary"
                 android:textSize="13sp" />
 
             <Button
                 android:id="@+id/btn_grant_shizuku"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#00FF88"
-                android:text="GRANT SHIZUKU PERMISSION"
-                android:textColor="#0A0E1A"
+                android:backgroundTint="@color/accent_neon_green"
+                android:text="CONNECT VIA SHIZUKU"
+                android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Root Card -->
+        <!-- System Settings Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#161F33"
+            android:background="@color/card_bg"
             android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="👑 ROOT ACCESS (su)"
-                android:textColor="#7000FF"
-                android:textSize="16sp"
+                android:text="⚙️ SYSTEM SETTINGS PERMISSION"
+                android:textColor="@color/accent_cyan"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -84,9 +84,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Status: Root available (Magisk / KernelSU / APatch)"
-                android:textColor="#FFFFFF"
+                android:text="Engine Access: System Settings API Active"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_open_settings"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="14dp"
+                android:backgroundTint="@color/accent_cyan"
+                android:text="OPEN WRITE SETTINGS PERMISSION"
+                android:textColor="#000000"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </LinearLayout>
