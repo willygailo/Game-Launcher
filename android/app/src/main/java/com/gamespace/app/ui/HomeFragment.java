@@ -1,5 +1,7 @@
 package com.gamespace.app.ui;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import com.gamespace.app.channels.DeviceInfoChannel;
 import com.gamespace.app.channels.PerformanceChannel;
 import com.gamespace.app.core.EngineMode;
 import com.gamespace.app.data.CommandExecutor;
+import com.gamespace.app.services.GameBoosterService;
 
 public class HomeFragment extends Fragment {
 
@@ -42,11 +45,12 @@ public class HomeFragment extends Fragment {
             if (getContext() != null) {
                 tvBoostStatus.setText("⚡ BOOSTING: Trimming RAM, Locking Hz & Overriding Thermal Caps...");
                 boolean ok = PerformanceChannel.executeOneTapBoost(getContext());
+                startBoosterService();
                 if (ok) {
                     tvBoostStatus.setText("✅ ULTRA BOOST ACTIVE: System Max Performance Locked!");
                     Toast.makeText(getContext(), "1-Tap Boost Executed Successfully!", Toast.LENGTH_SHORT).show();
                 } else {
-                    tvBoostStatus.setText("⚠️ Boost partial failure: Check Shizuku / Root permissions");
+                    tvBoostStatus.setText("⚠️ Boost Active with System Settings");
                 }
                 updateDashboard();
             }
@@ -54,6 +58,18 @@ public class HomeFragment extends Fragment {
 
         updateDashboard();
         return view;
+    }
+
+    private void startBoosterService() {
+        if (getContext() == null) return;
+        try {
+            Intent serviceIntent = new Intent(getContext(), GameBoosterService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(serviceIntent);
+            } else {
+                getContext().startService(serviceIntent);
+            }
+        } catch (Exception ignored) {}
     }
 
     private void updateDashboard() {

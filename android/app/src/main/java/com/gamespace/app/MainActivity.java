@@ -1,6 +1,8 @@
 package com.gamespace.app;
 
 import android.os.Bundle;
+import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -11,9 +13,21 @@ import com.gamespace.app.ui.PermissionsFragment;
 import com.gamespace.app.ui.ProfilesFragment;
 import com.gamespace.app.ui.TweaksFragment;
 import com.gamespace.app.utils.ShizukuExecutor;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.tabs.TabLayout;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String KEY_SELECTED_TAB = "SELECTED_TAB_INDEX";
+    private int currentTabIndex = 0;
+
+    private static final String[] TAB_TITLES = {
+            "Home HUD",
+            "Hz & FPS",
+            "Tweaks",
+            "Profiles",
+            "Games",
+            "Access"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,39 +41,79 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Throwable ignored) {}
 
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
-            int itemId = item.getItemId();
+        if (savedInstanceState != null) {
+            currentTabIndex = savedInstanceState.getInt(KEY_SELECTED_TAB, 0);
+            Log.i("TabPersist", "restored index=" + currentTabIndex);
+        } else {
+            Log.i("TabPersist", "fresh start index=0");
+        }
 
-            if (itemId == R.id.nav_home) {
-                selectedFragment = new HomeFragment();
-            } else if (itemId == R.id.nav_games) {
-                selectedFragment = new GamesFragment();
-            } else if (itemId == R.id.nav_tweaks) {
-                selectedFragment = new TweaksFragment();
-            } else if (itemId == R.id.nav_hz_fps) {
-                selectedFragment = new HzFpsFragment();
-            } else if (itemId == R.id.nav_profiles) {
-                selectedFragment = new ProfilesFragment();
-            } else if (itemId == R.id.nav_permissions) {
-                selectedFragment = new PermissionsFragment();
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        for (String title : TAB_TITLES) {
+            tabLayout.addTab(tabLayout.newTab().setText(title));
+        }
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentTabIndex = tab.getPosition();
+                showFragmentForTab(currentTabIndex);
             }
 
-            if (selectedFragment != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, selectedFragment)
-                        .commit();
-                return true;
-            }
-            return false;
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
 
-        // Set default fragment
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new HomeFragment())
-                    .commit();
+        TabLayout.Tab initialTab = tabLayout.getTabAt(currentTabIndex);
+        if (initialTab != null) {
+            if (tabLayout.getSelectedTabPosition() != currentTabIndex) {
+                initialTab.select();
+            } else {
+                if (savedInstanceState == null) {
+                    showFragmentForTab(currentTabIndex);
+                }
+            }
         }
+    }
+
+    private void showFragmentForTab(int position) {
+        Fragment selectedFragment;
+        switch (position) {
+            case 0:
+                selectedFragment = new HomeFragment();
+                break;
+            case 1:
+                selectedFragment = new HzFpsFragment();
+                break;
+            case 2:
+                selectedFragment = new TweaksFragment();
+                break;
+            case 3:
+                selectedFragment = new ProfilesFragment();
+                break;
+            case 4:
+                selectedFragment = new GamesFragment();
+                break;
+            case 5:
+                selectedFragment = new PermissionsFragment();
+                break;
+            default:
+                selectedFragment = new HomeFragment();
+                break;
+        }
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, selectedFragment)
+                .commit();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_SELECTED_TAB, currentTabIndex);
+        Log.i("TabPersist", "saved index=" + currentTabIndex);
     }
 }

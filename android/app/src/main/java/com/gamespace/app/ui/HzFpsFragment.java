@@ -27,19 +27,21 @@ public class HzFpsFragment extends Fragment {
         Button btn90 = view.findViewById(R.id.btn_lock_90);
         Button btn120 = view.findViewById(R.id.btn_lock_120);
         Button btn144 = view.findViewById(R.id.btn_lock_144);
+        Button btn165 = view.findViewById(R.id.btn_lock_165);
         Switch switchThermal = view.findViewById(R.id.switch_thermal);
 
         btn60.setOnClickListener(v -> setHz(60.0f));
         btn90.setOnClickListener(v -> setHz(90.0f));
         btn120.setOnClickListener(v -> setHz(120.0f));
         btn144.setOnClickListener(v -> setHz(144.0f));
+        btn165.setOnClickListener(v -> setHz(165.0f));
 
         switchThermal.setOnCheckedChangeListener((buttonView, isChecked) -> {
             boolean ok = ThermalChannel.setThermalOverride(isChecked);
             if (ok) {
                 Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getContext(), "Requires Shizuku or Root to override thermal caps", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission", Toast.LENGTH_LONG).show();
                 buttonView.setChecked(!isChecked);
             }
         });

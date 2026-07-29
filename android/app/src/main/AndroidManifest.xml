@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:label="GAME SPACE"
@@ -19,6 +20,11 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:allowBackup="true"
         android:supportsRtl="true">
+
+        <service
+            android:name=".services.GameBoosterService"
+            android:enabled="true"
+            android:exported="false" />
 
         <receiver
             android:name=".receivers.BootReceiver"

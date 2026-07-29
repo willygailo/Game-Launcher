@@ -18,6 +18,7 @@ public class RamZramChannel {
         }
         CommandExecutor.executeSystemCommand("am kill-all");
         CommandExecutor.executeSystemCommand("am trim-memory ALL");
+        CommandExecutor.executeSystemCommand("cmd activity compact full");
         return ok;
     }
 }

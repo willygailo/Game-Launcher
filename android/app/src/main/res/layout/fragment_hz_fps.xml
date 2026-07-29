@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0E1A"
+    android:background="@color/bg_dark"
     android:padding="16dp">
 
     <LinearLayout
@@ -13,25 +13,25 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hz &amp; FPS Unlocker"
-            android:textColor="#00F0FF"
-            android:textSize="24sp"
+            android:text="⚡ Hz &amp; FPS UNLOCKER"
+            android:textColor="@color/accent_cyan"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Lock display refresh rate &amp; thermal throttling caps"
-            android:textColor="#8F9CAE"
-            android:textSize="14sp" />
+            android:layout_marginTop="2dp"
+            android:text="Lock Display Refresh Rate &amp; Bypass Thermal Throttling Caps"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
         <!-- Refresh Rate Controls -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -39,54 +39,65 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="LOCK DISPLAY REFRESH RATE"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_lock_60"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="12dp"
                 android:backgroundTint="#243354"
-                android:text="Lock to 60Hz"
+                android:text="Lock to 60Hz (Battery Saver)"
                 android:textColor="#FFFFFF" />
 
             <Button
                 android:id="@+id/btn_lock_90"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="#243354"
-                android:text="Lock to 90Hz"
+                android:text="Lock to 90Hz (Smooth Balanced)"
                 android:textColor="#FFFFFF" />
 
             <Button
                 android:id="@+id/btn_lock_120"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="#00F0FF"
-                android:text="Lock to 120Hz (Recommended)"
-                android:textColor="#0A0E1A"
+                android:backgroundTint="@color/accent_cyan"
+                android:text="⚡ Lock to 120Hz Ultra"
+                android:textColor="#000000"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_lock_144"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="#243354"
-                android:text="Lock to 144Hz / Max"
-                android:textColor="#FFFFFF" />
+                android:backgroundTint="@color/accent_neon_green"
+                android:text="🔥 Lock to 144Hz Extreme"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_lock_165"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/accent_purple"
+                android:text="🚀 Lock to 165Hz / Max Hardware Mode"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Thermal Bypass Switch -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@color/card_bg"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="16dp">
@@ -101,16 +112,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thermal Throttling Bypass"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Overrides cmd thermal status caps during gaming"
-                    android:textColor="#8F9CAE"
+                    android:text="Overrides cmd thermalservice status caps during gaming"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
 
