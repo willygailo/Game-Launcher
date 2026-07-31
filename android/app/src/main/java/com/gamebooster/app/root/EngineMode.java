@@ -1,0 +1,23 @@
+package com.gamebooster.app.root;
+
+public enum EngineMode {
+    SHIZUKU("SHIZUKU ADB ENGINE", 0xFF00FF66),
+    SYSTEM_SETTINGS("SYSTEM SETTINGS ENGINE", 0xFF00F0FF),
+    READ_ONLY("HARDWARE MONITOR MODE", 0xFFFFB800);
+
+    private final String displayName;
+    private final int colorHex;
+
+    EngineMode(String displayName, int colorHex) {
+        this.displayName = displayName;
+        this.colorHex = colorHex;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int getColorHex() {
+        return colorHex;
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "0": "CPU Governor Subsystem",
+  "1": "Main Activity & UI Lifecycle",
+  "2": "Tweaks & Command Executor",
+  "3": "Permission Management Channel",
+  "4": "Property Resolver Base",
+  "5": "Game Library & Scanner",
+  "6": "Device Metrics Channel",
+  "7": "Command Engine ADB Shell",
+  "8": "Display Capabilities & Hz",
+  "9": "Game Booster Background Service",
+  "10": "Command Engine Cache Control",
+  "11": "Property Resolver Managers",
+  "12": "Hz & FPS Fragment UI",
+  "13": "Command Engine Builder",
+  "14": "Command Execution Engine",
+  "15": "Global Settings Manager",
+  "21": "Gradle Wrapper Scripts",
+  "22": "App Build Output",
+  "23": "Android Build Root"
+}

@@ -1,0 +1,8 @@
+/home/willygailo/Documents/Game_Launcher_Pro/.agents/rules/graphify.md
+/home/willygailo/Documents/Game_Launcher_Pro/.agents/workflows/graphify.md
+/home/willygailo/Documents/Game_Launcher_Pro/README.md
+/home/willygailo/Documents/Game_Launcher_Pro/android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+/home/willygailo/Documents/Game_Launcher_Pro/android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+/home/willygailo/Documents/Game_Launcher_Pro/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+/home/willygailo/Documents/Game_Launcher_Pro/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+/home/willygailo/Documents/Game_Launcher_Pro/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png

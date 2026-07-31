@@ -26,6 +26,21 @@
         android:gravity="center"
         android:paddingBottom="12dp" />
 
+    <!-- Persistent Warning Banner for Disconnected Shizuku Service -->
+    <TextView
+        android:id="@+id/banner_shizuku_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⚠️ Shizuku disconnected — reconnect to continue privileged tweaks"
+        android:textColor="#FFFFFF"
+        android:background="@color/accent_red"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:padding="10dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

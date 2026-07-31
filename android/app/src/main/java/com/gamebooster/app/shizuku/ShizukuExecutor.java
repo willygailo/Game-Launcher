@@ -1,0 +1,100 @@
+package com.gamebooster.app.shizuku;
+
+import android.content.Context;
+import android.content.pm.PackageManager;
+import rikka.shizuku.Shizuku;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import android.util.Log;
+
+public class ShizukuExecutor {
+
+    private static final String TAG = "ShizukuDiag";
+
+    public static boolean isShizukuAvailable() {
+        try {
+            boolean ping = Shizuku.pingBinder();
+            Log.d(TAG, "isShizukuAvailable pingBinder=" + ping);
+            return ping;
+        } catch (Throwable t) {
+            Log.d(TAG, "isShizukuAvailable exception: " + t.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean hasShizukuPermission() {
+        if (!isShizukuAvailable()) {
+            Log.d(TAG, "hasShizukuPermission: Shizuku NOT available");
+            return false;
+        }
+        try {
+            int check = Shizuku.checkSelfPermission();
+            boolean granted = (check == PackageManager.PERMISSION_GRANTED);
+            Log.d(TAG, "hasShizukuPermission: checkSelfPermission=" + check + " granted=" + granted);
+            return granted;
+        } catch (Throwable t) {
+            Log.d(TAG, "hasShizukuPermission exception: " + t.getMessage());
+            return false;
+        }
+    }
+
+    public static String executeShizukuCommand(String command) {
+        Log.d(TAG, "executeShizukuCommand input: " + command);
+        if (!hasShizukuPermission()) {
+            Log.d(TAG, "executeShizukuCommand: FAILED - Permission Denied");
+            return "ERROR: Shizuku Permission Denied";
+        }
+        Process process = null;
+        BufferedReader stdoutReader = null;
+        BufferedReader stderrReader = null;
+        try {
+            java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
+            newProcessMethod.setAccessible(true);
+            process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
+
+            stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder stdout = new StringBuilder();
+            String line;
+            while ((line = stdoutReader.readLine()) != null) {
+                stdout.append(line).append("\n");
+            }
+
+            stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder stderr = new StringBuilder();
+            while ((line = stderrReader.readLine()) != null) {
+                stderr.append(line).append("\n");
+            }
+
+            int exitCode = process.waitFor();
+            String stdoutStr = stdout.toString().trim();
+            String stderrStr = stderr.toString().trim();
+            Log.d(TAG, "executeShizukuCommand exitCode=" + exitCode + " stdout='" + stdoutStr + "' stderr='" + stderrStr + "'");
+
+            if (exitCode == 0) {
+                return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
+            } else {
+                return "ERROR: Shizuku command failed with exit code " + exitCode + (stderrStr.isEmpty() ? "" : ": " + stderrStr);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "executeShizukuCommand exception: " + e.getClass().getName() + " message=" + e.getMessage(), e);
+            return "ERROR: " + (e.getMessage() != null ? e.getMessage() : "Shizuku execution failed");
+        } finally {
+            try {
+                if (stdoutReader != null) stdoutReader.close();
+                if (stderrReader != null) stderrReader.close();
+                if (process != null) process.destroy();
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public static void grantAppPermissionsViaShizuku(Context context) {
+        if (context == null || !hasShizukuPermission()) return;
+        String packageName = context.getPackageName();
+
+        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
+    }
+}
