@@ -78,11 +78,11 @@ public class ShizukuUserServiceConnector {
     public String executeCommand(String command) {
         if (userServiceInstance == null) {
             bindService();
-            // Short polling wait for binding to establish (up to 1.5s max)
-            int retries = 15;
+            // Brief polling wait for binding to establish before falling back
+            int retries = 2;
             while (userServiceInstance == null && retries > 0) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                 } catch (InterruptedException ignored) {}
                 retries--;
             }

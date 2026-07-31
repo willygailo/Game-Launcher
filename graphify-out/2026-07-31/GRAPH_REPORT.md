@@ -1,12 +1,18 @@
-# Graph Report - .  (2026-07-31)
+# Graph Report - Game_Launcher_Pro  (2026-07-31)
 
 ## Corpus Check
-- Corpus is ~15,162 words - fits in a single context window. You may not need a graph.
+- 54 files · ~17,353 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 481 nodes · 1061 edges · 24 communities (16 shown, 8 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.8)
+- 543 nodes · 1157 edges · 19 communities (16 shown, 3 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 32 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `83577c9e`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - CPU Governor Subsystem
@@ -25,117 +31,112 @@
 - Command Engine Builder
 - Command Execution Engine
 - Global Settings Manager
-- GPU Manager Module
-- Memory Manager Module
-- System Properties Manager
-- System Settings Manager
-- Thermal Manager Module
 - Gradle Wrapper Scripts
 
 ## God Nodes (most connected - your core abstractions)
-1. `Result` - 40 edges
-2. `CommandEngine` - 29 edges
-3. `TweakItem` - 21 edges
-4. `BaseManager` - 17 edges
-5. `Command` - 16 edges
-6. `DeviceSpecModel` - 15 edges
-7. `GameAppInfo` - 15 edges
-8. `RefreshRateController` - 14 edges
-9. `PropertyResolver` - 12 edges
-10. `TweaksAdapter` - 12 edges
+1. `PropResult` - 34 edges
+2. `TweakItem` - 22 edges
+3. `GameAppInfo` - 18 edges
+4. `FloatingOverlayService` - 17 edges
+5. `DeviceSpecModel` - 15 edges
+6. `BaseManager` - 15 edges
+7. `RefreshRateController` - 14 edges
+8. `TweaksAdapter` - 13 edges
+9. `ChipsetVendor` - 12 edges
+10. `ShizukuManager` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `BaseManager` --references--> `CommandEngine`  [EXTRACTED]
-  android/app/src/main/java/com/gamespace/app/core/PropertyResolver.java → android/app/src/main/java/com/gamespace/app/core/CommandEngine.java
-- `PropertyResolver` --references--> `CommandEngine`  [EXTRACTED]
-  android/app/src/main/java/com/gamespace/app/core/PropertyResolver.java → android/app/src/main/java/com/gamespace/app/core/CommandEngine.java
 - `RefreshRateController` --references--> `PropertyResolver`  [EXTRACTED]
-  android/app/src/main/java/com/gamespace/app/core/DisplayCapabilitiesDetector.java → android/app/src/main/java/com/gamespace/app/core/PropertyResolver.java
+  android/app/src/main/java/com/gamebooster/app/core/DisplayCapabilitiesDetector.java → android/app/src/main/java/com/gamebooster/app/core/PropertyResolver.java
 - `TweaksFragment` --references--> `TweaksAdapter`  [EXTRACTED]
-  android/app/src/main/java/com/gamespace/app/ui/TweaksFragment.java → android/app/src/main/java/com/gamespace/app/ui/TweaksAdapter.java
+  android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java → android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java
 - `DeviceSpecModel` --references--> `ChipsetVendor`  [EXTRACTED]
-  android/app/src/main/java/com/gamespace/app/core/DeviceSpecModel.java → android/app/src/main/java/com/gamespace/app/utils/DeviceDetector.java
+  android/app/src/main/java/com/gamebooster/app/core/DeviceSpecModel.java → android/app/src/main/java/com/gamebooster/app/core/DeviceDetector.java
+- `TweakItem` --references--> `TweakCategory`  [EXTRACTED]
+  android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java → android/app/src/main/java/com/gamebooster/app/functions/TweakCategory.java
+- `TweakManagerRepository` --references--> `TweakItem`  [EXTRACTED]
+  android/app/src/main/java/com/gamebooster/app/functions/TweakManagerRepository.java → android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (24 total, 8 thin omitted)
+## Communities (19 total, 3 thin omitted)
 
 ### Community 0 - "CPU Governor Subsystem"
 Cohesion: 0.05
-Nodes (28): CpuGovernorChannel, GameLibraryChannel, GpuTweaksChannel, HzFpsChannel, NetworkTweaksChannel, Context, PerformanceChannel, Profile (+20 more)
-
-### Community 1 - "Main Activity & UI Lifecycle"
-Cohesion: 0.08
-Nodes (32): Bundle, Override, MainActivity, GamesFragment, Bundle, LayoutInflater, Nullable, Override (+24 more)
+Nodes (32): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+24 more)
 
 ### Community 2 - "Tweaks & Command Executor"
-Cohesion: 0.09
-Nodes (19): Adapter, TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem, TweakManagerRepository (+11 more)
+Cohesion: 0.06
+Nodes (25): AppExecutors, Handler, TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem (+17 more)
 
 ### Community 3 - "Permission Management Channel"
-Cohesion: 0.10
-Nodes (15): Context, PermissionChannel, ShizukuChannel, Bundle, LayoutInflater, Nullable, Override, TextView (+7 more)
+Cohesion: 0.07
+Nodes (18): BaseManager, CpuManager, DisplayManager, FileSystemManager, GlobalSettingsManager, GpuManager, Context, Override (+10 more)
 
 ### Community 4 - "Property Resolver Base"
-Cohesion: 0.12
-Nodes (8): BaseManager, CpuManager, DisplayManager, FileSystemManager, Override, KernelParameterManager, NetworkManager, SecureSettingsManager
+Cohesion: 0.06
+Nodes (36): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+28 more)
 
 ### Community 5 - "Game Library & Scanner"
-Cohesion: 0.12
-Nodes (16): Context, GameAppInfo, Intent, GameManagerRepository, Context, GamesAdapter, GameViewHolder, Context (+8 more)
+Cohesion: 0.08
+Nodes (28): Adapter, GameAppInfo, Intent, GameLauncherHelper, Context, Context, GameManagerRepository, Context (+20 more)
 
 ### Community 6 - "Device Metrics Channel"
 Cohesion: 0.09
-Nodes (13): DeviceInfoChannel, Context, Metrics, DeviceSpecModel, ChipsetVendor, EXYNOS, GENERIC, KIRIN (+5 more)
+Nodes (13): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+5 more)
 
 ### Community 7 - "Command Engine ADB Shell"
-Cohesion: 0.13
-Nodes (11): AdbLocalExecutor, CapabilitySet, ExecutorStrategy, Context, Override, Method, ADB_LOCAL, SHIZUKU (+3 more)
-
-### Community 8 - "Display Capabilities & Hz"
 Cohesion: 0.14
 Nodes (9): DisplayCapabilitiesDetector, DisplayCaps, Context, Mode, EXACT, MIN, PEAK, USER (+1 more)
 
+### Community 8 - "Display Capabilities & Hz"
+Cohesion: 0.10
+Nodes (19): ⚡ 1. 100% Non-Rooted Dual Execution Engine, ⚡ 1-Tap Ultra Booster, 📱 2. Direct Shizuku Binder IPC Integration, 🚀 3. Multi-OEM Refresh Rate (Hz) & FPS Lock, 🧊 4. Thermal & Throttling Bypass Module, 🎯 5. Preset Gaming Profiles Suite, 🎨 6. Graphics & GPU Unlocking Module, 🧠 7. CPU PowerHAL & Game Mode Governor (+11 more)
+
 ### Community 9 - "Game Booster Background Service"
+Cohesion: 0.12
+Nodes (17): GameBoosterService, IBinder, Intent, Nullable, Override, FloatingOverlayService, Context, Handler (+9 more)
+
+### Community 10 - "Command Engine Cache Control"
 Cohesion: 0.15
-Nodes (14): GameBoosterService, Intent, Nullable, Override, HomeFragment, Bundle, LayoutInflater, Nullable (+6 more)
+Nodes (12): EngineMode, READ_ONLY, SHIZUKU, SYSTEM_SETTINGS, HomeFragment, Bundle, LayoutInflater, Nullable (+4 more)
 
 ### Community 11 - "Property Resolver Managers"
 Cohesion: 0.26
-Nodes (3): PropertyManager, PropertyResolver, PropResult
-
-### Community 12 - "Hz & FPS Fragment UI"
-Cohesion: 0.26
 Nodes (9): HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch, View (+1 more)
 
+### Community 12 - "Hz & FPS Fragment UI"
+Cohesion: 0.32
+Nodes (3): Override, UserService, Stub
+
 ### Community 13 - "Command Engine Builder"
-Cohesion: 0.19
-Nodes (6): Builder, Priority, CRITICAL, HIGH, LOW, NORMAL
+Cohesion: 0.12
+Nodes (9): Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, ShizukuUserServiceConnector, IUserService, ServiceConnection (+1 more)
 
 ### Community 21 - "Gradle Wrapper Scripts"
 Cohesion: 0.60
 Nodes (3): gradlew script, die(), warn()
 
 ## Knowledge Gaps
-- **29 isolated node(s):** `EXTREME_3D_FPS`, `ULTRA_SMOOTH_2D`, `BALANCED`, `BATTERY_SAVER`, `SHIZUKU` (+24 more)
+- **43 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+38 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Result` connect `Command Execution Engine` to `Property Resolver Base`, `Command Engine ADB Shell`, `Command Engine Cache Control`, `Property Resolver Managers`, `Global Settings Manager`, `GPU Manager Module`, `Memory Manager Module`, `System Properties Manager`, `System Settings Manager`, `Thermal Manager Module`?**
-  _High betweenness centrality (0.158) - this node is a cross-community bridge._
-- **Why does `CommandEngine` connect `Command Engine Cache Control` to `Property Resolver Managers`, `Property Resolver Base`, `Command Execution Engine`, `Command Engine ADB Shell`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **What connects `EXTREME_3D_FPS`, `ULTRA_SMOOTH_2D`, `BALANCED` to the rest of the system?**
-  _29 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `PropertyResolver` connect `Permission Management Channel` to `Command Engine ADB Shell`?**
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **What connects `QUALCOMM`, `MEDIATEK`, `EXYNOS` to the rest of the system?**
+  _43 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `CPU Governor Subsystem` be split into smaller, more focused modules?**
-  _Cohesion score 0.05472636815920398 - nodes in this community are weakly interconnected._
-- **Should `Main Activity & UI Lifecycle` be split into smaller, more focused modules?**
-  _Cohesion score 0.07918367346938776 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05017543859649123 - nodes in this community are weakly interconnected._
 - **Should `Tweaks & Command Executor` be split into smaller, more focused modules?**
-  _Cohesion score 0.08637873754152824 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06386946386946386 - nodes in this community are weakly interconnected._
 - **Should `Permission Management Channel` be split into smaller, more focused modules?**
-  _Cohesion score 0.10476190476190476 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06867088607594937 - nodes in this community are weakly interconnected._
+- **Should `Property Resolver Base` be split into smaller, more focused modules?**
+  _Cohesion score 0.05879917184265011 - nodes in this community are weakly interconnected._
+- **Should `Game Library & Scanner` be split into smaller, more focused modules?**
+  _Cohesion score 0.07910014513788098 - nodes in this community are weakly interconnected._

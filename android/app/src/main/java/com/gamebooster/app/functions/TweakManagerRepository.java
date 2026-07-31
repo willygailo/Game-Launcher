@@ -1,14 +1,19 @@
 package com.gamebooster.app.functions;
 
-import com.gamebooster.app.root.EngineMode;
+import android.content.Context;
 
-import com.gamebooster.app.root.EngineMode;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.root.EngineMode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TweakManagerRepository {
+
+    public interface OnBatchCompleteListener {
+        void onBatchComplete(int appliedCount);
+    }
 
     private static final List<TweakItem> TWEAKS = new ArrayList<>();
 
@@ -103,7 +108,17 @@ public class TweakManagerRepository {
         return filtered;
     }
 
+    public static void initializeStates(Context context) {
+        if (context != null) {
+            TweakPreferences.loadSavedStates(context, TWEAKS);
+        }
+    }
+
     public static boolean applyTweak(TweakItem tweak) {
+        return applyTweak(null, tweak);
+    }
+
+    public static boolean applyTweak(Context context, TweakItem tweak) {
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
         if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) {
             return false;
@@ -113,30 +128,70 @@ public class TweakManagerRepository {
         boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(true);
+            if (context != null) {
+                TweakPreferences.saveTweakState(context, tweak.getId(), true);
+            }
         }
         return success;
     }
 
     public static boolean revertTweak(TweakItem tweak) {
+        return revertTweak(null, tweak);
+    }
+
+    public static boolean revertTweak(Context context, TweakItem tweak) {
         String res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
         boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(false);
+            if (context != null) {
+                TweakPreferences.saveTweakState(context, tweak.getId(), false);
+            }
         }
         return success;
     }
 
     public static int applyAllSupportedTweaks() {
+        return applyAllSupportedTweaks(null);
+    }
+
+    public static int applyAllSupportedTweaks(Context context) {
         int appliedCount = 0;
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
 
         for (TweakItem tweak : TWEAKS) {
             if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) continue;
 
-            if (applyTweak(tweak)) {
+            if (applyTweak(context, tweak)) {
                 appliedCount++;
             }
         }
         return appliedCount;
     }
+
+    public static void applyAllSupportedTweaksAsync(Context context, OnBatchCompleteListener listener) {
+        AppExecutors.getInstance().executeCommand(() -> {
+            int appliedCount = applyAllSupportedTweaks(context);
+            if (listener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(appliedCount));
+            }
+        });
+    }
+
+    public static void restoreAppliedTweaksAsync(Context context) {
+        if (context == null) return;
+        AppExecutors.getInstance().executeCommand(() -> {
+            EngineMode mode = CommandExecutor.getActiveEngineMode();
+            if (mode == EngineMode.READ_ONLY) return;
+
+            for (TweakItem tweak : TWEAKS) {
+                boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
+                if (wasSavedApplied) {
+                    if (tweak.isRequiresShizuku() && mode != EngineMode.SHIZUKU) continue;
+                    applyTweak(context, tweak);
+                }
+            }
+        });
+    }
 }
+

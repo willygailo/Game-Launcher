@@ -15,6 +15,9 @@
   "13": "Command Engine Builder",
   "14": "Command Execution Engine",
   "15": "Global Settings Manager",
+  "16": ".applyGameFpsPatch",
+  "17": "GameInfoSpec",
+  "18": "CommandResult",
   "21": "Gradle Wrapper Scripts",
   "22": "App Build Output",
   "23": "Android Build Root"

@@ -1,203 +1,8 @@
 {
   "android/app/build.gradle": {
-    "mtime": 1785118737.1167057,
-    "ast_hash": "21c7b6c03556e230d167a580de360be7",
-    "semantic_hash": "21c7b6c03556e230d167a580de360be7"
-  },
-  "android/app/src/main/java/com/gamespace/app/MainActivity.java": {
-    "mtime": 1785337512.8423638,
-    "ast_hash": "33a7f2b9b8e4b9e5a1fedb2c069f73ad",
-    "semantic_hash": "33a7f2b9b8e4b9e5a1fedb2c069f73ad"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/CpuGovernorChannel.java": {
-    "mtime": 1785334916.2036726,
-    "ast_hash": "5e7cb5ee4c12ad925d92501074d1a22c",
-    "semantic_hash": "5e7cb5ee4c12ad925d92501074d1a22c"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/DeviceInfoChannel.java": {
-    "mtime": 1785332907.372433,
-    "ast_hash": "4c5e268989e869c8f3950cb7cdce00c6",
-    "semantic_hash": "4c5e268989e869c8f3950cb7cdce00c6"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/GameLibraryChannel.java": {
-    "mtime": 1785335971.2003603,
-    "ast_hash": "3df84fb91e100db140e5a6143e86f8c8",
-    "semantic_hash": "3df84fb91e100db140e5a6143e86f8c8"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/GpuTweaksChannel.java": {
-    "mtime": 1785334923.4840307,
-    "ast_hash": "71a4b56edc81ba5ef10fcc6964b874f5",
-    "semantic_hash": "71a4b56edc81ba5ef10fcc6964b874f5"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/HzFpsChannel.java": {
-    "mtime": 1785335938.1083467,
-    "ast_hash": "8ac86a79252d1d840be268b05b6a129e",
-    "semantic_hash": "8ac86a79252d1d840be268b05b6a129e"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/NetworkTweaksChannel.java": {
-    "mtime": 1785335978.8839953,
-    "ast_hash": "08c5c100569a3704d1a31f783dee930a",
-    "semantic_hash": "08c5c100569a3704d1a31f783dee930a"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/PerformanceChannel.java": {
-    "mtime": 1785431147.0804627,
-    "ast_hash": "96e380ae071c37556d45047d99fa06f5",
-    "semantic_hash": "96e380ae071c37556d45047d99fa06f5"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/PermissionChannel.java": {
-    "mtime": 1785334903.3341107,
-    "ast_hash": "5b8403d6b1dfab5dcc3bf74de1fea863",
-    "semantic_hash": "5b8403d6b1dfab5dcc3bf74de1fea863"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/RamZramChannel.java": {
-    "mtime": 1785335963.8490484,
-    "ast_hash": "a1c932db4a04edae5f7ac3375cd4e717",
-    "semantic_hash": "a1c932db4a04edae5f7ac3375cd4e717"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/ShizukuChannel.java": {
-    "mtime": 1785332549.854006,
-    "ast_hash": "9bb202a74d1b331277bbb026d400b25a",
-    "semantic_hash": "9bb202a74d1b331277bbb026d400b25a"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/ThermalChannel.java": {
-    "mtime": 1785334909.7828846,
-    "ast_hash": "91f9ce5c6cf97cf05470ab5e57d877f5",
-    "semantic_hash": "91f9ce5c6cf97cf05470ab5e57d877f5"
-  },
-  "android/app/src/main/java/com/gamespace/app/channels/TouchLatencyChannel.java": {
-    "mtime": 1785334931.5999706,
-    "ast_hash": "c252cec1f943b0894b9ea69cfae2c7ef",
-    "semantic_hash": "c252cec1f943b0894b9ea69cfae2c7ef"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/CommandEngine.java": {
-    "mtime": 1785335036.1982508,
-    "ast_hash": "2d7fa5bd5f8ac722e4cb83c8fbe1bae3",
-    "semantic_hash": "2d7fa5bd5f8ac722e4cb83c8fbe1bae3"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/DeviceSpecModel.java": {
-    "mtime": 1785117875.624088,
-    "ast_hash": "7220ed9696428601169e4a79cebb1e8d",
-    "semantic_hash": "7220ed9696428601169e4a79cebb1e8d"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/DisplayCapabilitiesDetector.java": {
-    "mtime": 1785332486.7048182,
-    "ast_hash": "8c88bae5cad832963ec0b6fadfa08d49",
-    "semantic_hash": "8c88bae5cad832963ec0b6fadfa08d49"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/EngineMode.java": {
-    "mtime": 1785334855.6019888,
-    "ast_hash": "a88af4bd51f3e728b6c6af02f9146fb6",
-    "semantic_hash": "a88af4bd51f3e728b6c6af02f9146fb6"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/GameAppInfo.java": {
-    "mtime": 1785117878.7361026,
-    "ast_hash": "ce909af8a603047bfa8286b5da86dd5d",
-    "semantic_hash": "ce909af8a603047bfa8286b5da86dd5d"
-  },
-  "android/app/src/main/java/com/gamespace/app/core/PropertyResolver.java": {
-    "mtime": 1785335074.0107312,
-    "ast_hash": "547cf0c71f218e9717fd48bd0a5033e9",
-    "semantic_hash": "547cf0c71f218e9717fd48bd0a5033e9"
-  },
-  "android/app/src/main/java/com/gamespace/app/data/CommandExecutor.java": {
-    "mtime": 1785430902.5324833,
-    "ast_hash": "188a378791195cb1bc6fc140fb6f4304",
-    "semantic_hash": "188a378791195cb1bc6fc140fb6f4304"
-  },
-  "android/app/src/main/java/com/gamespace/app/data/GameManagerRepository.java": {
-    "mtime": 1785117890.8801572,
-    "ast_hash": "7a3a4f00d42a9e69ce084a7d4b38acc2",
-    "semantic_hash": "7a3a4f00d42a9e69ce084a7d4b38acc2"
-  },
-  "android/app/src/main/java/com/gamespace/app/receivers/BootReceiver.java": {
-    "mtime": 1785335012.9580894,
-    "ast_hash": "d8907c447e23c358155efa45b7f5d310",
-    "semantic_hash": "d8907c447e23c358155efa45b7f5d310"
-  },
-  "android/app/src/main/java/com/gamespace/app/services/GameBoosterService.java": {
-    "mtime": 1785335920.0678444,
-    "ast_hash": "02416633dea2a591f96af1da969f45dc",
-    "semantic_hash": "02416633dea2a591f96af1da969f45dc"
-  },
-  "android/app/src/main/java/com/gamespace/app/tweaks/TweakCategory.java": {
-    "mtime": 1785334863.094241,
-    "ast_hash": "c07f7029f3a2311b2fc074ea65505ee6",
-    "semantic_hash": "c07f7029f3a2311b2fc074ea65505ee6"
-  },
-  "android/app/src/main/java/com/gamespace/app/tweaks/TweakItem.java": {
-    "mtime": 1785334869.6429648,
-    "ast_hash": "0a8f19bbc7dabb28a7a65ac3dc298d30",
-    "semantic_hash": "0a8f19bbc7dabb28a7a65ac3dc298d30"
-  },
-  "android/app/src/main/java/com/gamespace/app/tweaks/TweakManagerRepository.java": {
-    "mtime": 1785334877.7429128,
-    "ast_hash": "f29fab30eeeda84a35ec2536e811e33a",
-    "semantic_hash": "f29fab30eeeda84a35ec2536e811e33a"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/GamesAdapter.java": {
-    "mtime": 1785430897.5561576,
-    "ast_hash": "8961a789048a9a71b033217586747386",
-    "semantic_hash": "8961a789048a9a71b033217586747386"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/GamesFragment.java": {
-    "mtime": 1785471179.7770836,
-    "ast_hash": "9db2228c1dec57efa77cdf94b56641bb",
-    "semantic_hash": "9db2228c1dec57efa77cdf94b56641bb"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/HomeFragment.java": {
-    "mtime": 1785471179.7810836,
-    "ast_hash": "e10b95ec792e988f0a135a802f825484",
-    "semantic_hash": "e10b95ec792e988f0a135a802f825484"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/HzFpsFragment.java": {
-    "mtime": 1785432409.4176497,
-    "ast_hash": "16debe016d1ac2d6a2650bdc4275eb18",
-    "semantic_hash": "16debe016d1ac2d6a2650bdc4275eb18"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/PermissionsFragment.java": {
-    "mtime": 1785467267.0894425,
-    "ast_hash": "5f717c5e3381eb51d4371f74c4b2c25a",
-    "semantic_hash": "5f717c5e3381eb51d4371f74c4b2c25a"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/ProfilesFragment.java": {
-    "mtime": 1785473655.4754853,
-    "ast_hash": "5cc4f44a3f1e4276a9736ea9c3bbc737",
-    "semantic_hash": "5cc4f44a3f1e4276a9736ea9c3bbc737"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/TweaksAdapter.java": {
-    "mtime": 1785471179.7810836,
-    "ast_hash": "03dd2c4d58810aa2b7144c2cfdcb23fb",
-    "semantic_hash": "03dd2c4d58810aa2b7144c2cfdcb23fb"
-  },
-  "android/app/src/main/java/com/gamespace/app/ui/TweaksFragment.java": {
-    "mtime": 1785432214.6340656,
-    "ast_hash": "c290d6610f9b66b8e43683398f8dc727",
-    "semantic_hash": "c290d6610f9b66b8e43683398f8dc727"
-  },
-  "android/app/src/main/java/com/gamespace/app/utils/DeviceDetector.java": {
-    "mtime": 1785117887.252141,
-    "ast_hash": "db4c924d3c6093d86f2f618e8b2f5b54",
-    "semantic_hash": "db4c924d3c6093d86f2f618e8b2f5b54"
-  },
-  "android/app/src/main/java/com/gamespace/app/utils/EngineUIHelper.java": {
-    "mtime": 1785432191.9892027,
-    "ast_hash": "8bbabdfff8603edf6ed7941b0f7922db",
-    "semantic_hash": "8bbabdfff8603edf6ed7941b0f7922db"
-  },
-  "android/app/src/main/java/com/gamespace/app/utils/ShellExecutor.java": {
-    "mtime": 1785334895.4580507,
-    "ast_hash": "1953d4b2619dd377f7ec0ed76a30c519",
-    "semantic_hash": "1953d4b2619dd377f7ec0ed76a30c519"
-  },
-  "android/app/src/main/java/com/gamespace/app/utils/ShizukuExecutor.java": {
-    "mtime": 1785469061.6608226,
-    "ast_hash": "16a7e60f418fa89cdfccf65a9e179a23",
-    "semantic_hash": "16a7e60f418fa89cdfccf65a9e179a23"
-  },
-  "android/app/src/main/java/com/gamespace/app/utils/ShizukuUtils.java": {
-    "mtime": 1785431799.5516937,
-    "ast_hash": "c5c3f186a82631360bb42f2cf35764b2",
-    "semantic_hash": "c5c3f186a82631360bb42f2cf35764b2"
+    "mtime": 1785478096.4135857,
+    "ast_hash": "aba68b9b44d3ddaec32a49e3faeba8b0",
+    "semantic_hash": ""
   },
   "android/build.gradle": {
     "mtime": 1785059217.0727684,
@@ -253,5 +58,240 @@
     "mtime": 1785118821.8885648,
     "ast_hash": "d184d3d8d1eaf68778260e915b92ea77",
     "semantic_hash": "d184d3d8d1eaf68778260e915b92ea77"
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/AppExecutors.java": {
+    "mtime": 1785476676.5501273,
+    "ast_hash": "86adfe4aa72fd13950244bf8265aa890",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/DeviceDetector.java": {
+    "mtime": 1785476676.5499957,
+    "ast_hash": "ff5a0590efee9ca2fc52427b81bf5161",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/DeviceInfoChannel.java": {
+    "mtime": 1785476676.5503128,
+    "ast_hash": "623b02c445ae9676fa960639cd1df848",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/DeviceSpecModel.java": {
+    "mtime": 1785476676.5501685,
+    "ast_hash": "9ad32ef0ed0067b674cbfe901eb62c08",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/DisplayCapabilitiesDetector.java": {
+    "mtime": 1785476676.5502255,
+    "ast_hash": "075f165617c6e8947658edea8dadf795",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/EngineUIHelper.java": {
+    "mtime": 1785476676.5502713,
+    "ast_hash": "b2cf8613e45549b60b326b9e0ea2a2c6",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/core/PropertyResolver.java": {
+    "mtime": 1785476676.5500762,
+    "ast_hash": "0da4944224f3c6b0672bbdb4bee38a7e",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/CpuGovernorChannel.java": {
+    "mtime": 1785476676.5494938,
+    "ast_hash": "031e73568cbe5c282f389196b06ff4da",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/GpuTweaksChannel.java": {
+    "mtime": 1785476676.548989,
+    "ast_hash": "ca5bb2e495e0305c7f32981d4e4b2950",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/HzFpsChannel.java": {
+    "mtime": 1785476987.5514688,
+    "ast_hash": "c368f8ea88dc9677b3938ed62465d632",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/NetworkTweaksChannel.java": {
+    "mtime": 1785476676.5493329,
+    "ast_hash": "af372502d41e89251d58088d5342f88d",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/PerformanceChannel.java": {
+    "mtime": 1785476676.549392,
+    "ast_hash": "10f44c1abdcbfc98b1bc5afbf2ea2734",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/RamZramChannel.java": {
+    "mtime": 1785476676.5495467,
+    "ast_hash": "8090e57e880d69a0e8f5e03602399690",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/ThermalChannel.java": {
+    "mtime": 1785476676.5494423,
+    "ast_hash": "48fe873fb630af76be695a1a053aa441",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/TouchLatencyChannel.java": {
+    "mtime": 1785476676.5491068,
+    "ast_hash": "49057e6f23fd5b8e7f03fcfecc2ba8ad",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/TweakCategory.java": {
+    "mtime": 1785476676.5490525,
+    "ast_hash": "4353807c28a17f82ef0b1ece881d550c",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java": {
+    "mtime": 1785476676.5491848,
+    "ast_hash": "ce66ce081058e889162d7e6413b48870",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/TweakManagerRepository.java": {
+    "mtime": 1785487805.527576,
+    "ast_hash": "53db2efa6b1efc99e8a6d0969e428f21",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/games/GameAppInfo.java": {
+    "mtime": 1785476676.5497885,
+    "ast_hash": "908387c70e6b74d2b809145cb408c0a2",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/games/GameConfigPatcher.java": {
+    "mtime": 1785476977.248623,
+    "ast_hash": "40bdca4a0311095e56ac4c03250616fc",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/games/GameLibraryChannel.java": {
+    "mtime": 1785476676.5497303,
+    "ast_hash": "d7c1f72cb57b8bd83f1324636263f764",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/games/GameManagerRepository.java": {
+    "mtime": 1785488149.348669,
+    "ast_hash": "d394e3b80f6b4094a7d7eb21ad5f8af0",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/metadata/BootReceiver.java": {
+    "mtime": 1785476676.547976,
+    "ast_hash": "bb0e46d110047413561746771617d744",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/metadata/GameBoosterService.java": {
+    "mtime": 1785476676.548052,
+    "ast_hash": "82f7c589342c38f510ec48b576eb22a1",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
+    "mtime": 1785478524.691442,
+    "ast_hash": "41d0969c4b2203ca989b695e5833a5a0",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/root/EngineMode.java": {
+    "mtime": 1785476676.5477176,
+    "ast_hash": "9d5f1a7708350f1c60e99b94f9677404",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/root/ShellExecutor.java": {
+    "mtime": 1785476676.5477984,
+    "ast_hash": "11e53f166aaf7490ef3bc891c14ffc87",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/settings/PermissionsFragment.java": {
+    "mtime": 1785476676.5478976,
+    "ast_hash": "b5970e828626e25f4b31255176f156da",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/PermissionChannel.java": {
+    "mtime": 1785476676.5483088,
+    "ast_hash": "90f77b9d636468a2e95a06a90c868611",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuChannel.java": {
+    "mtime": 1785476676.5481262,
+    "ast_hash": "e6aa5a1a222416a382c8a7741620a5cc",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuExecutor.java": {
+    "mtime": 1785476676.5481932,
+    "ast_hash": "23233e985b5a1798e6bb5f657df43756",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuManager.java": {
+    "mtime": 1785477299.3788643,
+    "ast_hash": "a07ddd486cb3d056632ff410c268c019",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuUserServiceConnector.java": {
+    "mtime": 1785487840.282302,
+    "ast_hash": "c082e2df10b165006c8e201c8f065aa3",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/shizuku/UserService.java": {
+    "mtime": 1785477486.6177979,
+    "ast_hash": "00ccbe427284a432e537f7c38f449bb4",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/GamesAdapter.java": {
+    "mtime": 1785488163.3167627,
+    "ast_hash": "fff43ae9eb07a46e1ba84605c3017bc1",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/GamesFragment.java": {
+    "mtime": 1785478599.8337865,
+    "ast_hash": "475e01bbc40635e628c594d585b1cb2d",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/HomeFragment.java": {
+    "mtime": 1785488190.4492826,
+    "ast_hash": "bdc214875c157fb04b0e2763a0abedf8",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/HzFpsFragment.java": {
+    "mtime": 1785476676.5487301,
+    "ast_hash": "530f5412d26fd45792d8e3d8e1922c7a",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/MainActivity.java": {
+    "mtime": 1785487859.2820892,
+    "ast_hash": "dcba881da7b6e63236f286fa86cb39b2",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/ProfilesFragment.java": {
+    "mtime": 1785476676.548875,
+    "ast_hash": "fe1e5a5e4b94b7718b492ad4f0a77669",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java": {
+    "mtime": 1785487819.4742367,
+    "ast_hash": "61bd8e75867cb4ab9043e02ac4ab0686",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java": {
+    "mtime": 1785487832.816832,
+    "ast_hash": "08a51376470dd77c51dbeda628c0e11c",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/TweakPreferences.java": {
+    "mtime": 1785487794.5335245,
+    "ast_hash": "18d982032a26a94049bd14508901e2fa",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/GameSpaceDndManager.java": {
+    "mtime": 1785488131.3767848,
+    "ast_hash": "fb5989bd185c22fdde29b05c437ec7a5",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/NetworkOptimizer.java": {
+    "mtime": 1785488136.9087167,
+    "ast_hash": "d7a67a5dde19b4f7a6ccbca4fe9950fa",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java": {
+    "mtime": 1785488140.9846857,
+    "ast_hash": "3897132a143d7935532fa92f06c0b05d",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
+    "mtime": 1785488126.724867,
+    "ast_hash": "5d2fa7781ee98f723052e9d1660311dc",
+    "semantic_hash": ""
   }
 }

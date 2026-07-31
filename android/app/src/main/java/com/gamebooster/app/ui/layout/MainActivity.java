@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.functions.TweakManagerRepository;
 import com.gamebooster.app.settings.PermissionsFragment;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuManager;
@@ -36,6 +37,10 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
+
+        // Initialize saved tweak states and restore active tweaks
+        TweakManagerRepository.initializeStates(this);
+        TweakManagerRepository.restoreAppliedTweaksAsync(this);
 
         // Auto-grant permissions if Shizuku binder is active
         try {
@@ -89,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "⚡ Shizuku connected cleanly", Toast.LENGTH_SHORT).show();
+                TweakManagerRepository.restoreAppliedTweaksAsync(this);
             }
         });
     }

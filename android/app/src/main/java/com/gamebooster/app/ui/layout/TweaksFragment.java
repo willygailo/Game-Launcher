@@ -47,6 +47,8 @@ public class TweaksFragment extends Fragment implements ShizukuManager.ShizukuSt
             btnFilterRoot.setVisibility(View.GONE);
         }
 
+        TweakManagerRepository.initializeStates(getContext());
+
         rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new TweaksAdapter(getContext(), TweakManagerRepository.getAllTweaks());
         rvTweaks.setAdapter(adapter);
@@ -54,9 +56,18 @@ public class TweaksFragment extends Fragment implements ShizukuManager.ShizukuSt
         EngineUIHelper.refreshEngineStatus(tvStatus);
 
         btnApplyAll.setOnClickListener(v -> {
-            int appliedCount = TweakManagerRepository.applyAllSupportedTweaks();
-            adapter.notifyDataSetChanged();
-            Toast.makeText(getContext(), "Applied " + appliedCount + " system optimizations!", Toast.LENGTH_SHORT).show();
+            btnApplyAll.setEnabled(false);
+            Toast.makeText(getContext(), "Applying system optimizations...", Toast.LENGTH_SHORT).show();
+
+            TweakManagerRepository.applyAllSupportedTweaksAsync(getContext(), appliedCount -> {
+                if (getContext() != null && isAdded()) {
+                    if (adapter != null) {
+                        adapter.notifyDataSetChanged();
+                    }
+                    btnApplyAll.setEnabled(true);
+                    Toast.makeText(getContext(), "Applied " + appliedCount + " system optimizations!", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         btnFilterAll.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getAllTweaks()));
@@ -93,6 +104,9 @@ public class TweaksFragment extends Fragment implements ShizukuManager.ShizukuSt
                 }
                 EngineUIHelper.refreshEngineStatus(tvStatus);
             });
+            if (alive && getContext() != null) {
+                TweakManagerRepository.restoreAppliedTweaksAsync(getContext());
+            }
         }
     }
 

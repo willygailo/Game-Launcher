@@ -96,9 +96,12 @@ public class HzFpsFragment extends Fragment {
     }
 
     private void setHz(float hz) {
+        if (getContext() != null) {
+            com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), (int) hz);
+        }
         boolean ok = HzFpsChannel.setRefreshRate(hz);
         if (ok) {
-            Toast.makeText(getContext(), "Display refresh rate locked to " + (int) hz + "Hz", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Display refresh rate & Target Games FPS set to " + (int) hz + "Hz/FPS", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission to lock refresh rate", Toast.LENGTH_LONG).show();
         }

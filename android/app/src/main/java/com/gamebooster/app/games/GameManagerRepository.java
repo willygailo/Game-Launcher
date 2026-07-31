@@ -23,27 +23,29 @@ public class GameManagerRepository {
         PackageManager pm = context.getPackageManager();
         List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
+        java.util.Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
+
         for (ApplicationInfo app : apps) {
             Intent launchIntent = pm.getLaunchIntentForPackage(app.packageName);
             if (launchIntent == null) continue;
 
-            boolean isGame = false;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            boolean isGame = customPkgs.contains(app.packageName);
+            if (!isGame && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 if (app.category == ApplicationInfo.CATEGORY_GAME) {
                     isGame = true;
                 }
             }
 
-            if ((app.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
+            if (!isGame && (app.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
                 isGame = true;
             }
 
             String pkgNameLower = app.packageName.toLowerCase();
-            if (pkgNameLower.contains("game") || pkgNameLower.contains("pubg") ||
+            if (!isGame && (pkgNameLower.contains("game") || pkgNameLower.contains("pubg") ||
                 pkgNameLower.contains("mobilelegends") || pkgNameLower.contains("freefire") ||
                 pkgNameLower.contains("genshin") || pkgNameLower.contains("roblox") ||
                 pkgNameLower.contains("cod") || pkgNameLower.contains("minecraft") ||
-                pkgNameLower.contains("apex") || pkgNameLower.contains("ea.gp")) {
+                pkgNameLower.contains("apex") || pkgNameLower.contains("ea.gp"))) {
                 isGame = true;
             }
 

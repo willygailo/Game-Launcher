@@ -41,6 +41,57 @@ public class GamesFragment extends Fragment {
         tvHeader = view.findViewById(R.id.tv_games_header);
         rvGames = view.findViewById(R.id.rv_games_list);
 
+        TextView tvTargetLabel = view.findViewById(R.id.tv_target_fps_label);
+        Button btnTarget60 = view.findViewById(R.id.btn_target_60);
+        Button btnTarget90 = view.findViewById(R.id.btn_target_90);
+        Button btnTarget120 = view.findViewById(R.id.btn_target_120);
+        Button btnTarget144 = view.findViewById(R.id.btn_target_144);
+        Button btnTarget165 = view.findViewById(R.id.btn_target_165);
+        Button btnAutoConfig = view.findViewById(R.id.btn_auto_config_games);
+
+        if (getContext() != null && tvTargetLabel != null) {
+            int currentTarget = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
+            tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ");
+        }
+
+        View.OnClickListener hzClickListener = v -> {
+            if (getContext() == null) return;
+            int targetHz = 120;
+            int id = v.getId();
+            if (id == R.id.btn_target_60) targetHz = 60;
+            else if (id == R.id.btn_target_90) targetHz = 90;
+            else if (id == R.id.btn_target_120) targetHz = 120;
+            else if (id == R.id.btn_target_144) targetHz = 144;
+            else if (id == R.id.btn_target_165) targetHz = 165;
+
+            com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
+            if (tvTargetLabel != null) {
+                tvTargetLabel.setText("TARGET RATE: " + targetHz + " FPS / HZ");
+            }
+            Toast.makeText(getContext(), "Target FPS/Hz set to " + targetHz + " FPS", Toast.LENGTH_SHORT).show();
+        };
+
+        if (btnTarget60 != null) btnTarget60.setOnClickListener(hzClickListener);
+        if (btnTarget90 != null) btnTarget90.setOnClickListener(hzClickListener);
+        if (btnTarget120 != null) btnTarget120.setOnClickListener(hzClickListener);
+        if (btnTarget144 != null) btnTarget144.setOnClickListener(hzClickListener);
+        if (btnTarget165 != null) btnTarget165.setOnClickListener(hzClickListener);
+
+        if (btnAutoConfig != null) {
+            btnAutoConfig.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnAutoConfig.setEnabled(false);
+                Toast.makeText(getContext(), "⚡ Auto-configuring all games for max FPS/Hz...", Toast.LENGTH_SHORT).show();
+
+                com.gamebooster.app.games.GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(getContext(), (count, fps) -> {
+                    if (isAdded() && getContext() != null) {
+                        btnAutoConfig.setEnabled(true);
+                        Toast.makeText(getContext(), "✅ Auto-Configured " + count + " games to " + fps + " FPS/Hz!", Toast.LENGTH_LONG).show();
+                    }
+                });
+            });
+        }
+
         rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GamesAdapter(getContext(), gameList);
         rvGames.setAdapter(adapter);

@@ -63,17 +63,32 @@ public class GameConfigPatcher {
     }
 
     private static String getConfigPathForPackage(String packageName) {
-        switch (packageName) {
-            case PACKAGE_PUBG_GLOBAL:
+        if (packageName == null) return null;
+        String pkg = packageName.toLowerCase().trim();
+        switch (pkg) {
+            case "com.tencent.ig":
                 return "/sdcard/Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini";
-            case PACKAGE_PUBG_INDIA:
+            case "com.pubg.imobile":
                 return "/sdcard/Android/data/com.pubg.imobile/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini";
-            case PACKAGE_PUBG_LITE:
+            case "com.pubg.krmobile":
+                return "/sdcard/Android/data/com.pubg.krmobile/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini";
+            case "com.vng.pubgmobile":
+                return "/sdcard/Android/data/com.vng.pubgmobile/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini";
+            case "com.tencent.iglite":
                 return "/sdcard/Android/data/com.tencent.iglite/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini";
-            case PACKAGE_COD_MOBILE:
+            case "com.activision.callofduty.shooter":
                 return "/sdcard/Android/data/com.activision.callofduty.shooter/files/GraphicsSettings.ini";
-            case PACKAGE_GENSHIN:
-                return "/sdcard/Android/data/com.miHoYo.GenshinImpact/files/GameSetting.ini";
+            case "com.garena.game.codm":
+                return "/sdcard/Android/data/com.garena.game.codm/files/GraphicsSettings.ini";
+            case "com.mobile.legends":
+            case "com.mobile.legends.vng":
+                return "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini";
+            case "com.dts.freefireth":
+            case "com.dts.freefiremax":
+                return "/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini";
+            case "com.mihoyo.genshinimpact":
+            case "com.cognosphere.genshinimpact":
+                return "/sdcard/Android/data/" + pkg + "/files/GameSetting.ini";
             default:
                 return null;
         }

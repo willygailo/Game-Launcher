@@ -18,6 +18,7 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.functions.TweakItem;
 import com.gamebooster.app.functions.TweakManagerRepository;
+import com.gamebooster.app.functions.TweakPreferences;
 import com.gamebooster.app.root.CommandExecutor;
 import com.gamebooster.app.root.EngineMode;
 import com.gamebooster.app.shizuku.ShizukuManager;
@@ -81,7 +82,8 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         }
 
         holder.switchToggle.setOnCheckedChangeListener(null);
-        holder.switchToggle.setChecked(targetItem.isApplied());
+        boolean isAppliedState = targetItem.isApplied() || TweakPreferences.isTweakApplied(context, targetItem.getId());
+        holder.switchToggle.setChecked(isAppliedState);
 
         holder.switchToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -103,8 +105,8 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                 // Offload shell execution to AppExecutors.commandIO
                 AppExecutors.getInstance().executeCommand(() -> {
                     boolean success = isChecked ? 
-                            TweakManagerRepository.applyTweak(targetItem) : 
-                            TweakManagerRepository.revertTweak(targetItem);
+                            TweakManagerRepository.applyTweak(context, targetItem) : 
+                            TweakManagerRepository.revertTweak(context, targetItem);
 
                     // Post callback back to main thread with recycling safety checks
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -113,6 +115,7 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                             holder.switchToggle.setEnabled(true);
                             if (success) {
                                 targetItem.setApplied(isChecked);
+                                TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);
                                 Toast.makeText(context, targetItem.getTitle() + (isChecked ? " APPLIED" : " REVERTED"), Toast.LENGTH_SHORT).show();
                             } else {
                                 holder.isUpdatingProgrammatically = true;

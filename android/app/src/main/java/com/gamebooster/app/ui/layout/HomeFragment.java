@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,52 @@ public class HomeFragment extends Fragment {
         tvBatteryTemp = view.findViewById(R.id.tv_battery_temp);
         tvBoostStatus = view.findViewById(R.id.tv_boost_status);
         Button btnHeroBoost = view.findViewById(R.id.btn_hero_boost);
+
+        Switch switchOverlay = view.findViewById(R.id.switch_overlay_hud);
+        Switch switchDnd = view.findViewById(R.id.switch_gaming_dnd);
+        Button btnDns = view.findViewById(R.id.btn_network_dns);
+
+        if (switchOverlay != null) {
+            switchOverlay.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
+            switchOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(getContext())) {
+                    switchOverlay.setChecked(false);
+                    Toast.makeText(getContext(), "Please grant 'Draw over other apps' permission first", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                    intent.setData(android.net.Uri.parse("package:" + getContext().getPackageName()));
+                    startActivity(intent);
+                    return;
+                }
+                if (isChecked) {
+                    com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
+                    Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
+                    Toast.makeText(getContext(), "Overlay Disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (switchDnd != null) {
+            switchDnd.setChecked(com.gamebooster.app.functions.GameSpaceDndManager.isDndActive(getContext()));
+            switchDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
+                Toast.makeText(getContext(), "Gaming DND & Banner Blocker: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnDns != null) {
+            btnDns.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                boolean ok = com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
+                com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+                if (ok) {
+                    Toast.makeText(getContext(), "🌐 Cloudflare 1.1.1.1 Gaming DNS & TCP Tuned!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
         btnHeroBoost.setOnClickListener(v -> {
             if (getContext() != null) {
