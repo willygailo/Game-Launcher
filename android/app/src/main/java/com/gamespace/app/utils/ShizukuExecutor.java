@@ -7,27 +7,43 @@ import rikka.shizuku.Shizuku;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import android.util.Log;
+
 public class ShizukuExecutor {
+
+    private static final String TAG = "ShizukuDiag";
 
     public static boolean isShizukuAvailable() {
         try {
-            return Shizuku.pingBinder();
+            boolean ping = Shizuku.pingBinder();
+            Log.d(TAG, "isShizukuAvailable pingBinder=" + ping);
+            return ping;
         } catch (Throwable t) {
+            Log.d(TAG, "isShizukuAvailable exception: " + t.getMessage());
             return false;
         }
     }
 
     public static boolean hasShizukuPermission() {
-        if (!isShizukuAvailable()) return false;
+        if (!isShizukuAvailable()) {
+            Log.d(TAG, "hasShizukuPermission: Shizuku NOT available");
+            return false;
+        }
         try {
-            return Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            int check = Shizuku.checkSelfPermission();
+            boolean granted = (check == PackageManager.PERMISSION_GRANTED);
+            Log.d(TAG, "hasShizukuPermission: checkSelfPermission=" + check + " granted=" + granted);
+            return granted;
         } catch (Throwable t) {
+            Log.d(TAG, "hasShizukuPermission exception: " + t.getMessage());
             return false;
         }
     }
 
     public static String executeShizukuCommand(String command) {
+        Log.d(TAG, "executeShizukuCommand input: " + command);
         if (!hasShizukuPermission()) {
+            Log.d(TAG, "executeShizukuCommand: FAILED - Permission Denied");
             return "ERROR: Shizuku Permission Denied";
         }
         Process process = null;
@@ -42,9 +58,12 @@ public class ShizukuExecutor {
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
-            process.waitFor();
-            return output.toString().trim();
+            int exitCode = process.waitFor();
+            String result = output.toString().trim();
+            Log.d(TAG, "executeShizukuCommand output: exitCode=" + exitCode + " result='" + result + "'");
+            return result;
         } catch (Exception e) {
+            Log.e(TAG, "executeShizukuCommand exception: " + e.getClass().getName() + " message=" + e.getMessage(), e);
             return "ERROR: " + (e.getMessage() != null ? e.getMessage() : "Shizuku execution failed");
         } finally {
             try {
