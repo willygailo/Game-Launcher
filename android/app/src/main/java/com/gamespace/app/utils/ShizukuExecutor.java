@@ -47,27 +47,43 @@ public class ShizukuExecutor {
             return "ERROR: Shizuku Permission Denied";
         }
         Process process = null;
-        BufferedReader reader = null;
+        BufferedReader stdoutReader = null;
+        BufferedReader stderrReader = null;
         try {
             java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
             newProcessMethod.setAccessible(true);
             process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
+
+            stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder stdout = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
+            while ((line = stdoutReader.readLine()) != null) {
+                stdout.append(line).append("\n");
             }
+
+            stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder stderr = new StringBuilder();
+            while ((line = stderrReader.readLine()) != null) {
+                stderr.append(line).append("\n");
+            }
+
             int exitCode = process.waitFor();
-            String result = output.toString().trim();
-            Log.d(TAG, "executeShizukuCommand output: exitCode=" + exitCode + " result='" + result + "'");
-            return result;
+            String stdoutStr = stdout.toString().trim();
+            String stderrStr = stderr.toString().trim();
+            Log.d(TAG, "executeShizukuCommand exitCode=" + exitCode + " stdout='" + stdoutStr + "' stderr='" + stderrStr + "'");
+
+            if (exitCode == 0) {
+                return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
+            } else {
+                return "ERROR: Shizuku command failed with exit code " + exitCode + (stderrStr.isEmpty() ? "" : ": " + stderrStr);
+            }
         } catch (Exception e) {
             Log.e(TAG, "executeShizukuCommand exception: " + e.getClass().getName() + " message=" + e.getMessage(), e);
             return "ERROR: " + (e.getMessage() != null ? e.getMessage() : "Shizuku execution failed");
         } finally {
             try {
-                if (reader != null) reader.close();
+                if (stdoutReader != null) stdoutReader.close();
+                if (stderrReader != null) stderrReader.close();
                 if (process != null) process.destroy();
             } catch (Exception ignored) {}
         }
