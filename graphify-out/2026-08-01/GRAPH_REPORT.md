@@ -1,16 +1,16 @@
-# Graph Report - Game_Launcher_Pro  (2026-08-01)
+# Graph Report - Game_Launcher_Pro  (2026-07-31)
 
 ## Corpus Check
-- 57 files · ~20,625 words
+- 56 files · ~18,191 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 559 nodes · 1192 edges · 21 communities (18 shown, 3 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.8)
+- 559 nodes · 1191 edges · 22 communities (18 shown, 4 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 33 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `92dae8a4`
+- Built from commit: `83577c9e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -33,6 +33,7 @@
 - Global Settings Manager
 - .applyGameFpsPatch
 - GameInfoSpec
+- CommandResult
 - Gradle Wrapper Scripts
 
 ## God Nodes (most connected - your core abstractions)
@@ -62,11 +63,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (21 total, 3 thin omitted)
+## Communities (22 total, 4 thin omitted)
 
 ### Community 0 - "CPU Governor Subsystem"
 Cohesion: 0.06
-Nodes (28): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+20 more)
+Nodes (29): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+21 more)
 
 ### Community 1 - "Main Activity & UI Lifecycle"
 Cohesion: 0.15
@@ -85,8 +86,8 @@ Cohesion: 0.09
 Nodes (27): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+19 more)
 
 ### Community 5 - "Game Library & Scanner"
-Cohesion: 0.07
-Nodes (29): Adapter, NetworkTweaksChannel, GameAppInfo, Intent, GameLauncherHelper, Context, Context, GameManagerRepository (+21 more)
+Cohesion: 0.08
+Nodes (27): Adapter, GameAppInfo, Intent, GameLauncherHelper, Context, GameManagerRepository, Context, GamesAdapter (+19 more)
 
 ### Community 6 - "Device Metrics Channel"
 Cohesion: 0.09
@@ -109,8 +110,8 @@ Cohesion: 0.25
 Nodes (8): HomeFragment, Bundle, LayoutInflater, Nullable, Override, TextView, View, ViewGroup
 
 ### Community 11 - "Property Resolver Managers"
-Cohesion: 0.22
-Nodes (10): ThermalChannel, HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch (+2 more)
+Cohesion: 0.26
+Nodes (9): HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch, View (+1 more)
 
 ### Community 12 - "Hz & FPS Fragment UI"
 Cohesion: 0.32
@@ -131,7 +132,7 @@ Nodes (3): gradlew script, die(), warn()
 ## Knowledge Gaps
 - **43 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+38 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -141,7 +142,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `QUALCOMM`, `MEDIATEK`, `EXYNOS` to the rest of the system?**
   _43 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `CPU Governor Subsystem` be split into smaller, more focused modules?**
-  _Cohesion score 0.05837173579109063 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05920745920745921 - nodes in this community are weakly interconnected._
 - **Should `Main Activity & UI Lifecycle` be split into smaller, more focused modules?**
   _Cohesion score 0.14666666666666667 - nodes in this community are weakly interconnected._
 - **Should `Tweaks & Command Executor` be split into smaller, more focused modules?**

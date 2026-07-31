@@ -1,7 +1,7 @@
 {
   "android/app/build.gradle": {
-    "mtime": 1785488891.3321476,
-    "ast_hash": "cebd07a108df3a54e473b6aa2cafab0e",
+    "mtime": 1785478096.4135857,
+    "ast_hash": "aba68b9b44d3ddaec32a49e3faeba8b0",
     "semantic_hash": ""
   },
   "android/build.gradle": {
@@ -285,13 +285,13 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java": {
-    "mtime": 1785488768.0723908,
-    "ast_hash": "9767538ee96913219f629fe464912f27",
+    "mtime": 1785488140.9846857,
+    "ast_hash": "3897132a143d7935532fa92f06c0b05d",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785488760.4888713,
-    "ast_hash": "228069f727d3a9f4bb071ac0e3304849",
+    "mtime": 1785488126.724867,
+    "ast_hash": "5d2fa7781ee98f723052e9d1660311dc",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GamePackageRegistry.java": {
@@ -302,16 +302,6 @@
   "android/app/src/main/java/com/gamebooster/app/games/GameProfileAutoConfigurator.java": {
     "mtime": 1785488517.5885303,
     "ast_hash": "7cbafa0b7aa7077db3d1f2f0c76b5021",
-    "semantic_hash": ""
-  },
-  ".vscode/settings.json": {
-    "mtime": 1785488898.1280506,
-    "ast_hash": "bbc9237c86e6c0f01f6a57abf46a440b",
-    "semantic_hash": ""
-  },
-  "index.html": {
-    "mtime": 1785541349.799844,
-    "ast_hash": "e949bfa1e62fdf3ee714d7234e578260",
     "semantic_hash": ""
   }
 }

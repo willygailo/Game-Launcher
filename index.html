@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Booster Pro — Max FPS & Advanced Tweaks</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #07101f;
+      --panel: rgba(14, 25, 47, 0.78);
+      --line: rgba(148, 190, 255, 0.15);
+      --blue: #38bdf8;
+      --violet: #8b5cf6;
+      --mint: #56f1cc;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100vh;
+      font-family: "DM Sans", sans-serif;
+      overflow-x: hidden;
+      background: #040914;
+      color: #e2e8f0;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      padding: 2rem 1rem;
+      isolation: isolate;
+    }
+
+    .scene::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(130, 167, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(130, 167, 255, 0.045) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black 5%, transparent 72%);
+      z-index: -1;
+    }
+
+    .orb {
+      position: absolute;
+      width: 28rem;
+      height: 28rem;
+      border-radius: 999px;
+      filter: blur(35px);
+      opacity: .34;
+      z-index: -2;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .orb-one { top: -12rem; left: -10rem; background: #075dd9; }
+    .orb-two { right: -12rem; bottom: -10rem; background: #6d28d9; animation-delay: -4s; }
+    @keyframes drift { to { transform: translate(35px, 22px) scale(1.12); } }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 12px var(--blue);
+      opacity: .7;
+      animation: float 6s ease-in-out infinite;
+      z-index: -1;
+    }
+    .particle:nth-child(1) { width: 4px; height: 4px; left: 18%; top: 16%; }
+    .particle:nth-child(2) { width: 6px; height: 6px; right: 20%; top: 26%; background: var(--violet); box-shadow: 0 0 12px var(--violet); animation-delay: -2s; }
+    .particle:nth-child(3) { width: 3px; height: 3px; left: 23%; bottom: 19%; animation-delay: -4s; }
+    .particle:nth-child(4) { width: 5px; height: 5px; right: 24%; bottom: 12%; animation-delay: -1s; }
+    @keyframes float { 50% { transform: translateY(-20px); opacity: .2; } }
+
+    .phone {
+      width: min(100%, 415px);
+      padding: 9px;
+      border-radius: 3.2rem;
+      background: linear-gradient(145deg, #617197 0%, #111a32 23%, #050914 70%, #516384 100%);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .62), 0 0 0 1px rgba(124, 174, 255, .24), 0 0 48px rgba(64, 126, 255, .22);
+      position: relative;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 128px;
+      width: 4px;
+      height: 74px;
+      border-radius: 0 4px 4px 0;
+      background: #24314d;
+    }
+
+    .phone-screen {
+      height: min(800px, calc(100vh - 4rem));
+      min-height: 660px;
+      border-radius: 2.65rem;
+      overflow: hidden;
+      position: relative;
+      background: #081221;
+      border: 1px solid rgba(183, 215, 255, .18);
+    }
+
+    .phone-screen::before {
+      content: "";
+      height: 25px;
+      width: 112px;
+      border-radius: 0 0 18px 18px;
+      background: #020611;
+      position: absolute;
+      z-index: 40;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .app-screen {
+      position: absolute;
+      inset: 0;
+      padding: 2.7rem 1.1rem 4.5rem;
+      background:
+        radial-gradient(circle at 88% 7%, rgba(101, 57, 230, .27), transparent 24%),
+        radial-gradient(circle at 8% 43%, rgba(10, 163, 255, .16), transparent 31%),
+        #081221;
+      transition: opacity .35s ease, transform .35s ease;
+      overflow-y: auto;
+    }
+
+    .app-screen::-webkit-scrollbar { display: none; }
+
+    .app-screen.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.03);
+    }
+
+    .glass {
+      background: rgba(17, 32, 59, .72);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 12px 30px rgba(0,0,0,.18);
+      backdrop-filter: blur(16px);
+    }
+
+    .splash-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .app-mark {
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      border-radius: 31px;
+      background: linear-gradient(145deg, rgba(39, 186, 255, .95), rgba(91, 57, 230, .93));
+      box-shadow: 0 0 0 7px rgba(71, 132, 255, .08), 0 0 40px rgba(70, 139, 255, .6), inset 0 1px 1px rgba(255,255,255,.5);
+      animation: markPulse 2.8s ease-in-out infinite;
+    }
+    @keyframes markPulse { 50% { transform: translateY(-5px); box-shadow: 0 0 0 12px rgba(91, 92, 250, .05), 0 0 56px rgba(104, 88, 255, .75); } }
+
+    .mono { font-family: "Space Mono", monospace; }
+    .metric-number { font-family: "Space Mono", monospace; letter-spacing: -0.08em; }
+    .screen-label { font-size: .62rem; letter-spacing: .15em; text-transform: uppercase; color: #789bc7; font-weight: 600; }
+
+    .primary-action {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      padding: .85rem 1rem;
+      border: 0;
+      border-radius: 1rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: #ffffff;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      box-shadow: 0 12px 26px rgba(48, 111, 255, .35);
+    }
+    .primary-action:hover { transform: translateY(-2px); box-shadow: 0 18px 34px rgba(72, 84, 255, .5); filter: brightness(1.1); }
+    .primary-action:active { transform: translateY(0); }
+    .primary-action:focus-visible, button:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+    .ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(#56f1cc 0deg 274deg, rgba(129, 169, 216, .15) 274deg 360deg);
+      position: relative;
+      transition: filter .3s ease, transform .3s ease, background .5s ease;
+    }
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: #0d1a2d;
+      box-shadow: inset 0 0 18px rgba(4, 9, 22, .9);
+    }
+    .ring-inner { position: relative; z-index: 1; text-align: center; }
+    .boosting .ring { filter: brightness(1.3) drop-shadow(0 0 16px #56f1cc); transform: scale(1.08); }
+
+    .phone-screen.boosting::after {
+      content: "⚡ UNLOCKING MAX FPS & HIGH REFRESH RATE...";
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 18, 38, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #56f1cc;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      padding: 2rem;
+      text-align: center;
+      animation: boostFlash 0.95s ease forwards;
+    }
+    @keyframes boostFlash {
+      0% { opacity: 0; transform: scale(0.95); }
+      25% { opacity: 1; transform: scale(1); }
+      75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .chart-grid {
+      height: 80px;
+      border-radius: .8rem;
+      background-image: linear-gradient(rgba(169, 196, 255, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(169, 196, 255, .08) 1px, transparent 1px);
+      background-size: 22px 21px;
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-grid svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .switch {
+      width: 46px;
+      height: 25px;
+      padding: 2px;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      background: rgba(132, 157, 204, .23);
+      transition: background .25s ease;
+      flex-shrink: 0;
+    }
+    .switch-knob {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      background: #dce9ff;
+      display: block;
+      transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
+    }
+    .switch.is-on { background: linear-gradient(90deg, #0ea5e9, #8b5cf6); }
+    .switch.is-on .switch-knob { transform: translateX(21px); background: #fff; box-shadow: 0 0 10px #c4eeff; }
+
+    .nav-item { color: #7790b9; transition: color .2s ease, transform .2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .nav-item:hover { color: #b0c9f0; }
+    .nav-item.active { color: #57d8ff; transform: translateY(-1px); }
+    .nav-item.active i { filter: drop-shadow(0 0 6px #40caff); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .fps-pill {
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: "Space Mono", monospace;
+      cursor: pointer;
+      border: 1px solid rgba(148, 190, 255, 0.18);
+      background: rgba(15, 27, 49, 0.6);
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+    .fps-pill:hover { border-color: #38bdf8; color: #e2e8f0; }
+    .fps-pill.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .tweak-card {
+      transition: all 0.2s ease;
+    }
+    .tweak-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .badge-active {
+      background: rgba(86, 241, 204, 0.12);
+      color: #56f1cc;
+      border: 1px solid rgba(86, 241, 204, 0.3);
+    }
+    .badge-off {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    /* Toast Overlay */
+    .toast {
+      position: absolute;
+      top: 3.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      opacity: 0;
+      background: rgba(14, 25, 47, 0.95);
+      border: 1px solid #38bdf8;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(56, 189, 248, 0.3);
+      color: #fff;
+      padding: 0.6rem 1.1rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 100;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: max-content;
+      max-width: 90%;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 430px) {
+      .scene { padding: 0; }
+      .phone { width: 100%; padding: 0; border-radius: 0; }
+      .phone-screen { height: 100vh; min-height: 640px; border-radius: 0; }
+    }
+  </style>
+ </head>
+ <body>
+  <main class="scene" aria-label="Game Booster mobile app mockup">
+   <div class="orb orb-one"></div>
+   <div class="orb orb-two"></div>
+   <span class="particle"></span>
+   <span class="particle"></span>
+   <span class="particle"></span>
+   <span class="particle"></span>
+
+   <section class="phone" aria-label="Android Game Booster app">
+    <div class="phone-screen">
+
+     <!-- Interactive Floating Toast Banner -->
+     <div id="app-toast" class="toast">
+      <i data-lucide="check-circle-2" class="text-emerald-400" width="16" height="16"></i>
+      <span id="toast-message">Shizuku ADB Engine Connected</span>
+     </div>
+
+     <!-- Notification Drawer Modal -->
+     <div id="notification-modal" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 p-5 hidden flex-col justify-between">
+      <div>
+       <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div class="flex items-center gap-2">
+         <i data-lucide="bell" class="text-cyan-400" width="18" height="18"></i>
+         <h3 class="text-sm font-bold text-white">System Alerts & Logs</h3>
+        </div>
+        <button id="close-notif-btn" class="glass p-1.5 rounded-lg text-slate-400 hover:text-white">
+         <i data-lucide="x" width="16" height="16"></i>
+        </button>
+       </div>
+       <div class="mt-3 space-y-2 text-xs">
+        <div class="glass p-3 rounded-xl border-l-2 border-l-emerald-400">
+         <p class="font-bold text-emerald-300">Shizuku Provider Active</p>
+         <p class="text-[10px] text-slate-400 mt-0.5">IPC Binder rikka.shizuku connected cleanly.</p>
+        </div>
+        <div class="glass p-3 rounded-xl border-l-2 border-l-cyan-400">
+         <p class="font-bold text-cyan-300">Display Refresh Rate Locked</p>
+         <p class="text-[10px] text-slate-400 mt-0.5">Peak refresh rate forced to 120Hz via Settings.Global.</p>
+        </div>
+        <div class="glass p-3 rounded-xl border-l-2 border-l-purple-400">
+         <p class="font-bold text-purple-300">Thermal Throttling Bypassed</p>
+         <p class="text-[10px] text-slate-400 mt-0.5">cmd thermalservice override-status 0 active.</p>
+        </div>
+       </div>
+      </div>
+      <button id="clear-notif-btn" class="primary-action text-xs py-2">Dismiss All Alerts</button>
+     </div>
+
+     <!-- Add Game Modal -->
+     <div id="add-game-modal" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 p-5 hidden flex-col justify-center">
+      <div class="glass p-4 rounded-2xl border border-cyan-500/30 space-y-3">
+       <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="plus-circle" class="text-cyan-400" width="16" height="16"></i> Add Game to Launcher</h3>
+        <button id="close-add-game" class="text-slate-400 hover:text-white"><i data-lucide="x" width="16" height="16"></i></button>
+       </div>
+       <div>
+        <label class="screen-label">GAME TITLE</label>
+        <input id="new-game-title" type="text" placeholder="e.g. Mobile Legends" class="w-full mt-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+       </div>
+       <div>
+        <label class="screen-label">PACKAGE NAME</label>
+        <input id="new-game-pkg" type="text" placeholder="e.g. com.mobile.legends" class="w-full mt-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+       </div>
+       <div>
+        <label class="screen-label">TARGET FPS PROFILE</label>
+        <select id="new-game-fps" class="w-full mt-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+         <option value="120">120 FPS Ultra Mode</option>
+         <option value="90">90 FPS High Mode</option>
+         <option value="144">144 FPS Extreme Mode</option>
+         <option value="60">60 FPS Balanced</option>
+        </select>
+       </div>
+       <button id="save-new-game" class="primary-action text-xs mt-2">Add & Optimize Game</button>
+      </div>
+     </div>
+
+     <!-- SPLASH SCREEN -->
+     <section id="splash-screen" class="app-screen" aria-labelledby="splash-title">
+      <div class="splash-content">
+       <div class="app-mark" aria-hidden="true">
+        <svg width="62" height="62" viewBox="0 0 64 64" fill="none">
+          <path d="M38.5 7.8c7.4 4.8 11.7 12.6 11.3 21.4l-9.2 5.2-10.6-10.6 5.2-9.2c1.1-2.5 2.2-4.7 3.3-6.8Z" fill="#EAFBFF" />
+          <path d="m30 23.8-10.6 10.6 10.6 10.6 10.6-10.6L30 23.8Z" fill="#D7F9FF" />
+          <path d="M18.8 35.1 10 44l10 1.7 1.7 10 8.9-8.8" stroke="#EAFBFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M31.5 38.5c-7.6-4.9-15.4-3.4-19.3 3.5 5.9 4.6 12.4 4.6 19.3-3.5Z" fill="#302367" stroke="#fff" stroke-width="2" />
+          <circle cx="23.2" cy="41.1" r="1.8" fill="#62ECFF" />
+          <path d="M34.8 42.4h7M38.3 38.9v7" stroke="#62ECFF" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+       </div>
+       <p data-template-id="splash-eyebrow" class="screen-label mt-7">SYSTEM READY • NON-ROOT ADB</p>
+       <h1 id="splash-title" data-template-id="app-name" class="text-2xl font-bold text-white mt-1.5 tracking-wide">GAME BOOSTER PRO</h1>
+       <p data-template-id="splash-tagline" class="text-slate-300 text-xs mt-2.5 max-w-[250px] leading-relaxed">Unlock 120Hz/165Hz FPS, Vulkan HWUI, Low Latency & Thermal Bypass</p>
+
+       <div class="grid grid-cols-2 gap-2 mt-5 w-full text-left">
+        <div class="glass p-2.5 rounded-xl flex items-center gap-2">
+         <i data-lucide="zap" class="text-cyan-400" width="16" height="16"></i>
+         <div>
+          <p class="text-[10px] font-bold text-white">Vulkan HWUI</p>
+          <p class="text-[9px] text-slate-400">GPU Pipeline</p>
+         </div>
+        </div>
+        <div class="glass p-2.5 rounded-xl flex items-center gap-2">
+         <i data-lucide="shield-check" class="text-emerald-400" width="16" height="16"></i>
+         <div>
+          <p class="text-[10px] font-bold text-white">Shizuku IPC</p>
+          <p class="text-[9px] text-slate-400">Active Engine</p>
+         </div>
+        </div>
+       </div>
+
+       <div class="mt-6 w-full">
+        <button id="start-button" data-template-id="start-button-label" class="primary-action" type="button">
+         <i data-lucide="rocket" width="18" height="18"></i> LAUNCH PERFORMANCE HUD
+        </button>
+       </div>
+       <p data-template-id="splash-footnote" class="text-slate-400 mt-4 text-[11px]">Non-Rooted • Android 12+ Game Mode Compliant</p>
+      </div>
+     </section>
+
+     <!-- MAIN DASHBOARD APP SCREEN -->
+     <section id="dashboard-screen" class="app-screen is-hidden" aria-labelledby="dashboard-title">
+      <!-- App Header -->
+      <header class="flex items-center justify-between mb-3">
+       <div>
+        <p data-template-id="dashboard-eyebrow" class="screen-label">SHIZUKU ENGINE ACTIVE</p>
+        <h2 id="dashboard-title" data-template-id="dashboard-title-text" class="text-base font-bold text-white mt-0.5 flex items-center gap-1.5">
+         Game Launcher Pro <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#56f1cc]"></span>
+        </h2>
+       </div>
+       <div class="flex items-center gap-2">
+        <button id="notification-btn" class="glass rounded-xl p-2 text-sky-200 hover:text-white transition-colors relative" type="button" aria-label="Notifications">
+         <i data-lucide="bell" width="17" height="17"></i>
+         <span class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        </button>
+        <button id="back-button" class="glass rounded-xl p-2 text-sky-200 hover:text-white transition-colors" type="button" aria-label="Return to splash screen">
+         <i data-lucide="log-out" width="17" height="17"></i>
+        </button>
+       </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD (HOME HUD) -->
+      <div id="tab-dashboard" class="tab-pane active">
+       <!-- FPS Gauge Card -->
+       <section data-template-id="fps-card" class="glass rounded-2xl p-3.5 relative overflow-hidden">
+        <div class="absolute -right-7 -top-8 h-28 w-28 rounded-full bg-cyan-400/10 blur-2xl"></div>
+        <div class="flex items-center justify-between relative">
+         <div>
+          <p data-template-id="fps-label" class="screen-label">TARGET DISPLAY REFRESH RATE</p>
+          <div class="flex items-baseline gap-2 mt-1">
+           <span id="fps-val" class="metric-number text-4xl font-bold text-white">120</span>
+           <span data-template-id="fps-unit" class="text-xs font-semibold text-cyan-300 mono">FPS / Hz</span>
+          </div>
+         </div>
+         <div class="h-12 w-12 rounded-2xl grid place-items-center bg-cyan-400/10 text-cyan-300 border border-cyan-300/15">
+          <i data-lucide="gauge" width="24" height="24"></i>
+         </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+         <span class="h-2 flex-1 rounded-full bg-slate-700/80 overflow-hidden">
+          <span id="fps-bar" class="block h-full w-[92%] rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-500"></span>
+         </span>
+         <span id="fps-status-tag" data-template-id="fps-status" class="text-[10px] font-bold tracking-wide badge-active px-2 py-0.5 rounded-full">STABLE 120Hz</span>
+        </div>
+
+        <!-- Quick FPS Switcher Pills -->
+        <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-1">
+         <button class="fps-pill" data-hz="60">60Hz</button>
+         <button class="fps-pill" data-hz="90">90Hz</button>
+         <button class="fps-pill active" data-hz="120">120Hz</button>
+         <button class="fps-pill" data-hz="144">144Hz</button>
+         <button class="fps-pill" data-hz="165">165Hz</button>
+        </div>
+       </section>
+
+       <!-- RAM & Latency Row -->
+       <div class="grid grid-cols-2 gap-3 mt-3">
+        <!-- RAM Meter Card -->
+        <section data-template-id="ram-card" class="glass rounded-2xl p-3">
+         <div class="flex items-center justify-between">
+          <p data-template-id="ram-label" class="screen-label">RAM USAGE</p>
+          <i data-lucide="memory-stick" class="text-violet-300" width="16" height="16"></i>
+         </div>
+         <div id="ram-ring" class="ring mx-auto mt-2.5">
+          <div class="ring-inner">
+           <strong id="ram-val" class="mono text-lg text-white">76%</strong>
+           <span id="ram-detail" data-template-id="ram-meter-label" class="block text-[8.5px] text-slate-400 mt-0.5">6.1 / 8.0 GB</span>
+          </div>
+         </div>
+         <button id="trim-ram-btn" class="w-full mt-2.5 py-1 text-[10px] font-bold text-violet-300 bg-violet-500/10 border border-violet-500/20 rounded-lg hover:bg-violet-500/20 transition-colors">
+          Trim Memory
+         </button>
+        </section>
+
+        <!-- Network Latency Card -->
+        <section data-template-id="network-card" class="glass rounded-2xl p-3">
+         <div class="flex items-center justify-between">
+          <p data-template-id="ping-label" class="screen-label">PING & NET</p>
+          <i data-lucide="wifi" class="text-cyan-300" width="16" height="16"></i>
+         </div>
+         <p class="metric-number text-2xl text-white font-bold mt-2"><span id="ping-val">18</span><span class="text-xs ml-1 text-slate-400">ms</span></p>
+         <div class="mt-2 pt-2 border-t border-white/10">
+          <p data-template-id="speed-label" class="text-[9px] text-slate-400">TCP BANDWIDTH</p>
+          <p class="mono text-xs text-emerald-300 font-bold mt-0.5">94.6 Mbps</p>
+         </div>
+         <button id="test-ping-btn" class="w-full mt-2 py-1 text-[10px] font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/20 transition-colors">
+          Test Latency
+         </button>
+        </section>
+       </div>
+
+       <!-- System Hardware Load Chart -->
+       <section data-template-id="usage-card" class="glass rounded-2xl p-3 mt-3">
+        <div class="flex items-center justify-between mb-2">
+         <p data-template-id="usage-title" class="screen-label">REALTIME HARDWARE LOAD</p>
+         <span data-template-id="realtime-label" class="text-[9px] font-bold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full border border-cyan-400/20">LIVE IPC</span>
+        </div>
+        <div class="chart-grid">
+         <svg viewBox="0 0 300 85" preserveAspectRatio="none" aria-label="CPU and GPU usage chart">
+          <defs>
+           <linearGradient id="areaBlue" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#22c8ff" stop-opacity=".34" />
+            <stop offset="1" stop-color="#22c8ff" stop-opacity="0" />
+           </linearGradient>
+          </defs>
+          <path id="chart-area" d="M0 65 C18 58, 25 72, 42 55 S66 49, 83 58 S105 29,124 42 S151 54,169 33 S201 51,220 31 S245 45,266 18 S285 31,300 12 V85 H0Z" fill="url(#areaBlue)" />
+          <path d="M0 65 C18 58, 25 72, 42 55 S66 49, 83 58 S105 29,124 42 S151 54,169 33 S201 51,220 31 S245 45,266 18 S285 31,300 12" fill="none" stroke="#36d4ff" stroke-width="2.3" />
+          <path d="M0 74 C21 71,34 62,52 67 S82 40,100 64 S130 50,148 58 S180 19,204 43 S236 30,254 46 S283 20,300 31" fill="none" stroke="#9a75ff" stroke-width="2.1" stroke-dasharray="4 3" />
+         </svg>
+        </div>
+        <div class="flex gap-4 mt-2 text-[10px]">
+         <span class="flex items-center gap-1.5">
+          <i class="w-2 h-2 rounded-full bg-cyan-400"></i>
+          <span data-template-id="cpu-legend" class="text-slate-300">CPU Load</span>
+          <strong id="cpu-val" class="text-slate-100 mono">42%</strong>
+         </span>
+         <span class="flex items-center gap-1.5">
+          <i class="w-2 h-2 rounded-full bg-violet-400"></i>
+          <span data-template-id="gpu-legend" class="text-slate-300">GPU Load</span>
+          <strong id="gpu-val" class="text-slate-100 mono">68%</strong>
+         </span>
+        </div>
+       </section>
+
+       <!-- Ultra Game Mode Toggle -->
+       <section data-template-id="mode-card" class="glass rounded-2xl p-3 mt-3">
+        <div class="flex items-center justify-between">
+         <div class="flex items-center gap-3">
+          <div class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-sky-400/25 to-violet-500/25 text-cyan-200">
+           <i data-lucide="gamepad-2" width="19" height="19"></i>
+          </div>
+          <div>
+           <p data-template-id="mode-title" class="text-xs font-bold text-white">ULTRA GAME MODE</p>
+           <p data-template-id="mode-description" class="text-[9.5px] text-slate-400 mt-0.5">Vulkan HWUI & 300Hz Touch Slop Lock</p>
+          </div>
+         </div>
+         <button id="game-switch" class="switch is-on" type="button" aria-label="Toggle Game Mode" aria-pressed="true">
+          <span class="switch-knob"></span>
+         </button>
+        </div>
+       </section>
+
+       <!-- Boost Button -->
+       <button id="boost-button" data-template-id="boost-button-label" class="primary-action text-xs mt-3" type="button">
+        <i data-lucide="rocket" width="16" height="16"></i> ULTRA BOOST NOW
+       </button>
+      </div>
+
+      <!-- TAB 2: HZ & FPS UNLOCKER CONTROLLER -->
+      <div id="tab-hz" class="tab-pane">
+       <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="zap" class="text-cyan-400" width="16" height="16"></i> Hz & FPS Display Lock</h3>
+        <span class="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">Non-Root ADB</span>
+       </div>
+
+       <div class="glass p-3.5 rounded-2xl space-y-3">
+        <p class="text-xs text-slate-300 leading-relaxed">Lock your device's screen refresh rate to maximum hardware capabilities (90Hz, 120Hz, 144Hz, or 165Hz) overriding dynamic thermal throttling caps.</p>
+        
+        <div class="grid grid-cols-2 gap-2 text-xs">
+         <button class="hz-option glass p-3 rounded-xl text-left border border-cyan-400/50 bg-cyan-400/10" data-target-hz="120">
+          <div class="flex justify-between items-center">
+           <span class="font-bold text-white">120 Hz Mode</span>
+           <i data-lucide="check-circle" class="text-cyan-400" width="14" height="14"></i>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Recommended for PUBG & COD</p>
+         </button>
+
+         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="144">
+          <div class="flex justify-between items-center">
+           <span class="font-bold text-white">144 Hz Extreme</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Ultra Smooth Display</p>
+         </button>
+
+         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="165">
+          <div class="flex justify-between items-center">
+           <span class="font-bold text-white">165 Hz Max</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Maximum Hardware Limit</p>
+         </button>
+
+         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="90">
+          <div class="flex justify-between items-center">
+           <span class="font-bold text-white">90 Hz Smooth</span>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Balanced Battery & FPS</p>
+         </button>
+        </div>
+
+        <div class="pt-2 border-t border-white/10 space-y-2">
+         <label class="screen-label">OEM DISPLAY PRESET OVERRIDE</label>
+         <select id="oem-preset" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+          <option value="pixel">Stock Android / Google Pixel Overrides</option>
+          <option value="xiaomi">Xiaomi / Poco / MIUI Display Settings</option>
+          <option value="samsung">Samsung OneUI High Motion Smoothness</option>
+          <option value="tecno">Tecno / Infinix HiOS Ultra Touch</option>
+          <option value="oneplus">OnePlus / Realme OxygenOS High Hz</option>
+         </select>
+        </div>
+
+        <button id="apply-hz-btn" class="primary-action text-xs py-2.5">
+         <i data-lucide="check" width="15" height="15"></i> Apply Refresh Rate Lock
+        </button>
+       </div>
+      </div>
+
+      <!-- TAB 3: ADVANCED SYSTEM TWEAKS -->
+      <div id="tab-tweaks" class="tab-pane">
+       <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="sliders" class="text-violet-400" width="16" height="16"></i> System Tweaks Suite</h3>
+        <span class="text-[9px] text-cyan-400">8 Active Tweaks</span>
+       </div>
+
+       <!-- Category Filter Tabs -->
+       <div class="flex gap-1.5 overflow-x-auto pb-2 text-[10px] font-bold">
+        <button class="tweak-filter-btn px-2.5 py-1 rounded-lg bg-cyan-400/20 text-cyan-300 border border-cyan-400/30" data-cat="all">ALL TWEAKS</button>
+        <button class="tweak-filter-btn px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 border border-white/10" data-cat="gpu">GPU & GRAPHICS</button>
+        <button class="tweak-filter-btn px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 border border-white/10" data-cat="touch">TOUCH LATENCY</button>
+        <button class="tweak-filter-btn px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 border border-white/10" data-cat="net">NETWORK</button>
+       </div>
+
+       <div class="space-y-2 mt-2">
+        <!-- Tweak 1: Vulkan HWUI -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="gpu">
+         <div>
+          <div class="flex items-center gap-2">
+           <p class="text-xs font-bold text-white">Vulkan HWUI Graphics Renderer</p>
+           <span class="badge-active text-[8px] font-bold px-1.5 py-0.2 rounded">VULKAN</span>
+          </div>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">debug.hwui.renderer=vulkan</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="Vulkan HWUI" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 2: SurfaceFlinger GPU Render -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="gpu">
+         <div>
+          <div class="flex items-center gap-2">
+           <p class="text-xs font-bold text-white">SurfaceFlinger GPU Composition</p>
+           <span class="badge-active text-[8px] font-bold px-1.5 py-0.2 rounded">GPU HW</span>
+          </div>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">debug.sf.hw=1 (Bypasses CPU rendering)</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="SurfaceFlinger GPU" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 3: 4x MSAA Anti-Aliasing -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="gpu">
+         <div>
+          <p class="text-xs font-bold text-white">Force 4x MSAA Anti-Aliasing</p>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">debug.egl.force_msaa=1</p>
+         </div>
+         <button class="switch tweak-toggle" data-tweak-name="4x MSAA" aria-pressed="false"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 4: Thermal Bypass -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="gpu">
+         <div>
+          <div class="flex items-center gap-2">
+           <p class="text-xs font-bold text-white">Thermal Throttling Bypass</p>
+           <span class="badge-active text-[8px] font-bold px-1.5 py-0.2 rounded">OVERRIDE 0</span>
+          </div>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">cmd thermalservice override-status 0</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="Thermal Bypass" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 5: Touch Slop Sensitivity -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="touch">
+         <div>
+          <div class="flex items-center gap-2">
+           <p class="text-xs font-bold text-white">Touch Slop Reduction (300Hz)</p>
+           <span class="badge-active text-[8px] font-bold px-1.5 py-0.2 rounded">ULTRA FAST</span>
+          </div>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">settings put system touch_slop_reduction 1</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="Touch Slop Reduction" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 6: Disable Scroll Cache -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="touch">
+         <div>
+          <p class="text-xs font-bold text-white">Disable Scroll Cache Delay</p>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">persist.sys.scrollingcache=3</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="Disable Scroll Cache" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <!-- Tweak 7: TCP Packet Buffer Tuning -->
+        <div class="tweak-card glass p-3 rounded-2xl flex items-center justify-between" data-category="net">
+         <div>
+          <p class="text-xs font-bold text-white">TCP Low Latency Packet Sizing</p>
+          <p class="text-[9.5px] text-slate-400 mt-0.5">High throughput Wi-Fi & 5G buffer</p>
+         </div>
+         <button class="switch is-on tweak-toggle" data-tweak-name="TCP Packet Sizing" aria-pressed="true"><span class="switch-knob"></span></button>
+        </div>
+       </div>
+      </div>
+
+      <!-- TAB 4: GAMING PROFILES -->
+      <div id="tab-profiles" class="tab-pane">
+       <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-indigo-400" width="16" height="16"></i> Preset Profiles Suite</h3>
+       </div>
+
+       <div class="space-y-2.5">
+        <div class="profile-card glass p-3.5 rounded-2xl border-l-4 border-l-cyan-400 relative">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="text-xs font-bold text-white">🎯 PUBG / 3D FPS Extreme Profile</h4>
+           <p class="text-[10px] text-slate-300 mt-1">120Hz Lock • 300Hz Touch • Vulkan Renderer • Low Latency TCP</p>
+          </div>
+          <span class="text-[9px] font-bold text-cyan-300 bg-cyan-400/20 px-2 py-0.5 rounded">RECOMMENDED</span>
+         </div>
+         <button class="apply-profile-btn primary-action text-xs py-1.5 mt-3" data-profile="PUBG Extreme">
+          Apply PUBG Extreme Profile
+         </button>
+        </div>
+
+        <div class="profile-card glass p-3.5 rounded-2xl border-l-4 border-l-purple-400">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="text-xs font-bold text-white">🎮 2D & Pixel Games Ultra Smooth</h4>
+           <p class="text-[10px] text-slate-300 mt-1">Zero scroll delay • 2D GPU acceleration • Smooth 90Hz</p>
+          </div>
+         </div>
+         <button class="apply-profile-btn primary-action text-xs py-1.5 mt-3" data-profile="2D Smooth">
+          Apply 2D Smooth Profile
+         </button>
+        </div>
+
+        <div class="profile-card glass p-3.5 rounded-2xl border-l-4 border-l-emerald-400">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="text-xs font-bold text-white">⚖️ Balanced Game Performance</h4>
+           <p class="text-[10px] text-slate-300 mt-1">Schedutil CPU Governor • 90Hz Refresh Rate • Normal Thermal</p>
+          </div>
+         </div>
+         <button class="apply-profile-btn glass w-full py-1.5 mt-3 rounded-xl text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors" data-profile="Balanced">
+          Apply Balanced Profile
+         </button>
+        </div>
+
+        <div class="profile-card glass p-3.5 rounded-2xl border-l-4 border-l-amber-400">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="text-xs font-bold text-white">🔋 Power Saver Gaming</h4>
+           <p class="text-[10px] text-slate-300 mt-1">Powersave CPU Governor • 60Hz Lock • Max Battery Conservation</p>
+          </div>
+         </div>
+         <button class="apply-profile-btn glass w-full py-1.5 mt-3 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-colors" data-profile="Power Saver">
+          Apply Battery Saver
+         </button>
+        </div>
+       </div>
+      </div>
+
+      <!-- TAB 5: GAMES LIBRARY & LAUNCHER -->
+      <div id="tab-games" class="tab-pane">
+       <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="gamepad-2" class="text-cyan-400" width="16" height="16"></i> Game Launcher Library</h3>
+        <button id="open-add-game" class="glass text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-cyan-400/30 hover:bg-cyan-400/20">
+         <i data-lucide="plus" width="12" height="12"></i> Add Game
+        </button>
+       </div>
+
+       <div id="games-list" class="space-y-2.5">
+        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between">
+         <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center font-bold text-white text-xs shadow-md">PUBG</div>
+          <div>
+           <h4 class="text-xs font-bold text-white">PUBG Mobile</h4>
+           <p class="text-[9.5px] text-emerald-400 font-semibold">120 FPS Locked • Vulkan Render</p>
+          </div>
+         </div>
+         <button class="launch-game-btn glass px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="PUBG Mobile">
+          <i data-lucide="play" width="12" height="12"></i> Launch
+         </button>
+        </div>
+
+        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between">
+         <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center font-bold text-white text-xs shadow-md">COD</div>
+          <div>
+           <h4 class="text-xs font-bold text-white">Call of Duty: Mobile</h4>
+           <p class="text-[9.5px] text-cyan-400 font-semibold">120 FPS Ultra Mode</p>
+          </div>
+         </div>
+         <button class="launch-game-btn glass px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="COD Mobile">
+          <i data-lucide="play" width="12" height="12"></i> Launch
+         </button>
+        </div>
+
+        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between">
+         <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs shadow-md">GI</div>
+          <div>
+           <h4 class="text-xs font-bold text-white">Genshin Impact</h4>
+           <p class="text-[9.5px] text-amber-400 font-semibold">Thermal Bypass Active</p>
+          </div>
+         </div>
+         <button class="launch-game-btn glass px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Genshin Impact">
+          <i data-lucide="play" width="12" height="12"></i> Launch
+         </button>
+        </div>
+
+        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between">
+         <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs shadow-md">MLBB</div>
+          <div>
+           <h4 class="text-xs font-bold text-white">Mobile Legends</h4>
+           <p class="text-[9.5px] text-emerald-400 font-semibold">Ultra Touch Slop 300Hz</p>
+          </div>
+         </div>
+         <button class="launch-game-btn glass px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Mobile Legends">
+          <i data-lucide="play" width="12" height="12"></i> Launch
+         </button>
+        </div>
+       </div>
+      </div>
+
+      <!-- TAB 6: ACCESS / SHIZUKU ADB SHELL TERMINAL -->
+      <div id="tab-access" class="tab-pane">
+       <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="terminal" class="text-emerald-400" width="16" height="16"></i> Shizuku ADB Shell Console</h3>
+        <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">CONNECTED IPC</span>
+       </div>
+
+       <!-- Shizuku Status Overview -->
+       <div class="glass p-3 rounded-2xl space-y-2 mb-3">
+        <div class="flex justify-between items-center text-xs">
+         <span class="text-slate-300">Shizuku Binder Service</span>
+         <span class="text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" width="12" height="12"></i> Active (UID 2000)</span>
+        </div>
+        <div class="flex justify-between items-center text-xs border-t border-white/10 pt-1.5">
+         <span class="text-slate-300">WRITE_SECURE_SETTINGS</span>
+         <span class="text-emerald-400 font-bold">GRANTED</span>
+        </div>
+        <div class="flex justify-between items-center text-xs border-t border-white/10 pt-1.5">
+         <span class="text-slate-300">PACKAGE_USAGE_STATS</span>
+         <span class="text-emerald-400 font-bold">GRANTED</span>
+        </div>
+       </div>
+
+       <!-- Live ADB Shell Log Stream -->
+       <div class="glass p-3 rounded-2xl">
+        <div class="flex items-center justify-between pb-2 border-b border-white/10">
+         <span class="screen-label">REALTIME COMMAND LOG</span>
+         <button id="clear-log-btn" class="text-[9px] text-slate-400 hover:text-white">Clear Console</button>
+        </div>
+        <div id="shell-log" class="mono text-[9.5px] text-emerald-400 bg-slate-950 p-2.5 rounded-xl h-44 overflow-y-auto mt-2 space-y-1">
+         <p class="text-slate-500">[INFO] ShizukuBinderListener initialized.</p>
+         <p>[SUCCESS] Granted WRITE_SECURE_SETTINGS via rikka.shizuku.</p>
+         <p>[EXEC] settings put global peak_refresh_rate 120.0</p>
+         <p>[EXEC] setprop debug.hwui.renderer vulkan</p>
+         <p>[EXEC] cmd thermalservice override-status 0</p>
+         <p>[EXEC] settings put system touch_slop_reduction 1</p>
+         <p class="text-cyan-300">[READY] All hardware tweaks enforced successfully.</p>
+        </div>
+
+        <!-- Interactive Shell Input -->
+        <div class="mt-2.5 flex gap-1.5">
+         <input id="shell-cmd-input" type="text" placeholder="e.g. cmd game mode performance com.tencent.ig" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-[10px] text-emerald-300 mono focus:outline-none focus:border-emerald-400">
+         <button id="run-shell-btn" class="glass px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400 border border-emerald-400/30 hover:bg-emerald-400/20">Run</button>
+        </div>
+       </div>
+      </div>
+
+      <!-- MAIN BOTTOM NAVIGATION BAR -->
+      <nav class="glass absolute bottom-3 left-3 right-3 rounded-2xl px-4 py-2 flex items-center justify-between z-30" aria-label="Main navigation">
+       <button id="nav-dashboard" class="nav-item active" type="button" aria-label="Dashboard">
+        <i data-lucide="layout-dashboard" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">HUD</span>
+       </button>
+       <button id="nav-hz" class="nav-item" type="button" aria-label="Hz & FPS">
+        <i data-lucide="zap" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">Hz & FPS</span>
+       </button>
+       <button id="nav-tweaks" class="nav-item" type="button" aria-label="Tweaks">
+        <i data-lucide="sliders" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">Tweaks</span>
+       </button>
+       <button id="nav-profiles" class="nav-item" type="button" aria-label="Profiles">
+        <i data-lucide="layers" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">Profiles</span>
+       </button>
+       <button id="nav-games" class="nav-item" type="button" aria-label="Games">
+        <i data-lucide="gamepad-2" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">Games</span>
+       </button>
+       <button id="nav-access" class="nav-item" type="button" aria-label="Access">
+        <i data-lucide="terminal" width="17" height="17"></i>
+        <span class="text-[8px] font-bold">Access</span>
+       </button>
+      </nav>
+     </section>
+
+    </div>
+   </section>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      const splash = document.getElementById("splash-screen");
+      const dashboard = document.getElementById("dashboard-screen");
+      const phoneScreen = document.querySelector(".phone-screen");
+      const gameSwitch = document.getElementById("game-switch");
+      const boostBtn = document.getElementById("boost-button");
+      const toast = document.getElementById("app-toast");
+      const toastMsg = document.getElementById("toast-message");
+
+      function showToast(msg) {
+        toastMsg.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 2500);
+      }
+
+      function logShell(command) {
+        const shellLog = document.getElementById("shell-log");
+        if (shellLog) {
+          const p = document.createElement("p");
+          p.textContent = `[EXEC] ${command}`;
+          shellLog.appendChild(p);
+          shellLog.scrollTop = shellLog.scrollHeight;
+        }
+      }
+
+      // Splash Screen Navigation
+      document.getElementById("start-button").addEventListener("click", () => {
+        splash.classList.add("is-hidden");
+        dashboard.classList.remove("is-hidden");
+        showToast("⚡ Shizuku ADB Performance Engine Connected!");
+      });
+
+      document.getElementById("back-button").addEventListener("click", () => {
+        dashboard.classList.add("is-hidden");
+        splash.classList.remove("is-hidden");
+      });
+
+      // Game Switch Toggle
+      gameSwitch.addEventListener("click", () => {
+        const active = gameSwitch.classList.toggle("is-on");
+        gameSwitch.setAttribute("aria-pressed", String(active));
+        if (active) {
+          showToast("⚡ Ultra Game Mode Enabled (300Hz Touch Slop)");
+          logShell("settings put system touch_slop_reduction 1");
+         } else {
+          showToast("Game Mode Paused");
+        }
+      });
+
+      // Quick FPS Switcher Pills
+      let currentHz = 120;
+      const fpsPills = document.querySelectorAll(".fps-pill");
+      const fpsVal = document.getElementById("fps-val");
+      const fpsBar = document.getElementById("fps-bar");
+      const fpsStatusTag = document.getElementById("fps-status-tag");
+
+      function updateFpsDisplay(hz) {
+        currentHz = hz;
+        fpsVal.textContent = hz;
+        
+        const widthPct = Math.min(100, Math.round((hz / 165) * 100));
+        fpsBar.style.width = widthPct + "%";
+        fpsStatusTag.textContent = `STABLE ${hz}Hz`;
+        
+        fpsPills.forEach(p => {
+          if (p.getAttribute("data-hz") === String(hz)) {
+            p.classList.add("active");
+          } else {
+            p.classList.remove("active");
+          }
+        });
+
+        showToast(`🎮 Refresh Rate locked to ${hz}Hz!`);
+        logShell(`settings put global peak_refresh_rate ${hz}.0`);
+        logShell(`settings put global user_refresh_rate ${hz}.0`);
+      }
+
+      fpsPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+          const hz = parseInt(pill.getAttribute("data-hz"), 10);
+          updateFpsDisplay(hz);
+        });
+      });
+
+      // Hz & FPS Tab Option Selection
+      const hzOptions = document.querySelectorAll(".hz-option");
+      hzOptions.forEach(opt => {
+        opt.addEventListener("click", () => {
+          hzOptions.forEach(o => {
+            o.classList.remove("border-cyan-400/50", "bg-cyan-400/10");
+            const icon = o.querySelector(".lucide-check-circle");
+            if (icon) icon.remove();
+          });
+          opt.classList.add("border-cyan-400/50", "bg-cyan-400/10");
+          const targetHz = parseInt(opt.getAttribute("data-target-hz"), 10);
+          updateFpsDisplay(targetHz);
+        });
+      });
+
+      document.getElementById("apply-hz-btn").addEventListener("click", () => {
+        const oem = document.getElementById("oem-preset").value;
+        showToast(`🔥 Display Refresh Rate locked to ${currentHz}Hz (${oem.toUpperCase()} Mode)`);
+        logShell(`cmd game set --fps ${currentHz} global`);
+      });
+
+      // RAM Trimming Button
+      document.getElementById("trim-ram-btn").addEventListener("click", () => {
+        document.getElementById("ram-val").textContent = "38%";
+        document.getElementById("ram-detail").textContent = "3.0 / 8.0 GB";
+        showToast("🧹 RAM Cleaned: 2.8 GB Memory Freed!");
+        logShell("am trim-memory com.android.systemui COMPLETE");
+      });
+
+      // Latency Testing Button
+      document.getElementById("test-ping-btn").addEventListener("click", () => {
+        const pingVal = document.getElementById("ping-val");
+        pingVal.textContent = "12";
+        showToast("📡 Latency Tested: 12ms (Optimal TCP Connection)");
+        logShell("ping -c 3 8.8.8.8 -> avg latency 12.4ms");
+      });
+
+      // Boost Action Button
+      boostBtn.addEventListener("click", () => {
+        phoneScreen.classList.add("boosting");
+        
+        document.getElementById("ram-val").textContent = "34%";
+        document.getElementById("ram-detail").textContent = "2.7 / 8.0 GB";
+        document.getElementById("ping-val").textContent = "11";
+
+        logShell("cmd thermalservice override-status 0");
+        logShell("setprop debug.hwui.renderer vulkan");
+        logShell("setprop debug.sf.hw 1");
+
+        setTimeout(() => {
+          phoneScreen.classList.remove("boosting");
+          showToast("🚀 Ultra Boost Applied! Max Hardware Unlocked.");
+        }, 950);
+      });
+
+      // Tab Switching Logic
+      const navButtons = {
+        'nav-dashboard': 'tab-dashboard',
+        'nav-hz': 'tab-hz',
+        'nav-tweaks': 'tab-tweaks',
+        'nav-profiles': 'tab-profiles',
+        'nav-games': 'tab-games',
+        'nav-access': 'tab-access'
+      };
+
+      Object.keys(navButtons).forEach(navId => {
+        const btn = document.getElementById(navId);
+        if (btn) {
+          btn.addEventListener("click", () => {
+            Object.keys(navButtons).forEach(id => {
+              const b = document.getElementById(id);
+              const p = document.getElementById(navButtons[id]);
+              if (b) b.classList.remove("active");
+              if (p) p.classList.remove("active");
+            });
+            btn.classList.add("active");
+            const targetPane = document.getElementById(navButtons[navId]);
+            if (targetPane) targetPane.classList.add("active");
+          });
+        }
+      });
+
+      // Tweak Filtering & Toggles
+      const tweakFilterBtns = document.querySelectorAll(".tweak-filter-btn");
+      const tweakCards = document.querySelectorAll(".tweak-card");
+
+      tweakFilterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tweakFilterBtns.forEach(b => {
+            b.classList.remove("bg-cyan-400/20", "text-cyan-300", "border-cyan-400/30");
+            b.classList.add("bg-slate-800", "text-slate-400", "border-white/10");
+          });
+          btn.classList.add("bg-cyan-400/20", "text-cyan-300", "border-cyan-400/30");
+          
+          const cat = btn.getAttribute("data-cat");
+          tweakCards.forEach(card => {
+            if (cat === "all" || card.getAttribute("data-category") === cat) {
+              card.style.display = "flex";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+      });
+
+      const tweakToggles = document.querySelectorAll(".tweak-toggle");
+      tweakToggles.forEach(toggle => {
+        toggle.addEventListener("click", () => {
+          const active = toggle.classList.toggle("is-on");
+          toggle.setAttribute("aria-pressed", String(active));
+          const name = toggle.getAttribute("data-tweak-name");
+          if (active) {
+            showToast(`⚙️ Enabled: ${name}`);
+            logShell(`Tweak Enabled: ${name}`);
+          } else {
+            showToast(`Disabled: ${name}`);
+            logShell(`Tweak Disabled: ${name}`);
+          }
+        });
+      });
+
+      // Preset Profile Buttons
+      const applyProfileBtns = document.querySelectorAll(".apply-profile-btn");
+      applyProfileBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const profile = btn.getAttribute("data-profile");
+          showToast(`🔥 Profile Applied: ${profile}!`);
+          logShell(`Applied Gaming Profile: ${profile}`);
+        });
+      });
+
+      // Game Launch Buttons
+      const launchBtns = document.querySelectorAll(".launch-game-btn");
+      launchBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const game = btn.getAttribute("data-game");
+          showToast(`🎮 Launching ${game} with Game Booster Overlay...`);
+          logShell(`Launching App: ${game}`);
+        });
+      });
+
+      // Add Game Modal
+      const addGameModal = document.getElementById("add-game-modal");
+      document.getElementById("open-add-game").addEventListener("click", () => {
+        addGameModal.classList.remove("hidden");
+        addGameModal.classList.add("flex");
+      });
+      document.getElementById("close-add-game").addEventListener("click", () => {
+        addGameModal.classList.add("hidden");
+        addGameModal.classList.remove("flex");
+      });
+      document.getElementById("save-new-game").addEventListener("click", () => {
+        const title = document.getElementById("new-game-title").value.trim() || "Custom Game";
+        const fps = document.getElementById("new-game-fps").value;
+        
+        const gamesList = document.getElementById("games-list");
+        const newCard = document.createElement("div");
+        newCard.className = "game-item glass p-3 rounded-2xl flex items-center justify-between";
+        newCard.innerHTML = `
+         <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-800 flex items-center justify-center font-bold text-white text-xs shadow-md">${title.substring(0, 3).toUpperCase()}</div>
+          <div>
+           <h4 class="text-xs font-bold text-white">${title}</h4>
+           <p class="text-[9.5px] text-cyan-400 font-semibold">${fps} FPS Target Mode</p>
+          </div>
+         </div>
+         <button class="launch-game-btn glass px-3 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="${title}">
+          <i data-lucide="play" width="12" height="12"></i> Launch
+         </button>
+        `;
+        gamesList.prepend(newCard);
+        if (window.lucide) lucide.createIcons();
+
+        // Bind launch listener to new button
+        newCard.querySelector(".launch-game-btn").addEventListener("click", () => {
+          showToast(`🎮 Launching ${title} with Game Booster Overlay...`);
+          logShell(`Launching App: ${title}`);
+        });
+
+        addGameModal.classList.add("hidden");
+        addGameModal.classList.remove("flex");
+        showToast(`✅ Game Added: ${title}`);
+      });
+
+      // Notification Drawer
+      const notifModal = document.getElementById("notification-modal");
+      document.getElementById("notification-btn").addEventListener("click", () => {
+        notifModal.classList.remove("hidden");
+        notifModal.classList.add("flex");
+      });
+      document.getElementById("close-notif-btn").addEventListener("click", () => {
+        notifModal.classList.add("hidden");
+        notifModal.classList.remove("flex");
+      });
+      document.getElementById("clear-notif-btn").addEventListener("click", () => {
+        notifModal.classList.add("hidden");
+        notifModal.classList.remove("flex");
+        showToast("Alerts Cleared");
+      });
+
+      // Shell Terminal Input
+      const shellInput = document.getElementById("shell-cmd-input");
+      const runShellBtn = document.getElementById("run-shell-btn");
+
+      function executeUserCmd() {
+        const cmd = shellInput.value.trim();
+        if (cmd) {
+          logShell(cmd);
+          const shellLog = document.getElementById("shell-log");
+          const resP = document.createElement("p");
+          resP.className = "text-cyan-300";
+          resP.textContent = `[RESULT] Command executed successfully via Shizuku.`;
+          shellLog.appendChild(resP);
+          shellLog.scrollTop = shellLog.scrollHeight;
+          shellInput.value = "";
+        }
+      }
+
+      runShellBtn.addEventListener("click", executeUserCmd);
+      shellInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") executeUserCmd();
+      });
+
+      document.getElementById("clear-log-btn").addEventListener("click", () => {
+        document.getElementById("shell-log").innerHTML = `<p class="text-slate-500">[INFO] Console cleared.</p>`;
+      });
+
+      // Periodic Load Fluctuation
+      setInterval(() => {
+        const cpuVal = document.getElementById("cpu-val");
+        const gpuVal = document.getElementById("gpu-val");
+        if (cpuVal && gpuVal) {
+          const cpu = Math.floor(32 + Math.random() * 18);
+          const gpu = Math.floor(58 + Math.random() * 20);
+          cpuVal.textContent = cpu + "%";
+          gpuVal.textContent = gpu + "%";
+        }
+      }, 3000);
+    });
+  </script>
+ </body>
+</html>
