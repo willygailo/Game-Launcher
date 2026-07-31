@@ -33,10 +33,22 @@
             android:textSize="15sp"
             android:textStyle="bold" />
 
-        <Switch
-            android:id="@+id/switch_tweak_toggle"
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+            <Switch
+                android:id="@+id/switch_tweak_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ImageView
+                android:id="@+id/iv_tweak_lock"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_secure"
+                android:tint="@color/accent_lock_amber"
+                android:visibility="gone" />
+        </FrameLayout>
     </LinearLayout>
 
     <TextView

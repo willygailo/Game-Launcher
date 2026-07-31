@@ -24,7 +24,16 @@ public class CommandExecutor {
             case READ_ONLY:
             default:
                 ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, false);
-                return shellRes.stdout.isEmpty() ? shellRes.stderr : shellRes.stdout;
+                if (!shellRes.isSuccess()) {
+                    return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
+                }
+                if (!shellRes.stderr.isEmpty()) {
+                    return "ERROR: " + shellRes.stderr;
+                }
+                if (shellRes.stdout.isEmpty()) {
+                    return "ERROR: Unprivileged shell execution failed or unconfirmed";
+                }
+                return shellRes.stdout;
         }
     }
 
@@ -41,12 +50,16 @@ public class CommandExecutor {
     }
 
     public static boolean isSuccessOutput(String result) {
-        if (result == null) return true;
+        if (result == null || result.trim().isEmpty()) {
+            return false;
+        }
         String lower = result.toLowerCase();
-        if (lower.isEmpty() || lower.equals("ok") || lower.equals("0")) return true;
-        if (lower.contains("error") || lower.contains("permission denial") ||
-            lower.contains("securityexception") || lower.contains("permission denied") ||
-            lower.contains("operation not permitted") || lower.contains("failed") ||
+        if (lower.startsWith("error") ||
+            lower.contains("permission denial") ||
+            lower.contains("securityexception") ||
+            lower.contains("permission denied") ||
+            lower.contains("operation not permitted") ||
+            lower.contains("failed") ||
             lower.contains("not found")) {
             return false;
         }

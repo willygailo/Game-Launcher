@@ -26,6 +26,15 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
+        <TextView
+            android:id="@+id/tv_engine_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Active Engine: Checking..."
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
         <!-- Shizuku Card -->
         <LinearLayout
             android:layout_width="match_parent"

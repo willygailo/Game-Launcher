@@ -60,6 +60,12 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateDashboard();
+    }
+
     private void startBoosterService() {
         if (getContext() == null) return;
         try {

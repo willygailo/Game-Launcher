@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gamespace.app.R;
 import com.gamespace.app.tweaks.TweakItem;
 import com.gamespace.app.tweaks.TweakManagerRepository;
+import com.gamespace.app.data.CommandExecutor;
+import com.gamespace.app.utils.ShizukuExecutor;
+import com.gamespace.app.utils.ShizukuUtils;
 
 import java.util.List;
 
@@ -46,7 +51,12 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         holder.tvTitle.setText(tweak.getTitle());
         holder.tvDescription.setText(tweak.getDescription());
 
-        if (tweak.isRequiresShizuku()) {
+        boolean needsShizuku = tweak.isRequiresShizuku();
+        boolean hasShizuku = CommandExecutor.getActiveEngineMode() == com.gamespace.app.core.EngineMode.SHIZUKU;
+
+        boolean isLocked = needsShizuku && !hasShizuku;
+
+        if (needsShizuku) {
             holder.tvBadge.setText("[SHIZUKU/ADB]");
             holder.tvBadge.setTextColor(Color.parseColor("#00FF66"));
         } else {
@@ -54,23 +64,52 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             holder.tvBadge.setTextColor(Color.parseColor("#00F0FF"));
         }
 
+        if (isLocked) {
+            holder.ivLock.setVisibility(View.VISIBLE);
+            holder.switchToggle.setAlpha(0.5f);
+        } else {
+            holder.ivLock.setVisibility(View.GONE);
+            holder.switchToggle.setAlpha(1.0f);
+        }
+
         holder.switchToggle.setOnCheckedChangeListener(null);
         holder.switchToggle.setChecked(tweak.isApplied());
 
-        holder.switchToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            boolean success;
-            if (isChecked) {
-                success = TweakManagerRepository.applyTweak(tweak);
-                if (success) {
-                    Toast.makeText(context, tweak.getTitle() + " APPLIED", Toast.LENGTH_SHORT).show();
-                } else {
-                    holder.switchToggle.setChecked(false);
-                    Toast.makeText(context, "Permission Denied for " + tweak.getTitle(), Toast.LENGTH_SHORT).show();
+        holder.switchToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (holder.isUpdatingProgrammatically) return;
+
+                if (isLocked) {
+                    holder.isUpdatingProgrammatically = true;
+                    holder.switchToggle.setChecked(!isChecked);
+                    holder.isUpdatingProgrammatically = false;
+                    
+                    ShizukuUtils.showShizukuPermissionDialog(context, tweak.getTitle());
+                    return;
                 }
-            } else {
-                success = TweakManagerRepository.revertTweak(tweak);
-                if (success) {
-                    Toast.makeText(context, tweak.getTitle() + " REVERTED", Toast.LENGTH_SHORT).show();
+
+                boolean success;
+                if (isChecked) {
+                    success = TweakManagerRepository.applyTweak(tweak);
+                    if (success) {
+                        Toast.makeText(context, tweak.getTitle() + " APPLIED", Toast.LENGTH_SHORT).show();
+                    } else {
+                        holder.isUpdatingProgrammatically = true;
+                        holder.switchToggle.setChecked(false);
+                        holder.isUpdatingProgrammatically = false;
+                        Toast.makeText(context, "Failed to apply " + tweak.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    success = TweakManagerRepository.revertTweak(tweak);
+                    if (success) {
+                        Toast.makeText(context, tweak.getTitle() + " REVERTED", Toast.LENGTH_SHORT).show();
+                    } else {
+                        holder.isUpdatingProgrammatically = true;
+                        holder.switchToggle.setChecked(true);
+                        holder.isUpdatingProgrammatically = false;
+                        Toast.makeText(context, "Failed to revert " + tweak.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -86,6 +125,8 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         TextView tvTitle;
         TextView tvDescription;
         Switch switchToggle;
+        ImageView ivLock;
+        boolean isUpdatingProgrammatically = false;
 
         public TweakViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -93,6 +134,7 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             tvTitle = itemView.findViewById(R.id.tv_tweak_title);
             tvDescription = itemView.findViewById(R.id.tv_tweak_description);
             switchToggle = itemView.findViewById(R.id.switch_tweak_toggle);
+            ivLock = itemView.findViewById(R.id.iv_tweak_lock);
         }
     }
 }

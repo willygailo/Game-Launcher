@@ -15,10 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamespace.app.R;
-import com.gamespace.app.core.EngineMode;
-import com.gamespace.app.data.CommandExecutor;
 import com.gamespace.app.tweaks.TweakCategory;
 import com.gamespace.app.tweaks.TweakManagerRepository;
+import com.gamespace.app.utils.EngineUIHelper;
 
 public class TweaksFragment extends Fragment {
 
@@ -38,12 +37,17 @@ public class TweaksFragment extends Fragment {
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
+        Button btnFilterRoot = view.findViewById(R.id.btn_filter_root);
+
+        if (btnFilterRoot != null) {
+            btnFilterRoot.setVisibility(View.GONE);
+        }
 
         rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new TweaksAdapter(getContext(), TweakManagerRepository.getAllTweaks());
         rvTweaks.setAdapter(adapter);
 
-        updateEngineStatus();
+        EngineUIHelper.refreshEngineStatus(tvStatus);
 
         btnApplyAll.setOnClickListener(v -> {
             int appliedCount = TweakManagerRepository.applyAllSupportedTweaks();
@@ -59,9 +63,12 @@ public class TweaksFragment extends Fragment {
         return view;
     }
 
-    private void updateEngineStatus() {
-        EngineMode mode = CommandExecutor.getActiveEngineMode();
-        tvStatus.setText("Active Engine: " + mode.getDisplayName());
-        tvStatus.setTextColor(mode.getColorHex());
+    @Override
+    public void onResume() {
+        super.onResume();
+        EngineUIHelper.refreshEngineStatus(tvStatus);
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 }

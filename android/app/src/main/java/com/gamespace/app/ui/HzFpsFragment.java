@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -15,8 +16,15 @@ import androidx.fragment.app.Fragment;
 import com.gamespace.app.R;
 import com.gamespace.app.channels.HzFpsChannel;
 import com.gamespace.app.channels.ThermalChannel;
+import com.gamespace.app.core.EngineMode;
+import com.gamespace.app.data.CommandExecutor;
+import com.gamespace.app.utils.ShizukuUtils;
 
 public class HzFpsFragment extends Fragment {
+
+    private boolean isUpdatingProgrammatically = false;
+    private Switch switchThermal;
+    private ImageView ivThermalLock;
 
     @Nullable
     @Override
@@ -28,7 +36,8 @@ public class HzFpsFragment extends Fragment {
         Button btn120 = view.findViewById(R.id.btn_lock_120);
         Button btn144 = view.findViewById(R.id.btn_lock_144);
         Button btn165 = view.findViewById(R.id.btn_lock_165);
-        Switch switchThermal = view.findViewById(R.id.switch_thermal);
+        switchThermal = view.findViewById(R.id.switch_thermal);
+        ivThermalLock = view.findViewById(R.id.iv_thermal_lock);
 
         btn60.setOnClickListener(v -> setHz(60.0f));
         btn90.setOnClickListener(v -> setHz(90.0f));
@@ -36,17 +45,52 @@ public class HzFpsFragment extends Fragment {
         btn144.setOnClickListener(v -> setHz(144.0f));
         btn165.setOnClickListener(v -> setHz(165.0f));
 
+        updateLockState();
+
         switchThermal.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isUpdatingProgrammatically) return;
+
+            boolean hasShizuku = CommandExecutor.getActiveEngineMode() == EngineMode.SHIZUKU;
+            if (!hasShizuku) {
+                isUpdatingProgrammatically = true;
+                buttonView.setChecked(!isChecked);
+                isUpdatingProgrammatically = false;
+                
+                ShizukuUtils.showShizukuPermissionDialog(getContext(), "Thermal Throttling Bypass");
+                return;
+            }
+
             boolean ok = ThermalChannel.setThermalOverride(isChecked);
             if (ok) {
                 Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Failed to override thermal service", Toast.LENGTH_LONG).show();
+                isUpdatingProgrammatically = true;
                 buttonView.setChecked(!isChecked);
+                isUpdatingProgrammatically = false;
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateLockState();
+    }
+
+    private void updateLockState() {
+        if (switchThermal == null || ivThermalLock == null) return;
+        
+        boolean hasShizuku = CommandExecutor.getActiveEngineMode() == EngineMode.SHIZUKU;
+        if (!hasShizuku) {
+            ivThermalLock.setVisibility(View.VISIBLE);
+            switchThermal.setAlpha(0.5f);
+        } else {
+            ivThermalLock.setVisibility(View.GONE);
+            switchThermal.setAlpha(1.0f);
+        }
     }
 
     private void setHz(float hz) {
@@ -58,3 +102,4 @@ public class HzFpsFragment extends Fragment {
         }
     }
 }
+

@@ -15,36 +15,37 @@ public class PerformanceChannel {
     }
 
     public static boolean applyProfile(Context context, Profile profile) {
+        boolean ok = true;
         switch (profile) {
             case EXTREME_3D_FPS:
-                CpuGovernorChannel.setPerformanceLock();
-                GpuTweaksChannel.setGpuMaxPerformance();
-                TouchLatencyChannel.enableUltraTouchResponse();
-                NetworkTweaksChannel.enableLowLatencyNetwork();
-                ThermalChannel.setThermalOverride(true);
-                HzFpsChannel.setRefreshRate(120.0f);
+                ok &= CpuGovernorChannel.setPerformanceLock();
+                ok &= GpuTweaksChannel.setGpuMaxPerformance();
+                ok &= TouchLatencyChannel.enableUltraTouchResponse();
+                ok &= NetworkTweaksChannel.enableLowLatencyNetwork();
+                ok &= ThermalChannel.setThermalOverride(true);
+                ok &= HzFpsChannel.setRefreshRate(120.0f);
                 RamZramChannel.trimMemoryAndCleanCache(context);
-                return true;
+                return ok;
 
             case ULTRA_SMOOTH_2D:
-                CpuGovernorChannel.setGovernor("performance");
-                TouchLatencyChannel.enableUltraTouchResponse();
-                HzFpsChannel.setRefreshRate(90.0f);
+                ok &= CpuGovernorChannel.setGovernor("performance");
+                ok &= TouchLatencyChannel.enableUltraTouchResponse();
+                ok &= HzFpsChannel.setRefreshRate(90.0f);
                 RamZramChannel.trimMemoryAndCleanCache(context);
-                return true;
+                return ok;
 
             case BALANCED:
-                CpuGovernorChannel.setGovernor("schedutil");
-                TouchLatencyChannel.enableUltraTouchResponse();
-                HzFpsChannel.setRefreshRate(90.0f);
-                ThermalChannel.setThermalOverride(false);
-                return true;
+                ok &= CpuGovernorChannel.setGovernor("schedutil");
+                ok &= TouchLatencyChannel.enableUltraTouchResponse();
+                ok &= HzFpsChannel.setRefreshRate(90.0f);
+                ok &= ThermalChannel.setThermalOverride(false);
+                return ok;
 
             case BATTERY_SAVER:
-                CpuGovernorChannel.setGovernor("powersave");
-                ThermalChannel.setThermalOverride(false);
-                HzFpsChannel.setRefreshRate(60.0f);
-                return true;
+                ok &= CpuGovernorChannel.setGovernor("powersave");
+                ok &= ThermalChannel.setThermalOverride(false);
+                ok &= HzFpsChannel.setRefreshRate(60.0f);
+                return ok;
 
             default:
                 return false;

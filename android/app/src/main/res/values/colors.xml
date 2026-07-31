@@ -7,6 +7,7 @@
     <color name="accent_neon_green">#00FF66</color>
     <color name="accent_purple">#7000FF</color>
     <color name="accent_amber">#FFB800</color>
+    <color name="accent_lock_amber">#FFB800</color>
     <color name="accent_red">#FF0055</color>
     <color name="text_primary">#F1F5F9</color>
     <color name="text_secondary">#94A3B8</color>

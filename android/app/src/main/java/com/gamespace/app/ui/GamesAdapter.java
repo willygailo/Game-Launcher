@@ -44,11 +44,15 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
         }
 
         holder.btnLaunch.setOnClickListener(v -> {
-            try {
-                Toast.makeText(context, "Boosting & Launching " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
-                context.startActivity(game.getLaunchIntent());
-            } catch (Exception e) {
-                Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
+            if (game.getLaunchIntent() != null) {
+                try {
+                    Toast.makeText(context, "Boosting & Launching " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
+                    context.startActivity(game.getLaunchIntent());
+                } catch (Exception e) {
+                    Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(context, "Cannot launch " + game.getLabel() + " (No launcher intent)", Toast.LENGTH_SHORT).show();
             }
         });
     }

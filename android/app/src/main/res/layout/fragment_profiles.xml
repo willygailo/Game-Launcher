@@ -26,6 +26,15 @@
             android:textColor="#8F9CAE"
             android:textSize="14sp" />
 
+        <TextView
+            android:id="@+id/tv_engine_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Active Engine: Checking..."
+            android:textColor="#8F9CAE"
+            android:textSize="13sp" />
+
         <!-- 2D Games Profile Card -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -95,6 +104,78 @@
                 android:backgroundTint="#00F0FF"
                 android:text="Apply PUBG Extreme Profile"
                 android:textColor="#0A0E1A"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Balanced Profile Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#161F33"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚖️ Balanced Game Performance"
+                android:textColor="#FFB800"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Schedutil CPU governor, 90Hz refresh rate, standard thermal throttling."
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_apply_balanced_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#FFB800"
+                android:text="Apply Balanced Profile"
+                android:textColor="#0A0E1A"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Battery Saver Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#161F33"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔋 Battery Saver Gaming"
+                android:textColor="#8F9CAE"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Powersave CPU governor, 60Hz refresh rate, maximum power conservation."
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_apply_battery_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#243354"
+                android:text="Apply Battery Saver Profile"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold" />
         </LinearLayout>
 

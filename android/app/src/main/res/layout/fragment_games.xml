@@ -14,6 +14,16 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tv_engine_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Active Engine: Checking..."
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:gravity="center"
         android:paddingBottom="12dp" />
 
     <Button
