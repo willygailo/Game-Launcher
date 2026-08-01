@@ -5,10 +5,9 @@ import android.content.Context;
 public class PerformanceChannel {
 
     public enum Profile {
-        EXTREME_3D_FPS("Extreme 3D FPS Booster"),
-        ULTRA_SMOOTH_2D("Ultra Smooth 2D Gamer"),
-        BALANCED("Balanced Game Performance"),
-        BATTERY_SAVER("Battery Saver Gaming");
+        EXTREME_PERFORMANCE("Extreme Performance Mode"),
+        PERFORMANCE("High Performance Mode"),
+        BALANCED("Balanced Game Performance");
 
         public final String title;
         Profile(String title) { this.title = title; }
@@ -17,20 +16,22 @@ public class PerformanceChannel {
     public static boolean applyProfile(Context context, Profile profile) {
         boolean ok = true;
         switch (profile) {
-            case EXTREME_3D_FPS:
+            case EXTREME_PERFORMANCE:
                 ok &= CpuGovernorChannel.setPerformanceLock();
                 ok &= GpuTweaksChannel.setGpuMaxPerformance();
+                ok &= GpuTweaksChannel.enableVulkanRenderer();
                 ok &= TouchLatencyChannel.enableUltraTouchResponse();
                 ok &= NetworkTweaksChannel.enableLowLatencyNetwork();
                 ok &= ThermalChannel.setThermalOverride(true);
-                ok &= HzFpsChannel.setRefreshRate(120.0f);
+                ok &= HzFpsChannel.setRefreshRate(165.0f);
                 RamZramChannel.trimMemoryAndCleanCache(context);
                 return ok;
 
-            case ULTRA_SMOOTH_2D:
+            case PERFORMANCE:
                 ok &= CpuGovernorChannel.setGovernor("performance");
+                ok &= GpuTweaksChannel.enableVulkanRenderer();
                 ok &= TouchLatencyChannel.enableUltraTouchResponse();
-                ok &= HzFpsChannel.setRefreshRate(90.0f);
+                ok &= HzFpsChannel.setRefreshRate(120.0f);
                 RamZramChannel.trimMemoryAndCleanCache(context);
                 return ok;
 
@@ -39,12 +40,6 @@ public class PerformanceChannel {
                 ok &= TouchLatencyChannel.enableUltraTouchResponse();
                 ok &= HzFpsChannel.setRefreshRate(90.0f);
                 ok &= ThermalChannel.setThermalOverride(false);
-                return ok;
-
-            case BATTERY_SAVER:
-                ok &= CpuGovernorChannel.setGovernor("powersave");
-                ok &= ThermalChannel.setThermalOverride(false);
-                ok &= HzFpsChannel.setRefreshRate(60.0f);
                 return ok;
 
             default:
