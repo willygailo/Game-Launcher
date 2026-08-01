@@ -35,7 +35,7 @@
             android:textColor="#8F9CAE"
             android:textSize="13sp" />
 
-        <!-- 2D Games Profile Card -->
+        <!-- GPU GRAPHICS RENDER ENGINE SELECTOR CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,8 +47,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎮 2D &amp; Pixel Games Ultra Smooth"
-                android:textColor="#00FF88"
+                android:text="🎨 GPU GRAPHICS RENDER ENGINE"
+                android:textColor="#00F0FF"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -56,22 +56,41 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="300Hz touch sampling rate, 2D GPU acceleration, zero scrolling cache delay."
+                android:text="Select 3D Vulkan HWUI for modern 3D games or 2D Skia Engine for retro/pixel games."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
-            <Button
-                android:id="@+id/btn_apply_2d_profile"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#00FF88"
-                android:text="Apply 2D Games Profile"
-                android:textColor="#0A0E1A"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_engine_3d_vulkan"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:backgroundTint="#00F0FF"
+                    android:text="⚡ 3D Vulkan HWUI"
+                    android:textColor="#0A0E1A"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_engine_2d_skia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="#243354"
+                    android:text="🎮 2D Skia Engine"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- PUBG Mobile Card -->
+        <!-- EXTREME PERFORMANCE PROFILE CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -83,7 +102,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎯 PUBG Mobile / 3D FPS Extreme"
+                android:text="🔥 EXTREME PERFORMANCE"
                 android:textColor="#00F0FF"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -92,7 +111,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Full SurfaceFlinger GPU composition, 300Hz touch sampling, low latency."
+                android:text="Max CPU clocks, Vulkan HWUI, 480Hz touch slop, Thermal bypass &amp; 165Hz lock."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
@@ -102,12 +121,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:backgroundTint="#00F0FF"
-                android:text="Apply PUBG Extreme Profile"
+                android:text="Apply Extreme Performance Profile"
                 android:textColor="#0A0E1A"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Balanced Profile Card -->
+        <!-- HIGH PERFORMANCE PROFILE CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,7 +138,43 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚖️ Balanced Game Performance"
+                android:text="⚡ HIGH PERFORMANCE"
+                android:textColor="#00FF88"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Performance CPU governor, Vulkan HWUI, 300Hz touch &amp; 120Hz refresh lock."
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_apply_2d_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#00FF88"
+                android:text="Apply Performance Profile"
+                android:textColor="#0A0E1A"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- BALANCED PROFILE CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#161F33"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚖️ BALANCED GAME PERFORMANCE"
                 android:textColor="#FFB800"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -128,7 +183,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Schedutil CPU governor, 90Hz refresh rate, standard thermal throttling."
+                android:text="Schedutil CPU governor, 90Hz refresh rate &amp; standard thermal throttling."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
@@ -140,42 +195,6 @@
                 android:backgroundTint="#FFB800"
                 android:text="Apply Balanced Profile"
                 android:textColor="#0A0E1A"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Battery Saver Card -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="#161F33"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔋 Battery Saver Gaming"
-                android:textColor="#8F9CAE"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Powersave CPU governor, 60Hz refresh rate, maximum power conservation."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/btn_apply_battery_profile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:backgroundTint="#243354"
-                android:text="Apply Battery Saver Profile"
-                android:textColor="#FFFFFF"
                 android:textStyle="bold" />
         </LinearLayout>
 

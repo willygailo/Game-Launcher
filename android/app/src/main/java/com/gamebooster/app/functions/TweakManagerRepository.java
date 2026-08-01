@@ -100,6 +100,56 @@ public class TweakManagerRepository {
                 TweakCategory.CPU_GPU,
                 true
         ));
+
+        TWEAKS.add(new TweakItem(
+                "force_4x_msaa",
+                "Force 4x MSAA Anti-Aliasing",
+                "Forces 4x Multi-Sample Anti-Aliasing for crisp 3D graphics rendering",
+                "setprop debug.egl.force_msaa 1",
+                "setprop debug.egl.force_msaa 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "gpu_16bit_color",
+                "GPU High-Speed 16-Bit Alpha",
+                "Uses fast 16-bit texture format to boost rendering FPS",
+                "setprop persist.sys.use_16bpp_alpha 1",
+                "setprop persist.sys.use_16bpp_alpha 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "bypass_game_throttle",
+                "Bypass Game Throttling Interventions",
+                "Disables Android system default FPS caps & enables Game Driver for all apps",
+                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 2",
+                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_all_apps 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "wifi_latency_mode",
+                "Low Latency Wi-Fi Packet Mode",
+                "Forces high-power Wi-Fi lock to eliminate packet jitter during online games",
+                "cmd wlan set-power-mode 0 || settings put global wifi_sleep_policy 2",
+                "cmd wlan set-power-mode 2 || settings put global wifi_sleep_policy 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "cpu_affinity_priority",
+                "CPU Thread Affinity Priority",
+                "Directs game process threads to high-performance CPU cores",
+                "setprop sys.games.cpu_affinity 1",
+                "setprop sys.games.cpu_affinity 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

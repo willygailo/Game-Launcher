@@ -47,6 +47,18 @@ public class PerformanceChannel {
         }
     }
 
+    public static boolean setGpuRenderMode(boolean is3D) {
+        if (is3D) {
+            boolean ok = GpuTweaksChannel.enableVulkanRenderer();
+            ok &= com.gamebooster.app.root.CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+            return ok;
+        } else {
+            boolean ok = com.gamebooster.app.root.CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
+            ok &= com.gamebooster.app.root.CommandExecutor.setSystemProperty("debug.sf.hw", "0");
+            return ok;
+        }
+    }
+
     public static boolean executeOneTapBoost(Context context) {
         RamZramChannel.trimMemoryAndCleanCache(context);
         CpuGovernorChannel.setPerformanceLock();

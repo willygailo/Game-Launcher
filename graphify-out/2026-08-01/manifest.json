@@ -318,5 +318,10 @@
     "mtime": 1785542097.4818735,
     "ast_hash": "87a2e3596fd1bca0470567f75d752e20",
     "semantic_hash": ""
+  },
+  ".agents/AGENTS.md": {
+    "mtime": 1785546207.7732353,
+    "ast_hash": "d7fde81e5ec0d02b4238f224c1999f3a",
+    "semantic_hash": ""
   }
 }

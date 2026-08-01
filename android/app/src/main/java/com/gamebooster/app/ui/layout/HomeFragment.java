@@ -26,6 +26,16 @@ import com.gamebooster.app.root.EngineMode;
 import com.gamebooster.app.root.CommandExecutor;
 import com.gamebooster.app.metadata.GameBoosterService;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.gamebooster.app.games.GameAppInfo;
+import com.gamebooster.app.games.GameManagerRepository;
+import com.gamebooster.app.games.GameProfileAutoConfigurator;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomeFragment extends Fragment {
 
     private TextView tvEngineMode;
@@ -33,6 +43,10 @@ public class HomeFragment extends Fragment {
     private TextView tvRamUsage;
     private TextView tvBatteryTemp;
     private TextView tvBoostStatus;
+    private TextView tvGamesHeader;
+    private RecyclerView rvGames;
+    private GamesAdapter adapter;
+    private final List<GameAppInfo> gameList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -45,10 +59,19 @@ public class HomeFragment extends Fragment {
         tvBatteryTemp = view.findViewById(R.id.tv_battery_temp);
         tvBoostStatus = view.findViewById(R.id.tv_boost_status);
         Button btnHeroBoost = view.findViewById(R.id.btn_hero_boost);
+        Button btnSettings = view.findViewById(R.id.btn_open_settings);
 
         Switch switchOverlay = view.findViewById(R.id.switch_overlay_hud);
         Switch switchDnd = view.findViewById(R.id.switch_gaming_dnd);
         Button btnDns = view.findViewById(R.id.btn_network_dns);
+
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).selectTab(1); // Navigate to Tweaks / Settings
+                }
+            });
+        }
 
         if (switchOverlay != null) {
             switchOverlay.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
@@ -121,7 +144,87 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        // Setup Embedded Games Launcher controls
+        tvGamesHeader = view.findViewById(R.id.tv_games_header);
+        rvGames = view.findViewById(R.id.rv_games_list);
+        TextView tvTargetLabel = view.findViewById(R.id.tv_target_fps_label);
+        Button btnTarget60 = view.findViewById(R.id.btn_target_60);
+        Button btnTarget90 = view.findViewById(R.id.btn_target_90);
+        Button btnTarget120 = view.findViewById(R.id.btn_target_120);
+        Button btnTarget144 = view.findViewById(R.id.btn_target_144);
+        Button btnTarget165 = view.findViewById(R.id.btn_target_165);
+        Button btnAutoConfig = view.findViewById(R.id.btn_auto_config_games);
+        Button btnBoostRam = view.findViewById(R.id.btn_boost_ram);
+
+        if (getContext() != null && tvTargetLabel != null) {
+            int currentTarget = GameProfileAutoConfigurator.getTargetFpsHz(getContext());
+            tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ");
+        }
+
+        View.OnClickListener hzClickListener = v -> {
+            if (getContext() == null) return;
+            int targetHz = 120;
+            int id = v.getId();
+            if (id == R.id.btn_target_60) targetHz = 60;
+            else if (id == R.id.btn_target_90) targetHz = 90;
+            else if (id == R.id.btn_target_120) targetHz = 120;
+            else if (id == R.id.btn_target_144) targetHz = 144;
+            else if (id == R.id.btn_target_165) targetHz = 165;
+
+            GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
+            if (tvTargetLabel != null) {
+                tvTargetLabel.setText("TARGET RATE: " + targetHz + " FPS / HZ");
+            }
+            Toast.makeText(getContext(), "Target FPS/Hz set to " + targetHz + " FPS", Toast.LENGTH_SHORT).show();
+        };
+
+        if (btnTarget60 != null) btnTarget60.setOnClickListener(hzClickListener);
+        if (btnTarget90 != null) btnTarget90.setOnClickListener(hzClickListener);
+        if (btnTarget120 != null) btnTarget120.setOnClickListener(hzClickListener);
+        if (btnTarget144 != null) btnTarget144.setOnClickListener(hzClickListener);
+        if (btnTarget165 != null) btnTarget165.setOnClickListener(hzClickListener);
+
+        if (btnAutoConfig != null) {
+            btnAutoConfig.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnAutoConfig.setEnabled(false);
+                Toast.makeText(getContext(), "⚡ Auto-configuring all games for max FPS/Hz...", Toast.LENGTH_SHORT).show();
+
+                GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(getContext(), (count, fps) -> {
+                    if (isAdded() && getContext() != null) {
+                        btnAutoConfig.setEnabled(true);
+                        Toast.makeText(getContext(), "✅ Auto-Configured " + count + " games to " + fps + " FPS/Hz!", Toast.LENGTH_LONG).show();
+                    }
+                });
+            });
+        }
+
+        if (btnBoostRam != null) {
+            btnBoostRam.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    btnBoostRam.setEnabled(false);
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        String resultMsg = GameManagerRepository.boostRamAndOptimize(getContext());
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (isAdded() && getContext() != null) {
+                                btnBoostRam.setEnabled(true);
+                                Toast.makeText(getContext(), resultMsg, Toast.LENGTH_LONG).show();
+                                updateDashboard();
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        if (rvGames != null) {
+            rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
+            adapter = new GamesAdapter(getContext(), gameList);
+            rvGames.setAdapter(adapter);
+        }
+
         updateDashboard();
+        loadInstalledGames();
         return view;
     }
 
@@ -129,6 +232,28 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateDashboard();
+        loadInstalledGames();
+    }
+
+    private void loadInstalledGames() {
+        if (getContext() == null || rvGames == null) return;
+
+        AppExecutors.getInstance().executeScan(() -> {
+            List<GameAppInfo> installedGames = GameManagerRepository.getInstalledGames(getContext());
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+
+                if (tvGamesHeader != null) {
+                    tvGamesHeader.setText("🎮 INSTALLED GAMES LIBRARY (" + installedGames.size() + "):");
+                }
+                gameList.clear();
+                gameList.addAll(installedGames);
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        });
     }
 
     private void startBoosterService() {

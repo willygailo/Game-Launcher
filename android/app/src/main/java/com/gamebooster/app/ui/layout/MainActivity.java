@@ -21,13 +21,21 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     private int currentTabIndex = 0;
 
     private static final String[] TAB_TITLES = {
-            "Home HUD",
-            "Hz & FPS",
+            "Home",
             "Tweaks",
             "Profiles",
-            "Games",
             "Access"
     };
+
+    public void selectTab(int position) {
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        if (tabLayout != null && position >= 0 && position < TAB_TITLES.length) {
+            TabLayout.Tab tab = tabLayout.getTabAt(position);
+            if (tab != null) {
+                tab.select();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,18 +114,12 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 selectedFragment = new HomeFragment();
                 break;
             case 1:
-                selectedFragment = new HzFpsFragment();
-                break;
-            case 2:
                 selectedFragment = new TweaksFragment();
                 break;
-            case 3:
+            case 2:
                 selectedFragment = new ProfilesFragment();
                 break;
-            case 4:
-                selectedFragment = new GamesFragment();
-                break;
-            case 5:
+            case 3:
                 selectedFragment = new PermissionsFragment();
                 break;
             default:

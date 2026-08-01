@@ -29,9 +29,38 @@ public class ProfilesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profiles, container, false);
 
         tvEngineStatus = view.findViewById(R.id.tv_engine_status);
+        Button btn3dVulkan = view.findViewById(R.id.btn_engine_3d_vulkan);
+        Button btn2dSkia = view.findViewById(R.id.btn_engine_2d_skia);
+
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
         Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
+
+        if (btn3dVulkan != null) {
+            btn3dVulkan.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = PerformanceChannel.setGpuRenderMode(true);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        Toast.makeText(getContext(), "⚡ 3D Vulkan HWUI Render Engine Enabled!", Toast.LENGTH_SHORT).show();
+                    });
+                });
+            });
+        }
+
+        if (btn2dSkia != null) {
+            btn2dSkia.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = PerformanceChannel.setGpuRenderMode(false);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        Toast.makeText(getContext(), "🎮 2D Skia Render Engine Enabled!", Toast.LENGTH_SHORT).show();
+                    });
+                });
+            });
+        }
 
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {

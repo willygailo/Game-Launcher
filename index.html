@@ -582,10 +582,13 @@
        <div>
         <p data-template-id="dashboard-eyebrow" class="screen-label">SHIZUKU ENGINE ACTIVE</p>
         <h2 id="dashboard-title" data-template-id="dashboard-title-text" class="text-base font-bold text-white mt-0.5 flex items-center gap-1.5">
-         Game Launcher Pro <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#56f1cc]"></span>
+         Game Space Hub <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#56f1cc]"></span>
         </h2>
        </div>
        <div class="flex items-center gap-2">
+        <button id="settings-hub-btn" class="glass rounded-xl p-2 text-cyan-300 hover:text-white transition-colors" type="button" aria-label="Settings Hub">
+         <i data-lucide="settings" width="17" height="17"></i>
+        </button>
         <button id="notification-btn" class="glass rounded-xl p-2 text-sky-200 hover:text-white transition-colors relative" type="button" aria-label="Notifications">
          <i data-lucide="bell" width="17" height="17"></i>
          <span class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
@@ -933,14 +936,32 @@
        </div>
       </div>
 
-      <!-- TAB 4: PERFORMANCE PROFILES SUITE (BALANCED, PERFORMANCE, EXTREME PERFORMANCE ONLY) -->
+      <!-- TAB 4: PERFORMANCE PROFILES SUITE -->
       <div id="tab-profiles" class="tab-pane">
        <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-indigo-400" width="16" height="16"></i> Performance Profiles Suite</h3>
-        <span class="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">3 Optimized Modes</span>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-indigo-400" width="16" height="16"></i> Performance Profiles & Render Engine</h3>
+        <span class="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">GPU & Preset Tuner</span>
        </div>
 
        <div class="space-y-3">
+        <!-- GPU Graphics Render Engine Selector -->
+        <div class="glass p-3.5 rounded-2xl border border-cyan-400/30">
+         <div class="flex justify-between items-start">
+          <div>
+           <h4 class="text-xs font-bold text-white flex items-center gap-1.5"><i data-lucide="cpu" class="text-cyan-400" width="15" height="15"></i> GPU GRAPHICS RENDER ENGINE</h4>
+           <p class="text-[10px] text-slate-300 mt-1">Select 3D Vulkan HWUI for modern 3D games or 2D Skia Engine for pixel games.</p>
+          </div>
+         </div>
+         <div class="grid grid-cols-2 gap-2 mt-3">
+          <button id="btn-engine-vulkan-web" class="glass py-2 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/50 bg-cyan-400/10 flex items-center justify-center gap-1">
+           <i data-lucide="zap" width="14" height="14"></i> 3D Vulkan HWUI
+          </button>
+          <button id="btn-engine-skia-web" class="glass py-2 rounded-xl text-xs font-bold text-slate-400 border border-white/10 flex items-center justify-center gap-1">
+           <i data-lucide="gamepad-2" width="14" height="14"></i> 2D Skia Engine
+          </button>
+         </div>
+        </div>
+
         <!-- Profile 1: Extreme Performance Mode -->
         <div class="profile-card glass p-3.5 rounded-2xl border-l-4 border-l-cyan-400 relative">
          <div class="flex justify-between items-start">
@@ -1121,14 +1142,10 @@
       </div>
 
       <!-- MAIN BOTTOM NAVIGATION BAR -->
-      <nav class="glass absolute bottom-3 left-3 right-3 rounded-2xl px-4 py-2 flex items-center justify-between z-30" aria-label="Main navigation">
-       <button id="nav-dashboard" class="nav-item active" type="button" aria-label="Dashboard">
+      <nav class="glass absolute bottom-3 left-3 right-3 rounded-2xl px-4 py-2 flex items-center justify-around z-30" aria-label="Main navigation">
+       <button id="nav-dashboard" class="nav-item active" type="button" aria-label="Dashboard & Games">
         <i data-lucide="layout-dashboard" width="17" height="17"></i>
-        <span class="text-[8px] font-bold">HUD</span>
-       </button>
-       <button id="nav-hz" class="nav-item" type="button" aria-label="Hz & FPS">
-        <i data-lucide="zap" width="17" height="17"></i>
-        <span class="text-[8px] font-bold">Hz & FPS</span>
+        <span class="text-[8px] font-bold">Home</span>
        </button>
        <button id="nav-tweaks" class="nav-item" type="button" aria-label="Tweaks">
         <i data-lucide="sliders" width="17" height="17"></i>
@@ -1137,10 +1154,6 @@
        <button id="nav-profiles" class="nav-item" type="button" aria-label="Profiles">
         <i data-lucide="layers" width="17" height="17"></i>
         <span class="text-[8px] font-bold">Profiles</span>
-       </button>
-       <button id="nav-games" class="nav-item" type="button" aria-label="Games">
-        <i data-lucide="gamepad-2" width="17" height="17"></i>
-        <span class="text-[8px] font-bold">Games</span>
        </button>
        <button id="nav-access" class="nav-item" type="button" aria-label="Access">
         <i data-lucide="terminal" width="17" height="17"></i>
@@ -1181,6 +1194,15 @@
           shellLog.appendChild(p);
           shellLog.scrollTop = shellLog.scrollHeight;
         }
+      }
+
+      // Settings Icon Button in Header
+      const settingsHubBtn = document.getElementById("settings-hub-btn");
+      if (settingsHubBtn) {
+        settingsHubBtn.addEventListener("click", () => {
+          const tweaksNav = document.getElementById("nav-tweaks");
+          if (tweaksNav) tweaksNav.click();
+        });
       }
 
       // Splash Screen Navigation
@@ -1261,11 +1283,14 @@
         });
       });
 
-      document.getElementById("apply-hz-btn").addEventListener("click", () => {
-        const oem = document.getElementById("oem-preset").value;
-        showToast(`🔥 Display Refresh Rate & Real FPS Overridden (${oem.toUpperCase()} Mode)`);
-        logShell(`cmd game set --fps ${currentHz} global`);
-      });
+      const applyHzBtn = document.getElementById("apply-hz-btn");
+      if (applyHzBtn) {
+        applyHzBtn.addEventListener("click", () => {
+          const oem = document.getElementById("oem-preset") ? document.getElementById("oem-preset").value : "standard";
+          showToast(`🔥 Display Refresh Rate & Real FPS Overridden (${oem.toUpperCase()} Mode)`);
+          logShell(`cmd game set --fps ${currentHz} global`);
+        });
+      }
 
       // RAM Trimming Button
       document.getElementById("trim-ram-btn").addEventListener("click", () => {
@@ -1307,10 +1332,8 @@
       // Tab Switching Logic
       const navButtons = {
         'nav-dashboard': 'tab-dashboard',
-        'nav-hz': 'tab-hz',
         'nav-tweaks': 'tab-tweaks',
         'nav-profiles': 'tab-profiles',
-        'nav-games': 'tab-games',
         'nav-access': 'tab-access'
       };
 
@@ -1371,7 +1394,31 @@
         });
       });
 
-      // Preset Profile Buttons (Extreme Performance, Performance, Balanced Only)
+      // GPU Graphics Render Engine Web Toggle Buttons
+      const btnVulkanWeb = document.getElementById("btn-engine-vulkan-web");
+      const btnSkiaWeb = document.getElementById("btn-engine-skia-web");
+      if (btnVulkanWeb && btnSkiaWeb) {
+        btnVulkanWeb.addEventListener("click", () => {
+          btnVulkanWeb.classList.add("border-cyan-400/50", "bg-cyan-400/10", "text-cyan-300");
+          btnVulkanWeb.classList.remove("border-white/10", "text-slate-400");
+          btnSkiaWeb.classList.remove("border-purple-400/50", "bg-purple-400/10", "text-purple-300");
+          btnSkiaWeb.classList.add("border-white/10", "text-slate-400");
+          showToast("⚡ 3D Vulkan HWUI Graphics Engine Enforced!");
+          logShell("setprop debug.hwui.renderer vulkan");
+          logShell("setprop debug.sf.hw 1");
+        });
+        btnSkiaWeb.addEventListener("click", () => {
+          btnSkiaWeb.classList.add("border-purple-400/50", "bg-purple-400/10", "text-purple-300");
+          btnSkiaWeb.classList.remove("border-white/10", "text-slate-400");
+          btnVulkanWeb.classList.remove("border-cyan-400/50", "bg-cyan-400/10", "text-cyan-300");
+          btnVulkanWeb.classList.add("border-white/10", "text-slate-400");
+          showToast("🎮 2D Skia Graphics Engine Enforced!");
+          logShell("setprop debug.hwui.renderer skia");
+          logShell("setprop debug.sf.hw 0");
+        });
+      }
+
+      // Preset Profile Buttons
       const applyProfileBtns = document.querySelectorAll(".apply-profile-btn");
       applyProfileBtns.forEach(btn => {
         btn.addEventListener("click", () => {
