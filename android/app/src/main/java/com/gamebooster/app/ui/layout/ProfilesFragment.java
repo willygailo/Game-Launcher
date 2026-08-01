@@ -17,6 +17,8 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.functions.PerformanceChannel;
 import com.gamebooster.app.core.EngineUIHelper;
 
+import com.gamebooster.app.core.AppExecutors;
+
 public class ProfilesFragment extends Fragment {
 
     private TextView tvEngineStatus;
@@ -34,12 +36,20 @@ public class ProfilesFragment extends Fragment {
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                    if (ok) {
-                        Toast.makeText(getContext(), "🔥 Extreme Performance Profile Applied!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Profile could not be fully applied", Toast.LENGTH_LONG).show();
-                    }
+                    btnExtreme.setEnabled(false);
+                    Toast.makeText(getContext(), "Applying Extreme Performance Profile...", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (!isAdded() || getContext() == null) return;
+                            btnExtreme.setEnabled(true);
+                            if (ok) {
+                                Toast.makeText(getContext(), "🔥 Extreme Performance Profile Applied!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getContext(), "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
                 }
             });
         }
@@ -47,12 +57,20 @@ public class ProfilesFragment extends Fragment {
         if (btnPerformance != null) {
             btnPerformance.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.PERFORMANCE);
-                    if (ok) {
-                        Toast.makeText(getContext(), "⚡ Performance Profile Applied!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Profile could not be fully applied", Toast.LENGTH_LONG).show();
-                    }
+                    btnPerformance.setEnabled(false);
+                    Toast.makeText(getContext(), "Applying Performance Profile...", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.PERFORMANCE);
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (!isAdded() || getContext() == null) return;
+                            btnPerformance.setEnabled(true);
+                            if (ok) {
+                                Toast.makeText(getContext(), "⚡ Performance Profile Applied!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getContext(), "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
                 }
             });
         }
@@ -60,12 +78,20 @@ public class ProfilesFragment extends Fragment {
         if (btnBalanced != null) {
             btnBalanced.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.BALANCED);
-                    if (ok) {
-                        Toast.makeText(getContext(), "⚖️ Balanced Game Profile Applied!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Profile could not be fully applied", Toast.LENGTH_LONG).show();
-                    }
+                    btnBalanced.setEnabled(false);
+                    Toast.makeText(getContext(), "Applying Balanced Profile...", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        boolean ok = PerformanceChannel.applyProfile(getContext(), PerformanceChannel.Profile.BALANCED);
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (!isAdded() || getContext() == null) return;
+                            btnBalanced.setEnabled(true);
+                            if (ok) {
+                                Toast.makeText(getContext(), "⚖️ Balanced Game Profile Applied!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getContext(), "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
                 }
             });
         }

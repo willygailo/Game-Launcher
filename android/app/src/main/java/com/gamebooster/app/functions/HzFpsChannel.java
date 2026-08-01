@@ -17,6 +17,10 @@ public class HzFpsChannel {
         ok &= CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzStr);
         ok &= CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
         ok &= CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzStr);
+        CommandExecutor.executeSystemCommand("cmd game mode performance global");
+        CommandExecutor.setSystemProperty("debug.graphics.game_default_frame_rate.disabled", "1");
 
         String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";
         String brand = Build.BRAND != null ? Build.BRAND.toLowerCase() : "";

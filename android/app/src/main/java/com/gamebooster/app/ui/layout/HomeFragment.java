@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.core.DeviceInfoChannel;
 import com.gamebooster.app.functions.PerformanceChannel;
 import com.gamebooster.app.root.EngineMode;
@@ -83,26 +84,40 @@ public class HomeFragment extends Fragment {
         if (btnDns != null) {
             btnDns.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                boolean ok = com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
-                com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
-                if (ok) {
-                    Toast.makeText(getContext(), "🌐 Cloudflare 1.1.1.1 Gaming DNS & TCP Tuned!", Toast.LENGTH_SHORT).show();
-                }
+                btnDns.setEnabled(false);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
+                    com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnDns.setEnabled(true);
+                        if (ok) {
+                            Toast.makeText(getContext(), "🌐 Cloudflare 1.1.1.1 Gaming DNS & TCP Tuned!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         }
 
         btnHeroBoost.setOnClickListener(v -> {
             if (getContext() != null) {
+                btnHeroBoost.setEnabled(false);
                 tvBoostStatus.setText("⚡ BOOSTING: Trimming RAM, Locking Hz & Overriding Thermal Caps...");
-                boolean ok = PerformanceChannel.executeOneTapBoost(getContext());
-                startBoosterService();
-                if (ok) {
-                    tvBoostStatus.setText("✅ ULTRA BOOST ACTIVE: System Max Performance Locked!");
-                    Toast.makeText(getContext(), "1-Tap Boost Executed Successfully!", Toast.LENGTH_SHORT).show();
-                } else {
-                    tvBoostStatus.setText("⚠️ Boost Active with System Settings");
-                }
-                updateDashboard();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = PerformanceChannel.executeOneTapBoost(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnHeroBoost.setEnabled(true);
+                        startBoosterService();
+                        if (ok) {
+                            tvBoostStatus.setText("✅ ULTRA BOOST ACTIVE: System Max Performance Locked!");
+                            Toast.makeText(getContext(), "1-Tap Boost Executed Successfully!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            tvBoostStatus.setText("⚠️ Boost Active with System Settings");
+                        }
+                        updateDashboard();
+                    });
+                });
             }
         });
 

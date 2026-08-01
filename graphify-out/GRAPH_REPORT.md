@@ -1,16 +1,16 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-01)
 
 ## Corpus Check
-- 57 files · ~31,128 words
+- 58 files · ~31,328 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 558 nodes · 1192 edges · 21 communities (17 shown, 4 thin omitted)
+- 560 nodes · 1201 edges · 21 communities (16 shown, 5 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `da4dfed0`
+- Built from commit: `48f0fff6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,11 +62,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (21 total, 4 thin omitted)
+## Communities (21 total, 5 thin omitted)
 
 ### Community 0 - "CPU Governor Subsystem"
-Cohesion: 0.06
-Nodes (27): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+19 more)
+Cohesion: 0.05
+Nodes (30): CpuGovernorChannel, GameSpaceDndManager, Context, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8 (+22 more)
+
+### Community 1 - "Main Activity & UI Lifecycle"
+Cohesion: 0.28
+Nodes (4): ShizukuUserServiceConnector, IUserService, ServiceConnection, UserServiceArgs
 
 ### Community 2 - "Tweaks & Command Executor"
 Cohesion: 0.06
@@ -77,16 +81,16 @@ Cohesion: 0.07
 Nodes (18): BaseManager, CpuManager, DisplayManager, FileSystemManager, GlobalSettingsManager, GpuManager, Context, Override (+10 more)
 
 ### Community 4 - "Property Resolver Base"
-Cohesion: 0.05
-Nodes (32): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+24 more)
+Cohesion: 0.07
+Nodes (22): Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, Context, ShizukuManager, ShizukuStateListener (+14 more)
 
 ### Community 5 - "Game Library & Scanner"
-Cohesion: 0.07
-Nodes (29): Adapter, NetworkTweaksChannel, GameAppInfo, Intent, GameLauncherHelper, Context, Context, GameManagerRepository (+21 more)
+Cohesion: 0.08
+Nodes (27): Adapter, GameAppInfo, Intent, GameLauncherHelper, Context, GameManagerRepository, Context, GamesAdapter (+19 more)
 
 ### Community 6 - "Device Metrics Channel"
-Cohesion: 0.09
-Nodes (13): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+5 more)
+Cohesion: 0.07
+Nodes (21): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+13 more)
 
 ### Community 7 - "Command Engine ADB Shell"
 Cohesion: 0.13
@@ -101,48 +105,40 @@ Cohesion: 0.12
 Nodes (16): GameBoosterService, IBinder, Intent, Nullable, Override, FloatingOverlayService, Context, Handler (+8 more)
 
 ### Community 10 - "Command Engine Cache Control"
-Cohesion: 0.28
-Nodes (8): HomeFragment, Bundle, LayoutInflater, Nullable, Override, TextView, View, ViewGroup
-
-### Community 11 - "Property Resolver Managers"
-Cohesion: 0.12
-Nodes (19): ThermalChannel, HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch (+11 more)
+Cohesion: 0.15
+Nodes (7): AppExecutors, Handler, GameConfigPatcher, PatchResult, GameProfileAutoConfigurator, Context, OnAutoConfigListener
 
 ### Community 12 - "Hz & FPS Fragment UI"
 Cohesion: 0.32
 Nodes (3): Override, UserService, Stub
 
 ### Community 13 - "Command Engine Builder"
-Cohesion: 0.28
-Nodes (4): ShizukuUserServiceConnector, IUserService, ServiceConnection, UserServiceArgs
-
-### Community 16 - ".applyGameFpsPatch"
-Cohesion: 0.15
-Nodes (7): AppExecutors, Handler, GameConfigPatcher, PatchResult, GameProfileAutoConfigurator, Context, OnAutoConfigListener
+Cohesion: 0.09
+Nodes (28): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+20 more)
 
 ### Community 21 - "Gradle Wrapper Scripts"
 Cohesion: 0.60
 Nodes (3): gradlew script, die(), warn()
 
 ## Knowledge Gaps
-- **42 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+37 more)
+- **43 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+38 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `PropertyResolver` connect `Permission Management Channel` to `Command Engine ADB Shell`?**
-  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **What connects `QUALCOMM`, `MEDIATEK`, `EXYNOS` to the rest of the system?**
-  _42 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _43 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `CPU Governor Subsystem` be split into smaller, more focused modules?**
-  _Cohesion score 0.060285563194077206 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05403348554033485 - nodes in this community are weakly interconnected._
 - **Should `Tweaks & Command Executor` be split into smaller, more focused modules?**
   _Cohesion score 0.06293706293706294 - nodes in this community are weakly interconnected._
 - **Should `Permission Management Channel` be split into smaller, more focused modules?**
   _Cohesion score 0.06867088607594937 - nodes in this community are weakly interconnected._
 - **Should `Property Resolver Base` be split into smaller, more focused modules?**
-  _Cohesion score 0.0547945205479452 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06715063520871144 - nodes in this community are weakly interconnected._
 - **Should `Game Library & Scanner` be split into smaller, more focused modules?**
-  _Cohesion score 0.07199032062915911 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08392156862745098 - nodes in this community are weakly interconnected._

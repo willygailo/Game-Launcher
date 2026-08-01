@@ -22,6 +22,8 @@ import com.gamebooster.app.root.EngineMode;
 import com.gamebooster.app.root.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuManager;
 
+import com.gamebooster.app.core.AppExecutors;
+
 public class HzFpsFragment extends Fragment {
 
     private boolean isUpdatingProgrammatically = false;
@@ -62,15 +64,20 @@ public class HzFpsFragment extends Fragment {
                 return;
             }
 
-            boolean ok = ThermalChannel.setThermalOverride(isChecked);
-            if (ok) {
-                Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Failed to override thermal service", Toast.LENGTH_LONG).show();
-                isUpdatingProgrammatically = true;
-                buttonView.setChecked(!isChecked);
-                isUpdatingProgrammatically = false;
-            }
+            AppExecutors.getInstance().executeCommand(() -> {
+                boolean ok = ThermalChannel.setThermalOverride(isChecked);
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (!isAdded() || getContext() == null) return;
+                    if (ok) {
+                        Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Failed to override thermal service", Toast.LENGTH_LONG).show();
+                        isUpdatingProgrammatically = true;
+                        buttonView.setChecked(!isChecked);
+                        isUpdatingProgrammatically = false;
+                    }
+                });
+            });
         });
 
         return view;
@@ -99,12 +106,17 @@ public class HzFpsFragment extends Fragment {
         if (getContext() != null) {
             com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), (int) hz);
         }
-        boolean ok = HzFpsChannel.setRefreshRate(hz);
-        if (ok) {
-            Toast.makeText(getContext(), "Display refresh rate & Target Games FPS set to " + (int) hz + "Hz/FPS", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission to lock refresh rate", Toast.LENGTH_LONG).show();
-        }
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean ok = HzFpsChannel.setRefreshRate(hz);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                if (ok) {
+                    Toast.makeText(getContext(), "Display refresh rate & Target Games FPS set to " + (int) hz + "Hz/FPS", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission to lock refresh rate", Toast.LENGTH_LONG).show();
+                }
+            });
+        });
     }
 }
 

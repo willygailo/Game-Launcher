@@ -90,6 +90,16 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
+
+        TWEAKS.add(new TweakItem(
+                "tcp_latency_tuning",
+                "TCP Low Latency Buffer Tuning",
+                "Optimizes Wi-Fi and Cellular TCP buffer limits to lower multiplayer gaming ping",
+                "setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576; setprop net.tcp.buffersize.mobile 524288,1048576,2097152,262144,524288,1048576",
+                "setprop net.tcp.buffersize.wifi default; setprop net.tcp.buffersize.mobile default",
+                TweakCategory.CPU_GPU,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

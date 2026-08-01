@@ -1,16 +1,16 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-01)
 
 ## Corpus Check
-- 57 files · ~20,625 words
+- 57 files · ~31,307 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 559 nodes · 1192 edges · 21 communities (18 shown, 3 thin omitted)
+- 558 nodes · 1200 edges · 21 communities (16 shown, 5 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `92dae8a4`
+- Built from commit: `48f0fff6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -50,27 +50,23 @@
 ## Surprising Connections (you probably didn't know these)
 - `RefreshRateController` --references--> `PropertyResolver`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/core/DisplayCapabilitiesDetector.java → android/app/src/main/java/com/gamebooster/app/core/PropertyResolver.java
-- `TweaksFragment` --implements--> `ShizukuStateListener`  [EXTRACTED]
-  android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java → android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuManager.java
 - `TweaksFragment` --references--> `TweaksAdapter`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java → android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java
 - `DeviceSpecModel` --references--> `ChipsetVendor`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/core/DeviceSpecModel.java → android/app/src/main/java/com/gamebooster/app/core/DeviceDetector.java
 - `TweakItem` --references--> `TweakCategory`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java → android/app/src/main/java/com/gamebooster/app/functions/TweakCategory.java
+- `TweakManagerRepository` --references--> `TweakItem`  [EXTRACTED]
+  android/app/src/main/java/com/gamebooster/app/functions/TweakManagerRepository.java → android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (21 total, 3 thin omitted)
+## Communities (21 total, 5 thin omitted)
 
 ### Community 0 - "CPU Governor Subsystem"
-Cohesion: 0.06
-Nodes (28): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+20 more)
-
-### Community 1 - "Main Activity & UI Lifecycle"
-Cohesion: 0.15
-Nodes (9): Context, ShizukuManager, ShizukuStateListener, Bundle, Override, MainActivity, AppCompatActivity, OnBinderDeadListener (+1 more)
+Cohesion: 0.05
+Nodes (33): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+25 more)
 
 ### Community 2 - "Tweaks & Command Executor"
 Cohesion: 0.06
@@ -81,20 +77,20 @@ Cohesion: 0.07
 Nodes (18): BaseManager, CpuManager, DisplayManager, FileSystemManager, GlobalSettingsManager, GpuManager, Context, Override (+10 more)
 
 ### Community 4 - "Property Resolver Base"
-Cohesion: 0.09
-Nodes (27): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+19 more)
+Cohesion: 0.06
+Nodes (26): Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, Context, ShizukuManager, ShizukuStateListener (+18 more)
 
 ### Community 5 - "Game Library & Scanner"
-Cohesion: 0.07
-Nodes (29): Adapter, NetworkTweaksChannel, GameAppInfo, Intent, GameLauncherHelper, Context, Context, GameManagerRepository (+21 more)
+Cohesion: 0.08
+Nodes (27): Adapter, GameAppInfo, Intent, GameLauncherHelper, Context, GameManagerRepository, Context, GamesAdapter (+19 more)
 
 ### Community 6 - "Device Metrics Channel"
 Cohesion: 0.09
 Nodes (13): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+5 more)
 
 ### Community 7 - "Command Engine ADB Shell"
-Cohesion: 0.10
-Nodes (11): DisplayCapabilitiesDetector, DisplayCaps, Context, Mode, EXACT, MIN, PEAK, USER (+3 more)
+Cohesion: 0.13
+Nodes (10): DisplayCapabilitiesDetector, DisplayCaps, Context, Mode, EXACT, MIN, PEAK, USER (+2 more)
 
 ### Community 8 - "Display Capabilities & Hz"
 Cohesion: 0.10
@@ -102,36 +98,32 @@ Nodes (19): ⚡ 1. 100% Non-Rooted Dual Execution Engine, ⚡ 1-Tap Ultra Booste
 
 ### Community 9 - "Game Booster Background Service"
 Cohesion: 0.12
-Nodes (17): GameBoosterService, IBinder, Intent, Nullable, Override, FloatingOverlayService, Context, Handler (+9 more)
+Nodes (16): GameBoosterService, IBinder, Intent, Nullable, Override, FloatingOverlayService, Context, Handler (+8 more)
 
 ### Community 10 - "Command Engine Cache Control"
-Cohesion: 0.25
-Nodes (8): HomeFragment, Bundle, LayoutInflater, Nullable, Override, TextView, View, ViewGroup
+Cohesion: 0.16
+Nodes (10): AppExecutors, Handler, HomeFragment, Bundle, LayoutInflater, Nullable, Override, TextView (+2 more)
 
 ### Community 11 - "Property Resolver Managers"
-Cohesion: 0.22
-Nodes (10): ThermalChannel, HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch (+2 more)
+Cohesion: 0.26
+Nodes (9): HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch, View (+1 more)
 
 ### Community 12 - "Hz & FPS Fragment UI"
 Cohesion: 0.32
 Nodes (3): Override, UserService, Stub
 
 ### Community 13 - "Command Engine Builder"
-Cohesion: 0.12
-Nodes (9): Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, ShizukuUserServiceConnector, IUserService, ServiceConnection (+1 more)
-
-### Community 16 - ".applyGameFpsPatch"
-Cohesion: 0.15
-Nodes (7): AppExecutors, Handler, GameConfigPatcher, PatchResult, GameProfileAutoConfigurator, Context, OnAutoConfigListener
+Cohesion: 0.13
+Nodes (19): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+11 more)
 
 ### Community 21 - "Gradle Wrapper Scripts"
 Cohesion: 0.60
 Nodes (3): gradlew script, die(), warn()
 
 ## Knowledge Gaps
-- **43 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+38 more)
+- **42 isolated node(s):** `QUALCOMM`, `MEDIATEK`, `EXYNOS`, `UNISOC`, `TENSOR` (+37 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -139,14 +131,14 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `PropertyResolver` connect `Permission Management Channel` to `Command Engine ADB Shell`?**
   _High betweenness centrality (0.048) - this node is a cross-community bridge._
 - **What connects `QUALCOMM`, `MEDIATEK`, `EXYNOS` to the rest of the system?**
-  _43 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _42 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `CPU Governor Subsystem` be split into smaller, more focused modules?**
-  _Cohesion score 0.05837173579109063 - nodes in this community are weakly interconnected._
-- **Should `Main Activity & UI Lifecycle` be split into smaller, more focused modules?**
-  _Cohesion score 0.14666666666666667 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05063291139240506 - nodes in this community are weakly interconnected._
 - **Should `Tweaks & Command Executor` be split into smaller, more focused modules?**
   _Cohesion score 0.06293706293706294 - nodes in this community are weakly interconnected._
 - **Should `Permission Management Channel` be split into smaller, more focused modules?**
   _Cohesion score 0.06867088607594937 - nodes in this community are weakly interconnected._
 - **Should `Property Resolver Base` be split into smaller, more focused modules?**
-  _Cohesion score 0.08879492600422834 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05563093622795115 - nodes in this community are weakly interconnected._
+- **Should `Game Library & Scanner` be split into smaller, more focused modules?**
+  _Cohesion score 0.08144796380090498 - nodes in this community are weakly interconnected._

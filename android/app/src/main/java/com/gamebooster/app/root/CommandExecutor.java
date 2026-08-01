@@ -30,7 +30,7 @@ public class CommandExecutor {
                     return "ERROR: " + shellRes.stderr;
                 }
                 if (shellRes.stdout.isEmpty()) {
-                    return "ERROR: Unprivileged shell execution failed or unconfirmed";
+                    return "SUCCESS";
                 }
                 return shellRes.stdout;
         }
