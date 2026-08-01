@@ -44,10 +44,9 @@
 * Safe layout state modulation with lock overlays (`iv_thermal_lock`).
 
 ### 🎯 5. Preset Gaming Profiles Suite
-* **🎮 2D & Pixel Games Ultra Smooth**: 300Hz touch sampling rate, 2D GPU acceleration, zero scroll cache delay.
-* **🎯 PUBG Mobile / 3D FPS Extreme**: Full SurfaceFlinger GPU composition, 300Hz touch sampling, low latency.
-* **⚖️ Balanced Game Performance**: Schedutil CPU governor, 90Hz refresh rate, standard thermal throttling.
-* **🔋 Battery Saver Gaming**: Powersave CPU governor, 60Hz refresh rate, maximum power conservation.
+* **🔥 EXTREME PERFORMANCE PROFILE**: Full PowerHAL Mode 2 1, 480Hz touch slop, Vulkan renderer, thermal override status 0.
+* **⚡ PERFORMANCE PROFILE**: 120Hz/144Hz lock, PowerHAL Mode 0 1, 300Hz touch slop, Vulkan renderer.
+* **⚖️ BALANCED PROFILE**: 90Hz refresh rate, Schedutil CPU governor, balanced thermal management.
 
 ### 🎨 6. Graphics & GPU Unlocking Module
 * Forces **Vulkan HWUI Graphics Renderer** (`debug.hwui.renderer=vulkan`).

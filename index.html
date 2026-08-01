@@ -725,63 +725,74 @@
        <button id="boost-button" data-template-id="boost-button-label" class="primary-action text-xs mt-3" type="button">
         <i data-lucide="rocket" width="16" height="16"></i> EXTREME BOOST NOW
        </button>
-      </div>
 
-      <!-- TAB 2: HZ & REAL FPS OVERRIDE CONTROLLER -->
-      <div id="tab-hz" class="tab-pane">
-       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="zap" class="text-cyan-400" width="16" height="16"></i> Real FPS & Hz Override</h3>
-        <span class="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">Android 12-16</span>
-       </div>
-
-       <div class="glass p-3.5 rounded-2xl space-y-3">
-        <p class="text-xs text-slate-300 leading-relaxed">Overrides system game frame rate caps via Android Game Mode API (`cmd game set --fps`) and forces peak display refresh rate.</p>
-        
-        <div class="grid grid-cols-2 gap-2 text-xs">
-         <button class="hz-option glass p-3 rounded-xl text-left border border-cyan-400/50 bg-cyan-400/10" data-target-hz="120">
-          <div class="flex justify-between items-center">
-           <span class="font-bold text-white">120 Hz Mode</span>
-           <i data-lucide="check-circle" class="text-cyan-400" width="14" height="14"></i>
-          </div>
-          <p class="text-[10px] text-slate-400 mt-1">Recommended for PUBG & COD</p>
-         </button>
-
-         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="144">
-          <div class="flex justify-between items-center">
-           <span class="font-bold text-white">144 Hz Cyber</span>
-          </div>
-          <p class="text-[10px] text-slate-400 mt-1">Ultra Smooth Display</p>
-         </button>
-
-         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="165">
-          <div class="flex justify-between items-center">
-           <span class="font-bold text-white">165 Hz Max</span>
-          </div>
-          <p class="text-[10px] text-slate-400 mt-1">Maximum Hardware Limit</p>
-         </button>
-
-         <button class="hz-option glass p-3 rounded-xl text-left border border-white/10 hover:border-cyan-400/40" data-target-hz="240">
-          <div class="flex justify-between items-center">
-           <span class="font-bold text-white">240 Hz Extreme</span>
-          </div>
-          <p class="text-[10px] text-slate-400 mt-1">Ultra Low Latency Display</p>
+       <!-- EMBEDDED GAMES LAUNCHER SECTION (HOME) -->
+       <div class="mt-4 pt-3 border-t border-white/10 space-y-3">
+        <div class="flex items-center justify-between">
+         <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="gamepad-2" class="text-cyan-400" width="16" height="16"></i> Installed Games Library</h3>
+         <button id="open-add-game" class="glass text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-cyan-400/30 hover:bg-cyan-400/20">
+          <i data-lucide="plus" width="12" height="12"></i> Add Game
          </button>
         </div>
 
-        <div class="pt-2 border-t border-white/10 space-y-2">
-         <label class="screen-label">OEM DISPLAY PRESET OVERRIDE</label>
-         <select id="oem-preset" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
-          <option value="pixel">Stock Android / Google Pixel (Android 12-16)</option>
-          <option value="xiaomi">Xiaomi / Poco / MIUI Game Turbo Override</option>
-          <option value="samsung">Samsung OneUI High Motion Smoothness</option>
-          <option value="tecno">Tecno / Infinix HiOS Ultra Touch</option>
-          <option value="oneplus">OnePlus / Realme OxygenOS High Hz</option>
-         </select>
-        </div>
+        <div id="games-list" class="space-y-2.5">
+         <!-- PUBG Mobile Card -->
+         <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="PUBG Mobile" data-engine="3d" data-fps="144" data-cpu="extreme" data-touch="480">
+          <div class="flex items-center gap-3">
+           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center font-bold text-white text-xs shadow-md">PUBG</div>
+           <div>
+            <h4 class="text-xs font-bold text-white">PUBG Mobile</h4>
+            <p class="game-badge-text text-[9.5px] text-emerald-400 font-semibold">3D Vulkan Engine • 144Hz Real FPS • Extreme CPU</p>
+           </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+           <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="PUBG Mobile">
+            <i data-lucide="settings" width="14" height="14"></i>
+           </button>
+           <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="PUBG Mobile">
+            <i data-lucide="play" width="12" height="12"></i> Launch
+           </button>
+          </div>
+         </div>
 
-        <button id="apply-hz-btn" class="primary-action text-xs py-2.5">
-         <i data-lucide="check" width="15" height="15"></i> Force Override FPS & Hz Lock
-        </button>
+         <!-- COD Mobile Card -->
+         <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="Call of Duty: Mobile" data-engine="3d" data-fps="120" data-cpu="performance" data-touch="300">
+          <div class="flex items-center gap-3">
+           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center font-bold text-white text-xs shadow-md">COD</div>
+           <div>
+            <h4 class="text-xs font-bold text-white">Call of Duty: Mobile</h4>
+            <p class="game-badge-text text-[9.5px] text-cyan-400 font-semibold">3D Vulkan Engine • 120Hz Real FPS</p>
+           </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+           <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="Call of Duty: Mobile">
+            <i data-lucide="settings" width="14" height="14"></i>
+           </button>
+           <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Call of Duty: Mobile">
+            <i data-lucide="play" width="12" height="12"></i> Launch
+           </button>
+          </div>
+         </div>
+
+         <!-- Mobile Legends Card -->
+         <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="Mobile Legends" data-engine="2d" data-fps="165" data-cpu="extreme" data-touch="480">
+          <div class="flex items-center gap-3">
+           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs shadow-md">MLBB</div>
+           <div>
+            <h4 class="text-xs font-bold text-white">Mobile Legends</h4>
+            <p class="game-badge-text text-[9.5px] text-emerald-400 font-semibold">2D Pixel Engine • 165Hz Lock • Touch 480Hz</p>
+           </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+           <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="Mobile Legends">
+            <i data-lucide="settings" width="14" height="14"></i>
+           </button>
+           <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Mobile Legends">
+            <i data-lucide="play" width="12" height="12"></i> Launch
+           </button>
+          </div>
+         </div>
+        </div>
        </div>
       </div>
 
@@ -1000,94 +1011,6 @@
          <button class="apply-profile-btn glass w-full py-1.5 mt-3 rounded-xl text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors" data-profile="Balanced">
           Apply Balanced Profile
          </button>
-        </div>
-       </div>
-      </div>
-
-      <!-- TAB 5: GAMES LIBRARY & PER-GAME TUNER -->
-      <div id="tab-games" class="tab-pane">
-       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="gamepad-2" class="text-cyan-400" width="16" height="16"></i> Game Launcher Library</h3>
-        <button id="open-add-game" class="glass text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-xl flex items-center gap-1 border border-cyan-400/30 hover:bg-cyan-400/20">
-         <i data-lucide="plus" width="12" height="12"></i> Add Game
-        </button>
-       </div>
-
-       <div id="games-list" class="space-y-2.5">
-        <!-- PUBG Mobile Card -->
-        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="PUBG Mobile" data-engine="3d" data-fps="144" data-cpu="extreme" data-touch="480">
-         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center font-bold text-white text-xs shadow-md">PUBG</div>
-          <div>
-           <h4 class="text-xs font-bold text-white">PUBG Mobile</h4>
-           <p class="game-badge-text text-[9.5px] text-emerald-400 font-semibold">3D Vulkan Engine • 144Hz Real FPS • Extreme CPU</p>
-          </div>
-         </div>
-         <div class="flex items-center gap-1.5">
-          <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="PUBG Mobile">
-           <i data-lucide="settings" width="14" height="14"></i>
-          </button>
-          <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="PUBG Mobile">
-           <i data-lucide="play" width="12" height="12"></i> Launch
-          </button>
-         </div>
-        </div>
-
-        <!-- COD Mobile Card -->
-        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="Call of Duty: Mobile" data-engine="3d" data-fps="120" data-cpu="performance" data-touch="300">
-         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center font-bold text-white text-xs shadow-md">COD</div>
-          <div>
-           <h4 class="text-xs font-bold text-white">Call of Duty: Mobile</h4>
-           <p class="game-badge-text text-[9.5px] text-cyan-400 font-semibold">3D Vulkan Engine • 120Hz Real FPS</p>
-          </div>
-         </div>
-         <div class="flex items-center gap-1.5">
-          <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="Call of Duty: Mobile">
-           <i data-lucide="settings" width="14" height="14"></i>
-          </button>
-          <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Call of Duty: Mobile">
-           <i data-lucide="play" width="12" height="12"></i> Launch
-          </button>
-         </div>
-        </div>
-
-        <!-- Genshin Impact Card -->
-        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="Genshin Impact" data-engine="3d" data-fps="60" data-cpu="extreme" data-touch="300">
-         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs shadow-md">GI</div>
-          <div>
-           <h4 class="text-xs font-bold text-white">Genshin Impact</h4>
-           <p class="game-badge-text text-[9.5px] text-amber-400 font-semibold">3D Heavy Engine • Thermal Override Status 0</p>
-          </div>
-         </div>
-         <div class="flex items-center gap-1.5">
-          <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="Genshin Impact">
-           <i data-lucide="settings" width="14" height="14"></i>
-          </button>
-          <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Genshin Impact">
-           <i data-lucide="play" width="12" height="12"></i> Launch
-          </button>
-         </div>
-        </div>
-
-        <!-- Mobile Legends Card -->
-        <div class="game-item glass p-3 rounded-2xl flex items-center justify-between" data-game-title="Mobile Legends" data-engine="2d" data-fps="165" data-cpu="extreme" data-touch="480">
-         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs shadow-md">MLBB</div>
-          <div>
-           <h4 class="text-xs font-bold text-white">Mobile Legends</h4>
-           <p class="game-badge-text text-[9.5px] text-emerald-400 font-semibold">2D Pixel Engine • 165Hz Lock • Touch 480Hz</p>
-          </div>
-         </div>
-         <div class="flex items-center gap-1.5">
-          <button class="tune-game-btn glass p-1.5 rounded-xl text-slate-300 hover:text-white hover:border-cyan-400" title="Tune Game Performance" data-game="Mobile Legends">
-           <i data-lucide="settings" width="14" height="14"></i>
-          </button>
-          <button class="launch-game-btn glass px-2.5 py-1.5 rounded-xl text-xs font-bold text-cyan-300 border border-cyan-400/30 hover:bg-cyan-400/20 transition-all flex items-center gap-1" data-game="Mobile Legends">
-           <i data-lucide="play" width="12" height="12"></i> Launch
-          </button>
-         </div>
         </div>
        </div>
       </div>

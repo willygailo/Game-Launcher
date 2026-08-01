@@ -30,9 +30,9 @@
     "semantic_hash": "0bc020d491fca99550c1ea3de0a5f862"
   },
   "README.md": {
-    "mtime": 1785469623.0588338,
-    "ast_hash": "67fff20af82b55b02b501391982291eb",
-    "semantic_hash": "67fff20af82b55b02b501391982291eb"
+    "mtime": 1785565947.8282926,
+    "ast_hash": "70f62675aec5d90d35e8601636512e43",
+    "semantic_hash": ""
   },
   "android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
     "mtime": 1785118821.768565,
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/functions/CpuGovernorChannel.java": {
-    "mtime": 1785476676.5494938,
-    "ast_hash": "031e73568cbe5c282f389196b06ff4da",
+    "mtime": 1785565919.6207767,
+    "ast_hash": "2943525bbe84a4f4f92e3e9c2ac39824",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/functions/GpuTweaksChannel.java": {
@@ -310,13 +310,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785547616.5385938,
-    "ast_hash": "a77beeabae501cb0fca08a4bde318b35",
+    "mtime": 1785565282.087633,
+    "ast_hash": "1e987175d3ef46283dee8fb03b4403a5",
     "semantic_hash": ""
   },
   "android/app/src/main/assets/index.html": {
-    "mtime": 1785542097.4818735,
-    "ast_hash": "87a2e3596fd1bca0470567f75d752e20",
+    "mtime": 1785565464.865458,
+    "ast_hash": "1e987175d3ef46283dee8fb03b4403a5",
     "semantic_hash": ""
   },
   ".agents/AGENTS.md": {
