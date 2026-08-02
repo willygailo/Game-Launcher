@@ -17,13 +17,14 @@ public class PerformanceChannel {
         boolean ok = true;
         switch (profile) {
             case EXTREME_PERFORMANCE:
+                int targetHz = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(context);
                 ok &= CpuGovernorChannel.setPerformanceLock();
                 ok &= GpuTweaksChannel.setGpuMaxPerformance();
                 ok &= GpuTweaksChannel.enableVulkanRenderer();
                 ok &= TouchLatencyChannel.enableUltraTouchResponse();
                 ok &= NetworkTweaksChannel.enableLowLatencyNetwork();
                 ok &= ThermalChannel.setThermalOverride(true);
-                ok &= HzFpsChannel.setRefreshRate(165.0f);
+                ok &= HzFpsChannel.setRefreshRate((float) targetHz);
                 RamZramChannel.trimMemoryAndCleanCache(context);
                 return ok;
 

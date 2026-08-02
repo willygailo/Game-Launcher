@@ -81,9 +81,13 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             holder.switchToggle.setEnabled(true);
         }
 
+        // Guard: prevent listener from firing during programmatic setChecked
+        holder.isUpdatingProgrammatically = true;
+        boolean isAppliedState = TweakPreferences.isTweakApplied(context, targetItem.getId());
+        targetItem.setApplied(isAppliedState);
         holder.switchToggle.setOnCheckedChangeListener(null);
-        boolean isAppliedState = targetItem.isApplied() || TweakPreferences.isTweakApplied(context, targetItem.getId());
         holder.switchToggle.setChecked(isAppliedState);
+        holder.isUpdatingProgrammatically = false;
 
         holder.switchToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

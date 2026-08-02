@@ -41,6 +41,18 @@ public class HzFpsChannel {
         } else if (manufacturer.contains("asus")) {
             // ASUS ROG Phone / Gaming Devices
             CommandExecutor.setSystemSetting("system", "asus_option_display_refresh_rate", String.valueOf(hzInt));
+        } else if (manufacturer.contains("vivo") || brand.contains("iqoo")) {
+            // vivo / iQOO Funtouch OS / Origin OS
+            CommandExecutor.setSystemSetting("system", "screen_refresh_rate", String.valueOf(hzInt));
+            CommandExecutor.setSystemSetting("system", "iqoo_refresh_rate", String.valueOf(hzInt));
+        } else if (manufacturer.contains("motorola") || brand.contains("moto")) {
+            // Motorola MyUX
+            CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
+            CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
+        } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("itel") || manufacturer.contains("transsion")) {
+            // Transsion Holdings (Infinix XOS / Tecno HiOS / iTel)
+            CommandExecutor.setSystemSetting("system", "screen_refresh_rate_mode", hzInt >= 90 ? "1" : "0");
+            CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
         // SurfaceFlinger High FPS phase offsets for zero-stutter rendering

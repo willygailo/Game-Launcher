@@ -8,16 +8,9 @@ public class RamZramChannel {
 
     public static boolean trimMemoryAndCleanCache(Context context) {
         boolean ok = true;
-        if (context != null) {
-            try {
-                ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                if (am != null) {
-                    am.killBackgroundProcesses(context.getPackageName());
-                }
-            } catch (Exception ignored) {}
-        }
+        // Kill cached background processes via Shizuku (not our own app)
         CommandExecutor.executeSystemCommand("am kill-all");
-        CommandExecutor.executeSystemCommand("am trim-memory ALL");
+        CommandExecutor.executeSystemCommand("cmd activity trim-memory --mode COMPLETE");
         CommandExecutor.executeSystemCommand("cmd activity compact full");
         return ok;
     }

@@ -127,6 +127,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
+        Button btnFilterNetwork = view.findViewById(R.id.btn_filter_network);
 
         TweakManagerRepository.initializeStates(getContext());
 
@@ -158,6 +159,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnFilterCpuGpu != null && tweaksAdapter != null) btnFilterCpuGpu.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.CPU_GPU)));
         if (btnFilterTouch != null && tweaksAdapter != null) btnFilterTouch.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.TOUCH_DISPLAY)));
         if (btnFilterShizuku != null && tweaksAdapter != null) btnFilterShizuku.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.SHIZUKU_SYSTEM)));
+        if (btnFilterNetwork != null && tweaksAdapter != null) btnFilterNetwork.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.NETWORK_LATENCY)));
 
         refreshAllStatuses();
         return view;

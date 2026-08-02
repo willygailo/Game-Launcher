@@ -170,6 +170,212 @@ public class TweakManagerRepository {
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
+
+        // ═══════════════════════════════════════════════════════════
+        // NEW GPU & RENDERING TWEAKS
+        // ═══════════════════════════════════════════════════════════
+
+        TWEAKS.add(new TweakItem(
+                "disable_vsync",
+                "Disable VSync Lock",
+                "Removes VSync frame cap to unlock maximum GPU frame output",
+                "setprop debug.egl.swapinterval 0",
+                "setprop debug.egl.swapinterval 1",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "gpu_overdraw_debug_off",
+                "Disable GPU Overdraw Debug",
+                "Turns off GPU overdraw visualization layer to reclaim rendering cycles",
+                "setprop debug.hwui.overdraw false",
+                "setprop debug.hwui.overdraw show",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_hw_vsync",
+                "SurfaceFlinger Disable HW VSync",
+                "Disables hardware VSync for virtual displays to reduce compositor overhead",
+                "setprop debug.sf.disable_hwc_vds 1",
+                "setprop debug.sf.disable_hwc_vds 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        // ═══════════════════════════════════════════════════════════
+        // NEW TOUCH & DISPLAY TWEAKS
+        // ═══════════════════════════════════════════════════════════
+
+        TWEAKS.add(new TweakItem(
+                "pointer_speed_max",
+                "Max Pointer Speed",
+                "Maximizes touch pointer tracking speed for faster cursor response",
+                "settings put system pointer_speed 7",
+                "settings put system pointer_speed 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_screen_auto_bright",
+                "Lock Screen Brightness",
+                "Disables auto-brightness to prevent display dimming during gameplay",
+                "settings put system screen_brightness_mode 0",
+                "settings put system screen_brightness_mode 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        // ═══════════════════════════════════════════════════════════
+        // NEW SYSTEM & SHIZUKU ADB TWEAKS
+        // ═══════════════════════════════════════════════════════════
+
+        TWEAKS.add(new TweakItem(
+                "force_gpu_rendering",
+                "Force GPU Rendering",
+                "Forces all UI elements to use hardware GPU acceleration",
+                "settings put global force_hw_ui 1",
+                "settings put global force_hw_ui 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_battery_saver",
+                "Disable Low Power Mode",
+                "Prevents battery saver from throttling CPU/GPU clocks during gaming",
+                "settings put global low_power 0",
+                "settings put global low_power 1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "kill_bg_processes",
+                "Aggressive Background Kill",
+                "Forces system to immediately destroy background activities to free RAM",
+                "settings put global always_finish_activities 1",
+                "settings put global always_finish_activities 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_blur_effects",
+                "Disable Window Blur Effects",
+                "Disables UI background blur effects on Android 12+ to save GPU rendering cycles",
+                "settings put global window_blurs_enabled 0",
+                "settings put global window_blurs_enabled 1",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "force_dark_mode",
+                "Force System Dark UI Mode",
+                "Enforces system dark theme to reduce OLED display power draw and GPU overdraw",
+                "cmd uimode night yes",
+                "cmd uimode night no",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_hw_overlay_compositor",
+                "Disable HW Overlay Compositor",
+                "Forces SurfaceFlinger GPU composition for consistent frame pacing",
+                "setprop debug.sf.disable_hwc_overlay 1",
+                "setprop debug.sf.disable_hwc_overlay 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "gpu_buffer_count",
+                "Triple Buffer Rendering",
+                "Configures EGL 3-buffer pipeline to eliminate micro-stutter from swap waits",
+                "setprop debug.egl.buffcount 3",
+                "setprop debug.egl.buffcount 2",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_notification_alerts",
+                "Gaming DND Notification Silence",
+                "Enables Zen Mode DND to suppress popups and notification interruptions during gaming",
+                "settings put global zen_mode 2",
+                "settings put global zen_mode 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_haptic_feedback",
+                "Disable Vibration Haptics",
+                "Disables touch vibration motors to prevent tactile latency and save battery",
+                "settings put system haptic_feedback_enabled 0",
+                "settings put system haptic_feedback_enabled 1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "max_background_limit",
+                "Limit Background Apps",
+                "Restricts cached background processes to 2, releasing 200-400MB RAM for games",
+                "settings put global background_process_limit 2",
+                "settings put global background_process_limit -1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        // ═══════════════════════════════════════════════════════════
+        // NEW NETWORK & LATENCY TWEAKS
+        // ═══════════════════════════════════════════════════════════
+
+        TWEAKS.add(new TweakItem(
+                "dns_google_fast",
+                "Google DNS Fast Resolve",
+                "Routes DNS queries through Google 8.8.8.8 for fastest domain resolution",
+                "setprop net.dns1 8.8.8.8; setprop net.dns2 8.8.4.4",
+                "setprop net.dns1 \"\"; setprop net.dns2 \"\"",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "private_dns_cloudflare",
+                "Cloudflare Private DNS 1.1.1.1",
+                "Enables TLS-encrypted Cloudflare Private DNS for ultra-low gaming lookup ping",
+                "settings put global private_dns_mode hostname; settings put global private_dns_specifier one.one.one.one",
+                "settings put global private_dns_mode off",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_captive_portal",
+                "Disable Captive Portal Check",
+                "Disables HTTP ping checks to prevent network latency spikes during game connections",
+                "settings put global captive_portal_mode 0",
+                "settings put global captive_portal_mode 1",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_mobile_data_always",
+                "Disable Always-On Mobile Data",
+                "Stops background mobile data drain when connected to Wi-Fi to save battery",
+                "settings put global mobile_data_always_on 0",
+                "settings put global mobile_data_always_on 1",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

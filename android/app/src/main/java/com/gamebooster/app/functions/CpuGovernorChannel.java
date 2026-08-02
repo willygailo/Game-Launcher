@@ -9,7 +9,8 @@ public class CpuGovernorChannel {
             CommandExecutor.executeSystemCommand("cmd power set-mode 2 1");
             CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
         } else {
-            CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
+            CommandExecutor.executeSystemCommand("cmd power set-mode 2 0");
+            CommandExecutor.executeSystemCommand("cmd power set-mode 0 0");
         }
         return true;
     }

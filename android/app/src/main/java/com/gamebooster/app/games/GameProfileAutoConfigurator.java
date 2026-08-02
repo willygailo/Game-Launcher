@@ -85,9 +85,10 @@ public class GameProfileAutoConfigurator {
         // 3. System-wide refresh rate peak/min lock
         HzFpsChannel.setRefreshRate((float) targetFpsHz);
 
-        // 4. SurfaceFlinger high FPS offset
+        // 4. SurfaceFlinger high FPS offset & ANGLE Vulkan driver override
         CommandExecutor.executeSystemCommand("setprop debug.sf.high_fps_early_phase_offset_ns 1");
         CommandExecutor.executeSystemCommand("setprop debug.hwui.renderer vulkan");
+        CommandExecutor.executeSystemCommand("settings put global angle_enabled_app " + packageName);
 
         // 5. In-game config file sed/ini patch
         GameConfigPatcher.applyGameFpsPatch(packageName, targetFpsHz);
