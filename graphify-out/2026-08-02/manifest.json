@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/functions/TweakManagerRepository.java": {
-    "mtime": 1785547100.448222,
-    "ast_hash": "4061bdec03d97322e396de88c48b123e",
+    "mtime": 1785656002.566199,
+    "ast_hash": "00a2acfd8c4dc3e1a70ad53b75086eea",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/functions/TweakPreferences.java": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GameManagerRepository.java": {
-    "mtime": 1785488149.348669,
-    "ast_hash": "d394e3b80f6b4094a7d7eb21ad5f8af0",
+    "mtime": 1785655756.6493487,
+    "ast_hash": "35ef08d7d0433b763e04a66912903f27",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GamePackageRegistry.java": {
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GameProfileAutoConfigurator.java": {
-    "mtime": 1785488517.5885303,
-    "ast_hash": "7cbafa0b7aa7077db3d1f2f0c76b5021",
+    "mtime": 1785655814.324727,
+    "ast_hash": "0972b2cc483112bb4ade8ae59fec7db1",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/metadata/BootReceiver.java": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785488760.4888713,
-    "ast_hash": "228069f727d3a9f4bb071ac0e3304849",
+    "mtime": 1785655874.9840703,
+    "ast_hash": "70eaddf52351da8c9ca58887888696af",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/HomeFragment.java": {
-    "mtime": 1785654214.4500432,
-    "ast_hash": "ae83d295e2cd93558e3cf35695e58fca",
+    "mtime": 1785655928.3674903,
+    "ast_hash": "cb0f59f75975b9c97083786d5f2e8685",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/HzFpsFragment.java": {
