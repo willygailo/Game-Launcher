@@ -87,9 +87,9 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v3.3.0 (Latest)** | Persistent Tweaks & Hardware Refresh Rate Filtering | [Download v3.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) |
+| **v3.4.0 (Latest)** | 34 Legitimate AOSP Tweaks & Dynamic Engine | [Download v3.4.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.4.0) |
+| **v3.3.0** | Persistent Tweaks & Hardware Refresh Rate Filtering | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) |
 | **v3.2.0** | Consolidated 2-Tab Dashboard & Glassmorphic UI | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.0) |
-| **v3.1.0** | Advanced Non-Root Boost & Latency Tuning | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.1.0) |
 
 ---
 
