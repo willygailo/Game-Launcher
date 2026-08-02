@@ -18,26 +18,59 @@ public class GameLauncherHelper {
     public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
 
-        try {
-            // 1. Shizuku ADB Permission Combo grant
-            com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+        String pkgName = game.getPackageName();
+        if (pkgName == null || pkgName.trim().isEmpty()) return;
 
-            // 2. Target FPS / Hz refresh rate lock & Game Mode API
-            int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
-            GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);
+        // 1. Offload background optimizations to AppExecutors so launch is instant
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+                int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
+                GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
+                PerformanceChannel.executeOneTapBoost(context);
+                com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+            } catch (Throwable ignored) {}
+        });
 
-            // 3. One-tap system tweaks & GPU Vulkan renderer
-            PerformanceChannel.executeOneTapBoost(context);
-            com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+        // 2. Perform 3-Tier Game Launch Fallback
+        boolean launched = false;
 
-            Toast.makeText(context, "⚡ SHIZUKU COMBO BOOSTED: Launching " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
-        } catch (Exception ignored) {}
-
-        // Launch game intent
+        // Tier 1: Standard Intent Launch
         Intent launchIntent = game.getLaunchIntent();
         if (launchIntent != null) {
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(launchIntent);
+            try {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                context.startActivity(launchIntent);
+                launched = true;
+            } catch (Throwable ignored) {}
+        }
+
+        // Tier 2: PackageManager Re-query
+        if (!launched) {
+            try {
+                Intent pmIntent = context.getPackageManager().getLaunchIntentForPackage(pkgName);
+                if (pmIntent != null) {
+                    pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    context.startActivity(pmIntent);
+                    launched = true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Tier 3: Shizuku ADB Direct Launch Fallback (monkey -p <pkg> 1)
+        if (!launched) {
+            try {
+                String res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("monkey -p " + pkgName + " -c android.intent.category.LAUNCHER 1");
+                if (res != null && !res.startsWith("ERROR")) {
+                    launched = true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        if (launched) {
+            Toast.makeText(context, "⚡ LAUNCHED: " + game.getLabel() + " Boosted!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/core/DeviceInfoChannel.java": {
-    "mtime": 1785476676.5503128,
-    "ast_hash": "623b02c445ae9676fa960639cd1df848",
+    "mtime": 1785660741.9037554,
+    "ast_hash": "b875160e2c6e256e6c6533be3317179b",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/core/DeviceSpecModel.java": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java": {
-    "mtime": 1785657826.814826,
-    "ast_hash": "889bf667748ca6a6ec4ee15dd54c30d9",
+    "mtime": 1785661632.681225,
+    "ast_hash": "260de3cdbcf679b1ab9cfa20a2e0d674",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/games/GameLibraryChannel.java": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785655874.9840703,
-    "ast_hash": "70eaddf52351da8c9ca58887888696af",
+    "mtime": 1785660784.979756,
+    "ast_hash": "85118fcc44368a6f0c13032769b37955",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/GamesAdapter.java": {
-    "mtime": 1785488565.2189906,
-    "ast_hash": "c714a8579b977e61d93ef8070c14e06e",
+    "mtime": 1785661648.3331528,
+    "ast_hash": "10d08b693312f533f239de76df43927b",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/GamesFragment.java": {
@@ -367,6 +367,16 @@
   "app_bg.png": {
     "mtime": 1785566291.294964,
     "ast_hash": "12f0712518394107107eb6c1b9317caa",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/assets/settings_bg.jpg": {
+    "mtime": 1785661258.367256,
+    "ast_hash": "119e0acb8672315c409e8802673440bb",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/res/drawable/settings_bg.jpg": {
+    "mtime": 1785661258.3708177,
+    "ast_hash": "119e0acb8672315c409e8802673440bb",
     "semantic_hash": ""
   }
 }

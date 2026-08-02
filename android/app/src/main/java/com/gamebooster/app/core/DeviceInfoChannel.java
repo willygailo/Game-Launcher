@@ -16,13 +16,15 @@ public class DeviceInfoChannel {
         public final long usedRamMb;
         public final long totalRamMb;
         public final float batteryTempC;
+        public final int batteryCurrentMa;
 
-        public Metrics(String summary, int pct, long used, long total, float temp) {
+        public Metrics(String summary, int pct, long used, long total, float temp, int currentMa) {
             this.deviceSummary = summary;
             this.ramUsagePct = pct;
             this.usedRamMb = used;
             this.totalRamMb = total;
             this.batteryTempC = temp;
+            this.batteryCurrentMa = currentMa;
         }
     }
 
@@ -45,6 +47,7 @@ public class DeviceInfoChannel {
         }
 
         float tempC = 0.0f;
+        int currentMa = 0;
         if (context != null) {
             IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryIntent = context.registerReceiver(null, filter);
@@ -52,8 +55,17 @@ public class DeviceInfoChannel {
                 int tempInt = batteryIntent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
                 tempC = tempInt / 10.0f;
             }
+            try {
+                BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+                if (bm != null) {
+                    int val = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+                    if (val != Integer.MIN_VALUE) {
+                        currentMa = Math.abs(val / 1000);
+                    }
+                }
+            } catch (Throwable ignored) {}
         }
 
-        return new Metrics(summary, ramPct, used, total, tempC);
+        return new Metrics(summary, ramPct, used, total, tempC, currentMa);
     }
 }

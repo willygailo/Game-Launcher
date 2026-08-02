@@ -162,8 +162,9 @@ public class FloatingOverlayService extends Service {
         if (isCollapsed) {
             tvMetrics.setText(String.format("⚡ %dHz", currentHz));
         } else {
-            String text = String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C",
-                    currentHz, m.ramUsagePct, m.batteryTempC);
+            String text = m.batteryCurrentMa > 0 ?
+                    String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C | %dmA", currentHz, m.ramUsagePct, m.batteryTempC, m.batteryCurrentMa) :
+                    String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C", currentHz, m.ramUsagePct, m.batteryTempC);
             tvMetrics.setText(text);
         }
     }

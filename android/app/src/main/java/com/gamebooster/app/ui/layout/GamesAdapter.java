@@ -47,29 +47,7 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
         }
 
         holder.btnLaunch.setOnClickListener(v -> {
-            if (game.getLaunchIntent() != null) {
-                Toast.makeText(context, "⚡ Optimizing " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
-                
-                // Offload GameConfigPatcher & Auto-Configurator execution off main thread
-                AppExecutors.getInstance().executeCommand(() -> {
-                    int targetFps = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(context);
-                    com.gamebooster.app.games.GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);
-                    GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (result.success) {
-                            Toast.makeText(context, "⚡ " + result.message, Toast.LENGTH_SHORT).show();
-                        }
-                        try {
-                            GameLauncherHelper.launchGameWithAutoBoost(context, game);
-                        } catch (Exception e) {
-                            Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            } else {
-                Toast.makeText(context, "Cannot launch " + game.getLabel() + " (No launcher intent)", Toast.LENGTH_SHORT).show();
-            }
+            GameLauncherHelper.launchGameWithAutoBoost(context, game);
         });
     }
 

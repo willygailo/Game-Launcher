@@ -1,16 +1,16 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-02)
 
 ## Corpus Check
-- 62 files · ~125,878 words
+- 62 files · ~125,667 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 604 nodes · 1328 edges · 23 communities (21 shown, 2 thin omitted)
+- 604 nodes · 1324 edges · 23 communities (21 shown, 2 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2e80bb0d`
+- Built from commit: `c14df4c0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,24 +68,24 @@ Cohesion: 0.07
 Nodes (18): BaseManager, CpuManager, DisplayManager, FileSystemManager, GlobalSettingsManager, GpuManager, Context, Override (+10 more)
 
 ### Community 1 - "TweakItem"
-Cohesion: 0.06
-Nodes (31): Adapter, TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem, Context (+23 more)
+Cohesion: 0.05
+Nodes (35): Adapter, TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem, Context (+27 more)
 
 ### Community 2 - ".executeSystemCommand"
 Cohesion: 0.06
 Nodes (27): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+19 more)
 
 ### Community 3 - "CommandExecutor.java"
-Cohesion: 0.05
-Nodes (36): AppExecutors, Handler, NetworkTweaksChannel, GameAppInfo, Intent, GameConfigPatcher, PatchResult, GameLauncherHelper (+28 more)
+Cohesion: 0.06
+Nodes (34): NetworkTweaksChannel, GameAppInfo, Intent, GameConfigPatcher, PatchResult, GameLauncherHelper, Context, Context (+26 more)
 
 ### Community 4 - "DeviceSpecModel"
 Cohesion: 0.09
 Nodes (13): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+5 more)
 
 ### Community 5 - "Fragment"
-Cohesion: 0.10
-Nodes (28): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+20 more)
+Cohesion: 0.08
+Nodes (30): AppExecutors, Handler, EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override (+22 more)
 
 ### Community 6 - ".onCreateView"
 Cohesion: 0.28
@@ -108,8 +108,8 @@ Cohesion: 0.14
 Nodes (8): GameBoosterJsInterface, Context, Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, JavascriptInterface
 
 ### Community 11 - "HzFpsFragment.java"
-Cohesion: 0.13
-Nodes (14): ThermalChannel, EngineMode, READ_ONLY, SHIZUKU, SYSTEM_SETTINGS, HzFpsFragment, Bundle, ImageView (+6 more)
+Cohesion: 0.22
+Nodes (10): ThermalChannel, HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch (+2 more)
 
 ### Community 12 - "📌 Master Features"
 Cohesion: 0.13
@@ -144,8 +144,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Override` be split into smaller, more focused modules?**
   _Cohesion score 0.06867088607594937 - nodes in this community are weakly interconnected._
 - **Should `TweakItem` be split into smaller, more focused modules?**
-  _Cohesion score 0.0590990990990991 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05209274314965372 - nodes in this community are weakly interconnected._
 - **Should `.executeSystemCommand` be split into smaller, more focused modules?**
   _Cohesion score 0.059907834101382486 - nodes in this community are weakly interconnected._
 - **Should `CommandExecutor.java` be split into smaller, more focused modules?**
-  _Cohesion score 0.05209274314965372 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05693693693693694 - nodes in this community are weakly interconnected._

@@ -1,16 +1,16 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-02)
 
 ## Corpus Check
-- 62 files · ~125,600 words
+- 62 files · ~127,825 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 604 nodes · 1324 edges · 23 communities (21 shown, 2 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.8)
+- 604 nodes · 1321 edges · 23 communities (21 shown, 2 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 33 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `23345f40`
+- Built from commit: `c14df4c0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -135,9 +135,9 @@ Nodes (3): gradlew script, die(), warn()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `GameAppInfo` connect `CommandExecutor.java` to `Fragment`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Why does `PropertyResolver` connect `Override` to `RefreshRateController`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `RefreshRateController` connect `RefreshRateController` to `Override`?**
   _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **What connects `QUALCOMM`, `MEDIATEK`, `EXYNOS` to the rest of the system?**
   _35 weakly-connected nodes found - possible documentation gaps or missing edges._
@@ -148,4 +148,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `.executeSystemCommand` be split into smaller, more focused modules?**
   _Cohesion score 0.059907834101382486 - nodes in this community are weakly interconnected._
 - **Should `CommandExecutor.java` be split into smaller, more focused modules?**
-  _Cohesion score 0.05693693693693694 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05621621621621622 - nodes in this community are weakly interconnected._
