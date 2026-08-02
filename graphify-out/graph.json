@@ -21,8 +21,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "appexecutors.java"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_appexecutors",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "appexecutors"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_java_handler",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "handler"
     },
     {
@@ -54,8 +54,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_appexecutors_appexecutors",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".appexecutors()"
     },
     {
@@ -76,8 +76,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_appexecutors_executecommand",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".executecommand()"
     },
     {
@@ -87,8 +87,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_appexecutors_executescan",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".executescan()"
     },
     {
@@ -98,8 +98,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_appexecutors_appexecutors_posttomainthread",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".posttomainthread()"
     },
     {
@@ -736,8 +736,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_engineuihelper",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "engineuihelper.java"
     },
     {
@@ -747,8 +747,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_engineuihelper_engineuihelper",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "engineuihelper"
     },
     {
@@ -758,8 +758,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_engineuihelper_engineuihelper_refreshenginestatus",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".refreshenginestatus()"
     },
     {
@@ -769,8 +769,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_engineuihelper_java_textview",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "textview"
     },
     {
@@ -780,8 +780,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "gameboosterjsinterface.java"
     },
     {
@@ -791,8 +791,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "gameboosterjsinterface"
     },
     {
@@ -802,8 +802,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_java_context",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "context"
     },
     {
@@ -813,8 +813,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_gameboosterjsinterface",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".gameboosterjsinterface()"
     },
     {
@@ -824,8 +824,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_executeshizukucmd",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".executeshizukucmd()"
     },
     {
@@ -835,8 +835,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "javascriptinterface",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "javascriptinterface"
     },
     {
@@ -846,8 +846,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_applyprofile",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".applyprofile()"
     },
     {
@@ -857,8 +857,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_getdevicemetricsjson",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".getdevicemetricsjson()"
     },
     {
@@ -868,8 +868,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_grantshizukupermissions",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".grantshizukupermissions()"
     },
     {
@@ -879,8 +879,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_core_gameboosterjsinterface_gameboosterjsinterface_settargetfps",
-      "community": 4,
-      "community_name": "DeviceSpecModel",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".settargetfps()"
     },
     {
@@ -1814,8 +1814,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": "gamespacedndmanager.java"
     },
     {
@@ -1825,8 +1825,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_gamespacedndmanager",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": "gamespacedndmanager"
     },
     {
@@ -1836,8 +1836,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_gamespacedndmanager_isdndactive",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": ".isdndactive()"
     },
     {
@@ -1847,8 +1847,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_java_context",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": "context"
     },
     {
@@ -1858,8 +1858,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_gamespacedndmanager_setgamingdndmode",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": ".setgamingdndmode()"
     },
     {
@@ -1869,8 +1869,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_gamespacedndmanager_isbrightnesslockactive",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": ".isbrightnesslockactive()"
     },
     {
@@ -1880,8 +1880,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_functions_gamespacedndmanager_gamespacedndmanager_setbrightnesslock",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": ".setbrightnesslock()"
     },
     {
@@ -3010,7 +3010,7 @@
       "label": ".getCustomPackages()",
       "file_type": "code",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L35",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_getcustompackages",
       "community": 3,
@@ -3021,7 +3021,7 @@
       "label": ".addCustomPackage()",
       "file_type": "code",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L41",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_addcustompackage",
       "community": 3,
@@ -3032,7 +3032,7 @@
       "label": ".removeCustomPackage()",
       "file_type": "code",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L49",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_removecustompackage",
       "community": 3,
@@ -3255,8 +3255,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "gameprofileautoconfigurator.java"
     },
     {
@@ -3266,8 +3266,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "gameprofileautoconfigurator"
     },
     {
@@ -3277,8 +3277,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_onautoconfiglistener",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "onautoconfiglistener"
     },
     {
@@ -3288,8 +3288,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_onautoconfiglistener_onautoconfigcompleted",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".onautoconfigcompleted()"
     },
     {
@@ -3299,8 +3299,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_settargetfpshz",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".settargetfpshz()"
     },
     {
@@ -3310,8 +3310,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_java_context",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "context"
     },
     {
@@ -3321,8 +3321,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_gettargetfpshz",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".gettargetfpshz()"
     },
     {
@@ -3332,8 +3332,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_getsupporteddisplayrefreshrates",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".getsupporteddisplayrefreshrates()"
     },
     {
@@ -3343,8 +3343,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_autoconfiggamepackage",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".autoconfiggamepackage()"
     },
     {
@@ -3354,8 +3354,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_autoconfigallinstalledgamesasync",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".autoconfigallinstalledgamesasync()"
     },
     {
@@ -3904,8 +3904,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "enginemode.java"
     },
     {
@@ -3915,8 +3915,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_enginemode",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "enginemode"
     },
     {
@@ -3926,8 +3926,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_enginemode_shizuku",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "shizuku"
     },
     {
@@ -3937,8 +3937,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_enginemode_system_settings",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "system_settings"
     },
     {
@@ -3948,8 +3948,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_enginemode_read_only",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "read_only"
     },
     {
@@ -3959,8 +3959,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_getdisplayname",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "getdisplayname()"
     },
     {
@@ -3970,8 +3970,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_root_enginemode_getcolorhex",
-      "community": 1,
-      "community_name": "TweakItem",
+      "community": 11,
+      "community_name": "HzFpsFragment.java",
       "norm_label": "getcolorhex()"
     },
     {
@@ -4047,8 +4047,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "permissionsfragment.java"
     },
     {
@@ -4058,8 +4058,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_permissionsfragment",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "permissionsfragment"
     },
     {
@@ -4080,8 +4080,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_textview",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "textview"
     },
     {
@@ -4091,8 +4091,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_permissionsfragment_oncreateview",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".oncreateview()"
     },
     {
@@ -4102,8 +4102,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_layoutinflater",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "layoutinflater"
     },
     {
@@ -4113,8 +4113,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_viewgroup",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "viewgroup"
     },
     {
@@ -4124,8 +4124,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_bundle",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "bundle"
     },
     {
@@ -4135,8 +4135,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_view",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "view"
     },
     {
@@ -4146,8 +4146,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_nullable",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "nullable"
     },
     {
@@ -4157,8 +4157,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_java_override",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "override"
     },
     {
@@ -4168,8 +4168,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_permissionsfragment_onresume",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".onresume()"
     },
     {
@@ -4179,8 +4179,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_settings_permissionsfragment_permissionsfragment_updatesystemsettingsstatus",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".updatesystemsettingsstatus()"
     },
     {
@@ -4190,8 +4190,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_permissionchannel",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "permissionchannel.java"
     },
     {
@@ -4201,8 +4201,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_permissionchannel_permissionchannel",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "permissionchannel"
     },
     {
@@ -4212,8 +4212,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_permissionchannel_permissionchannel_hasshizuku",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".hasshizuku()"
     },
     {
@@ -4223,8 +4223,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_permissionchannel_permissionchannel_grantpermissionsviashizuku",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".grantpermissionsviashizuku()"
     },
     {
@@ -4234,8 +4234,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_permissionchannel_java_context",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "context"
     },
     {
@@ -4245,8 +4245,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuchannel",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "shizukuchannel.java"
     },
     {
@@ -4256,8 +4256,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuchannel_shizukuchannel",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "shizukuchannel"
     },
     {
@@ -4267,8 +4267,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuchannel_shizukuchannel_isavailable",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".isavailable()"
     },
     {
@@ -4278,8 +4278,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuchannel_shizukuchannel_execute",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".execute()"
     },
     {
@@ -4289,8 +4289,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuchannel_shizukuchannel_putsetting",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".putsetting()"
     },
     {
@@ -4300,8 +4300,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "shizukuexecutor.java"
     },
     {
@@ -4311,8 +4311,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_shizukuexecutor",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "shizukuexecutor"
     },
     {
@@ -4322,8 +4322,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_shizukuexecutor_isshizukuavailable",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".isshizukuavailable()"
     },
     {
@@ -4333,8 +4333,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_shizukuexecutor_hasshizukupermission",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".hasshizukupermission()"
     },
     {
@@ -4344,8 +4344,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_shizukuexecutor_executeshizukucommand",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".executeshizukucommand()"
     },
     {
@@ -4355,8 +4355,8 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_shizukuexecutor_grantapppermissionsviashizuku",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": ".grantapppermissionsviashizuku()"
     },
     {
@@ -4366,8 +4366,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_shizuku_shizukuexecutor_java_context",
-      "community": 7,
-      "community_name": "ShizukuManager",
+      "community": 10,
+      "community_name": "HomeFragment.java",
       "norm_label": "context"
     },
     {
@@ -4927,8 +4927,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "gamesfragment.java"
     },
     {
@@ -4938,8 +4938,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_gamesfragment",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "gamesfragment"
     },
     {
@@ -4949,8 +4949,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_textview",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "textview"
     },
     {
@@ -4960,8 +4960,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_recyclerview",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "recyclerview"
     },
     {
@@ -4971,8 +4971,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_gamesfragment_oncreateview",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".oncreateview()"
     },
     {
@@ -4982,8 +4982,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_layoutinflater",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "layoutinflater"
     },
     {
@@ -4993,8 +4993,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_viewgroup",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "viewgroup"
     },
     {
@@ -5004,8 +5004,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_bundle",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "bundle"
     },
     {
@@ -5015,8 +5015,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_view",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "view"
     },
     {
@@ -5026,8 +5026,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_nullable",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "nullable"
     },
     {
@@ -5037,8 +5037,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_java_override",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": "override"
     },
     {
@@ -5048,8 +5048,8 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_gamesfragment_onresume",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".onresume()"
     },
     {
@@ -5059,8 +5059,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesfragment_gamesfragment_loadinstalledgames",
-      "community": 3,
-      "community_name": "CommandExecutor.java",
+      "community": 5,
+      "community_name": "Fragment",
       "norm_label": ".loadinstalledgames()"
     },
     {
@@ -5070,8 +5070,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "homefragment.java"
     },
     {
@@ -5081,8 +5081,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_homefragment",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "homefragment"
     },
     {
@@ -5092,8 +5092,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_textview",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "textview"
     },
     {
@@ -5103,8 +5103,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_recyclerview",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "recyclerview"
     },
     {
@@ -5114,8 +5114,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_homefragment_oncreateview",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".oncreateview()"
     },
     {
@@ -5125,8 +5125,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_layoutinflater",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "layoutinflater"
     },
     {
@@ -5136,8 +5136,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_viewgroup",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "viewgroup"
     },
     {
@@ -5147,8 +5147,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_bundle",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "bundle"
     },
     {
@@ -5158,8 +5158,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_view",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "view"
     },
     {
@@ -5169,8 +5169,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_nullable",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "nullable"
     },
     {
@@ -5180,8 +5180,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_java_override",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": "override"
     },
     {
@@ -5191,8 +5191,8 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_homefragment_onresume",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".onresume()"
     },
     {
@@ -5202,8 +5202,8 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_homefragment_loadinstalledgames",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".loadinstalledgames()"
     },
     {
@@ -5213,8 +5213,8 @@
       "source_location": "L237",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_homefragment_homefragment_updatedashboard",
-      "community": 10,
-      "community_name": "HomeFragment.java",
+      "community": 3,
+      "community_name": "CommandExecutor.java",
       "norm_label": ".updatedashboard()"
     },
     {
@@ -6170,8 +6170,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "webdashboardfragment.java"
     },
     {
@@ -6181,8 +6181,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_webdashboardfragment",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "webdashboardfragment"
     },
     {
@@ -6192,8 +6192,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "webview",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "webview"
     },
     {
@@ -6203,8 +6203,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_webdashboardfragment_oncreateview",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": ".oncreateview()"
     },
     {
@@ -6214,8 +6214,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_layoutinflater",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "layoutinflater"
     },
     {
@@ -6225,8 +6225,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_viewgroup",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "viewgroup"
     },
     {
@@ -6236,8 +6236,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_bundle",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "bundle"
     },
     {
@@ -6247,8 +6247,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_view",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "view"
     },
     {
@@ -6258,8 +6258,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "suppresslint",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "suppresslint"
     },
     {
@@ -6269,8 +6269,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_nullable",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "nullable"
     },
     {
@@ -6280,8 +6280,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_java_override",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": "override"
     },
     {
@@ -6291,8 +6291,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "android_app_src_main_java_com_gamebooster_app_ui_layout_webdashboardfragment_webdashboardfragment_ondestroyview",
-      "community": 5,
-      "community_name": "Fragment",
+      "community": 13,
+      "community_name": "WebDashboardFragment.java",
       "norm_label": ".ondestroyview()"
     },
     {
@@ -6388,8 +6388,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "android_settings",
-      "community": 13,
-      "community_name": "WebDashboardFragment.java",
+      "community": 9,
+      "community_name": "RefreshRateController",
       "norm_label": "settings.gradle"
     },
     {
@@ -12502,7 +12502,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L23",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
@@ -14496,7 +14496,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L24",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
@@ -14513,6 +14513,18 @@
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_ui_layout_gamesadapter_gamesadapter_onbindviewholder",
       "target": "android_app_src_main_java_com_gamebooster_app_games_gameappinfo_gameappinfo_getlabel"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
+      "target": "android_app_src_main_java_com_gamebooster_app_games_gameappinfo_gameappinfo_getpackagename"
     },
     {
       "relation": "calls",
@@ -14544,7 +14556,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L28",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
@@ -14764,7 +14776,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L41",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper",
@@ -14775,7 +14787,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L35",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper",
@@ -14797,7 +14809,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L49",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper",
@@ -14821,6 +14833,30 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
+      "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
+      "target": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_autoconfiggamepackage"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "android_app_src_main_java_com_gamebooster_app_games_gamelauncherhelper_gamelauncherhelper_launchgamewithautoboost",
+      "target": "android_app_src_main_java_com_gamebooster_app_games_gameprofileautoconfigurator_gameprofileautoconfigurator_gettargetfpshz"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
       "source_file": "android/app/src/main/java/com/gamebooster/app/ui/layout/GamesAdapter.java",
       "source_location": "L64",
       "weight": 1.0,
@@ -14832,7 +14868,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L41",
+      "source_location": "L50",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -14844,7 +14880,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L35",
+      "source_location": "L44",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -14856,7 +14892,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "android/app/src/main/java/com/gamebooster/app/games/GameLauncherHelper.java",
-      "source_location": "L49",
+      "source_location": "L58",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -22133,5 +22169,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "20def56f954ae625f6e3d3c7eb0e47d8a804b7ee"
+  "built_at_commit": "2e80bb0dc0a5df8ed497e10a2c6b3fc555c62cf5"
 }

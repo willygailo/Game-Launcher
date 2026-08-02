@@ -81,88 +81,6 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
-        <!-- METRICS GAUGES CARD -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_glass_shape"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LIVE HARDWARE MONITORS"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_ram_usage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="RAM Usage: 45%"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/tv_battery_temp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Battery Temperature: 34.2 °C"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-        </LinearLayout>
-
-        <!-- PRO GAMING CONTROLS CARD -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_glass_shape"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PRO GAMING CONTROLS"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <Switch
-                android:id="@+id/switch_overlay_hud"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Floating Performance Overlay HUD"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <Switch
-                android:id="@+id/switch_gaming_dnd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Gaming DND &amp; Banner Blocker"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/btn_network_dns"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="@color/card_bg"
-                android:text="🌐 SET LOW-LATENCY GAMING DNS (1.1.1.1)"
-                android:textColor="@color/accent_cyan"
-                android:textSize="12sp" />
-        </LinearLayout>
-
         <!-- INSTALLED GAMES LAUNCHER SECTION -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -259,32 +177,123 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_auto_config_games"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_cyan"
-                android:text="⚡ AUTO-CONFIG ALL GAMES MAX FPS/HZ"
-                android:textColor="#000000"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btn_boost_ram"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_purple"
-                android:text="🚀 BOOST RAM &amp; CLEAN CACHE"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+                <Button
+                    android:id="@+id/btn_auto_config_games"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/accent_cyan"
+                    android:text="⚡ AUTO-TUNE ALL GAMES"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_boost_ram"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/card_bg"
+                    android:text="🧹 TRIM RAM"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_games_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:clipToPadding="false" />
+                android:nestedScrollingEnabled="false" />
+        </LinearLayout>
+
+        <!-- METRICS GAUGES CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_glass_shape"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LIVE HARDWARE MONITORS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_ram_usage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="RAM Usage: 45%"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_battery_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Battery Temperature: 34.2 °C"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- PRO GAMING CONTROLS CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_glass_shape"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PRO GAMING CONTROLS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <Switch
+                android:id="@+id/switch_overlay_hud"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Floating Performance Overlay HUD"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <Switch
+                android:id="@+id/switch_gaming_dnd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Gaming DND &amp; Banner Blocker"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_network_dns"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="@color/card_bg"
+                android:text="🌐 SET LOW-LATENCY GAMING DNS (1.1.1.1)"
+                android:textColor="@color/accent_cyan"
+                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>

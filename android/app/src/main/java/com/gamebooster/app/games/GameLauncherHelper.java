@@ -18,10 +18,19 @@ public class GameLauncherHelper {
     public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
 
-        // Execute pre-game RAM trim & booster
         try {
+            // 1. Shizuku ADB Permission Combo grant
+            com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+
+            // 2. Target FPS / Hz refresh rate lock & Game Mode API
+            int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
+            GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);
+
+            // 3. One-tap system tweaks & GPU Vulkan renderer
             PerformanceChannel.executeOneTapBoost(context);
-            Toast.makeText(context, "⚡ ULTRA BOOSTED: Launching " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
+            com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+
+            Toast.makeText(context, "⚡ SHIZUKU COMBO BOOSTED: Launching " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
         } catch (Exception ignored) {}
 
         // Launch game intent
