@@ -107,6 +107,7 @@ public class FloatingOverlayService extends Service {
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
+            private boolean isClick = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -116,12 +117,24 @@ public class FloatingOverlayService extends Service {
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        isClick = true;
                         return true;
                     case MotionEvent.ACTION_MOVE:
+                        float dx = Math.abs(event.getRawX() - initialTouchX);
+                        float dy = Math.abs(event.getRawY() - initialTouchY);
+                        if (dx > 10 || dy > 10) {
+                            isClick = false;
+                        }
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         if (windowManager != null && overlayView != null) {
                             windowManager.updateViewLayout(overlayView, params);
+                        }
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (isClick) {
+                            isCollapsed = !isCollapsed;
+                            updateMetricsText();
                         }
                         return true;
                 }
@@ -137,21 +150,30 @@ public class FloatingOverlayService extends Service {
         }
     }
 
+    private boolean isCollapsed = false;
+
+    private void updateMetricsText() {
+        if (tvMetrics == null) return;
+        DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
+        com.gamebooster.app.core.DisplayCapabilitiesDetector.DisplayCaps caps = 
+                com.gamebooster.app.core.DisplayCapabilitiesDetector.detect(getApplicationContext());
+        int currentHz = caps != null ? caps.currentRefreshRate : 60;
+
+        if (isCollapsed) {
+            tvMetrics.setText(String.format("⚡ %dHz", currentHz));
+        } else {
+            String text = String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C",
+                    currentHz, m.ramUsagePct, m.batteryTempC);
+            tvMetrics.setText(text);
+        }
+    }
+
     private void setupTicker() {
         handler = new Handler(Looper.getMainLooper());
         updateRunnable = new Runnable() {
             @Override
             public void run() {
-                if (tvMetrics != null) {
-                    DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
-                    com.gamebooster.app.core.DisplayCapabilitiesDetector.DisplayCaps caps = 
-                            com.gamebooster.app.core.DisplayCapabilitiesDetector.detect(getApplicationContext());
-                    int currentHz = caps != null ? caps.currentRefreshRate : 60;
-
-                    String text = String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C",
-                            currentHz, m.ramUsagePct, m.batteryTempC);
-                    tvMetrics.setText(text);
-                }
+                updateMetricsText();
                 if (handler != null && isRunning) {
                     handler.postDelayed(this, 1000);
                 }

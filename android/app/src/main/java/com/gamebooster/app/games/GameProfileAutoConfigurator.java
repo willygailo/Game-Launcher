@@ -8,6 +8,7 @@ import com.gamebooster.app.functions.HzFpsChannel;
 import com.gamebooster.app.functions.TweakPreferences;
 import com.gamebooster.app.root.CommandExecutor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameProfileAutoConfigurator {
@@ -34,6 +35,40 @@ public class GameProfileAutoConfigurator {
         return context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
+    }
+
+    public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
+        List<Integer> rates = new ArrayList<>();
+        if (context == null) {
+            rates.add(60);
+            rates.add(90);
+            rates.add(120);
+            return rates;
+        }
+        try {
+            android.view.WindowManager wm = (android.view.WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            if (wm != null) {
+                android.view.Display display = wm.getDefaultDisplay();
+                if (display != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    android.view.Display.Mode[] modes = display.getSupportedModes();
+                    java.util.Set<Integer> uniqueHz = new java.util.TreeSet<>();
+                    for (android.view.Display.Mode mode : modes) {
+                        int hz = Math.round(mode.getRefreshRate());
+                        if (hz >= 50) {
+                            uniqueHz.add(hz);
+                        }
+                    }
+                    rates.addAll(uniqueHz);
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        if (rates.isEmpty()) {
+            rates.add(60);
+            rates.add(90);
+            rates.add(120);
+        }
+        return rates;
     }
 
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {

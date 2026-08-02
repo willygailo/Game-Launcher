@@ -150,6 +150,26 @@ public class TweakManagerRepository {
                 TweakCategory.CPU_GPU,
                 true
         ));
+
+        TWEAKS.add(new TweakItem(
+                "sf_latch_unsignaled",
+                "Zero Frame Latency Latching",
+                "Forces SurfaceFlinger to latch unsignaled buffers immediately for lower input latency",
+                "setprop debug.sf.latch_unsignaled 1; setprop debug.performance.tuning 1",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.performance.tuning 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "touch_pressure_scale",
+                "Ultra Touch Pressure Sensitivity",
+                "Boosts touch panel responsiveness and digitizer sampling rate",
+                "setprop persist.sys.touch.pressure.scale 0.001; settings put system touch_sensitivity 1",
+                "setprop persist.sys.touch.pressure.scale 1.0; settings put system touch_sensitivity 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

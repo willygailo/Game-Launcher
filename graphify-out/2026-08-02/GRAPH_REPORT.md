@@ -1,16 +1,16 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-02)
 
 ## Corpus Check
-- 62 files · ~126,429 words
+- 62 files · ~126,120 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 609 nodes · 1330 edges · 23 communities (21 shown, 2 thin omitted)
+- 607 nodes · 1325 edges · 23 communities (21 shown, 2 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 33 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ac11f1e3`
+- Built from commit: `b1bd4ea1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -38,7 +38,7 @@
 1. `PropResult` - 34 edges
 2. `TweakItem` - 22 edges
 3. `GameAppInfo` - 20 edges
-4. `FloatingOverlayService` - 18 edges
+4. `FloatingOverlayService` - 17 edges
 5. `DeviceSpecModel` - 15 edges
 6. `BaseManager` - 15 edges
 7. `SettingsFragment` - 15 edges
@@ -49,14 +49,14 @@
 ## Surprising Connections (you probably didn't know these)
 - `RefreshRateController` --references--> `PropertyResolver`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/core/DisplayCapabilitiesDetector.java → android/app/src/main/java/com/gamebooster/app/core/PropertyResolver.java
-- `TweaksAdapter` --references--> `TweakItem`  [EXTRACTED]
-  android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java → android/app/src/main/java/com/gamebooster/app/functions/TweakItem.java
 - `GamesFragment` --references--> `GameAppInfo`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/ui/layout/GamesFragment.java → android/app/src/main/java/com/gamebooster/app/games/GameAppInfo.java
 - `HomeFragment` --references--> `GameAppInfo`  [EXTRACTED]
   android/app/src/main/java/com/gamebooster/app/ui/layout/HomeFragment.java → android/app/src/main/java/com/gamebooster/app/games/GameAppInfo.java
-- `GamesFragment` --references--> `GamesAdapter`  [EXTRACTED]
-  android/app/src/main/java/com/gamebooster/app/ui/layout/GamesFragment.java → android/app/src/main/java/com/gamebooster/app/ui/layout/GamesAdapter.java
+- `SettingsFragment` --implements--> `ShizukuStateListener`  [EXTRACTED]
+  android/app/src/main/java/com/gamebooster/app/ui/layout/SettingsFragment.java → android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuManager.java
+- `TweaksFragment` --implements--> `ShizukuStateListener`  [EXTRACTED]
+  android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java → android/app/src/main/java/com/gamebooster/app/shizuku/ShizukuManager.java
 
 ## Import Cycles
 - None detected.
@@ -68,32 +68,32 @@ Cohesion: 0.07
 Nodes (18): BaseManager, CpuManager, DisplayManager, FileSystemManager, GlobalSettingsManager, GpuManager, Context, Override (+10 more)
 
 ### Community 1 - "TweakItem"
-Cohesion: 0.07
-Nodes (24): TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem, Context, OnBatchCompleteListener (+16 more)
+Cohesion: 0.06
+Nodes (30): TweakCategory, ALL, CPU_GPU, SHIZUKU_SYSTEM, TOUCH_DISPLAY, TweakItem, Context, OnBatchCompleteListener (+22 more)
 
 ### Community 2 - ".executeSystemCommand"
 Cohesion: 0.06
-Nodes (28): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+20 more)
+Nodes (27): CpuGovernorChannel, GpuTweaksChannel, HzFpsChannel, DnsMode, CLOUDFLARE_1_1_1_1, GOOGLE_8_8_8_8, SYSTEM_DEFAULT, Context (+19 more)
 
 ### Community 3 - "CommandExecutor.java"
 Cohesion: 0.08
-Nodes (22): Adapter, GameAppInfo, Intent, GameConfigPatcher, PatchResult, GameLauncherHelper, Context, Context (+14 more)
+Nodes (23): Adapter, NetworkTweaksChannel, GameAppInfo, Intent, GameConfigPatcher, PatchResult, GameLauncherHelper, Context (+15 more)
 
 ### Community 4 - "DeviceSpecModel"
-Cohesion: 0.09
-Nodes (13): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+5 more)
+Cohesion: 0.07
+Nodes (16): ChipsetVendor, EXYNOS, GENERIC, KIRIN, MEDIATEK, QUALCOMM, TENSOR, UNISOC (+8 more)
 
 ### Community 5 - "Fragment"
 Cohesion: 0.10
 Nodes (28): EngineUIHelper, TextView, Bundle, LayoutInflater, Nullable, Override, TextView, View (+20 more)
 
 ### Community 6 - ".onCreateView"
-Cohesion: 0.09
-Nodes (17): GameBoosterJsInterface, Context, Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, Bundle (+9 more)
+Cohesion: 0.11
+Nodes (14): Context, PermissionChannel, ShizukuChannel, Context, ShizukuExecutor, Bundle, Button, LayoutInflater (+6 more)
 
 ### Community 7 - "ShizukuManager"
-Cohesion: 0.07
-Nodes (28): Context, ShizukuManager, ShizukuStateListener, Bundle, Override, MainActivity, Bundle, Button (+20 more)
+Cohesion: 0.10
+Nodes (13): Context, ShizukuManager, ShizukuStateListener, ShizukuUserServiceConnector, Bundle, Override, MainActivity, AppCompatActivity (+5 more)
 
 ### Community 8 - "FloatingOverlayService"
 Cohesion: 0.12
@@ -104,20 +104,20 @@ Cohesion: 0.10
 Nodes (11): DisplayCapabilitiesDetector, DisplayCaps, Context, Mode, EXACT, MIN, PEAK, USER (+3 more)
 
 ### Community 10 - "HomeFragment.java"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (14): AppExecutors, Handler, GameProfileAutoConfigurator, Context, OnAutoConfigListener, HomeFragment, Bundle, LayoutInflater (+6 more)
 
 ### Community 11 - "HzFpsFragment.java"
-Cohesion: 0.22
-Nodes (10): ThermalChannel, HzFpsFragment, Bundle, ImageView, LayoutInflater, Nullable, Override, Switch (+2 more)
+Cohesion: 0.13
+Nodes (14): ThermalChannel, EngineMode, READ_ONLY, SHIZUKU, SYSTEM_SETTINGS, HzFpsFragment, Bundle, ImageView (+6 more)
 
 ### Community 12 - "📌 Master Features"
 Cohesion: 0.10
 Nodes (19): ⚡ 1. 100% Non-Rooted Dual Execution Engine, ⚡ 1-Tap Ultra Booster, 📱 2. Direct Shizuku Binder IPC Integration, 🚀 3. Multi-OEM Refresh Rate (Hz) & FPS Lock, 🧊 4. Thermal & Throttling Bypass Module, 🎯 5. Preset Gaming Profiles Suite, 🎨 6. Graphics & GPU Unlocking Module, 🧠 7. CPU PowerHAL & Game Mode Governor (+11 more)
 
 ### Community 13 - "WebDashboardFragment.java"
-Cohesion: 0.28
-Nodes (4): ShizukuUserServiceConnector, IUserService, ServiceConnection, UserServiceArgs
+Cohesion: 0.30
+Nodes (9): Bundle, LayoutInflater, Nullable, Override, View, ViewGroup, WebDashboardFragment, SuppressLint (+1 more)
 
 ### Community 14 - "UserService"
 Cohesion: 0.32
@@ -144,8 +144,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Override` be split into smaller, more focused modules?**
   _Cohesion score 0.06867088607594937 - nodes in this community are weakly interconnected._
 - **Should `TweakItem` be split into smaller, more focused modules?**
-  _Cohesion score 0.06612021857923497 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06034801925212884 - nodes in this community are weakly interconnected._
 - **Should `.executeSystemCommand` be split into smaller, more focused modules?**
-  _Cohesion score 0.05576923076923077 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.059907834101382486 - nodes in this community are weakly interconnected._
 - **Should `CommandExecutor.java` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07541478129713423 - nodes in this community are weakly interconnected._

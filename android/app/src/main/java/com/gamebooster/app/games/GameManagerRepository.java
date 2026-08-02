@@ -42,10 +42,17 @@ public class GameManagerRepository {
 
             String pkgNameLower = app.packageName.toLowerCase();
             if (!isGame && (pkgNameLower.contains("game") || pkgNameLower.contains("pubg") ||
-                pkgNameLower.contains("mobilelegends") || pkgNameLower.contains("freefire") ||
-                pkgNameLower.contains("genshin") || pkgNameLower.contains("roblox") ||
-                pkgNameLower.contains("cod") || pkgNameLower.contains("minecraft") ||
-                pkgNameLower.contains("apex") || pkgNameLower.contains("ea.gp"))) {
+                pkgNameLower.contains("mobilelegends") || pkgNameLower.contains("mobile.legends") ||
+                pkgNameLower.contains("freefire") || pkgNameLower.contains("genshin") ||
+                pkgNameLower.contains("roblox") || pkgNameLower.contains("cod") ||
+                pkgNameLower.contains("callofduty") || pkgNameLower.contains("minecraft") ||
+                pkgNameLower.contains("apex") || pkgNameLower.contains("wildrift") ||
+                pkgNameLower.contains("league") || pkgNameLower.contains("sgameglobal") ||
+                pkgNameLower.contains("honorofkings") || pkgNameLower.contains("supercell") ||
+                pkgNameLower.contains("brawlstars") || pkgNameLower.contains("clashroyale") ||
+                pkgNameLower.contains("ea.gp") || pkgNameLower.contains("garena") ||
+                pkgNameLower.contains("tencent") || pkgNameLower.contains("netease") ||
+                pkgNameLower.contains("hoyoverse") || pkgNameLower.contains("mihoyo"))) {
                 isGame = true;
             }
 

@@ -147,6 +147,15 @@ public class HomeFragment extends Fragment {
             Toast.makeText(getContext(), "Target FPS/Hz set to " + targetHz + " FPS", Toast.LENGTH_SHORT).show();
         };
 
+        if (getContext() != null) {
+            java.util.List<Integer> supportedRates = GameProfileAutoConfigurator.getSupportedDisplayRefreshRates(getContext());
+            if (btnTarget60 != null) btnTarget60.setVisibility(supportedRates.contains(60) ? View.VISIBLE : View.GONE);
+            if (btnTarget90 != null) btnTarget90.setVisibility(supportedRates.contains(90) ? View.VISIBLE : View.GONE);
+            if (btnTarget120 != null) btnTarget120.setVisibility(supportedRates.contains(120) ? View.VISIBLE : View.GONE);
+            if (btnTarget144 != null) btnTarget144.setVisibility(supportedRates.contains(144) ? View.VISIBLE : View.GONE);
+            if (btnTarget165 != null) btnTarget165.setVisibility(supportedRates.contains(165) ? View.VISIBLE : View.GONE);
+        }
+
         if (btnTarget60 != null) btnTarget60.setOnClickListener(hzClickListener);
         if (btnTarget90 != null) btnTarget90.setOnClickListener(hzClickListener);
         if (btnTarget120 != null) btnTarget120.setOnClickListener(hzClickListener);

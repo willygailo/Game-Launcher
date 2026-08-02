@@ -30,8 +30,10 @@
             android:layout_weight="1"
             android:text="Tweak Title"
             android:textColor="@color/text_primary"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
 
         <FrameLayout
             android:layout_width="wrap_content"
