@@ -59,17 +59,27 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (btnOpenSettings != null) {
-            btnOpenSettings.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-                    intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    try {
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Unable to open write settings screen", Toast.LENGTH_SHORT).show();
-                    }
+        Button btnGithubReleases = view.findViewById(R.id.btn_github_releases);
+        Button btnFacebookProfile = view.findViewById(R.id.btn_facebook_profile);
+
+        if (btnGithubReleases != null) {
+            btnGithubReleases.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/willygailo/Game-Launcher/releases"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), "Unable to open browser", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (btnFacebookProfile != null) {
+            btnFacebookProfile.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), "Unable to open browser", Toast.LENGTH_SHORT).show();
                 }
             });
         }

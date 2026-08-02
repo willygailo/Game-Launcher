@@ -102,8 +102,9 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
       <sub><b>Willy Gailo</b></sub>
     </td>
     <td>
-      <b>Connect with the Developer:</b>
+      <b>Connect with the Developer & Downloads:</b>
       <br/><br/>
+      📦 <b>APK Releases:</b> <a href="https://github.com/willygailo/Game-Launcher/releases">willygailo/Game-Launcher/releases</a><br/>
       🐱 <b>GitHub:</b> <a href="https://github.com/willygailo">@willygailo</a><br/>
       📘 <b>Facebook:</b> <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027">Willy Gailo</a><br/>
       📂 <b>Repository:</b> <a href="https://github.com/willygailo/Game-Launcher">willygailo/Game-Launcher</a>

@@ -1,7 +1,7 @@
 # Graph Report - Game_Launcher_Pro  (2026-08-02)
 
 ## Corpus Check
-- 62 files · ~128,180 words
+- 62 files · ~128,534 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

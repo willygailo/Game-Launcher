@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/SettingsFragment.java": {
-    "mtime": 1785664754.87724,
-    "ast_hash": "2af4c07ee9c74ba2118d360bdbef19b0",
+    "mtime": 1785667954.9593625,
+    "ast_hash": "677cec322a56d467aead7d4ae2c38c23",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785657089.4986215,
-    "ast_hash": "88e2babf0855aa2355d1df9e667c36e0",
+    "mtime": 1785667861.532849,
+    "ast_hash": "60f06665fbbe6f7ec52b307d7ad715da",
     "semantic_hash": ""
   },
   "android/app/src/main/assets/index.html": {
