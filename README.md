@@ -64,51 +64,6 @@
 * Exposes `@JavascriptInterface` (`window.AndroidBridge`) for WebViews.
 * Modular web scripts (`js/app.js`, `js/shizuku-shell.js`, `js/game-manager.js`, `js/monitors.js`) supporting web dashboard controls.
 
----
-
-## 🏛️ Project Architecture
-
-```
-Game_Launcher_Pro/
-├── README.md                                          # Master project documentation
-├── js/                                                # Modular Web Dashboard JavaScript
-│   ├── app.js                                         # Core UI logic
-│   ├── game-manager.js                                # Game tuning scripts
-│   ├── monitors.js                                    # Hardware gauges loop
-│   └── shizuku-shell.js                               # Shell emulation scripts
-└── android/                                           # Pure Native Android Java Project (SDK 35)
-    ├── build.gradle                                   # Root build script
-    └── app/
-        ├── build.gradle                               # App module Gradle configuration
-        └── src/main/
-            ├── AndroidManifest.xml                    # SDK 35 permissions & service declarations
-            ├── res/
-            │   ├── drawable/
-            │   │   ├── app_bg.jpg                     # Background wallpaper
-            │   │   └── card_glass_shape.xml           # Glassmorphic card background
-            │   └── layout/
-            │       ├── activity_main.xml              # Main 2-Tab Navigation Layout
-            │       ├── fragment_home.xml              # Home Dashboard & Games Library
-            │       ├── fragment_settings.xml          # Settings & Consolidated Tweaks
-            │       └── item_tweak_card.xml            # Glass tweak card layout
-            └── java/com/gamebooster/app/
-                ├── ui/layout/
-                │   ├── MainActivity.java              # 2-Tab Fragment Controller
-                │   ├── HomeFragment.java              # Home Dashboard logic
-                │   ├── SettingsFragment.java          # Settings & Tweaks logic
-                │   ├── GamesAdapter.java              # Games RecyclerView adapter
-                │   └── TweaksAdapter.java             # Tweaks RecyclerView adapter
-                ├── games/
-                │   ├── GameManagerRepository.java     # Game scanner & memory optimizer
-                │   └── GameProfileAutoConfigurator.java # Hardware refresh rate detector & profiler
-                ├── overlay/
-                │   └── FloatingOverlayService.java    # Collapsible HUD overlay service
-                ├── functions/
-                │   ├── TweakManagerRepository.java     # System setprop & settings tweaks
-                │   └── TweakPreferences.java          # Persistent state retention
-                └── shizuku/
-                    └── ShizukuExecutor.java           # Shizuku binder IPC runner
-```
 
 ---
 
