@@ -1,194 +1,140 @@
 <div align="center">
 
-# 🎮 GAME SPACE — Pure Native Non-Rooted Android Gaming Optimizer & FPS Unlocker
+# 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Android-00F0FF?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android" />
+  <img src="https://img.shields.io/badge/Release-v3.3.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.3.0" />
+  <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
-  <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-00FF66?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
-  <img src="https://img.shields.io/badge/Architecture-Asynchronous%20AppExecutors-FF9900?style=for-the-badge" alt="Async Execution Model" />
+  <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
   <img src="https://img.shields.io/badge/License-MIT-FF0055?style=for-the-badge" alt="License" />
 </p>
 
-### ⚡ *Unlock 90Hz / 120Hz / 144Hz / 165Hz Refresh Rates, Vulkan HWUI, 4x MSAA, Touch Slop Reduction & Thermal Bypass on ALL Non-Rooted Android Devices!* ⚡
+### ⚡ *Pure Native Non-Rooted Android Gaming Optimizer, Hardware FPS/Hz Locker, Vulkan HWUI Engine & Shizuku ADB System Tuner* ⚡
 
 ---
 
-[📖 Features](#-master-features) • [🏛️ Architecture](#%EF%B8%8F-project-architecture--file-map) • [⚡ 1-Tap Boost](#-1-tap-ultra-booster) • [⚡ Async Threading](#-non-blocking-asynchronous-threading-model) • [🚀 Build APK](#-building-the-release-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v3.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 Master Features
+## 📌 What's New in v3.3.0
 
 > [!IMPORTANT]
-> **GAME SPACE** is built **100% in Native Java (JDK 17)** designed specifically for **Non-Rooted Android Devices**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **Android System Settings**, and **Android 12+ Game Mode API** with zero root requirement, non-blocking background I/O, and zero process hangs.
+> **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **System Settings**, and **Android 12+ Game Mode API** with zero root requirement.
 
-### ⚡ 1. 100% Non-Rooted Dual Execution Engine
-* **⚡ Shizuku ADB Engine (`shizuku`)**: **Non-Rooted High Refresh Rate & Thermal Lock**: Locks Max Refresh Rate (90Hz / 120Hz / 144Hz / 165Hz), forces Vulkan HWUI graphics pipeline, disables thermal throttling caps (`cmd thermalservice`), and triggers Android 12+ Game Mode interventions via IPC binder.
-* **⚙️ System Settings & Monitor Engine**: Non-rooted fallback utilizing standard Android `Settings.System`, `Settings.Global`, `ActivityManager`, and `DisplayManager` APIs.
+* 📱 **Consolidated 2-Tab Dashboard**: Streamlined UI featuring strictly **Home** and **Settings** tabs for fast navigation.
+* 🎨 **Glassmorphism Wallpaper Visibility**: Translucent glass card design with low dark scrim opacity (`#450A0E1A` / 27%) showcasing the custom background wallpaper (`app_bg`).
+* 🔒 **Persistent Tweak Retention**: Switches remain **ON** persistently once enabled (saved in `TweakPreferences`) and require manual user toggling to turn OFF.
+* ⚡ **Hardware-Driven Refresh Rate Selector**: Queries `Display.getSupportedModes()` to display ONLY the target FPS/Hz buttons supported by the phone's physical screen.
+* 📱 **Hideable / Collapsible Floating HUD Overlay**: Single tap toggles between full metrics view (`⚡ FPS/Hz: 120Hz | RAM: 42% | Temp: 34.5°C`) and a minimal pill icon (`⚡ 120Hz`) so it never obstructs gameplay.
+* 🌐 **Expanded Online Game Package Scanner**: Comprehensive detection for Mobile Legends, PUBG Mobile, COD Mobile, Free Fire, Genshin Impact, Wild Rift, Honor of Kings, Roblox, Apex Legends, etc.
+* 🚀 **Auto-Apply Game Profiles on Launch**: Automatically applies target FPS locks, GPU render modes, DND settings, and system tweaks whenever any game is opened from the library.
 
-### 📱 2. Direct Shizuku Binder IPC Integration
-* Connects directly to the running Shizuku service via `rikka.shizuku.ShizukuProvider`.
-* Auto-grants `WRITE_SECURE_SETTINGS`, `WRITE_SETTINGS`, and `PACKAGE_USAGE_STATS` permissions on launch.
-* Live `EngineUIHelper` dynamic engine badges across all fragments (`Active Engine: SHIZUKU ADB ENGINE` vs `Active Engine: SYSTEM SETTINGS ENGINE`).
+---
 
-### 🚀 3. Multi-OEM Refresh Rate (Hz) & FPS Lock
-* Lock display refresh rate to **60Hz, 90Hz, 120Hz, 144Hz, or 165Hz (Max Hardware Mode)**.
-* Supports **Stock Pixel, Xiaomi/MIUI, Samsung OneUI, TECNO/Infinix HiOS, and OnePlus/Realme** system setting overrides.
-* Android 12+ Game Mode API integration (`cmd game set --fps <hz> <package>`).
+## ⚡ Master Features
 
-### 🧊 4. Thermal & Throttling Bypass Module
-* Overrides system thermal throttling caps (`cmd thermalservice override-status 0` / `cmd thermal override-status 0`).
-* Safe layout state modulation with lock overlays (`iv_thermal_lock`).
+### 🔒 1. 100% Non-Rooted Shizuku ADB Control
+* **Automated 27-Permission Shizuku ADB Combo**: Automatically grants `WRITE_SECURE_SETTINGS`, `MANAGE_GAME_MODE`, `FORCE_STOP_PACKAGES`, `CLEAR_APP_CACHE`, `SET_PROCESS_LIMIT`, `POST_NOTIFICATIONS`, and `FOREGROUND_SERVICE_SPECIAL_USE` via Shizuku binder IPC.
+* **Dual Execution Engine (`Shizuku` vs `System Settings`)**: Seamless fallback execution if Shizuku is not running.
 
-### 🎯 5. Preset Gaming Profiles Suite
-* **🔥 EXTREME PERFORMANCE PROFILE**: Full PowerHAL Mode 2 1, 480Hz touch slop, Vulkan renderer, thermal override status 0.
-* **⚡ PERFORMANCE PROFILE**: 120Hz/144Hz lock, PowerHAL Mode 0 1, 300Hz touch slop, Vulkan renderer.
-* **⚖️ BALANCED PROFILE**: 90Hz refresh rate, Schedutil CPU governor, balanced thermal management.
+### 🎯 2. Hardware Refresh Rate (Hz) & FPS Lock
+* Detects hardware display modes and locks refresh rates to **60Hz, 90Hz, 120Hz, 144Hz, or 165Hz**.
+* Integrates Android 12+ Game Mode API (`cmd game mode performance <package>`) and per-app refresh rate overrides (`cmd window set-app-refresh-rate`).
 
-### 🎨 6. Graphics & GPU Unlocking Module
-* Forces **Vulkan HWUI Graphics Renderer** (`debug.hwui.renderer=vulkan`).
-* Forces **SurfaceFlinger GPU Composition** (`debug.sf.hw=1`).
-* Unlocks **4x MSAA Anti-Aliasing** (`debug.egl.force_msaa=1`).
+### 🎨 3. Graphics & GPU Engine Optimization
+* **Vulkan HWUI Graphics Renderer** (`setprop debug.hwui.renderer vulkan`).
+* **SurfaceFlinger Unsignaled Latching** (`setprop debug.sf.latch_unsignaled 1`).
+* **Force 4x MSAA Anti-Aliasing** (`setprop debug.egl.force_msaa 1`).
+* **High-Speed 16-Bit Alpha Textures** (`setprop persist.sys.use_16bpp_alpha 1`).
 
-### 🧠 7. CPU PowerHAL & Game Mode Governor
+### 👆 4. Touch Latency & Digitizer Sensitivity
+* **Touch Pressure Scale Reduction** (`setprop persist.sys.touch.pressure.scale 0.001`).
+* **Touch Slop Gesture Sensitivity** (`settings put system touch_slop_reduction 1`).
+* **Zero Scroll Cache Compression** (`setprop persist.sys.scrollingcache 3`).
+
+### 🧊 5. Thermal Throttling & PowerHAL Bypass
+* Overrides system thermal throttling caps (`cmd thermalservice override-status 0`).
 * Triggers PowerHAL sustained performance mode (`cmd power set-mode 0 1`).
-* Configures Android 12+ Game Mode (`cmd game mode performance <package>`).
 
-### 👆 8. Touch Slop & Input Latency Module
-* Ultra-low touch slop sensitivity reduction (`settings put system touch_slop_reduction 1`).
-* Disables scroll cache delay (`persist.sys.scrollingcache=3`).
-
-### 🌐 9. Network & TCP Latency Tuning
-* High-throughput TCP buffer sizing for Wi-Fi and 4G/5G mobile data.
+### 🌐 6. Native JavaScript Bridge & Modular Web Scripts
+* Exposes `@JavascriptInterface` (`window.AndroidBridge`) for WebViews.
+* Modular web scripts (`js/app.js`, `js/shizuku-shell.js`, `js/game-manager.js`, `js/monitors.js`) supporting web dashboard controls.
 
 ---
 
-## ⚡ Non-Blocking Asynchronous Threading Model
-
-> [!NOTE]
-> All background process executions (`sh -c`, `setprop`, `settings put`, `cmd thermalservice`) and `PackageManager` package scanning are offloaded to a centralized thread-safe executor (`AppExecutors`). This ensures **zero main-thread blocking** and **zero ANRs**.
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          AppExecutors                                  │
-├────────────────────────────────────────────────────────────────────────┤
-│  Disk I/O Single-Thread Executor ──► Background Process / Shell Run   │
-│                                                   │                    │
-│                                                   ▼                    │
-│  Main Looper Handler ◄───────────── Fragment Lifecycle Guard           │
-│                                     (!isAdded() / getContext() != null)│
-│                                                   │                    │
-│                                                   ▼                    │
-│  UI Re-enable & Toast ◄────────────── Double-Tap Re-entrancy Lock      │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## ⚡ 1-Tap Ultra Booster
-
-```
-┌────────────────────────────────────────────────────────┐
-│               ⚡ ONE-TAP ULTRA BOOST                   │
-├────────────────────────────────────────────────────────┤
-│  [1] Trim RAM & Kill Background Junk Apps              │
-│  [2] Lock Display to 120Hz / Max Hardware Mode        │
-│  [3] Enable Vulkan HWUI & SurfaceFlinger GPU Render   │
-│  [4] Bypass Thermal Throttling Caps (ThermalService)  │
-│  [5] Trigger PowerHAL & Android Game Mode Performance │
-└────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🏛️ Project Architecture & File Map
+## 🏛️ Project Architecture
 
 ```
 Game_Launcher_Pro/
-├── README.md                                          # Master documentation
-└── android/                                           # Pure Native Android Java Project
-    ├── build.gradle                                   # AGP 8.7.3 buildscript
-    └── app/src/main/
-        ├── AndroidManifest.xml                        # Native Manifest & ShizukuProvider IPC
-        ├── res/
-        │   ├── layout/
-        │   │   ├── activity_main.xml                  # Main Fragment Container
-        │   │   ├── fragment_home.xml                  # Cyberpunk HUD & 1-Tap Boost
-        │   │   ├── fragment_hz_fps.xml                 # Hz & FPS Unlocker UI
-        │   │   ├── fragment_profiles.xml              # Gamer Preset Profiles UI (4 Cards)
-        │   │   ├── fragment_permissions.xml           # Engine status & WRITE_SETTINGS state
-        │   │   ├── fragment_games.xml                 # Game Launcher UI
-        │   │   └── item_tweak_card.xml                # Tweak Card layout with lock overlay
-        │   └── values/
-        │       ├── colors.xml                         # Cyberpunk dark neon palette
-        │       └── strings.xml
-        └── java/com/gamespace/app/
-            ├── MainActivity.java                      # Main Activity & Navigation
-            ├── data/                                  # Repository layer
-            │   ├── CommandExecutor.java               # Engine mode switcher & stdout parser
-            │   └── GameManagerRepository.java         # Game scanner & memory optimizer
-            ├── channels/                              # Subsystem Execution Channels
-            │   ├── HzFpsChannel.java                  # Refresh rate lock channel
-            │   ├── ThermalChannel.java                # Thermal override channel
-            │   ├── CpuGovernorChannel.java            # PowerHAL & Game Mode channel
-            │   ├── GpuTweaksChannel.java              # Vulkan & MSAA GPU channel
-            │   ├── TouchLatencyChannel.java           # Touch slop channel
-            │   ├── NetworkTweaksChannel.java          # TCP buffer channel
-            │   ├── RamZramChannel.java                # Memory trim channel
-            │   ├── PerformanceChannel.java            # Profile orchestrator channel
-            │   └── DeviceInfoChannel.java             # Hardware monitor channel
-            ├── ui/                                    # UI Fragments per subsystem
-            │   ├── HomeFragment.java                  # Home HUD & metrics
-            │   ├── HzFpsFragment.java                 # Refresh rate unlocker
-            │   ├── TweaksFragment.java                # Dynamic tweaks card list
-            │   ├── TweaksAdapter.java                 # Tweaks RecyclerView adapter
-            │   ├── ProfilesFragment.java              # 4 Gamer preset profiles
-            │   ├── GamesFragment.java                 # Installed games launcher
-            │   ├── GamesAdapter.java                  # Games RecyclerView adapter
-            │   └── PermissionsFragment.java           # Access engine & permissions UI
-            └── utils/                                 # Core execution & helper utilities
-                ├── AppExecutors.java                  # Centralized async thread pool
-                ├── EngineUIHelper.java                # Live engine badge formatter
-                ├── ShellExecutor.java                 # Native shell process wrapper
-                ├── ShizukuExecutor.java               # Shizuku IPC binder & command executor
-                └── ShizukuUtils.java                  # Permission dialog launcher
+├── README.md                                          # Master project documentation
+├── js/                                                # Modular Web Dashboard JavaScript
+│   ├── app.js                                         # Core UI logic
+│   ├── game-manager.js                                # Game tuning scripts
+│   ├── monitors.js                                    # Hardware gauges loop
+│   └── shizuku-shell.js                               # Shell emulation scripts
+└── android/                                           # Pure Native Android Java Project (SDK 35)
+    ├── build.gradle                                   # Root build script
+    └── app/
+        ├── build.gradle                               # App module Gradle configuration
+        └── src/main/
+            ├── AndroidManifest.xml                    # SDK 35 permissions & service declarations
+            ├── res/
+            │   ├── drawable/
+            │   │   ├── app_bg.jpg                     # Background wallpaper
+            │   │   └── card_glass_shape.xml           # Glassmorphic card background
+            │   └── layout/
+            │       ├── activity_main.xml              # Main 2-Tab Navigation Layout
+            │       ├── fragment_home.xml              # Home Dashboard & Games Library
+            │       ├── fragment_settings.xml          # Settings & Consolidated Tweaks
+            │       └── item_tweak_card.xml            # Glass tweak card layout
+            └── java/com/gamebooster/app/
+                ├── ui/layout/
+                │   ├── MainActivity.java              # 2-Tab Fragment Controller
+                │   ├── HomeFragment.java              # Home Dashboard logic
+                │   ├── SettingsFragment.java          # Settings & Tweaks logic
+                │   ├── GamesAdapter.java              # Games RecyclerView adapter
+                │   └── TweaksAdapter.java             # Tweaks RecyclerView adapter
+                ├── games/
+                │   ├── GameManagerRepository.java     # Game scanner & memory optimizer
+                │   └── GameProfileAutoConfigurator.java # Hardware refresh rate detector & profiler
+                ├── overlay/
+                │   └── FloatingOverlayService.java    # Collapsible HUD overlay service
+                ├── functions/
+                │   ├── TweakManagerRepository.java     # System setprop & settings tweaks
+                │   └── TweakPreferences.java          # Persistent state retention
+                └── shizuku/
+                    └── ShizukuExecutor.java           # Shizuku binder IPC runner
 ```
 
 ---
 
-## 🧩 Subsystem Module Map
+## 🚀 Building the APK
 
-| Feature Area | Fragment (UI) | Channel / Utility | Non-Rooted Execution Surface |
-| :--- | :--- | :--- | :--- |
-| **Refresh Rate / FPS** | `HzFpsFragment.java` | `HzFpsChannel.java` | `settings put system/secure/global` |
-| **Thermal Bypass** | `HzFpsFragment.java` | `ThermalChannel.java` | `cmd thermalservice override-status 0` |
-| **PowerHAL / Game Mode** | `HomeFragment.java` | `CpuGovernorChannel.java` | `cmd power set-mode` / `cmd game` |
-| **GPU / Vulkan** | `TweaksFragment.java` | `GpuTweaksChannel.java` | `setprop debug.hwui.renderer vulkan` |
-| **Touch Response** | `TweaksFragment.java` | `TouchLatencyChannel.java` | `settings put system touch_slop_reduction` |
-| **RAM Trim** | `HomeFragment.java` | `RamZramChannel.java` | `ActivityManager` / `am kill-all` |
-| **Preset Profiles** | `ProfilesFragment.java` | `PerformanceChannel.java` | Profile Orchestrator (2D, PUBG, Balanced, Battery) |
-| **Async Execution** | All Fragments | `AppExecutors.java` | Background SingleThreadExecutor + Main Looper |
-| **Engine Status** | All Fragments | `EngineUIHelper.java` | Dynamic Shizuku vs System Settings Header |
-
----
-
-## 🚀 Building the Release APK
-
-Navigate to the `android/` directory and build with Gradle:
+To build the debug APK, run:
 
 ```bash
 cd android
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-./gradlew assembleRelease
+./gradlew clean assembleDebug
 ```
 
-### 📦 Output APK Path:
+### 📦 Output APK Location:
 ```
-android/app/build/outputs/apk/release/Game_Space.apk
+android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 ```
+
+---
+
+## 🌐 Latest Releases & Downloads
+
+| Release Tag | Title | Link |
+| :--- | :--- | :--- |
+| **v3.3.0 (Latest)** | Persistent Tweaks & Hardware Refresh Rate Filtering | [Download v3.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) |
+| **v3.2.0** | Consolidated 2-Tab Dashboard & Glassmorphic UI | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.0) |
+| **v3.1.0** | Advanced Non-Root Boost & Latency Tuning | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.1.0) |
 
 ---
 
