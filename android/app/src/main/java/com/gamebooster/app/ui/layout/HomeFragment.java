@@ -1,8 +1,5 @@
 package com.gamebooster.app.ui.layout;
 
-import com.gamebooster.app.core.DeviceInfoChannel;
-import com.gamebooster.app.root.EngineMode;
-
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,21 +14,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.core.DeviceInfoChannel;
-import com.gamebooster.app.functions.PerformanceChannel;
-import com.gamebooster.app.root.EngineMode;
-import com.gamebooster.app.root.CommandExecutor;
-import com.gamebooster.app.metadata.GameBoosterService;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
 import com.gamebooster.app.games.GameProfileAutoConfigurator;
+import com.gamebooster.app.metadata.GameBoosterService;
+import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.root.EngineMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +36,6 @@ public class HomeFragment extends Fragment {
     private TextView tvDeviceInfo;
     private TextView tvRamUsage;
     private TextView tvBatteryTemp;
-    private TextView tvBoostStatus;
     private TextView tvGamesHeader;
     private RecyclerView rvGames;
     private GamesAdapter adapter;
@@ -57,8 +50,6 @@ public class HomeFragment extends Fragment {
         tvDeviceInfo = view.findViewById(R.id.tv_device_info);
         tvRamUsage = view.findViewById(R.id.tv_ram_usage);
         tvBatteryTemp = view.findViewById(R.id.tv_battery_temp);
-        tvBoostStatus = view.findViewById(R.id.tv_boost_status);
-        Button btnHeroBoost = view.findViewById(R.id.btn_hero_boost);
         Button btnSettings = view.findViewById(R.id.btn_open_settings);
 
         Switch switchOverlay = view.findViewById(R.id.switch_overlay_hud);
@@ -68,7 +59,7 @@ public class HomeFragment extends Fragment {
         if (btnSettings != null) {
             btnSettings.setOnClickListener(v -> {
                 if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).selectTab(1); // Navigate to Tweaks / Settings
+                    ((MainActivity) getActivity()).selectTab(1); // Navigate to Settings
                 }
             });
         }
@@ -121,28 +112,6 @@ public class HomeFragment extends Fragment {
                 });
             });
         }
-
-        btnHeroBoost.setOnClickListener(v -> {
-            if (getContext() != null) {
-                btnHeroBoost.setEnabled(false);
-                tvBoostStatus.setText("⚡ BOOSTING: Trimming RAM, Locking Hz & Overriding Thermal Caps...");
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = PerformanceChannel.executeOneTapBoost(getContext());
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnHeroBoost.setEnabled(true);
-                        startBoosterService();
-                        if (ok) {
-                            tvBoostStatus.setText("✅ ULTRA BOOST ACTIVE: System Max Performance Locked!");
-                            Toast.makeText(getContext(), "1-Tap Boost Executed Successfully!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            tvBoostStatus.setText("⚠️ Boost Active with System Settings");
-                        }
-                        updateDashboard();
-                    });
-                });
-            }
-        });
 
         // Setup Embedded Games Launcher controls
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
@@ -254,18 +223,6 @@ public class HomeFragment extends Fragment {
                 }
             });
         });
-    }
-
-    private void startBoosterService() {
-        if (getContext() == null) return;
-        try {
-            Intent serviceIntent = new Intent(getContext(), GameBoosterService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getContext().startForegroundService(serviceIntent);
-            } else {
-                getContext().startService(serviceIntent);
-            }
-        } catch (Exception ignored) {}
     }
 
     private void updateDashboard() {

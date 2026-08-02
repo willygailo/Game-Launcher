@@ -22,9 +22,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "Home",
-            "Tweaks",
-            "Profiles",
-            "Access"
+            "Settings"
     };
 
     public void selectTab(int position) {
@@ -108,24 +106,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     private void showFragmentForTab(int position) {
-        Fragment selectedFragment;
-        switch (position) {
-            case 0:
-                selectedFragment = new HomeFragment();
-                break;
-            case 1:
-                selectedFragment = new TweaksFragment();
-                break;
-            case 2:
-                selectedFragment = new ProfilesFragment();
-                break;
-            case 3:
-                selectedFragment = new PermissionsFragment();
-                break;
-            default:
-                selectedFragment = new HomeFragment();
-                break;
-        }
+        Fragment selectedFragment = (position == 1) ? new SettingsFragment() : new HomeFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, selectedFragment)

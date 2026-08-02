@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_dark"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    android:clipToPadding="false"
     android:padding="16dp">
 
     <LinearLayout
@@ -51,42 +52,13 @@
                 android:textSize="20sp" />
         </RelativeLayout>
 
-        <!-- HERO ONE-TAP BOOST BUTTON CARD -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <Button
-                android:id="@+id/btn_hero_boost"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:backgroundTint="@color/accent_cyan"
-                android:text="⚡ ONE-TAP ULTRA BOOST"
-                android:textColor="#000000"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_boost_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="Status: Ready to boost system &amp; lock Hz"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="13sp" />
-        </LinearLayout>
 
         <!-- EXECUTION MODE CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -114,7 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -150,7 +122,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -196,7 +168,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -229,7 +201,7 @@
                     android:id="@+id/btn_target_60"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/card_bg"
                     android:padding="0dp"
@@ -241,7 +213,7 @@
                     android:id="@+id/btn_target_90"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/card_bg"
                     android:padding="0dp"
@@ -253,7 +225,7 @@
                     android:id="@+id/btn_target_120"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/accent_cyan"
                     android:padding="0dp"
@@ -266,7 +238,7 @@
                     android:id="@+id/btn_target_144"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/card_bg"
                     android:padding="0dp"
@@ -278,7 +250,7 @@
                     android:id="@+id/btn_target_165"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/card_bg"
                     android:padding="0dp"
@@ -290,7 +262,7 @@
             <Button
                 android:id="@+id/btn_auto_config_games"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/accent_cyan"
                 android:text="⚡ AUTO-CONFIG ALL GAMES MAX FPS/HZ"
@@ -300,7 +272,7 @@
             <Button
                 android:id="@+id/btn_boost_ram"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/accent_purple"
                 android:text="🚀 BOOST RAM &amp; CLEAN CACHE"

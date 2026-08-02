@@ -24,7 +24,7 @@
       min-height: 100vh;
       font-family: "DM Sans", sans-serif;
       overflow-x: hidden;
-      background: #040914;
+      background: url('app_bg.jpg') center center / cover no-repeat fixed #040914;
       color: #e2e8f0;
     }
 
@@ -107,7 +107,7 @@
       border-radius: 2.65rem;
       overflow: hidden;
       position: relative;
-      background: #081221;
+      background: linear-gradient(rgba(8, 18, 33, 0.82), rgba(8, 18, 33, 0.92)), url('app_bg.jpg') center/cover no-repeat;
       border: 1px solid rgba(183, 215, 255, .18);
     }
 
@@ -145,9 +145,9 @@
     }
 
     .glass {
-      background: rgba(17, 32, 59, .72);
-      border: 1px solid var(--line);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 12px 30px rgba(0,0,0,.18);
+      background: rgba(14, 25, 47, 0.55);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.35);
       backdrop-filter: blur(16px);
     }
 
@@ -1596,5 +1596,9 @@
       }, 3000);
     });
   </script>
+  <script src="js/app.js"></script>
+  <script src="js/shizuku-shell.js"></script>
+  <script src="js/game-manager.js"></script>
+  <script src="js/monitors.js"></script>
  </body>
 </html>

@@ -93,8 +93,24 @@ public class ShizukuExecutor {
         if (context == null || !hasShizukuPermission()) return;
         String packageName = context.getPackageName();
 
+        // Perform Shizuku ADB Grant Combo
         executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.DUMP");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.BATTERY_STATS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.MANAGE_GAME_MODE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.OVERRIDE_WIFI_CONFIG");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_NETWORK_STATE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.FORCE_STOP_PACKAGES");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
+        executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
+        executeShizukuCommand("cmd appops set " + packageName + " GET_USAGE_STATS allow");
+        executeShizukuCommand("cmd appops set " + packageName + " WRITE_SETTINGS allow");
+        executeShizukuCommand("cmd appops set " + packageName + " MANAGE_GAME_MODE allow");
+        executeShizukuCommand("cmd appops set " + packageName + " RUN_IN_BACKGROUND allow");
+        executeShizukuCommand("cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow");
+        executeShizukuCommand("cmd appops set " + packageName + " AUTO_START allow");
     }
 }
