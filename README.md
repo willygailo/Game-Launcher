@@ -3,7 +3,7 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.4.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.4.0" />
+  <img src="https://img.shields.io/badge/Release-v4.5.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.5.0" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Shizuku%20ADB%20Temporary%20Root-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Shizuku ADB Temporary Root" />
@@ -14,26 +14,22 @@
 
 ---
 
-[📦 Download v4.4.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.4.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v4.5.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.5.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v4.4.0
+## 📌 What's New in v4.5.0
 
 > [!IMPORTANT]
 > **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)** to gain **temporary root privileges** (UID 2000 / UID 0 ADB Shell rights) with zero permanent system modifications.
 
 * 🔒 **100% Shizuku API Temporary Root Integration**: Auto-starts AIDL `ShizukuUserServiceConnector` binder on launch and features a 1-tap auto-grant engine for protected system permissions (`WRITE_SECURE_SETTINGS`, `PACKAGE_USAGE_STATS`, `MANAGE_GAME_MODE`, `SYSTEM_ALERT_WINDOW`, `FORCE_STOP_PACKAGES`, `CLEAR_APP_CACHE`).
-* 🎮 **Pure Gaming Launcher Home Screen**: Redesigned Home tab focused 100% on installed games (MLBB, CODM, PUBG, Free Fire, Wild Rift, Genshin Impact, Roblox, etc.) with empty state guidance support.
-* ⚡ **Full Boost System & Kernel Tweaks**:
-  - **Google ANGLE Vulkan Driver Mode**: `settings put global angle_gl_driver_all_angle 1` & `debug.angle.backend 2` (OpenGL ES to Vulkan API translation for increased FPS).
-  - **Updatable System Game Driver Preference**: `settings put global game_driver_all_apps 1` & `updatable_driver_all_apps 1`.
-  - **Tethering Hardware Acceleration**: `settings put global tether_offload_disabled 0` (Hardware tethering offload to eliminate CPU overhead during hotspot gaming).
-  - **Force Full GNSS Raw Measurements**: `settings put global force_gnss_raw_measurements 1` (Forces raw GNSS/GPS measurements for high-precision location tracking in games).
-* 📁 **Direct `/data/data/` Game Config Auto-Patcher**: Targets internal app data paths (`/data/data/<package_name>/files/`) for automatic high-FPS config file injection via Shizuku privileged shell (`mkdir -p`, `chmod 777`, `printf`, `sed -i`).
-* ⚙️ **Settings Screen Redesign**: Organized into 6 clean non-overlapping glassmorphic cards with zero duplicate or conflicting controls.
+* 🎯 **120Hz / 144Hz / 165Hz Display & FPS Lock**: SurfaceFlinger binder IPC (`service call SurfaceFlinger 1035 i32 <hz>`), swap interval cap removal (`setprop debug.gr.swapinterval 0`), and per-app rate overrides (`cmd window set-app-refresh-rate <pkg> <fps>`).
+* ⚡ **Floating Performance HUD Real FPS Engine**: Unthrottled overlay window compositor with `params.preferredRefreshRate = (float) caps.maxRefreshRate` (90Hz, 120Hz, 144Hz, 165Hz) and dynamic frame rate calculation.
+* 🛡️ **Permanent Performance Retention (Zero Auto-Off)**: Preserves active high refresh rates, DND mode, ANGLE Mode, System Game Driver, GPU Vulkan 3D, and CPU Extreme Performance Governor permanently across game exits and app restarts.
+* 🛠️ **39 Legitimate System Tweaks**: PowerHAL Sustained Performance Boost, Thermal Throttling Bypass Override, GPU Maximum Clocks, and SurfaceFlinger Zero VSync Phase Offsets.
 
 ---
 
