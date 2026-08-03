@@ -13,8 +13,8 @@ android {
         applicationId "com.gamebooster.app"
         minSdk 24
         targetSdk 35
-        versionCode 34
-        versionName "3.4.0"
+        versionCode 42
+        versionName "4.2.0"
     }
 
     buildFeatures {
