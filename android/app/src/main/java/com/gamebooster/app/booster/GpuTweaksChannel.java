@@ -22,4 +22,30 @@ public class GpuTweaksChannel {
         ok &= enableForceMsaa();
         return ok;
     }
+
+    public static boolean setAngleMode(boolean enabled) {
+        if (enabled) {
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 1");
+            CommandExecutor.setSystemProperty("debug.angle.backend", "2");
+            String res = CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 1");
+            return CommandExecutor.isSuccessOutput(res);
+        } else {
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
+            CommandExecutor.setSystemProperty("debug.angle.backend", "0");
+            String res = CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 0");
+            return CommandExecutor.isSuccessOutput(res);
+        }
+    }
+
+    public static boolean setGameDriverMode(boolean enabled) {
+        if (enabled) {
+            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 1");
+            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 1");
+            return CommandExecutor.isSuccessOutput(res);
+        } else {
+            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
+            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+            return CommandExecutor.isSuccessOutput(res);
+        }
+    }
 }

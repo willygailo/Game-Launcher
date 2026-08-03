@@ -98,28 +98,50 @@ public class GameConfigPatcher {
             // Mobile Legends (Global, VNG, KR, JP)
             paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
             paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
+            paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
+            paths.add("/data/user/0/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("vng.pubgmobile")) {
             // PUBG Mobile (Global, BGMI, KR, VNG, Lite, New State)
             paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
             paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             // Call of Duty Mobile (Global, Garena, KR, CN)
             paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/GraphicsSettings.ini");
         } else if (pkg.contains("freefire")) {
             // Free Fire & Free Fire MAX
             paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/FFGraphicsSettings.ini");
         } else if (pkg.contains("wildrift") || pkg.contains("league")) {
             // Wild Rift
             paths.add("/sdcard/Android/data/" + pkg + "/files/SaveData/Local/Settings");
+            paths.add("/data/data/" + pkg + "/files/SaveData/Local/Settings");
+            paths.add("/data/user/0/" + pkg + "/files/SaveData/Local/Settings");
         } else if (pkg.contains("sgameglobal") || pkg.contains("honorofkings") || pkg.contains("kgtw") || pkg.contains("kgvn")) {
             // Honor of Kings & Arena of Valor
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo")) {
             // Genshin Impact & HoYoverse
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSetting.ini");
+            paths.add("/data/data/" + pkg + "/files/GameSetting.ini");
+            paths.add("/data/user/0/" + pkg + "/files/GameSetting.ini");
         } else if (pkg.contains("roblox") || pkg.contains("bloodstrike") || pkg.contains("farlight") || pkg.contains("standoff")) {
             // Roblox & Action Shooters
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
+        } else {
+            // Generic fallback for any other custom game package
+            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
         }
 
         return paths;

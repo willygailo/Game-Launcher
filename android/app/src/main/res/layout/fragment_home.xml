@@ -3,15 +3,15 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:overScrollMode="never"
-    android:clipToPadding="false"
-    android:padding="16dp">
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Header Row with Settings Icon -->
+        <!-- Header Row: Title + Settings Icon -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -20,21 +20,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎮 GAME SPACE HUB"
+                    android:text="🎮 MY GAMES"
                     android:textColor="@color/accent_cyan"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Pure Native Gaming Launcher &amp; Optimizer"
+                    android:text="Tap a game to boost &amp; launch"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -49,154 +51,95 @@
                 android:backgroundTint="@color/card_bg"
                 android:padding="0dp"
                 android:text="⚙️"
-                android:textSize="20sp" />
+                android:textSize="22sp" />
         </RelativeLayout>
 
-
-        <!-- EXECUTION MODE CARD -->
+        <!-- Compact Status Strip: Engine mode + RAM -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/card_glass_shape"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp">
 
             <TextView
                 android:id="@+id/tv_engine_mode"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="EXECUTION ENGINE: SHIZUKU ADB MODE"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_device_info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Device Hardware: Loading..."
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/tv_device_compatibility"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Compatibility: Checking device support..."
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
-        </LinearLayout>
-
-        <!-- INSTALLED GAMES LAUNCHER SECTION -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_glass_shape"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/tv_games_header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎮 INSTALLED GAMES LIBRARY"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_boost_ram"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/card_bg"
-                android:text="🧹 TRIM RAM"
+                android:layout_weight="1"
+                android:text="⚡ SHIZUKU"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_games_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:nestedScrollingEnabled="false" />
-        </LinearLayout>
-
-        <!-- METRICS GAUGES CARD -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_glass_shape"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LIVE HARDWARE MONITORS"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_ram_usage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="RAM Usage: 45%"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/tv_battery_temp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Battery Temperature: 34.2 °C"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
+                android:text="RAM: —"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- PRO GAMING CONTROLS CARD -->
-        <LinearLayout
+        <!-- Games Count Header -->
+        <TextView
+            android:id="@+id/tv_games_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:text="INSTALLED GAMES"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
+        <!-- Games RecyclerView (hero content) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_games_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card_glass_shape"
+            android:nestedScrollingEnabled="false"
+            android:clipToPadding="false" />
+
+        <!-- Empty State (hidden by default, shown when no games detected) -->
+        <LinearLayout
+            android:id="@+id/layout_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:gravity="center"
+            android:paddingTop="60dp"
+            android:paddingBottom="60dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PRO GAMING CONTROLS"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
+                android:text="🎮"
+                android:textSize="48sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="No Games Detected"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <Switch
-                android:id="@+id/switch_overlay_hud"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Floating Performance Overlay HUD"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <Switch
-                android:id="@+id/switch_gaming_dnd"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Gaming DND &amp; Banner Blocker"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
+                android:text="Install games like MLBB, CODM, or PUBG\nand they will appear here automatically."
+                android:textColor="@color/empty_state_text"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp" />
         </LinearLayout>
 
     </LinearLayout>

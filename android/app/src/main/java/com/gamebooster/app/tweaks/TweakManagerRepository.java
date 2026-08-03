@@ -153,6 +153,36 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "tethering_hw_offload",
+                "Tethering Hardware Acceleration",
+                "Enables hardware-offloaded tethering to reduce CPU overhead during hotspot gaming",
+                "settings put global tether_offload_disabled 0",
+                "settings put global tether_offload_disabled 1",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "force_full_gnss_raw",
+                "Force Full GNSS Raw Measurements",
+                "Forces raw GNSS/GPS measurements for high-precision location tracking in games",
+                "settings put global development_settings_enabled 1; settings put global force_gnss_raw_measurements 1",
+                "settings put global force_gnss_raw_measurements 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "angle_vulkan_driver",
+                "Google ANGLE Vulkan GLES Driver",
+                "Translates OpenGL ES calls directly to Vulkan API for increased rendering FPS",
+                "settings put global angle_gl_driver_all_angle 1; setprop debug.angle.backend 2; settings put global angle_enabled_pkgs 1",
+                "settings put global angle_gl_driver_all_angle 0; setprop debug.angle.backend 0; settings put global angle_enabled_pkgs 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "touch_pressure_scale",
                 "Ultra Touch Pressure Sensitivity",
                 "Boosts touch panel responsiveness and digitizer sampling rate",

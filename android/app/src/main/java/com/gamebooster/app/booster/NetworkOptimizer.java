@@ -51,4 +51,15 @@ public class NetworkOptimizer {
         CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576");
         CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576");
     }
+
+    public static boolean setTetheringHwAcceleration(boolean enabled) {
+        String res = CommandExecutor.executeSystemCommand("settings put global tether_offload_disabled " + (enabled ? "0" : "1"));
+        return CommandExecutor.isSuccessOutput(res);
+    }
+
+    public static boolean setForceFullGnss(boolean enabled) {
+        CommandExecutor.executeSystemCommand("settings put global development_settings_enabled 1");
+        String res = CommandExecutor.executeSystemCommand("settings put global force_gnss_raw_measurements " + (enabled ? "1" : "0"));
+        return CommandExecutor.isSuccessOutput(res);
+    }
 }

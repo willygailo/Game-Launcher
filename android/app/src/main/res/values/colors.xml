@@ -14,4 +14,7 @@
     <color name="text_primary">#F1F5F9</color>
     <color name="text_secondary">#94A3B8</color>
     <color name="nav_bg">#D9090C12</color>
+    <color name="game_card_accent">#00FF66</color>
+    <color name="empty_state_text">#475569</color>
+    <color name="status_strip_bg">#30121B2E</color>
 </resources>
