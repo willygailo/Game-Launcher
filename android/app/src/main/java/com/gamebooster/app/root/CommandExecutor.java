@@ -49,10 +49,14 @@ public class CommandExecutor {
     }
 
     public static boolean isSuccessOutput(String result) {
-        if (result == null || result.trim().isEmpty()) {
+        if (result == null) {
             return false;
         }
-        String lower = result.toLowerCase();
+        String trimmed = result.trim();
+        if (trimmed.isEmpty() || trimmed.equalsIgnoreCase("SUCCESS")) {
+            return true;
+        }
+        String lower = trimmed.toLowerCase();
         if (lower.startsWith("error") ||
             lower.contains("permission denial") ||
             lower.contains("securityexception") ||

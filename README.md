@@ -3,7 +3,7 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.3.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.3.0" />
+  <img src="https://img.shields.io/badge/Release-v3.5.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.5.0" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
@@ -14,24 +14,26 @@
 
 ---
 
-[📦 Download v3.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v3.5.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v3.3.0
+## 📌 What's New in v3.5.0
 
 > [!IMPORTANT]
 > **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **System Settings**, and **Android 12+ Game Mode API** with zero root requirement.
 
-* 📱 **Consolidated 2-Tab Dashboard**: Streamlined UI featuring strictly **Home** and **Settings** tabs for fast navigation.
-* 🎨 **Glassmorphism Wallpaper Visibility**: Translucent glass card design with low dark scrim opacity (`#450A0E1A` / 27%) showcasing the custom background wallpaper (`app_bg`).
-* 🔒 **Persistent Tweak Retention**: Switches remain **ON** persistently once enabled (saved in `TweakPreferences`) and require manual user toggling to turn OFF.
-* ⚡ **Hardware-Driven Refresh Rate Selector**: Queries `Display.getSupportedModes()` to display ONLY the target FPS/Hz buttons supported by the phone's physical screen.
-* 📱 **Hideable / Collapsible Floating HUD Overlay**: Single tap toggles between full metrics view (`⚡ FPS/Hz: 120Hz | RAM: 42% | Temp: 34.5°C`) and a minimal pill icon (`⚡ 120Hz`) so it never obstructs gameplay.
-* 🌐 **Expanded Online Game Package Scanner**: Comprehensive detection for Mobile Legends, PUBG Mobile, COD Mobile, Free Fire, Genshin Impact, Wild Rift, Honor of Kings, Roblox, Apex Legends, etc.
-* 🚀 **Auto-Apply Game Profiles on Launch**: Automatically applies target FPS locks, GPU render modes, DND settings, and system tweaks whenever any game is opened from the library.
+* ⚡ **Performance Profile Refresh Rate Locks (165Hz / 120Hz / 90Hz)**: Locks display refresh rate with zero fallbacks (`EXTREME PERFORMANCE`: 165Hz, `HIGH PERFORMANCE`: 120Hz/144Hz, `BALANCED GAME`: 90Hz/60Hz).
+* 🎮 **Manual GPU & CPU Controls**: Dedicated manual ON/OFF switches for 3D Vulkan HWUI renderer, 2D Skia engine renderer, CPU Performance governor, and CPU Balance governor.
+* 📡 **Game Server Ping Tester & 1-Tap Gaming DNS**: Live ICMP Ping Tester (`1.1.1.1`) and 1-tap DNS switcher (Cloudflare 1.1.1.1, Google 8.8.8.8, Default DNS).
+* 📱 **Commercial Game Turbo Floating Gaming HUD**: Collapsible neon pill badge (`⚡ 120 FPS | 38°C`) & expanded gaming dock with in-game quick action buttons (1-Tap RAM Clean, 165Hz Lock, DND Silence, FPS Crosshair Overlay) and magnetic edge snapping.
+* ⚡ **Shizuku 1-Tap Auto-Grant Permission Engine**: Automatically grants all 17 system permissions & AppOps via ADB as soon as Shizuku connects (`Shizuku.requestPermission(1001)`).
+* 🎮 **Auto Game Space Launcher Monitor**: Background service auto-detecting when games open to apply 165Hz Auto-Boost instantly.
+* 🔊 **1-Tap Footstep & Gunshot Audio Enhancer**: High-frequency 2kHz-4kHz footstep equalizer boost for competitive FPS games.
+* 🧹 **Deep Game Storage & Shader Cache Cleaner**: Purges app caches & temporary shader files to maximize UFS read/write speeds.
+* 💻 **Live Shell Command Toast Feedback**: Displays exact executed shell commands (`setprop`, `settings put`, `cmd power`) in real-time Toast notifications on every toggle click.
 
 ---
 

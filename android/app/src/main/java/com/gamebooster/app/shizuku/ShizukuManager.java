@@ -46,8 +46,23 @@ public class ShizukuManager {
         }
     }
 
+    public static final int REQUEST_CODE_SHIZUKU = 1001;
+
+    private static final Shizuku.OnRequestPermissionResultListener PERMISSION_RESULT_LISTENER = (requestCode, grantResult) -> {
+        if (requestCode == REQUEST_CODE_SHIZUKU) {
+            boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
+            Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
+            notifyStateChanged(granted);
+        }
+    };
+
     private static final Shizuku.OnBinderReceivedListener RECEIVED_LISTENER = () -> {
         Log.i(TAG, "Shizuku binder connected cleanly.");
+        try {
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+            }
+        } catch (Exception ignored) {}
         notifyStateChanged(true);
     };
 
@@ -60,6 +75,7 @@ public class ShizukuManager {
         try {
             Shizuku.addBinderReceivedListenerSticky(RECEIVED_LISTENER);
             Shizuku.addBinderDeadListener(DEAD_LISTENER);
+            Shizuku.addRequestPermissionResultListener(PERMISSION_RESULT_LISTENER);
             Log.d(TAG, "Shizuku binder listeners registered successfully.");
         } catch (Exception e) {
             Log.e(TAG, "Failed to register Shizuku binder listeners", e);
@@ -70,9 +86,20 @@ public class ShizukuManager {
         try {
             Shizuku.removeBinderReceivedListener(RECEIVED_LISTENER);
             Shizuku.removeBinderDeadListener(DEAD_LISTENER);
+            Shizuku.removeRequestPermissionResultListener(PERMISSION_RESULT_LISTENER);
             Log.d(TAG, "Shizuku binder listeners unregistered.");
         } catch (Exception e) {
             Log.e(TAG, "Failed to unregister Shizuku binder listeners", e);
+        }
+    }
+
+    public static void requestShizukuPermission() {
+        try {
+            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error requesting Shizuku permission", e);
         }
     }
 

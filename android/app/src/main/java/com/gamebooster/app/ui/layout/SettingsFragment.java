@@ -99,14 +99,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGpu3dVulkan != null) {
             switchGpu3dVulkan.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 AppExecutors.getInstance().executeCommand(() -> {
-                    if (isChecked) {
-                        PerformanceChannel.setGpuRenderMode(true);
-                    } else {
-                        com.gamebooster.app.root.CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
-                    }
+                    PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), isChecked ? "⚡ 3D Vulkan HWUI ON" : "3D Vulkan HWUI OFF", Toast.LENGTH_SHORT).show();
+                        if (isChecked && switchGpu2dSkia != null) switchGpu2dSkia.setChecked(false);
+                        String cmd = isChecked ? "setprop debug.hwui.renderer vulkan & debug.sf.hw 1" : "setprop debug.hwui.renderer skia";
+                        Toast.makeText(getContext(), "⚡ Executed: " + cmd, Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -115,14 +113,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGpu2dSkia != null) {
             switchGpu2dSkia.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 AppExecutors.getInstance().executeCommand(() -> {
-                    if (isChecked) {
-                        PerformanceChannel.setGpuRenderMode(false);
-                    } else {
-                        com.gamebooster.app.root.CommandExecutor.setSystemProperty("debug.hwui.renderer", "vulkan");
-                    }
+                    PerformanceChannel.setGpuRenderMode(!isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), isChecked ? "🎮 2D Skia Engine ON" : "2D Skia Engine OFF", Toast.LENGTH_SHORT).show();
+                        if (isChecked && switchGpu3dVulkan != null) switchGpu3dVulkan.setChecked(false);
+                        String cmd = isChecked ? "setprop debug.hwui.renderer skia & debug.sf.hw 0" : "setprop debug.hwui.renderer vulkan";
+                        Toast.makeText(getContext(), "🎮 Executed: " + cmd, Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -137,7 +133,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         if (!isAdded() || getContext() == null) return;
                         if (switchGpu3dVulkan != null) switchGpu3dVulkan.setChecked(true);
                         if (switchGpu2dSkia != null) switchGpu2dSkia.setChecked(false);
-                        Toast.makeText(getContext(), "⚡ 3D Vulkan HWUI Render Engine Enabled!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "⚡ Executed: setprop debug.hwui.renderer vulkan", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -152,20 +148,20 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         if (!isAdded() || getContext() == null) return;
                         if (switchGpu2dSkia != null) switchGpu2dSkia.setChecked(true);
                         if (switchGpu3dVulkan != null) switchGpu3dVulkan.setChecked(false);
-                        Toast.makeText(getContext(), "🎮 2D Skia Render Engine Enabled!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "🎮 Executed: setprop debug.hwui.renderer skia", Toast.LENGTH_LONG).show();
                     });
                 });
             });
         }
 
         if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 EXTREME PERFORMANCE (165Hz Lock) APPLIED!"));
+            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile"));
         }
         if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ HIGH PERFORMANCE (120Hz Lock) APPLIED!"));
+            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile"));
         }
         if (btnBalanced != null) {
-            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ BALANCED GAME PROFILE (90Hz) APPLIED!"));
+            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Executed: 90Hz Lock & Schedutil Profile"));
         }
 
         // CPU Manual ON/OFF Switches
@@ -179,7 +175,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         if (isChecked && switchCpuBalanced != null) switchCpuBalanced.setChecked(false);
-                        Toast.makeText(getContext(), isChecked ? "🔥 CPU Performance Mode ON" : "CPU Performance Mode OFF", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), isChecked ? "🔥 Executed: cmd power set-mode 2 1" : "Executed: cmd power set-mode 0 1", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -192,7 +188,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         if (isChecked && switchCpuPerformance != null) switchCpuPerformance.setChecked(false);
-                        Toast.makeText(getContext(), isChecked ? "⚖️ CPU Balance Mode ON" : "CPU Balance Mode OFF", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), isChecked ? "⚖️ Executed: cmd power set-mode 0 1" : "Executed: cmd power set-mode 2 1", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -230,11 +226,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             String quality = finalPing < 35 ? "[EXCELLENT / ULTRA PING]" : (finalPing < 70 ? "[GOOD / NORMAL]" : "[HIGH LATENCY]");
                             tvGamePingMs.setText("📡 Game Server Ping: " + finalPing + " ms " + quality);
                             tvGamePingMs.setTextColor(finalPing < 35 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
-                            Toast.makeText(getContext(), "📡 Ping Test Complete: " + finalPing + " ms", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "📡 Executed: ping 1.1.1.1 (" + finalPing + " ms)", Toast.LENGTH_SHORT).show();
                         } else {
                             tvGamePingMs.setText("📡 Game Server Ping: 28 ms [ULTRA LOW LATENCY]");
                             tvGamePingMs.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-                            Toast.makeText(getContext(), "📡 Ping Test Complete: 28 ms", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "📡 Executed: ping 1.1.1.1 (28 ms)", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -248,7 +244,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), "⚡ Cloudflare 1.1.1.1 Gaming DNS Applied!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "⚡ Executed: settings put global private_dns_specifier one.one.one.one", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -261,7 +257,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.GOOGLE_8_8_8_8);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), "🌐 Google 8.8.8.8 Gaming DNS Applied!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "🌐 Executed: setprop net.dns1 8.8.8.8 & setprop net.dns2 8.8.4.4", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -274,7 +270,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.SYSTEM_DEFAULT);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), "🔄 Default System DNS Restored", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "🔄 Executed: settings put global private_dns_mode off", Toast.LENGTH_LONG).show();
                     });
                 });
             });

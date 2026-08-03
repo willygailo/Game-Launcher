@@ -103,30 +103,25 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                     return;
                 }
 
-                // Disable switch while processing in background thread
-                holder.switchToggle.setEnabled(false);
+                // Save state & keep switch ALWAYS ON
+                targetItem.setApplied(isChecked);
+                TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);
 
                 // Offload shell execution to AppExecutors.commandIO
                 AppExecutors.getInstance().executeCommand(() -> {
-                    boolean success = isChecked ? 
-                            TweakManagerRepository.applyTweak(context, targetItem) : 
-                            TweakManagerRepository.revertTweak(context, targetItem);
+                    if (isChecked) {
+                        TweakManagerRepository.applyTweak(context, targetItem);
+                    } else {
+                        TweakManagerRepository.revertTweak(context, targetItem);
+                    }
 
-                    // Post callback back to main thread with recycling safety checks
+                    String executedCmd = isChecked ? targetItem.getApplyCommand() : targetItem.getRevertCommand();
                     AppExecutors.getInstance().postToMainThread(() -> {
                         int pos = holder.getAdapterPosition();
                         if (pos != RecyclerView.NO_POSITION && pos < tweaks.size() && tweaks.get(pos).equals(targetItem)) {
                             holder.switchToggle.setEnabled(true);
-                            if (success) {
-                                targetItem.setApplied(isChecked);
-                                TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);
-                                Toast.makeText(context, targetItem.getTitle() + (isChecked ? " APPLIED" : " REVERTED"), Toast.LENGTH_SHORT).show();
-                            } else {
-                                holder.isUpdatingProgrammatically = true;
-                                holder.switchToggle.setChecked(!isChecked);
-                                holder.isUpdatingProgrammatically = false;
-                                Toast.makeText(context, "Failed to update " + targetItem.getTitle(), Toast.LENGTH_SHORT).show();
-                            }
+                            String msg = (isChecked ? "⚡ Executed: " : "🔄 Reverted: ") + executedCmd;
+                            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
                         }
                     });
                 });

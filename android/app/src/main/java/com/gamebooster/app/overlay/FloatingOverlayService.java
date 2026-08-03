@@ -109,7 +109,7 @@ public class FloatingOverlayService extends Service {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.functions.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "⚡ 1-Tap RAM Cleaned!", android.widget.Toast.LENGTH_SHORT).show());
+                            android.widget.Toast.makeText(getApplicationContext(), "⚡ Executed: pm trim-caches 1000M & sync", android.widget.Toast.LENGTH_LONG).show());
                 });
             });
         }
@@ -119,7 +119,7 @@ public class FloatingOverlayService extends Service {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.functions.PerformanceChannel.applyProfile(getApplicationContext(), com.gamebooster.app.functions.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "🔥 EXTREME (165Hz Lock) Applied In-Game!", android.widget.Toast.LENGTH_SHORT).show());
+                            android.widget.Toast.makeText(getApplicationContext(), "🔥 Executed: 165Hz Lock & Vulkan 3D Profile", android.widget.Toast.LENGTH_LONG).show());
                 });
             });
         }
@@ -131,7 +131,7 @@ public class FloatingOverlayService extends Service {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.root.CommandExecutor.executeSystemCommand(targetDnd ? "settings put global zen_mode 2" : "settings put global zen_mode 0");
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), targetDnd ? "🚫 In-Game DND Silenced" : "🔔 DND Normal", android.widget.Toast.LENGTH_SHORT).show());
+                            android.widget.Toast.makeText(getApplicationContext(), targetDnd ? "🚫 Executed: settings put global zen_mode 2" : "🔔 Executed: settings put global zen_mode 0", android.widget.Toast.LENGTH_LONG).show());
                 });
             });
         }
