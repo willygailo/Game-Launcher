@@ -173,22 +173,52 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "angle_vulkan_driver",
-                "Google ANGLE Vulkan GLES Driver",
-                "Translates OpenGL ES calls directly to Vulkan API for increased rendering FPS",
-                "settings put global angle_gl_driver_all_angle 1; setprop debug.angle.backend 2; settings put global angle_enabled_pkgs 1",
-                "settings put global angle_gl_driver_all_angle 0; setprop debug.angle.backend 0; settings put global angle_enabled_pkgs 0",
+                "powerhal_sustained_perf",
+                "PowerHAL Sustained Performance & Power Boost",
+                "Forces PowerHAL sustained performance & extreme boost modes to prevent CPU clock drops",
+                "cmd power set-mode 0 1; cmd power set-mode 2 1",
+                "cmd power set-mode 0 0; cmd power set-mode 2 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "thermalservice_override",
+                "Thermal Throttling Bypass Override",
+                "Overrides thermal service status to cool (0) to eliminate thermal clock throttling",
+                "cmd thermalservice override-status 0",
+                "cmd thermalservice override-status -1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "gpu_power_mode",
+                "GPU Maximum Clocks & Power Mode",
+                "Locks GPU frequency governor at maximum performance state",
+                "setprop vendor.gpu.power_mode 1; setprop debug.gpu.performance 1",
+                "setprop vendor.gpu.power_mode 0; setprop debug.gpu.performance 0",
                 TweakCategory.CPU_GPU,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
-                "touch_pressure_scale",
-                "Ultra Touch Pressure Sensitivity",
-                "Boosts touch panel responsiveness and digitizer sampling rate",
-                "setprop persist.sys.touch.pressure.scale 0.001; settings put system touch_sensitivity 1",
-                "setprop persist.sys.touch.pressure.scale 1.0; settings put system touch_sensitivity 0",
+                "display_vsync_offset",
+                "SurfaceFlinger Zero VSync Phase Offset",
+                "Aligns app & GL VSync phase offsets to 0.5ms for lowest latency rendering",
+                "setprop debug.sf.early_app_phase_offset_ns 500000; setprop debug.sf.early_gl_app_phase_offset_ns 500000",
+                "setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_app_phase_offset_ns 1000000",
                 TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "renderthread_vulkan_backend",
+                "Vulkan RenderEngine & Skia Optimization",
+                "Routes System UI & app rendering pipelines through Vulkan backend",
+                "setprop debug.renderengine.backend vulkan; setprop renderthread.skia.reduceopstasksplitting true",
+                "setprop debug.renderengine.backend gles; setprop renderthread.skia.reduceopstasksplitting false",
+                TweakCategory.CPU_GPU,
                 true
         ));
 
@@ -491,6 +521,7 @@ public class TweakManagerRepository {
             EngineMode mode = CommandExecutor.getActiveEngineMode();
             if (mode == EngineMode.READ_ONLY) return;
 
+            // 1. Re-apply all enabled Shizuku ADB system tweaks
             for (TweakItem tweak : TWEAKS) {
                 boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
                 if (wasSavedApplied) {
@@ -498,6 +529,29 @@ public class TweakManagerRepository {
                     applyTweak(context, tweak);
                 }
             }
+
+            // 2. Re-apply manual hardware engine settings permanently (Zero Auto-Off)
+            if (ManualSettingsPreferences.isAngleModeEnabled(context)) {
+                com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(true);
+            }
+            if (ManualSettingsPreferences.isGameDriverEnabled(context)) {
+                com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(true);
+            }
+            boolean isVulkan = "vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(context));
+            com.gamebooster.app.booster.PerformanceChannel.setGpuRenderMode(isVulkan);
+
+            boolean isPerfCpu = "performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(context));
+            com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isPerfCpu ? "extreme" : "schedutil");
+
+            if (ManualSettingsPreferences.isTetherHwEnabled(context)) {
+                com.gamebooster.app.booster.NetworkOptimizer.setTetheringHwAcceleration(true);
+            }
+            if (ManualSettingsPreferences.isForceGnssEnabled(context)) {
+                com.gamebooster.app.booster.NetworkOptimizer.setForceFullGnss(true);
+            }
+
+            // 3. Execute master root performance script
+            com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript();
         });
     }
 }

@@ -121,12 +121,12 @@ public class AutoGameMonitorService extends Service {
                                 + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — restoring the user's previous settings");
+                Log.i(TAG, "Game exited — maintaining active performance settings (Zero Auto-Off)");
                 lastActiveGamePackage = null;
                 GameSessionSettings.restore(getApplicationContext());
                 
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🔄 Game exited — restored previous settings", android.widget.Toast.LENGTH_SHORT).show());
+                        android.widget.Toast.makeText(getApplicationContext(), "⚡ Game session complete — Performance & Tweaks Active", android.widget.Toast.LENGTH_SHORT).show());
             }
         });
     }

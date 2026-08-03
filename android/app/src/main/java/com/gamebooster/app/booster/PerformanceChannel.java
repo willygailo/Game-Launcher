@@ -82,8 +82,13 @@ public class PerformanceChannel {
                     "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
                     "setprop debug.sf.hw 1\\n" +
                     "setprop debug.hwui.renderer vulkan\\n" +
+                    "setprop debug.renderengine.backend vulkan\\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
                     "setprop persist.sys.NV_FPSLIMIT 120\\n" +
-                    "setprop persist.sys.NV_POWERMODE 1\\n";
+                    "setprop persist.sys.NV_POWERMODE 1\\n" +
+                    "cmd power set-mode 0 1\\n" +
+                    "cmd power set-mode 2 1\\n" +
+                    "cmd thermalservice override-status 0\\n";
 
             String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
                     scriptContent, scriptPath, scriptPath, scriptPath);

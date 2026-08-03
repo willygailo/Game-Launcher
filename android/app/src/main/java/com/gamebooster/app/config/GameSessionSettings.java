@@ -36,11 +36,8 @@ public final class GameSessionSettings {
                 .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         if (!preferences.contains(KEY_ACTIVE_PACKAGE)) return false;
 
-        int previousHz = preferences.getInt(KEY_PREVIOUS_HZ, 60);
-        boolean previousDnd = preferences.getBoolean(KEY_PREVIOUS_DND, false);
-        boolean restored = HzFpsChannel.setRefreshRate(context, previousHz).success;
-        GameSpaceDndManager.setGamingDndMode(context, previousDnd);
+        // Preserve high performance refresh rate state & active tweaks permanently (Zero Auto-Off)
         preferences.edit().clear().apply();
-        return restored;
+        return true;
     }
 }
