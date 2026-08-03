@@ -60,7 +60,9 @@ public class GameProfileAutoConfigurator {
         // 3. System-wide refresh rate peak/min lock
         HzFpsChannel.RefreshRateResult refreshResult = HzFpsChannel.setRefreshRate(context, supportedTarget);
 
-        // Individual games retain final control over their own FPS cap and graphics configuration.
+        // 4. Auto-patch and create game configuration files inside app data storage folder for supported target FPS/Hz
+        GameConfigPatcher.applyGameFpsPatch(packageName, supportedTarget);
+
         return refreshResult.success;
     }
 
