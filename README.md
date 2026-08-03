@@ -3,33 +3,33 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.5.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.5.0" />
+  <img src="https://img.shields.io/badge/Release-v4.6.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.6.0" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Shizuku%20ADB%20Temporary%20Root-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Shizuku ADB Temporary Root" />
   <img src="https://img.shields.io/badge/License-MIT-FF0055?style=for-the-badge" alt="License" />
 </p>
 
-### ⚡ *Pure Native Android Gaming Launcher & System Tuner with 100% Shizuku API Temporary Root Privilege Execution, ANGLE Vulkan Driver, Updatable Game Driver & Internal Data Config Patcher* ⚡
+### ⚡ *Pure Native Android Gaming Launcher & System Tuner with 100% Shizuku API Temporary Root Privilege Execution, Full Device Identity Spoofing Engine, Multi-Platform Deep Search & Unthrottled 120/144/165 FPS HUD* ⚡
 
 ---
 
-[📦 Download v4.5.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.5.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v4.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.6.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v4.5.0
+## 📌 What's New in v4.6.0
 
 > [!IMPORTANT]
-> **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)** to gain **temporary root privileges** (UID 2000 / UID 0 ADB Shell rights) with zero permanent system modifications.
+> **GAME BOOSTER PRO v4.6.0** introduces **Full System Device Identity Spoofing** (unlocking 120 FPS in MLBB, CODM, PUBG, BGMI), **Multi-Platform Deep Search Engine** (Android 11-16 visibility bypass), and an **Unthrottled Floating Overlay HUD Engine**.
 
-* 🔒 **100% Shizuku API Temporary Root Integration**: Auto-starts AIDL `ShizukuUserServiceConnector` binder on launch and features a 1-tap auto-grant engine for protected system permissions (`WRITE_SECURE_SETTINGS`, `PACKAGE_USAGE_STATS`, `MANAGE_GAME_MODE`, `SYSTEM_ALERT_WINDOW`, `FORCE_STOP_PACKAGES`, `CLEAR_APP_CACHE`).
-* 🎯 **120Hz / 144Hz / 165Hz Display & FPS Lock**: SurfaceFlinger binder IPC (`service call SurfaceFlinger 1035 i32 <hz>`), swap interval cap removal (`setprop debug.gr.swapinterval 0`), and per-app rate overrides (`cmd window set-app-refresh-rate <pkg> <fps>`).
-* ⚡ **Floating Performance HUD Real FPS Engine**: Unthrottled overlay window compositor with `params.preferredRefreshRate = (float) caps.maxRefreshRate` (90Hz, 120Hz, 144Hz, 165Hz) and dynamic frame rate calculation.
-* 🛡️ **Permanent Performance Retention (Zero Auto-Off)**: Preserves active high refresh rates, DND mode, ANGLE Mode, System Game Driver, GPU Vulkan 3D, and CPU Extreme Performance Governor permanently across game exits and app restarts.
-* 🛠️ **39 Legitimate System Tweaks**: PowerHAL Sustained Performance Boost, Thermal Throttling Bypass Override, GPU Maximum Clocks, and SurfaceFlinger Zero VSync Phase Offsets.
+* 🎭 **Full System Device Identity Spoofing Engine**: Multi-tier property injection for **ASUS ROG Phone 6**, **Black Shark 5 Pro**, **Samsung Galaxy S24 Ultra**, and **iPad Pro M2** via Shizuku ADB (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.vendor.product.model`, `device_config`).
+* 🔍 **Multi-Platform Deep Search Engine**: Bypasses Android 11–16 package visibility restrictions via Shizuku (`pm list packages -3 -u -a`), discovering multi-user games and platform stores (**TapTap**, **Garena App Store**, **Samsung Galaxy Store**, **APKPure**, **QooApp**).
+* ⚡ **Unthrottled Floating Overlay HUD 120/144/165 FPS Engine**: Hardware accelerated WindowManager layout (`FLAG_HARDWARE_ACCELERATED` & `preferredDisplayModeId`) preventing screen 60 FPS drops during gameplay.
+* 🎮 **Game-Specific Storage Config Patchers**: Dedicated auto-patchers for **Mobile Legends** (`UserSystem.ini`), **Call of Duty Mobile** (`UserSetting.json`), **PUBG Mobile & BGMI** (`UserCustom.ini`), and **Free Fire** (`FFGraphicsSettings.ini`).
+* 🛠️ **Real-World Gamer System Tweaks**: Thermal Throttling Bypass Override, Zero VSync Phase Frame Offsets, and Touch Pressure Scale Latency Boost.
 
 ---
 
@@ -96,7 +96,8 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v4.4.0 (Latest)** | 100% Shizuku API Temporary Root, Redesigned Gaming Launcher, Full Boost System Tweaks & Internal Data Config Patcher | [Download v4.4.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.4.0) |
+| **v4.6.0 (Latest)** | Full Device Identity Spoofing Engine, Multi-Platform Deep Search, Unthrottled 120/144/165 FPS HUD & Game Config Patchers | [Download v4.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.6.0) |
+| **v4.4.0** | 100% Shizuku API Temporary Root, Redesigned Gaming Launcher, Full Boost System Tweaks & Internal Data Config Patcher | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.4.0) |
 | **v4.3.0** | Guaranteed Online Games Library, App Picker Catalog Injection & Play Store Fallback | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.3.0) |
 | **v4.2.0** | Manifest Package Visibility Queries, Shizuku Package Scanner & Add Game App Picker | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.2.0) |
 | **v4.1.0** | Dual-Scan Game Detection Engine & Game Storage Config Auto-Patcher | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.1.0) |
