@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.core.DeviceInfoChannel;
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
 import com.gamebooster.app.games.GameProfileAutoConfigurator;
@@ -34,6 +35,7 @@ public class HomeFragment extends Fragment {
 
     private TextView tvEngineMode;
     private TextView tvDeviceInfo;
+    private TextView tvDeviceCompatibility;
     private TextView tvRamUsage;
     private TextView tvBatteryTemp;
     private TextView tvGamesHeader;
@@ -48,6 +50,7 @@ public class HomeFragment extends Fragment {
 
         tvEngineMode = view.findViewById(R.id.tv_engine_mode);
         tvDeviceInfo = view.findViewById(R.id.tv_device_info);
+        tvDeviceCompatibility = view.findViewById(R.id.tv_device_compatibility);
         tvRamUsage = view.findViewById(R.id.tv_ram_usage);
         tvBatteryTemp = view.findViewById(R.id.tv_battery_temp);
         Button btnSettings = view.findViewById(R.id.btn_open_settings);
@@ -165,6 +168,17 @@ public class HomeFragment extends Fragment {
 
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
         tvDeviceInfo.setText("Hardware: " + m.deviceSummary);
+        DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
+        String access = engineMode == EngineMode.SHIZUKU
+                ? "Advanced controls ready (Shizuku connected)"
+                : "Standard controls only; connect Shizuku for supported advanced controls";
+        tvDeviceCompatibility.setText("Compatibility: " + caps.getOemFamilyLabel()
+                + " • Android " + Build.VERSION.RELEASE
+                + "\nDisplay: " + caps.getCurrentRefreshRate() + "Hz now • "
+                + caps.getSupportedRefreshRates() + "Hz supported"
+                + "\nRecommended profile: " + caps.getRecommendedProfileLabel()
+                + " (up to " + caps.getMaxRefreshRate() + "Hz)"
+                + "\nAccess: " + access);
         tvRamUsage.setText("RAM Usage: " + m.ramUsagePct + "% (" + m.usedRamMb + " MB / " + m.totalRamMb + " MB)");
         tvBatteryTemp.setText("Battery Temp: " + m.batteryTempC + " °C");
     }

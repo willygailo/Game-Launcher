@@ -20,20 +20,22 @@ public final class DevicePerformanceCapabilities {
 
     private final List<Integer> supportedRefreshRates;
     private final int maxRefreshRate;
+    private final int currentRefreshRate;
     private final OemFamily oemFamily;
 
-    private DevicePerformanceCapabilities(List<Integer> rates, OemFamily family) {
+    private DevicePerformanceCapabilities(List<Integer> rates, int currentRefreshRate, OemFamily family) {
         List<Integer> sorted = new ArrayList<>(rates);
         if (sorted.isEmpty()) sorted.add(60);
         Collections.sort(sorted);
         this.supportedRefreshRates = Collections.unmodifiableList(sorted);
         this.maxRefreshRate = sorted.get(sorted.size() - 1);
+        this.currentRefreshRate = currentRefreshRate > 0 ? currentRefreshRate : sorted.get(0);
         this.oemFamily = family;
     }
 
     public static DevicePerformanceCapabilities detect(Context context) {
         DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(context);
-        return new DevicePerformanceCapabilities(caps.getRecommendedRates(), detectOemFamily());
+        return new DevicePerformanceCapabilities(caps.getRecommendedRates(), caps.currentRefreshRate, detectOemFamily());
     }
 
     public List<Integer> getSupportedRefreshRates() {
@@ -42,6 +44,10 @@ public final class DevicePerformanceCapabilities {
 
     public int getMaxRefreshRate() {
         return maxRefreshRate;
+    }
+
+    public int getCurrentRefreshRate() {
+        return currentRefreshRate;
     }
 
     public OemFamily getOemFamily() {
@@ -63,8 +69,28 @@ public final class DevicePerformanceCapabilities {
     }
 
     public String getCompatibilitySummary() {
-        return oemFamily.name() + " device: " + maxRefreshRate + "Hz max (supported: "
+        return getOemFamilyLabel() + " device: " + maxRefreshRate + "Hz max (supported: "
                 + supportedRefreshRates + ")";
+    }
+
+    public String getOemFamilyLabel() {
+        switch (oemFamily) {
+            case TRANSSION: return "Transsion (Infinix / Tecno / itel)";
+            case XIAOMI: return "Xiaomi / Redmi / POCO";
+            case SAMSUNG: return "Samsung";
+            case OPPO_FAMILY: return "OPPO / realme / OnePlus";
+            case VIVO_IQOO: return "vivo / iQOO";
+            case ASUS: return "ASUS";
+            case MOTOROLA: return "Motorola";
+            case GOOGLE: return "Google Pixel";
+            default: return "Generic Android";
+        }
+    }
+
+    public String getRecommendedProfileLabel() {
+        if (maxRefreshRate >= 120) return "MAX SUPPORTED";
+        if (maxRefreshRate >= 90) return "COMPETITIVE";
+        return "BALANCED";
     }
 
     private static OemFamily detectOemFamily() {

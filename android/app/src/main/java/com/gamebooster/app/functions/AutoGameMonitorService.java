@@ -21,6 +21,8 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
+import com.gamebooster.app.games.GameProfilePreferences;
+import com.gamebooster.app.games.GameSessionSettings;
 import com.gamebooster.app.overlay.FloatingOverlayService;
 
 import java.util.List;
@@ -97,10 +99,15 @@ public class AutoGameMonitorService extends Service {
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
                 lastActiveGamePackage = currentPackage;
-                Log.i(TAG, "🎮 GAME LAUNCH DETECTED: " + currentPackage + " — Applying EXTREME 165Hz Auto-Boost!");
+                GameSessionSettings.begin(getApplicationContext(), currentPackage);
+                GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
+                        getApplicationContext(), currentPackage);
+                int targetHz = GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
+                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
+                        + profile.label + " up to " + targetHz + "Hz");
 
-                // Auto-Apply Extreme Performance Profile
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
+                GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
                 
                 // Auto-Start Floating Gaming HUD
                 if (!FloatingOverlayService.isOverlayRunning()) {
@@ -108,15 +115,16 @@ public class AutoGameMonitorService extends Service {
                 }
 
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 Game Space Auto-Boost Activated! (165Hz Lock)", android.widget.Toast.LENGTH_LONG).show());
+                        android.widget.Toast.makeText(getApplicationContext(), "🎮 " + profile.label
+                                + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "🔄 Game Exited — Restoring BALANCED Profile");
+                Log.i(TAG, "Game exited — restoring the user's previous settings");
                 lastActiveGamePackage = null;
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.BALANCED);
+                GameSessionSettings.restore(getApplicationContext());
                 
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🔄 Game Exited — Restored Balanced Mode", android.widget.Toast.LENGTH_SHORT).show());
+                        android.widget.Toast.makeText(getApplicationContext(), "🔄 Game exited — restored previous settings", android.widget.Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -178,7 +186,7 @@ public class AutoGameMonitorService extends Service {
     private Notification createNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GAME SPACE — Auto Detection Active")
-                .setContentText("Monitoring installed games for automatic 165Hz boost...")
+                .setContentText("Monitoring installed games for their selected performance profile...")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)

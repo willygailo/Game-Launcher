@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import com.gamebooster.app.functions.PerformanceChannel;
+import com.gamebooster.app.functions.GameSpaceDndManager;
+import com.gamebooster.app.functions.AutoGameMonitorService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,13 +23,18 @@ public class GameLauncherHelper {
         String pkgName = game.getPackageName();
         if (pkgName == null || pkgName.trim().isEmpty()) return;
 
+        GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(context, pkgName);
+        GameSessionSettings.begin(context, pkgName);
+        AutoGameMonitorService.start(context);
+
         // 1. Offload background optimizations to AppExecutors so launch is instant
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
                 com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
-                int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
+                int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
-                PerformanceChannel.executeOneTapBoost(context);
+                PerformanceChannel.applyProfile(context, profile.performanceProfile);
+                GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
             } catch (Throwable ignored) {}
         });
@@ -68,10 +75,15 @@ public class GameLauncherHelper {
         }
 
         if (launched) {
-            Toast.makeText(context, "⚡ LAUNCHED: " + game.getLabel() + " Boosted!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "⚡ LAUNCHED: " + game.getLabel() + " • "
+                    + profile.label + " up to " + targetFpsForToast(context, pkgName) + "Hz", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private static int targetFpsForToast(Context context, String packageName) {
+        return GameProfilePreferences.getTargetHz(context, packageName);
     }
 
     public static Set<String> getCustomPackages(Context context) {

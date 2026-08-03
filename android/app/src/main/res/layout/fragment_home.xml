@@ -79,6 +79,15 @@
                 android:text="Device Hardware: Loading..."
                 android:textColor="@color/text_primary"
                 android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_device_compatibility"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Compatibility: Checking device support..."
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
         </LinearLayout>
 
         <!-- INSTALLED GAMES LAUNCHER SECTION -->
