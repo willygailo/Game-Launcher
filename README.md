@@ -82,7 +82,7 @@ cd android
 
 ### 📦 Output APK Location:
 ```
-Game_Launcher_Pro_v4.2.0.apk
+Game_Launcher_Pro_v4.3.0.apk
 android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 ```
 
@@ -92,9 +92,9 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v4.2.0 (Latest)** | Manifest Package Visibility Queries, Shizuku Package Scanner & Add Game App Picker | [Download v4.2.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.2.0) |
+| **v4.3.0 (Latest)** | Guaranteed Online Games Library, App Picker Catalog Injection & Play Store Fallback | [Download v4.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.3.0) |
+| **v4.2.0** | Manifest Package Visibility Queries, Shizuku Package Scanner & Add Game App Picker | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.2.0) |
 | **v4.1.0** | Dual-Scan Game Detection Engine & Game Storage Config Auto-Patcher | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.1.0) |
-| **v4.0.0** | Floating Overlay HUD Fix, Online Games Library, 144Hz/165Hz FPS Unlock & Auto Shizuku Permissions | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.0.0) |
 | **v4.0.0** | Floating Overlay HUD Fix, Online Games Library, 144Hz/165Hz FPS Unlock & Auto Shizuku Permissions | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.0.0) |
 | **v3.6.0** | Real-Time Choreographer FPS Engine, Redesigned Glassmorphism HUD & Persistent GPU/CPU Switches | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.6.0) |
 | **v3.5.1** | Persistent GPU & CPU Manual Switch Engine | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.1) |
