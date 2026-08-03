@@ -194,16 +194,6 @@
                 android:text="Gaming DND &amp; Banner Blocker"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/btn_network_dns"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="@color/card_bg"
-                android:text="🌐 SET LOW-LATENCY GAMING DNS (1.1.1.1)"
-                android:textColor="@color/accent_cyan"
-                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>

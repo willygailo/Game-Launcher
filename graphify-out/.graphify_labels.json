@@ -5,7 +5,6 @@
   "3": "CommandExecutor.java",
   "4": "DeviceSpecModel",
   "5": "Fragment",
-  "6": ".onCreateView",
   "7": "ShizukuManager",
   "8": "FloatingOverlayService",
   "9": "RefreshRateController",
@@ -22,11 +21,6 @@
   "20": "build.gradle",
   "21": "build.gradle",
   "22": "monitors.js",
-  "23": ".onCreateView",
-  "24": "GameProfileAutoConfigurator.java",
-  "25": "CommandExecutor.java",
-  "26": "DnsMode",
   "27": "CrosshairOverlayManager",
-  "28": "CommandResult",
-  "29": "GameLibraryChannel"
+  "28": "CommandResult"
 }

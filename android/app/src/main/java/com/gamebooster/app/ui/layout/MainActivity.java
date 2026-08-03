@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.functions.TweakManagerRepository;
 import com.gamebooster.app.settings.PermissionsFragment;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -99,8 +100,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (!alive) {
                 Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "⚡ Shizuku connected cleanly", Toast.LENGTH_SHORT).show();
-                TweakManagerRepository.restoreAppliedTweaksAsync(this);
+                Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System Permissions...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                    TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            Toast.makeText(getApplicationContext(), "⚡ All System Permissions Auto-Configured!", Toast.LENGTH_SHORT).show());
+                });
             }
         });
     }

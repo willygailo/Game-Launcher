@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/HomeFragment.java": {
-    "mtime": 1785659610.7152412,
-    "ast_hash": "17556888f1c08962f756672491ebc2db",
+    "mtime": 1785718167.880476,
+    "ast_hash": "d2813e0c3d2e0c516b57506024fb8cd7",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/HzFpsFragment.java": {
@@ -240,8 +240,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/MainActivity.java": {
-    "mtime": 1785653072.0724063,
-    "ast_hash": "d46fc004cf3c02956b377a95a2546f0f",
+    "mtime": 1785718390.722022,
+    "ast_hash": "3d7f0c18f808fa6b7865e78f89c16a07",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/ProfilesFragment.java": {

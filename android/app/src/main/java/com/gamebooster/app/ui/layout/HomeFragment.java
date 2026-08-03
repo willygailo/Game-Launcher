@@ -54,7 +54,6 @@ public class HomeFragment extends Fragment {
 
         Switch switchOverlay = view.findViewById(R.id.switch_overlay_hud);
         Switch switchDnd = view.findViewById(R.id.switch_gaming_dnd);
-        Button btnDns = view.findViewById(R.id.btn_network_dns);
 
         if (btnSettings != null) {
             btnSettings.setOnClickListener(v -> {
@@ -92,24 +91,6 @@ public class HomeFragment extends Fragment {
                 if (getContext() == null) return;
                 com.gamebooster.app.functions.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
                 Toast.makeText(getContext(), "Gaming DND & Banner Blocker: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        if (btnDns != null) {
-            btnDns.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                btnDns.setEnabled(false);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = com.gamebooster.app.functions.NetworkOptimizer.applyGamingDns(getContext(), com.gamebooster.app.functions.NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
-                    com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnDns.setEnabled(true);
-                        if (ok) {
-                            Toast.makeText(getContext(), "🌐 Cloudflare 1.1.1.1 Gaming DNS & TCP Tuned!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
             });
         }
 

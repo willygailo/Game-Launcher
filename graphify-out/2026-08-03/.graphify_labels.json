@@ -23,5 +23,10 @@
   "21": "build.gradle",
   "22": "monitors.js",
   "23": ".onCreateView",
-  "24": "GameProfileAutoConfigurator.java"
+  "24": "GameProfileAutoConfigurator.java",
+  "25": "CommandExecutor.java",
+  "26": "DnsMode",
+  "27": "CrosshairOverlayManager",
+  "28": "CommandResult",
+  "29": "GameLibraryChannel"
 }
