@@ -68,20 +68,80 @@ public class FloatingOverlayService extends Service {
         setupTicker();
     }
 
+    private View layoutCollapsedPill;
+    private View layoutExpandedDock;
+    private TextView tvPillMetrics;
+    private TextView tvHudFps;
+    private TextView tvHudRam;
+    private TextView tvHudTemp;
+    private TextView tvHudMa;
+    private boolean isCollapsed = true;
+    private boolean isDndActive = false;
+
     private void setupFloatingView() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (windowManager == null) return;
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setBackgroundColor(Color.parseColor("#CC0F172A")); // Glassmorphic dark slate
-        layout.setPadding(24, 16, 24, 16);
+        android.view.LayoutInflater inflater = (android.view.LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        if (inflater == null) return;
+        overlayView = inflater.inflate(R.layout.floating_hud_layout, null);
 
-        tvMetrics = new TextView(this);
-        tvMetrics.setTextColor(Color.parseColor("#00F0FF"));
-        tvMetrics.setTextSize(12f);
-        tvMetrics.setText("⚡ GAME HUD: Loading...");
-        layout.addView(tvMetrics);
+        layoutCollapsedPill = overlayView.findViewById(R.id.layout_collapsed_pill);
+        layoutExpandedDock = overlayView.findViewById(R.id.layout_expanded_dock);
+        tvPillMetrics = overlayView.findViewById(R.id.tv_pill_metrics);
+        tvHudFps = overlayView.findViewById(R.id.tv_hud_fps);
+        tvHudRam = overlayView.findViewById(R.id.tv_hud_ram);
+        tvHudTemp = overlayView.findViewById(R.id.tv_hud_temp);
+        tvHudMa = overlayView.findViewById(R.id.tv_hud_ma);
+
+        View tvCollapseBtn = overlayView.findViewById(R.id.tv_hud_collapse_btn);
+        View btnBoost = overlayView.findViewById(R.id.btn_hud_boost);
+        View btnExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
+        View btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
+        View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
+
+        if (tvCollapseBtn != null) {
+            tvCollapseBtn.setOnClickListener(v -> toggleDockState(true));
+        }
+
+        if (btnBoost != null) {
+            btnBoost.setOnClickListener(v -> {
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.functions.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), "⚡ 1-Tap RAM Cleaned!", android.widget.Toast.LENGTH_SHORT).show());
+                });
+            });
+        }
+
+        if (btnExtreme != null) {
+            btnExtreme.setOnClickListener(v -> {
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.functions.PerformanceChannel.applyProfile(getApplicationContext(), com.gamebooster.app.functions.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), "🔥 EXTREME (165Hz Lock) Applied In-Game!", android.widget.Toast.LENGTH_SHORT).show());
+                });
+            });
+        }
+
+        if (btnDnd != null) {
+            btnDnd.setOnClickListener(v -> {
+                isDndActive = !isDndActive;
+                final boolean targetDnd = isDndActive;
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.root.CommandExecutor.executeSystemCommand(targetDnd ? "settings put global zen_mode 2" : "settings put global zen_mode 0");
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), targetDnd ? "🚫 In-Game DND Silenced" : "🔔 DND Normal", android.widget.Toast.LENGTH_SHORT).show());
+                });
+            });
+        }
+
+        if (btnCrosshair != null) {
+            btnCrosshair.setOnClickListener(v -> {
+                boolean active = CrosshairOverlayManager.toggleCrosshair(getApplicationContext());
+                android.widget.Toast.makeText(getApplicationContext(), active ? "🎯 FPS Crosshair Overlay ON" : "🎯 Crosshair OFF", android.widget.Toast.LENGTH_SHORT).show();
+            });
+        }
 
         int layoutFlag;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -99,10 +159,10 @@ public class FloatingOverlayService extends Service {
         );
 
         params.gravity = Gravity.TOP | Gravity.START;
-        params.x = 50;
-        params.y = 150;
+        params.x = 20;
+        params.y = 200;
 
-        layout.setOnTouchListener(new View.OnTouchListener() {
+        overlayView.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -119,10 +179,11 @@ public class FloatingOverlayService extends Service {
                         initialTouchY = event.getRawY();
                         isClick = true;
                         return true;
+
                     case MotionEvent.ACTION_MOVE:
                         float dx = Math.abs(event.getRawX() - initialTouchX);
                         float dy = Math.abs(event.getRawY() - initialTouchY);
-                        if (dx > 10 || dy > 10) {
+                        if (dx > 12 || dy > 12) {
                             isClick = false;
                         }
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
@@ -131,10 +192,23 @@ public class FloatingOverlayService extends Service {
                             windowManager.updateViewLayout(overlayView, params);
                         }
                         return true;
+
                     case MotionEvent.ACTION_UP:
                         if (isClick) {
-                            isCollapsed = !isCollapsed;
-                            updateMetricsText();
+                            toggleDockState(!isCollapsed);
+                        } else {
+                            // Magnetic Edge Snapping
+                            if (windowManager != null && overlayView != null) {
+                                int screenWidth = getResources().getDisplayMetrics().widthPixels;
+                                int viewWidth = overlayView.getWidth();
+                                int midPoint = screenWidth / 2;
+                                if (params.x + (viewWidth / 2) < midPoint) {
+                                    params.x = 10; // Magnetic Snap Left
+                                } else {
+                                    params.x = screenWidth - viewWidth - 10; // Magnetic Snap Right
+                                }
+                                windowManager.updateViewLayout(overlayView, params);
+                            }
                         }
                         return true;
                 }
@@ -142,7 +216,6 @@ public class FloatingOverlayService extends Service {
             }
         });
 
-        overlayView = layout;
         try {
             windowManager.addView(overlayView, params);
         } catch (Exception e) {
@@ -150,22 +223,45 @@ public class FloatingOverlayService extends Service {
         }
     }
 
-    private boolean isCollapsed = false;
+    private void toggleDockState(boolean collapse) {
+        this.isCollapsed = collapse;
+        if (layoutCollapsedPill != null && layoutExpandedDock != null) {
+            if (collapse) {
+                layoutCollapsedPill.setVisibility(View.VISIBLE);
+                layoutExpandedDock.setVisibility(View.GONE);
+            } else {
+                layoutCollapsedPill.setVisibility(View.GONE);
+                layoutExpandedDock.setVisibility(View.VISIBLE);
+            }
+        }
+        updateMetricsText();
+    }
 
     private void updateMetricsText() {
-        if (tvMetrics == null) return;
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         com.gamebooster.app.core.DisplayCapabilitiesDetector.DisplayCaps caps = 
                 com.gamebooster.app.core.DisplayCapabilitiesDetector.detect(getApplicationContext());
         int currentHz = caps != null ? caps.currentRefreshRate : 60;
 
-        if (isCollapsed) {
-            tvMetrics.setText(String.format("⚡ %dHz", currentHz));
-        } else {
-            String text = m.batteryCurrentMa > 0 ?
-                    String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C | %dmA", currentHz, m.ramUsagePct, m.batteryTempC, m.batteryCurrentMa) :
-                    String.format("⚡ FPS/Hz: %dHz | RAM: %d%% | Temp: %.1f°C", currentHz, m.ramUsagePct, m.batteryTempC);
-            tvMetrics.setText(text);
+        if (tvPillMetrics != null) {
+            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", currentHz, m.batteryTempC));
+        }
+
+        if (tvHudFps != null) {
+            tvHudFps.setText(String.format("⚡ FPS / Refresh Rate: %d Hz", currentHz));
+        }
+        if (tvHudRam != null) {
+            tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
+        }
+        if (tvHudTemp != null) {
+            tvHudTemp.setText(String.format("🌡️ Battery Temp: %.1f°C", m.batteryTempC));
+        }
+        if (tvHudMa != null) {
+            if (m.batteryCurrentMa != 0) {
+                tvHudMa.setText(String.format("🔋 Power Current: %d mA", m.batteryCurrentMa));
+            } else {
+                tvHudMa.setText("🔋 Power Current: Normal");
+            }
         }
     }
 

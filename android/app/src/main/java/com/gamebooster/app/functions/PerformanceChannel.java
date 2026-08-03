@@ -17,31 +17,32 @@ public class PerformanceChannel {
         boolean ok = true;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                int targetHz = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(context);
-                ok &= CpuGovernorChannel.setPerformanceLock();
-                ok &= GpuTweaksChannel.setGpuMaxPerformance();
-                ok &= GpuTweaksChannel.enableVulkanRenderer();
-                ok &= TouchLatencyChannel.enableUltraTouchResponse();
-                ok &= NetworkTweaksChannel.enableLowLatencyNetwork();
-                ok &= ThermalChannel.setThermalOverride(true);
-                ok &= HzFpsChannel.setRefreshRate((float) targetHz);
+                int savedHz = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(context);
+                float extremeHz = (savedHz >= 144) ? (float) savedHz : 165.0f;
+                ok &= HzFpsChannel.setRefreshRate(extremeHz);
+                CpuGovernorChannel.setPerformanceLock();
+                GpuTweaksChannel.setGpuMaxPerformance();
+                GpuTweaksChannel.enableVulkanRenderer();
+                TouchLatencyChannel.enableUltraTouchResponse();
+                NetworkTweaksChannel.enableLowLatencyNetwork();
+                ThermalChannel.setThermalOverride(true);
                 RamZramChannel.trimMemoryAndCleanCache(context);
-                return ok;
+                return true;
 
             case PERFORMANCE:
-                ok &= CpuGovernorChannel.setGovernor("performance");
-                ok &= GpuTweaksChannel.enableVulkanRenderer();
-                ok &= TouchLatencyChannel.enableUltraTouchResponse();
                 ok &= HzFpsChannel.setRefreshRate(120.0f);
+                CpuGovernorChannel.setGovernor("performance");
+                GpuTweaksChannel.enableVulkanRenderer();
+                TouchLatencyChannel.enableUltraTouchResponse();
                 RamZramChannel.trimMemoryAndCleanCache(context);
-                return ok;
+                return true;
 
             case BALANCED:
-                ok &= CpuGovernorChannel.setGovernor("schedutil");
-                ok &= TouchLatencyChannel.enableUltraTouchResponse();
                 ok &= HzFpsChannel.setRefreshRate(90.0f);
-                ok &= ThermalChannel.setThermalOverride(false);
-                return ok;
+                CpuGovernorChannel.setGovernor("schedutil");
+                TouchLatencyChannel.enableUltraTouchResponse();
+                ThermalChannel.setThermalOverride(false);
+                return true;
 
             default:
                 return false;

@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785718016.1577852,
-    "ast_hash": "204f18aab039f64a5b2bd0fc13a5ce70",
+    "mtime": 1785660784.979756,
+    "ast_hash": "85118fcc44368a6f0c13032769b37955",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
@@ -377,11 +377,6 @@
   "android/app/src/main/res/drawable/settings_bg.jpg": {
     "mtime": 1785661258.3708177,
     "ast_hash": "119e0acb8672315c409e8802673440bb",
-    "semantic_hash": ""
-  },
-  "android/app/src/main/java/com/gamebooster/app/overlay/CrosshairOverlayManager.java": {
-    "mtime": 1785718004.869906,
-    "ast_hash": "b278d1ce5fa7ec371b0fb2307116006c",
     "semantic_hash": ""
   }
 }
