@@ -58,10 +58,17 @@
 * Overrides system thermal throttling caps (`cmd thermalservice override-status 0`).
 * Triggers PowerHAL sustained performance mode (`cmd power set-mode 0 1`).
 
-### 🌐 6. Native JavaScript Bridge & Modular Web Scripts
-* Exposes `@JavascriptInterface` (`window.AndroidBridge`) for WebViews.
-* Modular web scripts (`js/app.js`, `js/shizuku-shell.js`, `js/game-manager.js`, `js/monitors.js`) supporting web dashboard controls.
-
+### ⚙️ 7. Game Storage INI/Config Auto-Patcher & Modifier
+* **Automatic Config Generation**: Creates and modifies game INI configuration files in `/sdcard/Android/data/<package_name>/files/` to force high FPS modes (`HighFPSMode=1`, `FrameRateLevel=9`, `MaxFrameRate=120`, `FPS=120`/`144`/`165`) before launching games.
+* **Supported Popular Online Games**:
+  - **Mobile Legends (MLBB)**: `com.mobile.legends`, `com.mobile.legends.vng`, `com.mobile.legends.kr`, `com.mobile.legends.jp`
+  - **Call of Duty: Mobile (CODM)**: `com.activision.callofduty.shooter`, `com.garena.game.codm`, `com.tencent.tmgp.kr.codm`, `com.tencent.tmgp.cod`
+  - **PUBG Mobile & BGMI**: `com.tencent.ig`, `com.pubg.imobile`, `com.pubg.krmobile`, `com.vng.pubgmobile`, `com.tencent.iglite`, `com.pubg.newstate`
+  - **Garena Free Fire & MAX**: `com.dts.freefireth`, `com.dts.freefiremax`
+  - **League of Legends: Wild Rift**: `com.riotgames.league.wildrift`, `com.riotgames.league.wildrifttw`, `com.riotgames.league.wildriftvn`
+  - **Honor of Kings (HOK) & AoV**: `com.levelinfinite.sgameGlobal`, `com.tencent.tmgp.sgame`, `com.garena.game.kgtw`
+  - **Genshin Impact & HoYoverse**: `com.cognosphere.GenshinImpact`, `com.miHoYo.GenshinImpact`, `com.HoYoverse.hkrpgoversea`
+  - **Roblox & Shooters**: `com.roblox.client`, `com.axlebolt.standoff2`, `com.netease.bloodstrike`, `com.miracle.farlight84`
 
 ---
 
