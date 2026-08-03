@@ -96,8 +96,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         android.widget.Switch switchGpu3dVulkan = view.findViewById(R.id.switch_gpu_3d_vulkan);
         android.widget.Switch switchGpu2dSkia = view.findViewById(R.id.switch_gpu_2d_skia);
 
+        // CPU Manual ON/OFF Switches
+        android.widget.Switch switchCpuPerformance = view.findViewById(R.id.switch_cpu_performance);
+        android.widget.Switch switchCpuBalanced = view.findViewById(R.id.switch_cpu_balanced);
+
+        // Restore Saved GPU & CPU Preferences
+        if (getContext() != null) {
+            String savedGpu = com.gamebooster.app.functions.ManualSettingsPreferences.getGpuMode(getContext());
+            String savedCpu = com.gamebooster.app.functions.ManualSettingsPreferences.getCpuMode(getContext());
+
+            if (switchGpu3dVulkan != null) switchGpu3dVulkan.setChecked("vulkan".equalsIgnoreCase(savedGpu));
+            if (switchGpu2dSkia != null) switchGpu2dSkia.setChecked("skia".equalsIgnoreCase(savedGpu));
+            if (switchCpuPerformance != null) switchCpuPerformance.setChecked("performance".equalsIgnoreCase(savedCpu) || "extreme".equalsIgnoreCase(savedCpu));
+            if (switchCpuBalanced != null) switchCpuBalanced.setChecked("schedutil".equalsIgnoreCase(savedCpu));
+        }
+
         if (switchGpu3dVulkan != null) {
             switchGpu3dVulkan.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "vulkan" : "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -112,6 +129,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchGpu2dSkia != null) {
             switchGpu2dSkia.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "skia" : "vulkan");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(!isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -127,6 +146,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btn3dVulkan != null) {
             btn3dVulkan.setOnClickListener(v -> {
                 if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(true);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -142,6 +162,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btn2dSkia != null) {
             btn2dSkia.setOnClickListener(v -> {
                 if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(false);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -155,21 +176,37 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile"));
+            btnExtreme.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+                }
+                applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile");
+            });
         }
         if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile"));
+            btnPerformance.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+                }
+                applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile");
+            });
         }
         if (btnBalanced != null) {
-            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Executed: 90Hz Lock & Schedutil Profile"));
+            btnBalanced.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
+                    com.gamebooster.app.functions.ManualSettingsPreferences.setCpuMode(getContext(), "schedutil");
+                }
+                applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Executed: 90Hz Lock & Schedutil Profile");
+            });
         }
-
-        // CPU Manual ON/OFF Switches
-        android.widget.Switch switchCpuPerformance = view.findViewById(R.id.switch_cpu_performance);
-        android.widget.Switch switchCpuBalanced = view.findViewById(R.id.switch_cpu_balanced);
 
         if (switchCpuPerformance != null) {
             switchCpuPerformance.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "performance" : "schedutil");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.functions.CpuGovernorChannel.setGovernor(isChecked ? "extreme" : "schedutil");
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -183,6 +220,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchCpuBalanced != null) {
             switchCpuBalanced.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "schedutil" : "performance");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.functions.CpuGovernorChannel.setGovernor(isChecked ? "schedutil" : "performance");
                     AppExecutors.getInstance().postToMainThread(() -> {

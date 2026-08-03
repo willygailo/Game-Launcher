@@ -3,7 +3,7 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.5.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.5.0" />
+  <img src="https://img.shields.io/badge/Release-v3.5.1-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.5.1" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
@@ -14,17 +14,18 @@
 
 ---
 
-[📦 Download v3.5.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v3.5.1 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.1) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v3.5.0
+## 📌 What's New in v3.5.1
 
 > [!IMPORTANT]
 > **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **System Settings**, and **Android 12+ Game Mode API** with zero root requirement.
 
+* 🔒 **Persistent GPU & CPU Manual Switches**: Manual Vulkan 3D / Skia 2D and CPU Performance / Balance switches now automatically restore their ON/OFF states upon navigating back or reopening the app (`ManualSettingsPreferences`).
 * ⚡ **Performance Profile Refresh Rate Locks (165Hz / 120Hz / 90Hz)**: Locks display refresh rate with zero fallbacks (`EXTREME PERFORMANCE`: 165Hz, `HIGH PERFORMANCE`: 120Hz/144Hz, `BALANCED GAME`: 90Hz/60Hz).
 * 🎮 **Manual GPU & CPU Controls**: Dedicated manual ON/OFF switches for 3D Vulkan HWUI renderer, 2D Skia engine renderer, CPU Performance governor, and CPU Balance governor.
 * 📡 **Game Server Ping Tester & 1-Tap Gaming DNS**: Live ICMP Ping Tester (`1.1.1.1`) and 1-tap DNS switcher (Cloudflare 1.1.1.1, Google 8.8.8.8, Default DNS).

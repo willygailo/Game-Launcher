@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785718016.1577852,
-    "ast_hash": "204f18aab039f64a5b2bd0fc13a5ce70",
+    "mtime": 1785720407.9269655,
+    "ast_hash": "48ccf896ea81f240d3d27a31996e70c5",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
@@ -250,13 +250,13 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/SettingsFragment.java": {
-    "mtime": 1785718658.2817445,
-    "ast_hash": "2a37d695f8ef8bdf2486f92feecf0276",
+    "mtime": 1785720400.7360778,
+    "ast_hash": "d53b8d3372109bfa40fe8a9b48c05c60",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java": {
-    "mtime": 1785720198.376499,
-    "ast_hash": "1a5908f1b6455ca32a64ea2e59a179e1",
+    "mtime": 1785720370.32711,
+    "ast_hash": "b36945086bb062f7078769987abd583c",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksFragment.java": {
