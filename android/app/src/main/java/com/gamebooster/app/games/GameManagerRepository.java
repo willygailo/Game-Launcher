@@ -1,35 +1,42 @@
 package com.gamebooster.app.games;
 
 import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-
-import com.gamebooster.app.games.GameAppInfo;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GameManagerRepository {
+
+    private static final String TAG = "GameManagerRepository";
 
     public static List<GameAppInfo> getInstalledGames(Context context) {
         List<GameAppInfo> gamesList = new ArrayList<>();
         if (context == null) return gamesList;
 
         PackageManager pm = context.getPackageManager();
-        java.util.Set<String> addedPackages = new java.util.HashSet<>();
-        java.util.Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
+        Set<String> addedPackages = new HashSet<>();
+        Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
 
-        // 1. Primary Scanner: Query all launcher intent activities (Catches MLBB, CODM, PUBG, etc. on Android 11-15)
+        // 1. Primary Scanner: Query launcher intent activities (Android 11-15 <queries> matched)
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<android.content.pm.ResolveInfo> resolveInfos = pm.queryIntentActivities(mainIntent, 0);
-        for (android.content.pm.ResolveInfo ri : resolveInfos) {
+        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(mainIntent, 0);
+        for (ResolveInfo ri : resolveInfos) {
             if (ri == null || ri.activityInfo == null) continue;
             String pkgName = ri.activityInfo.packageName;
             if (pkgName == null || addedPackages.contains(pkgName)) continue;
@@ -50,7 +57,7 @@ public class GameManagerRepository {
             }
         }
 
-        // 2. Secondary Scanner: Query installed applications (Catches any games with custom launch flags)
+        // 2. Secondary Scanner: Query installed applications
         List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo app : apps) {
             if (app == null || app.packageName == null || addedPackages.contains(app.packageName)) continue;
@@ -66,7 +73,49 @@ public class GameManagerRepository {
             }
         }
 
-        // 3. Fallback for demo/emulator: If no installed online games are detected physically, populate default featured online game profiles
+        // 3. Tertiary Scanner: Shizuku ADB Direct Package List Query (pm list packages -3)
+        if (ShizukuExecutor.isShizukuAvailable()) {
+            try {
+                String shizukuRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
+                    String[] lines = shizukuRes.split("\n");
+                    for (String line : lines) {
+                        String pkgName = line.trim().replace("package:", "").trim();
+                        if (pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
+                        if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
+
+                        try {
+                            ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+                            String label = pm.getApplicationLabel(appInfo).toString();
+                            if (isPackageGame(context, pkgName, label, appInfo, customPkgs)) {
+                                Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+                                Drawable icon = pm.getApplicationIcon(appInfo);
+                                gamesList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
+                                addedPackages.add(pkgName);
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable e) {
+                Log.w(TAG, "Shizuku package scanner fallback error: " + e.getMessage());
+            }
+        }
+
+        // 4. Custom Packages Explicit Enforcement
+        for (String customPkg : customPkgs) {
+            if (!addedPackages.contains(customPkg)) {
+                try {
+                    ApplicationInfo appInfo = pm.getApplicationInfo(customPkg, 0);
+                    String label = pm.getApplicationLabel(appInfo).toString();
+                    Drawable icon = pm.getApplicationIcon(appInfo);
+                    Intent launchIntent = pm.getLaunchIntentForPackage(customPkg);
+                    gamesList.add(new GameAppInfo(label, customPkg, icon, launchIntent));
+                    addedPackages.add(customPkg);
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        // 5. Fallback for demo/emulator: If no installed online games are detected physically, populate default featured online game profiles
         if (gamesList.isEmpty()) {
             Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
             gamesList.add(new GameAppInfo("Mobile Legends: Bang Bang (Global)", "com.mobile.legends", defaultIcon, null));
@@ -82,7 +131,37 @@ public class GameManagerRepository {
         return gamesList;
     }
 
-    private static boolean isPackageGame(Context context, String pkgName, String label, ApplicationInfo appInfo, java.util.Set<String> customPkgs) {
+    public static List<GameAppInfo> getAllInstalledApps(Context context) {
+        List<GameAppInfo> appsList = new ArrayList<>();
+        if (context == null) return appsList;
+
+        PackageManager pm = context.getPackageManager();
+        Set<String> addedPackages = new HashSet<>();
+
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(mainIntent, 0);
+        for (ResolveInfo ri : resolveInfos) {
+            if (ri == null || ri.activityInfo == null) continue;
+            String pkgName = ri.activityInfo.packageName;
+            if (pkgName == null || addedPackages.contains(pkgName)) continue;
+            if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
+
+            String label = ri.loadLabel(pm).toString();
+            Drawable icon = ri.loadIcon(pm);
+            Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+
+            appsList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
+            addedPackages.add(pkgName);
+        }
+
+        // Sort alphabetically by app label
+        Collections.sort(appsList, Comparator.comparing(a -> a.getLabel().toLowerCase()));
+        return appsList;
+    }
+
+    private static boolean isPackageGame(Context context, String pkgName, String label, ApplicationInfo appInfo, Set<String> customPkgs) {
         if (pkgName == null) return false;
         String pkgLower = pkgName.toLowerCase();
         String labelLower = label != null ? label.toLowerCase() : "";

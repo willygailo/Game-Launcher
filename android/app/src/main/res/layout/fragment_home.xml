@@ -116,12 +116,26 @@
 
                 <Button
                     android:id="@+id/btn_boost_ram"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
                     android:backgroundTint="@color/card_bg"
-                    android:text="🧹 TRIM RAM &amp; CLEAN CACHE"
+                    android:text="🧹 TRIM RAM"
                     android:textColor="@color/accent_neon_green"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_add_game"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:backgroundTint="@color/card_bg"
+                    android:text="➕ ADD GAME"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
 

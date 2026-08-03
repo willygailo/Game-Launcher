@@ -31,6 +31,35 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
+    <!-- Package Visibility Queries for Android 11+ (Target SDK 30-35) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GAME" />
+        </intent>
+        <!-- Popular Online Game Package Declarations -->
+        <package android:name="com.mobile.legends" />
+        <package android:name="com.mobile.legends.vng" />
+        <package android:name="com.garena.game.codm" />
+        <package android:name="com.activision.callofduty.shooter" />
+        <package android:name="com.tencent.ig" />
+        <package android:name="com.pubg.imobile" />
+        <package android:name="com.pubg.krmobile" />
+        <package android:name="com.vng.pubgmobile" />
+        <package android:name="com.dts.freefireth" />
+        <package android:name="com.dts.freefiremax" />
+        <package android:name="com.riotgames.league.wildrift" />
+        <package android:name="com.levelinfinite.sgameGlobal" />
+        <package android:name="com.cognosphere.GenshinImpact" />
+        <package android:name="com.roblox.client" />
+        <package android:name="com.axlebolt.standoff2" />
+        <package android:name="com.netease.bloodstrike" />
+        <package android:name="com.miracle.farlight84" />
+    </queries>
+
     <application
         android:label="Game Booster"
         android:icon="@mipmap/ic_launcher"

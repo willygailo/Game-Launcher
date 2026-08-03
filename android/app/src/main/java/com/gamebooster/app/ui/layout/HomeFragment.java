@@ -120,6 +120,11 @@ public class HomeFragment extends Fragment {
             });
         }
 
+        Button btnAddGame = view.findViewById(R.id.btn_add_game);
+        if (btnAddGame != null) {
+            btnAddGame.setOnClickListener(v -> showAddAppPickerDialog());
+        }
+
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter = new GamesAdapter(getContext(), gameList);
@@ -129,6 +134,37 @@ public class HomeFragment extends Fragment {
         updateDashboard();
         loadInstalledGames();
         return view;
+    }
+
+    private void showAddAppPickerDialog() {
+        if (getContext() == null) return;
+
+        AppExecutors.getInstance().executeScan(() -> {
+            List<GameAppInfo> allApps = GameManagerRepository.getAllInstalledApps(getContext());
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null || allApps.isEmpty()) {
+                    Toast.makeText(getContext(), "No installed applications found to add", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String[] appNames = new String[allApps.size()];
+                for (int i = 0; i < allApps.size(); i++) {
+                    appNames[i] = allApps.get(i).getLabel() + " (" + allApps.get(i).getPackageName() + ")";
+                }
+
+                new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                        .setTitle("➕ Select App/Game to Add")
+                        .setItems(appNames, (dialog, which) -> {
+                            GameAppInfo selected = allApps.get(which);
+                            com.gamebooster.app.games.GameLauncherHelper.addCustomPackage(getContext(), selected.getPackageName());
+                            Toast.makeText(getContext(), "Added " + selected.getLabel() + " to Game Launcher!", Toast.LENGTH_SHORT).show();
+                            loadInstalledGames();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        });
     }
 
     @Override
