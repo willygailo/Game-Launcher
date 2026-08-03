@@ -2,6 +2,8 @@ package com.gamebooster.app.functions;
 
 import android.content.Context;
 
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
+
 public class PerformanceChannel {
 
     public enum Profile {
@@ -13,40 +15,62 @@ public class PerformanceChannel {
         Profile(String title) { this.title = title; }
     }
 
+    public static final class ProfileResult {
+        public final boolean refreshRateApplied;
+        public final int appliedHz;
+        public final String message;
+
+        private ProfileResult(boolean refreshRateApplied, int appliedHz, String message) {
+            this.refreshRateApplied = refreshRateApplied;
+            this.appliedHz = appliedHz;
+            this.message = message;
+        }
+    }
+
     public static boolean applyProfile(Context context, Profile profile) {
-        boolean ok = true;
+        return applyProfileWithResult(context, profile).refreshRateApplied;
+    }
+
+    /** Applies the strongest refresh rate that is physically supported by this device. */
+    public static ProfileResult applyProfileWithResult(Context context, Profile profile) {
+        if (context == null) return new ProfileResult(false, 0, "Device context is unavailable");
+
+        DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
+        int targetHz;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                int savedHz = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(context);
-                float extremeHz = (savedHz >= 144) ? (float) savedHz : 165.0f;
-                ok &= HzFpsChannel.setRefreshRate(extremeHz);
-                CpuGovernorChannel.setPerformanceLock();
-                GpuTweaksChannel.setGpuMaxPerformance();
-                GpuTweaksChannel.enableVulkanRenderer();
-                TouchLatencyChannel.enableUltraTouchResponse();
-                NetworkTweaksChannel.enableLowLatencyNetwork();
-                ThermalChannel.setThermalOverride(true);
-                RamZramChannel.trimMemoryAndCleanCache(context);
-                return true;
+                targetHz = caps.getMaxRefreshRate();
+                break;
 
             case PERFORMANCE:
-                ok &= HzFpsChannel.setRefreshRate(120.0f);
-                CpuGovernorChannel.setGovernor("performance");
-                GpuTweaksChannel.enableVulkanRenderer();
-                TouchLatencyChannel.enableUltraTouchResponse();
-                RamZramChannel.trimMemoryAndCleanCache(context);
-                return true;
+                targetHz = caps.resolveRefreshRate(120);
+                break;
 
             case BALANCED:
-                ok &= HzFpsChannel.setRefreshRate(90.0f);
-                CpuGovernorChannel.setGovernor("schedutil");
-                TouchLatencyChannel.enableUltraTouchResponse();
-                ThermalChannel.setThermalOverride(false);
-                return true;
+                targetHz = caps.resolveRefreshRate(90);
+                break;
 
             default:
-                return false;
+                return new ProfileResult(false, 0, "Unknown performance profile");
         }
+
+        HzFpsChannel.RefreshRateResult refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
+        if (!refreshResult.success) {
+            return new ProfileResult(false, targetHz, refreshResult.message);
+        }
+
+        // Thermal protection remains enabled. It prevents heat-related frame drops in longer sessions.
+        if (profile == Profile.EXTREME_PERFORMANCE || profile == Profile.PERFORMANCE) {
+            CpuGovernorChannel.setPerformanceLock();
+            GpuTweaksChannel.enableVulkanRenderer();
+            TouchLatencyChannel.enableUltraTouchResponse();
+            NetworkTweaksChannel.enableLowLatencyNetwork();
+            RamZramChannel.trimMemoryAndCleanCache(context);
+        } else {
+            CpuGovernorChannel.setGovernor("schedutil");
+            TouchLatencyChannel.enableUltraTouchResponse();
+        }
+        return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
     }
 
     public static boolean setGpuRenderMode(boolean is3D) {
@@ -62,12 +86,6 @@ public class PerformanceChannel {
     }
 
     public static boolean executeOneTapBoost(Context context) {
-        RamZramChannel.trimMemoryAndCleanCache(context);
-        CpuGovernorChannel.setPerformanceLock();
-        GpuTweaksChannel.enableVulkanRenderer();
-        TouchLatencyChannel.enableUltraTouchResponse();
-        ThermalChannel.setThermalOverride(true);
-        HzFpsChannel.setRefreshRate(120.0f);
-        return true;
+        return applyProfile(context, Profile.PERFORMANCE);
     }
 }

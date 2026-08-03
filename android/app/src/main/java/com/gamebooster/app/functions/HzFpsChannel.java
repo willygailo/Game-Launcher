@@ -2,15 +2,58 @@ package com.gamebooster.app.functions;
 
 import android.os.Build;
 import android.util.Log;
+import android.content.Context;
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
 import com.gamebooster.app.root.CommandExecutor;
 
 public class HzFpsChannel {
 
     private static final String TAG = "HzFpsChannel";
 
-    public static boolean setRefreshRate(float hz) {
-        String hzStr = String.valueOf(hz);
-        int hzInt = (int) hz;
+    public static final class RefreshRateResult {
+        public final boolean success;
+        public final int requestedHz;
+        public final int appliedHz;
+        public final String message;
+
+        private RefreshRateResult(boolean success, int requestedHz, int appliedHz, String message) {
+            this.success = success;
+            this.requestedHz = requestedHz;
+            this.appliedHz = appliedHz;
+            this.message = message;
+        }
+
+        public static RefreshRateResult success(int requestedHz, int appliedHz) {
+            String note = requestedHz == appliedHz ? "Applied " + appliedHz + "Hz"
+                    : "Applied supported " + appliedHz + "Hz instead of requested " + requestedHz + "Hz";
+            return new RefreshRateResult(true, requestedHz, appliedHz, note);
+        }
+
+        public static RefreshRateResult unsupported(int requestedHz, int maxHz) {
+            return new RefreshRateResult(false, requestedHz, 0,
+                    requestedHz + "Hz is not supported on this device (max " + maxHz + "Hz)");
+        }
+
+        public static RefreshRateResult failed(int requestedHz, int appliedHz) {
+            return new RefreshRateResult(false, requestedHz, appliedHz,
+                    "Android did not allow the " + appliedHz + "Hz setting. Connect Shizuku or allow Modify system settings.");
+        }
+    }
+
+    /**
+     * Applies only a refresh rate exposed by Android for the current display.
+     * This controls display refresh rate, not an individual game's internal FPS cap.
+     */
+    public static RefreshRateResult setRefreshRate(Context context, int requestedHz) {
+        if (context == null) return RefreshRateResult.failed(requestedHz, 0);
+
+        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
+        if (!capabilities.supportsRefreshRate(requestedHz)) {
+            return RefreshRateResult.unsupported(requestedHz, capabilities.getMaxRefreshRate());
+        }
+
+        String hzStr = String.valueOf(requestedHz);
+        int hzInt = requestedHz;
         boolean ok = true;
 
         // Stock AOSP / Pixel Standard settings (Android 11+)
@@ -20,11 +63,10 @@ public class HzFpsChannel {
         CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
         CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzStr);
         CommandExecutor.executeSystemCommand("cmd game mode performance global");
-        CommandExecutor.setSystemProperty("debug.graphics.game_default_frame_rate.disabled", "1");
 
         String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";
         String brand = Build.BRAND != null ? Build.BRAND.toLowerCase() : "";
-        Log.d(TAG, "setRefreshRate: targetHz=" + hz + " manufacturer='" + manufacturer + "' brand='" + brand + "'");
+        Log.d(TAG, "setRefreshRate: targetHz=" + requestedHz + " manufacturer='" + manufacturer + "' brand='" + brand + "'");
 
         // Vendor-Gated Specific Keys
         if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || brand.contains("poco")) {
@@ -55,15 +97,15 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
-        // SurfaceFlinger High FPS phase offsets for zero-stutter rendering
-        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_phase_offset_ns", "1000000");
-        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_app_phase_offset_ns", "1000000");
-
-        return ok;
+        return ok ? RefreshRateResult.success(requestedHz, requestedHz)
+                : RefreshRateResult.failed(requestedHz, requestedHz);
     }
 
-    public static boolean forceGameFps(String packageName, int targetFps) {
+    public static boolean forceGameFps(Context context, String packageName, int targetFps) {
         if (packageName == null || packageName.isEmpty()) return false;
+        if (context == null || !DevicePerformanceCapabilities.detect(context).supportsRefreshRate(targetFps)) {
+            return false;
+        }
         String cmd = "cmd game set --fps " + targetFps + " " + packageName;
         String res = CommandExecutor.executeSystemCommand(cmd);
         return CommandExecutor.isSuccessOutput(res);

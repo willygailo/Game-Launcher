@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Select game tuning profiles for 2D &amp; 3D titles"
+            android:text="Profiles automatically match your device's supported refresh rates"
             android:textColor="#8F9CAE"
             android:textSize="14sp" />
 
@@ -113,7 +113,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Max CPU clocks, Vulkan HWUI, 480Hz touch slop, Thermal bypass &amp; 165Hz lock."
+                android:text="Uses the highest display refresh rate supported by your Android device."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
@@ -149,7 +149,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Performance CPU governor, Vulkan HWUI, 300Hz touch &amp; 120Hz refresh lock."
+                android:text="Uses up to 120Hz when supported, with device-compatible gaming settings."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
@@ -185,7 +185,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Schedutil CPU governor, 90Hz refresh rate &amp; standard thermal throttling."
+                android:text="Uses up to 90Hz when supported for smoother gameplay and lower heat."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 

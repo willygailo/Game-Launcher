@@ -82,7 +82,7 @@ public final class DisplayCapabilitiesDetector {
         int maxRate = 60, minRate = 60, currentRate = 60;
         if (modes != null && modes.length > 0) {
             for (Display.Mode m : modes) {
-                int r = (int) m.getRefreshRate();
+                int r = Math.round(m.getRefreshRate());
                 if (r > 0 && !rates.contains(r)) rates.add(r);
             }
             if (!rates.isEmpty()) {

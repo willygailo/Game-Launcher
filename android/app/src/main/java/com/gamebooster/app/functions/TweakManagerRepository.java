@@ -82,16 +82,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "shizuku_disable_thermal_throttle",
-                "Thermal Override Bypass",
-                "Overrides thermal throttling caps via ThermalService",
-                "cmd thermalservice override-status 0 || cmd thermal override-status 0",
-                "cmd thermalservice override-status -1 || cmd thermal override-status -1",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "tcp_latency_tuning",
                 "TCP Low Latency Buffer Tuning",
                 "Optimizes Wi-Fi and Cellular TCP buffer limits to lower multiplayer gaming ping",
@@ -480,4 +470,3 @@ public class TweakManagerRepository {
         });
     }
 }
-

@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚡ Hz &amp; FPS UNLOCKER"
+            android:text="⚡ DEVICE-SUPPORTED HZ &amp; FPS"
             android:textColor="@color/accent_cyan"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -22,8 +22,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Lock Display Refresh Rate &amp; Bypass Thermal Throttling Caps"
+            android:text="Only display modes reported by your Android device are available"
             android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tv_device_refresh_support"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/accent_neon_green"
             android:textSize="13sp" />
 
         <!-- Refresh Rate Controls -->
@@ -92,7 +100,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Thermal Bypass Switch -->
+        <!-- Thermal protection status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -111,7 +119,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thermal Throttling Bypass"
+                    android:text="Thermal Protection"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -120,27 +128,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Overrides cmd thermalservice status caps during gaming"
+                    android:text="Stays active to prevent overheating and performance drops during long sessions"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <FrameLayout
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <Switch
-                    android:id="@+id/switch_thermal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <ImageView
-                    android:id="@+id/iv_thermal_lock"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:src="@android:drawable/ic_secure"
-                    android:tint="@color/accent_lock_amber"
-                    android:visibility="gone" />
-            </FrameLayout>
+                android:layout_height="wrap_content"
+                android:text="ACTIVE"
+                android:textColor="@color/accent_neon_green"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </LinearLayout>

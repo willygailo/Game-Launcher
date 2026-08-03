@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
 import com.gamebooster.app.functions.HzFpsChannel;
 import com.gamebooster.app.functions.TweakPreferences;
 import com.gamebooster.app.root.CommandExecutor;
@@ -15,7 +16,7 @@ public class GameProfileAutoConfigurator {
 
     private static final String TAG = "GameAutoConfigurator";
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
-    public static final int DEFAULT_TARGET_HZ = 120;
+    public static final int DEFAULT_TARGET_HZ = 60;
 
     public interface OnAutoConfigListener {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);
@@ -23,77 +24,44 @@ public class GameProfileAutoConfigurator {
 
     public static void setTargetFpsHz(Context context, int targetFpsHz) {
         if (context == null) return;
+        int supportedTarget = DevicePerformanceCapabilities.detect(context).resolveRefreshRate(targetFpsHz);
         context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .putInt(KEY_TARGET_HZ_FPS, targetFpsHz)
+                .putInt(KEY_TARGET_HZ_FPS, supportedTarget)
                 .apply();
     }
 
     public static int getTargetFpsHz(Context context) {
         if (context == null) return DEFAULT_TARGET_HZ;
-        return context.getApplicationContext()
+        int storedTarget = context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
+        return DevicePerformanceCapabilities.detect(context).resolveRefreshRate(storedTarget);
     }
 
     public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
-        List<Integer> rates = new ArrayList<>();
-        if (context == null) {
-            rates.add(60);
-            rates.add(90);
-            rates.add(120);
-            return rates;
-        }
-        try {
-            android.view.WindowManager wm = (android.view.WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            if (wm != null) {
-                android.view.Display display = wm.getDefaultDisplay();
-                if (display != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    android.view.Display.Mode[] modes = display.getSupportedModes();
-                    java.util.Set<Integer> uniqueHz = new java.util.TreeSet<>();
-                    for (android.view.Display.Mode mode : modes) {
-                        int hz = Math.round(mode.getRefreshRate());
-                        if (hz >= 50) {
-                            uniqueHz.add(hz);
-                        }
-                    }
-                    rates.addAll(uniqueHz);
-                }
-            }
-        } catch (Throwable ignored) {}
-
-        if (rates.isEmpty()) {
-            rates.add(60);
-            rates.add(90);
-            rates.add(120);
-        }
-        return rates;
+        if (context == null) return new ArrayList<>();
+        return new ArrayList<>(DevicePerformanceCapabilities.detect(context).getSupportedRefreshRates());
     }
 
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
 
-        Log.d(TAG, "Configuring " + packageName + " for " + targetFpsHz + " FPS / Hz...");
+        int supportedTarget = DevicePerformanceCapabilities.detect(context).resolveRefreshRate(targetFpsHz);
+        Log.d(TAG, "Configuring " + packageName + " for supported " + supportedTarget + " FPS / Hz...");
 
         // 1. Android Game Mode API Performance tuning
         CommandExecutor.executeSystemCommand("cmd game mode performance " + packageName);
 
         // 2. Per-app max refresh rate override
-        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetFpsHz);
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + supportedTarget);
 
         // 3. System-wide refresh rate peak/min lock
-        HzFpsChannel.setRefreshRate((float) targetFpsHz);
+        HzFpsChannel.RefreshRateResult refreshResult = HzFpsChannel.setRefreshRate(context, supportedTarget);
 
-        // 4. SurfaceFlinger high FPS offset & ANGLE Vulkan driver override
-        CommandExecutor.executeSystemCommand("setprop debug.sf.high_fps_early_phase_offset_ns 1");
-        CommandExecutor.executeSystemCommand("setprop debug.hwui.renderer vulkan");
-        CommandExecutor.executeSystemCommand("settings put global angle_enabled_app " + packageName);
-
-        // 5. In-game config file sed/ini patch
-        GameConfigPatcher.applyGameFpsPatch(packageName, targetFpsHz);
-
-        return true;
+        // Individual games retain final control over their own FPS cap and graphics configuration.
+        return refreshResult.success;
     }
 
     public static void autoConfigAllInstalledGamesAsync(Context context, OnAutoConfigListener listener) {

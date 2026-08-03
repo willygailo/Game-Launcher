@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
 import com.gamebooster.app.core.EngineUIHelper;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
@@ -52,6 +53,12 @@ public class GamesFragment extends Fragment {
         if (getContext() != null && tvTargetLabel != null) {
             int currentTarget = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
             tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ");
+            DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
+            setTargetRateVisible(btnTarget60, caps, 60);
+            setTargetRateVisible(btnTarget90, caps, 90);
+            setTargetRateVisible(btnTarget120, caps, 120);
+            setTargetRateVisible(btnTarget144, caps, 144);
+            setTargetRateVisible(btnTarget165, caps, 165);
         }
 
         View.OnClickListener hzClickListener = v -> {
@@ -65,10 +72,11 @@ public class GamesFragment extends Fragment {
             else if (id == R.id.btn_target_165) targetHz = 165;
 
             com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
+            int appliedTarget = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
             if (tvTargetLabel != null) {
-                tvTargetLabel.setText("TARGET RATE: " + targetHz + " FPS / HZ");
+                tvTargetLabel.setText("TARGET RATE: " + appliedTarget + " FPS / HZ");
             }
-            Toast.makeText(getContext(), "Target FPS/Hz set to " + targetHz + " FPS", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Supported game target set to " + appliedTarget + " FPS / Hz", Toast.LENGTH_SHORT).show();
         };
 
         if (btnTarget60 != null) btnTarget60.setOnClickListener(hzClickListener);
@@ -143,5 +151,9 @@ public class GamesFragment extends Fragment {
                 }
             });
         });
+    }
+
+    private void setTargetRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {
+        if (button != null) button.setVisibility(caps.supportsRefreshRate(rate) ? View.VISIBLE : View.GONE);
     }
 }

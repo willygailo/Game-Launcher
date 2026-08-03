@@ -1,14 +1,11 @@
 package com.gamebooster.app.ui.layout;
 
-import com.gamebooster.app.root.EngineMode;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,107 +13,75 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.functions.HzFpsChannel;
-import com.gamebooster.app.functions.ThermalChannel;
-import com.gamebooster.app.root.EngineMode;
-import com.gamebooster.app.root.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuManager;
-
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.core.DevicePerformanceCapabilities;
+import com.gamebooster.app.functions.HzFpsChannel;
+import com.gamebooster.app.games.GameProfileAutoConfigurator;
 
+/** Shows only physical display modes reported by the device. */
 public class HzFpsFragment extends Fragment {
 
-    private boolean isUpdatingProgrammatically = false;
-    private Switch switchThermal;
-    private ImageView ivThermalLock;
+    private Button btn60;
+    private Button btn90;
+    private Button btn120;
+    private Button btn144;
+    private Button btn165;
+    private TextView tvDeviceRefreshSupport;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_hz_fps, container, false);
+        btn60 = view.findViewById(R.id.btn_lock_60);
+        btn90 = view.findViewById(R.id.btn_lock_90);
+        btn120 = view.findViewById(R.id.btn_lock_120);
+        btn144 = view.findViewById(R.id.btn_lock_144);
+        btn165 = view.findViewById(R.id.btn_lock_165);
+        tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
-        Button btn60 = view.findViewById(R.id.btn_lock_60);
-        Button btn90 = view.findViewById(R.id.btn_lock_90);
-        Button btn120 = view.findViewById(R.id.btn_lock_120);
-        Button btn144 = view.findViewById(R.id.btn_lock_144);
-        Button btn165 = view.findViewById(R.id.btn_lock_165);
-        switchThermal = view.findViewById(R.id.switch_thermal);
-        ivThermalLock = view.findViewById(R.id.iv_thermal_lock);
-
-        btn60.setOnClickListener(v -> setHz(60.0f));
-        btn90.setOnClickListener(v -> setHz(90.0f));
-        btn120.setOnClickListener(v -> setHz(120.0f));
-        btn144.setOnClickListener(v -> setHz(144.0f));
-        btn165.setOnClickListener(v -> setHz(165.0f));
-
-        updateLockState();
-
-        switchThermal.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isUpdatingProgrammatically) return;
-
-            boolean hasShizuku = CommandExecutor.getActiveEngineMode() == EngineMode.SHIZUKU;
-            if (!hasShizuku) {
-                isUpdatingProgrammatically = true;
-                buttonView.setChecked(!isChecked);
-                isUpdatingProgrammatically = false;
-                
-                ShizukuManager.showShizukuPermissionDialog(getContext(), "Thermal Throttling Bypass");
-                return;
-            }
-
-            AppExecutors.getInstance().executeCommand(() -> {
-                boolean ok = ThermalChannel.setThermalOverride(isChecked);
-                AppExecutors.getInstance().postToMainThread(() -> {
-                    if (!isAdded() || getContext() == null) return;
-                    if (ok) {
-                        Toast.makeText(getContext(), "Thermal Bypass: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Failed to override thermal service", Toast.LENGTH_LONG).show();
-                        isUpdatingProgrammatically = true;
-                        buttonView.setChecked(!isChecked);
-                        isUpdatingProgrammatically = false;
-                    }
-                });
-            });
-        });
-
+        btn60.setOnClickListener(v -> setHz(60));
+        btn90.setOnClickListener(v -> setHz(90));
+        btn120.setOnClickListener(v -> setHz(120));
+        btn144.setOnClickListener(v -> setHz(144));
+        btn165.setOnClickListener(v -> setHz(165));
+        refreshSupportedRates();
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateLockState();
+        refreshSupportedRates();
     }
 
-    private void updateLockState() {
-        if (switchThermal == null || ivThermalLock == null) return;
-        
-        boolean hasShizuku = CommandExecutor.getActiveEngineMode() == EngineMode.SHIZUKU;
-        if (!hasShizuku) {
-            ivThermalLock.setVisibility(View.VISIBLE);
-            switchThermal.setAlpha(0.5f);
-        } else {
-            ivThermalLock.setVisibility(View.GONE);
-            switchThermal.setAlpha(1.0f);
+    private void refreshSupportedRates() {
+        if (getContext() == null) return;
+        DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
+        if (tvDeviceRefreshSupport != null) {
+            tvDeviceRefreshSupport.setText("Detected: " + caps.getSupportedRefreshRates()
+                    + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz");
         }
+        setRateVisible(btn60, caps, 60);
+        setRateVisible(btn90, caps, 90);
+        setRateVisible(btn120, caps, 120);
+        setRateVisible(btn144, caps, 144);
+        setRateVisible(btn165, caps, 165);
     }
 
-    private void setHz(float hz) {
-        if (getContext() != null) {
-            com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), (int) hz);
-        }
+    private void setRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {
+        if (button != null) button.setVisibility(caps.supportsRefreshRate(rate) ? View.VISIBLE : View.GONE);
+    }
+
+    private void setHz(int hz) {
+        if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
-            boolean ok = HzFpsChannel.setRefreshRate(hz);
+            HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), hz);
+            if (result.success) GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.appliedHz);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                if (ok) {
-                    Toast.makeText(getContext(), "Display refresh rate & Target Games FPS set to " + (int) hz + "Hz/FPS", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Requires Shizuku or Write Settings permission to lock refresh rate", Toast.LENGTH_LONG).show();
-                }
+                Toast.makeText(getContext(), result.message, Toast.LENGTH_LONG).show();
             });
         });
     }
 }
-
