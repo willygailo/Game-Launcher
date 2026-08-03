@@ -33,6 +33,5 @@
   "31": ".performDeepGameCacheClean",
   "32": ".trimMemoryAndCleanCache",
   "33": "WebDashboardFragment.java",
-  "34": ".getPrefs",
-  "35": ".trimMemoryAndCleanCache"
+  "34": ".getPrefs"
 }

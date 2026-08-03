@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/SettingsFragment.java": {
-    "mtime": 1785720400.7360778,
-    "ast_hash": "d53b8d3372109bfa40fe8a9b48c05c60",
+    "mtime": 1785720956.685449,
+    "ast_hash": "8b139315611b895ed1106c2595730f49",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785671028.715395,
-    "ast_hash": "f4b57623ddd12695af1adaeaf8ac49cb",
+    "mtime": 1785720585.273665,
+    "ast_hash": "c6b7087f3b6b164ba677e6c22d438a66",
     "semantic_hash": ""
   },
   "android/app/src/main/assets/index.html": {
@@ -397,6 +397,11 @@
   "android/app/src/main/java/com/gamebooster/app/functions/GameCacheCleaner.java": {
     "mtime": 1785718619.1650822,
     "ast_hash": "f479f8201ebe7b87663847b8eae6c007",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/ManualSettingsPreferences.java": {
+    "mtime": 1785720940.8815417,
+    "ast_hash": "65379e7ab7fbd6a8da78aecc310fdd5d",
     "semantic_hash": ""
   }
 }

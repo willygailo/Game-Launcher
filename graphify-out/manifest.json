@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/overlay/FloatingOverlayService.java": {
-    "mtime": 1785720407.9269655,
-    "ast_hash": "48ccf896ea81f240d3d27a31996e70c5",
+    "mtime": 1785721163.6321752,
+    "ast_hash": "90a792a1509deffcbeead58727e8ed80",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/root/CommandExecutor.java": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785720585.273665,
-    "ast_hash": "c6b7087f3b6b164ba677e6c22d438a66",
+    "mtime": 1785721048.7128947,
+    "ast_hash": "b436379675741c36c9a739d6fd528589",
     "semantic_hash": ""
   },
   "android/app/src/main/assets/index.html": {

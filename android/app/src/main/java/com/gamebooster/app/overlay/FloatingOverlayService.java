@@ -237,18 +237,44 @@ public class FloatingOverlayService extends Service {
         updateMetricsText();
     }
 
+    private int realTimeFps = 60;
+    private int frameCounter = 0;
+    private long lastFpsCalcTimeNanos = 0;
+
+    private final android.view.Choreographer.FrameCallback choreographerCallback = new android.view.Choreographer.FrameCallback() {
+        @Override
+        public void doFrame(long frameTimeNanos) {
+            if (!isRunning) return;
+            frameCounter++;
+            if (lastFpsCalcTimeNanos == 0) {
+                lastFpsCalcTimeNanos = frameTimeNanos;
+            } else {
+                long elapsedNanos = frameTimeNanos - lastFpsCalcTimeNanos;
+                if (elapsedNanos >= 1_000_000_000L) { // 1 second interval
+                    realTimeFps = (int) Math.round((frameCounter * 1_000_000_000.0) / elapsedNanos);
+                    frameCounter = 0;
+                    lastFpsCalcTimeNanos = frameTimeNanos;
+                }
+            }
+            try {
+                android.view.Choreographer.getInstance().postFrameCallback(this);
+            } catch (Exception ignored) {}
+        }
+    };
+
     private void updateMetricsText() {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         com.gamebooster.app.core.DisplayCapabilitiesDetector.DisplayCaps caps = 
                 com.gamebooster.app.core.DisplayCapabilitiesDetector.detect(getApplicationContext());
         int currentHz = caps != null ? caps.currentRefreshRate : 60;
+        int activeFps = realTimeFps > 0 ? realTimeFps : currentHz;
 
         if (tvPillMetrics != null) {
-            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", currentHz, m.batteryTempC));
+            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ FPS / Refresh Rate: %d Hz", currentHz));
+            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d FPS (%d Hz)", activeFps, currentHz));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
@@ -277,6 +303,9 @@ public class FloatingOverlayService extends Service {
             }
         };
         handler.post(updateRunnable);
+        try {
+            android.view.Choreographer.getInstance().postFrameCallback(choreographerCallback);
+        } catch (Exception ignored) {}
     }
 
     @Override

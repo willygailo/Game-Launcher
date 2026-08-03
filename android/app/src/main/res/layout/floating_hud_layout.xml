@@ -10,19 +10,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/card_glass_shape"
-        android:paddingStart="12dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="14dp"
+        android:paddingTop="9dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="9dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:elevation="6dp"
         android:visibility="visible">
 
         <TextView
             android:id="@+id/tv_pill_metrics"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚡ 120 FPS | 38°C"
+            android:text="⚡ 119 FPS | 38.5°C"
             android:textColor="@color/accent_neon_green"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -31,11 +32,12 @@
     <!-- EXPANDED GAME DOCK DASHBOARD MODE -->
     <LinearLayout
         android:id="@+id/layout_expanded_dock"
-        android:layout_width="270dp"
+        android:layout_width="280dp"
         android:layout_height="wrap_content"
         android:background="@drawable/card_glass_shape"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:padding="14dp"
+        android:elevation="8dp"
         android:visibility="gone">
 
         <!-- HEADER -->
@@ -49,7 +51,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="🎮 GAME HUD TURBO"
+                android:text="⚡ GAME HUD TURBO PRO"
                 android:textColor="@color/accent_cyan"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -68,14 +70,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_hud_fps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚡ FPS / Refresh Rate: 120 Hz"
+                android:text="⚡ Real-Time FPS: 119 FPS (120 Hz)"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -84,7 +86,7 @@
                 android:id="@+id/tv_hud_ram"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:text="🧠 Memory RAM: 42% Used"
                 android:textColor="@color/text_primary"
                 android:textSize="11sp" />
@@ -93,7 +95,7 @@
                 android:id="@+id/tv_hud_temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:text="🌡️ Battery Temp: 38.5°C"
                 android:textColor="@color/accent_orange"
                 android:textSize="11sp" />
@@ -102,7 +104,7 @@
                 android:id="@+id/tv_hud_ma"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:text="🔋 Power Current: -450 mA"
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
@@ -112,7 +114,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:text="IN-GAME QUICK TURBO ACTIONS"
             android:textColor="@color/accent_cyan"
             android:textSize="10sp"

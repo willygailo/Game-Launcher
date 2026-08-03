@@ -31,5 +31,8 @@
   "29": "EsportsAudioEnhancer",
   "30": ".applyGameFpsPatch",
   "31": ".performDeepGameCacheClean",
-  "32": ".trimMemoryAndCleanCache"
+  "32": ".trimMemoryAndCleanCache",
+  "33": "WebDashboardFragment.java",
+  "34": ".getPrefs",
+  "35": ".trimMemoryAndCleanCache"
 }
