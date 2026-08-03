@@ -167,7 +167,7 @@ public class FloatingOverlayService extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 layoutFlag,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
         );
 
@@ -177,6 +177,23 @@ public class FloatingOverlayService extends Service {
                     com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
             if (caps != null && caps.maxRefreshRate > 0) {
                 params.preferredRefreshRate = (float) caps.maxRefreshRate;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
+                android.view.Display display = windowManager.getDefaultDisplay();
+                if (display != null) {
+                    android.view.Display.Mode[] modes = display.getSupportedModes();
+                    int bestModeId = 0;
+                    float maxFps = 0.0f;
+                    for (android.view.Display.Mode m : modes) {
+                        if (m != null && m.getRefreshRate() > maxFps) {
+                            maxFps = m.getRefreshRate();
+                            bestModeId = m.getModeId();
+                        }
+                    }
+                    if (bestModeId != 0) {
+                        params.preferredDisplayModeId = bestModeId;
+                    }
+                }
             }
         } catch (Throwable ignored) {}
 

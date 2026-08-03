@@ -54,15 +54,16 @@ public class HzFpsChannel {
         }
 
         String hzStr = String.valueOf(requestedHz);
+        String hzFloatStr = requestedHz + ".0";
         int hzInt = requestedHz;
         boolean ok = true;
 
         // Stock AOSP / Pixel Standard settings (Android 11+)
-        ok &= CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzStr);
-        ok &= CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
+        ok &= CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzFloatStr);
+        ok &= CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzFloatStr);
         ok &= CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
-        CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
-        CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzFloatStr);
+        CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzFloatStr);
         CommandExecutor.executeSystemCommand("cmd game mode performance global");
 
         String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";

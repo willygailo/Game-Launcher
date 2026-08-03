@@ -5,6 +5,11 @@ import com.gamebooster.app.engine.CommandExecutor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * GameConfigPatcher creates and updates game-specific internal configuration files
+ * (INI, JSON, XML, UserCustom) for Mobile Legends, Call of Duty Mobile, PUBG Mobile, BGMI,
+ * Free Fire, Wild Rift, and Genshin Impact to force high FPS modes (90 FPS / 120 FPS / 144 FPS / 165 FPS).
+ */
 public class GameConfigPatcher {
 
     private static final String TAG = "GameConfigPatcher";
@@ -27,13 +32,21 @@ public class GameConfigPatcher {
         String pkg = packageName.toLowerCase().trim();
         List<String> configPaths = getConfigPathsForPackage(pkg);
         if (configPaths == null || configPaths.isEmpty()) {
-            return new PatchResult(false, "FPS config patching not required for " + packageName + " (handled via Game Mode API)");
+            return new PatchResult(false, "FPS config patching not required for " + packageName);
         }
 
         int patchedFiles = 0;
         for (String path : configPaths) {
-            if (patchOrWriteConfigFile(path, targetFps)) {
-                patchedFiles++;
+            if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+                if (patchMlbbConfig(path, targetFps)) patchedFiles++;
+            } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
+                if (patchCodmConfig(path, targetFps)) patchedFiles++;
+            } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+                if (patchPubgConfig(path, targetFps)) patchedFiles++;
+            } else if (pkg.contains("freefire")) {
+                if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
+            } else {
+                if (patchGenericConfig(path, targetFps)) patchedFiles++;
             }
         }
 
@@ -45,49 +58,115 @@ public class GameConfigPatcher {
         }
     }
 
-    private static boolean patchOrWriteConfigFile(String path, int targetFps) {
-        if (path == null) return false;
+    private static void ensureParentDirectory(String path) {
+        if (path == null) return;
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash > 0) {
+            String parentDir = path.substring(0, lastSlash);
+            CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
+        }
+    }
 
-        String parentDir = path.substring(0, path.lastIndexOf('/'));
-        // 1. Ensure parent directory exists via Shizuku shell
-        CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-
-        // 2. Check if file exists
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkResult = CommandExecutor.executeSystemCommand(checkCmd);
-        boolean exists = checkResult.contains("EXISTS");
-
+    private static boolean patchMlbbConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
         int frameRateLevel = targetFps >= 120 ? 9 : (targetFps >= 90 ? 6 : 3);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
-        if (!exists) {
-            // Write fresh INI configuration file
-            String createCmd = String.format("printf '[Graphics]\\nFPS=%d\\nFrameRate=%d\\nHighFPSMode=1\\nFrameRateLevel=%d\\nHighFrameRate=1\\nMaxFrameRate=%d\\nFPS_MODE=2\\nHIGH_FPS=1\\nTargetFPS=%d\\n' > %s",
-                    targetFps, targetFps, frameRateLevel, targetFps, targetFps, path);
-            String createRes = CommandExecutor.executeSystemCommand(createCmd);
-            return CommandExecutor.isSuccessOutput(createRes) || checkResult.contains("EXISTS");
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format(
+                    "[Graphics]\\nHighFPSMode=1\\nFrameRateLevel=%d\\nGraphicsQuality=4\\nHDMode=1\\nShadow=1\\nFPS=%d\\nMaxFrameRate=%d\\nTargetFPS=%d\\nHighFrameRate=1\\n",
+                    frameRateLevel, targetFps, targetFps, targetFps
+            );
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
         } else {
-            // In-place sed update for FPS, FrameRate, HighFPSMode, FrameRateLevel, MaxFrameRate
+            CommandExecutor.executeSystemCommand("sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^HDMode=.*/HDMode=1/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^Shadow=.*/Shadow=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^fps=.*/fps=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path);
+        }
+        return true;
+    }
+
+    private static boolean patchCodmConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format(
+                    "{\\n  \"MaxFrameRate\": %d,\\n  \"GraphicQuality\": 4,\\n  \"FPSLimit\": %d,\\n  \"SuperResolution\": 1,\\n  \"FieldOfView\": 90\\n}\\n",
+                    targetFps, targetFps
+            );
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+        } else {
+            CommandExecutor.executeSystemCommand("sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path);
+        }
+        return true;
+    }
+
+    private static boolean patchPubgConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
+        int pubgFpsLevel = targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format(
+                    "[UserCustom DeviceProfile]\\n+CVars=r.PUBGDeviceFPS=%d\\n+CVars=r.PUBGFrameRateLimit=%d\\n+CVars=r.MobileFPSLimit=%d\\nFrameRateLevel=%d\\n",
+                    pubgFpsLevel, targetFps, targetFps, pubgFpsLevel
+            );
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+        } else {
+            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGDeviceFPS=.*/+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/FrameRateLevel=.*/FrameRateLevel=" + pubgFpsLevel + "/' " + path);
+        }
+        return true;
+    }
+
+    private static boolean patchFreeFireConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format(
+                    "[FFGraphics]\\nHighFPS=1\\nFPSMode=2\\nMaxFPS=%d\\nGraphicLevel=3\\n",
+                    targetFps
+            );
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+        } else {
+            CommandExecutor.executeSystemCommand("sed -i 's/^HighFPS=.*/HighFPS=1/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^FPSMode=.*/FPSMode=2/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path);
+        }
+        return true;
+    }
+
+    private static boolean patchGenericConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format("[Graphics]\\nFPS=%d\\nFrameRate=%d\\nHighFPSMode=1\\nMaxFrameRate=%d\\n",
+                    targetFps, targetFps, targetFps);
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+        } else {
+            CommandExecutor.executeSystemCommand("sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FrameRate=.*/FrameRate=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^FPS_MODE=.*/FPS_MODE=2/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^HIGH_FPS=.*/HIGH_FPS=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path);
-
-            // Append if keys missing
-            String grepCmd = "grep -i 'FPS' " + path;
-            String grepRes = CommandExecutor.executeSystemCommand(grepCmd);
-            if (!grepRes.contains("FPS=") && !grepRes.contains("fps=")) {
-                String appendCmd = String.format("printf '\\nFPS=%d\\nFrameRate=%d\\nHighFPSMode=1\\nFrameRateLevel=%d\\nMaxFrameRate=%d\\n' >> %s",
-                        targetFps, targetFps, frameRateLevel, targetFps, path);
-                CommandExecutor.executeSystemCommand(appendCmd);
-            }
-            return true;
         }
+        return true;
     }
 
     private static List<String> getConfigPathsForPackage(String pkg) {
@@ -95,53 +174,25 @@ public class GameConfigPatcher {
         if (pkg == null) return paths;
 
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            // Mobile Legends (Global, VNG, KR, JP)
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
             paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
             paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
-            paths.add("/data/user/0/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("vng.pubgmobile")) {
-            // PUBG Mobile (Global, BGMI, KR, VNG, Lite, New State)
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
             paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
-            // Call of Duty Mobile (Global, Garena, KR, CN)
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/com.activision.callofduty.shooter.v2.playerprefs.xml");
             paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
             paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/GraphicsSettings.ini");
         } else if (pkg.contains("freefire")) {
-            // Free Fire & Free Fire MAX
             paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
             paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/FFGraphicsSettings.ini");
-        } else if (pkg.contains("wildrift") || pkg.contains("league")) {
-            // Wild Rift
-            paths.add("/sdcard/Android/data/" + pkg + "/files/SaveData/Local/Settings");
-            paths.add("/data/data/" + pkg + "/files/SaveData/Local/Settings");
-            paths.add("/data/user/0/" + pkg + "/files/SaveData/Local/Settings");
-        } else if (pkg.contains("sgameglobal") || pkg.contains("honorofkings") || pkg.contains("kgtw") || pkg.contains("kgvn")) {
-            // Honor of Kings & Arena of Valor
-            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
-        } else if (pkg.contains("genshin") || pkg.contains("mihoyo")) {
-            // Genshin Impact & HoYoverse
-            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSetting.ini");
-            paths.add("/data/data/" + pkg + "/files/GameSetting.ini");
-            paths.add("/data/user/0/" + pkg + "/files/GameSetting.ini");
-        } else if (pkg.contains("roblox") || pkg.contains("bloodstrike") || pkg.contains("farlight") || pkg.contains("standoff")) {
-            // Roblox & Action Shooters
-            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
         } else {
-            // Generic fallback for any other custom game package
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
             paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/user/0/" + pkg + "/files/GameSettings.ini");
         }
 
         return paths;

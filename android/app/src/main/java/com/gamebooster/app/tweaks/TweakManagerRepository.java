@@ -143,6 +143,46 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "device_model_spoof_rog6",
+                "ASUS ROG Phone 6 Model Spoof",
+                "Spoofs device identity as ROG Phone 6 to unlock 120 FPS in MLBB & Wild Rift",
+                "resetprop ro.product.model ASUS_AI2201 || setprop ro.product.model ASUS_AI2201; resetprop ro.product.brand asus || setprop ro.product.brand asus; resetprop ro.product.manufacturer asus || setprop ro.product.manufacturer asus; resetprop ro.hardware qcom || setprop ro.hardware qcom",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "device_model_spoof_blackshark",
+                "Black Shark 5 Pro Model Spoof",
+                "Spoofs device identity as Black Shark 5 Pro to unlock 120 FPS & Ultra Graphics in CODM",
+                "resetprop ro.product.model \"SHARK PAR-A0\" || setprop ro.product.model \"SHARK PAR-A0\"; resetprop ro.product.brand blackshark || setprop ro.product.brand blackshark; resetprop ro.product.manufacturer blackshark || setprop ro.product.manufacturer blackshark; resetprop ro.hardware qcom || setprop ro.hardware qcom",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "device_model_spoof_s24ultra",
+                "Samsung Galaxy S24 Ultra Model Spoof",
+                "Spoofs device identity as Galaxy S24 Ultra to unlock 90/120 FPS in PUBG Mobile & BGMI",
+                "resetprop ro.product.model SM-S928B || setprop ro.product.model SM-S928B; resetprop ro.product.brand samsung || setprop ro.product.brand samsung; resetprop ro.product.manufacturer samsung || setprop ro.product.manufacturer samsung; resetprop ro.hardware qcom || setprop ro.hardware qcom",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "device_model_spoof_ipadpro",
+                "iPad Pro M2 Model Spoof",
+                "Spoofs device identity as iPad Pro M2 for tablet FOV & extreme graphics mode",
+                "resetprop ro.product.model iPad13,8 || setprop ro.product.model iPad13,8; resetprop ro.product.brand apple || setprop ro.product.brand apple; resetprop ro.product.manufacturer apple || setprop ro.product.manufacturer apple",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "sf_latch_unsignaled",
                 "Zero Frame Latency Latching",
                 "Forces SurfaceFlinger to latch unsignaled buffers immediately for lower input latency",
@@ -169,6 +209,36 @@ public class TweakManagerRepository {
                 "settings put global development_settings_enabled 1; settings put global force_gnss_raw_measurements 1",
                 "settings put global force_gnss_raw_measurements 0",
                 TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "thermal_throttling_override",
+                "Thermal Throttling Bypass Override",
+                "Temporarily bypasses thermal throttling policy daemon to prevent FPS drops during extended gaming",
+                "setprop sys.thermal.policy 0; setprop vendor.thermal.mode 0; setprop debug.thermal.throttle 0",
+                "setprop sys.thermal.policy 1; setprop vendor.thermal.mode 1; setprop debug.thermal.throttle 1",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "sf_zero_vsync_phase",
+                "Zero VSync Phase Frame Offsets",
+                "Eliminates SurfaceFlinger VSync app/render phase offsets to render frames instantly",
+                "setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0",
+                "setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "touch_pressure_scale_boost",
+                "Touch Pressure Scale Latency Boost",
+                "Scales down digitizer pressure threshold for instantaneous touch gesture response",
+                "setprop persist.sys.touch.pressure.scale 0.001; setprop view.touch_slop 1",
+                "setprop persist.sys.touch.pressure.scale 1.0; setprop view.touch_slop 8",
+                TweakCategory.TOUCH_DISPLAY,
                 true
         ));
 

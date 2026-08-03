@@ -77,31 +77,31 @@ public class GameManagerRepository {
             }
         } catch (Throwable ignored) {}
 
-        // 3. Tertiary Scanner: Shizuku ADB Direct Package List Query (pm list packages -3)
+        // 3. Tertiary Scanner & Deep Search Engine (Multi-User & Multi-Platform)
         if (ShizukuExecutor.isShizukuAvailable()) {
             try {
-                String shizukuRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
-                if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
-                    String[] lines = shizukuRes.split("\n");
-                    for (String line : lines) {
-                        String pkgName = line.trim().replace("package:", "").trim();
-                        if (pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
-                        if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
+                Set<String> deepDiscovered = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
+                for (String pkgName : deepDiscovered) {
+                    if (pkgName == null || pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
+                    if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
 
-                        try {
-                            ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
-                            String label = pm.getApplicationLabel(appInfo).toString();
-                            if (isPackageGame(context, pkgName, label, appInfo, customPkgs)) {
-                                Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
-                                Drawable icon = pm.getApplicationIcon(appInfo);
-                                gamesList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
-                                addedPackages.add(pkgName);
-                            }
-                        } catch (Throwable ignored) {}
+                    try {
+                        ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+                        String label = pm.getApplicationLabel(appInfo).toString();
+                        Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+                        Drawable icon = pm.getApplicationIcon(appInfo);
+                        gamesList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
+                        addedPackages.add(pkgName);
+                    } catch (Throwable e) {
+                        GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkgName);
+                        String label = spec != null ? spec.title : pkgName;
+                        Drawable defaultAppIcon = context.getApplicationInfo().loadIcon(pm);
+                        gamesList.add(new GameAppInfo(label, pkgName, defaultAppIcon, null));
+                        addedPackages.add(pkgName);
                     }
                 }
             } catch (Throwable e) {
-                Log.w(TAG, "Shizuku package scanner fallback error: " + e.getMessage());
+                Log.w(TAG, "Deep search scanner error: " + e.getMessage());
             }
         }
 

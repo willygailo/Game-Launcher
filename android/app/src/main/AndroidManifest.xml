@@ -58,6 +58,13 @@
         <package android:name="com.axlebolt.standoff2" />
         <package android:name="com.netease.bloodstrike" />
         <package android:name="com.miracle.farlight84" />
+        <!-- Third-Party Gaming Platforms & App Stores -->
+        <package android:name="com.taptap.global" />
+        <package android:name="com.taptap" />
+        <package android:name="com.garena.appstore" />
+        <package android:name="com.sec.android.app.samsungapps" />
+        <package android:name="com.apkpure.aether" />
+        <package android:name="com.qooapp.qoohelper" />
     </queries>
 
     <application

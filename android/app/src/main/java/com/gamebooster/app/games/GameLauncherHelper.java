@@ -32,6 +32,7 @@ public class GameLauncherHelper {
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
                 com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkgName);
                 int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 PerformanceChannel.applyProfile(context, profile.performanceProfile);
