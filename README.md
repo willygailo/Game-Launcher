@@ -91,9 +91,11 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v3.4.0 (Latest)** | 34 Legitimate AOSP Tweaks, Persistence Fix & Network Optimizer | [Download v3.4.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.4.0) |
+| **v3.6.0 (Latest)** | Real-Time Choreographer FPS Engine, Redesigned Glassmorphism HUD & Persistent GPU/CPU Switches | [Download v3.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.6.0) |
+| **v3.5.1** | Persistent GPU & CPU Manual Switch Engine | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.1) |
+| **v3.5.0** | 165Hz Lock, Game Turbo Floating HUD, Auto Game Boost & Live Shell Command Feedback | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0) |
+| **v3.4.0** | 34 Legitimate AOSP Tweaks, Persistence Fix & Network Optimizer | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.4.0) |
 | **v3.3.0** | Persistent Tweaks & Hardware Refresh Rate Filtering | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.3.0) |
-| **v3.2.0** | Consolidated 2-Tab Dashboard & Glassmorphic UI | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.2.0) |
 
 ---
 
