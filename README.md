@@ -3,7 +3,7 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.6.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v3.6.0" />
+  <img src="https://img.shields.io/badge/Release-v4.0.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.0.0" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
@@ -14,35 +14,30 @@
 
 ---
 
-[📦 Download v3.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.6.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v4.0.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.0.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v3.6.0
+## 📌 What's New in v4.0.0
 
 > [!IMPORTANT]
 > **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **System Settings**, and **Android 12+ Game Mode API** with zero root requirement.
 
-* 📱 **Real-Time Choreographer Live FPS Calculation Engine**: Replaced static refresh rate displaying with an active `Choreographer.FrameCallback` frame rate listener calculating exact rendered frames every 1 second interval (`1,000,000,000ns`).
-* 🎨 **Glassmorphism Floating HUD Layout Redesign**: Modernized overlay dashboard (`floating_hud_layout.xml`) with neon cyan/green glassmorphism cards, elevated shadows, and aligned telemetry grid (`⚡ Real-Time FPS: 119 FPS (120 Hz)`).
-* 🔒 **Persistent GPU & CPU Manual Switches**: Manual Vulkan 3D / Skia 2D and CPU Performance / Balance switches now automatically restore their ON/OFF states upon navigating back or reopening the app (`ManualSettingsPreferences`).
-* ⚡ **Performance Profile Refresh Rate Locks (165Hz / 120Hz / 90Hz)**: Locks display refresh rate with zero fallbacks (`EXTREME PERFORMANCE`: 165Hz, `HIGH PERFORMANCE`: 120Hz/144Hz, `BALANCED GAME`: 90Hz/60Hz).
-* 🎮 **Manual GPU & CPU Controls**: Dedicated manual ON/OFF switches for 3D Vulkan HWUI renderer, 2D Skia engine renderer, CPU Performance governor, and CPU Balance governor.
-* 📡 **Game Server Ping Tester & 1-Tap Gaming DNS**: Live ICMP Ping Tester (`1.1.1.1`) and 1-tap DNS switcher (Cloudflare 1.1.1.1, Google 8.8.8.8, Default DNS).
-* ⚡ **Shizuku 1-Tap Auto-Grant Permission Engine**: Automatically grants all 17 system permissions & AppOps via ADB as soon as Shizuku connects (`Shizuku.requestPermission(1001)`).
-* 🎮 **Auto Game Space Launcher Monitor**: Background service auto-detecting when games open to apply 165Hz Auto-Boost instantly.
-* 🔊 **1-Tap Footstep & Gunshot Audio Enhancer**: High-frequency 2kHz-4kHz footstep equalizer boost for competitive FPS games.
-* 🧹 **Deep Game Storage & Shader Cache Cleaner**: Purges app caches & temporary shader files to maximize UFS read/write speeds.
-* 💻 **Live Shell Command Toast Feedback**: Displays exact executed shell commands (`setprop`, `settings put`, `cmd power`) in real-time Toast notifications on every toggle click.
+* 🎯 **Responsive Floating Overlay HUD Fix**: Separated touch drag listener onto header/pill view so action buttons (`CLEAN`, `MAX Hz`, `DND`, `AIM`, collapse button) receive click events without touch interference. Features magnetic edge snapping to screen borders on drag release.
+* 🎮 **Universal Online Games Library & Package Detection**: Auto-detects 28+ popular online games and their regional package variants (MLBB Global/VNG/KR, CODM Global/Garena/KR/CN, PUBG Mobile Global/BGMI/KR/VNG/Lite/New State, Free Fire & MAX, Wild Rift Global/TW/VN, HOK Global/CN / AoV TW/VN/ID, Genshin Impact & HoYoverse, Roblox, Blood Strike, Farlight 84, eFootball 2024, EA FC Mobile, Speed Drifters, Asphalt 9, CarX Street, Supercell games). Includes demo fallback online games for test devices.
+* ⚡ **144Hz & 165Hz Extreme FPS Unlock**: Support for 144Hz and 165Hz display refresh rates on high refresh rate screens with vendor-specific key tuning for Xiaomi, Poco, Redmi, Samsung, OnePlus, Oppo, Realme, ASUS ROG, Vivo, iQOO, Motorola, Infinix, and Tecno.
+* ⚡ **Automatic Shizuku Permission Grant Combo**: Automatically grants 18+ system permissions (`SYSTEM_ALERT_WINDOW`, `WRITE_SECURE_SETTINGS`, `PACKAGE_USAGE_STATS`, `MANAGE_GAME_MODE`, `OVERRIDE_WIFI_CONFIG`, `FORCE_STOP_PACKAGES`, `SET_PROCESS_LIMIT`, `RUN_IN_BACKGROUND`, `AUTO_START`) via ADB as soon as Shizuku binder connects.
+* 📱 **Real-Time Telemetry & Live Refresh Rate HUD**: Displays real-time FPS, active display Hz, RAM usage %, Battery Temp °C, and Battery Current mA in a glassmorphism HUD dashboard.
+* 🎨 **Vulkan HWUI & System Optimization**: Toggle Vulkan 3D rendering, SurfaceFlinger hardware composition (`debug.sf.hw 1`), 4x MSAA, VSync unlock, Low Latency Wi-Fi locks (`cmd wlan set-power-mode 0`), and Cloudflare 1.1.1.1 / Google 8.8.8.8 DNS resolution modes.
 
 ---
 
 ## ⚡ Master Features
 
 ### 🔒 1. 100% Non-Rooted Shizuku ADB Control
-* **Automated 27-Permission Shizuku ADB Combo**: Automatically grants `WRITE_SECURE_SETTINGS`, `MANAGE_GAME_MODE`, `FORCE_STOP_PACKAGES`, `CLEAR_APP_CACHE`, `SET_PROCESS_LIMIT`, `POST_NOTIFICATIONS`, and `FOREGROUND_SERVICE_SPECIAL_USE` via Shizuku binder IPC.
+* **Automated 28-Permission Shizuku ADB Combo**: Automatically grants `WRITE_SECURE_SETTINGS`, `SYSTEM_ALERT_WINDOW`, `MANAGE_GAME_MODE`, `FORCE_STOP_PACKAGES`, `CLEAR_APP_CACHE`, `SET_PROCESS_LIMIT`, `POST_NOTIFICATIONS`, and `FOREGROUND_SERVICE_SPECIAL_USE` via Shizuku binder IPC.
 * **Dual Execution Engine (`Shizuku` vs `System Settings`)**: Seamless fallback execution if Shizuku is not running.
 
 ### 🎯 2. Hardware Refresh Rate (Hz) & FPS Lock
@@ -82,6 +77,7 @@ cd android
 
 ### 📦 Output APK Location:
 ```
+Game_Launcher_Pro_v2.0.apk
 android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 ```
 
@@ -91,7 +87,8 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v3.6.0 (Latest)** | Real-Time Choreographer FPS Engine, Redesigned Glassmorphism HUD & Persistent GPU/CPU Switches | [Download v3.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v3.6.0) |
+| **v4.0.0 (Latest)** | Floating Overlay HUD Fix, Online Games Library, 144Hz/165Hz FPS Unlock & Auto Shizuku Permissions | [Download v4.0.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.0.0) |
+| **v3.6.0** | Real-Time Choreographer FPS Engine, Redesigned Glassmorphism HUD & Persistent GPU/CPU Switches | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.6.0) |
 | **v3.5.1** | Persistent GPU & CPU Manual Switch Engine | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.1) |
 | **v3.5.0** | 165Hz Lock, Game Turbo Floating HUD, Auto Game Boost & Live Shell Command Feedback | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.5.0) |
 | **v3.4.0** | 34 Legitimate AOSP Tweaks, Persistence Fix & Network Optimizer | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v3.4.0) |

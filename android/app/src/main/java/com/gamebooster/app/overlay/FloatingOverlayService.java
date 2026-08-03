@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,7 +34,6 @@ public class FloatingOverlayService extends Service {
 
     private WindowManager windowManager;
     private View overlayView;
-    private TextView tvMetrics;
     private Handler handler;
     private Runnable updateRunnable;
 
@@ -43,6 +43,7 @@ public class FloatingOverlayService extends Service {
 
     public static void startOverlay(Context context) {
         if (context == null || isRunning) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) return;
         Intent intent = new Intent(context, FloatingOverlayService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
@@ -64,7 +65,11 @@ public class FloatingOverlayService extends Service {
         createNotificationChannel();
         startForeground(NOTIF_ID, createNotification());
 
-        setupFloatingView();
+        if (!setupFloatingView()) {
+            isRunning = false;
+            stopSelf();
+            return;
+        }
         setupTicker();
     }
 
@@ -78,12 +83,12 @@ public class FloatingOverlayService extends Service {
     private boolean isCollapsed = true;
     private boolean isDndActive = false;
 
-    private void setupFloatingView() {
+    private boolean setupFloatingView() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (windowManager == null) return;
+        if (windowManager == null) return false;
 
         android.view.LayoutInflater inflater = (android.view.LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        if (inflater == null) return;
+        if (inflater == null) return false;
         overlayView = inflater.inflate(R.layout.floating_hud_layout, null);
 
         layoutCollapsedPill = overlayView.findViewById(R.id.layout_collapsed_pill);
@@ -99,6 +104,7 @@ public class FloatingOverlayService extends Service {
         View btnExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
         View btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
         View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
+        isDndActive = com.gamebooster.app.functions.GameSpaceDndManager.isDndActive(getApplicationContext());
 
         if (tvCollapseBtn != null) {
             tvCollapseBtn.setOnClickListener(v -> toggleDockState(true));
@@ -117,9 +123,13 @@ public class FloatingOverlayService extends Service {
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.functions.PerformanceChannel.applyProfile(getApplicationContext(), com.gamebooster.app.functions.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                    com.gamebooster.app.functions.PerformanceChannel.ProfileResult result =
+                            com.gamebooster.app.functions.PerformanceChannel.applyProfileWithResult(
+                                    getApplicationContext(),
+                                    com.gamebooster.app.functions.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "🔥 Executed: 165Hz Lock & Vulkan 3D Profile", android.widget.Toast.LENGTH_LONG).show());
+                            android.widget.Toast.makeText(getApplicationContext(), "🔥 " + result.message,
+                                    android.widget.Toast.LENGTH_LONG).show());
                 });
             });
         }
@@ -129,9 +139,12 @@ public class FloatingOverlayService extends Service {
                 isDndActive = !isDndActive;
                 final boolean targetDnd = isDndActive;
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.root.CommandExecutor.executeSystemCommand(targetDnd ? "settings put global zen_mode 2" : "settings put global zen_mode 0");
+                    boolean applied = com.gamebooster.app.functions.GameSpaceDndManager
+                            .setGamingDndMode(getApplicationContext(), targetDnd);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), targetDnd ? "🚫 Executed: settings put global zen_mode 2" : "🔔 Executed: settings put global zen_mode 0", android.widget.Toast.LENGTH_LONG).show());
+                            android.widget.Toast.makeText(getApplicationContext(), applied
+                                    ? (targetDnd ? "🚫 Gaming DND enabled" : "🔔 Gaming DND disabled")
+                                    : "DND permission is required", android.widget.Toast.LENGTH_LONG).show());
                 });
             });
         }
@@ -162,7 +175,10 @@ public class FloatingOverlayService extends Service {
         params.x = 20;
         params.y = 200;
 
-        overlayView.setOnTouchListener(new View.OnTouchListener() {
+        View headerDock = overlayView.findViewById(R.id.tv_hud_collapse_btn) != null ? 
+                (View) overlayView.findViewById(R.id.tv_hud_collapse_btn).getParent() : overlayView;
+
+        View.OnTouchListener dragListener = new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -195,7 +211,9 @@ public class FloatingOverlayService extends Service {
 
                     case MotionEvent.ACTION_UP:
                         if (isClick) {
-                            toggleDockState(!isCollapsed);
+                            if (v == layoutCollapsedPill) {
+                                toggleDockState(false);
+                            }
                         } else {
                             // Magnetic Edge Snapping
                             if (windowManager != null && overlayView != null) {
@@ -205,7 +223,7 @@ public class FloatingOverlayService extends Service {
                                 if (params.x + (viewWidth / 2) < midPoint) {
                                     params.x = 10; // Magnetic Snap Left
                                 } else {
-                                    params.x = screenWidth - viewWidth - 10; // Magnetic Snap Right
+                                    params.x = Math.max(10, screenWidth - viewWidth - 10); // Magnetic Snap Right
                                 }
                                 windowManager.updateViewLayout(overlayView, params);
                             }
@@ -214,12 +232,21 @@ public class FloatingOverlayService extends Service {
                 }
                 return false;
             }
-        });
+        };
+
+        if (layoutCollapsedPill != null) {
+            layoutCollapsedPill.setOnTouchListener(dragListener);
+        }
+        if (headerDock != null) {
+            headerDock.setOnTouchListener(dragListener);
+        }
 
         try {
             windowManager.addView(overlayView, params);
+            return true;
         } catch (Exception e) {
             isRunning = false;
+            return false;
         }
     }
 
@@ -274,7 +301,7 @@ public class FloatingOverlayService extends Service {
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d FPS (%d Hz)", activeFps, currentHz));
+            tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz", activeFps, currentHz));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
@@ -320,6 +347,9 @@ public class FloatingOverlayService extends Service {
         if (handler != null && updateRunnable != null) {
             handler.removeCallbacks(updateRunnable);
         }
+        try {
+            android.view.Choreographer.getInstance().removeFrameCallback(choreographerCallback);
+        } catch (Exception ignored) {}
         if (windowManager != null && overlayView != null) {
             try {
                 windowManager.removeView(overlayView);

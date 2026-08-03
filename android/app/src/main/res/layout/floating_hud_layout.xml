@@ -77,7 +77,7 @@
                 android:id="@+id/tv_hud_fps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚡ Real-Time FPS: 119 FPS (120 Hz)"
+                android:text="⚡ HUD FPS: 60 • Display: 60 Hz"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -147,7 +147,7 @@
                 android:layout_marginEnd="3dp"
                 android:backgroundTint="@color/accent_neon_green"
                 android:padding="0dp"
-                android:text="🔥 165Hz"
+                android:text="🔥 MAX Hz"
                 android:textColor="#000000"
                 android:textSize="10sp"
                 android:textStyle="bold" />

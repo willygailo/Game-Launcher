@@ -29,7 +29,7 @@ public class GameManagerRepository {
             Intent launchIntent = pm.getLaunchIntentForPackage(app.packageName);
             if (launchIntent == null) continue;
 
-            boolean isGame = customPkgs.contains(app.packageName);
+            boolean isGame = customPkgs.contains(app.packageName) || GamePackageRegistry.isKnownGame(app.packageName);
             if (!isGame && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 if (app.category == ApplicationInfo.CATEGORY_GAME) {
                     isGame = true;
@@ -52,7 +52,8 @@ public class GameManagerRepository {
                 pkgNameLower.contains("brawlstars") || pkgNameLower.contains("clashroyale") ||
                 pkgNameLower.contains("ea.gp") || pkgNameLower.contains("garena") ||
                 pkgNameLower.contains("tencent") || pkgNameLower.contains("netease") ||
-                pkgNameLower.contains("hoyoverse") || pkgNameLower.contains("mihoyo"))) {
+                pkgNameLower.contains("hoyoverse") || pkgNameLower.contains("mihoyo") ||
+                pkgNameLower.contains("bloodstrike") || pkgNameLower.contains("farlight"))) {
                 isGame = true;
             }
 
@@ -62,6 +63,20 @@ public class GameManagerRepository {
                 gamesList.add(new GameAppInfo(label.toString(), app.packageName, icon, launchIntent));
             }
         }
+
+        // Fallback for demo/emulator: If no installed online games are detected physically, populate default featured online game profiles
+        if (gamesList.isEmpty()) {
+            Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
+            gamesList.add(new GameAppInfo("Mobile Legends: Bang Bang (Global)", "com.mobile.legends", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Call of Duty: Mobile (Garena)", "com.garena.game.codm", defaultIcon, null));
+            gamesList.add(new GameAppInfo("PUBG Mobile (Global)", "com.tencent.ig", defaultIcon, null));
+            gamesList.add(new GameAppInfo("League of Legends: Wild Rift", "com.riotgames.league.wildrift", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Garena Free Fire MAX", "com.dts.freefiremax", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Honor of Kings (Global)", "com.levelinfinite.sgameGlobal", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Genshin Impact", "com.cognosphere.GenshinImpact", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Roblox", "com.roblox.client", defaultIcon, null));
+        }
+
         return gamesList;
     }
 
