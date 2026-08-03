@@ -1,4 +1,5 @@
 package com.gamebooster.app.tweaks;
+import com.gamebooster.app.config.*;
 
 import android.content.Context;
 

@@ -1,4 +1,4 @@
-package com.gamebooster.app.games;
+package com.gamebooster.app.config;
 
 import android.content.Context;
 

@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,7 +17,7 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.booster.HzFpsChannel;
-import com.gamebooster.app.games.GameProfileAutoConfigurator;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
 
 /** Shows only physical display modes reported by the device. */
 public class HzFpsFragment extends Fragment {

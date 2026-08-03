@@ -1,4 +1,5 @@
 package com.gamebooster.app.games;
+import com.gamebooster.app.config.*;
 
 import java.util.HashMap;
 import java.util.Map;

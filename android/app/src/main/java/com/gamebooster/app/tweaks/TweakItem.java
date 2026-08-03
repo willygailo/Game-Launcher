@@ -1,4 +1,5 @@
 package com.gamebooster.app.tweaks;
+import com.gamebooster.app.config.*;
 
 public class TweakItem {
     private final String id;

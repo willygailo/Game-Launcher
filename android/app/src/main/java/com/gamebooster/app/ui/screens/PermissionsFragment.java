@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 

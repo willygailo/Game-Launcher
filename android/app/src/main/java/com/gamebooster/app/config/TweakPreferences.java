@@ -1,7 +1,8 @@
-package com.gamebooster.app.tweaks;
+package com.gamebooster.app.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.gamebooster.app.tweaks.TweakItem;
 
 import java.util.HashSet;
 import java.util.List;

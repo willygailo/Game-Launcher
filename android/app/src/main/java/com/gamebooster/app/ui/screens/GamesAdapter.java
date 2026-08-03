@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gamebooster.app.R;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameLauncherHelper;
-import com.gamebooster.app.games.GameProfilePreferences;
+import com.gamebooster.app.config.GameProfilePreferences;
 
 import java.util.List;
 

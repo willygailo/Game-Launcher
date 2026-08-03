@@ -1,4 +1,5 @@
 package com.gamebooster.app.booster;
+import com.gamebooster.app.config.*;
 
 import android.content.Context;
 
@@ -66,11 +67,31 @@ public class PerformanceChannel {
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
+            writeAndExecuteRootTweaksScript();
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
         }
         return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
+    }
+
+    public static boolean writeAndExecuteRootTweaksScript() {
+        try {
+            String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
+            String scriptContent = "#!/system/bin/sh\\n" +
+                    "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
+                    "setprop debug.sf.hw 1\\n" +
+                    "setprop debug.hwui.renderer vulkan\\n" +
+                    "setprop persist.sys.NV_FPSLIMIT 120\\n" +
+                    "setprop persist.sys.NV_POWERMODE 1\\n";
+
+            String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
+                    scriptContent, scriptPath, scriptPath, scriptPath);
+            String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
+            return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public static boolean setGpuRenderMode(boolean is3D) {

@@ -1,4 +1,5 @@
 package com.gamebooster.app.booster;
+import com.gamebooster.app.config.*;
 
 import android.os.Build;
 import android.util.Log;

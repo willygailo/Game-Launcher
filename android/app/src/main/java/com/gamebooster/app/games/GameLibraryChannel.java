@@ -1,4 +1,5 @@
 package com.gamebooster.app.games;
+import com.gamebooster.app.config.*;
 
 import com.gamebooster.app.booster.HzFpsChannel;
 import com.gamebooster.app.booster.PerformanceChannel;

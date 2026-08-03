@@ -1,4 +1,4 @@
-package com.gamebooster.app.gamespace;
+package com.gamebooster.app.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;

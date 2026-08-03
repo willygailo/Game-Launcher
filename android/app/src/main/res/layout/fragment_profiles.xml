@@ -200,5 +200,41 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- PER-GAME MANUAL CONFIG PATCHER CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#161F33"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛠️ MANUAL GAME CONFIG PATCHER"
+                android:textColor="#00F0FF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Patches graphics/FPS config files inside /sdcard/Android/data/&lt;package_name&gt;/ for MLBB, PUBG, CODM, Free Fire, Wild Rift, HOK, Genshin, etc."
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_open_manual_config_picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#00F0FF"
+                android:text="🎮 SELECT GAME &amp; APPLY MANUAL CONFIG"
+                android:textColor="#0A0E1A"
+                android:textStyle="bold" />
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

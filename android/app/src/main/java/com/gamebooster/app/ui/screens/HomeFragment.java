@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.content.Intent;
 import android.os.Build;
@@ -23,7 +24,7 @@ import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
-import com.gamebooster.app.games.GameProfileAutoConfigurator;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.services.GameBoosterService;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;

@@ -1,4 +1,5 @@
 package com.gamebooster.app.gamespace;
+import com.gamebooster.app.config.*;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -22,8 +23,8 @@ import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
-import com.gamebooster.app.games.GameProfilePreferences;
-import com.gamebooster.app.games.GameSessionSettings;
+import com.gamebooster.app.config.GameProfilePreferences;
+import com.gamebooster.app.config.GameSessionSettings;
 import com.gamebooster.app.overlay.FloatingOverlayService;
 
 import java.util.List;

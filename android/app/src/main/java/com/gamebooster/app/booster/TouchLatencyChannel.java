@@ -1,4 +1,5 @@
 package com.gamebooster.app.booster;
+import com.gamebooster.app.config.*;
 
 import com.gamebooster.app.engine.CommandExecutor;
 

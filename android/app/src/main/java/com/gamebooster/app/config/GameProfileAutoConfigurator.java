@@ -1,12 +1,13 @@
-package com.gamebooster.app.games;
+package com.gamebooster.app.config;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.games.*;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.booster.HzFpsChannel;
-import com.gamebooster.app.tweaks.TweakPreferences;
+import com.gamebooster.app.config.TweakPreferences;
 import com.gamebooster.app.engine.CommandExecutor;
 
 import java.util.ArrayList;

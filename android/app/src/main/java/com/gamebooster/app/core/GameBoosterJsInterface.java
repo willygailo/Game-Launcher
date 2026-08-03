@@ -5,7 +5,7 @@ import android.webkit.JavascriptInterface;
 
 import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.device.DeviceInfoChannel;
-import com.gamebooster.app.games.GameProfileAutoConfigurator;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import org.json.JSONObject;

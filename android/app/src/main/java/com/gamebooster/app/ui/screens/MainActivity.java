@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.os.Bundle;
 import android.util.Log;

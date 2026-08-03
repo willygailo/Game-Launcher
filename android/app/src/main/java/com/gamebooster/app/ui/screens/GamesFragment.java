@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -51,7 +52,7 @@ public class GamesFragment extends Fragment {
         Button btnAutoConfig = view.findViewById(R.id.btn_auto_config_games);
 
         if (getContext() != null && tvTargetLabel != null) {
-            int currentTarget = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
+            int currentTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
             tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ");
             DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
             setTargetRateVisible(btnTarget60, caps, 60);
@@ -71,8 +72,8 @@ public class GamesFragment extends Fragment {
             else if (id == R.id.btn_target_144) targetHz = 144;
             else if (id == R.id.btn_target_165) targetHz = 165;
 
-            com.gamebooster.app.games.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
-            int appliedTarget = com.gamebooster.app.games.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
+            com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
+            int appliedTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
             if (tvTargetLabel != null) {
                 tvTargetLabel.setText("TARGET RATE: " + appliedTarget + " FPS / HZ");
             }
@@ -91,7 +92,7 @@ public class GamesFragment extends Fragment {
                 btnAutoConfig.setEnabled(false);
                 Toast.makeText(getContext(), "⚡ Auto-configuring all games for max FPS/Hz...", Toast.LENGTH_SHORT).show();
 
-                com.gamebooster.app.games.GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(getContext(), (count, fps) -> {
+                com.gamebooster.app.config.GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(getContext(), (count, fps) -> {
                     if (isAdded() && getContext() != null) {
                         btnAutoConfig.setEnabled(true);
                         Toast.makeText(getContext(), "✅ Auto-Configured " + count + " games to " + fps + " FPS/Hz!", Toast.LENGTH_LONG).show();

@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -102,8 +103,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         // Restore Saved GPU & CPU Preferences
         if (getContext() != null) {
-            String savedGpu = com.gamebooster.app.gamespace.ManualSettingsPreferences.getGpuMode(getContext());
-            String savedCpu = com.gamebooster.app.gamespace.ManualSettingsPreferences.getCpuMode(getContext());
+            String savedGpu = com.gamebooster.app.config.ManualSettingsPreferences.getGpuMode(getContext());
+            String savedCpu = com.gamebooster.app.config.ManualSettingsPreferences.getCpuMode(getContext());
 
             if (switchGpu3dVulkan != null) switchGpu3dVulkan.setChecked("vulkan".equalsIgnoreCase(savedGpu));
             if (switchGpu2dSkia != null) switchGpu2dSkia.setChecked("skia".equalsIgnoreCase(savedGpu));
@@ -114,7 +115,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGpu3dVulkan != null) {
             switchGpu3dVulkan.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "vulkan" : "skia");
+                com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "vulkan" : "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -130,7 +131,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGpu2dSkia != null) {
             switchGpu2dSkia.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "skia" : "vulkan");
+                com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "skia" : "vulkan");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(!isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -146,7 +147,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btn3dVulkan != null) {
             btn3dVulkan.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+                com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(true);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -162,7 +163,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btn2dSkia != null) {
             btn2dSkia.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
+                com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(false);
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -178,8 +179,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
                 }
                 applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile");
             });
@@ -187,8 +188,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnPerformance != null) {
             btnPerformance.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setCpuMode(getContext(), "performance");
                 }
                 applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile");
             });
@@ -196,8 +197,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnBalanced != null) {
             btnBalanced.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
-                    com.gamebooster.app.gamespace.ManualSettingsPreferences.setCpuMode(getContext(), "schedutil");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setGpuMode(getContext(), "skia");
+                    com.gamebooster.app.config.ManualSettingsPreferences.setCpuMode(getContext(), "schedutil");
                 }
                 applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Executed: 90Hz Lock & Schedutil Profile");
             });
@@ -206,7 +207,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchCpuPerformance != null) {
             switchCpuPerformance.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "performance" : "schedutil");
+                com.gamebooster.app.config.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "performance" : "schedutil");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isChecked ? "extreme" : "schedutil");
                     AppExecutors.getInstance().postToMainThread(() -> {
@@ -221,7 +222,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchCpuBalanced != null) {
             switchCpuBalanced.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "schedutil" : "performance");
+                com.gamebooster.app.config.ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "schedutil" : "performance");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isChecked ? "schedutil" : "performance");
                     AppExecutors.getInstance().postToMainThread(() -> {

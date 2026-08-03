@@ -1,6 +1,8 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.os.Bundle;
+import java.util.List;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,8 +115,77 @@ public class ProfilesFragment extends Fragment {
             });
         }
 
+        Button btnManualConfig = view.findViewById(R.id.btn_open_manual_config_picker);
+        if (btnManualConfig != null) {
+            btnManualConfig.setOnClickListener(v -> showGameConfigPickerDialog());
+        }
+
         EngineUIHelper.refreshEngineStatus(tvEngineStatus);
         return view;
+    }
+
+    private void showGameConfigPickerDialog() {
+        if (getContext() == null) return;
+
+        AppExecutors.getInstance().executeScan(() -> {
+            List<com.gamebooster.app.games.GameAppInfo> installedGames = com.gamebooster.app.games.GameManagerRepository.getInstalledGames(getContext());
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null || installedGames.isEmpty()) {
+                    Toast.makeText(getContext(), "No games installed to patch", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String[] gameNames = new String[installedGames.size()];
+                for (int i = 0; i < installedGames.size(); i++) {
+                    gameNames[i] = installedGames.get(i).getLabel() + " (" + installedGames.get(i).getPackageName() + ")";
+                }
+
+                new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                        .setTitle("🎮 Select Game for Manual Config Patch")
+                        .setItems(gameNames, (dialog, which) -> {
+                            com.gamebooster.app.games.GameAppInfo selectedGame = installedGames.get(which);
+                            showFpsSelectionDialog(selectedGame);
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        });
+    }
+
+    private void showFpsSelectionDialog(com.gamebooster.app.games.GameAppInfo game) {
+        if (getContext() == null || game == null) return;
+
+        String[] fpsOptions = new String[]{
+                "⚡ FORCE SET OVERRIDE (MAX UNLOCKED 240)",
+                "🔥 165 FPS / Max Gaming Mode",
+                "⚡ 144 FPS / Cyber Gaming Mode",
+                "🚀 120 FPS / Ultra Gaming Mode",
+                "🎮 90 FPS / High Gaming Mode",
+                "⚖️ 60 FPS / Standard Mode"
+        };
+        int[] fpsValues = new int[]{240, 165, 144, 120, 90, 60};
+
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setTitle("⚡ Target FPS & Override for " + game.getLabel())
+                .setItems(fpsOptions, (dialog, which) -> {
+                    int targetFps = fpsValues[which];
+                    String label = targetFps >= 240 ? "FORCE OVERRIDE (MAX UNLOCKED)" : targetFps + " FPS";
+                    Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
+
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
+                        com.gamebooster.app.booster.HzFpsChannel.forceGameFps(getContext(), game.getPackageName(), targetFps);
+                        com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), Math.min(targetFps, 165));
+
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (!isAdded() || getContext() == null) return;
+                            Toast.makeText(getContext(), "✅ " + label + " applied to " + game.getLabel() + "! " + result.message, Toast.LENGTH_LONG).show();
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override

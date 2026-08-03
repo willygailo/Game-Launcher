@@ -1,4 +1,5 @@
 package com.gamebooster.app.games;
+import com.gamebooster.app.config.*;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;

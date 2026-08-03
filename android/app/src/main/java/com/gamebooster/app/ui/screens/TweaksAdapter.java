@@ -1,4 +1,5 @@
 package com.gamebooster.app.ui.screens;
+import com.gamebooster.app.config.*;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -18,7 +19,7 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.tweaks.TweakItem;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
-import com.gamebooster.app.tweaks.TweakPreferences;
+import com.gamebooster.app.config.TweakPreferences;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 import com.gamebooster.app.shizuku.ShizukuManager;
