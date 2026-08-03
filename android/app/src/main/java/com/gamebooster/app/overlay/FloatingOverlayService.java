@@ -171,6 +171,15 @@ public class FloatingOverlayService extends Service {
                 PixelFormat.TRANSLUCENT
         );
 
+        // Force overlay window to request maximum hardware refresh rate (120Hz, 144Hz, 165Hz)
+        try {
+            com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
+                    com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
+            if (caps != null && caps.maxRefreshRate > 0) {
+                params.preferredRefreshRate = (float) caps.maxRefreshRate;
+            }
+        } catch (Throwable ignored) {}
+
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = 20;
         params.y = 200;
@@ -293,8 +302,11 @@ public class FloatingOverlayService extends Service {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-        int currentHz = caps != null ? caps.currentRefreshRate : 60;
+        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 60;
         int activeFps = realTimeFps > 0 ? realTimeFps : currentHz;
+        if (caps != null && caps.maxRefreshRate > 60 && activeFps < caps.currentRefreshRate && realTimeFps == 0) {
+            activeFps = caps.currentRefreshRate;
+        }
 
         if (tvPillMetrics != null) {
             tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));

@@ -93,7 +93,23 @@ public final class DisplayCapabilitiesDetector {
         }
 
         try {
-            currentRate = (int) defaultDisplay.getRefreshRate();
+            if (defaultDisplay.getMode() != null && defaultDisplay.getMode().getRefreshRate() > 0) {
+                currentRate = Math.round(defaultDisplay.getMode().getRefreshRate());
+            } else {
+                currentRate = Math.round(defaultDisplay.getRefreshRate());
+            }
+
+            // Check system peak/user refresh rate settings
+            String peakStr = Settings.System.getString(ctx.getContentResolver(), "peak_refresh_rate");
+            if (peakStr != null) {
+                float p = Float.parseFloat(peakStr);
+                if (p > 0) currentRate = Math.max(currentRate, Math.round(p));
+            }
+            String userStr = Settings.System.getString(ctx.getContentResolver(), "user_refresh_rate");
+            if (userStr != null) {
+                float u = Float.parseFloat(userStr);
+                if (u > 0) currentRate = Math.max(currentRate, Math.round(u));
+            }
         } catch (Exception ignored) {}
 
         boolean hasPeak = Settings.System.canWrite(ctx);

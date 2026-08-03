@@ -98,17 +98,31 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
+        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal
+        CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + hzInt);
+        CommandExecutor.setSystemProperty("debug.gr.swapinterval", "0");
+        CommandExecutor.setSystemProperty("persist.sys.NV_FPSLIMIT", hzStr);
+        CommandExecutor.setSystemProperty("persist.sys.NV_POWERMODE", "1");
+
         return ok ? RefreshRateResult.success(requestedHz, requestedHz)
                 : RefreshRateResult.failed(requestedHz, requestedHz);
     }
 
     public static boolean forceGameFps(Context context, String packageName, int targetFps) {
         if (packageName == null || packageName.isEmpty()) return false;
-        if (context == null || !DevicePerformanceCapabilities.detect(context).supportsRefreshRate(targetFps)) {
-            return false;
-        }
-        String cmd = "cmd game set --fps " + targetFps + " " + packageName;
-        String res = CommandExecutor.executeSystemCommand(cmd);
-        return CommandExecutor.isSuccessOutput(res);
+        
+        boolean ok = true;
+        // 1. Android Game Mode API per-app FPS set
+        String cmdFps = "cmd game set --fps " + targetFps + " " + packageName;
+        String resFps = CommandExecutor.executeSystemCommand(cmdFps);
+        ok &= CommandExecutor.isSuccessOutput(resFps);
+
+        // 2. Android Window Manager per-app refresh rate override
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetFps);
+
+        // 3. Android Game Mode Performance mode
+        CommandExecutor.executeSystemCommand("cmd game mode performance " + packageName);
+
+        return ok;
     }
 }
