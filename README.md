@@ -3,7 +3,7 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.2.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.2.0" />
+  <img src="https://img.shields.io/badge/Release-v4.3.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.3.0" />
   <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Non--Rooted%20Shizuku%20ADB-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Non-Rooted Shizuku ADB" />
@@ -14,21 +14,21 @@
 
 ---
 
-[📦 Download v4.2.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.2.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v4.3.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.3.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v4.2.0
+## 📌 What's New in v4.3.0
 
 > [!IMPORTANT]
 > **GAME BOOSTER PRO** is built **100% in Native Java (JDK 17)** specifically designed for **Non-Rooted Android Devices (Target SDK 35 / Android 15)**. It communicates via **Shizuku ADB Binder IPC (`rikka.shizuku.ShizukuProvider`)**, **System Settings**, and **Android 12+ Game Mode API** with zero root requirement.
 
-* 📱 **Fixed Package Visibility & Android 11–15 Queries**: Added full `<queries>` manifest element with explicit package name declarations for MLBB, CODM, PUBG, Free Fire, Wild Rift, Genshin, HOK, Roblox, Standoff 2, Blood Strike, and Farlight 84.
-* ⚡ **Shizuku ADB 3rd-Tier Package Scanner**: Automatically queries `pm list packages -3` directly from Android system server when Shizuku ADB is connected to 100% bypass OEM package visibility restrictions on MIUI/HyperOS, ColorOS, and OneUI.
-* ➕ **Home Screen App Picker Dialog ("➕ ADD GAME")**: Added interactive dialog allowing users to pick ANY installed app or game on their device and add it directly to their Game Launcher library.
-* ⚙️ **Game Storage INI/Config Auto-Patcher & Modifier**: Automatically creates and patches game configuration files inside app data folders (`dragon2017/assets/Com/MobileLegendsSettings.ini`, `ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini`, `GraphicsSettings.ini`, `FFGraphicsSettings.ini`, `GameSettings.ini`) to force high FPS modes (`HighFPSMode=1`, `FrameRateLevel=9`, `MaxFrameRate=120`, `FPS=120`, `FPS=144`, `FPS=165`) for MLBB, CODM, PUBG, Wild Rift, Free Fire, HOK, Genshin, Roblox, etc.
+* 🔥 **Guaranteed Online Games Library Integration**: Mobile Legends (MLBB), Call of Duty Mobile (CODM), PUBG Mobile (Global/BGMI/KR/VNG), Wild Rift, Free Fire MAX, Honor of Kings, Genshin Impact, and Roblox are now **ALWAYS LISTED, GUARANTEED VISIBLE, AND LAUNCHABLE** on the Home Screen.
+* ➕ **App Picker Catalog Injection**: Injecting full online game catalog into the "➕ ADD GAME" picker so users can select and add any game instantly regardless of OEM package visibility restrictions.
+* 🛍️ **Tier 4 Google Play Store Direct Fallback**: If a game package is not physically pre-installed, clicking launch applies all 120Hz/144Hz/165Hz FPS tweaks and automatically opens Google Play Store (`market://details?id=<package>`) for instant download/installation.
+* ⚡ **4-Tier Game Discovery & Launch Engine**: Combines Manifest `<queries>`, PackageManager Intent queries, Shizuku ADB system shell (`pm list packages -3`), and Play Store fallback launch.
 
 ---
 

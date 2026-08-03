@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class GameManagerRepository {
@@ -58,20 +59,22 @@ public class GameManagerRepository {
         }
 
         // 2. Secondary Scanner: Query installed applications
-        List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-        for (ApplicationInfo app : apps) {
-            if (app == null || app.packageName == null || addedPackages.contains(app.packageName)) continue;
+        try {
+            List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+            for (ApplicationInfo app : apps) {
+                if (app == null || app.packageName == null || addedPackages.contains(app.packageName)) continue;
 
-            CharSequence labelSeq = pm.getApplicationLabel(app);
-            String label = labelSeq != null ? labelSeq.toString() : app.packageName;
+                CharSequence labelSeq = pm.getApplicationLabel(app);
+                String label = labelSeq != null ? labelSeq.toString() : app.packageName;
 
-            if (isPackageGame(context, app.packageName, label, app, customPkgs)) {
-                Intent launchIntent = pm.getLaunchIntentForPackage(app.packageName);
-                Drawable icon = pm.getApplicationIcon(app);
-                gamesList.add(new GameAppInfo(label, app.packageName, icon, launchIntent));
-                addedPackages.add(app.packageName);
+                if (isPackageGame(context, app.packageName, label, app, customPkgs)) {
+                    Intent launchIntent = pm.getLaunchIntentForPackage(app.packageName);
+                    Drawable icon = pm.getApplicationIcon(app);
+                    gamesList.add(new GameAppInfo(label, app.packageName, icon, launchIntent));
+                    addedPackages.add(app.packageName);
+                }
             }
-        }
+        } catch (Throwable ignored) {}
 
         // 3. Tertiary Scanner: Shizuku ADB Direct Package List Query (pm list packages -3)
         if (ShizukuExecutor.isShizukuAvailable()) {
@@ -111,21 +114,48 @@ public class GameManagerRepository {
                     Intent launchIntent = pm.getLaunchIntentForPackage(customPkg);
                     gamesList.add(new GameAppInfo(label, customPkg, icon, launchIntent));
                     addedPackages.add(customPkg);
-                } catch (Throwable ignored) {}
+                } catch (Throwable e) {
+                    GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(customPkg);
+                    String label = spec != null ? spec.title : customPkg;
+                    Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
+                    gamesList.add(new GameAppInfo(label, customPkg, defaultIcon, null));
+                    addedPackages.add(customPkg);
+                }
             }
         }
 
-        // 5. Fallback for demo/emulator: If no installed online games are detected physically, populate default featured online game profiles
+        // 5. Always Guarantee Essential Online Games (MLBB, CODM, PUBG, Wild Rift, Free Fire, HOK, Genshin, Roblox)
+        Map<String, GamePackageRegistry.GameInfoSpec> knownMap = GamePackageRegistry.getAllKnownGames();
+        Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
+
+        for (Map.Entry<String, GamePackageRegistry.GameInfoSpec> entry : knownMap.entrySet()) {
+            String pkg = entry.getKey();
+            GamePackageRegistry.GameInfoSpec spec = entry.getValue();
+            if (!addedPackages.contains(pkg)) {
+                // Check if package is physically installed on device
+                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+                if (launchIntent != null) {
+                    try {
+                        ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                        String label = pm.getApplicationLabel(appInfo).toString();
+                        Drawable icon = pm.getApplicationIcon(appInfo);
+                        gamesList.add(new GameAppInfo(label, pkg, icon, launchIntent));
+                        addedPackages.add(pkg);
+                    } catch (Throwable ignored) {}
+                }
+            }
+        }
+
+        // 6. Fallback if still low games: Populate top online games so user can always launch/boost
         if (gamesList.isEmpty()) {
-            Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
-            gamesList.add(new GameAppInfo("Mobile Legends: Bang Bang (Global)", "com.mobile.legends", defaultIcon, null));
-            gamesList.add(new GameAppInfo("Call of Duty: Mobile (Garena)", "com.garena.game.codm", defaultIcon, null));
-            gamesList.add(new GameAppInfo("PUBG Mobile (Global)", "com.tencent.ig", defaultIcon, null));
-            gamesList.add(new GameAppInfo("League of Legends: Wild Rift", "com.riotgames.league.wildrift", defaultIcon, null));
-            gamesList.add(new GameAppInfo("Garena Free Fire MAX", "com.dts.freefiremax", defaultIcon, null));
-            gamesList.add(new GameAppInfo("Honor of Kings (Global)", "com.levelinfinite.sgameGlobal", defaultIcon, null));
-            gamesList.add(new GameAppInfo("Genshin Impact", "com.cognosphere.GenshinImpact", defaultIcon, null));
-            gamesList.add(new GameAppInfo("Roblox", "com.roblox.client", defaultIcon, null));
+            gamesList.add(new GameAppInfo("Mobile Legends: Bang Bang", "com.mobile.legends", defaultIcon, pm.getLaunchIntentForPackage("com.mobile.legends")));
+            gamesList.add(new GameAppInfo("Call of Duty: Mobile (Garena)", "com.garena.game.codm", defaultIcon, pm.getLaunchIntentForPackage("com.garena.game.codm")));
+            gamesList.add(new GameAppInfo("PUBG Mobile (Global)", "com.tencent.ig", defaultIcon, pm.getLaunchIntentForPackage("com.tencent.ig")));
+            gamesList.add(new GameAppInfo("League of Legends: Wild Rift", "com.riotgames.league.wildrift", defaultIcon, pm.getLaunchIntentForPackage("com.riotgames.league.wildrift")));
+            gamesList.add(new GameAppInfo("Garena Free Fire MAX", "com.dts.freefiremax", defaultIcon, pm.getLaunchIntentForPackage("com.dts.freefiremax")));
+            gamesList.add(new GameAppInfo("Honor of Kings (Global)", "com.levelinfinite.sgameGlobal", defaultIcon, pm.getLaunchIntentForPackage("com.levelinfinite.sgameGlobal")));
+            gamesList.add(new GameAppInfo("Genshin Impact", "com.cognosphere.GenshinImpact", defaultIcon, pm.getLaunchIntentForPackage("com.cognosphere.GenshinImpact")));
+            gamesList.add(new GameAppInfo("Roblox", "com.roblox.client", defaultIcon, pm.getLaunchIntentForPackage("com.roblox.client")));
         }
 
         return gamesList;
@@ -138,6 +168,7 @@ public class GameManagerRepository {
         PackageManager pm = context.getPackageManager();
         Set<String> addedPackages = new HashSet<>();
 
+        // Method 1: Launcher activities
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -154,6 +185,60 @@ public class GameManagerRepository {
 
             appsList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
             addedPackages.add(pkgName);
+        }
+
+        // Method 2: Installed applications scan
+        try {
+            List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+            for (ApplicationInfo app : apps) {
+                if (app == null || app.packageName == null || addedPackages.contains(app.packageName)) continue;
+                if (app.packageName.equalsIgnoreCase(context.getPackageName())) continue;
+
+                CharSequence labelSeq = pm.getApplicationLabel(app);
+                String label = labelSeq != null ? labelSeq.toString() : app.packageName;
+                Drawable icon = pm.getApplicationIcon(app);
+                Intent launchIntent = pm.getLaunchIntentForPackage(app.packageName);
+
+                appsList.add(new GameAppInfo(label, app.packageName, icon, launchIntent));
+                addedPackages.add(app.packageName);
+            }
+        } catch (Throwable ignored) {}
+
+        // Method 3: Shizuku ADB package list
+        if (ShizukuExecutor.isShizukuAvailable()) {
+            try {
+                String shizukuRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
+                    String[] lines = shizukuRes.split("\n");
+                    for (String line : lines) {
+                        String pkgName = line.trim().replace("package:", "").trim();
+                        if (pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
+                        if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
+
+                        try {
+                            ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+                            String label = pm.getApplicationLabel(appInfo).toString();
+                            Drawable icon = pm.getApplicationIcon(appInfo);
+                            Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+                            appsList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
+                            addedPackages.add(pkgName);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Method 4: Always inject all known online games into picker catalog
+        Map<String, GamePackageRegistry.GameInfoSpec> knownMap = GamePackageRegistry.getAllKnownGames();
+        Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
+        for (Map.Entry<String, GamePackageRegistry.GameInfoSpec> entry : knownMap.entrySet()) {
+            String pkg = entry.getKey();
+            GamePackageRegistry.GameInfoSpec spec = entry.getValue();
+            if (!addedPackages.contains(pkg)) {
+                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+                appsList.add(new GameAppInfo("🔥 " + spec.title + " (" + spec.category + ")", pkg, defaultIcon, launchIntent));
+                addedPackages.add(pkg);
+            }
         }
 
         // Sort alphabetically by app label

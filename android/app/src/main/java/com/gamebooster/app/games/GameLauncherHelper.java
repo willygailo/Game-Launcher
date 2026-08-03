@@ -74,6 +74,23 @@ public class GameLauncherHelper {
             } catch (Throwable ignored) {}
         }
 
+        // Tier 4: Google Play Store / Web Store Launch Fallback
+        if (!launched) {
+            try {
+                Intent marketIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=" + pkgName));
+                marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(marketIntent);
+                launched = true;
+            } catch (Throwable e) {
+                try {
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=" + pkgName));
+                    webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(webIntent);
+                    launched = true;
+                } catch (Throwable ignored) {}
+            }
+        }
+
         if (launched) {
             Toast.makeText(context, "⚡ LAUNCHED: " + game.getLabel() + " • "
                     + profile.label + " up to " + targetFpsForToast(context, pkgName) + "Hz", Toast.LENGTH_SHORT).show();
