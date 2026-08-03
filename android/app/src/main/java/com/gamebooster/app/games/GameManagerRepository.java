@@ -1,6 +1,6 @@
 package com.gamebooster.app.games;
 
-import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import android.app.ActivityManager;

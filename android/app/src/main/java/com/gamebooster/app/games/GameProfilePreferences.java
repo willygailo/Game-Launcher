@@ -2,8 +2,8 @@ package com.gamebooster.app.games;
 
 import android.content.Context;
 
-import com.gamebooster.app.core.DevicePerformanceCapabilities;
-import com.gamebooster.app.functions.PerformanceChannel;
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.booster.PerformanceChannel;
 
 /** Persists a device-safe performance choice for every game package. */
 public final class GameProfilePreferences {

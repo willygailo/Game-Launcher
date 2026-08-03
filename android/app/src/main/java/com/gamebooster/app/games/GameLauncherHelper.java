@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
-import com.gamebooster.app.functions.PerformanceChannel;
-import com.gamebooster.app.functions.GameSpaceDndManager;
-import com.gamebooster.app.functions.AutoGameMonitorService;
+import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.gamespace.GameSpaceDndManager;
+import com.gamebooster.app.gamespace.AutoGameMonitorService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class GameLauncherHelper {
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 PerformanceChannel.applyProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
-                com.gamebooster.app.functions.NetworkOptimizer.flushDnsCache();
+                com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
             } catch (Throwable ignored) {}
         });
 

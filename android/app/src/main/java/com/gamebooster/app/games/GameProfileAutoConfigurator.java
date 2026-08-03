@@ -4,10 +4,10 @@ import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.core.AppExecutors;
-import com.gamebooster.app.core.DevicePerformanceCapabilities;
-import com.gamebooster.app.functions.HzFpsChannel;
-import com.gamebooster.app.functions.TweakPreferences;
-import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.booster.HzFpsChannel;
+import com.gamebooster.app.tweaks.TweakPreferences;
+import com.gamebooster.app.engine.CommandExecutor;
 
 import java.util.ArrayList;
 import java.util.List;

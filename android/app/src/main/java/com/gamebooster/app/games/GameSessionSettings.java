@@ -2,9 +2,9 @@ package com.gamebooster.app.games;
 
 import android.content.Context;
 
-import com.gamebooster.app.core.DevicePerformanceCapabilities;
-import com.gamebooster.app.functions.GameSpaceDndManager;
-import com.gamebooster.app.functions.HzFpsChannel;
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.gamespace.GameSpaceDndManager;
+import com.gamebooster.app.booster.HzFpsChannel;
 
 /** Saves the user's display and DND preferences before a configured game starts. */
 public final class GameSessionSettings {

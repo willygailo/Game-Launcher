@@ -1,13 +1,13 @@
 package com.gamebooster.app.games;
 
-import com.gamebooster.app.functions.HzFpsChannel;
-import com.gamebooster.app.functions.PerformanceChannel;
+import com.gamebooster.app.booster.HzFpsChannel;
+import com.gamebooster.app.booster.PerformanceChannel;
 
 import android.content.Context;
 import android.content.Intent;
 
 import com.gamebooster.app.games.GameAppInfo;
-import com.gamebooster.app.root.CommandExecutor;
+import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.games.GameManagerRepository;
 
 import java.util.List;

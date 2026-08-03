@@ -77,7 +77,7 @@
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <service
-            android:name="com.gamebooster.app.metadata.GameBoosterService"
+            android:name="com.gamebooster.app.services.GameBoosterService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -97,7 +97,7 @@
         </service>
 
         <service
-            android:name="com.gamebooster.app.functions.AutoGameMonitorService"
+            android:name="com.gamebooster.app.gamespace.AutoGameMonitorService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -107,7 +107,7 @@
         </service>
 
         <receiver
-            android:name="com.gamebooster.app.metadata.BootReceiver"
+            android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -116,7 +116,7 @@
         </receiver>
 
         <activity
-            android:name="com.gamebooster.app.ui.layout.MainActivity"
+            android:name="com.gamebooster.app.ui.screens.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:hardwareAccelerated="true">

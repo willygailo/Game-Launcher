@@ -3,7 +3,8 @@ package com.gamebooster.app.core;
 import android.content.Context;
 import android.webkit.JavascriptInterface;
 
-import com.gamebooster.app.functions.PerformanceChannel;
+import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.games.GameProfileAutoConfigurator;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 

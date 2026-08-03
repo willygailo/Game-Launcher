@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.core.DeviceInfoChannel;
+import com.gamebooster.app.device.DeviceInfoChannel;
 
 public class FloatingOverlayService extends Service {
 
@@ -104,7 +104,7 @@ public class FloatingOverlayService extends Service {
         View btnExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
         View btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
         View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
-        isDndActive = com.gamebooster.app.functions.GameSpaceDndManager.isDndActive(getApplicationContext());
+        isDndActive = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
 
         if (tvCollapseBtn != null) {
             tvCollapseBtn.setOnClickListener(v -> toggleDockState(true));
@@ -113,7 +113,7 @@ public class FloatingOverlayService extends Service {
         if (btnBoost != null) {
             btnBoost.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.functions.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                    com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
                             android.widget.Toast.makeText(getApplicationContext(), "⚡ Executed: pm trim-caches 1000M & sync", android.widget.Toast.LENGTH_LONG).show());
                 });
@@ -123,10 +123,10 @@ public class FloatingOverlayService extends Service {
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.functions.PerformanceChannel.ProfileResult result =
-                            com.gamebooster.app.functions.PerformanceChannel.applyProfileWithResult(
+                    com.gamebooster.app.booster.PerformanceChannel.ProfileResult result =
+                            com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
                                     getApplicationContext(),
-                                    com.gamebooster.app.functions.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                                    com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
                             android.widget.Toast.makeText(getApplicationContext(), "🔥 " + result.message,
                                     android.widget.Toast.LENGTH_LONG).show());
@@ -139,7 +139,7 @@ public class FloatingOverlayService extends Service {
                 isDndActive = !isDndActive;
                 final boolean targetDnd = isDndActive;
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    boolean applied = com.gamebooster.app.functions.GameSpaceDndManager
+                    boolean applied = com.gamebooster.app.gamespace.GameSpaceDndManager
                             .setGamingDndMode(getApplicationContext(), targetDnd);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
                             android.widget.Toast.makeText(getApplicationContext(), applied
@@ -291,8 +291,8 @@ public class FloatingOverlayService extends Service {
 
     private void updateMetricsText() {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
-        com.gamebooster.app.core.DisplayCapabilitiesDetector.DisplayCaps caps = 
-                com.gamebooster.app.core.DisplayCapabilitiesDetector.detect(getApplicationContext());
+        com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
+                com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
         int currentHz = caps != null ? caps.currentRefreshRate : 60;
         int activeFps = realTimeFps > 0 ? realTimeFps : currentHz;
 
