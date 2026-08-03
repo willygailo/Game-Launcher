@@ -146,18 +146,6 @@ public class GameManagerRepository {
             }
         }
 
-        // 6. Fallback if still low games: Populate top online games so user can always launch/boost
-        if (gamesList.isEmpty()) {
-            gamesList.add(new GameAppInfo("Mobile Legends: Bang Bang", "com.mobile.legends", defaultIcon, pm.getLaunchIntentForPackage("com.mobile.legends")));
-            gamesList.add(new GameAppInfo("Call of Duty: Mobile (Garena)", "com.garena.game.codm", defaultIcon, pm.getLaunchIntentForPackage("com.garena.game.codm")));
-            gamesList.add(new GameAppInfo("PUBG Mobile (Global)", "com.tencent.ig", defaultIcon, pm.getLaunchIntentForPackage("com.tencent.ig")));
-            gamesList.add(new GameAppInfo("League of Legends: Wild Rift", "com.riotgames.league.wildrift", defaultIcon, pm.getLaunchIntentForPackage("com.riotgames.league.wildrift")));
-            gamesList.add(new GameAppInfo("Garena Free Fire MAX", "com.dts.freefiremax", defaultIcon, pm.getLaunchIntentForPackage("com.dts.freefiremax")));
-            gamesList.add(new GameAppInfo("Honor of Kings (Global)", "com.levelinfinite.sgameGlobal", defaultIcon, pm.getLaunchIntentForPackage("com.levelinfinite.sgameGlobal")));
-            gamesList.add(new GameAppInfo("Genshin Impact", "com.cognosphere.GenshinImpact", defaultIcon, pm.getLaunchIntentForPackage("com.cognosphere.GenshinImpact")));
-            gamesList.add(new GameAppInfo("Roblox", "com.roblox.client", defaultIcon, pm.getLaunchIntentForPackage("com.roblox.client")));
-        }
-
         return gamesList;
     }
 
@@ -226,19 +214,6 @@ public class GameManagerRepository {
                     }
                 }
             } catch (Throwable ignored) {}
-        }
-
-        // Method 4: Always inject all known online games into picker catalog
-        Map<String, GamePackageRegistry.GameInfoSpec> knownMap = GamePackageRegistry.getAllKnownGames();
-        Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
-        for (Map.Entry<String, GamePackageRegistry.GameInfoSpec> entry : knownMap.entrySet()) {
-            String pkg = entry.getKey();
-            GamePackageRegistry.GameInfoSpec spec = entry.getValue();
-            if (!addedPackages.contains(pkg)) {
-                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
-                appsList.add(new GameAppInfo("🔥 " + spec.title + " (" + spec.category + ")", pkg, defaultIcon, launchIntent));
-                addedPackages.add(pkg);
-            }
         }
 
         // Sort alphabetically by app label

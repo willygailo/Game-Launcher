@@ -108,36 +108,16 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <Button
+                android:id="@+id/btn_boost_ram"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btn_boost_ram"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:backgroundTint="@color/card_bg"
-                    android:text="🧹 TRIM RAM"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_add_game"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:backgroundTint="@color/card_bg"
-                    android:text="➕ ADD GAME"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:backgroundTint="@color/card_bg"
+                android:text="🧹 TRIM RAM"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_games_list"
