@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/SettingsFragment.java": {
-    "mtime": 1785717847.4043803,
-    "ast_hash": "7459b1168c4f6296b9a9fd468b2c491a",
+    "mtime": 1785718658.2817445,
+    "ast_hash": "2a37d695f8ef8bdf2486f92feecf0276",
     "semantic_hash": ""
   },
   "android/app/src/main/java/com/gamebooster/app/ui/layout/TweaksAdapter.java": {
@@ -382,6 +382,21 @@
   "android/app/src/main/java/com/gamebooster/app/overlay/CrosshairOverlayManager.java": {
     "mtime": 1785718004.869906,
     "ast_hash": "b278d1ce5fa7ec371b0fb2307116006c",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/AutoGameMonitorService.java": {
+    "mtime": 1785718652.2258828,
+    "ast_hash": "e2650232a98b6439596d382282b9c0b5",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/EsportsAudioEnhancer.java": {
+    "mtime": 1785718615.5787542,
+    "ast_hash": "edadc6ec3e4346ddbf04d4e2e063d3c4",
+    "semantic_hash": ""
+  },
+  "android/app/src/main/java/com/gamebooster/app/functions/GameCacheCleaner.java": {
+    "mtime": 1785718619.1650822,
+    "ast_hash": "f479f8201ebe7b87663847b8eae6c007",
     "semantic_hash": ""
   }
 }

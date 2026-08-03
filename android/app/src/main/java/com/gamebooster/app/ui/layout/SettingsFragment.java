@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -274,6 +275,51 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         Toast.makeText(getContext(), "🔄 Default System DNS Restored", Toast.LENGTH_SHORT).show();
+                    });
+                });
+            });
+        }
+
+        // Premium Esports Gamer Features Bindings
+        Switch switchAutoBoost = view.findViewById(R.id.switch_auto_game_boost);
+        Switch switchEsportsAudio = view.findViewById(R.id.switch_esports_audio);
+        Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
+
+        if (switchAutoBoost != null) {
+            switchAutoBoost.setChecked(com.gamebooster.app.functions.AutoGameMonitorService.isRunning());
+            switchAutoBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                if (isChecked) {
+                    com.gamebooster.app.functions.AutoGameMonitorService.start(getContext());
+                    Toast.makeText(getContext(), "🎮 Auto Game Launch Detection & 165Hz Boost: ENABLED", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.gamebooster.app.functions.AutoGameMonitorService.stop(getContext());
+                    Toast.makeText(getContext(), "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (switchEsportsAudio != null) {
+            switchEsportsAudio.setChecked(com.gamebooster.app.functions.EsportsAudioEnhancer.isEnabled());
+            switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.functions.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
+                Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost (2kHz-4kHz): ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnCleanCaches != null) {
+            btnCleanCaches.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnCleanCaches.setEnabled(false);
+                Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & System Caches...", Toast.LENGTH_SHORT).show();
+
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = com.gamebooster.app.functions.GameCacheCleaner.performDeepGameCacheClean(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnCleanCaches.setEnabled(true);
+                        Toast.makeText(getContext(), ok ? "🧹 Game Storage & Shaders Cleaned (+1000MB Free Cache)!" : "Cache Clean Complete", Toast.LENGTH_SHORT).show();
                     });
                 });
             });

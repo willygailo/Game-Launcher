@@ -470,7 +470,63 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- CARD 3: SYSTEM & KERNEL TWEAKS -->
+        <!-- CARD 3: PREMIUM ESPORTS GAMER FEATURES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_glass_shape"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎮 PREMIUM ESPORTS GAMER UTILITIES"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Automatic game space detection, footstep audio enhancer &amp; shader cleaner"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+
+            <Switch
+                android:id="@+id/switch_auto_game_boost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="🎮 Auto-Boost (165Hz Lock) On Game Launch"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <Switch
+                android:id="@+id/switch_esports_audio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="🔊 Esports Footstep Audio Enhancer (2kHz-4kHz Boost)"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_clean_game_caches"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="@color/card_bg"
+                android:text="🧹 DEEP CLEAN GAME CACHES &amp; SHADERS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- CARD 4: SYSTEM & KERNEL TWEAKS -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
