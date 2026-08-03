@@ -73,6 +73,19 @@
   - **Genshin Impact & HoYoverse**: `com.cognosphere.GenshinImpact`, `com.miHoYo.GenshinImpact`, `com.HoYoverse.hkrpgoversea`
   - **Roblox & Shooters**: `com.roblox.client`, `com.axlebolt.standoff2`, `com.netease.bloodstrike`, `com.miracle.farlight84`
 
+### 🎭 7. Full System Device Identity Spoofing Engine
+* **Multi-Tier Property Overrides via Shizuku ADB**: Overrides system identity properties (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.vendor.product.model`, `ro.product.name`, `ro.hardware`, `ro.board.platform`, `ro.soc.model`) and Android 12+ Game Mode overlay settings (`device_config put game_overlay`).
+* **Supported Flagship Profiles**:
+  - **ASUS ROG Phone 6** (`ASUS_AI2201`) ➔ Unlocks 120 FPS in Mobile Legends (MLBB) & League of Legends: Wild Rift.
+  - **Black Shark 5 Pro** (`SHARK PAR-A0`) ➔ Unlocks 120 FPS & Ultra Graphics in Call of Duty: Mobile (CODM).
+  - **Samsung Galaxy S24 Ultra** (`SM-S928B`) ➔ Unlocks 90 FPS / 120 FPS in PUBG Mobile & BGMI.
+  - **iPad Pro M2** (`iPad13,8`) ➔ Unlocks Tablet FOV & Extreme Graphics mode.
+
+### 🔍 8. Multi-Platform Deep Search Engine (Android 11 to 16)
+* **Unrestricted Multi-User Package Scanner**: Uses Shizuku ADB (`pm list packages -3 -u -a`) to bypass Android 11–16 package visibility restrictions, discovering games installed in secondary user profiles, Work Profiles, Dual Apps, Parallel Space, Island, and Shelter.
+* **Third-Party Platform Store Detection**: Automatically scans and indexes games downloaded from **Google Play Store**, **TapTap**, **Garena App Store**, **Samsung Galaxy Store**, **APKPure**, **QooApp**, and **Amazon Appstore**.
+* **Deep Storage Directory Scanner**: Inspects `/sdcard/Android/data/`, `/sdcard/Android/obb/`, and `/data/data/` for game data signatures and regional patches.
+
 ---
 
 ## 🚀 Building the APK
