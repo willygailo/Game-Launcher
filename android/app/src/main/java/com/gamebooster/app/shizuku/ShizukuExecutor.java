@@ -104,7 +104,10 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
         executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_NETWORK_STATE");
         executeShizukuCommand("pm grant " + packageName + " android.permission.FORCE_STOP_PACKAGES");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.CLEAR_APP_CACHE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.REAL_GET_TASKS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
         executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
         executeShizukuCommand("cmd appops set " + packageName + " GET_USAGE_STATS allow");
         executeShizukuCommand("cmd appops set " + packageName + " WRITE_SETTINGS allow");

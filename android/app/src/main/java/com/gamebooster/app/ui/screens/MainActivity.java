@@ -50,10 +50,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         TweakManagerRepository.initializeStates(this);
         TweakManagerRepository.restoreAppliedTweaksAsync(this);
 
-        // Auto-grant permissions if Shizuku binder is active
+        // Bind Shizuku AIDL UserService & Auto-Grant Privileges
         try {
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.grantAppPermissionsViaShizuku(this);
+            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
+            if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuManager.requestShizukuPermission();
+            } else if (ShizukuExecutor.hasShizukuPermission()) {
+                AppExecutors.getInstance().executeCommand(() ->
+                        ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext()));
             }
         } catch (Throwable ignored) {}
 
