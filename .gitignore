@@ -60,7 +60,8 @@ ehthumbs.db
 google-services.json
 GoogleService-Info.plist
 
-# Logs & Temporary agent files
+# Logs, scratch scripts & agent workspace data
 *.log
 scratch/
 .antigravity/
+.gemini/
