@@ -82,101 +82,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        // Card 1.5: iPad View Aspect Ratio Controller
-        Switch switchIpadViewToggle = view.findViewById(R.id.switch_ipad_view_toggle);
-        TextView tvIpadViewStatus = view.findViewById(R.id.tv_ipad_view_status);
-        Button btnIpadNormal = view.findViewById(R.id.btn_ipad_mode_normal);
-        Button btnIpadMedium = view.findViewById(R.id.btn_ipad_mode_medium);
-        Button btnIpadUltra = view.findViewById(R.id.btn_ipad_mode_ultra);
-
-        if (getContext() != null && switchIpadViewToggle != null) {
-            boolean isIpadOn = ManualSettingsPreferences.isIpadViewEnabled(getContext());
-            String modeStr = ManualSettingsPreferences.getIpadViewMode(getContext());
-
-            switchIpadViewToggle.setChecked(isIpadOn);
-            if (tvIpadViewStatus != null) {
-                tvIpadViewStatus.setText(isIpadOn ? "Status: ACTIVE (" + modeStr + ")" : "Status: OFF (Normal Display Density)");
-                tvIpadViewStatus.setTextColor(isIpadOn ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#94A3B8"));
-            }
-
-            switchIpadViewToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setIpadViewEnabled(getContext(), isChecked);
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok;
-                    if (isChecked) {
-                        String currentMode = ManualSettingsPreferences.getIpadViewMode(getContext());
-                        com.gamebooster.app.engine.IpadViewScalerEngine.IpadViewMode targetMode =
-                                "IPAD_ULTRA".equalsIgnoreCase(currentMode)
-                                        ? com.gamebooster.app.engine.IpadViewScalerEngine.IpadViewMode.IPAD_ULTRA
-                                        : com.gamebooster.app.engine.IpadViewScalerEngine.IpadViewMode.IPAD_MEDIUM;
-                        ok = com.gamebooster.app.engine.IpadViewScalerEngine.applyIpadView(getContext(), targetMode);
-                    } else {
-                        ok = com.gamebooster.app.engine.IpadViewScalerEngine.restoreDefaultView();
-                    }
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        if (tvIpadViewStatus != null) {
-                            tvIpadViewStatus.setText(isChecked ? "Status: ACTIVE (" + ManualSettingsPreferences.getIpadViewMode(getContext()) + ")" : "Status: OFF (Normal Display Density)");
-                            tvIpadViewStatus.setTextColor(isChecked ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#94A3B8"));
-                        }
-                        Toast.makeText(getContext(), isChecked ? (ok ? "📐 iPad View Scaling APPLIED via Shizuku!" : "Shizuku needed for iPad View") : "🔄 Display Density Restored to Default", Toast.LENGTH_SHORT).show();
-                    });
-                });
-            });
-        }
-
-        if (btnIpadNormal != null) {
-            btnIpadNormal.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setIpadViewEnabled(getContext(), false);
-                if (switchIpadViewToggle != null) switchIpadViewToggle.setChecked(false);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.engine.IpadViewScalerEngine.restoreDefaultView();
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "🔄 Normal View Restored (1.0x)", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnIpadMedium != null) {
-            btnIpadMedium.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setIpadViewMode(getContext(), "IPAD_MEDIUM");
-                ManualSettingsPreferences.setIpadViewEnabled(getContext(), true);
-                if (switchIpadViewToggle != null) switchIpadViewToggle.setChecked(true);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.engine.IpadViewScalerEngine.applyIpadView(getContext(), com.gamebooster.app.engine.IpadViewScalerEngine.IpadViewMode.IPAD_MEDIUM);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "📐 iPad View 1.5x Medium FOV Applied!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnIpadUltra != null) {
-            btnIpadUltra.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setIpadViewMode(getContext(), "IPAD_ULTRA");
-                ManualSettingsPreferences.setIpadViewEnabled(getContext(), true);
-                if (switchIpadViewToggle != null) switchIpadViewToggle.setChecked(true);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.engine.IpadViewScalerEngine.applyIpadView(getContext(), com.gamebooster.app.engine.IpadViewScalerEngine.IpadViewMode.IPAD_ULTRA);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "🔥 iPad View 2.0x Ultra FOV Applied!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
 
         if (btnOpenSettings != null) {
             btnOpenSettings.setOnClickListener(v -> {
@@ -266,32 +171,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        // Card 1.5: Per-Game iPad View Switches
-        Switch switchIpadMlbb = view.findViewById(R.id.switch_ipad_mlbb);
-        Switch switchIpadPubg = view.findViewById(R.id.switch_ipad_pubg);
-        Switch switchIpadCodm = view.findViewById(R.id.switch_ipad_codm);
-
-        if (getContext() != null) {
-            if (switchIpadMlbb != null) switchIpadMlbb.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "mlbb"));
-            if (switchIpadPubg != null) switchIpadPubg.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "pubg"));
-            if (switchIpadCodm != null) switchIpadCodm.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "codm"));
-        }
-
-        if (switchIpadMlbb != null) {
-            switchIpadMlbb.setOnCheckedChangeListener((bv, isChecked) -> {
-                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "mlbb", isChecked);
-            });
-        }
-        if (switchIpadPubg != null) {
-            switchIpadPubg.setOnCheckedChangeListener((bv, isChecked) -> {
-                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "pubg", isChecked);
-            });
-        }
-        if (switchIpadCodm != null) {
-            switchIpadCodm.setOnCheckedChangeListener((bv, isChecked) -> {
-                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "codm", isChecked);
-            });
-        }
 
         // Card 3: Hardware Engine & Performance Presets
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);

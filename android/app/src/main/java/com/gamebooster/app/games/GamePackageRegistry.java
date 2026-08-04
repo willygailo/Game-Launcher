@@ -22,25 +22,27 @@ public class GamePackageRegistry {
 
     static {
         // Mobile Legends: Bang Bang (MLBB) & Regional Variants
-        KNOWN_GAMES.put("com.mobile.legends", new GameInfoSpec("Mobile Legends: Bang Bang", "MOBA", 120));
-        KNOWN_GAMES.put("com.mobile.legends.vng", new GameInfoSpec("Mobile Legends VNG", "MOBA", 120));
-        KNOWN_GAMES.put("com.mobile.legends.kr", new GameInfoSpec("Mobile Legends KR", "MOBA", 120));
-        KNOWN_GAMES.put("com.mobile.legends.jp", new GameInfoSpec("Mobile Legends JP", "MOBA", 120));
+        KNOWN_GAMES.put("com.mobile.legends", new GameInfoSpec("Mobile Legends: Bang Bang", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobile.legends.vng", new GameInfoSpec("Mobile Legends VNG", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobile.legends.kr", new GameInfoSpec("Mobile Legends KR", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobile.legends.jp", new GameInfoSpec("Mobile Legends JP", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobilelegends.hw", new GameInfoSpec("Mobile Legends Huawei", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobile.legends.moonton", new GameInfoSpec("Mobile Legends Moonton", "MOBA", 165));
 
         // Call of Duty: Mobile (CODM) & Regional Variants
-        KNOWN_GAMES.put("com.activision.callofduty.shooter", new GameInfoSpec("Call of Duty: Mobile (Global)", "FPS", 120));
-        KNOWN_GAMES.put("com.garena.game.codm", new GameInfoSpec("Call of Duty: Mobile (Garena)", "FPS", 120));
-        KNOWN_GAMES.put("com.tencent.tmgp.kr.codm", new GameInfoSpec("Call of Duty: Mobile (KR)", "FPS", 120));
-        KNOWN_GAMES.put("com.tencent.tmgp.cod", new GameInfoSpec("Call of Duty: Mobile (CN)", "FPS", 120));
+        KNOWN_GAMES.put("com.activision.callofduty.shooter", new GameInfoSpec("Call of Duty: Mobile (Global)", "FPS", 165));
+        KNOWN_GAMES.put("com.garena.game.codm", new GameInfoSpec("Call of Duty: Mobile (Garena)", "FPS", 165));
+        KNOWN_GAMES.put("com.tencent.tmgp.kr.codm", new GameInfoSpec("Call of Duty: Mobile (KR)", "FPS", 165));
+        KNOWN_GAMES.put("com.tencent.tmgp.cod", new GameInfoSpec("Call of Duty: Mobile (CN)", "FPS", 165));
 
         // PUBG Mobile & Regional Variants
-        KNOWN_GAMES.put("com.tencent.ig", new GameInfoSpec("PUBG Mobile (Global)", "Battle Royale", 120));
-        KNOWN_GAMES.put("com.pubg.imobile", new GameInfoSpec("Battlegrounds Mobile India (BGMI)", "Battle Royale", 120));
-        KNOWN_GAMES.put("com.pubg.krmobile", new GameInfoSpec("PUBG Mobile (KR/JP)", "Battle Royale", 120));
-        KNOWN_GAMES.put("com.vng.pubgmobile", new GameInfoSpec("PUBG Mobile (VNG)", "Battle Royale", 120));
-        KNOWN_GAMES.put("com.tencent.iglite", new GameInfoSpec("PUBG Mobile Lite", "Battle Royale", 90));
-        KNOWN_GAMES.put("com.pubg.newstate", new GameInfoSpec("PUBG: NEW STATE", "Battle Royale", 120));
-        KNOWN_GAMES.put("com.tencent.tmgp.pubgm", new GameInfoSpec("PUBG Mobile (CN Game for Peace)", "Battle Royale", 120));
+        KNOWN_GAMES.put("com.tencent.ig", new GameInfoSpec("PUBG Mobile (Global)", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.pubg.imobile", new GameInfoSpec("Battlegrounds Mobile India (BGMI)", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.pubg.krmobile", new GameInfoSpec("PUBG Mobile (KR/JP)", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.vng.pubgmobile", new GameInfoSpec("PUBG Mobile (VNG)", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.tencent.iglite", new GameInfoSpec("PUBG Mobile Lite", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.pubg.newstate", new GameInfoSpec("PUBG: NEW STATE", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.tencent.tmgp.pubgm", new GameInfoSpec("PUBG Mobile (CN Peacekeeper Elite)", "Battle Royale", 165));
 
         // Free Fire & Free Fire MAX
         KNOWN_GAMES.put("com.dts.freefireth", new GameInfoSpec("Garena Free Fire", "Battle Royale", 90));

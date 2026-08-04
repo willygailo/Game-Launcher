@@ -111,18 +111,20 @@ public class DeviceSpooferEngine {
      * Determines the optimal device spoof profile for a given game package.
      */
     public static SpoofProfile getRecommendedProfile(String packageName) {
-        if (packageName == null) return PROFILE_ROG_PHONE_6;
+        if (packageName == null) return PROFILE_ROG_PHONE_8_PRO;
         String pkg = packageName.toLowerCase();
 
         if (pkg.contains("mobile.legends") || pkg.contains("wildrift") || pkg.contains("sgame")) {
-            return PROFILE_ROG_PHONE_6;
+            return PROFILE_ROG_PHONE_8_PRO;
         } else if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike")) {
             return PROFILE_BLACK_SHARK_5;
         } else if (pkg.contains("tencent.ig") || pkg.contains("pubg") || pkg.contains("imobile") || pkg.contains("freefire")) {
-            return PROFILE_GALAXY_S24_ULTRA;
+            return PROFILE_REDMAGIC_9_PRO;
+        } else if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai")) {
+            return PROFILE_XIAOMI_14_ULTRA;
         }
 
-        return PROFILE_ROG_PHONE_6;
+        return PROFILE_ROG_PHONE_8_PRO;
     }
 
     /**

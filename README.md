@@ -79,7 +79,7 @@
   - **ASUS ROG Phone 6** (`ASUS_AI2201`) ➔ Unlocks 120 FPS in Mobile Legends (MLBB) & League of Legends: Wild Rift.
   - **Black Shark 5 Pro** (`SHARK PAR-A0`) ➔ Unlocks 120 FPS & Ultra Graphics in Call of Duty: Mobile (CODM).
   - **Samsung Galaxy S24 Ultra** (`SM-S928B`) ➔ Unlocks 90 FPS / 120 FPS in PUBG Mobile & BGMI.
-  - **iPad Pro M2** (`iPad13,8`) ➔ Unlocks Tablet FOV & Extreme Graphics mode.
+  - **iPad Pro M2** (`iPad13,8`) ➔ Unlocks Extreme Graphics mode.
 
 ### 🔍 8. Multi-Platform Deep Search Engine (Android 11 to 16)
 * **Unrestricted Multi-User Package Scanner**: Uses Shizuku ADB (`pm list packages -3 -u -a`) to bypass Android 11–16 package visibility restrictions, discovering games installed in secondary user profiles, Work Profiles, Dual Apps, Parallel Space, Island, and Shelter.

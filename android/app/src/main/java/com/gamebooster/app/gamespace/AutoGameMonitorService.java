@@ -109,7 +109,6 @@ public class AutoGameMonitorService extends Service {
                         + profile.label + " up to " + targetHz + "Hz");
 
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
-                com.gamebooster.app.engine.IpadViewScalerEngine.applyForGame(getApplicationContext(), currentPackage);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
                         targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
                         targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
@@ -133,7 +132,6 @@ public class AutoGameMonitorService extends Service {
                 lastActiveGamePackage = null;
                 GameSessionSettings.restore(getApplicationContext());
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
-                com.gamebooster.app.engine.IpadViewScalerEngine.restoreDefaultView();
                 
                 // Enforce Background Home 165Hz Refresh Rate & Performance state
                 com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);

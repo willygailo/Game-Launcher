@@ -97,6 +97,10 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.MANAGE_EXTERNAL_STORAGE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_EXTERNAL_STORAGE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_EXTERNAL_STORAGE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.ACCESS_NOTIFICATION_POLICY");
         executeShizukuCommand("pm grant " + packageName + " android.permission.DUMP");
         executeShizukuCommand("pm grant " + packageName + " android.permission.BATTERY_STATS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.MANAGE_GAME_MODE");
@@ -107,7 +111,13 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.CLEAR_APP_CACHE");
         executeShizukuCommand("pm grant " + packageName + " android.permission.REAL_GET_TASKS");
         executeShizukuCommand("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.MODIFY_PHONE_STATE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_PRIVILEGED_PHONE_STATE");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.HARDWARE_TEST");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.INTERNET");
+
+        // AppOps Overrides for Unrestricted System Access
+        executeShizukuCommand("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
         executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
         executeShizukuCommand("cmd appops set " + packageName + " GET_USAGE_STATS allow");
         executeShizukuCommand("cmd appops set " + packageName + " WRITE_SETTINGS allow");
@@ -115,5 +125,8 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " RUN_IN_BACKGROUND allow");
         executeShizukuCommand("cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow");
         executeShizukuCommand("cmd appops set " + packageName + " AUTO_START allow");
+        executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
+        executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
+        executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
     }
 }

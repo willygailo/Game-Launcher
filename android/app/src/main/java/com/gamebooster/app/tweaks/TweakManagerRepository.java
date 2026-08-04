@@ -72,16 +72,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "ipad_view_scaling",
-                "iPad Ultra FOV View (DPI Density Scaler)",
-                "Scales display density to simulate Tablet / iPad wide FOV in PUBGM, CODM & MLBB",
-                "wm density 280",
-                "wm density reset",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "aim_touch_precision",
                 "Aim Precision Touch Latency Stabilizer",
                 "Reduces input lag and touch slop thresholds for zero-delay crosshair control",
@@ -173,6 +163,26 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "device_model_spoof_rog8pro",
+                "ASUS ROG Phone 8 Pro Model Spoof",
+                "Spoofs device identity as ROG Phone 8 Pro to force 165Hz & Ultra Graphics in MLBB & CODM",
+                "resetprop ro.product.model ASUS_AI2401 || setprop ro.product.model ASUS_AI2401; resetprop ro.product.brand asus || setprop ro.product.brand asus; resetprop ro.product.manufacturer asus || setprop ro.product.manufacturer asus; resetprop ro.hardware qcom || setprop ro.hardware qcom; resetprop ro.soc.model SM8650 || setprop ro.soc.model SM8650",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "device_model_spoof_redmagic9pro",
+                "REDMAGIC 9 Pro Model Spoof",
+                "Spoofs device identity as REDMAGIC 9 Pro to force 165Hz & Ultra Graphics in PUBGM & BGMI",
+                "resetprop ro.product.model NX769J || setprop ro.product.model NX769J; resetprop ro.product.brand nubia || setprop ro.product.brand nubia; resetprop ro.product.manufacturer nubia || setprop ro.product.manufacturer nubia; resetprop ro.hardware qcom || setprop ro.hardware qcom; resetprop ro.soc.model SM8650 || setprop ro.soc.model SM8650",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "device_model_spoof_rog6",
                 "ASUS ROG Phone 6 Model Spoof",
                 "Spoofs device identity as ROG Phone 6 to unlock 120 FPS in MLBB & Wild Rift",
@@ -203,10 +213,20 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "device_model_spoof_xiaomi14ultra",
+                "Xiaomi 14 Ultra Model Spoof",
+                "Spoofs device identity as Xiaomi 14 Ultra to unlock 120 FPS & Ultra Graphics",
+                "resetprop ro.product.model 24030PN60G || setprop ro.product.model 24030PN60G; resetprop ro.product.brand xiaomi || setprop ro.product.brand xiaomi; resetprop ro.product.manufacturer xiaomi || setprop ro.product.manufacturer xiaomi",
+                "setprop persist.sys.game.boost.profile 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "device_model_spoof_ipadpro",
-                "iPad Pro M2 Model Spoof",
-                "Spoofs device identity as iPad Pro M2 for tablet FOV & extreme graphics mode",
-                "resetprop ro.product.model iPad13,8 || setprop ro.product.model iPad13,8; resetprop ro.product.brand apple || setprop ro.product.brand apple; resetprop ro.product.manufacturer apple || setprop ro.product.manufacturer apple",
+                "iPad Pro M4 Model Spoof",
+                "Spoofs device identity as iPad Pro M4 for tablet FOV & extreme graphics mode",
+                "resetprop ro.product.model iPad16,3 || setprop ro.product.model iPad16,3; resetprop ro.product.brand apple || setprop ro.product.brand apple; resetprop ro.product.manufacturer apple || setprop ro.product.manufacturer apple",
                 "setprop persist.sys.game.boost.profile 0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true

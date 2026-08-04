@@ -36,19 +36,21 @@ public class GameConfigPatcher {
         }
 
         int patchedFiles = 0;
-        for (String path : configPaths) {
-            if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-                if (patchMlbbConfig(path, targetFps)) patchedFiles++;
-            } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
-                if (patchCodmConfig(path, targetFps)) patchedFiles++;
-            } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("gameloft")) {
-                if (patchPubgConfig(path, targetFps)) patchedFiles++;
-            } else if (pkg.contains("freefire")) {
-                if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
-            } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
-                if (patchWildRiftGenshinConfig(path, targetFps)) patchedFiles++;
-            } else {
-                if (patchGenericConfig(path, targetFps)) patchedFiles++;
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            if (MlbbConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
+            if (CodmConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            if (PubgConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else {
+            for (String path : configPaths) {
+                if (pkg.contains("freefire")) {
+                    if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
+                } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
+                    if (patchWildRiftGenshinConfig(path, targetFps)) patchedFiles++;
+                } else {
+                    if (patchGenericConfig(path, targetFps)) patchedFiles++;
+                }
             }
         }
 
