@@ -30,6 +30,12 @@ import com.gamebooster.app.tweaks.TweakCategory;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
+import com.gamebooster.app.spoofer.SpoofProfile;
+import com.gamebooster.app.spoofer.SpoofPreferences;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SettingsFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
@@ -50,6 +56,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchGamingDnd;
     private Switch switchAutoGameBoost;
     private Switch switchEsportsAudio;
+
+    // Device Spoofing UI
+    private Switch switchDeviceSpoof;
+    private TextView tvSpoofActiveProfile;
+    private RecyclerView rvSpoofProfiles;
+    private SpoofProfileAdapter spoofProfileAdapter;
 
     @Nullable
     @Override
@@ -395,6 +407,72 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnFilterShizuku != null && tweaksAdapter != null) btnFilterShizuku.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.SHIZUKU_SYSTEM)));
         if (btnFilterNetwork != null && tweaksAdapter != null) btnFilterNetwork.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.NETWORK_LATENCY)));
 
+        // Card Spoof: Hardware Device Spoofing
+        switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
+        tvSpoofActiveProfile = view.findViewById(R.id.tv_spoof_active_profile);
+        rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
+
+        boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
+        if (switchDeviceSpoof != null) {
+            switchDeviceSpoof.setChecked(spoofEnabled);
+        }
+        if (rvSpoofProfiles != null) {
+            rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvSpoofProfiles.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+            List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
+            spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
+                if (getContext() == null) return;
+                if (!ShizukuExecutor.hasShizukuPermission()) {
+                    Toast.makeText(getContext(), "⚠️ Shizuku permission required for device spoofing", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(getContext(), "Applying hardware spoof: " + profile.displayName + "...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean success = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        if (success) {
+                            SpoofPreferences.setSpoofEnabled(getContext(), true);
+                            SpoofPreferences.setActiveProfileId(getContext(), profile.id);
+                            if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
+                            if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
+                            updateSpoofUiState();
+                            Toast.makeText(getContext(), "⚡ Device Spoof Active: " + profile.displayName, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to apply spoof profile via Shizuku", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+            rvSpoofProfiles.setAdapter(spoofProfileAdapter);
+        }
+
+        if (switchDeviceSpoof != null) {
+            switchDeviceSpoof.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                SpoofPreferences.setSpoofEnabled(getContext(), isChecked);
+                if (rvSpoofProfiles != null) {
+                    rvSpoofProfiles.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+                if (!isChecked) {
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        DeviceSpooferEngine.resetSpoofing();
+                        SpoofPreferences.clearActiveProfile(getContext());
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (isAdded() && getContext() != null) {
+                                updateSpoofUiState();
+                                Toast.makeText(getContext(), "Device Spoofing Disabled", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                } else {
+                    updateSpoofUiState();
+                }
+            });
+        }
+
+        updateSpoofUiState();
+
         // Card 6: About & Community Links
         Button btnGithubReleases = view.findViewById(R.id.btn_github_releases);
         Button btnFacebookProfile = view.findViewById(R.id.btn_facebook_profile);
@@ -488,12 +566,39 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         EngineUIHelper.refreshEngineStatus(tvEngineStatus);
         EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
         updateSystemSettingsStatus();
+        updateSpoofUiState();
         boolean alive = ShizukuExecutor.hasShizukuPermission();
         if (tweaksAdapter != null) {
             tweaksAdapter.setShizukuAlive(alive);
         }
         if (bannerDisconnect != null) {
             bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void updateSpoofUiState() {
+        if (getContext() == null) return;
+        boolean enabled = SpoofPreferences.isSpoofEnabled(getContext());
+        String activeId = SpoofPreferences.getActiveProfileId(getContext());
+
+        if (tvSpoofActiveProfile != null) {
+            if (enabled && activeId != null) {
+                SpoofProfile activeProf = DeviceSpooferEngine.getProfileById(activeId);
+                if (activeProf != null) {
+                    tvSpoofActiveProfile.setText("Active Spoof Profile: " + activeProf.displayName + " (" + activeProf.model + ")");
+                    tvSpoofActiveProfile.setTextColor(0xFF00FF66);
+                } else {
+                    tvSpoofActiveProfile.setText("Active Spoof Profile: ENABLED (No profile selected)");
+                    tvSpoofActiveProfile.setTextColor(0xFFFFB800);
+                }
+            } else {
+                tvSpoofActiveProfile.setText("Active Spoof Profile: NONE (Disabled)");
+                tvSpoofActiveProfile.setTextColor(0xFF888888);
+            }
+        }
+
+        if (spoofProfileAdapter != null) {
+            spoofProfileAdapter.setActiveProfileId(enabled ? activeId : null);
         }
     }
 

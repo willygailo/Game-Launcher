@@ -517,6 +517,70 @@
                     android:nestedScrollingEnabled="false" />
             </LinearLayout>
 
+            <!-- CARD SPOOF: HARDWARE DEVICE SPOOFING -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎭 HARDWARE DEVICE SPOOFING"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Spoof model, brand, vendor &amp; SoC identity via Shizuku temporary root access."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Switch
+                        android:id="@+id/switch_device_spoof"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Enable Device Spoofing"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_spoof_active_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Active Spoof Profile: NONE"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_spoof_profiles"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="10dp"
+                    android:clipToPadding="false"
+                    android:scrollbars="vertical"
+                    android:nestedScrollingEnabled="true"
+                    android:visibility="gone" />
+            </LinearLayout>
+
             <!-- CARD 6: APP INFO & LINKS -->
             <LinearLayout
                 android:layout_width="match_parent"

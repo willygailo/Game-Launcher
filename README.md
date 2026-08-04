@@ -3,33 +3,33 @@
 # 🎮 GAME BOOSTER PRO & LAUNCHER
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.6.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.6.0" />
-  <img src="https://img.shields.io/badge/Platform-Android%2015%20(SDK%2035)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 35" />
+  <img src="https://img.shields.io/badge/Release-v4.7.0-00F0FF?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release v4.7.0" />
+  <img src="https://img.shields.io/badge/Platform-Android%2016%20(SDK%2036)-00FF66?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android SDK 36" />
   <img src="https://img.shields.io/badge/Language-Pure%20Java%2017-7000FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java JDK 17" />
   <img src="https://img.shields.io/badge/Mode-100%25%20Shizuku%20ADB%20Temporary%20Root-FF9900?style=for-the-badge&logo=linux&logoColor=white" alt="100% Shizuku ADB Temporary Root" />
   <img src="https://img.shields.io/badge/License-MIT-FF0055?style=for-the-badge" alt="License" />
 </p>
 
-### ⚡ *Pure Native Android Gaming Launcher & System Tuner with 100% Shizuku API Temporary Root Privilege Execution, Full Device Identity Spoofing Engine, Multi-Platform Deep Search & Unthrottled 120/144/165 FPS HUD* ⚡
+### ⚡ *Pure Native Android Gaming Launcher & System Tuner with 100% Shizuku API Temporary Root Privilege Execution, Modular 44-Profile Device Identity Spoofing Engine, Per-Game Competitive CFG Cards & Unthrottled 165 FPS HUD* ⚡
 
 ---
 
-[📦 Download v4.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.6.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
+[📦 Download v4.7.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.7.0) • [📖 Features](#-master-features) • [🏛️ Project Structure](#%EF%B8%8F-project-architecture) • [🚀 Build Guide](#-building-the-apk) • [👤 Developer](#-developer--contact)
 
 ---
 
 </div>
 
-## 📌 What's New in v4.6.0
+## 📌 What's New in v4.7.0
 
 > [!IMPORTANT]
-> **GAME BOOSTER PRO v4.6.0** introduces **Full System Device Identity Spoofing** (unlocking 120 FPS in MLBB, CODM, PUBG, BGMI), **Multi-Platform Deep Search Engine** (Android 11-16 visibility bypass), and an **Unthrottled Floating Overlay HUD Engine**.
+> **GAME BOOSTER PRO v4.7.0** introduces a **Modular Per-Brand Hardware Device Identity Spoofing Engine** (44 real-world profiles across 10 brand classes), a **Dedicated Hardware Device Spoofing Settings Card** (master ON/OFF switch & active badge), and **Per-Game Competitive CFG Cards** directly in the Home screen with automatic Shizuku execution upon launch.
 
-* 🎭 **Full System Device Identity Spoofing Engine**: Multi-tier property injection for **ASUS ROG Phone 6**, **Black Shark 5 Pro**, **Samsung Galaxy S24 Ultra**, and **iPad Pro M2** via Shizuku ADB (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.vendor.product.model`, `device_config`).
-* 🔍 **Multi-Platform Deep Search Engine**: Bypasses Android 11–16 package visibility restrictions via Shizuku (`pm list packages -3 -u -a`), discovering multi-user games and platform stores (**TapTap**, **Garena App Store**, **Samsung Galaxy Store**, **APKPure**, **QooApp**).
-* ⚡ **Unthrottled Floating Overlay HUD 120/144/165 FPS Engine**: Hardware accelerated WindowManager layout (`FLAG_HARDWARE_ACCELERATED` & `preferredDisplayModeId`) preventing screen 60 FPS drops during gameplay.
-* 🎮 **Game-Specific Storage Config Patchers**: Dedicated auto-patchers for **Mobile Legends** (`UserSystem.ini`), **Call of Duty Mobile** (`UserSetting.json`), **PUBG Mobile & BGMI** (`UserCustom.ini`), and **Free Fire** (`FFGraphicsSettings.ini`).
-* 🛠️ **Real-World Gamer System Tweaks**: Thermal Throttling Bypass Override, Zero VSync Phase Frame Offsets, and Touch Pressure Scale Latency Boost.
+* 🎭 **Modular Per-Brand Device Identity Spoofing Engine**: Restructured into 10 separate brand profile modules (**Samsung**, **Realme**, **ASUS ROG**, **Xiaomi**, **OnePlus**, **OPPO**, **Vivo**, **Apple**, **Nubia / REDMAGIC**, **Black Shark**) featuring **44 real-world flagship profiles**.
+* ⚙️ **Dedicated Hardware Device Spoofing Settings Card**: Features a master ON/OFF toggle, real-time active profile status badge, and scrollable catalog directly inside the Settings tab.
+* ⚡ **Full 6-Namespace System Property Override**: Overrides `ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.product.device`, `ro.product.name`, `ro.hardware`, `ro.soc.model`, `ro.build.fingerprint`, `ro.build.display.id`, `ro.product.board`, `ro.hardware.chipname` via Shizuku temporary root access across all 6 Android property namespaces.
+* 🎮 **Per-Game Competitive CFG Integration**: Directly configure 165Hz/165FPS Max Refresh & Touch Boost profiles inside Home game cards, auto-applying upon game launch via Shizuku.
+* 🧹 **Cleaned System Tweaks Engine**: Centralized spoofing into the dedicated Settings card while deduplicating system tweaks for maximum stability.
 
 ---
 
@@ -73,13 +73,19 @@
   - **Genshin Impact & HoYoverse**: `com.cognosphere.GenshinImpact`, `com.miHoYo.GenshinImpact`, `com.HoYoverse.hkrpgoversea`
   - **Roblox & Shooters**: `com.roblox.client`, `com.axlebolt.standoff2`, `com.netease.bloodstrike`, `com.miracle.farlight84`
 
-### 🎭 7. Full System Device Identity Spoofing Engine
-* **Multi-Tier Property Overrides via Shizuku ADB**: Overrides system identity properties (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.vendor.product.model`, `ro.product.name`, `ro.hardware`, `ro.board.platform`, `ro.soc.model`) and Android 12+ Game Mode overlay settings (`device_config put game_overlay`).
-* **Supported Flagship Profiles**:
-  - **ASUS ROG Phone 6** (`ASUS_AI2201`) ➔ Unlocks 120 FPS in Mobile Legends (MLBB) & League of Legends: Wild Rift.
-  - **Black Shark 5 Pro** (`SHARK PAR-A0`) ➔ Unlocks 120 FPS & Ultra Graphics in Call of Duty: Mobile (CODM).
-  - **Samsung Galaxy S24 Ultra** (`SM-S928B`) ➔ Unlocks 90 FPS / 120 FPS in PUBG Mobile & BGMI.
-  - **iPad Pro M2** (`iPad13,8`) ➔ Unlocks Extreme Graphics mode.
+### 🎭 7. Full System Device Identity Spoofing Engine (44 Profiles)
+* **Multi-Tier Property Overrides via Shizuku ADB**: Overrides system identity properties across 6 namespaces (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.product.device`, `ro.product.name`, `ro.hardware`, `ro.board.platform`, `ro.soc.model`, `ro.build.fingerprint`, `ro.build.display.id`, `ro.product.board`, `ro.hardware.chipname`).
+* **10 Brand Profile Collections**:
+  - **Samsung**: Galaxy S25 Ultra, S24 Ultra, S23 Ultra, Z Fold 5, Tab S9 Ultra, A55 5G.
+  - **Realme**: GT 5 Pro, GT Neo 5, GT 3, Narzo 60 Pro.
+  - **ASUS ROG**: ROG Phone 8 Pro, 7 Ultimate, 6, 5s (144/165Hz Extreme).
+  - **Xiaomi**: 14 Ultra, 14 Pro, POCO F6 Pro, Redmi K70 Pro, Redmi Note 13 Pro+.
+  - **OnePlus**: 12, 11, Ace 3 Pro, Nord 4.
+  - **OPPO**: Find X7 Ultra, Find X6 Pro, Reno 12 Pro.
+  - **Vivo**: X100 Ultra, iQOO 12, iQOO Neo 9 Pro, V30 Pro.
+  - **Apple**: iPad Pro M4, iPad Pro M2, iPhone 16 Pro Max, iPhone 15 Pro Max (Tablet FOV & Ultra Graphics).
+  - **Nubia / REDMAGIC**: REDMAGIC 9S Pro, 9 Pro, 8 Pro (165Hz Extreme).
+  - **Black Shark**: 5 Pro, 4 Pro, 5.
 
 ### 🔍 8. Multi-Platform Deep Search Engine (Android 11 to 16)
 * **Unrestricted Multi-User Package Scanner**: Uses Shizuku ADB (`pm list packages -3 -u -a`) to bypass Android 11–16 package visibility restrictions, discovering games installed in secondary user profiles, Work Profiles, Dual Apps, Parallel Space, Island, and Shelter.
@@ -109,7 +115,8 @@ android/app/build/outputs/apk/debug/Game_Space_Debug.apk
 
 | Release Tag | Title | Link |
 | :--- | :--- | :--- |
-| **v4.6.0 (Latest)** | Full Device Identity Spoofing Engine, Multi-Platform Deep Search, Unthrottled 120/144/165 FPS HUD & Game Config Patchers | [Download v4.6.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.6.0) |
+| **v4.7.0 (Latest)** | Modular 44-Profile Device Identity Spoofing Engine, Dedicated Settings Spoof Card & Per-Game Competitive CFG | [Download v4.7.0 APK](https://github.com/willygailo/Game-Launcher/releases/tag/v4.7.0) |
+| **v4.6.0** | Full Device Identity Spoofing Engine, Multi-Platform Deep Search, Unthrottled 120/144/165 FPS HUD & Game Config Patchers | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.6.0) |
 | **v4.4.0** | 100% Shizuku API Temporary Root, Redesigned Gaming Launcher, Full Boost System Tweaks & Internal Data Config Patcher | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.4.0) |
 | **v4.3.0** | Guaranteed Online Games Library, App Picker Catalog Injection & Play Store Fallback | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.3.0) |
 | **v4.2.0** | Manifest Package Visibility Queries, Shizuku Package Scanner & Add Game App Picker | [View Release](https://github.com/willygailo/Game-Launcher/releases/tag/v4.2.0) |
