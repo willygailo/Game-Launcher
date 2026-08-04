@@ -76,4 +76,27 @@ public class ManualSettingsPreferences {
         if (context == null) return false;
         return getPrefs(context).getBoolean(KEY_FORCE_GNSS, false);
     }
+
+    private static final String KEY_IPAD_VIEW_ENABLED = "pref_ipad_view_enabled";
+    private static final String KEY_IPAD_VIEW_MODE = "pref_ipad_view_mode"; // "IPAD_MEDIUM" or "IPAD_ULTRA"
+
+    public static void setIpadViewEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_IPAD_VIEW_ENABLED, enabled).apply();
+    }
+
+    public static boolean isIpadViewEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_IPAD_VIEW_ENABLED, false);
+    }
+
+    public static void setIpadViewMode(Context context, String mode) {
+        if (context == null) return;
+        getPrefs(context).edit().putString(KEY_IPAD_VIEW_MODE, mode).apply();
+    }
+
+    public static String getIpadViewMode(Context context) {
+        if (context == null) return "IPAD_MEDIUM";
+        return getPrefs(context).getString(KEY_IPAD_VIEW_MODE, "IPAD_MEDIUM");
+    }
 }

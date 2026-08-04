@@ -33,6 +33,7 @@ public class GameLauncherHelper {
             try {
                 com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkgName);
+                com.gamebooster.app.engine.IpadViewScalerEngine.applyForGame(context, pkgName);
                 int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName,

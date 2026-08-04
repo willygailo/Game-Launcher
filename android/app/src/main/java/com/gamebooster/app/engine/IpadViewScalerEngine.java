@@ -98,6 +98,20 @@ public class IpadViewScalerEngine {
         }
     }
 
+    /**
+     * Checks manual preferences and applies iPad view scaling for a launched game package if enabled.
+     */
+    public static boolean applyForGame(Context context, String packageName) {
+        if (context == null) return false;
+        boolean enabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewEnabled(context);
+        if (!enabled) {
+            return restoreDefaultView();
+        }
+        String modeStr = com.gamebooster.app.config.ManualSettingsPreferences.getIpadViewMode(context);
+        IpadViewMode mode = "IPAD_ULTRA".equalsIgnoreCase(modeStr) ? IpadViewMode.IPAD_ULTRA : IpadViewMode.IPAD_MEDIUM;
+        return applyIpadView(context, mode);
+    }
+
     public static int getOriginalDensity() {
         return originalDensity;
     }
