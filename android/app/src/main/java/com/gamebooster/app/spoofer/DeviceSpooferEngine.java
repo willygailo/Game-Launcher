@@ -46,6 +46,16 @@ public class DeviceSpooferEngine {
         }
     }
 
+    public static final SpoofProfile PROFILE_ROG_PHONE_8_PRO = new SpoofProfile(
+            "rog_phone_8_pro", "ASUS ROG Phone 8 Pro (165 Hz Extreme MLBB/CODM)",
+            "ASUS_AI2401", "asus", "asus", "ASUS_AI2401", "WW_AI2401", "ASUS_AI2401", "qcom", "sm8650", "SM8650"
+    );
+
+    public static final SpoofProfile PROFILE_REDMAGIC_9_PRO = new SpoofProfile(
+            "redmagic_9_pro", "REDMAGIC 9 Pro (165 Hz Extreme PUBGM/BGMI)",
+            "NX769J", "nubia", "nubia", "NX769J", "NX769J", "NX769J", "qcom", "sm8650", "SM8650"
+    );
+
     public static final SpoofProfile PROFILE_ROG_PHONE_6 = new SpoofProfile(
             "rog_phone_6", "ASUS ROG Phone 6 (120 FPS MLBB/Wild Rift)",
             "ASUS_AI2201", "asus", "asus", "ASUS_AI2201", "WW_AI2201", "ASUS_AI2201", "qcom", "sm8475", "SM8475"
@@ -69,6 +79,8 @@ public class DeviceSpooferEngine {
     private static final Map<String, SpoofProfile> PROFILES = new HashMap<>();
 
     static {
+        PROFILES.put(PROFILE_ROG_PHONE_8_PRO.id, PROFILE_ROG_PHONE_8_PRO);
+        PROFILES.put(PROFILE_REDMAGIC_9_PRO.id, PROFILE_REDMAGIC_9_PRO);
         PROFILES.put(PROFILE_ROG_PHONE_6.id, PROFILE_ROG_PHONE_6);
         PROFILES.put(PROFILE_BLACK_SHARK_5.id, PROFILE_BLACK_SHARK_5);
         PROFILES.put(PROFILE_GALAXY_S24_ULTRA.id, PROFILE_GALAXY_S24_ULTRA);

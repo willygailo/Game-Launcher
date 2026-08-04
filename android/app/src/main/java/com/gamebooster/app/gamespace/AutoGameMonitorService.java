@@ -108,6 +108,13 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
                         + profile.label + " up to " + targetHz + "Hz");
 
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
+                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
+                        targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
+                        targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
+                        targetHz >= 120 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ :
+                        targetHz >= 90 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_90HZ :
+                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_60HZ);
                 PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
                 
@@ -124,6 +131,8 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "Game exited — maintaining active performance settings (Zero Auto-Off)");
                 lastActiveGamePackage = null;
                 GameSessionSettings.restore(getApplicationContext());
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
+                com.gamebooster.app.engine.IpadViewScalerEngine.restoreDefaultView();
                 
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(), "⚡ Game session complete — Performance & Tweaks Active", android.widget.Toast.LENGTH_SHORT).show());

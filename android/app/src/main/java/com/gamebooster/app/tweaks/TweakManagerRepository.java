@@ -71,6 +71,36 @@ public class TweakManagerRepository {
                 true
         ));
 
+        TWEAKS.add(new TweakItem(
+                "ipad_view_scaling",
+                "iPad Ultra FOV View (DPI Density Scaler)",
+                "Scales display density to simulate Tablet / iPad wide FOV in PUBGM, CODM & MLBB",
+                "wm density 280",
+                "wm density reset",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "aim_touch_precision",
+                "Aim Precision Touch Latency Stabilizer",
+                "Reduces input lag and touch slop thresholds for zero-delay crosshair control",
+                "setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1",
+                "setprop view.touch_slop 8; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "hz_165_unlock",
+                "165Hz / 144Hz Max Refresh Rate Lock",
+                "Forces maximum display refresh rate override (165Hz/144Hz/120Hz)",
+                "settings put system peak_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global min_refresh_rate 165.0",
+                "settings delete system peak_refresh_rate; settings delete system user_refresh_rate; settings delete global min_refresh_rate",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
         // Shizuku / ADB System Tweaks
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
