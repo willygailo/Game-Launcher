@@ -20,4 +20,9 @@
     <color name="accent_ml_blue">#4A90E2</color>
     <color name="accent_pubg_orange">#FF8800</color>
     <color name="accent_codm_red">#FF0055</color>
+    <color name="card_bg_elevated">#60121B2E</color>
+    <color name="card_stroke_strong">#5500F0FF</color>
+    <color name="ipad_toggle_on">#00FF66</color>
+    <color name="ipad_toggle_off">#475569</color>
+    <color name="section_header">#B0C4DE</color>
 </resources>
