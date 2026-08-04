@@ -55,7 +55,13 @@ public class PerformanceChannel {
                 return new ProfileResult(false, 0, "Unknown performance profile");
         }
 
-        HzFpsChannel.RefreshRateResult refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
+        HzFpsChannel.RefreshRateResult refreshResult;
+        if (profile == Profile.EXTREME_PERFORMANCE) {
+            // EXTREME: force unconditionally via Shizuku — no capability gate, no fallback
+            refreshResult = HzFpsChannel.forceSetRefreshRate(context, targetHz);
+        } else {
+            refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
+        }
         if (!refreshResult.success) {
             return new ProfileResult(false, targetHz, refreshResult.message);
         }
@@ -67,7 +73,7 @@ public class PerformanceChannel {
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
-            writeAndExecuteRootTweaksScript();
+            writeAndExecuteRootTweaksScript(targetHz);
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
@@ -75,7 +81,18 @@ public class PerformanceChannel {
         return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
     }
 
+    /** Writes and executes a root shell script to apply the maximum boost at 165Hz. */
     public static boolean writeAndExecuteRootTweaksScript() {
+        return writeAndExecuteRootTweaksScript(165);
+    }
+
+    /**
+     * Writes and executes a root shell script via Shizuku for the specified target Hz.
+     * Uses the actual {@code targetHz} parameter — no longer hardcoded to 165.
+     *
+     * @param targetHz Target refresh rate written into the script (120, 144, or 165)
+     */
+    public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
         try {
             String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
             String scriptContent = "#!/system/bin/sh\\n" +
@@ -84,10 +101,11 @@ public class PerformanceChannel {
                     "setprop debug.hwui.renderer vulkan\\n" +
                     "setprop debug.renderengine.backend vulkan\\n" +
                     "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
-                    "setprop debug.sf.fps_limit 165\\n" +
-                    "setprop persist.sys.NV_FPSLIMIT 165\\n" +
+                    "setprop debug.sf.fps_limit " + targetHz + "\\n" +
+                    "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\\n" +
                     "setprop persist.sys.NV_POWERMODE 1\\n" +
-                    "service call SurfaceFlinger 1035 i32 165\\n" +
+                    "service call SurfaceFlinger 1035 i32 " + targetHz + "\\n" +
+                    "service call SurfaceFlinger 1036 i32 " + targetHz + "\\n" +
                     "cmd power set-mode 0 1\\n" +
                     "cmd power set-mode 2 1\\n" +
                     "cmd thermalservice override-status 0\\n";

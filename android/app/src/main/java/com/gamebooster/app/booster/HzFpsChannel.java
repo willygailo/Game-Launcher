@@ -6,6 +6,7 @@ import android.util.Log;
 import android.content.Context;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 public class HzFpsChannel {
 
@@ -39,6 +40,25 @@ public class HzFpsChannel {
             return new RefreshRateResult(false, requestedHz, appliedHz,
                     "Android did not allow the " + appliedHz + "Hz setting. Connect Shizuku or allow Modify system settings.");
         }
+    }
+
+    /**
+     * Forces the display to {@code requestedHz} via Shizuku with NO capability check and NO fallback.
+     * Fires 17+ Shizuku commands across 6 layers (AOSP + Game Mode + SurfaceFlinger + setprop + OEM)
+     * even if Android's Display.getSupportedModes() does not list the requested Hz.
+     *
+     * @param context App context
+     * @param requestedHz Target: 120, 144, or 165
+     */
+    public static RefreshRateResult forceSetRefreshRate(Context context, int requestedHz) {
+        if (context == null) return RefreshRateResult.failed(requestedHz, 0);
+        if (!ShizukuExecutor.hasShizukuPermission()) {
+            return RefreshRateResult.failed(requestedHz, 0);
+        }
+        MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
+        return r.success
+                ? RefreshRateResult.success(requestedHz, r.appliedHz)
+                : RefreshRateResult.failed(requestedHz, requestedHz);
     }
 
     /**

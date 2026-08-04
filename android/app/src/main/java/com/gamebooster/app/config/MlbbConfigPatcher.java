@@ -35,7 +35,8 @@ public class MlbbConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         ensureDirectory(path);
-        int frameRateLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 9 : (targetFps >= 90 ? 6 : 3));
+        // MLBB internal FrameRateLevel enum: 3=60fps, 6=90fps, 9=120/144/165fps Ultra High tier
+        int frameRateLevel = targetFps >= 90 ? 9 : (targetFps >= 60 ? 6 : 3);
         String checkCmd = "test -f " + path + " && echo EXISTS";
         String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
@@ -53,6 +54,7 @@ public class MlbbConfigPatcher {
             CommandExecutor.executeSystemCommand("sed -i 's/^Shadow=.*/Shadow=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path);
         }
         return true;

@@ -2,6 +2,7 @@ package com.gamebooster.app.engine;
 
 import android.content.Context;
 import android.util.Log;
+import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 /**
@@ -44,30 +45,45 @@ public class RefreshRateOverrideEngine {
 
         try {
             int rateInt = Math.round(mode.fps);
-            String rateStr = String.valueOf(mode.fps);
             Log.d(TAG, "Applying Refresh Rate Override: " + mode.label + " for package: " + packageName);
 
-            String[] commands = new String[] {
-                    "settings put system peak_refresh_rate " + rateStr,
-                    "settings put system user_refresh_rate " + rateInt,
-                    "settings put global min_refresh_rate " + rateStr
-            };
+            // Delegate global system forcing to MaxHzForceChannel (17+ commands, 6 layers)
+            MaxHzForceChannel.ForceResult forceResult = MaxHzForceChannel.forceApply(rateInt);
 
-            for (String cmd : commands) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            }
-
+            // Apply per-package constraints if a specific game package was provided
             if (packageName != null && !packageName.trim().isEmpty()) {
-                ShizukuExecutor.executeShizukuCommand("cmd window set-app-refresh-rate " + packageName + " " + rateInt);
-                ShizukuExecutor.executeShizukuCommand("device_config put game_overlay " + packageName + " mode=2,fps=" + rateInt + ":mode=3,fps=" + rateInt);
+                ShizukuExecutor.executeShizukuCommand(
+                    "cmd window set-app-refresh-rate " + packageName + " " + rateInt);
+                ShizukuExecutor.executeShizukuCommand(
+                    "device_config put game_overlay " + packageName
+                    + " mode=2,fps=" + rateInt + ":mode=3,fps=" + rateInt);
+                ShizukuExecutor.executeShizukuCommand(
+                    "cmd game set --fps " + rateInt + " " + packageName);
             }
 
-            Log.i(TAG, "Refresh Rate Override active: " + rateInt + " Hz");
-            return true;
+            Log.i(TAG, "RefreshRateOverrideEngine: " + forceResult.message);
+            return forceResult.success;
         } catch (Throwable e) {
             Log.e(TAG, "Failed to apply refresh rate override", e);
             return false;
         }
+    }
+
+    /**
+     * Convenience method: force max refresh rate globally without per-package constraints.
+     *
+     * @param targetHz Target Hz value (60, 90, 120, 144, or 165)
+     * @return true if Shizuku commands fired successfully
+     */
+    public static boolean applyMaxRefreshRateForce(int targetHz) {
+        if (!ShizukuExecutor.hasShizukuPermission()) return false;
+        RefreshRateMode mode;
+        if      (targetHz >= 165) mode = RefreshRateMode.MODE_165HZ;
+        else if (targetHz >= 144) mode = RefreshRateMode.MODE_144HZ;
+        else if (targetHz >= 120) mode = RefreshRateMode.MODE_120HZ;
+        else if (targetHz >= 90)  mode = RefreshRateMode.MODE_90HZ;
+        else                      mode = RefreshRateMode.MODE_60HZ;
+        return applyRefreshRate(null, null, mode);
     }
 
     /**
@@ -77,7 +93,9 @@ public class RefreshRateOverrideEngine {
         if (!ShizukuExecutor.isShizukuAvailable()) return false;
         try {
             ShizukuExecutor.executeShizukuCommand("settings delete system peak_refresh_rate");
+            ShizukuExecutor.executeShizukuCommand("settings delete system min_refresh_rate");
             ShizukuExecutor.executeShizukuCommand("settings delete system user_refresh_rate");
+            ShizukuExecutor.executeShizukuCommand("settings delete global peak_refresh_rate");
             ShizukuExecutor.executeShizukuCommand("settings delete global min_refresh_rate");
             Log.i(TAG, "Reset system refresh rate settings to default.");
             return true;

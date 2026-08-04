@@ -45,6 +45,18 @@ public class PubgConfigPatcher {
             );
             CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
         } else {
+            // Append CVars if they don't exist yet — sed cannot add new lines
+            String[][] cvars = {
+                {"+CVars=r.PUBGDeviceFPS",    "+CVars=r.PUBGDeviceFPS="    + pubgFpsLevel},
+                {"+CVars=r.PUBGFrameRateLimit", "+CVars=r.PUBGFrameRateLimit=" + targetFps},
+                {"+CVars=r.MobileFPSLimit",   "+CVars=r.MobileFPSLimit="   + targetFps}
+            };
+            for (String[] cvar : cvars) {
+                CommandExecutor.executeSystemCommand(
+                    "grep -qF '" + cvar[0] + "' " + path
+                    + " || echo '" + cvar[1] + "' >> " + path);
+            }
+            // Now update values in existing lines via sed
             CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGDeviceFPS=.*/+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path);

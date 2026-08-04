@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -36,6 +37,27 @@ public class FloatingOverlayService extends Service {
     private View overlayView;
     private Handler handler;
     private Runnable updateRunnable;
+
+    /**
+     * Class-level LayoutParams so toggleDockState() can dynamically swap window flags
+     * without recreating the view (required for FLAG_NOT_TOUCHABLE to take effect).
+     */
+    private WindowManager.LayoutParams params;
+
+    // -----------------------------------------------------------------------
+    // Window flag sets: collapsed = touch pass-through, expanded = interactive
+    // -----------------------------------------------------------------------
+
+    /** Collapsed pill state: touch events pass-through to game — zero obstruction. */
+    private static final int FLAGS_COLLAPSED =
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+
+    /** Expanded dock state: buttons are interactive, focus still not taken. */
+    private static final int FLAGS_EXPANDED =
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
 
     public static boolean isOverlayRunning() {
         return isRunning;
@@ -83,6 +105,12 @@ public class FloatingOverlayService extends Service {
     private boolean isCollapsed = true;
     private boolean isDndActive = false;
 
+    /** Kept as field so updateDndButtonTint() can change its tint without re-finding the view. */
+    private Button btnDndRef;
+
+    /** Dedicated Runnable ref so scheduleAutoCollapse() can cancel any pending collapse cleanly. */
+    private final Runnable autoCollapseRunnable = () -> toggleDockState(true);
+
     private boolean setupFloatingView() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (windowManager == null) return false;
@@ -106,6 +134,12 @@ public class FloatingOverlayService extends Service {
         View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
         isDndActive = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
 
+        // Store DND button reference and sync initial tint
+        if (btnDnd instanceof Button) {
+            btnDndRef = (Button) btnDnd;
+            updateDndButtonTint();
+        }
+
         if (tvCollapseBtn != null) {
             tvCollapseBtn.setOnClickListener(v -> toggleDockState(true));
         }
@@ -114,8 +148,13 @@ public class FloatingOverlayService extends Service {
             btnBoost.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "⚡ Executed: pm trim-caches 1000M & sync", android.widget.Toast.LENGTH_LONG).show());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "⚡ Executed: pm trim-caches 1000M & sync",
+                                android.widget.Toast.LENGTH_LONG).show();
+                        // Auto-collapse: get HUD out of the way after action
+                        scheduleAutoCollapse();
+                    });
                 });
             });
         }
@@ -127,9 +166,13 @@ public class FloatingOverlayService extends Service {
                             com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
                                     getApplicationContext(),
                                     com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "🔥 " + result.message,
-                                    android.widget.Toast.LENGTH_LONG).show());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "🔥 " + result.message,
+                                android.widget.Toast.LENGTH_LONG).show();
+                        // Auto-collapse: get HUD out of the way after action
+                        scheduleAutoCollapse();
+                    });
                 });
             });
         }
@@ -141,10 +184,16 @@ public class FloatingOverlayService extends Service {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     boolean applied = com.gamebooster.app.gamespace.GameSpaceDndManager
                             .setGamingDndMode(getApplicationContext(), targetDnd);
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), applied
-                                    ? (targetDnd ? "🚫 Gaming DND enabled" : "🔔 Gaming DND disabled")
-                                    : "DND permission is required", android.widget.Toast.LENGTH_LONG).show());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        android.widget.Toast.makeText(getApplicationContext(), applied
+                                ? (targetDnd ? "🚫 Gaming DND enabled" : "🔔 Gaming DND disabled")
+                                : "DND permission is required",
+                                android.widget.Toast.LENGTH_LONG).show();
+                        // Reflect active/inactive state visually on the button
+                        updateDndButtonTint();
+                        // Auto-collapse: get HUD out of the way after action
+                        scheduleAutoCollapse();
+                    });
                 });
             });
         }
@@ -152,7 +201,11 @@ public class FloatingOverlayService extends Service {
         if (btnCrosshair != null) {
             btnCrosshair.setOnClickListener(v -> {
                 boolean active = CrosshairOverlayManager.toggleCrosshair(getApplicationContext());
-                android.widget.Toast.makeText(getApplicationContext(), active ? "🎯 FPS Crosshair Overlay ON" : "🎯 Crosshair OFF", android.widget.Toast.LENGTH_SHORT).show();
+                android.widget.Toast.makeText(getApplicationContext(),
+                        active ? "🎯 FPS Crosshair Overlay ON" : "🎯 Crosshair OFF",
+                        android.widget.Toast.LENGTH_SHORT).show();
+                // Auto-collapse: get HUD out of the way after action
+                scheduleAutoCollapse();
             });
         }
 
@@ -163,17 +216,19 @@ public class FloatingOverlayService extends Service {
             layoutFlag = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+        // Start collapsed → FLAG_NOT_TOUCHABLE ensures the pill NEVER intercepts game touches.
+        // Flags are swapped dynamically in toggleDockState() via windowManager.updateViewLayout().
+        params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 layoutFlag,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                FLAGS_COLLAPSED,
                 PixelFormat.TRANSLUCENT
         );
 
         // Force overlay window to request maximum hardware refresh rate (120Hz, 144Hz, 165Hz)
         try {
-            com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
+            com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                     com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
             if (caps != null && caps.maxRefreshRate > 0) {
                 params.preferredRefreshRate = (float) caps.maxRefreshRate;
@@ -201,7 +256,7 @@ public class FloatingOverlayService extends Service {
         params.x = 20;
         params.y = 200;
 
-        View headerDock = overlayView.findViewById(R.id.tv_hud_collapse_btn) != null ? 
+        View headerDock = overlayView.findViewById(R.id.tv_hud_collapse_btn) != null ?
                 (View) overlayView.findViewById(R.id.tv_hud_collapse_btn).getParent() : overlayView;
 
         View.OnTouchListener dragListener = new View.OnTouchListener() {
@@ -241,7 +296,7 @@ public class FloatingOverlayService extends Service {
                                 toggleDockState(false);
                             }
                         } else {
-                            // Magnetic Edge Snapping
+                            // Magnetic Edge Snapping with safety clamp (prevents negative x)
                             if (windowManager != null && overlayView != null) {
                                 int screenWidth = getResources().getDisplayMetrics().widthPixels;
                                 int viewWidth = overlayView.getWidth();
@@ -249,7 +304,8 @@ public class FloatingOverlayService extends Service {
                                 if (params.x + (viewWidth / 2) < midPoint) {
                                     params.x = 10; // Magnetic Snap Left
                                 } else {
-                                    params.x = Math.max(10, screenWidth - viewWidth - 10); // Magnetic Snap Right
+                                    // Safety clamp: never go negative or off-screen
+                                    params.x = Math.max(10, Math.max(0, screenWidth - viewWidth - 10));
                                 }
                                 windowManager.updateViewLayout(overlayView, params);
                             }
@@ -267,6 +323,9 @@ public class FloatingOverlayService extends Service {
             headerDock.setOnTouchListener(dragListener);
         }
 
+        // Semi-transparent pill initially so it's less distracting while gaming
+        overlayView.setAlpha(0.75f);
+
         try {
             windowManager.addView(overlayView, params);
             return true;
@@ -276,15 +335,62 @@ public class FloatingOverlayService extends Service {
         }
     }
 
+    /**
+     * Updates the DND button background tint to visually reflect active/inactive state.
+     * Green = DND active (notifications silenced), default grey = DND inactive.
+     */
+    private void updateDndButtonTint() {
+        if (btnDndRef == null) return;
+        if (isDndActive) {
+            btnDndRef.setBackgroundTintList(
+                    android.content.res.ColorStateList.valueOf(Color.parseColor("#FF4CAF50")));
+            btnDndRef.setTextColor(Color.parseColor("#FF000000"));
+        } else {
+            // Reset to original card_bg colour
+            btnDndRef.setBackgroundTintList(
+                    android.content.res.ColorStateList.valueOf(Color.parseColor("#CC1C1C2E")));
+            btnDndRef.setTextColor(Color.parseColor("#FFE0E0E0"));
+        }
+    }
+
+    /**
+     * Schedules the HUD dock to auto-collapse 1.5 seconds after an action button is pressed,
+     * so the overlay automatically gets out of the way during gameplay.
+     * Any previous pending collapse is cancelled before rescheduling.
+     */
+    private void scheduleAutoCollapse() {
+        if (handler == null) return;
+        handler.removeCallbacks(autoCollapseRunnable);
+        handler.postDelayed(autoCollapseRunnable, 1500);
+    }
+
+    /**
+     * Toggles between collapsed pill mode and expanded dock mode.
+     * Critically, this also swaps the WindowManager flags so:
+     *   - Collapsed → FLAG_NOT_TOUCHABLE (game receives all touches)
+     *   - Expanded  → no FLAG_NOT_TOUCHABLE (HUD buttons are interactive)
+     */
     private void toggleDockState(boolean collapse) {
         this.isCollapsed = collapse;
         if (layoutCollapsedPill != null && layoutExpandedDock != null) {
             if (collapse) {
                 layoutCollapsedPill.setVisibility(View.VISIBLE);
                 layoutExpandedDock.setVisibility(View.GONE);
+                // Collapsed: pass touch events through — game is never blocked
+                if (params != null) params.flags = FLAGS_COLLAPSED;
+                overlayView.setAlpha(0.75f);
             } else {
                 layoutCollapsedPill.setVisibility(View.GONE);
                 layoutExpandedDock.setVisibility(View.VISIBLE);
+                // Expanded: allow user to interact with HUD buttons
+                if (params != null) params.flags = FLAGS_EXPANDED;
+                overlayView.setAlpha(1.0f);
+            }
+            // Apply updated flags to the live window immediately
+            if (windowManager != null && overlayView != null && params != null) {
+                try {
+                    windowManager.updateViewLayout(overlayView, params);
+                } catch (Exception ignored) {}
             }
         }
         updateMetricsText();
@@ -317,7 +423,7 @@ public class FloatingOverlayService extends Service {
 
     private void updateMetricsText() {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
-        com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
+        com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
         int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
         int activeFps = realTimeFps > 0 ? Math.min(165, realTimeFps) : currentHz;
@@ -370,8 +476,9 @@ public class FloatingOverlayService extends Service {
     public void onDestroy() {
         super.onDestroy();
         isRunning = false;
-        if (handler != null && updateRunnable != null) {
-            handler.removeCallbacks(updateRunnable);
+        if (handler != null) {
+            if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
+            handler.removeCallbacks(autoCollapseRunnable);
         }
         try {
             android.view.Choreographer.getInstance().removeFrameCallback(choreographerCallback);
