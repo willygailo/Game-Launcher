@@ -72,7 +72,7 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public boolean applyDeviceSpoofProfile(String profileId, String packageName) {
         if (context == null || profileId == null) return false;
-        com.gamebooster.app.spoofer.DeviceSpooferEngine.SpoofProfile profile =
+        com.gamebooster.app.spoofer.SpoofProfile profile =
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.getAllProfiles().get(profileId);
         if (profile == null) return false;
         return com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, packageName);
@@ -97,12 +97,13 @@ public class GameBoosterJsInterface {
     public String getAvailableSpoofProfilesJson() {
         try {
             org.json.JSONArray array = new org.json.JSONArray();
-            for (com.gamebooster.app.spoofer.DeviceSpooferEngine.SpoofProfile p : com.gamebooster.app.spoofer.DeviceSpooferEngine.getAllProfiles().values()) {
+            for (com.gamebooster.app.spoofer.SpoofProfile p : com.gamebooster.app.spoofer.DeviceSpooferEngine.getAllProfiles().values()) {
                 JSONObject obj = new JSONObject();
                 obj.put("id", p.id);
-                obj.put("name", p.name);
+                obj.put("name", p.displayName);
                 obj.put("model", p.model);
                 obj.put("brand", p.brand);
+                obj.put("brandLabel", p.brandLabel);
                 array.put(obj);
             }
             return array.toString();
