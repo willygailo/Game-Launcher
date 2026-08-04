@@ -9,12 +9,22 @@ public class GameAppInfo {
     private final String packageName;
     private final Drawable icon;
     private final Intent launchIntent;
+    private final String gameType;
+    private final int cardBgRes;
+    private final int badgeColor;
 
     public GameAppInfo(String label, String packageName, Drawable icon, Intent launchIntent) {
+        this(label, packageName, icon, launchIntent, "GAME", 0, 0000000);
+    }
+
+    public GameAppInfo(String label, String packageName, Drawable icon, Intent launchIntent, String gameType, int cardBgRes, int badgeColor) {
         this.label = label;
         this.packageName = packageName;
         this.icon = icon;
         this.launchIntent = launchIntent;
+        this.gameType = gameType;
+        this.cardBgRes = cardBgRes;
+        this.badgeColor = badgeColor;
     }
 
     public String getLabel() {
@@ -31,5 +41,17 @@ public class GameAppInfo {
 
     public Intent getLaunchIntent() {
         return launchIntent;
+    }
+
+    public String getGameType() {
+        return gameType;
+    }
+
+    public int getCardBgRes() {
+        return cardBgRes;
+    }
+
+    public int getBadgeColor() {
+        return badgeColor;
     }
 }

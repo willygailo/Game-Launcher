@@ -1,7 +1,7 @@
 package com.gamebooster.app.ui.screens;
-import com.gamebooster.app.config.*;
 
-import android.os.Build;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,19 +22,24 @@ import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 import com.gamebooster.app.games.GameAppInfo;
-import com.gamebooster.app.games.GameManagerRepository;
+import com.gamebooster.app.games.HomeGameScanner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HomeFragment extends Fragment {
+
+    private static final String PREF_HOME_CACHE = "home_game_cache_prefs";
+    private static final String KEY_CACHED_PACKAGES = "cached_home_packages";
 
     private TextView tvEngineMode;
     private TextView tvRamUsage;
     private TextView tvGamesHeader;
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
-    private GamesAdapter adapter;
+    private HomeGamesAdapter adapter;
     private final List<GameAppInfo> gameList = new ArrayList<>();
 
     @Nullable
@@ -59,12 +64,12 @@ public class HomeFragment extends Fragment {
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
-            adapter = new GamesAdapter(getContext(), gameList);
+            adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);
         }
 
         updateStatusStrip();
-        loadInstalledGames();
+        loadAndScanGamesZeroDelay();
         return view;
     }
 
@@ -72,7 +77,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateStatusStrip();
-        loadInstalledGames();
+        loadAndScanGamesZeroDelay();
     }
 
     private void updateStatusStrip() {
@@ -90,35 +95,36 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void loadInstalledGames() {
+    /**
+     * Zero-Delay Architecture:
+     * 1. Synchronously perform fast ML/PUBG/CODM target scan (~10ms)
+     * 2. Update UI instantly with zero flicker
+     */
+    private void loadAndScanGamesZeroDelay() {
         if (getContext() == null || rvGames == null) return;
 
-        AppExecutors.getInstance().executeScan(() -> {
-            List<GameAppInfo> installedGames = GameManagerRepository.getInstalledGames(getContext());
+        // Fast target scan (scans ONLY MLBB, PUBG, CODM packages directly)
+        List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(getContext());
 
-            AppExecutors.getInstance().postToMainThread(() -> {
-                if (!isAdded() || getContext() == null) return;
+        gameList.clear();
+        gameList.addAll(scannedGames);
 
-                gameList.clear();
-                gameList.addAll(installedGames);
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
+        if (adapter != null) {
+            adapter.updateList(scannedGames);
+        }
 
-                // Update header count
-                if (tvGamesHeader != null) {
-                    tvGamesHeader.setText("INSTALLED GAMES (" + installedGames.size() + ")");
-                }
+        // Update header count
+        if (tvGamesHeader != null) {
+            tvGamesHeader.setText("SUPPORTED GAMES (" + scannedGames.size() + "/3 DETECTED)");
+        }
 
-                // Toggle empty state vs games list
-                if (installedGames.isEmpty()) {
-                    rvGames.setVisibility(View.GONE);
-                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
-                } else {
-                    rvGames.setVisibility(View.VISIBLE);
-                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
-                }
-            });
-        });
+        // Toggle empty state vs games list
+        if (scannedGames.isEmpty()) {
+            rvGames.setVisibility(View.GONE);
+            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+        } else {
+            rvGames.setVisibility(View.VISIBLE);
+            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+        }
     }
 }

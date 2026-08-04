@@ -17,4 +17,7 @@
     <color name="game_card_accent">#00FF66</color>
     <color name="empty_state_text">#475569</color>
     <color name="status_strip_bg">#30121B2E</color>
+    <color name="accent_ml_blue">#4A90E2</color>
+    <color name="accent_pubg_orange">#FF8800</color>
+    <color name="accent_codm_red">#FF0055</color>
 </resources>

@@ -26,9 +26,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎮 MY GAMES"
+                    android:text="⚡ GAME BOOSTER PRO"
                     android:textColor="@color/accent_cyan"
-                    android:textSize="26sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.04" />
 
@@ -36,9 +36,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Tap a game to boost &amp; launch"
+                    android:text="Mobile Legends • PUBG Mobile • CODM"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <Button
@@ -91,7 +91,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:layout_marginBottom="6dp"
-            android:text="INSTALLED GAMES"
+            android:text="SUPPORTED GAMES (0/3 DETECTED)"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             android:textStyle="bold"
@@ -119,14 +119,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎮"
+                android:text="🎯"
                 android:textSize="48sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="No Games Detected"
+                android:text="No Target Games Found"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -135,7 +135,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Install games like MLBB, CODM, or PUBG\nand they will appear here automatically."
+                android:text="Install Mobile Legends, PUBG Mobile, or CODM\nand they will appear here instantly."
                 android:textColor="@color/empty_state_text"
                 android:textSize="13sp"
                 android:gravity="center"
