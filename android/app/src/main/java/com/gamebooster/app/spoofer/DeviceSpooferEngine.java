@@ -156,14 +156,19 @@ public class DeviceSpooferEngine {
                     "resetprop ro.product.device " + profile.device + " || setprop ro.product.device " + profile.device,
                     "resetprop ro.product.name " + profile.productName + " || setprop ro.product.name " + profile.productName,
                     "resetprop ro.build.product " + profile.buildProduct + " || setprop ro.build.product " + profile.buildProduct,
-                    "resetprop ro.vendor.product.model " + profile.model + " || setprop ro.vendor.product.model " + profile.model,
+                    "resetprop ro.product.system.model " + profile.model + " || setprop ro.product.system.model " + profile.model,
                     "resetprop ro.product.vendor.model " + profile.model + " || setprop ro.product.vendor.model " + profile.model,
-                    "resetprop ro.odm.product.model " + profile.model + " || setprop ro.odm.product.model " + profile.model,
+                    "resetprop ro.product.odm.model " + profile.model + " || setprop ro.product.odm.model " + profile.model,
+                    "resetprop ro.product.product.model " + profile.model + " || setprop ro.product.product.model " + profile.model,
+                    "resetprop ro.product.system_ext.model " + profile.model + " || setprop ro.product.system_ext.model " + profile.model,
+                    "resetprop ro.config.marketing_name \"" + profile.name + "\" || setprop ro.config.marketing_name \"" + profile.name + "\"",
                     "resetprop ro.hardware " + profile.hardware + " || setprop ro.hardware " + profile.hardware,
                     "resetprop ro.board.platform " + profile.platform + " || setprop ro.board.platform " + profile.platform,
                     "resetprop ro.soc.model " + profile.socModel + " || setprop ro.soc.model " + profile.socModel,
-                    "settings put system peak_refresh_rate 120.0",
-                    "settings put system user_refresh_rate 120",
+                    "setprop persist.sys.game.boost.profile " + profile.id,
+                    "settings put system peak_refresh_rate 165.0",
+                    "settings put system min_refresh_rate 165.0",
+                    "settings put system user_refresh_rate 165",
                     "settings put global angle_gl_driver_all_angle 1",
                     "settings put global game_driver_all_apps 1"
             };
@@ -174,8 +179,9 @@ public class DeviceSpooferEngine {
 
             if (packageName != null && !packageName.trim().isEmpty()) {
                 ShizukuExecutor.executeShizukuCommand("cmd game mode performance " + packageName);
-                ShizukuExecutor.executeShizukuCommand("cmd window set-app-refresh-rate " + packageName + " 120");
-                ShizukuExecutor.executeShizukuCommand("device_config put game_overlay " + packageName + " mode=2,fps=120:mode=3,fps=120");
+                ShizukuExecutor.executeShizukuCommand("cmd game set --fps 165 " + packageName);
+                ShizukuExecutor.executeShizukuCommand("cmd window set-app-refresh-rate " + packageName + " 165");
+                ShizukuExecutor.executeShizukuCommand("device_config put game_overlay " + packageName + " mode=2,fps=165:mode=3,fps=165");
             }
 
             activeProfileId = profile.id;

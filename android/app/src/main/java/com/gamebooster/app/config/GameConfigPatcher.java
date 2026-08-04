@@ -71,70 +71,7 @@ public class GameConfigPatcher {
         }
     }
 
-    private static boolean patchMlbbConfig(String path, int targetFps) {
-        ensureParentDirectory(path);
-        int frameRateLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 9 : (targetFps >= 90 ? 6 : 3));
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
-        if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "[Graphics]\\nHighFPSMode=1\\nFrameRateLevel=%d\\nGraphicsQuality=4\\nHDMode=1\\nShadow=1\\nFPS=%d\\nMaxFrameRate=%d\\nTargetFPS=%d\\nHighFrameRate=1\\n",
-                    frameRateLevel, targetFps, targetFps, targetFps
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
-        } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^HDMode=.*/HDMode=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^Shadow=.*/Shadow=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path);
-        }
-        return true;
-    }
-
-    private static boolean patchCodmConfig(String path, int targetFps) {
-        ensureParentDirectory(path);
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
-
-        if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "{\\n  \"MaxFrameRate\": %d,\\n  \"GraphicQuality\": 4,\\n  \"FPSLimit\": %d,\\n  \"SuperResolution\": 1,\\n  \"FieldOfView\": 90\\n}\\n",
-                    targetFps, targetFps
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
-        } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path);
-        }
-        return true;
-    }
-
-    private static boolean patchPubgConfig(String path, int targetFps) {
-        ensureParentDirectory(path);
-        int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5));
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
-
-        if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "[UserCustom DeviceProfile]\\n+CVars=r.PUBGDeviceFPS=%d\\n+CVars=r.PUBGFrameRateLimit=%d\\n+CVars=r.MobileFPSLimit=%d\\nFrameRateLevel=%d\\n",
-                    pubgFpsLevel, targetFps, targetFps, pubgFpsLevel
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
-        } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGDeviceFPS=.*/+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/FrameRateLevel=.*/FrameRateLevel=" + pubgFpsLevel + "/' " + path);
-        }
-        return true;
-    }
 
     private static boolean patchFreeFireConfig(String path, int targetFps) {
         ensureParentDirectory(path);

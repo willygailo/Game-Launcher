@@ -24,7 +24,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "Home",
-            "Settings"
+            "Settings",
+            "CFG Profiles"
     };
 
     public void selectTab(int position) {
@@ -117,7 +118,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     private void showFragmentForTab(int position) {
-        Fragment selectedFragment = (position == 1) ? new SettingsFragment() : new HomeFragment();
+        Fragment selectedFragment;
+        if (position == 1) {
+            selectedFragment = new SettingsFragment();
+        } else if (position == 2) {
+            selectedFragment = new CfgProfilesFragment();
+        } else {
+            selectedFragment = new HomeFragment();
+        }
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, selectedFragment)

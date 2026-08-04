@@ -128,5 +128,27 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
         executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
+
+        // Force Target Games Permission & AppOps Overrides (PUBGM, MLBB, CODM, BGMI, Free Fire)
+        String[] targetGames = new String[] {
+                "com.mobile.legends", "com.mobilelegends.win",
+                "com.tencent.ig", "com.pubg.krmobile", "com.vng.pubgmobile", "com.pubg.imobile", "com.pubg.newstate",
+                "com.activision.callofduty.shooter", "com.garena.game.codm",
+                "com.dts.freefireth", "com.dts.freefiremax",
+                "com.riotgames.league.wildrift", "com.miHoYo.GenshinImpact", "com.HoYoverse.hkrpg"
+        };
+
+        for (String gamePkg : targetGames) {
+            executeShizukuCommand("cmd game mode performance " + gamePkg);
+            executeShizukuCommand("cmd game set --fps 165 " + gamePkg);
+            executeShizukuCommand("cmd window set-app-refresh-rate " + gamePkg + " 165");
+            executeShizukuCommand("device_config put game_overlay " + gamePkg + " mode=2,fps=165:mode=3,fps=165");
+            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
+            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
+            executeShizukuCommand("cmd appops set " + gamePkg + " AUTO_START allow");
+            executeShizukuCommand("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
+            executeShizukuCommand("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
+            executeShizukuCommand("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
+        }
     }
 }

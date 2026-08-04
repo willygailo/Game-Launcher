@@ -2,15 +2,23 @@ package com.gamebooster.app.config;
 
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CodmConfigPatcher manages internal config files for Call of Duty Mobile (all versions).
+ * CodmConfigPatcher manages internal config files for Call of Duty Mobile (all versions/regions).
+ *
+ * Two patching modes:
+ *  - patch()            → standard patch: create-if-missing or sed-update
+ *  - patchCompetitive() → competitive force-write: ALWAYS overwrites all paths, no fallback,
+ *                         executed via Shizuku for full data/data access (temporary root)
  */
 public class CodmConfigPatcher {
 
     private static final String TAG = "CodmConfigPatcher";
+
+    // ─── Standard Patch ───────────────────────────────────────────────────────
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
@@ -19,9 +27,89 @@ public class CodmConfigPatcher {
         for (String path : paths) {
             if (applyPatch(path, targetFps)) patched++;
         }
-        Log.i(TAG, "CODM Config Patcher completed: " + patched + " files updated for " + packageName + " -> " + targetFps + " FPS");
+        Log.i(TAG, "CODM patch: " + patched + " files for " + packageName + " @ " + targetFps + "fps");
         return patched > 0;
     }
+
+    // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
+    /**
+     * Force-overwrites ALL CODM config paths unconditionally.
+     * Writes proper JSON for UserSetting.json and INI for GraphicsSettings.ini.
+     * Uses Shizuku (temporary root) to reach /data/data/ paths.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            String content;
+            if (path.endsWith(".json")) {
+                content = "{\n" +
+                        "  \"MaxFrameRate\": " + targetFps + ",\n" +
+                        "  \"GraphicQuality\": 4,\n" +
+                        "  \"FPSLimit\": " + targetFps + ",\n" +
+                        "  \"TouchBoostHz\": 165,\n" +
+                        "  \"SuperResolution\": 1,\n" +
+                        "  \"FieldOfView\": 90,\n" +
+                        "  \"AntiAliasing\": 1,\n" +
+                        "  \"ShadowQuality\": 2\n" +
+                        "}\n";
+            } else if (path.endsWith(".xml")) {
+                // PlayerPrefs XML format
+                content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
+                        "<map>\n" +
+                        "  <int name=\"MaxFrameRate\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"FPSLimit\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"GraphicQuality\" value=\"4\" />\n" +
+                        "</map>\n";
+            } else {
+                // INI format
+                content = "[Graphics]\n" +
+                        "MaxFrameRate=" + targetFps + "\n" +
+                        "FPSLimit=" + targetFps + "\n" +
+                        "GraphicQuality=4\n" +
+                        "SuperResolution=1\n" +
+                        "TouchBoostHz=165\n" +
+                        "AntiAliasing=1\n";
+            }
+            forceWrite(path, content);
+            written++;
+        }
+        Log.i(TAG, "CODM competitive force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Injects super-fast touch settings into CODM config files.
+     * Sets TouchBoostHz=165 in both JSON and INI formats.
+     */
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd;
+            if (path.endsWith(".json")) {
+                cmd = "grep -qF 'TouchBoostHz' " + path +
+                      " || sed -i 's/}$/,\\n  \"TouchBoostHz\": 165\\n}/' " + path + "; " +
+                      "sed -i 's/\"TouchBoostHz\":.*/\"TouchBoostHz\": 165,/' " + path;
+            } else {
+                cmd = "grep -qF 'TouchBoostHz' " + path + " || echo 'TouchBoostHz=165' >> " + path + "; " +
+                      "sed -i 's/^TouchBoostHz=.*/TouchBoostHz=165/' " + path;
+            }
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CODM super-fast touch applied for " + packageName);
+    }
+
+    // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
@@ -33,10 +121,20 @@ public class CodmConfigPatcher {
         return paths;
     }
 
+    private static void forceWrite(String path, String content) {
+        ensureDirectory(path);
+        String escaped = content.replace("'", "'\\''");
+        String writeCmd = "printf '" + escaped + "' > " + path;
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            ShizukuExecutor.executeShizukuCommand(writeCmd);
+        } else {
+            CommandExecutor.executeSystemCommand(writeCmd);
+        }
+    }
+
     private static boolean applyPatch(String path, int targetFps) {
         ensureDirectory(path);
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+        String checkRes = CommandExecutor.executeSystemCommand("test -f " + path + " && echo EXISTS");
 
         if (!checkRes.contains("EXISTS")) {
             String content = String.format(
@@ -57,7 +155,11 @@ public class CodmConfigPatcher {
         int lastSlash = path.lastIndexOf('/');
         if (lastSlash > 0) {
             String parentDir = path.substring(0, lastSlash);
-            CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
+            } else {
+                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
+            }
         }
     }
 }

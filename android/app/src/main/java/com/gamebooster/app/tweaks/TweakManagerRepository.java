@@ -52,16 +52,6 @@ public class TweakManagerRepository {
 
         // Touch & Display Tweaks
         TWEAKS.add(new TweakItem(
-                "touch_sample_rate",
-                "Touch Slop Sensitivity Boost",
-                "Reduces swipe activation threshold for instant gesture response",
-                "settings put system touch_slop_reduction 1; setprop view.touch_slop 2",
-                "settings put system touch_slop_reduction 0; setprop view.touch_slop 8",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "scrolling_cache_boost",
                 "Zero Scroll Cache Latency",
                 "Disables scrolling cache compression to save CPU render cycles",
@@ -74,9 +64,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "aim_touch_precision",
                 "Aim Precision Touch Latency Stabilizer",
-                "Reduces input lag and touch slop thresholds for zero-delay crosshair control",
-                "setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1",
-                "setprop view.touch_slop 8; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0",
+                "Reduces input lag, touch slop, pressure threshold and FIFO scheduling for zero-delay crosshair control",
+                "setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.001",
+                "setprop view.touch_slop 8; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0; setprop persist.sys.touch.pressure.scale 1.0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
@@ -283,16 +273,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "thermal_throttling_override",
-                "Thermal Throttling Bypass Override",
-                "Temporarily bypasses thermal throttling policy daemon to prevent FPS drops during extended gaming",
-                "setprop sys.thermal.policy 0; setprop vendor.thermal.mode 0; setprop debug.thermal.throttle 0",
-                "setprop sys.thermal.policy 1; setprop vendor.thermal.mode 1; setprop debug.thermal.throttle 1",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "sf_zero_vsync_phase",
                 "Zero VSync Phase Frame Offsets",
                 "Eliminates SurfaceFlinger VSync app/render phase offsets to render frames instantly",
@@ -302,15 +282,8 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "touch_pressure_scale_boost",
-                "Touch Pressure Scale Latency Boost",
-                "Scales down digitizer pressure threshold for instantaneous touch gesture response",
-                "setprop persist.sys.touch.pressure.scale 0.001; setprop view.touch_slop 1",
-                "setprop persist.sys.touch.pressure.scale 1.0; setprop view.touch_slop 8",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
+        // touch_pressure_scale_boost — slop line removed (covered by aim_touch_precision)
+        // display_vsync_offset — removed: contradicts sf_zero_vsync_phase (0ns vs 500000ns conflict)
 
         TWEAKS.add(new TweakItem(
                 "powerhal_sustained_perf",
@@ -339,16 +312,6 @@ public class TweakManagerRepository {
                 "setprop vendor.gpu.power_mode 1; setprop debug.gpu.performance 1",
                 "setprop vendor.gpu.power_mode 0; setprop debug.gpu.performance 0",
                 TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "display_vsync_offset",
-                "SurfaceFlinger Zero VSync Phase Offset",
-                "Aligns app & GL VSync phase offsets to 0.5ms for lowest latency rendering",
-                "setprop debug.sf.early_app_phase_offset_ns 500000; setprop debug.sf.early_gl_app_phase_offset_ns 500000",
-                "setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_app_phase_offset_ns 1000000",
-                TweakCategory.TOUCH_DISPLAY,
                 true
         ));
 
@@ -567,6 +530,40 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
+
+        // ═══════════════════════════════════════════════════════════
+        // COMPETITIVE GAMING TWEAKS (NEW — NO DUPLICATES)
+        // ═══════════════════════════════════════════════════════════
+
+        TWEAKS.add(new TweakItem(
+                "super_fast_touch_165",
+                "Super Fast Touch 165Hz Competitive Mode",
+                "Ultra-low slop (0), max digitizer input rate 1000/s, min pressure scale — tuned for 165Hz competitive play",
+                "setprop view.touch_slop 0; setprop persist.sys.touch.pressure.scale 0.0001; setprop debug.input.max_events_per_sec 1000; setprop sys.use_fifo 1; settings put system touch_slop_reduction 1",
+                "setprop view.touch_slop 8; setprop persist.sys.touch.pressure.scale 1.0; setprop debug.input.max_events_per_sec 150; setprop sys.use_fifo 0; settings put system touch_slop_reduction 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "ram_turbo_mode",
+                "RAM Turbo — Clear Hidden App Reserve",
+                "Clears Android hidden app RAM reserves and lowers min memory floor to free maximum RAM for games",
+                "settings put global min_hidden_apps 0; settings put global hidden_app_minmem_kb 0; settings put global background_process_limit 2",
+                "settings put global min_hidden_apps 5; settings put global hidden_app_minmem_kb 512; settings put global background_process_limit -1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "io_scheduler_gaming",
+                "Gaming I/O Scheduler & Low Swappiness",
+                "Sets I/O scheduler to deadline for deterministic latency and lowers swappiness to 20 to keep game data in RAM",
+                "setprop sys.io.scheduler deadline; setprop vm.swappiness 20; setprop vm.dirty_ratio 10; setprop vm.dirty_background_ratio 5",
+                "setprop sys.io.scheduler cfq; setprop vm.swappiness 60; setprop vm.dirty_ratio 20; setprop vm.dirty_background_ratio 10",
+                TweakCategory.CPU_GPU,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {
@@ -596,12 +593,20 @@ public class TweakManagerRepository {
     }
 
     public static boolean applyTweak(Context context, TweakItem tweak) {
+        if (tweak == null) return false;
+
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
         if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) {
             return false;
         }
 
-        String res = CommandExecutor.executeSystemCommand(tweak.getApplyCommand());
+        String res;
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getApplyCommand());
+        } else {
+            res = CommandExecutor.executeSystemCommand(tweak.getApplyCommand());
+        }
+
         boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(true);
@@ -617,7 +622,15 @@ public class TweakManagerRepository {
     }
 
     public static boolean revertTweak(Context context, TweakItem tweak) {
-        String res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
+        if (tweak == null) return false;
+
+        String res;
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getRevertCommand());
+        } else {
+            res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
+        }
+
         boolean success = CommandExecutor.isSuccessOutput(res);
         if (success) {
             tweak.setApplied(false);

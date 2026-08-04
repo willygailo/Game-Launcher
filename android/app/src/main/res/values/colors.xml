@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="bg_dark">#0B0E14</color>
-    <color name="glass_scrim">#45071022</color>
-    <color name="card_bg">#50121B2E</color>
-    <color name="card_stroke">#3300F0FF</color>
+    <color name="glass_scrim">#00000000</color>
+    <color name="card_bg">#180F172A</color>
+    <color name="card_stroke">#5500F0FF</color>
     <color name="accent_cyan">#00F0FF</color>
     <color name="accent_neon_green">#00FF66</color>
     <color name="accent_purple">#7000FF</color>
@@ -11,16 +11,16 @@
     <color name="accent_lock_amber">#FFB800</color>
     <color name="accent_orange">#FF8800</color>
     <color name="accent_red">#FF0055</color>
-    <color name="text_primary">#F1F5F9</color>
-    <color name="text_secondary">#94A3B8</color>
-    <color name="nav_bg">#D9090C12</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#F1F5F9</color>
+    <color name="nav_bg">#AA090C12</color>
     <color name="game_card_accent">#00FF66</color>
-    <color name="empty_state_text">#475569</color>
-    <color name="status_strip_bg">#30121B2E</color>
+    <color name="empty_state_text">#F1F5F9</color>
+    <color name="status_strip_bg">#180F172A</color>
     <color name="accent_ml_blue">#4A90E2</color>
     <color name="accent_pubg_orange">#FF8800</color>
     <color name="accent_codm_red">#FF0055</color>
-    <color name="card_bg_elevated">#60121B2E</color>
-    <color name="card_stroke_strong">#5500F0FF</color>
-    <color name="section_header">#B0C4DE</color>
+    <color name="card_bg_elevated">#250F172A</color>
+    <color name="card_stroke_strong">#7700F0FF</color>
+    <color name="section_header">#F8FAFC</color>
 </resources>
