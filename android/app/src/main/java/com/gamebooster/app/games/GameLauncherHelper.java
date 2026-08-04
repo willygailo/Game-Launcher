@@ -33,7 +33,15 @@ public class GameLauncherHelper {
             try {
                 com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkgName);
-                int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
+
+                // Auto-apply saved per-game Competitive CFG Profile (FPS + Super Touch + Shizuku Hz)
+                String gameKey = pkgName.contains("mobile.legends") || pkgName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
+                                 pkgName.contains("pubg") || pkgName.contains("tencent.ig") || pkgName.contains("imobile") || pkgName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
+                                 pkgName.contains("cod") || pkgName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
+                CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
+                CfgProfileManager.applyProfile(context, gameKey, cfgProf);
+
+                int targetFps = cfgProf.getTargetFps();
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName,
                         targetFps >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :

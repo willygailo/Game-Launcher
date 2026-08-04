@@ -18,9 +18,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.config.GameConfigPatcher;
-import com.gamebooster.app.config.GameProfileAutoConfigurator;
-import com.gamebooster.app.config.GameProfilePreferences;
+import com.gamebooster.app.config.*;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameLauncherHelper;
@@ -112,38 +110,64 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
     }
 
     private void showProfilePicker(GameViewHolder holder, GameAppInfo game) {
-        GameProfilePreferences.Profile[] profiles = GameProfilePreferences.Profile.values();
-        String[] labels = new String[profiles.length];
-        GameProfilePreferences.Profile current = GameProfilePreferences.getProfile(context, game.getPackageName());
-        int selected = 0;
-        for (int i = 0; i < profiles.length; i++) {
-            int fps = GameProfilePreferences.getTargetHz(context, profiles[i]);
-            labels[i] = profiles[i].label + " — Force " + fps + " FPS/Hz into game files";
-            if (profiles[i] == current) selected = i;
+        String pkg = game.getPackageName();
+        String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
+                         pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
+                         pkg.contains("cod") || pkg.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
+
+        CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
+
+        String[] fpsOptions = {
+                "⚡ 165 FPS / Hz (Max Extreme — ROG 8 Pro / RedMagic 9 Pro)",
+                "🎮 144 FPS / Hz (Ultra High — ROG 6)",
+                "🔥 120 FPS / Hz (Pro Gaming — Black Shark 5)",
+                "⚖️ 90 FPS / Hz  (Smooth Competitive — S24 Ultra)",
+                "🔋 60 FPS / Hz  (Standard)"
+        };
+        int[] fpsValues = {165, 144, 120, 90, 60};
+
+        int selectedIdx = 0;
+        for (int i = 0; i < fpsValues.length; i++) {
+            if (fpsValues[i] == currentCfg.getTargetFps()) {
+                selectedIdx = i;
+                break;
+            }
         }
 
-        final int[] chosenIdx = {selected};
+        final int[] chosenFps = {fpsValues[selectedIdx]};
+        final boolean[] superTouch = {currentCfg.isSuperFastTouchEnabled()};
+        final boolean[] forceHz = {currentCfg.isForceWriteSystemHz()};
+
+        String[] multiOptions = {
+                "⚡ Super Fast Touch 165Hz (HighFreqTouch / TouchBoostHz)",
+                "📺 Force System Hz via Shizuku (SurfaceFlinger + Game Mode)"
+        };
+        boolean[] initialChecked = {superTouch[0], forceHz[0]};
 
         new AlertDialog.Builder(context)
-                .setTitle("⚙️ " + game.getLabel() + " FPS Config")
-                .setMessage("Package: " + game.getPackageName() + "\nChoose target rate to force inject into internal game config files:")
-                .setSingleChoiceItems(labels, selected, (dialog, which) -> chosenIdx[0] = which)
-                .setPositiveButton("⚡ FORCE WRITE FPS TO GAME FILES", (dialog, which) -> {
-                    GameProfilePreferences.Profile chosen = profiles[chosenIdx[0]];
-                    int targetFps = GameProfilePreferences.getTargetHz(context, chosen);
-                    GameProfilePreferences.setProfile(context, game.getPackageName(), chosen);
-                    holder.tvProfile.setText(GameProfilePreferences.getSummary(context, game.getPackageName()));
+                .setTitle("⚙️ " + game.getLabel() + " — Competitive CFG Config")
+                .setMessage("Package: " + pkg + "\nSelect target FPS and touch options to force-write into game config files via Shizuku (temporary root):")
+                .setSingleChoiceItems(fpsOptions, selectedIdx, (dialog, which) -> chosenFps[0] = fpsValues[which])
+                .setMultiChoiceItems(multiOptions, initialChecked, (dialog, which, isChecked) -> {
+                    if (which == 0) superTouch[0] = isChecked;
+                    if (which == 1) forceHz[0] = isChecked;
+                })
+                .setPositiveButton("⚡ FORCE WRITE & APPLY VIA SHIZUKU", (dialog, which) -> {
+                    CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, chosenFps[0], superTouch[0], forceHz[0]);
 
-                    Toast.makeText(context, "⚡ Forcing " + targetFps + " FPS config into " + game.getLabel() + " game files...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "⚡ Forcing " + chosenFps[0] + " FPS CFG into " + game.getLabel() + " game files via Shizuku...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
-                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
-                        GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);
-                        ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + game.getPackageName());
-                        ShizukuExecutor.executeShizukuCommand("settings put global updatable_driver_production_opt_in_apps " + game.getPackageName());
+                        int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);
+                        GameConfigPatcher.applyGameFpsPatch(pkg, chosenFps[0]);
+                        GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, chosenFps[0]);
+
+                        ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + pkg);
+                        ShizukuExecutor.executeShizukuCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
 
                         AppExecutors.getInstance().postToMainThread(() -> {
-                            Toast.makeText(context, "✅ FORCED " + targetFps + " FPS CONFIG TO " + game.getLabel() + " GAME FILES!\n" + result.message, Toast.LENGTH_LONG).show();
+                            holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
+                            Toast.makeText(context, "✅ FORCED " + chosenFps[0] + " FPS CFG TO " + game.getLabel() + " (" + patchedCount + " files updated via Shizuku)!", Toast.LENGTH_LONG).show();
                         });
                     });
                 })
