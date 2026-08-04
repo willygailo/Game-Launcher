@@ -99,17 +99,39 @@ public class IpadViewScalerEngine {
     }
 
     /**
-     * Checks manual preferences and applies iPad view scaling for a launched game package if enabled.
+     * Checks manual preferences and applies iPad view scaling specifically when a supported game package (MLBB/PUBGM/CODM) is active.
      */
     public static boolean applyForGame(Context context, String packageName) {
-        if (context == null) return false;
-        boolean enabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewEnabled(context);
-        if (!enabled) {
+        if (context == null || packageName == null) return restoreDefaultView();
+        
+        boolean globalEnabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewEnabled(context);
+        if (!globalEnabled) {
             return restoreDefaultView();
         }
+
+        String pkg = packageName.toLowerCase().trim();
+        boolean isMlbb = pkg.contains("mobile.legends") || pkg.contains("mobilelegends");
+        boolean isPubg = pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile");
+        boolean isCodm = pkg.contains("cod") || pkg.contains("callofduty");
+
+        if (isMlbb) {
+            boolean enabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewGameEnabled(context, "mlbb");
+            if (!enabled) return restoreDefaultView();
+        } else if (isPubg) {
+            boolean enabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewGameEnabled(context, "pubg");
+            if (!enabled) return restoreDefaultView();
+        } else if (isCodm) {
+            boolean enabled = com.gamebooster.app.config.ManualSettingsPreferences.isIpadViewGameEnabled(context, "codm");
+            if (!enabled) return restoreDefaultView();
+        }
+
         String modeStr = com.gamebooster.app.config.ManualSettingsPreferences.getIpadViewMode(context);
         IpadViewMode mode = "IPAD_ULTRA".equalsIgnoreCase(modeStr) ? IpadViewMode.IPAD_ULTRA : IpadViewMode.IPAD_MEDIUM;
         return applyIpadView(context, mode);
+    }
+
+    public static boolean revertForAppExit(Context context) {
+        return restoreDefaultView();
     }
 
     public static int getOriginalDensity() {

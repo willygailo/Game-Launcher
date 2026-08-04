@@ -266,8 +266,36 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        // Card 1.5: Per-Game iPad View Switches
+        Switch switchIpadMlbb = view.findViewById(R.id.switch_ipad_mlbb);
+        Switch switchIpadPubg = view.findViewById(R.id.switch_ipad_pubg);
+        Switch switchIpadCodm = view.findViewById(R.id.switch_ipad_codm);
+
+        if (getContext() != null) {
+            if (switchIpadMlbb != null) switchIpadMlbb.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "mlbb"));
+            if (switchIpadPubg != null) switchIpadPubg.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "pubg"));
+            if (switchIpadCodm != null) switchIpadCodm.setChecked(ManualSettingsPreferences.isIpadViewGameEnabled(getContext(), "codm"));
+        }
+
+        if (switchIpadMlbb != null) {
+            switchIpadMlbb.setOnCheckedChangeListener((bv, isChecked) -> {
+                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "mlbb", isChecked);
+            });
+        }
+        if (switchIpadPubg != null) {
+            switchIpadPubg.setOnCheckedChangeListener((bv, isChecked) -> {
+                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "pubg", isChecked);
+            });
+        }
+        if (switchIpadCodm != null) {
+            switchIpadCodm.setOnCheckedChangeListener((bv, isChecked) -> {
+                if (getContext() != null) ManualSettingsPreferences.setIpadViewGameEnabled(getContext(), "codm", isChecked);
+            });
+        }
+
         // Card 3: Hardware Engine & Performance Presets
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
+        Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
         Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
 
@@ -278,6 +306,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile"));
+        }
+        if (btnPro144 != null) {
+            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
         }
         if (btnPerformance != null) {
             btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile"));

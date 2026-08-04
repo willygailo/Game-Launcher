@@ -319,18 +319,15 @@ public class FloatingOverlayService extends Service {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps = 
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 60;
-        int activeFps = realTimeFps > 0 ? realTimeFps : currentHz;
-        if (caps != null && caps.maxRefreshRate > 60 && activeFps < caps.currentRefreshRate && realTimeFps == 0) {
-            activeFps = caps.currentRefreshRate;
-        }
+        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
+        int activeFps = realTimeFps > 0 ? Math.min(165, realTimeFps) : currentHz;
 
         if (tvPillMetrics != null) {
             tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz", activeFps, currentHz));
+            tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz (Max 165)", activeFps, currentHz));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));

@@ -29,8 +29,8 @@ public class GameBoosterService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("GAME SPACE — Auto Booster")
-                .setContentText("Monitoring games & maintaining maximum non-rooted performance...")
+                .setContentTitle("GAME SPACE — 165Hz Auto Booster")
+                .setContentText("Background Home Gaming Engine Active • 165Hz Lock")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
@@ -40,7 +40,8 @@ public class GameBoosterService extends Service {
 
         // Apply background auto-boost optimizations
         try {
-            PerformanceChannel.executeOneTapBoost(getApplicationContext());
+            com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
+            PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
         } catch (Exception ignored) {}
 
         return START_STICKY;

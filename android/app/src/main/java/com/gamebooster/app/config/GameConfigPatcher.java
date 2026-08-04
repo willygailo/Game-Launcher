@@ -41,10 +41,12 @@ public class GameConfigPatcher {
                 if (patchMlbbConfig(path, targetFps)) patchedFiles++;
             } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
                 if (patchCodmConfig(path, targetFps)) patchedFiles++;
-            } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("gameloft")) {
                 if (patchPubgConfig(path, targetFps)) patchedFiles++;
             } else if (pkg.contains("freefire")) {
                 if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
+            } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
+                if (patchWildRiftGenshinConfig(path, targetFps)) patchedFiles++;
             } else {
                 if (patchGenericConfig(path, targetFps)) patchedFiles++;
             }
@@ -69,7 +71,7 @@ public class GameConfigPatcher {
 
     private static boolean patchMlbbConfig(String path, int targetFps) {
         ensureParentDirectory(path);
-        int frameRateLevel = targetFps >= 120 ? 9 : (targetFps >= 90 ? 6 : 3);
+        int frameRateLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 9 : (targetFps >= 90 ? 6 : 3));
         String checkCmd = "test -f " + path + " && echo EXISTS";
         String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
@@ -113,7 +115,7 @@ public class GameConfigPatcher {
 
     private static boolean patchPubgConfig(String path, int targetFps) {
         ensureParentDirectory(path);
-        int pubgFpsLevel = targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5);
+        int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5));
         String checkCmd = "test -f " + path + " && echo EXISTS";
         String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
@@ -147,6 +149,23 @@ public class GameConfigPatcher {
             CommandExecutor.executeSystemCommand("sed -i 's/^HighFPS=.*/HighFPS=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FPSMode=.*/FPSMode=2/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path);
+        }
+        return true;
+    }
+
+    private static boolean patchWildRiftGenshinConfig(String path, int targetFps) {
+        ensureParentDirectory(path);
+        String checkCmd = "test -f " + path + " && echo EXISTS";
+        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
+
+        if (!checkRes.contains("EXISTS")) {
+            String content = String.format("{\\n  \"fps\": %d,\\n  \"max_fps\": %d,\\n  \"target_frame_rate\": %d\\n}\\n",
+                    targetFps, targetFps, targetFps);
+            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+        } else {
+            CommandExecutor.executeSystemCommand("sed -i 's/\"fps\":.*/\"fps\": " + targetFps + ",/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/\"max_fps\":.*/\"max_fps\": " + targetFps + ",/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/\"target_frame_rate\":.*/\"target_frame_rate\": " + targetFps + "/' " + path);
         }
         return true;
     }
@@ -190,6 +209,9 @@ public class GameConfigPatcher {
         } else if (pkg.contains("freefire")) {
             paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
             paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
+        } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
+            paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
         } else {
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
             paths.add("/data/data/" + pkg + "/files/GameSettings.ini");

@@ -13,8 +13,8 @@ public final class GameProfilePreferences {
 
     public enum Profile {
         BALANCED("Balanced", 90, false, PerformanceChannel.Profile.BALANCED),
-        COMPETITIVE("Competitive", 120, true, PerformanceChannel.Profile.PERFORMANCE),
-        MAX_SUPPORTED("Max Supported", Integer.MAX_VALUE, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+        COMPETITIVE("Competitive 144Hz", 144, true, PerformanceChannel.Profile.PERFORMANCE),
+        MAX_SUPPORTED("Max 165Hz Extreme", 165, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
 
         public final String label;
         private final int requestedHz;
@@ -30,9 +30,7 @@ public final class GameProfilePreferences {
         }
 
         int resolveTargetHz(DevicePerformanceCapabilities capabilities) {
-            return requestedHz == Integer.MAX_VALUE
-                    ? capabilities.getMaxRefreshRate()
-                    : capabilities.resolveRefreshRate(requestedHz);
+            return capabilities.resolveRefreshRate(requestedHz);
         }
     }
 

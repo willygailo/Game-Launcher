@@ -93,9 +93,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "hz_165_unlock",
-                "165Hz / 144Hz Max Refresh Rate Lock",
-                "Forces maximum display refresh rate override (165Hz/144Hz/120Hz)",
-                "settings put system peak_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global min_refresh_rate 165.0",
+                "165Hz Max Refresh Rate Lock",
+                "Forces maximum display refresh rate override (165Hz System & SurfaceFlinger)",
+                "settings put system peak_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global min_refresh_rate 165.0; cmd window set-app-refresh-rate global 165; service call SurfaceFlinger 1035 i32 165",
                 "settings delete system peak_refresh_rate; settings delete system user_refresh_rate; settings delete global min_refresh_rate",
                 TweakCategory.TOUCH_DISPLAY,
                 true

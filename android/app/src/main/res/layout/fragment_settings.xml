@@ -196,6 +196,45 @@
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Per-Game iPad View Force Apply Switches:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Switch
+                    android:id="@+id/switch_ipad_mlbb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:checked="true"
+                    android:text="Mobile Legends (MLBB) iPad FOV"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <Switch
+                    android:id="@+id/switch_ipad_pubg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:checked="true"
+                    android:text="PUBG Mobile / BGMI iPad FOV"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <Switch
+                    android:id="@+id/switch_ipad_codm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:checked="true"
+                    android:text="Call of Duty Mobile (CODM) iPad FOV"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <!-- CARD 2: ESPORTS GAMING CONTROLS -->
@@ -291,12 +330,25 @@
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
+                        android:layout_marginEnd="2dp"
                         android:backgroundTint="@color/accent_red"
                         android:padding="0dp"
                         android:text="🔥 EXTREME\n165Hz"
                         android:textColor="#FFFFFF"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_144_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:backgroundTint="@color/accent_cyan"
+                        android:padding="0dp"
+                        android:text="🎮 PRO\n144Hz"
+                        android:textColor="#000000"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -309,7 +361,7 @@
                         android:padding="0dp"
                         android:text="⚡ HIGH\n120Hz"
                         android:textColor="#0B0E14"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -317,12 +369,12 @@
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="2dp"
                         android:backgroundTint="@color/accent_amber"
                         android:padding="0dp"
                         android:text="⚖️ BALANCED\n90Hz"
                         android:textColor="#0B0E14"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 

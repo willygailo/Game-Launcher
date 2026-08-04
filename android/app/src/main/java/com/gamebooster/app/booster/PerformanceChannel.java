@@ -40,11 +40,11 @@ public class PerformanceChannel {
         int targetHz;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                targetHz = caps.getMaxRefreshRate();
+                targetHz = 165;
                 break;
 
             case PERFORMANCE:
-                targetHz = caps.resolveRefreshRate(120);
+                targetHz = caps.resolveRefreshRate(144);
                 break;
 
             case BALANCED:
@@ -84,8 +84,10 @@ public class PerformanceChannel {
                     "setprop debug.hwui.renderer vulkan\\n" +
                     "setprop debug.renderengine.backend vulkan\\n" +
                     "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
-                    "setprop persist.sys.NV_FPSLIMIT 120\\n" +
+                    "setprop debug.sf.fps_limit 165\\n" +
+                    "setprop persist.sys.NV_FPSLIMIT 165\\n" +
                     "setprop persist.sys.NV_POWERMODE 1\\n" +
+                    "service call SurfaceFlinger 1035 i32 165\\n" +
                     "cmd power set-mode 0 1\\n" +
                     "cmd power set-mode 2 1\\n" +
                     "cmd thermalservice override-status 0\\n";

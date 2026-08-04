@@ -76,6 +76,21 @@ public class DeviceSpooferEngine {
             "iPad13,8", "apple", "apple", "iPad13,8", "iPad13,8", "iPad13,8", "apple", "m2", "M2"
     );
 
+    public static final SpoofProfile PROFILE_XIAOMI_14_ULTRA = new SpoofProfile(
+            "xiaomi_14_ultra", "Xiaomi 14 Ultra (120 FPS Ultra Graphics)",
+            "24030PN60G", "xiaomi", "xiaomi", "aurora", "aurora_global", "24030PN60G", "qcom", "sm8650", "SM8650"
+    );
+
+    public static final SpoofProfile PROFILE_IPAD_PRO_M4 = new SpoofProfile(
+            "ipad_pro_m4", "iPad Pro M4 (Tablet FOV 120 FPS & Ultra Graphics)",
+            "iPad16,3", "apple", "apple", "iPad16,3", "iPad16,3", "iPad16,3", "apple", "m4", "M4"
+    );
+
+    public static final SpoofProfile PROFILE_IPHONE_15_PRO_MAX = new SpoofProfile(
+            "iphone_15_pro_max", "iPhone 15 Pro Max (120 FPS Max Graphics)",
+            "iPhone16,2", "apple", "apple", "iPhone16,2", "iPhone16,2", "iPhone16,2", "apple", "a17pro", "A17Pro"
+    );
+
     private static final Map<String, SpoofProfile> PROFILES = new HashMap<>();
 
     static {
@@ -84,7 +99,10 @@ public class DeviceSpooferEngine {
         PROFILES.put(PROFILE_ROG_PHONE_6.id, PROFILE_ROG_PHONE_6);
         PROFILES.put(PROFILE_BLACK_SHARK_5.id, PROFILE_BLACK_SHARK_5);
         PROFILES.put(PROFILE_GALAXY_S24_ULTRA.id, PROFILE_GALAXY_S24_ULTRA);
+        PROFILES.put(PROFILE_XIAOMI_14_ULTRA.id, PROFILE_XIAOMI_14_ULTRA);
         PROFILES.put(PROFILE_IPAD_PRO.id, PROFILE_IPAD_PRO);
+        PROFILES.put(PROFILE_IPAD_PRO_M4.id, PROFILE_IPAD_PRO_M4);
+        PROFILES.put(PROFILE_IPHONE_15_PRO_MAX.id, PROFILE_IPHONE_15_PRO_MAX);
     }
 
     private static String activeProfileId = null;

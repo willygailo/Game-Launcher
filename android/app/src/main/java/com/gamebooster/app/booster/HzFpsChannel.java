@@ -76,7 +76,7 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("secure", "user_refresh_rate", String.valueOf(hzInt));
             CommandExecutor.setSystemSetting("global", "surface_flinger_peak_refresh_rate", hzStr);
         } else if (manufacturer.contains("samsung")) {
-            // Samsung OneUI (2 = Dynamic 120/144Hz, 1 = Standard 60Hz)
+            // Samsung OneUI (2 = Dynamic 120/144/165Hz, 1 = Standard 60Hz)
             CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", hzInt >= 90 ? "2" : "1");
         } else if (manufacturer.contains("oneplus") || manufacturer.contains("oppo") || manufacturer.contains("realme")) {
             // OnePlus / Realme / Oppo
@@ -93,15 +93,21 @@ public class HzFpsChannel {
             // Motorola MyUX
             CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
             CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
+        } else if (manufacturer.contains("nubia") || brand.contains("redmagic") || manufacturer.contains("zte")) {
+            // RedMagic / Nubia gaming devices
+            CommandExecutor.setSystemSetting("system", "display_refresh_rate", String.valueOf(hzInt));
+            CommandExecutor.setSystemSetting("system", "redmagic_refresh_rate", String.valueOf(hzInt));
         } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("itel") || manufacturer.contains("transsion")) {
             // Transsion Holdings (Infinix XOS / Tecno HiOS / iTel)
             CommandExecutor.setSystemSetting("system", "screen_refresh_rate_mode", hzInt >= 90 ? "1" : "0");
             CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
-        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal
+        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal (Supports 165Hz)
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + hzInt);
+        CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + hzInt);
         CommandExecutor.setSystemProperty("debug.gr.swapinterval", "0");
+        CommandExecutor.setSystemProperty("debug.sf.fps_limit", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_FPSLIMIT", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_POWERMODE", "1");
 
