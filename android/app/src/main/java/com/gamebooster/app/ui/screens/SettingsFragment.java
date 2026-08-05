@@ -33,6 +33,14 @@ import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 import com.gamebooster.app.spoofer.SpoofProfile;
 import com.gamebooster.app.spoofer.SpoofPreferences;
+import com.gamebooster.app.core.settings.SettingsManager;
+import com.gamebooster.app.core.profile.ProfileManager;
+import com.gamebooster.app.core.profile.InputProfile;
+import com.gamebooster.app.overlay.CrosshairOverlayService;
+import com.gamebooster.app.overlay.CrosshairPreset;
+import com.gamebooster.app.ui.sensitivity.SensitivityCalculator;
+import com.gamebooster.app.ui.sensitivity.SensitivityModel;
+import androidx.appcompat.app.AlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +71,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private RecyclerView rvSpoofProfiles;
     private SpoofProfileAdapter spoofProfileAdapter;
 
+    // Precision Aim Controls
+    private Switch switchPrecisionInputTuner;
+    private Switch switchCrosshairOverlay;
+    private TextView tvPrecisionAimStatus;
+    private Button btnCrosshairPreset;
+    private Button btnSensitivityCalculator;
+
+    private SettingsManager precisionSettingsManager;
+    private ProfileManager precisionProfileManager;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+
+        if (getContext() != null) {
+            precisionSettingsManager = new SettingsManager(getContext());
+            precisionProfileManager = new ProfileManager(getContext());
+        }
 
         // Card 1: Shizuku & System Permissions
         tvEngineStatus = view.findViewById(R.id.tv_engine_status);
@@ -183,6 +206,82 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        // Card 2.5: Precision Aim - Input & Gyro Tuner
+        tvPrecisionAimStatus = view.findViewById(R.id.tv_precision_aim_status);
+        switchPrecisionInputTuner = view.findViewById(R.id.switch_precision_input_tuner);
+        switchCrosshairOverlay = view.findViewById(R.id.switch_crosshair_overlay);
+        btnCrosshairPreset = view.findViewById(R.id.btn_crosshair_preset);
+        btnSensitivityCalculator = view.findViewById(R.id.btn_sensitivity_calculator);
+
+        if (precisionSettingsManager != null && switchPrecisionInputTuner != null) {
+            switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
+            switchPrecisionInputTuner.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                if (!ShizukuExecutor.hasShizukuPermission()) {
+                    switchPrecisionInputTuner.setChecked(false);
+                    ShizukuManager.showShizukuPermissionDialog(getContext(), "Precision Input Tuner");
+                    return;
+                }
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean success;
+                    if (isChecked) {
+                        InputProfile generalProfile = precisionProfileManager.getGeneralGamingProfile();
+                        success = precisionSettingsManager.applyProfile(generalProfile);
+                    } else {
+                        success = precisionSettingsManager.restoreOriginalValues();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        if (success) {
+                            Toast.makeText(getContext(), isChecked ? "🎯 Precision Aim: 1000Hz Input & Zero Slop APPLIED!" : "System Input Defaults Restored", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to modify system properties via Shizuku", Toast.LENGTH_SHORT).show();
+                            switchPrecisionInputTuner.setChecked(!isChecked);
+                        }
+                        updatePrecisionAimStatus();
+                    });
+                });
+            });
+        }
+
+        if (switchCrosshairOverlay != null) {
+            switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                    switchCrosshairOverlay.setChecked(false);
+                    Toast.makeText(getContext(), "Overlay Permission Required", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
+                    startActivity(intent);
+                    return;
+                }
+
+                if (isChecked) {
+                    new AlertDialog.Builder(getContext())
+                        .setTitle("⚠️ THIRD-PARTY OVERLAY DISCLAIMER")
+                        .setMessage("Some competitive games regulate visual overlays. Precision Aim crosshair overlay runs strictly as a native window view and does NOT touch game processes.\n\nEnable overlay?")
+                        .setPositiveButton("ENABLE OVERLAY", (dialog, which) -> {
+                            CrosshairOverlayService.startOverlay(getContext());
+                            Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("CANCEL", (dialog, which) -> switchCrosshairOverlay.setChecked(false))
+                        .setOnCancelListener(dialog -> switchCrosshairOverlay.setChecked(false))
+                        .show();
+                } else {
+                    CrosshairOverlayService.stopOverlay(getContext());
+                    Toast.makeText(getContext(), "Crosshair Overlay Disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (btnCrosshairPreset != null) {
+            btnCrosshairPreset.setOnClickListener(v -> showCrosshairPresetDialog());
+        }
+
+        if (btnSensitivityCalculator != null) {
+            btnSensitivityCalculator.setOnClickListener(v -> showSensitivityCalculatorDialog());
+        }
+
+        updatePrecisionAimStatus();
 
         // Card 3: Hardware Engine & Performance Presets
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
@@ -612,5 +711,50 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             tvRootStatus.setText("WRITE_SETTINGS Permission: REQUIRED");
             tvRootStatus.setTextColor(0xFFFFB800);
         }
+    }
+
+    private void updatePrecisionAimStatus() {
+        if (tvPrecisionAimStatus == null || precisionSettingsManager == null) return;
+        boolean tuned = precisionSettingsManager.isDeviceTuned();
+        if (tuned) {
+            tvPrecisionAimStatus.setText("⚡ OPTIMIZED: 1000Hz Input & 1000Hz Gyro Active");
+            tvPrecisionAimStatus.setTextColor(0xFF00FF66);
+        } else {
+            tvPrecisionAimStatus.setText("Status: Device Input Stock / Default");
+            tvPrecisionAimStatus.setTextColor(0xFF888888);
+        }
+    }
+
+    private void showCrosshairPresetDialog() {
+        if (getContext() == null) return;
+        String[] options = {"Dot Preset", "Tactical Cross", "Scope Ring", "Sniper Cross"};
+        new AlertDialog.Builder(getContext())
+                .setTitle("🎯 SELECT CROSSHAIR PRESET")
+                .setItems(options, (dialog, which) -> {
+                    Toast.makeText(getContext(), "Selected Preset: " + options[which], Toast.LENGTH_SHORT).show();
+                })
+                .show();
+    }
+
+    private void showSensitivityCalculatorDialog() {
+        if (getContext() == null) return;
+        SensitivityModel m = SensitivityCalculator.calculate(400, 6.5, 1.5f);
+        String details = "📊 RECOMMENDED SENSITIVITY:\n\n" +
+                "• Free Look: " + m.freeLook + "\n" +
+                "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
+                "• Red Dot / Holo: " + m.redDotHolo + "\n" +
+                "• 2x Scope: " + m.scope2x + "\n" +
+                "• 4x Scope: " + m.scope4x + "\n\n" +
+                "🌀 GYROSCOPE RECS:\n" +
+                "• Gyro No Scope: " + m.gyroNoScope + "\n" +
+                "• Gyro Red Dot: " + m.gyroRedDot + "\n" +
+                "• Gyro 4x Scope: " + m.gyro4x + "\n\n" +
+                "💡 Enter these values manually inside PUBG Mobile or COD Mobile settings menu.";
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("🧮 SENSITIVITY CALCULATOR")
+                .setMessage(details)
+                .setPositiveButton("CLOSE", null)
+                .show();
     }
 }

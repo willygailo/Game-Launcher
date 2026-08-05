@@ -1,0 +1,144 @@
+package com.gamebooster.app.gamedetector;
+
+import android.app.AppOpsManager;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
+import com.gamebooster.app.core.profile.InputProfile;
+import com.gamebooster.app.core.profile.ProfileManager;
+import com.gamebooster.app.core.settings.SettingsManager;
+
+/**
+ * Monitors foreground application changes using UsageStatsManager.
+ * Applies tuning profiles when target games enter foreground and restores system defaults when exiting.
+ */
+public class ForegroundAppDetector {
+
+    private static final String TAG = "ForegroundAppDetector";
+    private static final long MONITOR_INTERVAL_MS = 2000;
+
+    private final Context context;
+    private final SettingsManager settingsManager;
+    private final ProfileManager profileManager;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    private String lastForegroundPackage = "";
+    private boolean isMonitoring = false;
+
+    public interface ForegroundListener {
+        void onForegroundAppChanged(String packageName, boolean isGame);
+    }
+
+    private ForegroundListener listener;
+
+    public ForegroundAppDetector(Context context, SettingsManager settingsManager, ProfileManager profileManager) {
+        this.context = context.getApplicationContext();
+        this.settingsManager = settingsManager;
+        this.profileManager = profileManager;
+    }
+
+    public void setListener(ForegroundListener listener) {
+        this.listener = listener;
+    }
+
+    public boolean hasUsageStatsPermission() {
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        if (appOps == null) return false;
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(), context.getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    public void startMonitoring() {
+        if (isMonitoring) return;
+        if (!hasUsageStatsPermission()) {
+            Log.w(TAG, "UsageStats permission not granted. Cannot monitor foreground apps.");
+            return;
+        }
+        isMonitoring = true;
+        handler.post(monitorRunnable);
+        Log.i(TAG, "ForegroundAppDetector started monitoring.");
+    }
+
+    public void stopMonitoring() {
+        if (!isMonitoring) return;
+        isMonitoring = false;
+        handler.removeCallbacks(monitorRunnable);
+        if (settingsManager.isDeviceTuned()) {
+            settingsManager.restoreOriginalValues();
+        }
+        Log.i(TAG, "ForegroundAppDetector stopped monitoring.");
+    }
+
+    private final Runnable monitorRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isMonitoring) return;
+
+            String currentPackage = getForegroundPackageName();
+            if (!currentPackage.isEmpty() && !currentPackage.equals(lastForegroundPackage)) {
+                Log.d(TAG, "Foreground app changed: " + currentPackage);
+                lastForegroundPackage = currentPackage;
+                handleForegroundAppChanged(currentPackage);
+            }
+
+            handler.postDelayed(this, MONITOR_INTERVAL_MS);
+        }
+    };
+
+    private void handleForegroundAppChanged(String packageName) {
+        InputProfile profile = profileManager.getProfileForPackage(packageName);
+        boolean isTargetGame = isKnownGamePackage(packageName);
+
+        if (listener != null) {
+            listener.onForegroundAppChanged(packageName, isTargetGame);
+        }
+
+        if (isTargetGame) {
+            Log.i(TAG, "Target game detected in foreground (" + packageName + "). Applying input profile...");
+            settingsManager.applyProfile(profile);
+        } else {
+            if (settingsManager.isDeviceTuned()) {
+                Log.i(TAG, "Non-game app in foreground (" + packageName + "). Restoring original settings...");
+                settingsManager.restoreOriginalValues();
+            }
+        }
+    }
+
+    private boolean isKnownGamePackage(String packageName) {
+        if (packageName == null) return false;
+        return packageName.equals("com.tencent.ig")
+                || packageName.equals("com.pubg.imobile")
+                || packageName.equals("com.pubg.krmobile")
+                || packageName.equals("com.vng.pubgmobile")
+                || packageName.equals("com.activision.callofduty.shooter")
+                || packageName.equals("com.garena.game.codm")
+                || packageName.equals("com.dts.freefireth")
+                || packageName.equals("com.dts.freefiremax");
+    }
+
+    public String getForegroundPackageName() {
+        UsageStatsManager usm = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+        if (usm == null) return "";
+
+        long time = System.currentTimeMillis();
+        UsageEvents events = usm.queryEvents(time - 10000, time);
+        if (events == null) return "";
+
+        UsageEvents.Event event = new UsageEvents.Event();
+        String lastPkg = "";
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                lastPkg = event.getPackageName();
+            }
+        }
+        return lastPkg;
+    }
+}

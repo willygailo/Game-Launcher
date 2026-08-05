@@ -111,4 +111,49 @@ public class GameBoosterJsInterface {
             return "[]";
         }
     }
+
+    @JavascriptInterface
+    public boolean applyPrecisionAimProfile() {
+        if (context == null) return false;
+        com.gamebooster.app.core.settings.SettingsManager sm = new com.gamebooster.app.core.settings.SettingsManager(context);
+        com.gamebooster.app.core.profile.ProfileManager pm = new com.gamebooster.app.core.profile.ProfileManager(context);
+        return sm.applyProfile(pm.getGeneralGamingProfile());
+    }
+
+    @JavascriptInterface
+    public boolean restoreOriginalInputSettings() {
+        if (context == null) return false;
+        com.gamebooster.app.core.settings.SettingsManager sm = new com.gamebooster.app.core.settings.SettingsManager(context);
+        return sm.restoreOriginalValues();
+    }
+
+    @JavascriptInterface
+    public void toggleCrosshairOverlay(boolean enable) {
+        if (context == null) return;
+        if (enable) {
+            com.gamebooster.app.overlay.CrosshairOverlayService.startOverlay(context);
+        } else {
+            com.gamebooster.app.overlay.CrosshairOverlayService.stopOverlay(context);
+        }
+    }
+
+    @JavascriptInterface
+    public String calculateSensitivityJson(int dpi, double screenSize, float gyroMultiplier) {
+        try {
+            com.gamebooster.app.ui.sensitivity.SensitivityModel m =
+                    com.gamebooster.app.ui.sensitivity.SensitivityCalculator.calculate(dpi, screenSize, gyroMultiplier);
+            JSONObject obj = new JSONObject();
+            obj.put("freeLook", m.freeLook);
+            obj.put("noScope3rdPerson", m.noScope3rdPerson);
+            obj.put("redDotHolo", m.redDotHolo);
+            obj.put("scope2x", m.scope2x);
+            obj.put("scope4x", m.scope4x);
+            obj.put("gyroNoScope", m.gyroNoScope);
+            obj.put("gyroRedDot", m.gyroRedDot);
+            obj.put("gyro4x", m.gyro4x);
+            return obj.toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
 }

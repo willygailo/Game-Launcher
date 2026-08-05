@@ -113,6 +113,16 @@
         </service>
 
         <service
+            android:name="com.gamebooster.app.overlay.CrosshairOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Crosshair visual target overlay" />
+        </service>
+
+        <service
             android:name="com.gamebooster.app.gamespace.AutoGameMonitorService"
             android:enabled="true"
             android:exported="false"
