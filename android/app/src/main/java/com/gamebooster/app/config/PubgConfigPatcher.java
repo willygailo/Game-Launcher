@@ -87,6 +87,43 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM super-fast touch applied for " + packageName);
     }
 
+    /**
+     * Injects Aim Assist & Aim Lock Sensitivity CVars into PUBGM/BGMI config files.
+     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     */
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimCvars = {
+            "+CVars=r.PUBGAimAssist=1",
+            "+CVars=r.PUBGAimLockSensitivity=100",
+            "+CVars=r.AimAssistStrength=1.0",
+            "+CVars=r.CrosshairMagnetism=1",
+            "+CVars=r.GyroSensitivityRatio=1.5",
+            "+CVars=r.BulletTrackingOptimization=1",
+            "+CVars=r.MobileTouchAssistMode=1",
+            "bEnableAimAssist=True",
+            "AimAssistLevel=3"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : aimCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Aim Assist CVars applied via Shizuku for " + packageName);
+    }
+
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

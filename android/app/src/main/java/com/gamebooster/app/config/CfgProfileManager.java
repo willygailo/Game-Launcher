@@ -25,9 +25,11 @@ public class CfgProfileManager {
 
     private static final String TAG            = "CfgProfileManager";
     private static final String PREFS_NAME     = "game_booster_cfg_profiles";
-    private static final String KEY_FPS_SUFFIX = "_fps";
+    private static final String KEY_FPS_SUFFIX   = "_fps";
     private static final String KEY_TOUCH_SUFFIX = "_super_touch";
-    private static final String KEY_HZ_SUFFIX  = "_force_hz";
+    private static final String KEY_HZ_SUFFIX    = "_force_hz";
+    private static final String KEY_AIM_SUFFIX   = "_aim_assist";
+    private static final String KEY_DMG_SUFFIX   = "_damage_script";
 
     // ─── Supported game packages per game key ────────────────────────────────
 
@@ -62,9 +64,11 @@ public class CfgProfileManager {
         SharedPreferences.Editor ed = context.getApplicationContext()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
         String key = profile.getPrefsKey();
-        ed.putInt  (key + KEY_FPS_SUFFIX,   profile.getTargetFps());
+        ed.putInt    (key + KEY_FPS_SUFFIX,   profile.getTargetFps());
         ed.putBoolean(key + KEY_TOUCH_SUFFIX, profile.isSuperFastTouchEnabled());
-        ed.putBoolean(key + KEY_HZ_SUFFIX,  profile.isForceWriteSystemHz());
+        ed.putBoolean(key + KEY_HZ_SUFFIX,    profile.isForceWriteSystemHz());
+        ed.putBoolean(key + KEY_AIM_SUFFIX,   profile.isAimAssistEnabled());
+        ed.putBoolean(key + KEY_DMG_SUFFIX,   profile.isMlbbDamageScriptEnabled());
         ed.apply();
         Log.i(TAG, "Saved profile: " + profile);
     }
@@ -77,10 +81,12 @@ public class CfgProfileManager {
         SharedPreferences prefs = context.getApplicationContext()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String key = "cfg_profile_" + gameKey.toLowerCase();
-        int fps         = prefs.getInt(key + KEY_FPS_SUFFIX, CompetitiveCfgProfile.FPS_165);
-        boolean touch   = prefs.getBoolean(key + KEY_TOUCH_SUFFIX, true);
-        boolean forceHz = prefs.getBoolean(key + KEY_HZ_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz);
+        int fps          = prefs.getInt(key + KEY_FPS_SUFFIX, CompetitiveCfgProfile.FPS_165);
+        boolean touch    = prefs.getBoolean(key + KEY_TOUCH_SUFFIX, true);
+        boolean forceHz  = prefs.getBoolean(key + KEY_HZ_SUFFIX, true);
+        boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
+        boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -124,7 +130,7 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_MLBB,
                 CompetitiveCfgProfile.GAME_PUBGM,
                 CompetitiveCfgProfile.GAME_CODM}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -144,15 +150,24 @@ public class CfgProfileManager {
             if (profile.isSuperFastTouchEnabled()) {
                 MlbbConfigPatcher.applySuperFastTouch(pkg);
             }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                MlbbConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_PUBGM.equals(key)) {
             result = PubgConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
                 PubgConfigPatcher.applySuperFastTouch(pkg);
             }
+            if (profile.isAimAssistEnabled()) {
+                PubgConfigPatcher.applyAimAssistConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_CODM.equals(key)) {
             result = CodmConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
                 CodmConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                CodmConfigPatcher.applyAimAssistConfig(pkg);
             }
         }
         return result;
