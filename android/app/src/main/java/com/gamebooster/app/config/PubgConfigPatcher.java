@@ -134,6 +134,38 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM Aim Assist & Aimbot 80% Damage CVars applied via Shizuku for " + packageName);
     }
 
+    /**
+     * Injects Recoil Compensation & Gun Stability CVars into PUBGM/BGMI config files.
+     * Reduces vertical/horizontal weapon kick by 80% via Shizuku temporary root access.
+     */
+    public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilCvars = {
+            "+CVars=r.PUBGRecoilScale=0.20",
+            "+CVars=r.WeaponKickReduction=0.80",
+            "+CVars=r.GunShakeOptimization=1",
+            "+CVars=r.CameraShakeMultiplier=0.20",
+            "+CVars=r.ScopeStabilizationMode=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : recoilCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Recoil Control 80% reduction applied via Shizuku for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

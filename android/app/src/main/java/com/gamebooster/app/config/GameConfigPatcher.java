@@ -42,9 +42,11 @@ public class GameConfigPatcher {
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             if (CodmConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
             CodmConfigPatcher.applyAimAssistConfig(pkg);
+            CodmConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
             PubgConfigPatcher.applyAimAssistConfig(pkg);
+            PubgConfigPatcher.applyRecoilControlConfig(pkg);
         } else {
             for (String path : configPaths) {
                 if (pkg.contains("freefire")) {

@@ -13,8 +13,8 @@ android {
         applicationId "com.gamebooster.app"
         minSdk 24
         targetSdk 36
-        versionCode 47
-        versionName "4.7.0"
+        versionCode 48
+        versionName "4.8.0"
     }
 
     buildFeatures {
@@ -50,4 +50,5 @@ dependencies {
     def shizuku_version = "13.1.5"
     implementation "dev.rikka.shizuku:api:${shizuku_version}"
     implementation "dev.rikka.shizuku:provider:${shizuku_version}"
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 }

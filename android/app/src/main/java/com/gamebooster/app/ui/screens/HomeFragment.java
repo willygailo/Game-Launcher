@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DeviceInfoChannel;
@@ -52,6 +54,11 @@ public class HomeFragment extends Fragment {
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
+
+        ImageView ivHeroBanner = view.findViewById(R.id.iv_hero_banner);
+        if (ivHeroBanner != null && getContext() != null) {
+            Glide.with(this).load(R.drawable.hero_banner).into(ivHeroBanner);
+        }
 
         Button btnSettings = view.findViewById(R.id.btn_open_settings);
         if (btnSettings != null) {

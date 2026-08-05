@@ -151,6 +151,36 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM Aim Assist & Aimbot 80% Damage config applied via Shizuku for " + packageName);
     }
 
+    /**
+     * Injects Recoil Reduction & Weapon Shake Reduction keys into CODM config files.
+     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     */
+    public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            ensureDirectory(path);
+            String cmd;
+            if (path.endsWith(".json")) {
+                cmd = "grep -qF 'RecoilScale' " + path +
+                      " || sed -i 's/}$/,\\n  \"RecoilScale\": 0.20,\\n  \"WeaponKickReduction\": 0.80,\\n  \"GunShakeMode\": 0\\n}/' " + path;
+            } else if (path.endsWith(".xml")) {
+                cmd = "grep -qF 'RecoilScale' " + path +
+                      " || sed -i 's/<\\/map>/  <float name=\"RecoilScale\" value=\"0.20\" \\/>\\n  <float name=\"WeaponKickReduction\" value=\"0.80\" \\/>\\n<\\/map>/' " + path;
+            } else {
+                cmd = "grep -qF 'RecoilScale' " + path + " || echo 'RecoilScale=0.20' >> " + path + "; " +
+                      "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=0.80' >> " + path + "; " +
+                      "grep -qF 'GunShakeMode' " + path + " || echo 'GunShakeMode=0' >> " + path;
+            }
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CODM Recoil Control 80% reduction applied via Shizuku for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 
