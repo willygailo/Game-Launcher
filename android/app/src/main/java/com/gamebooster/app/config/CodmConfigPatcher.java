@@ -52,6 +52,9 @@ public class CodmConfigPatcher {
                         "  \"MaxFrameRate\": " + targetFps + ",\n" +
                         "  \"GraphicQuality\": 4,\n" +
                         "  \"FPSLimit\": " + targetFps + ",\n" +
+                        "  \"HDRMode\": 1,\n" +
+                        "  \"HDRColorMode\": 2,\n" +
+                        "  \"Unlock165Hz\": 1,\n" +
                         "  \"TouchBoostHz\": 165,\n" +
                         "  \"SuperResolution\": 1,\n" +
                         "  \"FieldOfView\": 90,\n" +
@@ -65,6 +68,8 @@ public class CodmConfigPatcher {
                         "  <int name=\"MaxFrameRate\" value=\"" + targetFps + "\" />\n" +
                         "  <int name=\"FPSLimit\" value=\"" + targetFps + "\" />\n" +
                         "  <int name=\"GraphicQuality\" value=\"4\" />\n" +
+                        "  <int name=\"HDRMode\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock165Hz\" value=\"1\" />\n" +
                         "</map>\n";
             } else {
                 // INI format
@@ -72,6 +77,9 @@ public class CodmConfigPatcher {
                         "MaxFrameRate=" + targetFps + "\n" +
                         "FPSLimit=" + targetFps + "\n" +
                         "GraphicQuality=4\n" +
+                        "HDRMode=1\n" +
+                        "HDRColorMode=2\n" +
+                        "Unlock165Hz=1\n" +
                         "SuperResolution=1\n" +
                         "TouchBoostHz=165\n" +
                         "AntiAliasing=1\n";
@@ -79,7 +87,7 @@ public class CodmConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "CODM competitive force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        Log.i(TAG, "CODM competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -110,7 +118,7 @@ public class CodmConfigPatcher {
     }
 
     /**
-     * Injects Aim Assist, Rotational Magnetism, and Target Lock keys into CODM config files.
+     * Injects Aim Assist, Aimbot 80% Lock, Target Tracking, and Bullet Damage Boost into CODM config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
@@ -121,15 +129,17 @@ public class CodmConfigPatcher {
             String cmd;
             if (path.endsWith(".json")) {
                 cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/}$/,\\n  \"AimAssist\": 1,\\n  \"AimAssistStrength\": 100,\\n  \"RotationalAimAssist\": 1,\\n  \"TargetLockSensitivity\": 100,\\n  \"AimMagnetism\": 1\\n}/' " + path;
+                      " || sed -i 's/}$/,\\n  \"AimAssist\": 1,\\n  \"AimAssistStrength\": 80,\\n  \"AimbotLockRate\": 0.80,\\n  \"RotationalAimAssist\": 1,\\n  \"TargetLockSensitivity\": 100,\\n  \"AimMagnetism\": 1,\\n  \"DamageBoostRatio\": 1.80\\n}/' " + path;
             } else if (path.endsWith(".xml")) {
                 cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/<\\/map>/  <int name=\"AimAssist\" value=\"1\" \\/>\\n  <int name=\"AimAssistStrength\" value=\"100\" \\/>\\n<\\/map>/' " + path;
+                      " || sed -i 's/<\\/map>/  <int name=\"AimAssist\" value=\"1\" \\/>\\n  <int name=\"AimAssistStrength\" value=\"80\" \\/>\\n  <float name=\"AimbotLockRate\" value=\"0.80\" \\/>\\n<\\/map>/' " + path;
             } else {
                 cmd = "grep -qF 'AimAssist' " + path + " || echo 'AimAssist=1' >> " + path + "; " +
-                      "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=100' >> " + path + "; " +
+                      "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=80' >> " + path + "; " +
+                      "grep -qF 'AimbotLockRate' " + path + " || echo 'AimbotLockRate=0.80' >> " + path + "; " +
                       "grep -qF 'RotationalAimAssist' " + path + " || echo 'RotationalAimAssist=1' >> " + path + "; " +
                       "grep -qF 'TargetLockSensitivity' " + path + " || echo 'TargetLockSensitivity=100' >> " + path + "; " +
+                      "grep -qF 'DamageBoostRatio' " + path + " || echo 'DamageBoostRatio=1.80' >> " + path + "; " +
                       "grep -qF 'AimMagnetism' " + path + " || echo 'AimMagnetism=1' >> " + path;
             }
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -138,7 +148,7 @@ public class CodmConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "CODM Aim Assist config applied via Shizuku for " + packageName);
+        Log.i(TAG, "CODM Aim Assist & Aimbot 80% Damage config applied via Shizuku for " + packageName);
     }
 
 
@@ -147,9 +157,11 @@ public class CodmConfigPatcher {
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/com.activision.callofduty.shooter.v2.playerprefs.xml");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/" + pkg + ".v2.playerprefs.xml");
         paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/ControlsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/ControlsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
         return paths;
     }

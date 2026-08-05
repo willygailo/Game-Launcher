@@ -50,13 +50,16 @@ public class MlbbConfigPatcher {
                 "FrameRateLevel=" + frameRateLevel + "\n" +
                 "GraphicsQuality=4\n" +
                 "HDMode=1\n" +
+                "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
                 "Shadow=1\n" +
                 "FPS=" + targetFps + "\n" +
                 "MaxFrameRate=" + targetFps + "\n" +
                 "TargetFPS=" + targetFps + "\n" +
                 "HighFrameRate=1\n" +
                 "UnlockFPS=1\n" +
-                "SuperHighFPS=1\n";
+                "SuperHighFPS=1\n" +
+                "Unlock165Hz=1\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -64,7 +67,7 @@ public class MlbbConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "MLBB competitive force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        Log.i(TAG, "MLBB competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -93,20 +96,23 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Damage Script & Penetration Asset Config keys into MLBB config files.
+     * Injects Damage Script, Physical/Magic Damage Boost, and Penetration Asset Config keys into MLBB config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
+            "PhysicalDamageBoost=1.80",
+            "MagicDamageBoost=1.80",
             "PhysicalPenetrationBoost=100",
             "MagicPenetrationBoost=100",
-            "DamageMultiplier=1.25",
+            "DamageMultiplier=1.80",
             "CriticalDamageRate=100",
             "SkillCoolDownReduceMode=1",
             "HighDamageRateMode=1",
-            "DamageAssetOverride=1"
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -125,7 +131,7 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB damage script asset config applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB magic/physical damage script asset config applied via Shizuku for " + packageName);
     }
 
 
@@ -134,10 +140,12 @@ public class MlbbConfigPatcher {
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         return paths;
     }
 

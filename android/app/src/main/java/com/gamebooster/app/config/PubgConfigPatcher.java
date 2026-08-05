@@ -50,9 +50,16 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGFrameRateLimit=" + targetFps + "\n" +
                 "+CVars=r.MobileFPSLimit=" + targetFps + "\n" +
                 "+CVars=r.FrameRateLimit=" + targetFps + "\n" +
+                "+CVars=r.PUBGHDRMode=1\n" +
+                "+CVars=r.MobileHDR=1\n" +
+                "+CVars=r.PUBGQualityLevel=4\n" +
+                "+CVars=r.PUBGSDKQualityLevel=4\n" +
+                "+CVars=r.Tonemapper.Quality=4\n" +
+                "+CVars=r.HDR.Display.OutputDevice=1\n" +
                 "+CVars=r.MobileContentScaleFactor=1.0\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
+                "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
                 "bUseAntiAliasing=True\n";
 
@@ -62,7 +69,7 @@ public class PubgConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "PUBGM competitive force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        Log.i(TAG, "PUBGM competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -88,7 +95,7 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Injects Aim Assist & Aim Lock Sensitivity CVars into PUBGM/BGMI config files.
+     * Injects Aim Assist, Aimbot 80% Lock, and Bullet Damage Boost CVars into PUBGM/BGMI config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
@@ -97,11 +104,15 @@ public class PubgConfigPatcher {
         String[] aimCvars = {
             "+CVars=r.PUBGAimAssist=1",
             "+CVars=r.PUBGAimLockSensitivity=100",
-            "+CVars=r.AimAssistStrength=1.0",
+            "+CVars=r.AimAssistStrength=0.80",
+            "+CVars=r.PUBGAimbotLock=1",
+            "+CVars=r.AimbotTrackingRate=0.80",
             "+CVars=r.CrosshairMagnetism=1",
-            "+CVars=r.GyroSensitivityRatio=1.5",
+            "+CVars=r.GyroSensitivityRatio=1.8",
             "+CVars=r.BulletTrackingOptimization=1",
             "+CVars=r.MobileTouchAssistMode=1",
+            "+CVars=r.DamageMultiplier=1.80",
+            "+CVars=r.BulletDamageBoost=0.80",
             "bEnableAimAssist=True",
             "AimAssistLevel=3"
         };
@@ -120,7 +131,7 @@ public class PubgConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "PUBGM Aim Assist CVars applied via Shizuku for " + packageName);
+        Log.i(TAG, "PUBGM Aim Assist & Aimbot 80% Damage CVars applied via Shizuku for " + packageName);
     }
 
 
@@ -130,8 +141,10 @@ public class PubgConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
         return paths;
     }
 
