@@ -50,6 +50,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         TweakManagerRepository.initializeStates(this);
         TweakManagerRepository.restoreAppliedTweaksAsync(this);
 
+        // Request runtime notification permission on Android 13+ (API 33+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
         // Bind Shizuku AIDL UserService & Auto-Grant Privileges
         try {
             com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();

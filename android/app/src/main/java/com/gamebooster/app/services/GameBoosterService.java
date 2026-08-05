@@ -36,7 +36,11 @@ public class GameBoosterService extends Service {
                 .setOngoing(true)
                 .build();
 
-        startForeground(NOTIF_ID, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIF_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(NOTIF_ID, notification);
+        }
 
         // Apply background auto-boost optimizations
         try {

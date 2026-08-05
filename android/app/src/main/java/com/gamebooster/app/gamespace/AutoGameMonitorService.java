@@ -67,7 +67,11 @@ public class AutoGameMonitorService extends Service {
         super.onCreate();
         isRunning = true;
         createNotificationChannel();
-        startForeground(NOTIF_ID, createNotification());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIF_ID, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(NOTIF_ID, createNotification());
+        }
 
         setupMonitorLoop();
     }
