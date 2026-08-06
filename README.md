@@ -1,17 +1,17 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v5.0.0-PRO 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
-[![Android SDK](https://img.shields.io/badge/Android-SDK%2036-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Version](https://img.shields.io/badge/Release-v5.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Glide Engine](https://img.shields.io/badge/Glide-Animated%20GIF-FF6F00?style=for-the-badge&logo=glide&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Star%20Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher)
 
-**An ultra-high-performance Game Booster, Input Latency Tuner, and Custom Launcher designed for mobile eSports players.**
+**An ultra-high-performance Game Booster, Input Latency Tuner, Per-Game 120/144/165 FPS Unlocker, and Precision HUD Overlay for Android 12 to 16.**
 
 ---
 
@@ -22,11 +22,22 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ---
 
-## 📌 1. Introduction
+## 📌 1. Introduction & v5.0.0-PRO Highlights
 
-**Game Launcher Pro (Precision Aim Input Tuner)** is a legitimate, ban-safe, high-performance Android utility app engineered for competitive mobile gamers and eSports players across titles such as *PUBG Mobile*, *COD Mobile*, *Free Fire*, and *Mobile Legends*.
+**Game Launcher Pro (Precision Aim Input Tuner v5.0.0-PRO)** is a ban-safe, high-performance Android utility app engineered for competitive mobile gamers across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, and *Free Fire*.
 
-It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, and RAM/ZRAM allocation using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
+It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, display refresh rate overrides (120/144/165Hz), and game driver configurations using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
+
+### 🌟 What's New in v5.0.0-PRO
+
+- ⚡ **Targeted GameDriver Opt-In**: GameDriver and ANGLE drivers are now explicitly targeted **ONLY** to MLBB, PUBGM/BGMI, and CODM (`game_driver_opt_in_apps`) instead of forcing all background apps.
+- 🎮 **Per-Game 120/144/165 FPS Unlocks**: Dedicated Shizuku Game Mode interventions (`cmd game set --fps 165`, `cmd window set-app-refresh-rate`, `device_config put game_overlay`) tailored for MLBB, PUBGM, and CODM.
+- 🎯 **Precision Aim & Gyro Tuner Fixes**:
+  - **Sleek HUD Crosshair**: Tuned size to 60px with clean view detachment on toggle OFF.
+  - **Live Presets**: Reticle presets (`Dot`, `Tactical Cross`, `Scope Ring`, `Sniper Cross`) persist and render live.
+  - **Interactive Recoil & Gyro Calculator**: Select your game profile, target DPI, and recoil dampening mode (`Balanced`, `Low Recoil / Precision Aim`, `Pro Gyro 400%`).
+- 🖼️ **Omni Dashboard Theme**: Integrated `omni.jpeg` as the settings dashboard background with a sleek glass scrim overlay.
+- 📱 **Full Android 12 to 16 (API 31–36) Compatibility**: Full support for Android 12, 13, 14, 15, and 16 with Android 14+ FGS subtype declarations.
 
 > [!IMPORTANT]
 > **SAFETY & COMPLIANCE GUARANTEE**:
@@ -37,79 +48,68 @@ It optimizes device-level touch sampling frequency, digitizer response rates, gy
 
 ---
 
-## 📄 2. Technical Documents & Architecture
-
-### 🏗️ Directory & Module Architecture
+## 📄 2. Technical Architecture & Directory Structure
 
 ```
 Game_Launcher_Pro/
 ├── android/
 │   ├── app/
 │   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/          # RamZramChannel & Background Process Optimizer
-│   │   │   ├── device/           # DeviceInfoChannel (CPU/RAM/Display Refresh Rate)
+│   │   │   ├── booster/          # GpuTweaksChannel, PerformanceChannel, NetworkOptimizer
+│   │   │   ├── device/           # DisplayCapabilitiesDetector & DeviceInfoChannel
 │   │   │   ├── engine/           # CommandExecutor & Hardware Engine Modes
 │   │   │   ├── games/            # GameLauncherHelper & Zero-Delay Auto Scanner
-│   │   │   ├── overlay/          # FloatingOverlayService & Crosshair Canvas
-│   │   │   ├── tweaks/           # TweakManagerRepository & System Property Knobs
-│   │   │   └── ui/screens/       # HomeFragment, SettingsFragment, MainActivity
+│   │   │   ├── overlay/          # CrosshairOverlayService, FloatingOverlayService & CrosshairPreset
+│   │   │   ├── shizuku/          # ShizukuExecutor, ShizukuChannel & ShizukuProvider
+│   │   │   ├── tweaks/           # TweakManagerRepository & Per-Game 120/165 FPS Unlocks
+│   │   │   └── ui/
+│   │   │       ├── screens/      # HomeFragment, SettingsFragment, MainActivity
+│   │   │       └── sensitivity/  # SensitivityCalculator & SensitivityModel (Gyro Recoil Tuner)
 │   │   └── src/main/res/
-│   │       └── drawable/         # Custom UI Assets (hero_banner.gif, home_bg_new.jpg, settings_bg_new.jpg)
+│   │       └── drawable/         # Custom UI Assets (omni.jpeg, hero_banner.gif, home_bg_new.jpg)
+│   └── build.gradle              # versionCode 50, versionName "5.0.0-PRO", targetSdk 36
+├── Game_Space_v5.0.0-PRO.apk
 └── README.md
 ```
 
-### ⚡ System Property Tuning Matrix
+### ⚡ System Property & Shizuku Tuning Matrix
 
-| System Knob / Setting | Default Range | Tuned Value | Description |
+| System Setting / Command | Target Scope | Value | Description |
 | :--- | :--- | :--- | :--- |
-| `debug.input.max_events_per_sec` | 60 - 240 Hz | **1000 Hz** | Maximizes digitizer event dispatch rate for instant touch input |
-| `view.touch_slop` | 8 - 24 px | **0 px** | Eliminates drag deadzone for immediate aim response |
-| `touch_slop_reduction` | 0 | **1** | Reduces touch slop scaling factor across views |
-| `debug.sensor.gyro.rate` | 100 - 200 Hz | **1000 Hz** | Unlocks max sensor polling for smooth scope tracking |
-| `pointer_speed` | 0 (scaled) | **7** | Applies 1:1 linear pointer acceleration curve |
-| `background_process_limit` | -1 (Unlimited) | **2** | Restricts cached apps to free 200-400MB RAM for games |
+| `game_driver_opt_in_apps` | MLBB, PUBGM, CODM | **Target Package Names** | Assigns GameDriver explicitly to target games without affecting system apps |
+| `cmd game set --fps 165` | Target Package | **165 FPS** | Overrides system frame rate caps via Android Game Mode API |
+| `cmd window set-app-refresh-rate` | Target Package | **165 Hz** | Pins SurfaceFlinger refresh rate to maximum hardware display Hz |
+| `debug.input.max_events_per_sec` | System-wide | **1000 Hz** | Maximizes digitizer event dispatch rate for instant touch input |
+| `view.touch_slop` | System-wide | **0 px** | Eliminates drag deadzone for immediate aim response |
+| `debug.sensor.gyro.rate` | System-wide | **1000 Hz** | Unlocks max sensor polling for smooth scope tracking |
 
-### 🛠️ Setup Instructions (Shizuku Privileged Access)
+---
 
-1. Download and install **Shizuku** from Google Play Store or GitHub.
-2. Enable **Developer Options** and **Wireless Debugging** in your Android system settings.
-3. Start Shizuku via Wireless Debugging or connect your device to PC and run:
+## 📥 3. Download & Setup Instructions
+
+### Download Release APK
+Get the latest compiled binary from GitHub Releases:
+👉 **[Download Latest Version (v5.0.0-PRO APK)](https://github.com/willygailo/Game-Launcher/releases)**
+
+### Setup Steps (Shizuku Privileged Access)
+
+1. Install **Shizuku** from Google Play Store or GitHub.
+2. Enable **Developer Options** and **Wireless Debugging** in system settings.
+3. Start Shizuku via Wireless Debugging or connect your device to PC via ADB:
    ```bash
    adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
    ```
 4. Open **Game Launcher Pro** and grant Shizuku permission when prompted.
-
----
-
-## ⚡ 3. Recent Upgrades & Improvements
-
-- 🎨 **Hardware-Accelerated Animated GIF Banner**: Integrated `com.github.bumptech.glide:glide:4.16.0` to render high-definition animated GIF banners (`hero_banner.gif`) seamlessly in `HomeFragment`.
-- 🖼️ **Premium High-Resolution Backgrounds**:
-  - **Home Screen**: Customized backdrop scrim (`home_bg_new.jpg`).
-  - **Settings Screen**: High-contrast theme backdrop (`settings_bg_new.jpg`).
-- 🚀 **Zero-Delay Game Scanner**: Instant local package indexing to populate installed games on launch.
-- 🧹 **Shizuku RAM & ZRAM Purge**: Automatic background process cleanup to eliminate micro-stutters during heavy gaming sessions.
-- 🎯 **Tactical HUD Overlay**: Real-time FPS, hardware temperature, memory monitor, and customizable crosshair overlay.
+5. Select your game profile and apply 120/144/165 FPS overrides!
 
 ---
 
 ## 🙏 4. Acknowledgments & Special Thanks
 
-Special thanks to the open-source community and technologies that made this project possible:
-
 - ❤️ **Shizuku Developer Team (Rikka)** — For providing the privileged ADB binder bridge API without requiring full device root access.
 - ❤️ **Android Open Source Project (AOSP)** — For system developer properties and flexible OS framework capabilities.
-- ❤️ **Glide Image Loading Library (Bumptech)** — For high-performance, memory-efficient animated GIF and image rendering.
-- ❤️ **Community Testers & Gamers** — For continuous feedback, performance logs, and testing across different device chipsets.
-
----
-
-## ☕ 5. Support & Donations
-
-If **Game Launcher Pro** has improved your gaming latency and device performance, consider supporting ongoing development:
-
-- 💸 **Direct Sponsorship**: Contact via Facebook for direct QR and sponsorship details.
-- ⭐ **GitHub Star**: Simply starring this repository helps increase visibility and support for future updates!
+- ❤️ **Glide Image Loading Library (Bumptech)** — For high-performance animated GIF and image rendering.
+- ❤️ **Community Testers & Gamers** — For continuous feedback, performance logs, and testing across different Android 12-16 devices.
 
 ---
 
@@ -121,6 +121,7 @@ If **Game Launcher Pro** has improved your gaming latency and device performance
 | :--- | :--- |
 | 🌐 **Facebook Profile** | [Willy Jr Carnasa Gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) |
 | 🐙 **GitHub Repository** | [Willy Gailo / Game-Launcher](https://github.com/willygailo/Game-Launcher) |
+| 📦 **GitHub Releases** | [Game Launcher Releases](https://github.com/willygailo/Game-Launcher/releases) |
 
 ---
 

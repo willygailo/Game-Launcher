@@ -151,4 +151,12 @@ public class ShizukuExecutor {
             executeShizukuCommand("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
         }
     }
+
+    public static String injectTouchTap(int x, int y) {
+        return executeShizukuCommand("input tap " + x + " " + y);
+    }
+
+    public static String injectTouchSwipe(int startX, int startY, int endX, int endY, int durationMs) {
+        return executeShizukuCommand("input swipe " + startX + " " + startY + " " + endX + " " + endY + " " + durationMs);
+    }
 }

@@ -101,6 +101,36 @@ public class TweakManagerRepository {
                 true
         ));
 
+        TWEAKS.add(new TweakItem(
+                "mlbb_120fps_unlock",
+                "Mobile Legends 120/165 FPS Unlock",
+                "Forces MLBB package to run at 120/165Hz with Game Mode performance intervention via Shizuku",
+                "cmd game mode performance com.mobile.legends; cmd game set --fps 165 com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 165; device_config put game_overlay com.mobile.legends mode=2,fps=165:mode=3,fps=165",
+                "cmd game mode standard com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "pubgm_120fps_unlock",
+                "PUBG Mobile / BGMI 120 FPS Unlock",
+                "Forces PUBGM & BGMI packages to 120/165 FPS with Game Overlay override via Shizuku",
+                "cmd game mode performance com.tencent.ig; cmd game set --fps 165 com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 165; device_config put game_overlay com.tencent.ig mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.pubg.imobile; cmd game set --fps 165 com.pubg.imobile; cmd window set-app-refresh-rate com.pubg.imobile 165",
+                "cmd game mode standard com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "codm_120fps_unlock",
+                "COD Mobile 120/165 FPS Unlock",
+                "Forces CODM package to 120/165 FPS with high-priority surface flinger refresh rate via Shizuku",
+                "cmd game mode performance com.activision.callofduty.shooter; cmd game set --fps 165 com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 165; device_config put game_overlay com.activision.callofduty.shooter mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.garena.game.codm; cmd game set --fps 165 com.garena.game.codm; cmd window set-app-refresh-rate com.garena.game.codm 165",
+                "cmd game mode standard com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
         // Shizuku / ADB System Tweaks
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
@@ -144,10 +174,10 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "bypass_game_throttle",
-                "Bypass Game Throttling Interventions",
-                "Disables Android system default FPS caps & enables Game Driver for all apps",
-                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 2",
-                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_all_apps 0",
+                "Targeted Game Driver & Latency Uncap",
+                "Disables default FPS caps and enables ANGLE/Game Driver explicitly for MLBB, PUBGM & CODM",
+                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 0; settings put global game_driver_opt_in_apps com.mobile.legends,com.mobilelegends.win,com.tencent.ig,com.pubg.krmobile,com.vng.pubgmobile,com.pubg.imobile,com.activision.callofduty.shooter,com.garena.game.codm",
+                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_opt_in_apps \"\"",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));

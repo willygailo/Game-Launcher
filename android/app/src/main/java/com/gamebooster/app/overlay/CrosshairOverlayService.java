@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
@@ -16,16 +17,28 @@ import android.view.WindowManager;
 import androidx.core.app.NotificationCompat;
 
 /**
- * Service managing crosshair overlay lifecycle with non-touchable pass-through flags.
+ * Service managing crosshair overlay lifecycle with non-touchable pass-through flags,
+ * persistent preset selection, and clean view detachment.
  */
 public class CrosshairOverlayService extends Service {
+
+    public static final String PREF_NAME = "gamebooster_crosshair_prefs";
+    public static final String KEY_PRESET = "crosshair_preset";
+    public static final String KEY_COLOR = "crosshair_color";
+    public static final String KEY_SIZE = "crosshair_size";
 
     private static final String CHANNEL_ID = "crosshair_overlay_channel";
     private static final int NOTIFICATION_ID = 2002;
 
+    private static CrosshairOverlayService instance;
+
     private WindowManager windowManager;
     private CrosshairOverlayView overlayView;
     private boolean isOverlayActive = false;
+
+    public static boolean isRunning() {
+        return instance != null && instance.isOverlayActive;
+    }
 
     public static void startOverlay(Context context) {
         Intent intent = new Intent(context, CrosshairOverlayService.class);
@@ -41,11 +54,23 @@ public class CrosshairOverlayService extends Service {
         Intent intent = new Intent(context, CrosshairOverlayService.class);
         intent.setAction("ACTION_STOP");
         context.startService(intent);
+        // Also force manager hide cleanup
+        CrosshairOverlayManager.forceHide(context);
+    }
+
+    public static void updatePreset(Context context, CrosshairPreset preset) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_PRESET, preset.name()).apply();
+
+        if (instance != null && instance.overlayView != null) {
+            instance.overlayView.setPreset(preset);
+        }
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         createNotificationChannel();
     }
@@ -65,20 +90,23 @@ public class CrosshairOverlayService extends Service {
     }
 
     private void showOverlayView() {
-        if (isOverlayActive || windowManager == null) return;
+        if (windowManager == null) return;
+        if (isOverlayActive && overlayView != null) {
+            reloadPreferences();
+            return;
+        }
 
         overlayView = new CrosshairOverlayView(this);
-        overlayView.setPreset(CrosshairPreset.TACTICAL_CROSS);
-        overlayView.setColor(Color.parseColor("#00FF66"));
-        overlayView.setSizePx(100);
+        reloadPreferences();
 
         int layoutFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
 
+        // Sleek 60x60 px dimensions
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                120,
-                120,
+                60,
+                60,
                 layoutFlag,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
@@ -96,8 +124,25 @@ public class CrosshairOverlayService extends Service {
         }
     }
 
+    private void reloadPreferences() {
+        if (overlayView == null) return;
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        String presetName = prefs.getString(KEY_PRESET, CrosshairPreset.TACTICAL_CROSS.name());
+        int color = prefs.getInt(KEY_COLOR, Color.parseColor("#00FF66"));
+        int size = prefs.getInt(KEY_SIZE, 60);
+
+        try {
+            CrosshairPreset preset = CrosshairPreset.valueOf(presetName);
+            overlayView.setPreset(preset);
+        } catch (Exception e) {
+            overlayView.setPreset(CrosshairPreset.TACTICAL_CROSS);
+        }
+        overlayView.setColor(color);
+        overlayView.setSizePx(size);
+    }
+
     private void removeOverlayView() {
-        if (isOverlayActive && overlayView != null && windowManager != null) {
+        if (overlayView != null && windowManager != null) {
             try {
                 windowManager.removeView(overlayView);
             } catch (Exception ignored) {}
@@ -108,8 +153,8 @@ public class CrosshairOverlayService extends Service {
 
     @Override
     public void onDestroy() {
-
         removeOverlayView();
+        instance = null;
         super.onDestroy();
     }
 
