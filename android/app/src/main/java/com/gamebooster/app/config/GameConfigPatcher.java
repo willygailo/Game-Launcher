@@ -35,6 +35,7 @@ public class GameConfigPatcher {
             patched = MlbbConfigPatcher.patch(pkg, targetFps);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
+            MlbbConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             patched = CodmConfigPatcher.patch(pkg, targetFps);
             CodmConfigPatcher.applyAimAssistConfig(pkg);

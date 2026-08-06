@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FreeFireConfigPatcher manages internal config files for Free Fire and Free Fire MAX.
- * Supports all regional package names on Android 12 to 16.
+ * FreeFireConfigPatcher manages internal graphics and FPS configuration files for Free Fire and Free Fire MAX.
+ * Supports unlocking Ultra graphics quality, 120/165 FPS, and high-frequency touch across Android 12 to 16.
  */
 public class FreeFireConfigPatcher {
 
@@ -25,11 +25,38 @@ public class FreeFireConfigPatcher {
         return patched > 0;
     }
 
+    /**
+     * Competitive Force-Write for Free Fire & Free Fire MAX.
+     * Force-overwrites Ultra Graphics (GraphicLevel=4, HighFPS=1, HighRes=1, Shadow=1, UltraHD=1).
+     */
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        String content = String.format(
+                "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nGraphicLevel=4\nShadow=1\nHighRes=1\nUltraHD=1\nTouchBoostHz=165\nUnlock165Hz=1\n",
+                targetFps
+        );
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, content);
+            written++;
+        }
+        Log.i(TAG, "Free Fire competitive Ultra graphics force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        return written > 0;
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
         return paths;
+    }
+
+    private static void forceWrite(String path, String content) {
+        ensureDirectory(path);
+        String escaped = content.replace("'", "'\\''");
+        String writeCmd = "printf '" + escaped + "' > " + path;
+        runCommand(writeCmd);
     }
 
     private static boolean applyPatch(String path, int targetFps) {
@@ -41,7 +68,7 @@ public class FreeFireConfigPatcher {
 
         if (checkRes == null || !checkRes.contains("EXISTS")) {
             String content = String.format(
-                    "[FFGraphics]\\nHighFPS=1\\nFPSMode=2\\nMaxFPS=%d\\nGraphicLevel=3\\n",
+                    "[FFGraphics]\\nHighFPS=1\\nFPSMode=2\\nMaxFPS=%d\\nGraphicLevel=4\\nShadow=1\\nHighRes=1\\n",
                     targetFps
             );
             runCommand("printf '" + content + "' > " + path);
@@ -49,6 +76,8 @@ public class FreeFireConfigPatcher {
             runCommand("sed -i 's/^HighFPS=.*/HighFPS=1/' " + path);
             runCommand("sed -i 's/^FPSMode=.*/FPSMode=2/' " + path);
             runCommand("sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path);
+            runCommand("sed -i 's/^GraphicLevel=.*/GraphicLevel=4/' " + path);
+            runCommand("sed -i 's/^Shadow=.*/Shadow=1/' " + path);
         }
         return true;
     }

@@ -134,6 +134,43 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB magic/physical damage script asset config applied via Shizuku for " + packageName);
     }
 
+    /**
+     * Injects Aim Assist, Target Lock, Auto-Skill Aim, and Hero Tracking keys into MLBB config files.
+     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     */
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssist=1",
+            "AimAssistLevel=3",
+            "TargetLockMode=1",
+            "AutoSkillAim=1",
+            "HeroTargetLockSensitivity=100",
+            "SkillAimAssist=1",
+            "RotationalAimAssist=1",
+            "CameraTargetTracking=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[AimAssistConfig]' ").append(path).append(" || echo '[AimAssistConfig]' >> ").append(path).append("; ");
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB Aim Assist & Target Tracking config applied via Shizuku for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 
