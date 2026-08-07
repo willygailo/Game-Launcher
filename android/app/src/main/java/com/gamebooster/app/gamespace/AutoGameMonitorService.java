@@ -83,7 +83,7 @@ public class AutoGameMonitorService extends Service {
             public void run() {
                 checkForegroundApp();
                 if (handler != null && isRunning) {
-                    handler.postDelayed(this, 2500); // Check every 2.5s
+                    handler.postDelayed(this, 1200); // Fast 1.2s polling for zero-delay auto detection
                 }
             }
         };
@@ -93,7 +93,7 @@ public class AutoGameMonitorService extends Service {
     private void checkForegroundApp() {
         AppExecutors.getInstance().executeCommand(() -> {
             String currentPackage = getForegroundPackage();
-            if (currentPackage == null) return;
+            if (currentPackage == null || currentPackage.isEmpty()) return;
 
             List<GameAppInfo> installedGames = GameManagerRepository.getInstalledGames(getApplicationContext());
             Set<String> gamePackages = new TreeSet<>();
@@ -101,7 +101,8 @@ public class AutoGameMonitorService extends Service {
                 gamePackages.add(info.getPackageName());
             }
 
-            boolean isGameActive = gamePackages.contains(currentPackage);
+            boolean isGameActive = gamePackages.contains(currentPackage) 
+                    || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
                 lastActiveGamePackage = currentPackage;
@@ -109,7 +110,7 @@ public class AutoGameMonitorService extends Service {
                 GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
                         getApplicationContext(), currentPackage);
                 int targetHz = GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
-                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
+                Log.i(TAG, "GAME LAUNCH DETECTED (AUTOMATIC): " + currentPackage + " — Applying "
                         + profile.label + " up to " + targetHz + "Hz");
 
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
@@ -129,7 +130,7 @@ public class AutoGameMonitorService extends Service {
                 }
 
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 " + profile.label
+                        android.widget.Toast.makeText(getApplicationContext(), "🎮 AUTO BOOST: " + profile.label
                                 + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
@@ -152,22 +153,48 @@ public class AutoGameMonitorService extends Service {
     }
 
     private String getForegroundPackage() {
+        // 1. Primary: UsageStatsManager query
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
                 long time = System.currentTimeMillis();
                 UsageEvents events = usm.queryEvents(time - 10000, time);
-                UsageEvents.Event event = new UsageEvents.Event();
-                String lastPkg = null;
-                while (events.hasNextEvent()) {
-                    events.getNextEvent(event);
-                    if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                        lastPkg = event.getPackageName();
+                if (events != null) {
+                    UsageEvents.Event event = new UsageEvents.Event();
+                    String lastPkg = null;
+                    while (events.hasNextEvent()) {
+                        events.getNextEvent(event);
+                        if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                            lastPkg = event.getPackageName();
+                        }
+                    }
+                    if (lastPkg != null && !lastPkg.isEmpty()) {
+                        return lastPkg;
                     }
                 }
-                return lastPkg;
             }
         } catch (Exception ignored) {}
+
+        // 2. Secondary: Shizuku ADB dumpsys fallback for 100% background auto-detection without UsageStats permission
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.isShizukuAvailable()) {
+            try {
+                String output = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("dumpsys window visible-apps");
+                if (output != null && output.contains("package=")) {
+                    int idx = output.indexOf("package=");
+                    while (idx != -1) {
+                        int end = output.indexOf(" ", idx);
+                        if (end == -1) end = output.indexOf("\n", idx);
+                        if (end != -1) {
+                            String pkg = output.substring(idx + 8, end).trim();
+                            if (!pkg.isEmpty() && !pkg.equals(getPackageName())) {
+                                return pkg;
+                            }
+                        }
+                        idx = output.indexOf("package=", idx + 8);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return null;
     }
 
