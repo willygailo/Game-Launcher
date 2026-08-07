@@ -1,12 +1,12 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner v5.5.0-PRO 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v5.6.0-PRO 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v5.5.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
-[![Tag](https://img.shields.io/badge/Tag-v5.5.0--PRO-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v5.5.0-PRO)
+[![Version](https://img.shields.io/badge/Release-v5.6.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Tag](https://img.shields.io/badge/Tag-v5.6.0--PRO-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v5.6.0-PRO)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![Theme](https://img.shields.io/badge/UI-Cyberpunk%20Glass-FF007F?style=for-the-badge&logo=materialdesign&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
@@ -26,7 +26,7 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ## 📌 1. 🌟 Executive Summary & Highlights
 
-**Game Launcher Pro (v5.5.0-PRO)** is a ban-safe, high-performance Android gaming utility engineered for competitive mobile esports across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, *Blood Strike*, *Wild Rift*, *Genshin Impact*, and *Roblox*.
+**Game Launcher Pro (v5.6.0-PRO)** is a ban-safe, high-performance Android gaming utility engineered for competitive mobile esports across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, *Blood Strike*, *Wild Rift*, *Genshin Impact*, and *Roblox*.
 
 It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, display refresh rate overrides (120/144/165Hz), full-system hardware identity spoofing (concealing host CPU, GPU, Build Fingerprint, display ID across 6 property namespaces), background 24/7 game launch detection without opening the main app UI, and low-latency esports network tuning using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
 
@@ -45,9 +45,9 @@ It optimizes device-level touch sampling frequency, digitizer response rates, gy
 | 165Hz Display • ROG 8 Pro Profile • Esports Low-Latency DNS                       |
 +-----------------------------------------------------------------------------------+
 | 🎮 INSTALLED TARGET GAMES (3 DETECTED)                                            |
-|  [ 🗡️ Mobile Legends: Bang Bang ]  ▶ LAUNCH  ⚙️ CFG  |  165 FPS • Ultra Graphics    |
-|  [ 🪖 PUBG Mobile               ]  ▶ LAUNCH  ⚙️ CFG  |  165 FPS • 90Hz Extreme     |
-|  [ 🎯 Call of Duty: Mobile      ]  ▶ LAUNCH  ⚙️ CFG  |  120 FPS • Ultra Frame      |
+|  [ 🗡️ Mobile Legends: Bang Bang ]  ▶ LAUNCH  ⚙️ CFG  |  165 FPS • Max Graphics    |
+|  [ 🪖 PUBG Mobile               ]  ▶ LAUNCH  ⚙️ CFG  |  165 FPS • Max Graphics    |
+|  [ 🎯 Call of Duty: Mobile      ]  ▶ LAUNCH  ⚙️ CFG  |  120 FPS • Max Graphics    |
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -64,10 +64,10 @@ It optimizes device-level touch sampling frequency, digitizer response rates, gy
 
 ---
 
-## ⚡ 3. 🚀 Key Technical Features in v5.5.0-PRO
+## ⚡ 3. 🚀 Key Technical Features in v5.6.0-PRO
 
 - ⚡ **24/7 Background Auto-Game Launch Detection (`AutoGameMonitorService`)**: Automatically intercepts game launches directly from the Android home screen or app drawer without opening Game Launcher Pro first.
-- 🛠️ **Shizuku ADB Dumpsys Fallback**: Uses `dumpsys window visible-apps` fallback via Shizuku binder IPC for 100% reliable background game detection even if UsageStats permission is not granted.
+- 🛠️ **Shizuku ADB & SU Root Competitive Forcing**: Direct Shizuku base64 file stream engine forcing 165 FPS Max Graphics for MLBB & PUBGM, and 120 FPS Max Graphics for CODM into internal `/data/data/` config paths.
 - 🌐 **Esports Low-Latency Network & DNS Tuner (`EsportsNetworkTuner`)**: Automatically applies Cloudflare (`1.1.1.1`) and Google (`8.8.8.8`) DNS rules, optimizes TCP window scale buffers (`net.tcp.buffersize`), and forces Wi-Fi low-latency mode on game launch.
 - 🎭 **Full Hardware & System Identity Hiding (`DeviceSpooferEngine`)**: Overrides 6 system property namespaces (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.product.device`, `ro.product.name`, `ro.hardware`, `ro.soc.model`, `ro.build.fingerprint`) via Shizuku ADB binder IPC.
 - ⚡ **Direct 120/144/165Hz Display & FPS Enforcement (`MaxHzForceChannel`)**: Intercepts SurfaceFlinger binder calls (1035/1036) and forces 120Hz/144Hz/165Hz display refresh rate caps alongside Android Game Mode API FPS rules.
@@ -135,8 +135,8 @@ Game_Launcher_Pro/
 │   │   └── src/main/res/
 │   │       ├── drawable/         # Custom UI Assets (card_neon_glow.xml, hero_glass_badge.xml, hero_banner.gif, omni.jpeg)
 │   │       └── values/           # colors.xml, strings.xml
-│   └── build.gradle              # versionCode 55, versionName "5.5.0-PRO", targetSdk 36
-├── Game_Space_v5.5.0-PRO.apk     # Release APK Binary Output
+│   └── build.gradle              # versionCode 56, versionName "5.6.0-PRO", targetSdk 36
+├── Game_Space_v5.6.0-PRO.apk     # Release APK Binary Output
 └── README.md
 ```
 
@@ -174,7 +174,7 @@ Game_Launcher_Pro/
 
 ### Download Release APK
 Get the latest compiled binary directly from GitHub Releases:
-👉 **[Download Latest Release (v5.5.0-PRO APK)](https://github.com/willygailo/Game-Launcher/releases)** 📲
+👉 **[Download Latest Release (v5.6.0-PRO APK)](https://github.com/willygailo/Game-Launcher/releases)** 📲
 
 ### Setup Steps (Shizuku Privileged Access)
 
