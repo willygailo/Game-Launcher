@@ -36,17 +36,20 @@ public class GameConfigPatcher {
         TouchLatencyChannel.enableUltraTouchResponse();
 
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            patched = MlbbConfigPatcher.patch(pkg, targetFps);
+            int fps = Math.max(targetFps, 165);
+            patched = MlbbConfigPatcher.patchCompetitive(pkg, fps);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
-            patched = CodmConfigPatcher.patch(pkg, targetFps);
+            int fps = Math.max(targetFps, 120);
+            patched = CodmConfigPatcher.patchCompetitive(pkg, fps);
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
-            patched = PubgConfigPatcher.patch(pkg, targetFps);
+            int fps = Math.max(targetFps, 165);
+            patched = PubgConfigPatcher.patchCompetitive(pkg, fps);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("freefire")) {
