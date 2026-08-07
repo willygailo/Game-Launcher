@@ -1,18 +1,18 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner v5.1.0-PRO 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v5.2.0-PRO 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v5.1.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
-[![Tag](https://img.shields.io/badge/Tag-v2.4.0-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v2.4.0)
+[![Version](https://img.shields.io/badge/Release-v5.2.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Tag](https://img.shields.io/badge/Tag-v5.2.0--PRO-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v5.2.0-PRO)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Star%20Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher)
 
-**An ultra-high-performance Game Booster, Input Latency Tuner, Per-Game 120/144/165 FPS Unlocker, and Precision HUD Overlay for Android 12 to 16.**
+**An ultra-high-performance Game Booster, Input Latency Tuner, Per-Game 120/144/165 FPS Unlocker, Full Hardware Identity Spoofer, and Precision HUD Overlay for Android 12 to 16.**
 
 ---
 
@@ -23,19 +23,18 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ---
 
-## 📌 1. Introduction & v5.1.0-PRO (v2.4.0) Highlights
+## 📌 1. Introduction & v5.2.0-PRO Highlights
 
-**Game Launcher Pro (Precision Aim Input Tuner v5.1.0-PRO / Release Tag v2.4.0)** is a ban-safe, high-performance Android utility app engineered for competitive mobile gamers across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, and *Wild Rift*.
+**Game Launcher Pro (v5.2.0-PRO / Release Tag v5.2.0-PRO)** is a ban-safe, high-performance Android utility app engineered for competitive mobile gamers across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, and *Wild Rift*.
 
-It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, display refresh rate overrides (120/144/165Hz), and game driver configurations using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
+It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, display refresh rate overrides (120/144/165Hz), full-system hardware identity spoofing (concealing host CPU, GPU, Build Fingerprint, display ID across 6 property namespaces), and game driver configurations using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
 
-### 🌟 What's New in v5.1.0-PRO (Tag v2.4.0)
+### 🌟 What's New in v5.2.0-PRO
 
-- ⚡ **Full Project & Module Registry Audit**: All core background services (`GameBoosterService`, `FloatingOverlayService`, `CrosshairOverlayService`, `AutoGameMonitorService`), receivers (`BootReceiver`), and providers (`ShizukuProvider`) fully registered and verified.
-- 📱 **Expanded OEM Device Spoof Registry**: 10 distinct brand profile suites (`SamsungProfiles`, `RealmeProfiles`, `AsusRogProfiles`, `XiaomiProfiles`, `OnePlusProfiles`, `OppoProfiles`, `VivoProfiles`, `AppleProfiles`, `NubiaProfiles`, `BlackSharkProfiles`) registered in `SpoofProfileRegistry`.
-- 🎮 **Per-Game 120/144/165 FPS Unlocks**: Dedicated Shizuku Game Mode interventions (`cmd game set --fps 165`, `cmd window set-app-refresh-rate`, `device_config put game_overlay`) supporting 40+ top mobile game titles.
-- 🎯 **Universal Hardware & Device Adapter**: Added `UniversalDeviceAdapter` and `SettingsStateRestorer` for seamless hardware state preservation and automatic fallback restoration.
-- 🖼️ **Omni Dashboard Theme**: Integrated `omni.jpeg` dashboard background with glass scrim styling.
+- 🎭 **Full Hardware & System Identity Hiding**: Overrides 6 system property namespaces (`ro.product.model`, `ro.product.brand`, `ro.product.manufacturer`, `ro.product.device`, `ro.product.name`, `ro.hardware`, `ro.soc.model`, `ro.build.fingerprint`) via Shizuku ADB binder IPC.
+- ⚡ **Direct 120/144/165Hz Display & FPS Enforcement**: Intercepts SurfaceFlinger binder calls (1035/1036) and forces 120Hz/144Hz/165Hz display refresh rate caps alongside Android Game Mode API FPS rules.
+- 📱 **Expanded OEM Device Profiles**: Includes full real-world profiles for ASUS ROG 8 Pro, REDMAGIC 9 Pro, Galaxy S25 Ultra, Black Shark 5 Pro, Xiaomi 14 Ultra, and 10+ major brand suites.
+- 🚀 **Chipset GPU Boost Matrix**: Integrated Qualcomm Adreno (`qgl.enabled`), MediaTek Dimensity/Helio (`mtk_fps_limit`), and Exynos GPU boost properties in `UniversalDeviceAdapter`.
 - 📱 **Full Android 12 to 16 (API 31–36) Compatibility**: Target SDK upgraded to SDK 36 with full FGS subtype declarations.
 
 ---
