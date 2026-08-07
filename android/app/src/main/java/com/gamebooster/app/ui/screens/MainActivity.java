@@ -69,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         } catch (Throwable ignored) {}
 
+        // Ensure 24/7 Background Auto-Game Detection Service is registered and running
+        com.gamebooster.app.gamespace.AutoGameMonitorService.start(this);
+
         if (savedInstanceState != null) {
             currentTabIndex = savedInstanceState.getInt(KEY_SELECTED_TAB, 0);
             Log.i("TabPersist", "restored index=" + currentTabIndex);
