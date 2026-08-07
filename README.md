@@ -38,13 +38,6 @@ It optimizes device-level touch sampling frequency, digitizer response rates, gy
 - 🖼️ **Omni Dashboard Theme**: Integrated `omni.jpeg` dashboard background with glass scrim styling.
 - 📱 **Full Android 12 to 16 (API 31–36) Compatibility**: Target SDK upgraded to SDK 36 with full FGS subtype declarations.
 
-> [!IMPORTANT]
-> **SAFETY & COMPLIANCE GUARANTEE**:
-> - ❌ **Zero Game Memory Tampering**: Never reads, injects into, or modifies game binaries, RAM, or APK data.
-> - ❌ **No Anti-Cheat Violation**: Avoids prohibited UE4 console variable injections (`r.AimSensitivityScale`, `r.TouchDeadZone`) detected by Tencent ACE / anti-cheat solutions.
-> - ❌ **No Automation or Macros**: Strictly zero aimbots, auto-fire, recoil macros, or automated inputs.
-> - ✅ **100% Reversible**: Every system property modification is backed up and automatically restored to system defaults upon app termination.
-
 ---
 
 ## 📄 2. Technical Architecture & Directory Structure
