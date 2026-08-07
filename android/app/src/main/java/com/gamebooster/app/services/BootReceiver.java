@@ -10,9 +10,8 @@ import com.gamebooster.app.booster.TouchLatencyChannel;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            GpuTweaksChannel.enableVulkanRenderer();
-            TouchLatencyChannel.enableUltraTouchResponse();
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()) && context != null) {
+            com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(context);
         }
     }
 }

@@ -42,8 +42,9 @@ public class GameBoosterService extends Service {
             startForeground(NOTIF_ID, notification);
         }
 
-        // Apply background auto-boost optimizations
+        // Apply background auto-boost optimizations & restore persistent settings
         try {
+            com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(getApplicationContext());
             com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
             PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
         } catch (Exception ignored) {}

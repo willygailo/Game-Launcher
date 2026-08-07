@@ -604,11 +604,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() == null || button == null) return;
         button.setEnabled(false);
         Toast.makeText(getContext(), "Applying performance profile...", Toast.LENGTH_SHORT).show();
+        ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+        ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+        ManualSettingsPreferences.setAngleMode(getContext(), true);
+        ManualSettingsPreferences.setGameDriverEnabled(getContext(), true);
         AppExecutors.getInstance().executeCommand(() -> {
             boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
                 button.setEnabled(true);
+                if (switchGpuMode != null) switchGpuMode.setChecked(true);
+                if (switchCpuMode != null) switchCpuMode.setChecked(true);
+                if (switchAngleMode != null) switchAngleMode.setChecked(true);
+                if (switchGameDriver != null) switchGameDriver.setChecked(true);
                 Toast.makeText(getContext(), ok ? successMsg : "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
             });
         });

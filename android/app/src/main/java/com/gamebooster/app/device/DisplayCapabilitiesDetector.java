@@ -196,9 +196,9 @@ public final class DisplayCapabilitiesDetector {
             ok &= props.set("system:peak_refresh_rate", String.valueOf(caps.maxRefreshRate)).success;
             ok &= props.set("system:min_refresh_rate", String.valueOf(caps.maxRefreshRate)).success;
             ok &= props.set("system:user_refresh_rate", String.valueOf(caps.maxRefreshRate)).success;
-            ok &= props.set("global:window_animation_scale", "0.5").success;
-            ok &= props.set("global:transition_animation_scale", "0.5").success;
-            ok &= props.set("global:animator_duration_scale", "0.5").success;
+            ok &= props.set("global:window_animation_scale", "0.0").success;
+            ok &= props.set("global:transition_animation_scale", "0.0").success;
+            ok &= props.set("global:animator_duration_scale", "0.0").success;
             ok &= props.set("system:touch_slop_reduction", "1").success;
             return ok;
         }

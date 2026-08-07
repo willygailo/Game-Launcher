@@ -161,7 +161,10 @@ public final class MaxHzForceChannel {
             ok += run("settings put system user_refresh_rate " + hz);               total++;
         }
 
-        int fail = total - ok;
+        // ── Layer 7: Universal Device Adapter Engine (Android 12–16, All OEMs & Chipsets) ──
+        total += com.gamebooster.app.device.UniversalDeviceAdapter.applyOemHardwareOptimization(targetHz);
+
+        int fail = Math.max(0, total - ok);
         Log.i(TAG, "══ MaxHzForceChannel.forceApply DONE: "
                 + ok + "/" + total + " OK, " + targetHz + "Hz ══");
         return ForceResult.complete(targetHz, ok, fail, total);

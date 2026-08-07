@@ -46,9 +46,10 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
 
-        // Initialize saved tweak states and restore active tweaks
+        // Initialize saved tweak states and restore active tweaks & persistent settings
         TweakManagerRepository.initializeStates(this);
         TweakManagerRepository.restoreAppliedTweaksAsync(this);
+        com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(this);
 
         // Request runtime notification permission on Android 13+ (API 33+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {

@@ -1,11 +1,12 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner v5.0.0-PRO 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v5.1.0-PRO 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v5.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Version](https://img.shields.io/badge/Release-v5.1.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Tag](https://img.shields.io/badge/Tag-v2.4.0-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v2.4.0)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
@@ -22,22 +23,20 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ---
 
-## 📌 1. Introduction & v5.0.0-PRO Highlights
+## 📌 1. Introduction & v5.1.0-PRO (v2.4.0) Highlights
 
-**Game Launcher Pro (Precision Aim Input Tuner v5.0.0-PRO)** is a ban-safe, high-performance Android utility app engineered for competitive mobile gamers across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, and *Free Fire*.
+**Game Launcher Pro (Precision Aim Input Tuner v5.1.0-PRO / Release Tag v2.4.0)** is a ban-safe, high-performance Android utility app engineered for competitive mobile gamers across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, and *Wild Rift*.
 
 It optimizes device-level touch sampling frequency, digitizer response rates, gyroscope polling, display refresh rate overrides (120/144/165Hz), and game driver configurations using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
 
-### 🌟 What's New in v5.0.0-PRO
+### 🌟 What's New in v5.1.0-PRO (Tag v2.4.0)
 
-- ⚡ **Targeted GameDriver Opt-In**: GameDriver and ANGLE drivers are now explicitly targeted **ONLY** to MLBB, PUBGM/BGMI, and CODM (`game_driver_opt_in_apps`) instead of forcing all background apps.
-- 🎮 **Per-Game 120/144/165 FPS Unlocks**: Dedicated Shizuku Game Mode interventions (`cmd game set --fps 165`, `cmd window set-app-refresh-rate`, `device_config put game_overlay`) tailored for MLBB, PUBGM, and CODM.
-- 🎯 **Precision Aim & Gyro Tuner Fixes**:
-  - **Sleek HUD Crosshair**: Tuned size to 60px with clean view detachment on toggle OFF.
-  - **Live Presets**: Reticle presets (`Dot`, `Tactical Cross`, `Scope Ring`, `Sniper Cross`) persist and render live.
-  - **Interactive Recoil & Gyro Calculator**: Select your game profile, target DPI, and recoil dampening mode (`Balanced`, `Low Recoil / Precision Aim`, `Pro Gyro 400%`).
-- 🖼️ **Omni Dashboard Theme**: Integrated `omni.jpeg` as the settings dashboard background with a sleek glass scrim overlay.
-- 📱 **Full Android 12 to 16 (API 31–36) Compatibility**: Full support for Android 12, 13, 14, 15, and 16 with Android 14+ FGS subtype declarations.
+- ⚡ **Full Project & Module Registry Audit**: All core background services (`GameBoosterService`, `FloatingOverlayService`, `CrosshairOverlayService`, `AutoGameMonitorService`), receivers (`BootReceiver`), and providers (`ShizukuProvider`) fully registered and verified.
+- 📱 **Expanded OEM Device Spoof Registry**: 10 distinct brand profile suites (`SamsungProfiles`, `RealmeProfiles`, `AsusRogProfiles`, `XiaomiProfiles`, `OnePlusProfiles`, `OppoProfiles`, `VivoProfiles`, `AppleProfiles`, `NubiaProfiles`, `BlackSharkProfiles`) registered in `SpoofProfileRegistry`.
+- 🎮 **Per-Game 120/144/165 FPS Unlocks**: Dedicated Shizuku Game Mode interventions (`cmd game set --fps 165`, `cmd window set-app-refresh-rate`, `device_config put game_overlay`) supporting 40+ top mobile game titles.
+- 🎯 **Universal Hardware & Device Adapter**: Added `UniversalDeviceAdapter` and `SettingsStateRestorer` for seamless hardware state preservation and automatic fallback restoration.
+- 🖼️ **Omni Dashboard Theme**: Integrated `omni.jpeg` dashboard background with glass scrim styling.
+- 📱 **Full Android 12 to 16 (API 31–36) Compatibility**: Target SDK upgraded to SDK 36 with full FGS subtype declarations.
 
 > [!IMPORTANT]
 > **SAFETY & COMPLIANCE GUARANTEE**:
@@ -55,20 +54,25 @@ Game_Launcher_Pro/
 ├── android/
 │   ├── app/
 │   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/          # GpuTweaksChannel, PerformanceChannel, NetworkOptimizer
-│   │   │   ├── device/           # DisplayCapabilitiesDetector & DeviceInfoChannel
-│   │   │   ├── engine/           # CommandExecutor & Hardware Engine Modes
-│   │   │   ├── games/            # GameLauncherHelper & Zero-Delay Auto Scanner
+│   │   │   ├── booster/          # GpuTweaksChannel, PerformanceChannel, TouchLatencyChannel, NetworkOptimizer
+│   │   │   ├── config/           # PubgConfigPatcher, CodmConfigPatcher, FreeFireConfigPatcher, MlbbConfigPatcher
+│   │   │   ├── core/             # PropertyResolver, SettingsManager, SettingsStateRestorer, GameBoosterJsInterface
+│   │   │   ├── device/           # DisplayCapabilitiesDetector, UniversalDeviceAdapter, DeviceInfoChannel
+│   │   │   ├── engine/           # CommandExecutor, ShellExecutor & Hardware Engine Modes
+│   │   │   ├── games/            # GamePackageRegistry, GameLauncherHelper, GameManagerRepository
+│   │   │   ├── gamespace/        # AutoGameMonitorService, GameCacheCleaner, GameSpaceDndManager
 │   │   │   ├── overlay/          # CrosshairOverlayService, FloatingOverlayService & CrosshairPreset
+│   │   │   ├── service/          # BootReceiver, GameBoosterService
 │   │   │   ├── shizuku/          # ShizukuExecutor, ShizukuChannel & ShizukuProvider
+│   │   │   ├── spoofer/          # SpoofProfileRegistry & OEM Brand Profiles (Samsung, ROG, Xiaomi, Apple, etc.)
 │   │   │   ├── tweaks/           # TweakManagerRepository & Per-Game 120/165 FPS Unlocks
 │   │   │   └── ui/
-│   │   │       ├── screens/      # HomeFragment, SettingsFragment, MainActivity
+│   │   │       ├── screens/      # HomeFragment, SettingsFragment, ProfilesFragment, MainActivity
 │   │   │       └── sensitivity/  # SensitivityCalculator & SensitivityModel (Gyro Recoil Tuner)
 │   │   └── src/main/res/
 │   │       └── drawable/         # Custom UI Assets (omni.jpeg, hero_banner.gif, home_bg_new.jpg)
-│   └── build.gradle              # versionCode 50, versionName "5.0.0-PRO", targetSdk 36
-├── Game_Space_v5.0.0-PRO.apk
+│   └── build.gradle              # versionCode 51, versionName "5.1.0-PRO", targetSdk 36
+├── Game_Space.apk                # Release APK Output
 └── README.md
 ```
 
@@ -89,7 +93,7 @@ Game_Launcher_Pro/
 
 ### Download Release APK
 Get the latest compiled binary from GitHub Releases:
-👉 **[Download Latest Version (v5.0.0-PRO APK)](https://github.com/willygailo/Game-Launcher/releases)**
+👉 **[Download Latest Version (v5.1.0-PRO / v2.4.0 APK)](https://github.com/willygailo/Game-Launcher/releases)**
 
 ### Setup Steps (Shizuku Privileged Access)
 
