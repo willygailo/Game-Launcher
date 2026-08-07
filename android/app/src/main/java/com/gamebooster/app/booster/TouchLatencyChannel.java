@@ -29,4 +29,29 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("persist.sys.oppo.touch_response", "1");
         return ok;
     }
+
+    public static boolean disableUltraTouchResponse() {
+        boolean ok = true;
+        ok &= CommandExecutor.setSystemSetting("system", "touch_slop_reduction", "0");
+        ok &= CommandExecutor.setSystemProperty("view.touch_slop", "8");
+        ok &= CommandExecutor.setSystemProperty("touch.distance.scale", "1");
+        ok &= CommandExecutor.setSystemProperty("touch.pressure.scale", "1.0");
+        ok &= CommandExecutor.setSystemProperty("touch.size.calibration", "default");
+        ok &= CommandExecutor.setSystemProperty("touch.gestureMode", "1");
+        ok &= CommandExecutor.setSystemSetting("global", "window_animation_scale", "1.0");
+        ok &= CommandExecutor.setSystemSetting("global", "transition_animation_scale", "1.0");
+        ok &= CommandExecutor.setSystemSetting("global", "animator_duration_scale", "1.0");
+        ok &= CommandExecutor.setSystemProperty("debug.input.max_events_per_sec", "150");
+        ok &= CommandExecutor.setSystemProperty("windowsmgr.max_events_per_sec", "150");
+        ok &= CommandExecutor.setSystemProperty("sys.use_fifo", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.touch_latency", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.touch_response", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.scrollingcache", "1");
+        ok &= CommandExecutor.setSystemProperty("vendor.mtk.touch_boost", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.qti.input.touch_boost", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.transsion.touch_rate", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.samsung.touch_boost", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.oppo.touch_response", "0");
+        return ok;
+    }
 }

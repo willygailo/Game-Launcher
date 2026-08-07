@@ -119,6 +119,33 @@ public class PerformanceChannel {
         }
     }
 
+    public static boolean revertRootTweaksScript() {
+        try {
+            String scriptPath = "/data/local/tmp/gamebooster_revert.sh";
+            String scriptContent = "#!/system/bin/sh\\n" +
+                    "setprop debug.sf.hw 0\\n" +
+                    "setprop debug.hwui.renderer skia\\n" +
+                    "setprop debug.renderengine.backend gles\\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 1000000\\n" +
+                    "setprop debug.sf.fps_limit 0\\n" +
+                    "setprop persist.sys.NV_FPSLIMIT 0\\n" +
+                    "setprop persist.sys.NV_POWERMODE 0\\n" +
+                    "settings delete system peak_refresh_rate\\n" +
+                    "settings delete system min_refresh_rate\\n" +
+                    "settings delete system user_refresh_rate\\n" +
+                    "cmd power set-mode 0 0\\n" +
+                    "cmd power set-mode 2 0\\n" +
+                    "cmd thermalservice override-status -1\\n";
+
+            String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
+                    scriptContent, scriptPath, scriptPath, scriptPath);
+            String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
+            return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     public static boolean setGpuRenderMode(boolean is3D) {
         if (is3D) {
             boolean ok = GpuTweaksChannel.enableVulkanRenderer();

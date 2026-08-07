@@ -13,4 +13,11 @@ public class NetworkTweaksChannel {
         CommandExecutor.setSystemSetting("global", "wifi_sleep_policy", "2");
         return true;
     }
+
+    public static boolean disableLowLatencyNetwork() {
+        CommandExecutor.setSystemProperty("net.tcp.buffersize.wifi", "default");
+        CommandExecutor.setSystemProperty("net.tcp.buffersize.mobile", "default");
+        CommandExecutor.setSystemSetting("global", "wifi_sleep_policy", "0");
+        return true;
+    }
 }

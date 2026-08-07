@@ -156,4 +156,30 @@ public class GameBoosterJsInterface {
             return "{}";
         }
     }
+
+    @JavascriptInterface
+    public boolean setMasterBoostEnabled(boolean enable) {
+        if (context == null) return false;
+        com.gamebooster.app.config.ManualSettingsPreferences.setMasterBoostEnabled(context, enable);
+        if (!enable) {
+            com.gamebooster.app.tweaks.TweakManagerRepository.revertAllTweaks(context);
+        } else {
+            com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(context);
+        }
+        return true;
+    }
+
+    @JavascriptInterface
+    public boolean isMasterBoostEnabled() {
+        if (context == null) return false;
+        return com.gamebooster.app.config.ManualSettingsPreferences.isMasterBoostEnabled(context);
+    }
+
+    @JavascriptInterface
+    public boolean revertAllToAospDefaults() {
+        if (context == null) return false;
+        com.gamebooster.app.config.ManualSettingsPreferences.setMasterBoostEnabled(context, false);
+        com.gamebooster.app.tweaks.TweakManagerRepository.revertAllTweaks(context);
+        return true;
+    }
 }

@@ -19,4 +19,8 @@ public class CpuGovernorChannel {
     public static boolean setPerformanceLock() {
         return setGovernor("extreme");
     }
+
+    public static boolean resetToStockGovernor() {
+        return setGovernor("schedutil");
+    }
 }

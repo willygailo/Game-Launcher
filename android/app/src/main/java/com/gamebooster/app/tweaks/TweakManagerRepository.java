@@ -624,9 +624,41 @@ public class TweakManagerRepository {
         });
     }
 
+    public static int revertAllTweaks(Context context) {
+        int revertedCount = 0;
+        for (TweakItem tweak : TWEAKS) {
+            if (revertTweak(context, tweak)) {
+                revertedCount++;
+            }
+        }
+        com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(false);
+        com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(false);
+        com.gamebooster.app.booster.GpuTweaksChannel.disableVulkanRenderer();
+        com.gamebooster.app.booster.TouchLatencyChannel.disableUltraTouchResponse();
+        com.gamebooster.app.booster.CpuGovernorChannel.resetToStockGovernor();
+        com.gamebooster.app.booster.NetworkTweaksChannel.disableLowLatencyNetwork();
+        com.gamebooster.app.booster.PerformanceChannel.revertRootTweaksScript();
+        return revertedCount;
+    }
+
+    public static void revertAllTweaksAsync(Context context, OnBatchCompleteListener listener) {
+        AppExecutors.getInstance().executeCommand(() -> {
+            int count = revertAllTweaks(context);
+            if (listener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(count));
+            }
+        });
+    }
+
     public static void restoreAppliedTweaksAsync(Context context) {
         if (context == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
+            boolean masterEnabled = ManualSettingsPreferences.isMasterBoostEnabled(context);
+            if (!masterEnabled) {
+                revertAllTweaks(context);
+                return;
+            }
+
             EngineMode mode = CommandExecutor.getActiveEngineMode();
             if (mode == EngineMode.READ_ONLY) return;
 

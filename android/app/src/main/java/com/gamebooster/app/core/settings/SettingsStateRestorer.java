@@ -30,9 +30,16 @@ public class SettingsStateRestorer {
         Context appContext = context.getApplicationContext();
 
         AppExecutors.getInstance().executeCommand(() -> {
+            boolean masterEnabled = ManualSettingsPreferences.isMasterBoostEnabled(appContext);
+            if (!masterEnabled) {
+                Log.i(TAG, "Master Boost is OFF. Reverting all tweaks to AOSP defaults...");
+                TweakManagerRepository.revertAllTweaks(appContext);
+                return;
+            }
+
             Log.i(TAG, "Restoring and enforcing persistent Esports gaming performance settings...");
 
-            // 1. Enforce Zero Touch Latency (0.0 Slop & 0.0 Animation)
+            // 1. Enforce Zero Touch Latency
             TouchLatencyChannel.enableUltraTouchResponse();
 
             // 2. Restore GPU Renderer Mode (Vulkan/Skia)
