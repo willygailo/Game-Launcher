@@ -64,11 +64,19 @@ public final class GameProfilePreferences {
     }
 
     public static String getSummary(Context context, String packageName) {
-        if (context == null || packageName == null) return "CFG: 165 FPS • SUPER TOUCH 165Hz";
-        String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                         packageName.contains("pubg") || packageName.contains("tencent.ig") || packageName.contains("imobile") || packageName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         packageName.contains("cod") || packageName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
+        if (context == null || packageName == null) return "165 FPS • MAX GRAPHICS FPS HZ";
+        String pkgLower = packageName.toLowerCase();
+        
+        if (pkgLower.contains("mobile.legends") || pkgLower.contains("mobilelegends")) {
+            return "165 FPS • MAX GRAPHICS FPS HZ";
+        } else if (pkgLower.contains("pubg") || pkgLower.contains("tencent.ig") || pkgLower.contains("imobile") || pkgLower.contains("vng.pubgmobile")) {
+            return "165 FPS • MAX GRAPHICS FPS HZ";
+        } else if (pkgLower.contains("cod") || pkgLower.contains("callofduty")) {
+            return "120 FPS • MAX GRAPHICS FPS HZ";
+        }
+        
+        String gameKey = CompetitiveCfgProfile.GAME_ALL;
         CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "165Hz" : "STD") + " • SHIZUKU HZ " + (cfg.isForceWriteSystemHz() ? "ON" : "OFF");
+        return cfg.getTargetFps() + " FPS • MAX GRAPHICS FPS HZ";
     }
 }

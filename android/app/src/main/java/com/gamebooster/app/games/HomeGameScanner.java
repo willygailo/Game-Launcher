@@ -45,7 +45,7 @@ public class HomeGameScanner {
                     "com.mobile.legends.kr",
                     "com.mobile.legends.jp"
             },
-            "Mobile Legends: Bang Bang",
+            "🗡️ Mobile Legends: Bang Bang",
             "MOBA",
             R.drawable.home_game_card_bg_ml,
             Color.parseColor("#4A90E2")
@@ -62,7 +62,7 @@ public class HomeGameScanner {
                     "com.pubg.newstate",
                     "com.tencent.tmgp.pubgm"
             },
-            "PUBG Mobile",
+            "🪖 PUBG Mobile",
             "BATTLE ROYALE",
             R.drawable.home_game_card_bg_pubg,
             Color.parseColor("#FF8800")
@@ -76,7 +76,7 @@ public class HomeGameScanner {
                     "com.tencent.tmgp.kr.codm",
                     "com.tencent.tmgp.cod"
             },
-            "Call of Duty: Mobile",
+            "🎯 Call of Duty: Mobile",
             "FPS",
             R.drawable.home_game_card_bg_codm,
             Color.parseColor("#FF0055")
