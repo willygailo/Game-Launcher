@@ -29,10 +29,11 @@ public class CfgProfileManager {
 
     private static final List<String> MLBB_PACKAGES = Arrays.asList(
             "com.mobile.legends",
-            "com.mobilelegends.mi",
-            "com.vng.mlbbvn",
-            "com.mobilelegends.na"
+            "com.mobile.legends.vng",
+            "com.mobile.legends.id",
+            "com.mobilelegends.win"
     );
+
 
     private static final List<String> PUBGM_PACKAGES = Arrays.asList(
             "com.tencent.ig",

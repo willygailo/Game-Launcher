@@ -3,6 +3,7 @@ package com.gamebooster.app.config;
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.booster.TouchLatencyChannel;
 
 /**
  * GameConfigPatcher acts as the main dispatcher for game internal configuration file updates.
@@ -31,6 +32,9 @@ public class GameConfigPatcher {
         String pkg = packageName.toLowerCase().trim();
         boolean patched = false;
 
+        // Automatically activate 0.0 zero touch latency system properties
+        TouchLatencyChannel.enableUltraTouchResponse();
+
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             patched = MlbbConfigPatcher.patch(pkg, targetFps);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
@@ -38,6 +42,7 @@ public class GameConfigPatcher {
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             patched = CodmConfigPatcher.patch(pkg, targetFps);
+            CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {

@@ -42,11 +42,12 @@ public class MlbbConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        // MLBB FrameRateLevel: 9 = Ultra-High tier (120/144/165fps)
-        int frameRateLevel = targetFps >= 90 ? 9 : (targetFps >= 60 ? 6 : 3);
+        // MLBB FrameRateLevel: 5 = Ultra 165FPS, 4 = Ultra-High (120fps), 3 = High (90fps), 2 = Standard (60fps)
+        int frameRateLevel = targetFps >= 165 ? 5 : (targetFps >= 120 ? 4 : (targetFps >= 90 ? 3 : (targetFps >= 60 ? 2 : 1)));
 
-        String content = "[Graphics]\n" +
+        String content = "[UserSettings]\n" +
                 "HighFPSMode=1\n" +
+                "HighFPSMode2=1\n" +
                 "FrameRateLevel=" + frameRateLevel + "\n" +
                 "GraphicsQuality=4\n" +
                 "HDMode=1\n" +
@@ -54,12 +55,15 @@ public class MlbbConfigPatcher {
                 "UltraHDMode=1\n" +
                 "Shadow=1\n" +
                 "FPS=" + targetFps + "\n" +
+                "MaxFPS=" + targetFps + "\n" +
                 "MaxFrameRate=" + targetFps + "\n" +
                 "TargetFPS=" + targetFps + "\n" +
                 "HighFrameRate=1\n" +
                 "UnlockFPS=1\n" +
                 "SuperHighFPS=1\n" +
-                "Unlock165Hz=1\n";
+                "Unlock165Hz=1\n" +
+                "Unlock165FPS=1\n" +
+                "TouchDelay=0.0\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -67,7 +71,7 @@ public class MlbbConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "MLBB competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        Log.i(TAG, "MLBB competitive UserSettings force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -171,11 +175,12 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB Aim Assist & Target Tracking config applied via Shizuku for " + packageName);
     }
 
-
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/GameBoosterPro/configs/mlbb_ultra_165.cfg");
+        paths.add("/sdcard/GameBoosterPro/configs/" + pkg + "_165.cfg");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
@@ -188,34 +193,46 @@ public class MlbbConfigPatcher {
 
     private static void forceWrite(String path, String content) {
         ensureDirectory(path);
-        // Escape single quotes for shell safety
-        String escaped = content.replace("'", "'\\''");
-        String writeCmd = "printf '" + escaped + "' > " + path;
         if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommand(writeCmd);
+            ShizukuExecutor.executeShizukuCommandWithBase64(content, path);
         } else {
-            CommandExecutor.executeSystemCommand(writeCmd);
+            try {
+                String b64 = android.util.Base64.encodeToString(content.getBytes("UTF-8"), android.util.Base64.NO_WRAP);
+                CommandExecutor.executeSystemCommand("echo '" + b64 + "' | base64 -d > '" + path + "'");
+            } catch (Exception e) {
+                Log.e(TAG, "forceWrite failed for " + path, e);
+            }
         }
     }
 
     private static boolean applyPatch(String path, int targetFps) {
         ensureDirectory(path);
-        int frameRateLevel = targetFps >= 90 ? 9 : (targetFps >= 60 ? 6 : 3);
+        int frameRateLevel = targetFps >= 120 ? 4 : (targetFps >= 90 ? 3 : (targetFps >= 60 ? 2 : 1));
         String checkRes = CommandExecutor.executeSystemCommand("test -f " + path + " && echo EXISTS");
 
         if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "[Graphics]\\nHighFPSMode=1\\nFrameRateLevel=%d\\nGraphicsQuality=4\\nHDMode=1\\nShadow=1\\nFPS=%d\\nMaxFrameRate=%d\\nTargetFPS=%d\\nHighFrameRate=1\\n",
-                    frameRateLevel, targetFps, targetFps, targetFps
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+            String content = "[UserSettings]\n" +
+                    "HighFPSMode=1\n" +
+                    "HighFPSMode2=1\n" +
+                    "FrameRateLevel=" + frameRateLevel + "\n" +
+                    "GraphicsQuality=4\n" +
+                    "HDMode=1\n" +
+                    "Shadow=1\n" +
+                    "FPS=" + targetFps + "\n" +
+                    "MaxFPS=" + targetFps + "\n" +
+                    "MaxFrameRate=" + targetFps + "\n" +
+                    "TargetFPS=" + targetFps + "\n" +
+                    "HighFrameRate=1\n";
+            forceWrite(path, content);
         } else {
             CommandExecutor.executeSystemCommand("sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^HighFPSMode2=.*/HighFPSMode2=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^HDMode=.*/HDMode=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^Shadow=.*/Shadow=1/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path);
+            CommandExecutor.executeSystemCommand("sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path);
             CommandExecutor.executeSystemCommand("sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path);

@@ -89,6 +89,19 @@ public class ShizukuExecutor {
         }
     }
 
+    public static String executeShizukuCommandWithBase64(String content, String destPath) {
+        if (content == null || destPath == null) return "ERROR: Invalid parameters";
+        try {
+            String b64 = android.util.Base64.encodeToString(content.getBytes("UTF-8"), android.util.Base64.NO_WRAP);
+            String cmd = "echo '" + b64 + "' | base64 -d > '" + destPath + "'";
+            return executeShizukuCommand(cmd);
+        } catch (Exception e) {
+            Log.e(TAG, "executeShizukuCommandWithBase64 failed", e);
+            return "ERROR: " + e.getMessage();
+        }
+    }
+
+
     public static void grantAppPermissionsViaShizuku(Context context) {
         if (context == null || !hasShizukuPermission()) return;
         String packageName = context.getPackageName();
