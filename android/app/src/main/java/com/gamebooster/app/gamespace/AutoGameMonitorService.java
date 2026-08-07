@@ -113,6 +113,7 @@ public class AutoGameMonitorService extends Service {
                         + profile.label + " up to " + targetHz + "Hz");
 
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
+                com.gamebooster.app.booster.EsportsNetworkTuner.applyLowLatencyNetworkSettings(getApplicationContext());
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
                         targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
                         targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
