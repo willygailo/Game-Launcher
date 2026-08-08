@@ -76,6 +76,8 @@ public class AutoGameMonitorService extends Service {
         setupMonitorLoop();
     }
 
+    private boolean isChecking = false;
+
     private void setupMonitorLoop() {
         handler = new Handler(Looper.getMainLooper());
         monitorRunnable = new Runnable() {
@@ -83,7 +85,9 @@ public class AutoGameMonitorService extends Service {
             public void run() {
                 checkForegroundApp();
                 if (handler != null && isRunning) {
-                    handler.postDelayed(this, 1200); // Fast 1.2s polling for zero-delay auto detection
+                    // Adaptive battery-saving interval: 2s during active game session, 3.5s when idle
+                    long delay = (lastActiveGamePackage != null) ? 2000L : 3500L;
+                    handler.postDelayed(this, delay);
                 }
             }
         };
@@ -91,59 +95,65 @@ public class AutoGameMonitorService extends Service {
     }
 
     private void checkForegroundApp() {
-        AppExecutors.getInstance().executeCommand(() -> {
-            String currentPackage = getForegroundPackage();
-            if (currentPackage == null || currentPackage.isEmpty()) return;
+        if (isChecking) return;
+        isChecking = true;
+        AppExecutors.getInstance().executeMonitor(() -> {
+            try {
+                String currentPackage = getForegroundPackage();
+                if (currentPackage == null || currentPackage.isEmpty()) return;
 
-            List<GameAppInfo> installedGames = GameManagerRepository.getInstalledGames(getApplicationContext());
-            Set<String> gamePackages = new TreeSet<>();
-            for (GameAppInfo info : installedGames) {
-                gamePackages.add(info.getPackageName());
-            }
-
-            boolean isGameActive = gamePackages.contains(currentPackage) 
-                    || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
-
-            if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
-                lastActiveGamePackage = currentPackage;
-                GameSessionSettings.begin(getApplicationContext(), currentPackage);
-                GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
-                        getApplicationContext(), currentPackage);
-                int targetHz = GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
-                Log.i(TAG, "GAME LAUNCH DETECTED (AUTOMATIC): " + currentPackage + " — Applying "
-                        + profile.label + " up to " + targetHz + "Hz");
-
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
-                com.gamebooster.app.booster.EsportsNetworkTuner.applyLowLatencyNetworkSettings(getApplicationContext());
-                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
-                        targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
-                        targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
-                        targetHz >= 120 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ :
-                        targetHz >= 90 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_90HZ :
-                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_60HZ);
-                PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
-                GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
-                
-                // Auto-Start Floating Gaming HUD
-                if (!FloatingOverlayService.isOverlayRunning()) {
-                    FloatingOverlayService.startOverlay(getApplicationContext());
+                List<GameAppInfo> installedGames = GameManagerRepository.getInstalledGames(getApplicationContext());
+                Set<String> gamePackages = new TreeSet<>();
+                for (GameAppInfo info : installedGames) {
+                    gamePackages.add(info.getPackageName());
                 }
 
-                AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 AUTO BOOST: " + profile.label
-                                + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
+                boolean isGameActive = gamePackages.contains(currentPackage) 
+                        || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
 
-            } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — reverting session boosts for daily apps compatibility");
-                lastActiveGamePackage = null;
-                GameSessionSettings.restore(getApplicationContext());
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
-                
-                // Revert session-specific GPU / rendering overrides back to clean user state
-                com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(getApplicationContext());
-                
-                AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "⚡ Game Session Ended — System Standard Mode Restored", android.widget.Toast.LENGTH_SHORT).show());
+                if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
+                    lastActiveGamePackage = currentPackage;
+                    GameSessionSettings.begin(getApplicationContext(), currentPackage);
+                    GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
+                            getApplicationContext(), currentPackage);
+                    int targetHz = GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
+                    Log.i(TAG, "GAME LAUNCH DETECTED (AUTOMATIC): " + currentPackage + " — Applying "
+                            + profile.label + " up to " + targetHz + "Hz");
+
+                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
+                    com.gamebooster.app.booster.EsportsNetworkTuner.applyLowLatencyNetworkSettings(getApplicationContext());
+                    com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
+                            targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
+                            targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
+                            targetHz >= 120 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ :
+                            targetHz >= 90 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_90HZ :
+                            com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_60HZ);
+                    PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
+                    GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
+                    
+                    // Auto-Start Floating Gaming HUD
+                    if (!FloatingOverlayService.isOverlayRunning()) {
+                        FloatingOverlayService.startOverlay(getApplicationContext());
+                    }
+
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), "🎮 AUTO BOOST: " + profile.label
+                                    + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
+
+                } else if (!isGameActive && lastActiveGamePackage != null) {
+                    Log.i(TAG, "Game exited — reverting session boosts for daily apps compatibility");
+                    lastActiveGamePackage = null;
+                    GameSessionSettings.restore(getApplicationContext());
+                    com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
+                    
+                    // Revert session-specific GPU / rendering overrides back to clean user state
+                    com.gamebooster.app.core.settings.SettingsStateRestorer.restoreAllSettings(getApplicationContext());
+                    
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), "⚡ Game Session Ended — System Standard Mode Restored", android.widget.Toast.LENGTH_SHORT).show());
+                }
+            } finally {
+                isChecking = false;
             }
         });
     }

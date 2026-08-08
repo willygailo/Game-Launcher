@@ -17,7 +17,7 @@ public class GpuTweaksChannel {
         boolean ok = true;
         ok &= CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
         ok &= CommandExecutor.setSystemProperty("debug.renderengine.backend", "gles");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "0");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
         ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "0");
         return ok;
     }

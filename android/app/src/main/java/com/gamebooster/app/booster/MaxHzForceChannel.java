@@ -96,11 +96,7 @@ public final class MaxHzForceChannel {
         ok += run("device_config put game_overlay global "
                 + "mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);             total++;
 
-        // ── Layer 4: SurfaceFlinger Direct Binder ────────────────────────────────────
-        ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
-        ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
-
-        // ── Layer 5: setprop Runtime Overrides ───────────────────────────────────────
+        // ── Layer 4: setprop Runtime Overrides ───────────────────────────────────────
         ok += run("setprop debug.sf.fps_limit "      + hz);                          total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT " + hz);                          total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;

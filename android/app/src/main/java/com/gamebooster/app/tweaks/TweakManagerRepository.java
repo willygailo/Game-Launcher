@@ -37,7 +37,7 @@ public class TweakManagerRepository {
                 "Force SurfaceFlinger HW Composition",
                 "Forces GPU hardware composition to eliminate CPU rendering overhead",
                 "setprop debug.sf.hw 1",
-                "setprop debug.sf.hw 0",
+                "setprop debug.sf.hw 1",
                 TweakCategory.CPU_GPU,
                 true
         ));
