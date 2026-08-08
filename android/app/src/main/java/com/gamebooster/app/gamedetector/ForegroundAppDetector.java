@@ -112,14 +112,7 @@ public class ForegroundAppDetector {
 
     private boolean isKnownGamePackage(String packageName) {
         if (packageName == null) return false;
-        return packageName.equals("com.tencent.ig")
-                || packageName.equals("com.pubg.imobile")
-                || packageName.equals("com.pubg.krmobile")
-                || packageName.equals("com.vng.pubgmobile")
-                || packageName.equals("com.activision.callofduty.shooter")
-                || packageName.equals("com.garena.game.codm")
-                || packageName.equals("com.dts.freefireth")
-                || packageName.equals("com.dts.freefiremax");
+        return com.gamebooster.app.games.GamePackageRegistry.isKnownGame(packageName);
     }
 
     public String getForegroundPackageName() {

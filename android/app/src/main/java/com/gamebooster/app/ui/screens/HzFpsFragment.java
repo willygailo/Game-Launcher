@@ -59,25 +59,33 @@ public class HzFpsFragment extends Fragment {
     private void refreshSupportedRates() {
         if (getContext() == null) return;
         DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
+        boolean hasShizuku = com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission();
         if (tvDeviceRefreshSupport != null) {
+            String modeInfo = hasShizuku ? "⚡ Shizuku Direct Force Active (120/144/165Hz Unlocked)" : "Standard OS Modes";
             tvDeviceRefreshSupport.setText("Detected: " + caps.getSupportedRefreshRates()
-                    + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz");
+                    + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz\n" + modeInfo);
         }
-        setRateVisible(btn60, caps, 60);
-        setRateVisible(btn90, caps, 90);
-        setRateVisible(btn120, caps, 120);
-        setRateVisible(btn144, caps, 144);
-        setRateVisible(btn165, caps, 165);
+        setRateVisible(btn60, caps, 60, hasShizuku);
+        setRateVisible(btn90, caps, 90, hasShizuku);
+        setRateVisible(btn120, caps, 120, hasShizuku);
+        setRateVisible(btn144, caps, 144, hasShizuku);
+        setRateVisible(btn165, caps, 165, hasShizuku);
     }
 
-    private void setRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {
-        if (button != null) button.setVisibility(caps.supportsRefreshRate(rate) ? View.VISIBLE : View.GONE);
+    private void setRateVisible(Button button, DevicePerformanceCapabilities caps, int rate, boolean hasShizuku) {
+        if (button != null) {
+            // Keep all high refresh rate buttons visible if Shizuku is active or rate is supported
+            button.setVisibility((hasShizuku || caps.supportsRefreshRate(rate)) ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setHz(int hz) {
         if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
-            HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), hz);
+            boolean hasShizuku = com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission();
+            HzFpsChannel.RefreshRateResult result = hasShizuku
+                    ? HzFpsChannel.forceSetRefreshRate(getContext(), hz)
+                    : HzFpsChannel.setRefreshRate(getContext(), hz);
             if (result.success) GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.appliedHz);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
