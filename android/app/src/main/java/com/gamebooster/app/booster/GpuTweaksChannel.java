@@ -13,13 +13,32 @@ public class GpuTweaksChannel {
         return ok;
     }
 
+    public static boolean disableVulkanRenderer() {
+        boolean ok = true;
+        ok &= CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
+        ok &= CommandExecutor.setSystemProperty("debug.renderengine.backend", "gles");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "0");
+        return ok;
+    }
+
     public static boolean enableForceMsaa() {
         return CommandExecutor.setSystemProperty("debug.egl.force_msaa", "1");
+    }
+
+    public static boolean disableForceMsaa() {
+        return CommandExecutor.setSystemProperty("debug.egl.force_msaa", "0");
     }
 
     public static boolean setGpuMaxPerformance() {
         boolean ok = enableVulkanRenderer();
         ok &= enableForceMsaa();
+        return ok;
+    }
+
+    public static boolean revertGpuMaxPerformance() {
+        boolean ok = disableVulkanRenderer();
+        ok &= disableForceMsaa();
         return ok;
     }
 
@@ -39,12 +58,17 @@ public class GpuTweaksChannel {
 
     public static boolean setGameDriverMode(boolean enabled) {
         if (enabled) {
-            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 1");
-            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 1");
+            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
+            CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+            String targetPkgs = "com.mobile.legends,com.mobilelegends.win,com.tencent.ig,com.pubg.krmobile,com.vng.pubgmobile,com.pubg.imobile,com.activision.callofduty.shooter,com.garena.game.codm";
+            CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + targetPkgs);
+            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + targetPkgs);
             return CommandExecutor.isSuccessOutput(res);
         } else {
             CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
-            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+            CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+            CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");
+            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
             return CommandExecutor.isSuccessOutput(res);
         }
     }

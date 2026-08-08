@@ -69,4 +69,15 @@ public class UserService extends IUserService.Stub {
             } catch (Exception ignored) {}
         }
     }
+
+
+    @Override
+    public String writeFileFromBase64(String b64content, String destPath) {
+        if (b64content == null || destPath == null || destPath.trim().isEmpty()) {
+            return "ERROR: Invalid parameters for file write";
+        }
+        String cmd = "echo '" + b64content + "' | base64 -d > '" + destPath + "'";
+        return execCommand(cmd);
+    }
 }
+

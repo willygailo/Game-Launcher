@@ -29,30 +29,33 @@ public class CompetitiveCfgProfile {
     private boolean forceWriteSystemHz;
     private boolean aimAssistEnabled;
     private boolean mlbbDamageScriptEnabled;
+    private boolean recoilControlEnabled;
 
     // ─── Constructors ────────────────────────────────────────────────────────
     public CompetitiveCfgProfile(String gameKey, int targetFps,
                                  boolean superFastTouchEnabled,
                                  boolean forceWriteSystemHz) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
                                  boolean superFastTouchEnabled,
                                  boolean forceWriteSystemHz,
                                  boolean aimAssistEnabled,
-                                 boolean mlbbDamageScriptEnabled) {
+                                 boolean mlbbDamageScriptEnabled,
+                                 boolean recoilControlEnabled) {
         this.gameKey               = gameKey;
         this.targetFps             = targetFps;
         this.superFastTouchEnabled = superFastTouchEnabled;
         this.forceWriteSystemHz    = forceWriteSystemHz;
         this.aimAssistEnabled      = aimAssistEnabled;
         this.mlbbDamageScriptEnabled = mlbbDamageScriptEnabled;
+        this.recoilControlEnabled  = recoilControlEnabled;
     }
 
     /** Returns default competitive profile for the given game key (165fps, all enabled). */
     public static CompetitiveCfgProfile defaultCompetitive(String gameKey) {
-        return new CompetitiveCfgProfile(gameKey, FPS_165, true, true, true, true);
+        return new CompetitiveCfgProfile(gameKey, FPS_165, true, true, true, true, true);
     }
 
     // ─── Getters / Setters ───────────────────────────────────────────────────
@@ -72,6 +75,9 @@ public class CompetitiveCfgProfile {
 
     public boolean isMlbbDamageScriptEnabled() { return mlbbDamageScriptEnabled; }
     public void setMlbbDamageScriptEnabled(boolean enabled) { this.mlbbDamageScriptEnabled = enabled; }
+
+    public boolean isRecoilControlEnabled() { return recoilControlEnabled; }
+    public void setRecoilControlEnabled(boolean enabled) { this.recoilControlEnabled = enabled; }
 
     // ─── SharedPrefs Key Builder ─────────────────────────────────────────────
     /** Returns the SharedPreferences key prefix for this profile. */

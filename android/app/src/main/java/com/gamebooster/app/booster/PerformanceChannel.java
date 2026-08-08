@@ -95,23 +95,48 @@ public class PerformanceChannel {
     public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
         try {
             String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
-            String scriptContent = "#!/system/bin/sh\\n" +
-                    "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
-                    "setprop debug.sf.hw 1\\n" +
-                    "setprop debug.hwui.renderer vulkan\\n" +
-                    "setprop debug.renderengine.backend vulkan\\n" +
-                    "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
-                    "setprop debug.sf.fps_limit " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_POWERMODE 1\\n" +
-                    "service call SurfaceFlinger 1035 i32 " + targetHz + "\\n" +
-                    "service call SurfaceFlinger 1036 i32 " + targetHz + "\\n" +
-                    "cmd power set-mode 0 1\\n" +
-                    "cmd power set-mode 2 1\\n" +
-                    "cmd thermalservice override-status 0\\n";
+            String scriptContent = "#!/system/bin/sh\n" +
+                    "sync; echo 3 > /proc/sys/vm/drop_caches\n" +
+                    "setprop debug.sf.hw 1\n" +
+                    "setprop debug.hwui.renderer vulkan\n" +
+                    "setprop debug.renderengine.backend vulkan\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
+                    "setprop debug.sf.fps_limit " + targetHz + "\n" +
+                    "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\n" +
+                    "setprop persist.sys.NV_POWERMODE 1\n" +
+                    "cmd power set-mode 0 1\n" +
+                    "cmd power set-mode 2 1\n" +
+                    "cmd thermalservice override-status 0\n";
 
             String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
-                    scriptContent, scriptPath, scriptPath, scriptPath);
+                    scriptContent.replace("'", "'\\''"), scriptPath, scriptPath, scriptPath);
+            String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
+            return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    public static boolean revertRootTweaksScript() {
+        try {
+            String scriptPath = "/data/local/tmp/gamebooster_revert.sh";
+            String scriptContent = "#!/system/bin/sh\n" +
+                    "setprop debug.sf.hw 1\n" +
+                    "setprop debug.hwui.renderer skia\n" +
+                    "setprop debug.renderengine.backend gles\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 1000000\n" +
+                    "setprop debug.sf.fps_limit 0\n" +
+                    "setprop persist.sys.NV_FPSLIMIT 0\n" +
+                    "setprop persist.sys.NV_POWERMODE 0\n" +
+                    "settings delete system peak_refresh_rate\n" +
+                    "settings delete system min_refresh_rate\n" +
+                    "settings delete system user_refresh_rate\n" +
+                    "cmd power set-mode 0 0\n" +
+                    "cmd power set-mode 2 0\n" +
+                    "cmd thermalservice override-status -1\n";
+
+            String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
+                    scriptContent.replace("'", "'\\''"), scriptPath, scriptPath, scriptPath);
             String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
             return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
         } catch (Throwable ignored) {
@@ -126,7 +151,7 @@ public class PerformanceChannel {
             return ok;
         } else {
             boolean ok = com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
-            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "0");
+            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "1");
             return ok;
         }
     }

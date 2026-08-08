@@ -14,6 +14,32 @@ public class GameCacheCleaner {
         try {
             Log.i(TAG, "Starting Deep Game Cache & Shader Storage Cleaning...");
 
+            String[] gamePackages = new String[]{
+                "com.mobile.legends",
+                "com.mobile.legends.vng",
+                "com.activision.callofduty.shooter",
+                "com.garena.game.codm",
+                "com.tencent.ig",
+                "com.pubg.imobile",
+                "com.vng.pubgmobile",
+                "com.dts.freefireth",
+                "com.dts.freefiremax",
+                "com.riotgames.league.wildrift",
+                "com.cognosphere.GenshinImpact"
+            };
+
+            for (String pkg : gamePackages) {
+                String cmd = "rm -rf /data/data/" + pkg + "/cache/* /data/data/" + pkg + "/code_cache/* " +
+                        "/sdcard/Android/data/" + pkg + "/cache/* " +
+                        "find /data/data/" + pkg + "/ -name '*.shader' -delete; " +
+                        "find /data/data/" + pkg + "/ -name '*.spv' -delete";
+                if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                    com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+            }
+
             // Execute package cache trim & system cache purge
             CommandExecutor.executeSystemCommand("pm trim-caches 1000M");
             CommandExecutor.executeSystemCommand("rm -rf /data/local/tmp/*");
@@ -27,7 +53,7 @@ public class GameCacheCleaner {
                 }
             }
 
-            Log.i(TAG, "Deep Game Cache Cleaning Complete!");
+            Log.i(TAG, "Deep Game Cache & Shader Purge Complete!");
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Game Cache Clean Exception", e);

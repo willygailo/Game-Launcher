@@ -19,4 +19,12 @@ public class ShizukuChannel {
         String res = execute("settings put " + namespace + " " + key + " " + value);
         return res != null && !res.toLowerCase().contains("error") && !res.toLowerCase().contains("denied");
     }
+
+    public static String injectTouchTap(int x, int y) {
+        return ShizukuExecutor.injectTouchTap(x, y);
+    }
+
+    public static String injectTouchSwipe(int startX, int startY, int endX, int endY, int durationMs) {
+        return ShizukuExecutor.injectTouchSwipe(startX, startY, endX, endY, durationMs);
+    }
 }

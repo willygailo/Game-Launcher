@@ -89,6 +89,19 @@ public class ShizukuExecutor {
         }
     }
 
+    public static String executeShizukuCommandWithBase64(String content, String destPath) {
+        if (content == null || destPath == null) return "ERROR: Invalid parameters";
+        try {
+            String b64 = android.util.Base64.encodeToString(content.getBytes("UTF-8"), android.util.Base64.NO_WRAP);
+            String cmd = "echo '" + b64 + "' | base64 -d > '" + destPath + "'";
+            return executeShizukuCommand(cmd);
+        } catch (Exception e) {
+            Log.e(TAG, "executeShizukuCommandWithBase64 failed", e);
+            return "ERROR: " + e.getMessage();
+        }
+    }
+
+
     public static void grantAppPermissionsViaShizuku(Context context) {
         if (context == null || !hasShizukuPermission()) return;
         String packageName = context.getPackageName();
@@ -116,6 +129,13 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.HARDWARE_TEST");
         executeShizukuCommand("pm grant " + packageName + " android.permission.INTERNET");
 
+        executeShizukuCommand("pm grant " + packageName + " android.permission.POST_NOTIFICATIONS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.SCHEDULE_EXACT_ALARM");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.USE_EXACT_ALARM");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_IMAGES");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_VIDEO");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_AUDIO");
+
         // AppOps Overrides for Unrestricted System Access
         executeShizukuCommand("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
         executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
@@ -128,6 +148,9 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
         executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
+
+        // Uncap Phantom Process Killer for Android 13, 14, 15, 16
+        com.gamebooster.app.device.UniversalDeviceAdapter.applyAndroid13To16SystemUncap();
 
         // Force Target Games Permission & AppOps Overrides (PUBGM, MLBB, CODM, BGMI, Free Fire)
         String[] targetGames = new String[] {
@@ -150,5 +173,13 @@ public class ShizukuExecutor {
             executeShizukuCommand("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
             executeShizukuCommand("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
         }
+    }
+
+    public static String injectTouchTap(int x, int y) {
+        return executeShizukuCommand("input tap " + x + " " + y);
+    }
+
+    public static String injectTouchSwipe(int startX, int startY, int endX, int endY, int durationMs) {
+        return executeShizukuCommand("input swipe " + startX + " " + startY + " " + endX + " " + endY + " " + durationMs);
     }
 }

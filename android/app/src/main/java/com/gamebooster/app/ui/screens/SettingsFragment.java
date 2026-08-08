@@ -1,6 +1,7 @@
 package com.gamebooster.app.ui.screens;
 import com.gamebooster.app.config.*;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -603,11 +604,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() == null || button == null) return;
         button.setEnabled(false);
         Toast.makeText(getContext(), "Applying performance profile...", Toast.LENGTH_SHORT).show();
+        ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
+        ManualSettingsPreferences.setCpuMode(getContext(), "performance");
+        ManualSettingsPreferences.setAngleMode(getContext(), true);
+        ManualSettingsPreferences.setGameDriverEnabled(getContext(), true);
         AppExecutors.getInstance().executeCommand(() -> {
             boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
                 button.setEnabled(true);
+                if (switchGpuMode != null) switchGpuMode.setChecked(true);
+                if (switchCpuMode != null) switchCpuMode.setChecked(true);
+                if (switchAngleMode != null) switchAngleMode.setChecked(true);
+                if (switchGameDriver != null) switchGameDriver.setChecked(true);
                 Toast.makeText(getContext(), ok ? successMsg : "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
             });
         });
@@ -727,34 +736,83 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void showCrosshairPresetDialog() {
         if (getContext() == null) return;
-        String[] options = {"Dot Preset", "Tactical Cross", "Scope Ring", "Sniper Cross"};
+        CrosshairPreset[] presets = CrosshairPreset.values();
+        String[] options = new String[presets.length];
+        for (int i = 0; i < presets.length; i++) {
+            options[i] = presets[i].getLabel();
+        }
+
         new AlertDialog.Builder(getContext())
                 .setTitle("🎯 SELECT CROSSHAIR PRESET")
                 .setItems(options, (dialog, which) -> {
-                    Toast.makeText(getContext(), "Selected Preset: " + options[which], Toast.LENGTH_SHORT).show();
+                    CrosshairPreset selected = presets[which];
+                    CrosshairOverlayService.updatePreset(getContext(), selected);
+                    Toast.makeText(getContext(), "🎯 Preset Applied: " + selected.getLabel(), Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }
 
     private void showSensitivityCalculatorDialog() {
         if (getContext() == null) return;
-        SensitivityModel m = SensitivityCalculator.calculate(400, 6.5, 1.5f);
-        String details = "📊 RECOMMENDED SENSITIVITY:\n\n" +
-                "• Free Look: " + m.freeLook + "\n" +
-                "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
-                "• Red Dot / Holo: " + m.redDotHolo + "\n" +
-                "• 2x Scope: " + m.scope2x + "\n" +
-                "• 4x Scope: " + m.scope4x + "\n\n" +
-                "🌀 GYROSCOPE RECS:\n" +
-                "• Gyro No Scope: " + m.gyroNoScope + "\n" +
-                "• Gyro Red Dot: " + m.gyroRedDot + "\n" +
-                "• Gyro 4x Scope: " + m.gyro4x + "\n\n" +
-                "💡 Enter these values manually inside PUBG Mobile or COD Mobile settings menu.";
 
-        new AlertDialog.Builder(getContext())
-                .setTitle("🧮 SENSITIVITY CALCULATOR")
-                .setMessage(details)
-                .setPositiveButton("CLOSE", null)
+        final Context context = getContext();
+        String[] games = {"PUBG Mobile / BGMI", "Call of Duty Mobile", "Free Fire / Free Fire Max", "Mobile Legends"};
+        String[] modes = {"Balanced / Standard", "Low Recoil / Precision Micro-Aim", "Pro Gyro 400% Ultra Response"};
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(context);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 20);
+
+        final android.widget.EditText inputDpi = new android.widget.EditText(context);
+        inputDpi.setHint("Target Device DPI (e.g. 400, 480, 600)");
+        inputDpi.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        inputDpi.setText("400");
+        layout.addView(inputDpi);
+
+        final android.widget.Spinner spinnerGame = new android.widget.Spinner(context);
+        android.widget.ArrayAdapter<String> gameAdapter = new android.widget.ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, games);
+        spinnerGame.setAdapter(gameAdapter);
+        layout.addView(spinnerGame);
+
+        final android.widget.Spinner spinnerMode = new android.widget.Spinner(context);
+        android.widget.ArrayAdapter<String> modeAdapter = new android.widget.ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, modes);
+        spinnerMode.setAdapter(modeAdapter);
+        layout.addView(spinnerMode);
+
+        new AlertDialog.Builder(context)
+                .setTitle("🧮 INTERACTIVE GYRO & RECOIL TUNER")
+                .setView(layout)
+                .setPositiveButton("CALCULATE", (dialog, which) -> {
+                    int dpi = 400;
+                    try { dpi = Integer.parseInt(inputDpi.getText().toString()); } catch (Exception ignored) {}
+
+                    int gameIdx = spinnerGame.getSelectedItemPosition();
+                    int modeIdx = spinnerMode.getSelectedItemPosition();
+
+                    SensitivityCalculator.GameProfile gameProfile = SensitivityCalculator.GameProfile.values()[gameIdx];
+                    SensitivityCalculator.RecoilMode recoilMode = SensitivityCalculator.RecoilMode.values()[modeIdx];
+
+                    SensitivityModel m = SensitivityCalculator.calculate(dpi, 6.5, gameProfile, recoilMode);
+
+                    String details = "📊 " + m.summary.toUpperCase() + "\n\n" +
+                            "• Free Look: " + m.freeLook + "\n" +
+                            "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
+                            "• Red Dot / Holo: " + m.redDotHolo + "\n" +
+                            "• 2x Scope: " + m.scope2x + "\n" +
+                            "• 4x Scope: " + m.scope4x + "\n\n" +
+                            "🌀 GYROSCOPE RECOIL VALUES:\n" +
+                            "• Gyro No Scope: " + m.gyroNoScope + "\n" +
+                            "• Gyro Red Dot: " + m.gyroRedDot + "\n" +
+                            "• Gyro 4x Scope: " + m.gyro4x + "\n\n" +
+                            "💡 Enter these values inside game sensitivity settings for optimal legal recoil control.";
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("🎯 CALCULATED RECOIL & GYRO PROFILE")
+                            .setMessage(details)
+                            .setPositiveButton("OK", null)
+                            .show();
+                })
+                .setNegativeButton("CANCEL", null)
                 .show();
     }
 }

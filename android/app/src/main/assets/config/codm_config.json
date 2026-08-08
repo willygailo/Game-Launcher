@@ -1,0 +1,29 @@
+{
+  "game": "CODM",
+  "engine": "Unity",
+  "packages": [
+    "com.activision.callofduty.shooter",
+    "com.garena.game.codm",
+    "com.tencent.tmgp.kr.codm",
+    "com.vng.codmvn"
+  ],
+  "fps_tiers": [60, 90, 120, 144, 165],
+  "playerprefs_keys": {
+    "frame_rate": "{targetFps}",
+    "bk_frame_rate": "{targetFps}",
+    "graphic_quality": "3",
+    "hdr_mode": "1"
+  },
+  "json_user_setting_keys": {
+    "MaxFrameRate": "{targetFps}",
+    "GraphicQuality": 3,
+    "FPSLimit": "{targetFps}",
+    "HDRMode": 1,
+    "HDRColorMode": 2,
+    "TouchBoostHz": 165,
+    "SuperResolution": 1,
+    "FieldOfView": 90,
+    "AntiAliasing": 1,
+    "ShadowQuality": 2
+  }
+}

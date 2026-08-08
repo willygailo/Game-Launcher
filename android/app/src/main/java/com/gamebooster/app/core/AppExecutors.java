@@ -12,11 +12,13 @@ public class AppExecutors {
 
     private final ExecutorService commandIO;
     private final ExecutorService scanIO;
+    private final ExecutorService monitorIO;
     private final Handler mainThread;
 
     private AppExecutors() {
-        this.commandIO = Executors.newSingleThreadExecutor();
+        this.commandIO = Executors.newFixedThreadPool(4);
         this.scanIO = Executors.newFixedThreadPool(2);
+        this.monitorIO = Executors.newSingleThreadExecutor();
         this.mainThread = new Handler(Looper.getMainLooper());
     }
 
@@ -30,6 +32,10 @@ public class AppExecutors {
 
     public void executeScan(Runnable runnable) {
         scanIO.execute(runnable);
+    }
+
+    public void executeMonitor(Runnable runnable) {
+        monitorIO.execute(runnable);
     }
 
     public void postToMainThread(Runnable runnable) {

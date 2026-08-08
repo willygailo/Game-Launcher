@@ -43,6 +43,7 @@ public class CodmConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
 
+        int codmFpsOption = targetFps >= 120 ? 5 : (targetFps >= 90 ? 4 : 3);
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
@@ -50,44 +51,49 @@ public class CodmConfigPatcher {
             if (path.endsWith(".json")) {
                 content = "{\n" +
                         "  \"MaxFrameRate\": " + targetFps + ",\n" +
-                        "  \"GraphicQuality\": 4,\n" +
+                        "  \"GraphicQuality\": 0,\n" +
                         "  \"FPSLimit\": " + targetFps + ",\n" +
-                        "  \"HDRMode\": 1,\n" +
-                        "  \"HDRColorMode\": 2,\n" +
-                        "  \"Unlock165Hz\": 1,\n" +
+                        "  \"HDRMode\": 0,\n" +
                         "  \"TouchBoostHz\": 165,\n" +
-                        "  \"SuperResolution\": 1,\n" +
+                        "  \"TouchDelay\": 0.0,\n" +
+                        "  \"SuperResolution\": 0,\n" +
                         "  \"FieldOfView\": 90,\n" +
-                        "  \"AntiAliasing\": 1,\n" +
-                        "  \"ShadowQuality\": 2\n" +
+                        "  \"AntiAliasing\": 0,\n" +
+                        "  \"ShadowQuality\": 0\n" +
                         "}\n";
             } else if (path.endsWith(".xml")) {
-                // PlayerPrefs XML format
+                // Unity PlayerPrefs XML format
                 content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
                         "<map>\n" +
-                        "  <int name=\"MaxFrameRate\" value=\"" + targetFps + "\" />\n" +
-                        "  <int name=\"FPSLimit\" value=\"" + targetFps + "\" />\n" +
-                        "  <int name=\"GraphicQuality\" value=\"4\" />\n" +
-                        "  <int name=\"HDRMode\" value=\"1\" />\n" +
-                        "  <int name=\"Unlock165Hz\" value=\"1\" />\n" +
+                        "  <int name=\"frame_rate\" value=\"" + codmFpsOption + "\" />\n" +
+                        "  <int name=\"MaxFpsOption\" value=\"" + codmFpsOption + "\" />\n" +
+                        "  <int name=\"bk_frame_rate\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"graphic_quality\" value=\"0\" />\n" +
+                        "  <int name=\"GraphicsQualityOption\" value=\"0\" />\n" +
+                        "  <int name=\"hdr_mode\" value=\"0\" />\n" +
+                        "  <int name=\"AntiAliasingOption\" value=\"0\" />\n" +
+                        "  <int name=\"RealtimeShadowOption\" value=\"0\" />\n" +
+                        "  <int name=\"BloomOption\" value=\"0\" />\n" +
+                        "  <int name=\"DepthOfFieldOption\" value=\"0\" />\n" +
                         "</map>\n";
             } else {
-                // INI format
+                // INI and .cfg formats
                 content = "[Graphics]\n" +
+                        "frame_rate=" + targetFps + "\n" +
                         "MaxFrameRate=" + targetFps + "\n" +
                         "FPSLimit=" + targetFps + "\n" +
-                        "GraphicQuality=4\n" +
-                        "HDRMode=1\n" +
-                        "HDRColorMode=2\n" +
-                        "Unlock165Hz=1\n" +
-                        "SuperResolution=1\n" +
+                        "graphic_quality=0\n" +
+                        "GraphicQuality=0\n" +
+                        "HDRMode=0\n" +
                         "TouchBoostHz=165\n" +
-                        "AntiAliasing=1\n";
+                        "TouchDelay=0.0\n" +
+                        "AntiAliasing=0\n" +
+                        "ShadowQuality=0\n";
             }
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "CODM competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+        Log.i(TAG, "CODM competitive config force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -151,11 +157,43 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM Aim Assist & Aimbot 80% Damage config applied via Shizuku for " + packageName);
     }
 
+    /**
+     * Injects Recoil Reduction & Weapon Shake Reduction keys into CODM config files.
+     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     */
+    public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            ensureDirectory(path);
+            String cmd;
+            if (path.endsWith(".json")) {
+                cmd = "grep -qF 'RecoilScale' " + path +
+                      " || sed -i 's/}$/,\\n  \"RecoilScale\": 0.20,\\n  \"WeaponKickReduction\": 0.80,\\n  \"GunShakeMode\": 0\\n}/' " + path;
+            } else if (path.endsWith(".xml")) {
+                cmd = "grep -qF 'RecoilScale' " + path +
+                      " || sed -i 's/<\\/map>/  <float name=\"RecoilScale\" value=\"0.20\" \\/>\\n  <float name=\"WeaponKickReduction\" value=\"0.80\" \\/>\\n<\\/map>/' " + path;
+            } else {
+                cmd = "grep -qF 'RecoilScale' " + path + " || echo 'RecoilScale=0.20' >> " + path + "; " +
+                      "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=0.80' >> " + path + "; " +
+                      "grep -qF 'GunShakeMode' " + path + " || echo 'GunShakeMode=0' >> " + path;
+            }
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CODM Recoil Control 80% reduction applied via Shizuku for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/GameBoosterPro/configs/codm_ultramax_165.cfg");
+        paths.add("/sdcard/GameBoosterPro/configs/" + pkg + "_165.cfg");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
         paths.add("/sdcard/Android/data/" + pkg + "/files/" + pkg + ".v2.playerprefs.xml");
         paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
@@ -163,17 +201,21 @@ public class CodmConfigPatcher {
         paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/ControlsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
         return paths;
     }
 
     private static void forceWrite(String path, String content) {
         ensureDirectory(path);
-        String escaped = content.replace("'", "'\\''");
-        String writeCmd = "printf '" + escaped + "' > " + path;
         if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommand(writeCmd);
+            ShizukuExecutor.executeShizukuCommandWithBase64(content, path);
         } else {
-            CommandExecutor.executeSystemCommand(writeCmd);
+            try {
+                String b64 = android.util.Base64.encodeToString(content.getBytes("UTF-8"), android.util.Base64.NO_WRAP);
+                CommandExecutor.executeSystemCommand("echo '" + b64 + "' | base64 -d > '" + path + "'");
+            } catch (Exception e) {
+                Log.e(TAG, "forceWrite failed for " + path, e);
+            }
         }
     }
 
@@ -182,15 +224,23 @@ public class CodmConfigPatcher {
         String checkRes = CommandExecutor.executeSystemCommand("test -f " + path + " && echo EXISTS");
 
         if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "{\\n  \"MaxFrameRate\": %d,\\n  \"GraphicQuality\": 4,\\n  \"FPSLimit\": %d,\\n  \"SuperResolution\": 1,\\n  \"FieldOfView\": 90\\n}\\n",
-                    targetFps, targetFps
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
+            String content;
+            if (path.endsWith(".xml")) {
+                content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n  <int name=\"frame_rate\" value=\"" + targetFps + "\" />\n  <int name=\"graphic_quality\" value=\"3\" />\n</map>\n";
+            } else {
+                content = String.format(
+                        "{\n  \"MaxFrameRate\": %d,\n  \"GraphicQuality\": 3,\n  \"FPSLimit\": %d,\n  \"SuperResolution\": 1,\n  \"FieldOfView\": 90\n}\n",
+                        targetFps, targetFps
+                );
+            }
+            forceWrite(path, content);
         } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path);
+            if (path.endsWith(".xml")) {
+                CommandExecutor.executeSystemCommand("sed -i 's/name=\"frame_rate\" value=\".*\"/name=\"frame_rate\" value=\"" + targetFps + "\"/' " + path);
+            } else {
+                CommandExecutor.executeSystemCommand("sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path);
+                CommandExecutor.executeSystemCommand("sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path);
+            }
         }
         return true;
     }

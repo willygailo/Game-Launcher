@@ -3,9 +3,11 @@ import com.gamebooster.app.config.*;
 
 import android.content.Context;
 
+import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ public class TweakManagerRepository {
                 "Force SurfaceFlinger HW Composition",
                 "Forces GPU hardware composition to eliminate CPU rendering overhead",
                 "setprop debug.sf.hw 1",
-                "setprop debug.sf.hw 0",
+                "setprop debug.sf.hw 1",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -75,8 +77,8 @@ public class TweakManagerRepository {
                 "hz_120_unlock",
                 "120Hz Ultra Refresh Rate Lock",
                 "Forces 120Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + device_config",
-                "settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0; settings put system user_refresh_rate 120; settings put global peak_refresh_rate 120.0; settings put global min_refresh_rate 120.0; cmd game mode performance global; cmd window set-app-refresh-rate global 120; device_config put game_overlay global mode=2,fps=120:mode=3,fps=120; service call SurfaceFlinger 1035 i32 120; service call SurfaceFlinger 1036 i32 120; setprop debug.sf.fps_limit 120; setprop persist.sys.NV_FPSLIMIT 120; setprop persist.sys.NV_POWERMODE 1",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                "MAX_HZ_FORCE_120",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
@@ -85,8 +87,8 @@ public class TweakManagerRepository {
                 "hz_144_unlock",
                 "144Hz Extreme Refresh Rate Lock",
                 "Forces 144Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + device_config",
-                "settings put system peak_refresh_rate 144.0; settings put system min_refresh_rate 144.0; settings put system user_refresh_rate 144; settings put global peak_refresh_rate 144.0; settings put global min_refresh_rate 144.0; cmd game mode performance global; cmd window set-app-refresh-rate global 144; device_config put game_overlay global mode=2,fps=144:mode=3,fps=144; service call SurfaceFlinger 1035 i32 144; service call SurfaceFlinger 1036 i32 144; setprop debug.sf.fps_limit 144; setprop persist.sys.NV_FPSLIMIT 144; setprop persist.sys.NV_POWERMODE 1",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                "MAX_HZ_FORCE_144",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
@@ -95,8 +97,38 @@ public class TweakManagerRepository {
                 "hz_165_unlock",
                 "165Hz Max Hardware Refresh Rate Lock",
                 "Forces 165Hz via Shizuku: system settings + Game Mode + SurfaceFlinger 1035/1036 + device_config",
-                "settings put system peak_refresh_rate 165.0; settings put system min_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global peak_refresh_rate 165.0; settings put global min_refresh_rate 165.0; cmd game mode performance global; cmd window set-app-refresh-rate global 165; device_config put game_overlay global mode=2,fps=165:mode=3,fps=165; service call SurfaceFlinger 1035 i32 165; service call SurfaceFlinger 1036 i32 165; setprop debug.sf.fps_limit 165; setprop persist.sys.NV_FPSLIMIT 165; setprop persist.sys.NV_POWERMODE 1; setprop debug.gr.swapinterval 0",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                "MAX_HZ_FORCE_165",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "mlbb_120fps_unlock",
+                "Mobile Legends 120/165 FPS Unlock",
+                "Forces MLBB package to run at 120/165Hz with Game Mode performance intervention via Shizuku",
+                "cmd game mode performance com.mobile.legends; cmd game set --fps 165 com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 165; device_config put game_overlay com.mobile.legends mode=2,fps=165:mode=3,fps=165",
+                "cmd game mode standard com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "pubgm_120fps_unlock",
+                "PUBG Mobile / BGMI 120 FPS Unlock",
+                "Forces PUBGM & BGMI packages to 120/165 FPS with Game Overlay override via Shizuku",
+                "cmd game mode performance com.tencent.ig; cmd game set --fps 165 com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 165; device_config put game_overlay com.tencent.ig mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.pubg.imobile; cmd game set --fps 165 com.pubg.imobile; cmd window set-app-refresh-rate com.pubg.imobile 165",
+                "cmd game mode standard com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "codm_120fps_unlock",
+                "COD Mobile 120/165 FPS Unlock",
+                "Forces CODM package to 120/165 FPS with high-priority surface flinger refresh rate via Shizuku",
+                "cmd game mode performance com.activision.callofduty.shooter; cmd game set --fps 165 com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 165; device_config put game_overlay com.activision.callofduty.shooter mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.garena.game.codm; cmd game set --fps 165 com.garena.game.codm; cmd window set-app-refresh-rate com.garena.game.codm 165",
+                "cmd game mode standard com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
@@ -104,9 +136,9 @@ public class TweakManagerRepository {
         // Shizuku / ADB System Tweaks
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
-                "0.5x UI Speed Animations",
-                "Reduces system window transition duration",
-                "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5",
+                "0.0x Zero-Delay UI Animations",
+                "Disables system window transition delay for 0ms frame response",
+                "settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0",
                 "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -144,10 +176,10 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "bypass_game_throttle",
-                "Bypass Game Throttling Interventions",
-                "Disables Android system default FPS caps & enables Game Driver for all apps",
-                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 2",
-                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_all_apps 0",
+                "Targeted Game Driver & Latency Uncap",
+                "Disables default FPS caps and enables ANGLE/Game Driver explicitly for MLBB, PUBGM & CODM",
+                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 0; settings put global game_driver_opt_in_apps com.mobile.legends,com.mobilelegends.win,com.tencent.ig,com.pubg.krmobile,com.vng.pubgmobile,com.pubg.imobile,com.activision.callofduty.shooter,com.garena.game.codm",
+                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_opt_in_apps \"\"",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -212,9 +244,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // touch_pressure_scale_boost — slop line removed (covered by aim_touch_precision)
-        // display_vsync_offset — removed: contradicts sf_zero_vsync_phase (0ns vs 500000ns conflict)
-
         TWEAKS.add(new TweakItem(
                 "powerhal_sustained_perf",
                 "PowerHAL Sustained Performance & Power Boost",
@@ -255,10 +284,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // ═══════════════════════════════════════════════════════════
-        // NEW GPU & RENDERING TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
         TWEAKS.add(new TweakItem(
                 "disable_vsync",
                 "Disable VSync Lock",
@@ -289,10 +314,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // ═══════════════════════════════════════════════════════════
-        // NEW TOUCH & DISPLAY TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
         TWEAKS.add(new TweakItem(
                 "pointer_speed_max",
                 "Max Pointer Speed",
@@ -312,10 +333,6 @@ public class TweakManagerRepository {
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
-
-        // ═══════════════════════════════════════════════════════════
-        // NEW SYSTEM & SHIZUKU ADB TWEAKS
-        // ═══════════════════════════════════════════════════════════
 
         TWEAKS.add(new TweakItem(
                 "force_gpu_rendering",
@@ -417,10 +434,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // ═══════════════════════════════════════════════════════════
-        // NEW NETWORK & LATENCY TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
         TWEAKS.add(new TweakItem(
                 "dns_google_fast",
                 "Google DNS Fast Resolve",
@@ -460,10 +473,6 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
-
-        // ═══════════════════════════════════════════════════════════
-        // COMPETITIVE GAMING TWEAKS (NEW — NO DUPLICATES)
-        // ═══════════════════════════════════════════════════════════
 
         TWEAKS.add(new TweakItem(
                 "super_fast_touch_165",
@@ -530,9 +539,26 @@ public class TweakManagerRepository {
             return false;
         }
 
+        if ("hz_120_unlock".equals(tweak.getId())) {
+            MaxHzForceChannel.forceApply(120);
+            tweak.setApplied(true);
+            if (context != null) TweakPreferences.saveTweakState(context, tweak.getId(), true);
+            return true;
+        } else if ("hz_144_unlock".equals(tweak.getId())) {
+            MaxHzForceChannel.forceApply(144);
+            tweak.setApplied(true);
+            if (context != null) TweakPreferences.saveTweakState(context, tweak.getId(), true);
+            return true;
+        } else if ("hz_165_unlock".equals(tweak.getId())) {
+            MaxHzForceChannel.forceApply(165);
+            tweak.setApplied(true);
+            if (context != null) TweakPreferences.saveTweakState(context, tweak.getId(), true);
+            return true;
+        }
+
         String res;
-        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getApplyCommand());
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            res = ShizukuExecutor.executeShizukuCommand(tweak.getApplyCommand());
         } else {
             res = CommandExecutor.executeSystemCommand(tweak.getApplyCommand());
         }
@@ -555,8 +581,8 @@ public class TweakManagerRepository {
         if (tweak == null) return false;
 
         String res;
-        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getRevertCommand());
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            res = ShizukuExecutor.executeShizukuCommand(tweak.getRevertCommand());
         } else {
             res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
         }
@@ -598,13 +624,44 @@ public class TweakManagerRepository {
         });
     }
 
+    public static int revertAllTweaks(Context context) {
+        int revertedCount = 0;
+        for (TweakItem tweak : TWEAKS) {
+            if (revertTweak(context, tweak)) {
+                revertedCount++;
+            }
+        }
+        com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(false);
+        com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(false);
+        com.gamebooster.app.booster.GpuTweaksChannel.disableVulkanRenderer();
+        com.gamebooster.app.booster.TouchLatencyChannel.disableUltraTouchResponse();
+        com.gamebooster.app.booster.CpuGovernorChannel.resetToStockGovernor();
+        com.gamebooster.app.booster.NetworkTweaksChannel.disableLowLatencyNetwork();
+        com.gamebooster.app.booster.PerformanceChannel.revertRootTweaksScript();
+        return revertedCount;
+    }
+
+    public static void revertAllTweaksAsync(Context context, OnBatchCompleteListener listener) {
+        AppExecutors.getInstance().executeCommand(() -> {
+            int count = revertAllTweaks(context);
+            if (listener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(count));
+            }
+        });
+    }
+
     public static void restoreAppliedTweaksAsync(Context context) {
         if (context == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
+            boolean masterEnabled = ManualSettingsPreferences.isMasterBoostEnabled(context);
+            if (!masterEnabled) {
+                revertAllTweaks(context);
+                return;
+            }
+
             EngineMode mode = CommandExecutor.getActiveEngineMode();
             if (mode == EngineMode.READ_ONLY) return;
 
-            // 1. Re-apply all enabled Shizuku ADB system tweaks
             for (TweakItem tweak : TWEAKS) {
                 boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
                 if (wasSavedApplied) {
@@ -613,7 +670,6 @@ public class TweakManagerRepository {
                 }
             }
 
-            // 2. Re-apply manual hardware engine settings permanently (Zero Auto-Off)
             if (ManualSettingsPreferences.isAngleModeEnabled(context)) {
                 com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(true);
             }
@@ -633,7 +689,6 @@ public class TweakManagerRepository {
                 com.gamebooster.app.booster.NetworkOptimizer.setForceFullGnss(true);
             }
 
-            // 3. Execute master root performance script
             com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript();
         });
     }

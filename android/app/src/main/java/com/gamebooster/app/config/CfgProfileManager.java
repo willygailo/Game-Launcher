@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.util.Arrays;
@@ -12,14 +13,8 @@ import java.util.List;
 /**
  * CfgProfileManager — Manages saving, loading, and applying per-game competitive profiles.
  *
- * Each profile (MLBB / PUBGM / CODM / ALL) is independently stored in SharedPreferences
- * and applied via Shizuku (temporary full root) using the per-game patchers + Hz commands.
- *
- * Apply pipeline per profile:
- *   1. Force-write game config files via patcher.patchCompetitive()
- *   2. Inject super-fast touch into game config via patcher.applySuperFastTouch()
- *   3. Apply Shizuku system-level Hz force commands (if forceWriteSystemHz is enabled)
- *   4. Persist profile to SharedPreferences
+ * Each profile (MLBB / PUBGM / CODM / FREEFIRE / GENSHIN_WILDRIFT / ALL) is independently stored in SharedPreferences
+ * and applied via Shizuku/Root using dedicated per-game patchers + MaxHzForceChannel for zero duplication.
  */
 public class CfgProfileManager {
 
@@ -30,15 +25,15 @@ public class CfgProfileManager {
     private static final String KEY_HZ_SUFFIX    = "_force_hz";
     private static final String KEY_AIM_SUFFIX   = "_aim_assist";
     private static final String KEY_DMG_SUFFIX   = "_damage_script";
-
-    // ─── Supported game packages per game key ────────────────────────────────
+    private static final String KEY_RECOIL_SUFFIX = "_recoil_control";
 
     private static final List<String> MLBB_PACKAGES = Arrays.asList(
             "com.mobile.legends",
-            "com.mobilelegends.mi",
-            "com.vng.mlbbvn",
-            "com.mobilelegends.na"
+            "com.mobile.legends.vng",
+            "com.mobile.legends.id",
+            "com.mobilelegends.win"
     );
+
 
     private static final List<String> PUBGM_PACKAGES = Arrays.asList(
             "com.tencent.ig",
@@ -56,24 +51,32 @@ public class CfgProfileManager {
             "com.vng.codmvn"
     );
 
-    // ─── Save / Load ─────────────────────────────────────────────────────────
+    private static final List<String> FREEFIRE_PACKAGES = Arrays.asList(
+            "com.dts.freefireth",
+            "com.dts.freefiremax"
+    );
 
-    /** Saves a competitive profile to SharedPreferences. */
+    private static final List<String> GENSHIN_WILDRIFT_PACKAGES = Arrays.asList(
+            "com.riotgames.league.wildrift",
+            "com.cognosphere.GenshinImpact",
+            "com.HoYoverse.hkrpgoversea"
+    );
+
     public static void saveProfile(Context context, CompetitiveCfgProfile profile) {
         if (context == null || profile == null) return;
         SharedPreferences.Editor ed = context.getApplicationContext()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
         String key = profile.getPrefsKey();
-        ed.putInt    (key + KEY_FPS_SUFFIX,   profile.getTargetFps());
-        ed.putBoolean(key + KEY_TOUCH_SUFFIX, profile.isSuperFastTouchEnabled());
-        ed.putBoolean(key + KEY_HZ_SUFFIX,    profile.isForceWriteSystemHz());
-        ed.putBoolean(key + KEY_AIM_SUFFIX,   profile.isAimAssistEnabled());
-        ed.putBoolean(key + KEY_DMG_SUFFIX,   profile.isMlbbDamageScriptEnabled());
+        ed.putInt    (key + KEY_FPS_SUFFIX,    profile.getTargetFps());
+        ed.putBoolean(key + KEY_TOUCH_SUFFIX,  profile.isSuperFastTouchEnabled());
+        ed.putBoolean(key + KEY_HZ_SUFFIX,     profile.isForceWriteSystemHz());
+        ed.putBoolean(key + KEY_AIM_SUFFIX,    profile.isAimAssistEnabled());
+        ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
+        ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
         ed.apply();
         Log.i(TAG, "Saved profile: " + profile);
     }
 
-    /** Loads a competitive profile from SharedPreferences; returns default if not yet saved. */
     public static CompetitiveCfgProfile loadProfile(Context context, String gameKey) {
         if (context == null || gameKey == null) {
             return CompetitiveCfgProfile.defaultCompetitive(gameKey != null ? gameKey : CompetitiveCfgProfile.GAME_ALL);
@@ -86,17 +89,10 @@ public class CfgProfileManager {
         boolean forceHz  = prefs.getBoolean(key + KEY_HZ_SUFFIX, true);
         boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg);
+        boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil);
     }
 
-    // ─── Apply ───────────────────────────────────────────────────────────────
-
-    /**
-     * Applies a competitive profile for ALL packages of the given game key.
-     * Runs via Shizuku (temporary full root). Saves the profile on completion.
-     *
-     * @return number of packages successfully patched
-     */
     public static int applyProfile(Context context, String gameKey, CompetitiveCfgProfile profile) {
         if (profile == null) return 0;
         int patched = 0;
@@ -107,38 +103,30 @@ public class CfgProfileManager {
             if (ok) patched++;
         }
 
-        // System-level Hz force via Shizuku (applies globally, not per-package)
         if (profile.isForceWriteSystemHz()) {
-            applyShizukuHzForce(profile.getTargetFps());
+            MaxHzForceChannel.forceApply(profile.getTargetFps());
         }
 
-        // Persist
         if (context != null) saveProfile(context, profile);
 
         Log.i(TAG, "CfgProfileManager applied " + gameKey + " profile to " + patched + " packages @ " + profile.getTargetFps() + "fps");
         return patched;
     }
 
-    /**
-     * Applies ALL game profiles (MLBB + PUBGM + CODM) in one shot.
-     *
-     * @return total packages patched across all games
-     */
     public static int applyAllGames(Context context, int targetFps, boolean superTouch, boolean forceHz) {
         int total = 0;
         for (String gameKey : new String[]{
                 CompetitiveCfgProfile.GAME_MLBB,
                 CompetitiveCfgProfile.GAME_PUBGM,
-                CompetitiveCfgProfile.GAME_CODM}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz, true, true);
+                CompetitiveCfgProfile.GAME_CODM,
+                "FREEFIRE",
+                "GENSHIN_WILDRIFT"}) {
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
-        // One global Hz force for all
-        if (forceHz) applyShizukuHzForce(targetFps);
+        if (forceHz) MaxHzForceChannel.forceApply(targetFps);
         return total;
     }
-
-    // ─── Internal helpers ────────────────────────────────────────────────────
 
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
         boolean result = false;
@@ -161,6 +149,9 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 PubgConfigPatcher.applyAimAssistConfig(pkg);
             }
+            if (profile.isRecoilControlEnabled()) {
+                PubgConfigPatcher.applyRecoilControlConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_CODM.equals(key)) {
             result = CodmConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -169,32 +160,15 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 CodmConfigPatcher.applyAimAssistConfig(pkg);
             }
+            if (profile.isRecoilControlEnabled()) {
+                CodmConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+        } else if ("FREEFIRE".equals(key)) {
+            result = FreeFireConfigPatcher.patchCompetitive(pkg, fps);
+        } else if ("GENSHIN_WILDRIFT".equals(key)) {
+            result = GenshinWildRiftConfigPatcher.patchCompetitive(pkg, fps);
         }
         return result;
-    }
-
-    /** Builds the 165Hz / 144Hz / 120Hz / 90Hz Shizuku force command string. */
-    private static void applyShizukuHzForce(int hz) {
-        String cmd =
-            "settings put system peak_refresh_rate " + hz + ".0; " +
-            "settings put system min_refresh_rate "  + hz + ".0; " +
-            "settings put system user_refresh_rate " + hz + "; "   +
-            "settings put global peak_refresh_rate " + hz + ".0; " +
-            "settings put global min_refresh_rate "  + hz + ".0; " +
-            "cmd game mode performance global; " +
-            "cmd window set-app-refresh-rate global " + hz + "; "  +
-            "device_config put game_overlay global mode=2,fps=" + hz + ":mode=3,fps=" + hz + "; " +
-            "service call SurfaceFlinger 1035 i32 " + hz + "; "    +
-            "service call SurfaceFlinger 1036 i32 " + hz + "; "    +
-            "setprop debug.sf.fps_limit "           + hz + "; "    +
-            "setprop persist.sys.NV_FPSLIMIT "      + hz + "; "    +
-            "setprop persist.sys.NV_POWERMODE 1; "                  +
-            "setprop debug.gr.swapinterval 0";
-
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommand(cmd);
-        }
-        Log.i(TAG, "Shizuku Hz force applied: " + hz + "Hz");
     }
 
     private static List<String> getPackagesForKey(String gameKey) {
@@ -202,11 +176,15 @@ public class CfgProfileManager {
             case CompetitiveCfgProfile.GAME_MLBB:  return MLBB_PACKAGES;
             case CompetitiveCfgProfile.GAME_PUBGM: return PUBGM_PACKAGES;
             case CompetitiveCfgProfile.GAME_CODM:  return CODM_PACKAGES;
+            case "FREEFIRE":                       return FREEFIRE_PACKAGES;
+            case "GENSHIN_WILDRIFT":              return GENSHIN_WILDRIFT_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
                 List<String> all = new java.util.ArrayList<>();
                 all.addAll(MLBB_PACKAGES);
                 all.addAll(PUBGM_PACKAGES);
                 all.addAll(CODM_PACKAGES);
+                all.addAll(FREEFIRE_PACKAGES);
+                all.addAll(GENSHIN_WILDRIFT_PACKAGES);
                 return all;
             default: return new java.util.ArrayList<>();
         }

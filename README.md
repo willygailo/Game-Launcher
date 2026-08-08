@@ -1,17 +1,37 @@
-# ⚡ Game Booster Pro 2 — Ultimate Esports FPS & Refresh Rate Engine (v6.8.0-PRO)
+# 🚀 Game Launcher Pro & Precision Aim Tuner v6.8.0-PRO 🎯
 
-[![Android SDK](https://img.shields.io/badge/Android%20SDK-36%20%28Android%2016%29-brightgreen)](https://developer.android.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Shizuku Privileged](https://img.shields.io/badge/Shizuku-ADB%20Binder%20Direct-orange)](https://shizuku.rikka.app/)
-[![Target FPS](https://img.shields.io/badge/Target%20FPS-120%20%7C%20144%20%7C%20165%20Hz-red)](#-120--144--165-hz--fps-display-forcing-engine)
+<div align="center">
 
-**Game Booster Pro 2** is an advanced Android game optimization system engineered for competitive mobile gamers. It provides zero-delay display refresh rate forcing (up to 165Hz), real-time device spoofing, UE4 CVar injection, and direct internal file patching for **Mobile Legends: Bang Bang (MLBB)**, **PUBG Mobile / BGMI (PUBGM)**, and **Call of Duty: Mobile (CODM)** across Android 13, 14, 15, and 16.
+[![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Version](https://img.shields.io/badge/Release-v6.8.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Tag](https://img.shields.io/badge/Tag-v6.8.0--PRO-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v6.8.0-PRO)
+[![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Target FPS](https://img.shields.io/badge/Target%20FPS-120%20%7C%20144%20%7C%20165%20Hz-red?style=for-the-badge)](#-120--144--165-hz--fps-display-forcing-engine)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
+[![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Star%20Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher)
+
+**🔥 An ultra-high-performance Game Booster, Cyberpunk Glassmorphism UI, Input Latency Tuner, Per-Game 120/144/165 FPS Unlocker, 24/7 Background Auto-Game Detector, Full Hardware Identity Spoofer, Esports Network Tuner, and Precision HUD Overlay for Android 12 to 16. 🎮**
 
 ---
 
-## 🔥 Key Features
+### 📢 Share • Like • React • Star ⭐
+If you find this project helpful, please consider **Starring ⭐ the Repository**, **Sharing**, and leaving a **Like & Reaction**!
 
-### ⚡ 120 / 144 / 165 Hz & FPS Display Forcing Engine
+</div>
+
+---
+
+## 📌 1. 🌟 Executive Summary & Highlights
+
+**Game Launcher Pro (v6.8.0-PRO)** is a ban-safe, high-performance Android gaming utility engineered for competitive mobile esports across titles such as *Mobile Legends: Bang Bang (MLBB)*, *PUBG Mobile / BGMI*, *Call of Duty Mobile (CODM)*, *Free Fire*, *Honor of Kings*, *Blood Strike*, *Wild Rift*, *Genshin Impact*, and *Roblox*.
+
+It optimizes device-level touch sampling frequency, digitizer response rates, display refresh rate overrides (120/144/165Hz), full-system hardware identity spoofing (concealing host CPU, GPU, Build Fingerprint, display ID across 6 property namespaces), background 24/7 game launch detection without opening the main app UI, and low-latency esports network tuning using **Shizuku (ADB privileged execution)** — with **ZERO game memory tampering** or executable modification.
+
+---
+
+## ⚡ 2. ⚡ 120 / 144 / 165 Hz & FPS Display Forcing Engine
+
 Bypasses OS display constraints and forces peak refresh rates across 6 system layers via direct Shizuku ADB Binder execution:
 - **Layer 1 (AOSP System & Global)**: `peak_refresh_rate`, `min_refresh_rate`, `user_refresh_rate`.
 - **Layer 2 (Android Game Mode API)**: `cmd game mode performance global`, `cmd window set-app-refresh-rate global 165`.
@@ -20,20 +40,9 @@ Bypasses OS display constraints and forces peak refresh rates across 6 system la
 - **Layer 5 (Setprop Overrides)**: `debug.sf.fps_limit 165`, `persist.sys.NV_FPSLIMIT 165`, `debug.gr.swapinterval 0`.
 - **Layer 6 (OEM Brand Keys)**: Auto-detected overrides for Xiaomi (HyperOS/MIUI), Samsung (OneUI), OnePlus/Oppo/Realme (OxygenOS/ColorOS), ASUS ROG, RedMagic, Vivo/iQOO, Motorola, Transsion (Infinix/Tecno), etc.
 
-### 🎮 Dedicated Game Config Patchers (MLBB / PUBGM / CODM)
-Directly patches game config files in `/sdcard/Android/data/` and protected `/data/data/` directories using temporary ADB root shell routing:
-- **Mobile Legends: Bang Bang (MLBB)**: Unlocks 165 FPS, Ultra/HDR graphics, 165Hz touch boost, and damage script asset configs.
-- **PUBG Mobile / BGMI (PUBGM)**: Injects UE4 CVars for 165 FPS, MobileTouchBoostRate=165, Aim Assist, and 80% Aimbot lock sensitivity.
-- **Call of Duty: Mobile (CODM)**: Writes formatted `UserSetting.json`, `playerprefs.xml`, `GraphicsSettings.ini`, and `ControlsSettings.ini` (`MaxFrameRate=165`, `TouchBoostHz=165`, `AimAssist=1`).
-
-### 📱 Full Android 13 to 16 Compatibility
-- **Scoped Storage Bypass**: Routes protected directory operations through Shizuku ADB shell process context.
-- **Foreground Service Compliance**: Configured with `foregroundServiceType="specialUse"` and `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` for Android 14–16.
-- **Android 14+ Broadcast Receiver Security**: Utilizes `ContextCompat.registerReceiver()` with `RECEIVER_NOT_EXPORTED` flags to prevent security crashes.
-
 ---
 
-## 🎯 Target Game Packages & Modified File Paths
+## 🎮 3. 🎯 Target Game Packages & Direct Modified File Paths
 
 ### 1. Mobile Legends: Bang Bang (MLBB)
 * **Package Variants**: `com.mobile.legends`, `com.mobile.legends.vng`, `com.mobilelegends.mi`, `com.mobilelegends.hw`, `com.mobile.legends.kr`, `com.mobile.legends.jp`, `com.mobile.legends.moonton`
@@ -69,21 +78,39 @@ Directly patches game config files in `/sdcard/Android/data/` and protected `/da
 
 ---
 
-## 🛠 Shizuku Setup Instructions
+## 📱 4. 📱 Supported Hardware Profiles & Preset Matrix
 
-1. Install **Shizuku** from Google Play or GitHub.
-2. Open Shizuku and select **Start via Wireless Debugging** (Android 11+) or **Start via PC ADB**.
-3. Launch **Game Booster Pro 2**; the app will automatically connect to Shizuku and request system permission grants.
-4. Select your target refresh rate (120Hz, 144Hz, or 165Hz) or activate game competitive profiles.
+| Brand Preset | Model ID | Manufacturer | Target SoC / GPU | Max Refresh Rate |
+| :--- | :--- | :--- | :--- | :--- |
+| **ASUS ROG Phone 8 Pro** | `ASUS_AI2401_A` | `asus` | Snapdragon 8 Gen 3 / Adreno 750 | **165 Hz** 🚀 |
+| **REDMAGIC 9 Pro** | `NX769J` | `NUBIA` | Snapdragon 8 Gen 3 / Adreno 750 | **165 Hz** 🔥 |
+| **Galaxy S25 Ultra** | `SM-S938B` | `samsung` | Snapdragon 8 Elite / Adreno 830 | **120 Hz** ✨ |
+| **Black Shark 5 Pro** | `KTUS-A0` | `blackshark` | Snapdragon 8 Gen 1 / Adreno 730 | **144 Hz** ⚡ |
+| **Xiaomi 14 Ultra** | `24030PN60G` | `Xiaomi` | Snapdragon 8 Gen 3 / Adreno 750 | **120 Hz** 💎 |
+| **iPad Pro 12.9** | `iPad13,8` | `Apple` | Apple M2 / Apple GPU | **120 Hz** 📱 |
 
 ---
 
-## 🏗 Building & Installation
+## 📥 5. 📦 Download & Setup Instructions
 
-### Prerequisites
-- JDK 17
-- Android SDK 36 (Android 16 Build Tools)
-- Gradle 8.13+
+### Download Release APK
+Get the latest compiled binary directly from GitHub Releases:
+👉 **[Download Latest Release (v6.8.0-PRO APK)](https://github.com/willygailo/Game-Launcher/releases)** 📲
+
+### Setup Steps (Shizuku Privileged Access)
+
+1. 📲 Install **Shizuku** from Google Play Store or GitHub.
+2. ⚙️ Enable **Developer Options** and **Wireless Debugging** in system settings.
+3. ⚡ Start Shizuku via Wireless Debugging or connect your device to PC via ADB:
+   ```bash
+   adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
+   ```
+4. 🎮 Open **Game Launcher Pro** and grant Shizuku permission when prompted.
+5. 🚀 Select your game profile or simply launch games from your home screen — **auto-detection will handle the rest!**
+
+---
+
+## 🏗 6. 🏗 Building & Installation
 
 ### Clean Build Commands
 ```bash
@@ -103,9 +130,20 @@ Generated APKs:
 
 ---
 
-## 📝 Release Notes (v6.8.0-PRO)
+## 👤 7. 🌐 Developer Profiles & Connect
 
-- **165Hz Display Forcing**: Fully upgraded 6-layer refresh rate forcing engine with SurfaceFlinger binder transactions.
-- **MLBB / PUBGM / CODM Patchers**: Direct internal config file injection for 165 FPS, 165Hz touch boost, and graphics quality.
-- **Android 13–16 Compliance**: Fixed Scoped Storage barriers, Foreground Service types, and dynamic receiver export flags.
-- **Zero-Conflict Engine**: Updated `ForegroundAppDetector` and `HzFpsFragment` for flawless execution across all games.
+<div align="center">
+
+| Profile | Link |
+| :--- | :--- |
+| 🌐 **Facebook Profile** | [Willy Jr Carnasa Gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) |
+| 🐙 **GitHub Repository** | [Willy Gailo / Game-Launcher](https://github.com/willygailo/Game-Launcher) |
+| 📦 **GitHub Releases** | [Game Launcher Releases](https://github.com/willygailo/Game-Launcher/releases) |
+
+---
+
+### 👍 Don't Forget to Share, Like, React & Star! ⭐
+
+**Thank you for your support! Enjoy ultra-low input latency and maximum frame stability! 🎮🔥**
+
+</div>

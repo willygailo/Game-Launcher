@@ -1,0 +1,45 @@
+{
+  "game": "MLBB",
+  "engine": "Dragon",
+  "packages": [
+    "com.mobile.legends",
+    "com.mobile.legends.vng",
+    "com.mobile.legends.id",
+    "com.mobilelegends.win"
+  ],
+  "fps_tiers": [60, 90, 120, 144, 165],
+  "config_section": "UserSettings",
+  "fps_key": "FPS",
+  "max_fps_key": "MaxFPS",
+  "frame_rate_level_key": "FrameRateLevel",
+  "frame_rate_level_map": {
+    "60": 2,
+    "90": 3,
+    "120": 4,
+    "144": 4,
+    "165": 4
+  },
+  "extra_keys": {
+    "HighFPSMode": "1",
+    "HighFPSMode2": "1",
+    "GraphicsQuality": "4",
+    "HDMode": "1",
+    "HDRMode": "1",
+    "UltraHDMode": "1",
+    "Shadow": "1",
+    "HighFrameRate": "1",
+    "UnlockFPS": "1",
+    "SuperHighFPS": "1"
+  },
+  "sdcard_paths": [
+    "files/dragon2017/assets/UI/Config/UserSystem.ini",
+    "files/dragon2017/assets/UI/Config/DamageSystem.ini",
+    "files/dragon2017/assets/UI/HighFPSConfig.ini",
+    "files/dragon2017/assets/Com/MobileLegendsSettings.ini"
+  ],
+  "data_paths": [
+    "files/dragon2017/assets/Com/MobileLegendsSettings.ini",
+    "files/dragon2017/assets/UI/Config/UserSystem.ini",
+    "files/dragon2017/assets/UI/Config/DamageSystem.ini"
+  ]
+}

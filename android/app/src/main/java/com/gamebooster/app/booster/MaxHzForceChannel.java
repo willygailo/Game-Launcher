@@ -96,11 +96,7 @@ public final class MaxHzForceChannel {
         ok += run("device_config put game_overlay global "
                 + "mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);             total++;
 
-        // ── Layer 4: SurfaceFlinger Direct Binder ────────────────────────────────────
-        ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
-        ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
-
-        // ── Layer 5: setprop Runtime Overrides ───────────────────────────────────────
+        // ── Layer 4: setprop Runtime Overrides ───────────────────────────────────────
         ok += run("setprop debug.sf.fps_limit "      + hz);                          total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT " + hz);                          total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
@@ -161,7 +157,10 @@ public final class MaxHzForceChannel {
             ok += run("settings put system user_refresh_rate " + hz);               total++;
         }
 
-        int fail = total - ok;
+        // ── Layer 7: Universal Device Adapter Engine (Android 12–16, All OEMs & Chipsets) ──
+        total += com.gamebooster.app.device.UniversalDeviceAdapter.applyOemHardwareOptimization(targetHz);
+
+        int fail = Math.max(0, total - ok);
         Log.i(TAG, "══ MaxHzForceChannel.forceApply DONE: "
                 + ok + "/" + total + " OK, " + targetHz + "Hz ══");
         return ForceResult.complete(targetHz, ok, fail, total);

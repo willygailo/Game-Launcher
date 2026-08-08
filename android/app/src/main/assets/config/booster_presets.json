@@ -6,7 +6,8 @@
     "dns_flush": true,
     "touch_response_us": 0
   },
-  "max_hardware_hz": 165,
-  "refresh_rate_presets": [60, 90, 120, 144, 165],
-  "force_override_max_fps": 240
+  "max_hardware_hz": 240,
+  "refresh_rate_presets": [60, 90, 120, 144, 165, 240],
+  "force_override_max_fps": 240,
+  "shizuku_write_method": "base64"
 }
