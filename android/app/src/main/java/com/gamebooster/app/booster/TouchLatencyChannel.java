@@ -27,6 +27,28 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("persist.sys.transsion.touch_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("persist.sys.samsung.touch_boost", "1");
         ok &= CommandExecutor.setSystemProperty("persist.sys.oppo.touch_response", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.miui.touch_response", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.vivo.touch_response", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.input.touch_filter.enabled", "0");
+        ok &= CommandExecutor.setSystemProperty("debug.input.touch_filter.level", "0");
+        return ok;
+    }
+
+    public static boolean applyZeroTouchDelayForPackage(String packageName) {
+        boolean ok = enableUltraTouchResponse();
+        if (packageName == null) return ok;
+        String pkg = packageName.toLowerCase().trim();
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            MlbbConfigPatcher.applySuperFastTouch(pkg);
+        } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
+            CodmConfigPatcher.applySuperFastTouch(pkg);
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            PubgConfigPatcher.applySuperFastTouch(pkg);
+        } else if (pkg.contains("freefire")) {
+            FreeFireConfigPatcher.applySuperFastTouch(pkg);
+        } else {
+            EsportsGameTouchPatcher.applyGenericZeroTouchDelay(pkg);
+        }
         return ok;
     }
 

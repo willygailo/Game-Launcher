@@ -32,7 +32,7 @@ public class FreeFireConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         String content = String.format(
-                "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nGraphicLevel=4\nShadow=1\nHighRes=1\nUltraHD=1\nTouchBoostHz=165\nUnlock165Hz=1\n",
+                "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nGraphicLevel=4\nShadow=1\nHighRes=1\nUltraHD=1\nTouchBoostHz=165\nUnlock165Hz=1\nTouchResponseSpeed=3\nZeroInputDelay=1\n",
                 targetFps
         );
         List<String> paths = getConfigPaths(packageName);
@@ -43,6 +43,19 @@ public class FreeFireConfigPatcher {
         }
         Log.i(TAG, "Free Fire competitive Ultra graphics force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd = "grep -qF 'TouchResponseSpeed' " + path + " || echo 'TouchResponseSpeed=3' >> " + path + "; " +
+                         "sed -i 's/^TouchResponseSpeed=.*/TouchResponseSpeed=3/' " + path + "; " +
+                         "grep -qF 'ZeroInputDelay' " + path + " || echo 'ZeroInputDelay=1' >> " + path + "; " +
+                         "sed -i 's/^ZeroInputDelay=.*/ZeroInputDelay=1/' " + path;
+            runCommand(cmd);
+        }
+        Log.i(TAG, "Free Fire super fast touch applied for " + packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {

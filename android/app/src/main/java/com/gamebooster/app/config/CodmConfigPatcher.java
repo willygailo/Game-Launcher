@@ -43,6 +43,7 @@ public class CodmConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
 
+        int codmFpsOption = targetFps >= 120 ? 5 : (targetFps >= 90 ? 4 : 3);
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
@@ -50,27 +51,30 @@ public class CodmConfigPatcher {
             if (path.endsWith(".json")) {
                 content = "{\n" +
                         "  \"MaxFrameRate\": " + targetFps + ",\n" +
-                        "  \"GraphicQuality\": 4,\n" +
+                        "  \"GraphicQuality\": 0,\n" +
                         "  \"FPSLimit\": " + targetFps + ",\n" +
-                        "  \"HDRMode\": 1,\n" +
-                        "  \"HDRColorMode\": 2,\n" +
-                        "  \"UltraMaxGraphics\": 1,\n" +
+                        "  \"HDRMode\": 0,\n" +
                         "  \"TouchBoostHz\": 165,\n" +
                         "  \"TouchDelay\": 0.0,\n" +
-                        "  \"SuperResolution\": 1,\n" +
+                        "  \"SuperResolution\": 0,\n" +
                         "  \"FieldOfView\": 90,\n" +
-                        "  \"AntiAliasing\": 1,\n" +
-                        "  \"ShadowQuality\": 3\n" +
+                        "  \"AntiAliasing\": 0,\n" +
+                        "  \"ShadowQuality\": 0\n" +
                         "}\n";
             } else if (path.endsWith(".xml")) {
                 // Unity PlayerPrefs XML format
                 content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
                         "<map>\n" +
-                        "  <int name=\"frame_rate\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"frame_rate\" value=\"" + codmFpsOption + "\" />\n" +
+                        "  <int name=\"MaxFpsOption\" value=\"" + codmFpsOption + "\" />\n" +
                         "  <int name=\"bk_frame_rate\" value=\"" + targetFps + "\" />\n" +
-                        "  <int name=\"graphic_quality\" value=\"4\" />\n" +
-                        "  <int name=\"hdr_mode\" value=\"1\" />\n" +
-                        "  <int name=\"ultramax_graphics\" value=\"1\" />\n" +
+                        "  <int name=\"graphic_quality\" value=\"0\" />\n" +
+                        "  <int name=\"GraphicsQualityOption\" value=\"0\" />\n" +
+                        "  <int name=\"hdr_mode\" value=\"0\" />\n" +
+                        "  <int name=\"AntiAliasingOption\" value=\"0\" />\n" +
+                        "  <int name=\"RealtimeShadowOption\" value=\"0\" />\n" +
+                        "  <int name=\"BloomOption\" value=\"0\" />\n" +
+                        "  <int name=\"DepthOfFieldOption\" value=\"0\" />\n" +
                         "</map>\n";
             } else {
                 // INI and .cfg formats
@@ -78,16 +82,13 @@ public class CodmConfigPatcher {
                         "frame_rate=" + targetFps + "\n" +
                         "MaxFrameRate=" + targetFps + "\n" +
                         "FPSLimit=" + targetFps + "\n" +
-                        "graphic_quality=4\n" +
-                        "GraphicQuality=4\n" +
-                        "HDRMode=1\n" +
-                        "HDRColorMode=2\n" +
-                        "UltraMaxGraphics=1\n" +
-                        "SuperResolution=1\n" +
+                        "graphic_quality=0\n" +
+                        "GraphicQuality=0\n" +
+                        "HDRMode=0\n" +
                         "TouchBoostHz=165\n" +
                         "TouchDelay=0.0\n" +
-                        "AntiAliasing=1\n" +
-                        "ShadowQuality=3\n";
+                        "AntiAliasing=0\n" +
+                        "ShadowQuality=0\n";
             }
             forceWrite(path, content);
             written++;

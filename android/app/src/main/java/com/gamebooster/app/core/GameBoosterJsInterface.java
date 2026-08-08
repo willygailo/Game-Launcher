@@ -9,6 +9,7 @@ import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class GameBoosterJsInterface {
 
@@ -181,5 +182,89 @@ public class GameBoosterJsInterface {
         com.gamebooster.app.config.ManualSettingsPreferences.setMasterBoostEnabled(context, false);
         com.gamebooster.app.tweaks.TweakManagerRepository.revertAllTweaks(context);
         return true;
+    }
+
+    @JavascriptInterface
+    public boolean isShizukuConnected() {
+        return com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission();
+    }
+
+    @JavascriptInterface
+    public boolean forceGrantAllPermissions() {
+        if (context == null) return false;
+        com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+        return true;
+    }
+
+    @JavascriptInterface
+    public boolean forceApplyGameConfig(String pkg, String relativeFilePath, String rawContent) {
+        if (context == null || pkg == null) return false;
+        com.gamebooster.app.config.GameConfigPatcher.PatchResult res =
+                com.gamebooster.app.config.GameConfigPatcher.forceApplyUserConfig(pkg, relativeFilePath, rawContent);
+        return res.success;
+    }
+
+    @JavascriptInterface
+    public boolean putSystemSetting(String key, String value) {
+        return com.gamebooster.app.engine.SystemPropertiesEngine.putSystemSetting(key, value);
+    }
+
+    @JavascriptInterface
+    public boolean putGlobalSetting(String key, String value) {
+        return com.gamebooster.app.engine.SystemPropertiesEngine.putGlobalSetting(key, value);
+    }
+
+    @JavascriptInterface
+    public boolean putSecureSetting(String key, String value) {
+        return com.gamebooster.app.engine.SystemPropertiesEngine.putSecureSetting(key, value);
+    }
+
+    @JavascriptInterface
+    public boolean setSystemProperty(String key, String value) {
+        return com.gamebooster.app.engine.SystemPropertiesEngine.setSystemProperty(key, value);
+    }
+
+    @JavascriptInterface
+    public boolean applyZeroTouchDelay(String packageName) {
+        return com.gamebooster.app.booster.TouchLatencyChannel.applyZeroTouchDelayForPackage(packageName);
+    }
+
+    @JavascriptInterface
+    public String getAndroidVersionInfoJson() {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("apiVersion", com.gamebooster.app.device.UniversalDeviceAdapter.getAndroidApiVersion());
+            obj.put("versionName", com.gamebooster.app.device.UniversalDeviceAdapter.getAndroidVersionName());
+            obj.put("oemBrand", com.gamebooster.app.device.UniversalDeviceAdapter.getOemBrand().name());
+            obj.put("chipsetVendor", com.gamebooster.app.device.UniversalDeviceAdapter.getChipsetVendor().name());
+            return obj.toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public String getGameConfigPathsJson(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return "[]";
+        String pkg = packageName.toLowerCase().trim();
+        JSONArray arr = new JSONArray();
+
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            arr.put("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/AimAssist.ini");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile")) {
+            arr.put("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserEngine.ini");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserCustom.ini");
+        } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
+            arr.put("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
+            arr.put("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
+        } else {
+            arr.put("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+            arr.put("/data/data/" + pkg + "/files/GameSettings.ini");
+        }
+        return arr.toString();
     }
 }

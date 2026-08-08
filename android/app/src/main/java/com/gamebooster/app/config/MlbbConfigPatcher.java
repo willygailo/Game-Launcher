@@ -45,29 +45,50 @@ public class MlbbConfigPatcher {
         // MLBB FrameRateLevel: 5 = Ultra 165FPS, 4 = Ultra-High (120fps), 3 = High (90fps), 2 = Standard (60fps)
         int frameRateLevel = targetFps >= 165 ? 5 : (targetFps >= 120 ? 4 : (targetFps >= 90 ? 3 : (targetFps >= 60 ? 2 : 1)));
 
-        String content = "[UserSettings]\n" +
-                "HighFPSMode=1\n" +
-                "HighFPSMode2=1\n" +
-                "FrameRateLevel=" + frameRateLevel + "\n" +
-                "GraphicsQuality=4\n" +
-                "HDMode=1\n" +
-                "HDRMode=1\n" +
-                "UltraHDMode=1\n" +
-                "Shadow=1\n" +
-                "FPS=" + targetFps + "\n" +
-                "MaxFPS=" + targetFps + "\n" +
-                "MaxFrameRate=" + targetFps + "\n" +
-                "TargetFPS=" + targetFps + "\n" +
-                "HighFrameRate=1\n" +
-                "UnlockFPS=1\n" +
-                "SuperHighFPS=1\n" +
-                "Unlock165Hz=1\n" +
-                "Unlock165FPS=1\n" +
-                "TouchDelay=0.0\n";
-
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            String content;
+            if (path.endsWith(".xml")) {
+                content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
+                        "<map>\n" +
+                        "  <int name=\"HighFpsMode\" value=\"3\" />\n" +
+                        "  <int name=\"PerformanceLevel\" value=\"0\" />\n" +
+                        "  <int name=\"ShadowQuality\" value=\"0\" />\n" +
+                        "  <int name=\"OutlineEnable\" value=\"0\" />\n" +
+                        "  <int name=\"HDModeEnable\" value=\"0\" />\n" +
+                        "  <int name=\"ScreenShake\" value=\"0\" />\n" +
+                        "  <int name=\"TargetFPS\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"MaxFPS\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"Unlock120Fps\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock144Fps\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock165Fps\" value=\"1\" />\n" +
+                        "</map>\n";
+            } else {
+                content = "[UserSettings]\n" +
+                        "HighFPSMode=1\n" +
+                        "HighFPSMode2=1\n" +
+                        "FrameRateLevel=" + frameRateLevel + "\n" +
+                        "GraphicsQuality=0\n" +
+                        "HDMode=0\n" +
+                        "HDRMode=0\n" +
+                        "UltraHDMode=0\n" +
+                        "Shadow=0\n" +
+                        "FPS=" + targetFps + "\n" +
+                        "MaxFPS=" + targetFps + "\n" +
+                        "MaxFrameRate=" + targetFps + "\n" +
+                        "TargetFPS=" + targetFps + "\n" +
+                        "HighFrameRate=1\n" +
+                        "UnlockFPS=1\n" +
+                        "SuperHighFPS=1\n" +
+                        "Unlock120Hz=1\n" +
+                        "Unlock144Hz=1\n" +
+                        "Unlock165Hz=1\n" +
+                        "Unlock120FPS=1\n" +
+                        "Unlock144FPS=1\n" +
+                        "Unlock165FPS=1\n" +
+                        "TouchDelay=0.0\n";
+            }
             forceWrite(path, content);
             written++;
         }
@@ -77,7 +98,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Injects super-fast touch response keys into MLBB config files.
-     * Optimized for 165Hz panels — sets HighFreqTouchHz=165 and max touch response level.
+     * Optimized for 120Hz/144Hz/165Hz panels — sets HighFreqTouchHz=165 and max touch response level.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -179,15 +200,22 @@ public class MlbbConfigPatcher {
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/com.mobile.legends.v2.playerprefs.xml");
         paths.add("/sdcard/GameBoosterPro/configs/mlbb_ultra_165.cfg");
         paths.add("/sdcard/GameBoosterPro/configs/" + pkg + "_165.cfg");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2015/assets/UI/Config/UserSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/AimAssist.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/TouchConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/AimAssist.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/TouchConfig.ini");
         return paths;
     }
 

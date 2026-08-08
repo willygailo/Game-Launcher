@@ -25,6 +25,7 @@ public class UniversalDeviceAdapter {
         XIAOMI_REDMI_POCO,
         REALME_OPPO_ONEPLUS,
         VIVO_IQOO,
+        GOOGLE_PIXEL,
         MOTOROLA,
         ASUS_ROG,
         REDMAGIC_NUBIA,
@@ -34,6 +35,7 @@ public class UniversalDeviceAdapter {
     public enum ChipsetVendor {
         QUALCOMM_SNAPDRAGON,
         MEDIATEK_DIMENSITY_HELIO,
+        GOOGLE_TENSOR,
         SAMSUNG_EXYNOS,
         UNISOC,
         UNKNOWN
@@ -70,6 +72,8 @@ public class UniversalDeviceAdapter {
             return OemBrand.REALME_OPPO_ONEPLUS;
         } else if (full.contains("vivo") || full.contains("iqoo")) {
             return OemBrand.VIVO_IQOO;
+        } else if (full.contains("google") || full.contains("pixel")) {
+            return OemBrand.GOOGLE_PIXEL;
         } else if (full.contains("motorola") || full.contains("moto")) {
             return OemBrand.MOTOROLA;
         } else if (full.contains("asus")) {
@@ -90,6 +94,8 @@ public class UniversalDeviceAdapter {
             return ChipsetVendor.QUALCOMM_SNAPDRAGON;
         } else if (soc.contains("mt") || soc.contains("mediatek") || soc.contains("dimensity") || soc.contains("helio")) {
             return ChipsetVendor.MEDIATEK_DIMENSITY_HELIO;
+        } else if (soc.contains("gs101") || soc.contains("gs201") || soc.contains("zuma") || soc.contains("tensor")) {
+            return ChipsetVendor.GOOGLE_TENSOR;
         } else if (soc.contains("exynos") || soc.contains("s5e")) {
             return ChipsetVendor.SAMSUNG_EXYNOS;
         } else if (soc.contains("ums") || soc.contains("unisoc") || soc.contains("sprd")) {
@@ -100,9 +106,38 @@ public class UniversalDeviceAdapter {
     }
 
     /**
+     * Uncaps Phantom Process Killer & Background Process Limits on Android 13, 14, 15, 16.
+     */
+    public static boolean applyAndroid13To16SystemUncap() {
+        try {
+            List<String> uncapCmds = new ArrayList<>();
+            uncapCmds.add("device_config put activity_manager max_phantom_processes 2147483647");
+            uncapCmds.add("settings put global settings_enable_monitor_phantom_procs false");
+            uncapCmds.add("cmd deviceidle whitelist +com.gamebooster.app");
+            uncapCmds.add("cmd appops set com.gamebooster.app RUN_IN_BACKGROUND allow");
+            uncapCmds.add("cmd appops set com.gamebooster.app RUN_ANY_IN_BACKGROUND allow");
+
+            for (String cmd : uncapCmds) {
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+            }
+            Log.i(TAG, "Android 13-16 Phantom Process Killer uncap executed successfully.");
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "applyAndroid13To16SystemUncap exception", t);
+            return false;
+        }
+    }
+
+    /**
      * Executes OEM-specific hardware game mode & refresh rate overrides.
      */
     public static int applyOemHardwareOptimization(int targetFps) {
+        applyAndroid13To16SystemUncap();
+
         OemBrand brand = getOemBrand();
         ChipsetVendor chipset = getChipsetVendor();
         Log.i(TAG, "Applying OEM Optimization for " + brand + " | " + chipset + " | " + getAndroidVersionName());
@@ -155,6 +190,12 @@ public class UniversalDeviceAdapter {
                 cmds.add("setprop sys.vivo.game_mode 1");
                 break;
 
+            case GOOGLE_PIXEL:
+                cmds.add("settings put system peak_refresh_rate " + fpsStr);
+                cmds.add("settings put system min_refresh_rate " + fpsStr);
+                cmds.add("setprop debug.sf.showfps 0");
+                break;
+
             case MOTOROLA:
                 cmds.add("settings put global peak_refresh_rate " + fpsStr);
                 cmds.add("settings put system min_refresh_rate " + fpsStr);
@@ -190,6 +231,10 @@ public class UniversalDeviceAdapter {
                 cmds.add("setprop vendor.kgsl.gpu.control 1");
                 break;
 
+            case GOOGLE_TENSOR:
+                cmds.add("setprop debug.graphics.gpu.profiler.perfmode 1");
+                break;
+
             case SAMSUNG_EXYNOS:
                 cmds.add("setprop vendor.exynos.gpu.boost 1");
                 break;
@@ -202,13 +247,17 @@ public class UniversalDeviceAdapter {
                 break;
         }
 
-        // Execute commands via Shizuku / System Command Executor
+        // Safe execution loop with zero-crash fallback
         int success = 0;
         for (String cmd : cmds) {
-            String res = ShizukuExecutor.hasShizukuPermission()
-                    ? ShizukuExecutor.executeShizukuCommand(cmd)
-                    : CommandExecutor.executeSystemCommand(cmd);
-            if (res != null) success++;
+            try {
+                String res = ShizukuExecutor.hasShizukuPermission()
+                        ? ShizukuExecutor.executeShizukuCommand(cmd)
+                        : CommandExecutor.executeSystemCommand(cmd);
+                if (res != null) success++;
+            } catch (Throwable t) {
+                Log.w(TAG, "Command failed gracefully on this ROM: " + cmd, t);
+            }
         }
         return success;
     }

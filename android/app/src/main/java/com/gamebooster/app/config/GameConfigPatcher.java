@@ -112,4 +112,24 @@ public class GameConfigPatcher {
             runCommand("mkdir -p " + parentDir);
         }
     }
+
+    public static PatchResult forceApplyUserConfig(String pkg, String relativeFilePath, String rawContent) {
+        if (pkg == null || relativeFilePath == null || rawContent == null) {
+            return new PatchResult(false, "Invalid parameters for CFG force apply");
+        }
+        String destPath1 = "/sdcard/Android/data/" + pkg + "/files/" + relativeFilePath;
+        String destPath2 = "/data/data/" + pkg + "/files/" + relativeFilePath;
+
+        ensureParentDirectory(destPath1);
+        ensureParentDirectory(destPath2);
+
+        String res1 = ShizukuExecutor.executeShizukuCommandWithBase64(rawContent, destPath1);
+        String res2 = ShizukuExecutor.executeShizukuCommandWithBase64(rawContent, destPath2);
+
+        runCommand("chmod 666 " + destPath1 + " || true");
+        runCommand("chmod 666 " + destPath2 + " || true");
+
+        boolean ok = CommandExecutor.isSuccessOutput(res1) || CommandExecutor.isSuccessOutput(res2);
+        return new PatchResult(ok, ok ? "Successfully force-applied CFG to " + pkg : "CFG apply failed: " + res1);
+    }
 }

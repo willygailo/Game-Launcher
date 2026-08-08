@@ -42,19 +42,23 @@ public class PubgConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5));
+        int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5)));
 
         String content = "[UserCustom DeviceProfile]\n" +
                 "+CVars=r.FrameRateLimit=" + targetFps + "\n" +
                 "+CVars=r.MobileFPSLimit=" + targetFps + "\n" +
-                "+CVars=r.MobileHDR=1\n" +
-                "+CVars=r.MobileContentScaleFactor=1.0\n" +
+                "+CVars=r.PUBGFrameRateLimit=" + targetFps + ".000000\n" +
+                "+CVars=r.PUBGGraphicsQuality=0\n" +
+                "+CVars=r.PUBGMSAA=0\n" +
+                "+CVars=r.PUBGShadowQuality=0\n" +
+                "+CVars=r.PUBGHDR=0\n" +
+                "+CVars=r.MobileHDR=0\n" +
+                "+CVars=r.MobileContentScaleFactor=0.8\n" +
                 "+CVars=r.Streaming.LimitPoolSizeToVRAM=1\n" +
-                "+CVars=r.MobileTonemapperFilm=1\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
-                "bUseHDRMode=True\n" +
-                "bUseHighQualityBloom=True\n" +
-                "bUseAntiAliasing=True\n\n" +
+                "bUseHDRMode=False\n" +
+                "bUseHighQualityBloom=False\n" +
+                "bUseAntiAliasing=False\n\n" +
                 "[/Script/Engine.GameUserSettings]\n" +
                 "bUnlockHighFrameRate=True\n" +
                 "FrameRateLimit=" + targetFps + ".000000\n";
@@ -167,15 +171,20 @@ public class PubgConfigPatcher {
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
-        // Global / VNG / KR
+        // Global / VNG / KR / TW
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserEngine.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserEngine.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
         // BGMI (India)
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserCustom.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserEngine.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserCustom.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserEngine.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/GameUserSettings.ini");
         return paths;
     }

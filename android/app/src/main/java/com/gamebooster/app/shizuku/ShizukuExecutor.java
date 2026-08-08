@@ -129,6 +129,13 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.HARDWARE_TEST");
         executeShizukuCommand("pm grant " + packageName + " android.permission.INTERNET");
 
+        executeShizukuCommand("pm grant " + packageName + " android.permission.POST_NOTIFICATIONS");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.SCHEDULE_EXACT_ALARM");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.USE_EXACT_ALARM");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_IMAGES");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_VIDEO");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_MEDIA_AUDIO");
+
         // AppOps Overrides for Unrestricted System Access
         executeShizukuCommand("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
         executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
@@ -141,6 +148,9 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
         executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
+
+        // Uncap Phantom Process Killer for Android 13, 14, 15, 16
+        com.gamebooster.app.device.UniversalDeviceAdapter.applyAndroid13To16SystemUncap();
 
         // Force Target Games Permission & AppOps Overrides (PUBGM, MLBB, CODM, BGMI, Free Fire)
         String[] targetGames = new String[] {
