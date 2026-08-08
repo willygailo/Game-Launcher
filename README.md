@@ -2,6 +2,8 @@
 
 <div align="center">
 
+![Hero Banner](ght.jpeg)
+
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
 [![Version](https://img.shields.io/badge/Release-v6.8.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Tag](https://img.shields.io/badge/Tag-v6.8.0--PRO-FF5722?style=for-the-badge&logo=git&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/tag/v6.8.0-PRO)
