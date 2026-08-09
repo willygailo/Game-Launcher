@@ -1,37 +1,41 @@
-# Precision Aim – Input Tuner 🎯
+<p align="center">
+  <img src="BANNER.gif" alt="Precision Aim Banner" width="100%" style="border-radius: 12px;">
+</p>
 
-**Precision Aim – Input Tuner** is a legitimate, ban-safe device input tuning utility for mobile eSports players (PUBG Mobile, COD Mobile, Free Fire, etc.). 
+<h1 align="center">🎯 Precision Aim – Input Tuner</h1>
 
-It optimizes device-level touch sampling rates, gyroscope polling frequency, pointer speed, and touch deadzones using standard Android developer system properties via **Shizuku** (ADB shell privileges).
+<p align="center">
+  <b>Ban-Safe Device Input & Touch Sampling Frequency Optimizer for Mobile eSports</b>
+</p>
 
-> [!IMPORTANT]
-> **SAFETY & COMPLIANCE GUARANTEE**:
-> - **Zero Game Tampering**: Precision Aim **NEVER** reads, modifies, or interacts with game memory, processes, APK files, or internal game data.
-> - **No UE4 Console Variable Injection**: No `r.AimSensitivityScale`, `r.TouchDeadZone`, or `r.MobileTouchBoostRate` modifications (which are detected by Tencent ACE / anti-cheat engines).
-> - **No Scripting or Automation**: No aimbot, auto-aim, recoil compensation, macros, or automated inputs.
-> - **100% Reversible**: Every system property change is backed up before modification and automatically restored to original defaults on app exit, profile change, or uninstall.
+<p align="center">
+  <a href="https://github.com/willygailo/Game-Launcher"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://facebook.com/willygailo"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
+  <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
+  <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
+</p>
 
 ---
 
-## 🏗️ Project Architecture & Modules
+## 🚀 Overview
 
-```
-Precision-Aim/
-├── app/                  # UI screens, navigation, onboarding, sensitivity calculator
-├── shizuku/              # ShizukuClient, binder lifecycle, ADB setup wizard
-├── core/
-│   ├── settings/        # SettingsManager (system prop backup & restore engine)
-│   └── profile/         # ProfileManager (PUBG Mobile & COD Mobile profiles, JSON import/export)
-├── overlay/              # CrosshairOverlayService & custom floating canvas (4 presets)
-├── game-detector/        # ForegroundAppDetector (UsageStatsManager auto-profile switcher)
-└── README.md             # Documentation, compliance, and setup guide
-```
+**Precision Aim – Input Tuner** is an open-source, device-level input tuning utility designed for competitive mobile eSports titles (*PUBG Mobile, COD Mobile, Free Fire, Mobile Legends*). 
+
+By leveraging **Shizuku** (privileged ADB shell access), it tunes low-level Android digitizer sampling rates, gyroscope polling frequency, pointer acceleration curves, and touch slop deadzones directly at the OS kernel/framework level.
+
+> [!IMPORTANT]
+> **SAFETY & COMPLIANCE GUARANTEE**:
+> - ⚡ **Zero Game Memory Tampering**: Never reads, modifies, or interacts with game RAM, executable code, or game data files.
+> - ⚡ **No Anti-Cheat Violation**: Does not inject UE4 console variables (`r.TouchDeadZone`, `r.AimSensitivityScale`, etc.) which trigger anti-cheat bans.
+> - ⚡ **No Scripting or Automation**: No aimbot, recoil reduction, macros, or automated touch inputs.
+> - ⚡ **100% Reversible**: Automatically backs up original system state and restores factory defaults on profile exit or app close.
 
 ---
 
 ## ⚡ Key Tuned System Knobs (Device-Level)
 
-All optimizations are standard Android developer options modified via ADB/Shizuku shell commands (`setprop` / `settings put`):
+All optimizations modify standard Android developer options and digitizer system properties via ADB shell privileges (`setprop` / `settings put`):
 
 | System Property / Setting | Default Range | Tuned Value | Description |
 | :--- | :--- | :--- | :--- |
@@ -41,6 +45,30 @@ All optimizations are standard Android developer options modified via ADB/Shizuk
 | `debug.sensor.gyro.rate` | 100 - 200 Hz | **1000 Hz** | Maxes out gyroscope sampling rate for smooth scope aim |
 | `pointer_speed` | 0 (scaled) | **7** | Applies 1:1 linear pointer acceleration curve |
 | `persist.sys.touch.pressure.scale` | 1.0 | **0.0001** | Minimizes touch pressure calculation overhead |
+
+---
+
+## 🏗️ Project Architecture & Modules
+
+```
+Precision-Aim/
+├── .github/
+│   ├── workflows/        # GitHub Actions CI build & test automation
+│   └── ISSUE_TEMPLATE/   # Bug report & feature request templates
+├── android/
+│   ├── app/              # Android app source code (SDK 36, Java 17)
+│   │   ├── src/main/java/com/gamebooster/app/
+│   │   │   ├── core/     # SettingsManager & ProfileManager engines
+│   │   │   ├── shizuku/  # Shizuku binder IPC & ADB executor
+│   │   │   ├── booster/  # Thermal, FPS & GPU tweaking channels
+│   │   │   └── ui/       # Activities, Fragments & sensitivity calculator
+│   │   └── src/test/     # JUnit & Mockito unit testing suite
+├── BANNER.gif            # Project banner header
+├── CONTRIBUTING.md       # Open-source developer contribution guide
+├── LICENSE               # Apache 2.0 Open Source License
+├── SECURITY.md          # Security policy & ban-safety rules
+└── README.md             # Documentation & setup guide
+```
 
 ---
 
@@ -59,54 +87,57 @@ Precision Aim requires **Shizuku** to execute ADB shell commands without requiri
 
 ---
 
-## 🎯 Features
+## 🎯 Key Features
 
 ### 1. Dynamic Game Detection & Auto-Tuning
-- Automatically detects when **PUBG Mobile** (`com.tencent.ig`, `com.pubg.imobile`, etc.) or **COD Mobile** (`com.activision.callofduty.shooter`) enters the foreground.
-- Applies per-game input profiles instantly.
-- Reverts all system properties back to factory defaults as soon as the game closes.
+- Automatically detects foreground game launches (*PUBG Mobile, COD Mobile, Mobile Legends, Free Fire*).
+- Applies per-game input profiles instantly upon game focus.
+- Reverts all system properties back to factory defaults as soon as the game session ends.
 
 ### 2. Sensitivity & Gyro Setup Helper
-- Interactive calculator that maps your device's **DPI**, **Screen Size**, and **Gyro Preference** to optimal in-game sensitivity values.
-- Includes a step-by-step calibration guide for manual entry in the game's official settings menu.
+- Interactive calculator mapping device **DPI**, **Screen Size**, and **Gyro Preference** to recommended in-game scope sensitivities.
+- Includes manual calibration guides for PUBG Mobile and COD Mobile.
 
-### 3. Optional Hardware-Accelerated Crosshair Overlay
-- Disabled by default.
+### 3. Hardware-Accelerated Crosshair Overlay
+- Optional floating HUD canvas overlay.
 - 4 Visual Presets: **Dot**, **Tactical Cross**, **Scope Ring**, **Sniper Cross**.
 - Full customization for size, stroke width, opacity, color, and position offsets.
 - Touch pass-through enabled (`FLAG_NOT_TOUCHABLE`).
 
 ---
 
-## 📋 Play Store Policy & Safety Compliance
+## ⚙️ Building & Testing
 
-When publishing or listing this application on the Google Play Store or third-party stores:
-- **Title**: Precision Aim – Input Tuner (or Device Input Latency Tuner)
-- **Category**: Tools / Utilities
-- **Description Rules**:
-  - Describe as a *"device touch responsiveness and input latency tuning utility"*.
-  - **Do NOT** use prohibited terms such as *"cheat"*, *"hack"*, *"aimbot"*, *"recoil reducer"*, *"anti-cheat bypass"*, or *"100% ban-safe"*.
-  - **Do NOT** make unverifiable claims like *"60% better headshots"* or *"guaranteed victory"*.
-
----
-
-## 📜 Disclaimer Template
-
-```
-DISCLAIMER: Precision Aim is an independent system input tuning utility. It operates strictly at the Android OS level to adjust touch digitizer polling rates and display settings via ADB permissions. Precision Aim does not modify, inject into, or tamper with any game files, game memory, or third-party applications. Some game developers may restrict third-party visual overlays; use of the optional crosshair overlay feature is at the user's discretion.
-```
-
----
-
-## ⚙️ Building the Application
-
-### Prerequisites:
-- Android Studio Ladybug / Jellyfish or latest stable
+### Prerequisites
 - JDK 17
 - Android SDK 36 (minSdk 24, targetSdk 36)
 
-### Build Command:
+### Gradle Commands
 ```bash
+cd android
+
+# Run unit tests
+./gradlew test
+
+# Build debug APK
 ./gradlew assembleDebug
 ```
-The compiled APK will be output to `android/app/build/outputs/apk/debug/`.
+
+---
+
+## 🌐 Community & Social Links
+
+Connect with the developer and contribute to the project:
+
+- **GitHub Repository**: [github.com/willygailo/Game-Launcher](https://github.com/willygailo/Game-Launcher)
+- **Facebook Profile**: [facebook.com/willygailo](https://facebook.com/willygailo)
+- **Contribution Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **License**: [Apache License 2.0](LICENSE)
+
+---
+
+## 📜 Legal Disclaimer
+
+```
+DISCLAIMER: Precision Aim is an independent device input tuning utility. It operates strictly at the Android OS level to adjust touch digitizer polling rates and display properties via standard ADB permissions. Precision Aim does not modify, inject into, or tamper with any game files, game memory, or third-party applications.
+```
