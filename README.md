@@ -4,12 +4,12 @@
 
 <!-- Hero Banner Video Link -->
 <a href="https://ph.pinterest.com/pin/1087197166307724361/" target="_blank">
-  <img src="ght.jpeg" alt="▶ Watch Demo Video on Pinterest" width="100%" style="border-radius: 12dp; box-shadow: 0 4px 20px rgba(0,240,255,0.4);" />
+  <img src="lian.png" alt="▶ Watch Demo Video on Pinterest" width="100%" style="border-radius: 12dp; box-shadow: 0 4px 20px rgba(0,240,255,0.4);" />
 </a>
 
 <br/>
 
-### 🎥 [▶ CLICK HERE TO PLAY DEMO VIDEO ON PINTEREST](https://ph.pinterest.com/pin/1087197166307724361/) 🎬
+
 
 [![Watch Demo Video on Pinterest](https://img.shields.io/badge/Pinterest-Watch%20Demo%20Video%20%E2%96%B6-E60023?style=for-the-badge&logo=pinterest&logoColor=white)](https://ph.pinterest.com/pin/1087197166307724361/)
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
