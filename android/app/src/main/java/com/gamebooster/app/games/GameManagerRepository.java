@@ -80,7 +80,7 @@ public class GameManagerRepository {
         // 3. Tertiary Scanner & Deep Search Engine (Multi-User & Multi-Platform)
         if (ShizukuExecutor.isShizukuAvailable()) {
             try {
-                Set<String> deepDiscovered = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
+                Set<String> deepDiscovered = com.gamebooster.app.games.search.DeepSearchScanner.performDeepSearch(context);
                 for (String pkgName : deepDiscovered) {
                     if (pkgName == null || pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
                     if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;

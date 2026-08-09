@@ -1,4 +1,4 @@
-package com.gamebooster.app.gamedetector;
+package com.gamebooster.app.games.detector;
 
 import android.app.AppOpsManager;
 import android.app.usage.UsageEvents;
@@ -12,6 +12,7 @@ import android.util.Log;
 import com.gamebooster.app.core.profile.InputProfile;
 import com.gamebooster.app.core.profile.ProfileManager;
 import com.gamebooster.app.core.settings.SettingsManager;
+import com.gamebooster.app.games.GamePackageRegistry;
 
 /**
  * Monitors foreground application changes using UsageStatsManager.
@@ -99,46 +100,37 @@ public class ForegroundAppDetector {
             listener.onForegroundAppChanged(packageName, isTargetGame);
         }
 
-        if (isTargetGame) {
-            Log.i(TAG, "Target game detected in foreground (" + packageName + "). Applying input profile...");
+        if (isTargetGame && profile != null) {
+            Log.i(TAG, "Target game in foreground: " + packageName + ". Applying tuning profile.");
             settingsManager.applyProfile(profile);
-        } else {
-            if (settingsManager.isDeviceTuned()) {
-                Log.i(TAG, "Non-game app in foreground (" + packageName + "). Restoring original settings...");
-                settingsManager.restoreOriginalValues();
-            }
+        } else if (!isTargetGame && settingsManager.isDeviceTuned()) {
+            Log.i(TAG, "Game exited foreground. Restoring original settings.");
+            settingsManager.restoreOriginalValues();
         }
     }
 
     private boolean isKnownGamePackage(String packageName) {
-        if (packageName == null) return false;
-        return packageName.equals("com.tencent.ig")
-                || packageName.equals("com.pubg.imobile")
-                || packageName.equals("com.pubg.krmobile")
-                || packageName.equals("com.vng.pubgmobile")
-                || packageName.equals("com.activision.callofduty.shooter")
-                || packageName.equals("com.garena.game.codm")
-                || packageName.equals("com.dts.freefireth")
-                || packageName.equals("com.dts.freefiremax");
+        return GamePackageRegistry.isKnownGame(packageName);
     }
 
-    public String getForegroundPackageName() {
+    private String getForegroundPackageName() {
+        String foregroundPackage = "";
         UsageStatsManager usm = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-        if (usm == null) return "";
+        if (usm == null) return foregroundPackage;
 
-        long time = System.currentTimeMillis();
-        UsageEvents events = usm.queryEvents(time - 10000, time);
-        if (events == null) return "";
+        long endTime = System.currentTimeMillis();
+        long startTime = endTime - 5000;
+
+        UsageEvents events = usm.queryEvents(startTime, endTime);
+        if (events == null) return foregroundPackage;
 
         UsageEvents.Event event = new UsageEvents.Event();
-        String lastPkg = "";
-
         while (events.hasNextEvent()) {
             events.getNextEvent(event);
             if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                lastPkg = event.getPackageName();
+                foregroundPackage = event.getPackageName();
             }
         }
-        return lastPkg;
+        return foregroundPackage;
     }
 }

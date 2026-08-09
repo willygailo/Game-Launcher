@@ -72,15 +72,25 @@ Game-Launcher/
 │   └── workflows/        # GitHub Actions CI build & release workflow
 ├── android/
 │   ├── app/              # Android app source code (SDK 36, Java 17)
+│   │   ├── src/main/assets/
+│   │   │   ├── backgrounds/ # App background image assets
+│   │   │   └── index.html   # Web Dashboard UI
 │   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/  # TouchLatencyChannel (1000Hz Zero Touch Delay Engine)
-│   │   │   ├── config/   # GameConfigPatcher, Mlbb, Pubg, Codm, Hok, Genshin, Roblox patchers
-│   │   │   ├── core/     # AppExecutors & SettingsManager
-│   │   │   ├── games/    # HomeGameScanner (Universal Auto Game Scanner) & GamePackageRegistry
-│   │   │   ├── overlay/  # FloatingOverlayService (SurfaceFlinger Real-time FPS HUD)
-│   │   │   ├── shizuku/  # ShizukuExecutor & ShizukuFileBridge (Legal System File IPC)
-│   │   │   ├── spoofer/  # DeviceSpooferEngine (CPU, GPU, RAM, Model, SoC spoofer)
-│   │   │   └── ui/       # MainActivity & WebView interface
+│   │   │   ├── booster/  # Touch, FPS, CPU/GPU, RAM, Thermal performance channels
+│   │   │   ├── config/   # Game patchers (MLBB, PUBG, CODM, HOK, Genshin, Roblox) & profile configs
+│   │   │   ├── core/     # AppExecutors, PropertyResolver, GameBoosterJsInterface, utilities
+│   │   │   ├── device/   # Device & Display capability detection, spec models
+│   │   │   ├── engine/   # Shell & Shizuku command execution, display refresh rate engines
+│   │   │   ├── games/    # Game library management, scanner, detector, and search engines
+│   │   │   │   ├── detector/ # ForegroundAppDetector
+│   │   │   │   └── search/   # DeepSearchScanner
+│   │   │   ├── gamespace/ # Game cache cleaner and DND managers
+│   │   │   ├── overlay/  # SurfaceFlinger Floating FPS HUD & Crosshair overlays
+│   │   │   ├── services/ # Background services & receivers (GameBoosterService, BootReceiver)
+│   │   │   ├── shizuku/  # Shizuku IPC bridge, file bridge, and privilege elevation engines
+│   │   │   ├── spoofer/  # Hardware identity spoofing engine & brand definitions
+│   │   │   ├── tweaks/   # System tweak repositories and categories
+│   │   │   └── ui/       # MainActivity, Fragments, adapters, and UI components
 │   │   └── src/test/     # Unit tests
 ├── BANNER.gif            # Project banner header
 ├── CONTRIBUTING.md       # Open-source developer contribution guide

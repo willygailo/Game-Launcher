@@ -1,4 +1,4 @@
-package com.gamebooster.app.search;
+package com.gamebooster.app.games.search;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;

@@ -82,7 +82,7 @@ public class GameBoosterJsInterface {
     public String performDeepSearchJson() {
         if (context == null) return "[]";
         try {
-            java.util.Set<String> discovered = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
+            java.util.Set<String> discovered = com.gamebooster.app.games.search.DeepSearchScanner.performDeepSearch(context);
             org.json.JSONArray array = new org.json.JSONArray();
             for (String pkg : discovered) {
                 array.put(pkg);
