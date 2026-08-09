@@ -52,7 +52,34 @@ Bypasses OS display constraints and forces peak refresh rates across 6 system la
 
 ---
 
+## 🎯 3. 🎯 Dedicated Game Config Patchers (MLBB / PUBGM / CODM)
 
+Directly patches game config files in `/sdcard/Android/data/` and protected `/data/data/` directories using temporary ADB root shell routing:
+
+### 1. Mobile Legends: Bang Bang (MLBB)
+* **Package Variants**: `com.mobile.legends`, `com.mobile.legends.vng`, `com.mobilelegends.mi`, `com.mobilelegends.hw`, `com.mobile.legends.kr`, `com.mobile.legends.jp`, `com.mobile.legends.moonton`
+* **Target File Paths**:
+  * `/sdcard/Android/data/<pkg>/files/dragon2017/assets/UI/Config/UserSystem.ini`
+  * `/sdcard/Android/data/<pkg>/files/dragon2017/assets/UI/Config/DamageSystem.ini`
+  * `/sdcard/Android/data/<pkg>/files/dragon2017/assets/UI/HighFPSConfig.ini`
+  * `/sdcard/Android/data/<pkg>/files/dragon2017/assets/Com/MobileLegendsSettings.ini`
+
+### 2. PUBG Mobile & BGMI (PUBGM)
+* **Package Variants**: `com.tencent.ig`, `com.pubg.imobile`, `com.pubg.krmobile`, `com.vng.pubgmobile`, `com.rekoo.pubgm`, `com.tencent.tmgp.pubgmhd`, `com.tencent.iglite`, `com.pubg.newstate`
+* **Target File Paths**:
+  * `/sdcard/Android/data/<pkg>/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini`
+  * `/sdcard/Android/data/<pkg>/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini`
+  * `/sdcard/Android/data/<pkg>/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini`
+
+### 3. Call of Duty: Mobile (CODM)
+* **Package Variants**: `com.activision.callofduty.shooter`, `com.garena.game.codm`, `com.tencent.tmgp.kr.codm`, `com.vng.codmvn`
+* **Target File Paths**:
+  * `/sdcard/Android/data/<pkg>/files/Config/UserSetting.json`
+  * `/sdcard/Android/data/<pkg>/files/<pkg>.v2.playerprefs.xml`
+  * `/sdcard/Android/data/<pkg>/files/GraphicsSettings.ini`
+  * `/sdcard/Android/data/<pkg>/files/ControlsSettings.ini`
+
+---
 
 ## 📱 4. 📱 Supported Hardware Profiles & Preset Matrix
 
