@@ -166,7 +166,21 @@ public class DeviceSpooferEngine {
             exec("resetprop ro.hardware.chipname " + profile.chipname);
             exec("resetprop ro.board.platform " + profile.platform);
             exec("resetprop ro.soc.model " + profile.socModel);
+            exec("resetprop ro.soc.manufacturer " + profile.socVendor);
             exec("resetprop ro.product.board " + profile.board);
+            exec("resetprop ro.chipname " + profile.chipname);
+            exec("resetprop ro.sys.cpu.hardware " + profile.socModel);
+            exec("resetprop ro.product.cpu.abi " + profile.cpuAbi);
+
+            // ── GPU / Graphics Driver Identity ──
+            exec("resetprop ro.hardware.egl " + profile.eglHardware);
+            exec("resetprop debug.egl.hw_renderer \"" + profile.glRenderer + "\"");
+            exec("resetprop ro.opengles.version " + profile.glesVersion);
+
+            // ── Memory / RAM Capacity Overrides ──
+            exec("resetprop ro.config.ram " + profile.ramTotalMb);
+            exec("resetprop ro.sys.ram.total " + (profile.ramTotalMb * 1024L * 1024L));
+            exec("resetprop ro.config.hw_ram " + profile.ramTotalMb);
 
             // ── Build Identity ──
             exec("resetprop ro.build.product " + profile.buildProduct);

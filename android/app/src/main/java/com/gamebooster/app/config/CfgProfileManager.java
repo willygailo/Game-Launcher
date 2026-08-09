@@ -56,6 +56,30 @@ public class CfgProfileManager {
             "com.vng.codmvn"
     );
 
+    private static final List<String> HOK_PACKAGES = Arrays.asList(
+            "com.levelinfinite.sgameGlobal",
+            "com.tencent.tmgp.sgame"
+    );
+
+    private static final List<String> GENSHIN_PACKAGES = Arrays.asList(
+            "com.miHoYo.GenshinImpact",
+            "com.HoYoverse.hkrpg",
+            "com.miHoYo.hkrpg"
+    );
+
+    private static final List<String> ROBLOX_PACKAGES = Arrays.asList(
+            "com.roblox.client"
+    );
+
+    private static final List<String> FREEFIRE_PACKAGES = Arrays.asList(
+            "com.dts.freefireth",
+            "com.dts.freefiremax"
+    );
+
+    private static final List<String> WILDRIFT_PACKAGES = Arrays.asList(
+            "com.riotgames.league.wildrift"
+    );
+
     // ─── Save / Load ─────────────────────────────────────────────────────────
 
     /** Saves a competitive profile to SharedPreferences. */
@@ -120,7 +144,7 @@ public class CfgProfileManager {
     }
 
     /**
-     * Applies ALL game profiles (MLBB + PUBGM + CODM) in one shot.
+     * Applies ALL game profiles (MLBB + PUBGM + CODM + HOK + Genshin + Roblox) in one shot.
      *
      * @return total packages patched across all games
      */
@@ -129,7 +153,12 @@ public class CfgProfileManager {
         for (String gameKey : new String[]{
                 CompetitiveCfgProfile.GAME_MLBB,
                 CompetitiveCfgProfile.GAME_PUBGM,
-                CompetitiveCfgProfile.GAME_CODM}) {
+                CompetitiveCfgProfile.GAME_CODM,
+                CompetitiveCfgProfile.GAME_HOK,
+                CompetitiveCfgProfile.GAME_GENSHIN,
+                CompetitiveCfgProfile.GAME_ROBLOX,
+                CompetitiveCfgProfile.GAME_FREEFIRE,
+                CompetitiveCfgProfile.GAME_WILDRIFT}) {
             CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz, true, true);
             total += applyProfile(context, gameKey, p);
         }
@@ -169,6 +198,14 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 CodmConfigPatcher.applyAimAssistConfig(pkg);
             }
+        } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
+            result = HokConfigPatcher.patch(pkg, fps);
+        } else if (CompetitiveCfgProfile.GAME_GENSHIN.equals(key)) {
+            result = GenshinConfigPatcher.patch(pkg, fps);
+        } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
+            result = RobloxConfigPatcher.patch(pkg, fps);
+        } else {
+            result = GameConfigPatcher.applyGameFpsPatch(pkg, fps).success;
         }
         return result;
     }
@@ -199,14 +236,24 @@ public class CfgProfileManager {
 
     private static List<String> getPackagesForKey(String gameKey) {
         switch (gameKey) {
-            case CompetitiveCfgProfile.GAME_MLBB:  return MLBB_PACKAGES;
-            case CompetitiveCfgProfile.GAME_PUBGM: return PUBGM_PACKAGES;
-            case CompetitiveCfgProfile.GAME_CODM:  return CODM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_MLBB:     return MLBB_PACKAGES;
+            case CompetitiveCfgProfile.GAME_PUBGM:    return PUBGM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_CODM:     return CODM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_HOK:      return HOK_PACKAGES;
+            case CompetitiveCfgProfile.GAME_GENSHIN:  return GENSHIN_PACKAGES;
+            case CompetitiveCfgProfile.GAME_ROBLOX:   return ROBLOX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FREEFIRE: return FREEFIRE_PACKAGES;
+            case CompetitiveCfgProfile.GAME_WILDRIFT: return WILDRIFT_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
                 List<String> all = new java.util.ArrayList<>();
                 all.addAll(MLBB_PACKAGES);
                 all.addAll(PUBGM_PACKAGES);
                 all.addAll(CODM_PACKAGES);
+                all.addAll(HOK_PACKAGES);
+                all.addAll(GENSHIN_PACKAGES);
+                all.addAll(ROBLOX_PACKAGES);
+                all.addAll(FREEFIRE_PACKAGES);
+                all.addAll(WILDRIFT_PACKAGES);
                 return all;
             default: return new java.util.ArrayList<>();
         }

@@ -10,10 +10,15 @@ package com.gamebooster.app.config;
 public class CompetitiveCfgProfile {
 
     // ─── Game Key Constants ─────────────────────────────────────────────────
-    public static final String GAME_MLBB  = "MLBB";
-    public static final String GAME_PUBGM = "PUBGM";
-    public static final String GAME_CODM  = "CODM";
-    public static final String GAME_ALL   = "ALL";
+    public static final String GAME_MLBB     = "MLBB";
+    public static final String GAME_PUBGM    = "PUBGM";
+    public static final String GAME_CODM     = "CODM";
+    public static final String GAME_HOK      = "HOK";
+    public static final String GAME_GENSHIN  = "GENSHIN";
+    public static final String GAME_ROBLOX   = "ROBLOX";
+    public static final String GAME_FREEFIRE = "FREEFIRE";
+    public static final String GAME_WILDRIFT = "WILDRIFT";
+    public static final String GAME_ALL      = "ALL";
 
     // ─── FPS Tier Constants ──────────────────────────────────────────────────
     public static final int FPS_60  = 60;
