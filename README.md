@@ -2,10 +2,10 @@
   <img src="BANNER.gif" alt="Precision Aim Banner" width="100%" style="border-radius: 12px;">
 </p>
 
-<h1 align="center">🎯 Precision Aim – Input Tuner</h1>
+<h1 align="center">🎮 Game Launcher Pro V2.0 (v4.8.0) — Real-Time 120/144/165 FPS & MAX Graphics Engine</h1>
 
 <p align="center">
-  <b>Ban-Safe Device Input & Touch Sampling Frequency Optimizer for Mobile eSports</b>
+  <b>Ban-Safe Hardware Identity Spoofer, Real-Time SurfaceFlinger FPS HUD & 165Hz Game Patcher for Mobile eSports</b>
 </p>
 
 <p align="center">
@@ -14,130 +14,95 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
   <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
   <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
+  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v4.8.0-emerald?style=for-the-badge" alt="Version 4.8.0"></a>
 </p>
 
 ---
 
 ## 🚀 Overview
 
-**Precision Aim – Input Tuner** is an open-source, device-level input tuning utility designed for competitive mobile eSports titles (*PUBG Mobile, COD Mobile, Free Fire, Mobile Legends*). 
+**Game Launcher Pro V2.0 (v4.8.0)** is an advanced, device-level performance utility and game launcher designed for competitive eSports titles (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Roblox, Free Fire, Wild Rift*).
 
-By leveraging **Shizuku** (privileged ADB shell access), it tunes low-level Android digitizer sampling rates, gyroscope polling frequency, pointer acceleration curves, and touch slop deadzones directly at the OS kernel/framework level.
+By leveraging **Shizuku API (privileged ADB Binder IPC)**, it unlocks **120 FPS, 144 FPS, and 165 FPS** and **MAX Graphics** across all target games through legal system file modifications and multi-layer hardware refresh rate overrides.
 
 > [!IMPORTANT]
 > **SAFETY & COMPLIANCE GUARANTEE**:
-> - ⚡ **Zero Game Memory Tampering**: Never reads, modifies, or interacts with game RAM, executable code, or game data files.
-> - ⚡ **No Anti-Cheat Violation**: Does not inject UE4 console variables (`r.TouchDeadZone`, `r.AimSensitivityScale`, etc.) which trigger anti-cheat bans.
-> - ⚡ **No Scripting or Automation**: No aimbot, recoil reduction, macros, or automated touch inputs.
-> - ⚡ **100% Reversible**: Automatically backs up original system state and restores factory defaults on profile exit or app close.
+> - ⚡ **Zero Executable Tampering**: Operates using standard system properties (`setprop`, `resetprop`, `settings put`, `device_config`) and native game INI/JSON/XML configuration files.
+> - ⚡ **Shizuku Legal System Bridge**: Uses ADB shell privileges (uid 2000) with automatic `.bak` backups and read-only file locks (`chmod 444`) to prevent game clients resetting graphics settings on startup.
+> - ⚡ **100% Reversible**: All system property overrides are volatile and safely revert to device factory defaults upon reboot.
 
 ---
 
-## ⚡ Key Tuned System Knobs (Device-Level)
+## ⚡ Key Modules & Real-Time Engines
 
-All optimizations modify standard Android developer options and digitizer system properties via ADB shell privileges (`setprop` / `settings put`):
+### 1. Real-Time SurfaceFlinger FPS Monitoring HUD
+- Displays live active foreground game frame rate via `cmd SurfaceFlinger get_fps` directly over active gameplay.
+- Non-blocking floating overlay pill (`FLAG_NOT_TOUCHABLE`) with live memory usage, battery temperature, and mA power draw.
 
-| System Property / Setting | Default Range | Tuned Value | Description |
-| :--- | :--- | :--- | :--- |
-| `debug.input.max_events_per_sec` | 60 - 240 Hz | **1000 Hz** | Increases touch digitizer event dispatch frequency |
-| `view.touch_slop` | 8 - 24 px | **0 px** | Eliminates initial drag deadzone for instant aim response |
-| `touch_slop_reduction` | 0 | **1** | Reduces touch slop scaling factor across views |
-| `debug.sensor.gyro.rate` | 100 - 200 Hz | **1000 Hz** | Maxes out gyroscope sampling rate for smooth scope aim |
-| `pointer_speed` | 0 (scaled) | **7** | Applies 1:1 linear pointer acceleration curve |
-| `persist.sys.touch.pressure.scale` | 1.0 | **0.0001** | Minimizes touch pressure calculation overhead |
+### 2. Flagship Hardware Identity Spoofer (CPU, GPU, RAM, Model, SoC)
+- Overrides all 6 Android system property namespaces (`product`, `vendor`, `system`, `odm`, `product.product`, `system_ext`).
+- Spoofs Snapdragon 8 Gen 3, Adreno 750, 24GB LPDDR5X RAM, and OpenGL ES 3.2 identities (ROG Phone 8 Pro, REDMAGIC 9 Pro, Galaxy S24 Ultra, Xiaomi 14 Ultra).
+
+### 3. Dedicated 120/144/165 FPS & MAX Graphics Game Patchers
+- **Mobile Legends: Bang Bang**: `FrameRateLevel=9` (165Hz/144Hz unlock), `GraphicsQuality=4`, `UltraHDMode=1`, `HighFreqTouchHz=165`.
+- **PUBG Mobile / BGMI**: `UserCustom.ini` + `Active.sav` binary patcher forcing 120/144/165 FPS and Extreme HDR graphics.
+- **Call of Duty Mobile**: `UserSetting.json` + `playerprefs.xml` forcing `MaxFPS=165` & `GraphicQuality=4`.
+- **Honor of Kings (HOK)**: `SystemConfig.ini` forcing `FrameRate=120`, `FrameRateLevel=4`, `GraphicsLevel=5`.
+- **Genshin Impact & Star Rail**: `setting_data` JSON forcing `fps: 120` & `graphics_quality: 5`.
+- **Roblox**: `ClientAppSettings.json` forcing `"DFIntTaskSchedulerTargetFps": 165` & `"FFIntDebugForceGraphicsQuality": 10`.
 
 ---
 
-## 🏗️ Project Architecture & Modules
+## 🏗️ Project Architecture
 
 ```
-Precision-Aim/
+Game-Launcher/
 ├── .github/
-│   ├── workflows/        # GitHub Actions CI build & test automation
-│   └── ISSUE_TEMPLATE/   # Bug report & feature request templates
+│   └── workflows/        # GitHub Actions CI build & release workflow
 ├── android/
 │   ├── app/              # Android app source code (SDK 36, Java 17)
 │   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── core/     # SettingsManager & ProfileManager engines
-│   │   │   ├── shizuku/  # Shizuku binder IPC & ADB executor
-│   │   │   ├── booster/  # Thermal, FPS & GPU tweaking channels
-│   │   │   └── ui/       # Activities, Fragments & sensitivity calculator
-│   │   └── src/test/     # JUnit & Mockito unit testing suite
+│   │   │   ├── booster/  # MaxHzForceChannel (6-Layer 165Hz Refresh Engine)
+│   │   │   ├── config/   # GameConfigPatcher, Mlbb, Pubg, Codm, Hok, Genshin, Roblox patchers
+│   │   │   ├── core/     # AppExecutors & SettingsManager
+│   │   │   ├── overlay/  # FloatingOverlayService (SurfaceFlinger Real-time FPS HUD)
+│   │   │   ├── shizuku/  # ShizukuExecutor & ShizukuFileBridge (Legal System File IPC)
+│   │   │   ├── spoofer/  # DeviceSpooferEngine (CPU, GPU, RAM, Model, SoC spoofer)
+│   │   │   └── ui/       # MainActivity & WebView interface
+│   │   └── src/test/     # Unit tests
 ├── BANNER.gif            # Project banner header
 ├── CONTRIBUTING.md       # Open-source developer contribution guide
 ├── LICENSE               # Apache 2.0 Open Source License
 ├── SECURITY.md          # Security policy & ban-safety rules
-└── README.md             # Documentation & setup guide
+└── README.md             # Project documentation
 ```
 
 ---
 
-## 🛠️ Shizuku Setup Guide
+## 🛠️ Setup Guide
 
-Precision Aim requires **Shizuku** to execute ADB shell commands without requiring root access.
-
-### Setup Steps:
 1. Download & Install [Shizuku from Google Play](https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api) or GitHub.
-2. Enable **Developer Options** and **Wireless Debugging** on your Android device.
-3. Start Shizuku via Wireless Debugging inside the Shizuku app, or connect your device to a PC and run:
-   ```bash
-   adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
-   ```
-4. Open **Precision Aim** and grant Shizuku permission when prompted.
+2. Enable **Developer Options** and **Wireless Debugging** on your device.
+3. Start Shizuku via Wireless Debugging or PC ADB.
+4. Launch **Game Launcher Pro V2.0** and grant Shizuku permission when prompted.
 
 ---
 
-## 🎯 Key Features
+## ⚙️ Building
 
-### 1. Dynamic Game Detection & Auto-Tuning
-- Automatically detects foreground game launches (*PUBG Mobile, COD Mobile, Mobile Legends, Free Fire*).
-- Applies per-game input profiles instantly upon game focus.
-- Reverts all system properties back to factory defaults as soon as the game session ends.
-
-### 2. Sensitivity & Gyro Setup Helper
-- Interactive calculator mapping device **DPI**, **Screen Size**, and **Gyro Preference** to recommended in-game scope sensitivities.
-- Includes manual calibration guides for PUBG Mobile and COD Mobile.
-
-### 3. Hardware-Accelerated Crosshair Overlay
-- Optional floating HUD canvas overlay.
-- 4 Visual Presets: **Dot**, **Tactical Cross**, **Scope Ring**, **Sniper Cross**.
-- Full customization for size, stroke width, opacity, color, and position offsets.
-- Touch pass-through enabled (`FLAG_NOT_TOUCHABLE`).
-
----
-
-## ⚙️ Building & Testing
-
-### Prerequisites
-- JDK 17
-- Android SDK 36 (minSdk 24, targetSdk 36)
-
-### Gradle Commands
 ```bash
 cd android
 
-# Run unit tests
-./gradlew test
-
-# Build debug APK
-./gradlew assembleDebug
+# Clean & Build Release APK
+./gradlew clean assembleDebug assembleRelease
 ```
+
+Output APKs:
+- `android/app/build/outputs/apk/debug/Game_Space_Debug.apk`
+- `android/app/build/outputs/apk/release/Game_Space.apk`
 
 ---
 
-## 🌐 Community & Social Links
+## 📜 Legal & License
 
-Connect with the developer and contribute to the project:
-
-- **GitHub Repository**: [github.com/willygailo/Game-Launcher](https://github.com/willygailo/Game-Launcher)
-- **Facebook Profile**: [facebook.com/willy.jr.carnasa.gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
-- **Contribution Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
-- **License**: [Apache License 2.0](LICENSE)
-
----
-
-## 📜 Legal Disclaimer
-
-```
-DISCLAIMER: Precision Aim is an independent device input tuning utility. It operates strictly at the Android OS level to adjust touch digitizer polling rates and display properties via standard ADB permissions. Precision Aim does not modify, inject into, or tamper with any game files, game memory, or third-party applications.
-```
+Distributed under the **Apache License 2.0**. See `LICENSE` for details.
