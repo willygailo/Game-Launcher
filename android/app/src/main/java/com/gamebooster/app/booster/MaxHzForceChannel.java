@@ -106,6 +106,11 @@ public final class MaxHzForceChannel {
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
         ok += run("setprop debug.gr.swapinterval 0");                                total++;
         ok += run("setprop debug.egl.swapinterval 0");                               total++;
+        ok += run("setprop debug.sf.latch_unsignaled 1");                            total++;
+        ok += run("setprop debug.sf.disable_backpressure 1");                        total++;
+        ok += run("setprop debug.egl.hw 1");                                         total++;
+        ok += run("setprop debug.sf.early_app_phase_offset_ns 500000");              total++;
+        ok += run("setprop debug.sf.early_sf_phase_offset_ns 500000");               total++;
 
         // ── Layer 6: OEM / Vendor-Specific Keys (auto-detected) ──────────────────────
         String mfr    = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";

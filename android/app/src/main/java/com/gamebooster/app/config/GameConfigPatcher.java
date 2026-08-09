@@ -45,11 +45,17 @@ public class GameConfigPatcher {
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
             PubgConfigPatcher.applyAimAssistConfig(pkg);
+        } else if (pkg.contains("sgame") || pkg.contains("levelinfinite")) {
+            if (HokConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("genshin") || pkg.contains("hkrpg")) {
+            if (GenshinConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("roblox")) {
+            if (RobloxConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else {
             for (String path : configPaths) {
                 if (pkg.contains("freefire")) {
                     if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
-                } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
+                } else if (pkg.contains("wildrift")) {
                     if (patchWildRiftGenshinConfig(path, targetFps)) patchedFiles++;
                 } else {
                     if (patchGenericConfig(path, targetFps)) patchedFiles++;

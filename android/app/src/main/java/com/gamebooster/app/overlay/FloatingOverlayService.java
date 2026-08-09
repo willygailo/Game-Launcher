@@ -430,14 +430,31 @@ public class FloatingOverlayService extends Service {
         com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
         int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
+
         int activeFps = realTimeFps > 0 ? Math.min(165, realTimeFps) : currentHz;
+
+        // Try querying live SurfaceFlinger game FPS via Shizuku ADB
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String sfFpsRes = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("cmd SurfaceFlinger get_fps");
+                if (sfFpsRes != null && sfFpsRes.contains("FPS:")) {
+                    String[] parts = sfFpsRes.split("FPS:");
+                    if (parts.length > 1) {
+                        float sfFps = Float.parseFloat(parts[1].trim().split(" ")[0]);
+                        if (sfFps > 0) {
+                            activeFps = Math.round(sfFps);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
 
         if (tvPillMetrics != null) {
             tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz (Max 165)", activeFps, currentHz));
+            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d • Display: %d Hz (Max 165)", activeFps, currentHz));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
