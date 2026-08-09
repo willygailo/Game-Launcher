@@ -114,6 +114,7 @@ public class AutoGameMonitorService extends Service {
 
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
                 com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(currentPackage, targetHz);
+                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
                         targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
                         targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
