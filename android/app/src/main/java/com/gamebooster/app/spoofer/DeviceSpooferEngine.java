@@ -115,6 +115,8 @@ public class DeviceSpooferEngine {
             setBuildField("BOARD", profile.board);
             setBuildField("FINGERPRINT", profile.fingerprint);
             setBuildField("DISPLAY", profile.displayId);
+            setBuildField("SOC_MODEL", profile.socModel);
+            setBuildField("SOC_MANUFACTURER", profile.socManufacturer);
             Log.i(TAG, "✔ Java Reflection Build spoofing active: " + profile.model);
             return true;
         } catch (Throwable t) {
@@ -201,9 +203,25 @@ public class DeviceSpooferEngine {
                 // ── Hardware / SoC Identity ──
                 execProp("ro.hardware", profile.hardware);
                 execProp("ro.hardware.chipname", profile.chipname);
+                execProp("ro.chipname", profile.chipname);
                 execProp("ro.board.platform", profile.platform);
                 execProp("ro.soc.model", profile.socModel);
+                execProp("ro.soc.manufacturer", profile.socManufacturer);
                 execProp("ro.product.board", profile.board);
+
+                // ── GPU / EGL Model Spoofing ──
+                execProp("ro.hardware.egl", "adreno");
+                execProp("debug.egl.hw", "1");
+                execProp("ro.opengles.version", "196610");
+                execProp("vendor.gpurenderer", profile.glRenderer);
+                execProp("sys.gpu.renderer", profile.glRenderer);
+                execProp("ro.gfx.driver.0", profile.glRenderer);
+
+                // ── Anti-Cheat Verified Boot Security Masking ──
+                execProp("ro.boot.verifiedbootstate", "green");
+                execProp("ro.boot.flash.locked", "1");
+                execProp("ro.secure", "1");
+                execProp("ro.debuggable", "0");
 
                 // ── Build Identity ──
                 execProp("ro.build.product", profile.buildProduct);

@@ -100,6 +100,7 @@ public class PerformanceChannel {
                     "setprop debug.sf.hw 1\n" +
                     "setprop debug.hwui.renderer vulkan\n" +
                     "setprop debug.renderengine.backend vulkan\n" +
+                    "setprop debug.sf.disable_backpressure 1\n" +
                     "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
                     "setprop debug.sf.fps_limit " + targetHz + "\n" +
                     "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\n" +

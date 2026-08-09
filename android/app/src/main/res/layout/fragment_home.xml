@@ -172,18 +172,39 @@
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Games Count Header -->
-        <TextView
-            android:id="@+id/tv_games_header"
-            android:layout_width="wrap_content"
+        <!-- Games Count Header + Add Game Button -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="8dp"
-            android:text="INSTALLED TARGET GAMES"
-            android:textColor="@color/accent_cyan"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tv_games_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="INSTALLED TARGET GAMES"
+                android:textColor="@color/accent_cyan"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <Button
+                android:id="@+id/btn_add_game_home"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="➕ ADD GAME"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/card_neon_glow" />
+        </RelativeLayout>
 
         <!-- Games RecyclerView (hero content) -->
         <androidx.recyclerview.widget.RecyclerView

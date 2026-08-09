@@ -204,18 +204,21 @@ public class MlbbConfigPatcher {
         paths.add("/data/data/" + pkg + "/shared_prefs/com.mobile.legends.v2.playerprefs.xml");
         paths.add("/sdcard/GameBoosterPro/configs/mlbb_ultra_165.cfg");
         paths.add("/sdcard/GameBoosterPro/configs/" + pkg + "_165.cfg");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2015/assets/UI/Config/UserSystem.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/AimAssist.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/TouchConfig.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/AimAssist.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/TouchConfig.ini");
+        
+        String[] engines = new String[]{"dragon2015", "dragon2017", "dragon2019", "dragon2021", "dragon2023", "dragon2025", "dragon2026"};
+        for (String eng : engines) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/UI/Config/UserSystem.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/UI/Config/DamageSystem.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/UI/Config/AimAssist.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/UI/Config/TouchConfig.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/UI/HighFPSConfig.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/" + eng + "/assets/Com/MobileLegendsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/" + eng + "/assets/Com/MobileLegendsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/" + eng + "/assets/UI/Config/UserSystem.ini");
+            paths.add("/data/data/" + pkg + "/files/" + eng + "/assets/UI/Config/DamageSystem.ini");
+            paths.add("/data/data/" + pkg + "/files/" + eng + "/assets/UI/Config/AimAssist.ini");
+            paths.add("/data/data/" + pkg + "/files/" + eng + "/assets/UI/Config/TouchConfig.ini");
+        }
         return paths;
     }
 

@@ -36,24 +36,25 @@ public class GameConfigPatcher {
         TouchLatencyChannel.enableUltraTouchResponse();
 
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            int fps = Math.max(targetFps, 165);
-            patched = MlbbConfigPatcher.patchCompetitive(pkg, fps);
+            patched = MlbbConfigPatcher.patchCompetitive(pkg, targetFps);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
-            int fps = Math.max(targetFps, 120);
-            patched = CodmConfigPatcher.patchCompetitive(pkg, fps);
+            patched = CodmConfigPatcher.patchCompetitive(pkg, targetFps);
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
-        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
-            int fps = Math.max(targetFps, 165);
-            patched = PubgConfigPatcher.patchCompetitive(pkg, fps);
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("relevel")) {
+            patched = PubgConfigPatcher.patchCompetitive(pkg, targetFps);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("freefire")) {
             patched = FreeFireConfigPatcher.patch(pkg, targetFps);
+        } else if (pkg.contains("sgame") || pkg.contains("honorofkings") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
+            patched = HonorOfKingsConfigPatcher.patchCompetitive(pkg, targetFps);
+        } else if (pkg.contains("roblox")) {
+            patched = RobloxConfigPatcher.patch(pkg, targetFps);
         } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
             patched = GenshinWildRiftConfigPatcher.patch(pkg, targetFps);
         } else {

@@ -28,10 +28,13 @@ public class EsportsAudioEnhancer {
 
     private static boolean enableFootstepAudioBoost(Context context) {
         try {
-            // Apply system shell audio equalizer tuning
+            // Apply system shell audio equalizer & Bluetooth low latency tuning
             CommandExecutor.executeSystemCommand("cmd media_session volume --stream 3 --set 15");
             CommandExecutor.executeSystemCommand("setprop persist.audio.soundfx.type 2");
             CommandExecutor.executeSystemCommand("setprop persist.audio.clarity 1");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.bt.aac_vbr_tier 3");
+            CommandExecutor.executeSystemCommand("setprop audio.offload.buffer.size.kb 32");
+            CommandExecutor.executeSystemCommand("setprop persist.audio.vr.enable 1");
 
             if (equalizer == null) {
                 equalizer = new Equalizer(0, 0);

@@ -28,9 +28,15 @@ public class GameSpaceDndManager {
                 .putBoolean(KEY_DND_ENABLED, enable)
                 .apply();
 
-        // Toggle heads-up notifications (banner popups) via ADB/Shizuku or System Settings
+        // Toggle heads-up notifications (banner popups) & anti-mistouch gesture back insets via ADB/Shizuku
         CommandExecutor.executeSystemCommand(
                 "settings put global heads_up_notifications_enabled " + (enable ? "0" : "1")
+        );
+        CommandExecutor.executeSystemCommand(
+                "settings put secure back_gesture_inset_scale_left " + (enable ? "0.0" : "1.0")
+        );
+        CommandExecutor.executeSystemCommand(
+                "settings put secure back_gesture_inset_scale_right " + (enable ? "0.0" : "1.0")
         );
 
         // Toggle system DND if permission granted

@@ -33,8 +33,10 @@ public class SpoofProfile {
     public final String fingerprint;
     public final String displayId;
 
-    // ── GPU ──
+    // ── GPU & SoC Manufacturer ──
     public final String glRenderer;
+    public final String glVendor;
+    public final String socManufacturer;
 
     public SpoofProfile(String id, String displayName, String brandLabel,
                          String model, String brand, String manufacturer,
@@ -42,7 +44,7 @@ public class SpoofProfile {
                          String hardware, String platform, String socModel,
                          String board, String chipname,
                          String fingerprint, String displayId,
-                         String glRenderer) {
+                         String glRenderer, String glVendor, String socManufacturer) {
         this.id = id;
         this.displayName = displayName;
         this.brandLabel = brandLabel;
@@ -60,6 +62,19 @@ public class SpoofProfile {
         this.fingerprint = fingerprint;
         this.displayId = displayId;
         this.glRenderer = glRenderer;
+        this.glVendor = glVendor != null ? glVendor : "Qualcomm";
+        this.socManufacturer = socManufacturer != null ? socManufacturer : "Qualcomm";
+    }
+
+    public SpoofProfile(String id, String displayName, String brandLabel,
+                         String model, String brand, String manufacturer,
+                         String device, String productName, String buildProduct,
+                         String hardware, String platform, String socModel,
+                         String board, String chipname,
+                         String fingerprint, String displayId,
+                         String glRenderer) {
+        this(id, displayName, brandLabel, model, brand, manufacturer, device, productName, buildProduct,
+             hardware, platform, socModel, board, chipname, fingerprint, displayId, glRenderer, "Qualcomm", "Qualcomm");
     }
 
     @Override

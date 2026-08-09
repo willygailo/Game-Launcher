@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "Home",
+            "Games",
+            "Logs",
             "Settings"
     };
 

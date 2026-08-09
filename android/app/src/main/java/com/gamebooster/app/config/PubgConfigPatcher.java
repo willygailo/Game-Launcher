@@ -171,21 +171,16 @@ public class PubgConfigPatcher {
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
-        // Global / VNG / KR / TW
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserEngine.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserEngine.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-        // BGMI (India)
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserCustom.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserEngine.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserCustom.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/UserEngine.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/PUBGM/PUBGM/Saved/Config/Android/GameUserSettings.ini");
+        String[] ue4Dirs = new String[]{"ShadowTrackerExtra/ShadowTrackerExtra", "PUBGM/PUBGM", "Peacekeeper/Peacekeeper", "Lite/Lite"};
+        for (String dir : ue4Dirs) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/UserCustom.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/UserEngine.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/SaveGames/Active.sav");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/UserCustom.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/UserEngine.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/" + dir + "/Saved/Config/Android/GameUserSettings.ini");
+        }
         return paths;
     }
 

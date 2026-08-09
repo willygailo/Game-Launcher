@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_dark"
+    android:padding="16dp">
+
+    <!-- Top Card: Undo / Restore Control -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/card_bg_elevated"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="↩️ UNDO / RESTORE SYSTEM SETTINGS"
+            android:textColor="@color/accent_cyan"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Safely revert all active optimizations (Hz, CPU, GPU, Network, Touch) back to previous AOSP system defaults."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_undo_all_settings"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="🔄 UNDO ALL CHANGES"
+                android:textColor="@color/bg_dark"
+                android:backgroundTint="@color/accent_amber"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_clear_logs"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="CLEAR LOGS"
+                android:textColor="@color/text_primary"
+                android:backgroundTint="@color/status_strip_bg"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📜 OPTIMIZATION AUDIT LOGS HISTORY"
+        android:textColor="@color/section_header"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:id="@+id/tv_empty_logs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No optimization history logs recorded yet."
+        android:textColor="@color/empty_state_text"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_logs_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" />
+
+</LinearLayout>

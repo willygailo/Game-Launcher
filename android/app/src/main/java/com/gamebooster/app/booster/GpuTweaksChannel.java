@@ -10,6 +10,9 @@ public class GpuTweaksChannel {
         ok &= CommandExecutor.setSystemProperty("debug.hwui.renderer", "vulkan");
         ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
         ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "500000");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.early_gl_app_phase_offset_ns", "500000");
         return ok;
     }
 
@@ -19,6 +22,7 @@ public class GpuTweaksChannel {
         ok &= CommandExecutor.setSystemProperty("debug.renderengine.backend", "gles");
         ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
         ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "0");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "0");
         return ok;
     }
 
@@ -60,7 +64,7 @@ public class GpuTweaksChannel {
         if (enabled) {
             CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
             CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
-            String targetPkgs = "com.mobile.legends,com.mobilelegends.win,com.tencent.ig,com.pubg.krmobile,com.vng.pubgmobile,com.pubg.imobile,com.activision.callofduty.shooter,com.garena.game.codm";
+            String targetPkgs = "com.mobile.legends,com.mobile.legends.vng,com.mobile.legends.kr,com.mobile.legends.jp,com.mobilelegends.hw,com.mobile.legends.moonton,com.mobile.legends.in,com.tencent.ig,com.pubg.krmobile,com.vng.pubgmobile,com.pubg.imobile,com.tencent.iglite,com.pubg.newstate,com.tencent.tmgp.pubgm,com.pubg.mobile,com.relevel.pubg,com.activision.callofduty.shooter,com.garena.game.codm,com.tencent.tmgp.kr.codm,com.tencent.tmgp.cod,com.vng.codm,com.activision.callofduty.warzone";
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + targetPkgs);
             String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + targetPkgs);
             return CommandExecutor.isSuccessOutput(res);

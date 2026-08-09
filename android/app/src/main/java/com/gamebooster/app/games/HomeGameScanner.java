@@ -10,14 +10,13 @@ import android.graphics.drawable.Drawable;
 import com.gamebooster.app.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Ultra-fast dedicated scanner focused STRICTLY on MLBB, PUBG Mobile, and CODM (all regional variants).
- * Scans in under 15ms by querying target packages directly rather than scanning full system app lists.
+ * Ultra-fast dedicated scanner for Home screen — detects MLBB, PUBGM, CODM, Honor of Kings,
+ * Roblox, Free Fire, Wild Rift, Genshin Impact, and all user custom added games.
  */
 public class HomeGameScanner {
 
@@ -37,7 +36,7 @@ public class HomeGameScanner {
         }
     }
 
-    // 1. Mobile Legends: Bang Bang (ALL Regional Packages)
+    // 1. Mobile Legends: Bang Bang
     private static final TargetGameSpec MLBB_SPEC = new TargetGameSpec(
             new String[]{
                     "com.mobile.legends",
@@ -51,7 +50,7 @@ public class HomeGameScanner {
             Color.parseColor("#4A90E2")
     );
 
-    // 2. PUBG Mobile (ALL Regional Packages)
+    // 2. PUBG Mobile & Regional
     private static final TargetGameSpec PUBG_SPEC = new TargetGameSpec(
             new String[]{
                     "com.tencent.ig",
@@ -68,7 +67,7 @@ public class HomeGameScanner {
             Color.parseColor("#FF8800")
     );
 
-    // 3. Call of Duty: Mobile (ALL Regional Packages)
+    // 3. Call of Duty: Mobile
     private static final TargetGameSpec CODM_SPEC = new TargetGameSpec(
             new String[]{
                     "com.activision.callofduty.shooter",
@@ -82,12 +81,77 @@ public class HomeGameScanner {
             Color.parseColor("#FF0055")
     );
 
+    // 4. Honor of Kings (HoK) & Arena of Valor (AoV)
+    private static final TargetGameSpec HOK_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.levelinfinite.hok.global",
+                    "com.levelinfinite.sgameGlobal",
+                    "com.levelinfinite.sgameGlobal.gpkg",
+                    "com.tencent.tmgp.sgame",
+                    "com.garena.game.kgtw",
+                    "com.garena.game.kgvn",
+                    "com.garena.game.kgid"
+            },
+            "👑 Honor of Kings",
+            "MOBA",
+            R.drawable.home_game_card_bg_ml,
+            Color.parseColor("#FFB800")
+    );
+
+    // 5. Roblox
+    private static final TargetGameSpec ROBLOX_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.roblox.client"
+            },
+            "🕹️ Roblox",
+            "SANDBOX",
+            R.drawable.home_game_card_bg_codm,
+            Color.parseColor("#00F0FF")
+    );
+
+    // 6. Free Fire & Free Fire MAX
+    private static final TargetGameSpec FREEFIRE_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.dts.freefireth",
+                    "com.dts.freefiremax"
+            },
+            "🔥 Free Fire MAX",
+            "BATTLE ROYALE",
+            R.drawable.home_game_card_bg_pubg,
+            Color.parseColor("#FF7000")
+    );
+
+    // 7. Wild Rift
+    private static final TargetGameSpec WILDRIFT_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.riotgames.league.wildrift",
+                    "com.riotgames.league.wildrifttw",
+                    "com.riotgames.league.wildriftvn"
+            },
+            "⚔️ League of Legends: Wild Rift",
+            "MOBA",
+            R.drawable.home_game_card_bg_ml,
+            Color.parseColor("#9D4EDD")
+    );
+
+    // 8. Genshin Impact
+    private static final TargetGameSpec GENSHIN_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.cognosphere.GenshinImpact",
+                    "com.miHoYo.GenshinImpact"
+            },
+            "✨ Genshin Impact",
+            "ACTION RPG",
+            R.drawable.home_game_card_bg_ml,
+            Color.parseColor("#00FF66")
+    );
+
     private static final TargetGameSpec[] ALL_TARGET_SPECS = new TargetGameSpec[]{
-            MLBB_SPEC, PUBG_SPEC, CODM_SPEC
+            MLBB_SPEC, PUBG_SPEC, CODM_SPEC, HOK_SPEC, ROBLOX_SPEC, FREEFIRE_SPEC, WILDRIFT_SPEC, GENSHIN_SPEC
     };
 
     /**
-     * Scans and returns ONLY installed instances of MLBB, PUBG Mobile, or CODM.
+     * Scans and returns all target online games and user custom added games.
      */
     public static List<GameAppInfo> scanTargetGames(Context context) {
         List<GameAppInfo> detectedGames = new ArrayList<>();
@@ -96,6 +160,7 @@ public class HomeGameScanner {
         PackageManager pm = context.getPackageManager();
         Set<String> addedPackages = new HashSet<>();
 
+        // 1. Scan pre-configured target game specs
         for (TargetGameSpec spec : ALL_TARGET_SPECS) {
             for (String pkg : spec.packageNames) {
                 if (addedPackages.contains(pkg)) continue;
@@ -118,7 +183,6 @@ public class HomeGameScanner {
                         ));
                         addedPackages.add(pkg);
                     } catch (Throwable ignored) {
-                        // Fallback if appInfo fails but launchIntent exists
                         Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
                         detectedGames.add(new GameAppInfo(
                                 spec.defaultTitle,
@@ -132,6 +196,29 @@ public class HomeGameScanner {
                         addedPackages.add(pkg);
                     }
                 }
+            }
+        }
+
+        // 2. Include all manually added user custom game packages
+        Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
+        for (String customPkg : customPkgs) {
+            if (!addedPackages.contains(customPkg)) {
+                try {
+                    ApplicationInfo appInfo = pm.getApplicationInfo(customPkg, 0);
+                    String label = pm.getApplicationLabel(appInfo).toString();
+                    Drawable icon = pm.getApplicationIcon(appInfo);
+                    Intent launchIntent = pm.getLaunchIntentForPackage(customPkg);
+                    detectedGames.add(new GameAppInfo(
+                            label,
+                            customPkg,
+                            icon,
+                            launchIntent,
+                            "CUSTOM GAME",
+                            R.drawable.home_game_card_bg_ml,
+                            Color.parseColor("#00F0FF")
+                    ));
+                    addedPackages.add(customPkg);
+                } catch (Throwable ignored) {}
             }
         }
 

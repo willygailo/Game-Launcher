@@ -28,12 +28,15 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.mobile.legends.jp", new GameInfoSpec("Mobile Legends JP", "MOBA", 165));
         KNOWN_GAMES.put("com.mobilelegends.hw", new GameInfoSpec("Mobile Legends Huawei", "MOBA", 165));
         KNOWN_GAMES.put("com.mobile.legends.moonton", new GameInfoSpec("Mobile Legends Moonton", "MOBA", 165));
+        KNOWN_GAMES.put("com.mobile.legends.in", new GameInfoSpec("Mobile Legends IN", "MOBA", 165));
 
         // Call of Duty: Mobile (CODM) & Regional Variants
         KNOWN_GAMES.put("com.activision.callofduty.shooter", new GameInfoSpec("Call of Duty: Mobile (Global)", "FPS", 165));
         KNOWN_GAMES.put("com.garena.game.codm", new GameInfoSpec("Call of Duty: Mobile (Garena)", "FPS", 165));
         KNOWN_GAMES.put("com.tencent.tmgp.kr.codm", new GameInfoSpec("Call of Duty: Mobile (KR)", "FPS", 165));
         KNOWN_GAMES.put("com.tencent.tmgp.cod", new GameInfoSpec("Call of Duty: Mobile (CN)", "FPS", 165));
+        KNOWN_GAMES.put("com.vng.codm", new GameInfoSpec("Call of Duty: Mobile (VNG)", "FPS", 165));
+        KNOWN_GAMES.put("com.activision.callofduty.warzone", new GameInfoSpec("Call of Duty: Warzone Mobile", "FPS", 165));
 
         // PUBG Mobile & Regional Variants
         KNOWN_GAMES.put("com.tencent.ig", new GameInfoSpec("PUBG Mobile (Global)", "Battle Royale", 165));
@@ -43,6 +46,8 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.tencent.iglite", new GameInfoSpec("PUBG Mobile Lite", "Battle Royale", 165));
         KNOWN_GAMES.put("com.pubg.newstate", new GameInfoSpec("PUBG: NEW STATE", "Battle Royale", 165));
         KNOWN_GAMES.put("com.tencent.tmgp.pubgm", new GameInfoSpec("PUBG Mobile (CN Peacekeeper Elite)", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.pubg.mobile", new GameInfoSpec("PUBG Mobile Regional", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.relevel.pubg", new GameInfoSpec("PUBG Mobile Custom", "Battle Royale", 165));
 
         // Free Fire & Free Fire MAX
         KNOWN_GAMES.put("com.dts.freefireth", new GameInfoSpec("Garena Free Fire", "Battle Royale", 90));

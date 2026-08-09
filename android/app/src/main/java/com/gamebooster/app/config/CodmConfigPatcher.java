@@ -43,7 +43,7 @@ public class CodmConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
 
-        int codmFpsOption = targetFps >= 120 ? 5 : (targetFps >= 90 ? 4 : 3);
+        int codmFpsOption = targetFps >= 144 ? 6 : (targetFps >= 120 ? 5 : (targetFps >= 90 ? 4 : 3));
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
@@ -68,6 +68,11 @@ public class CodmConfigPatcher {
                         "  <int name=\"frame_rate\" value=\"" + codmFpsOption + "\" />\n" +
                         "  <int name=\"MaxFpsOption\" value=\"" + codmFpsOption + "\" />\n" +
                         "  <int name=\"bk_frame_rate\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"TargetFPS\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"MaxFPS\" value=\"" + targetFps + "\" />\n" +
+                        "  <int name=\"Unlock120Fps\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock144Fps\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock165Fps\" value=\"1\" />\n" +
                         "  <int name=\"graphic_quality\" value=\"0\" />\n" +
                         "  <int name=\"GraphicsQualityOption\" value=\"0\" />\n" +
                         "  <int name=\"hdr_mode\" value=\"0\" />\n" +

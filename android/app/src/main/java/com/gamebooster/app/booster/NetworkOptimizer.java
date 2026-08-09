@@ -50,6 +50,11 @@ public class NetworkOptimizer {
     public static void optimizeTcpBuffers() {
         CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576");
         CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576");
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.mobile 524288,1048576,2097152,262144,524288,1048576");
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.5g 1048576,2097152,4194304,262144,1048576,2097152");
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.5g_sub6 1048576,2097152,4194304,262144,1048576,2097152");
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.5g_mmwave 2097152,4194304,8388608,262144,1048576,2097152");
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.6g 2097152,4194304,8388608,262144,1048576,2097152");
     }
 
     public static boolean setTetheringHwAcceleration(boolean enabled) {

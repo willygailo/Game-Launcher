@@ -101,6 +101,15 @@ public class GamesFragment extends Fragment {
             });
         }
 
+        Button btnAddGame = view.findViewById(R.id.btn_add_game_games);
+        if (btnAddGame != null) {
+            btnAddGame.setOnClickListener(v -> {
+                AddGameDialogFragment dialog = AddGameDialogFragment.newInstance();
+                dialog.setOnGameAddedListener(pkg -> loadInstalledGames());
+                dialog.show(getChildFragmentManager(), "add_game_dialog");
+            });
+        }
+
         rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GamesAdapter(getContext(), gameList);
         rvGames.setAdapter(adapter);

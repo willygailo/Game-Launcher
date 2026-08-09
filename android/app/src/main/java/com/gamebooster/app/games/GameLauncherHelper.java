@@ -28,6 +28,9 @@ public class GameLauncherHelper {
         GameSessionSettings.begin(context, pkgName);
         AutoGameMonitorService.start(context);
 
+        // 0. Backup current system state for Undo/Restore capability
+        com.gamebooster.app.core.OptimizationRestoreManager.backupCurrentSystemState(context);
+
         // 1. Offload background optimizations to AppExecutors so launch is instant
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
@@ -52,7 +55,26 @@ public class GameLauncherHelper {
                 PerformanceChannel.applyProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
-            } catch (Throwable ignored) {}
+
+                // Log optimization launch
+                com.gamebooster.app.core.OptimizationLogRepository.addLog(context, new com.gamebooster.app.core.LogItem(
+                        "Launch & Optimize: " + game.getLabel(),
+                        "Applied " + targetFps + " FPS, Zero Latency, Device Spoofing & Gaming DND",
+                        true,
+                        "Standard System State",
+                        targetFps + " FPS / Hz Mode",
+                        null
+                ));
+            } catch (Throwable e) {
+                com.gamebooster.app.core.OptimizationLogRepository.addLog(context, new com.gamebooster.app.core.LogItem(
+                        "Launch & Optimize: " + game.getLabel(),
+                        "Optimization encountered error",
+                        false,
+                        "Standard System State",
+                        "Failed",
+                        e.getMessage()
+                ));
+            }
         });
 
         // 2. Perform 3-Tier Game Launch Fallback
