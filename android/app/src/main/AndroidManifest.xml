@@ -132,6 +132,11 @@
                 android:value="Game space automatic game detection service" />
         </service>
 
+        <service
+            android:name="com.gamebooster.app.device.ThermalGovernorService"
+            android:enabled="true"
+            android:exported="false" />
+
         <receiver
             android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"
