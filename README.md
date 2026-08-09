@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/willygailo/Game-Launcher"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
-  <a href="https://facebook.com/willygailo"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook"></a>
+  <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
   <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
   <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
@@ -130,7 +130,7 @@ cd android
 Connect with the developer and contribute to the project:
 
 - **GitHub Repository**: [github.com/willygailo/Game-Launcher](https://github.com/willygailo/Game-Launcher)
-- **Facebook Profile**: [facebook.com/willygailo](https://facebook.com/willygailo)
+- **Facebook Profile**: [facebook.com/willy.jr.carnasa.gailo](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 - **Contribution Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [Apache License 2.0](LICENSE)
 
