@@ -130,7 +130,22 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     private void showFragmentForTab(int position) {
-        Fragment selectedFragment = (position == 1) ? new SettingsFragment() : new HomeFragment();
+        Fragment selectedFragment;
+        switch (position) {
+            case 1:
+                selectedFragment = new GamesFragment();
+                break;
+            case 2:
+                selectedFragment = new LogsHistoryFragment();
+                break;
+            case 3:
+                selectedFragment = new SettingsFragment();
+                break;
+            case 0:
+            default:
+                selectedFragment = new HomeFragment();
+                break;
+        }
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, selectedFragment)
