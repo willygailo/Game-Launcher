@@ -2,9 +2,9 @@
 
 <div align="center">
 
-<!-- Hero Banner Video Link -->
+<!-- Hero Animated Banner Video Link -->
 <a href="https://ph.pinterest.com/pin/1087197166307724361/" target="_blank">
-  <img src="lian.png" alt="▶ Watch Demo Video on Pinterest" width="100%" style="border-radius: 12dp; box-shadow: 0 4px 20px rgba(0,240,255,0.4);" />
+  <img src="hero_banner.gif" alt="▶ Watch Demo Video on Pinterest" width="100%" style="border-radius: 12dp; box-shadow: 0 4px 20px rgba(0,240,255,0.4);" />
 </a>
 
 <br/>
