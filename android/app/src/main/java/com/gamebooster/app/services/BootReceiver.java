@@ -27,8 +27,17 @@ public class BootReceiver extends BroadcastReceiver {
                 GpuTweaksChannel.enableVulkanRenderer();
                 TouchLatencyChannel.enableUltraTouchResponse();
                 ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
+                    String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(context);
+                    if (activeId != null) {
+                        com.gamebooster.app.spoofer.SpoofProfile profile = com.gamebooster.app.spoofer.DeviceSpooferEngine.getProfileById(activeId);
+                        if (profile != null) {
+                            com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, null);
+                        }
+                    }
+                }
                 AutoGameMonitorService.start(context);
-                Log.i(TAG, "Boot optimizations and AutoGameMonitorService initialized cleanly!");
+                Log.i(TAG, "Boot optimizations, Spoofer, and AutoGameMonitorService initialized cleanly!");
             } catch (Throwable t) {
                 Log.e(TAG, "BootReceiver initialization error", t);
             }

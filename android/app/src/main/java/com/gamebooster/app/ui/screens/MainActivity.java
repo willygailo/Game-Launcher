@@ -1,6 +1,7 @@
 package com.gamebooster.app.ui.screens;
 import com.gamebooster.app.config.*;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -24,6 +25,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "Home",
+            "Games",
+            "FPS/Hz",
+            "Spoofer",
             "Settings"
     };
 
@@ -40,6 +44,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!OnboardingActivity.isOnboardingCompleted(this)) {
+            startActivity(new Intent(this, OnboardingActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
@@ -134,7 +145,25 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     private void showFragmentForTab(int position) {
-        Fragment selectedFragment = (position == 1) ? new SettingsFragment() : new HomeFragment();
+        Fragment selectedFragment;
+        switch (position) {
+            case 1:
+                selectedFragment = new GamesFragment();
+                break;
+            case 2:
+                selectedFragment = new HzFpsFragment();
+                break;
+            case 3:
+                selectedFragment = new ProfilesFragment();
+                break;
+            case 4:
+                selectedFragment = new SettingsFragment();
+                break;
+            case 0:
+            default:
+                selectedFragment = new HomeFragment();
+                break;
+        }
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, selectedFragment)

@@ -176,9 +176,10 @@ public class DeviceSpooferEngine {
             exec("setprop persist.sys.game.boost.profile " + profile.id);
 
             // ── Display refresh rate ──
-            exec("settings put system peak_refresh_rate 165.0");
-            exec("settings put system min_refresh_rate 165.0");
-            exec("settings put system user_refresh_rate 165");
+            float targetHz = (float) profile.targetRefreshRate;
+            exec("settings put system peak_refresh_rate " + targetHz);
+            exec("settings put system min_refresh_rate " + targetHz);
+            exec("settings put system user_refresh_rate " + profile.targetRefreshRate);
 
             // ── GPU / ANGLE acceleration ──
             exec("settings put global angle_gl_driver_all_angle 1");
@@ -187,9 +188,9 @@ public class DeviceSpooferEngine {
             // ── Per-package game mode boost ──
             if (packageName != null && !packageName.trim().isEmpty()) {
                 exec("cmd game mode performance " + packageName);
-                exec("cmd game set --fps 165 " + packageName);
-                exec("cmd window set-app-refresh-rate " + packageName + " 165");
-                exec("device_config put game_overlay " + packageName + " mode=2,fps=165:mode=3,fps=165");
+                exec("cmd game set --fps " + profile.targetRefreshRate + " " + packageName);
+                exec("cmd window set-app-refresh-rate " + packageName + " " + profile.targetRefreshRate);
+                exec("device_config put game_overlay " + packageName + " mode=2,fps=" + profile.targetRefreshRate + ":mode=3,fps=" + profile.targetRefreshRate);
                 exec("settings put global game_driver_opt_in_apps " + packageName);
             }
 

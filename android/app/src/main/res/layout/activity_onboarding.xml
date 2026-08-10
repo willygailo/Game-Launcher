@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/home_bg_new">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/glass_scrim" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/layout_bottom_buttons"
+        android:padding="24dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="16dp"
+                android:src="@mipmap/ic_launcher" />
+
+            <TextView
+                android:id="@+id/tv_onboarding_status_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="STEP 1 / 4"
+                android:textColor="#00F0FF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#2000F0FF"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/tv_onboarding_step_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Welcome to Game Launcher Pro V2.0"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/tv_onboarding_step_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Engineered by WILLY JR CARNASA GAILO..."
+                android:textColor="#CCCCCC"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:gravity="center_horizontal"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/layout_bottom_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:background="#E60A0E17">
+
+        <Button
+            android:id="@+id/btn_onboarding_primary"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="BEGIN SETUP 🚀"
+            android:textColor="#0A0E17"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:background="#00F0FF"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btn_onboarding_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="SKIP"
+            android:textColor="#80FFFFFF"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:background="#20FFFFFF"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</RelativeLayout>

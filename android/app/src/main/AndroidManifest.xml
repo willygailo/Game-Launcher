@@ -147,6 +147,12 @@
         </receiver>
 
         <activity
+            android:name="com.gamebooster.app.ui.screens.OnboardingActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:hardwareAccelerated="true" />
+
+        <activity
             android:name="com.gamebooster.app.ui.screens.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"

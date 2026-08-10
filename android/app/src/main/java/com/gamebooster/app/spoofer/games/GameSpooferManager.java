@@ -42,6 +42,8 @@ public class GameSpooferManager {
             return new WildRiftSpooferStrategy();
         } else if (pkg.contains("nap") || pkg.contains("wutheringwaves") || pkg.contains("kurogame")) {
             return new ZzzWuWaSpooferStrategy();
+        } else if (pkg.contains("dfm") || pkg.contains("deltaforce")) {
+            return new DeltaForceSpooferStrategy();
         } else {
             return new GenericGameSpooferStrategy();
         }

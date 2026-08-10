@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment {
 
         // Update header count
         if (tvGamesHeader != null) {
-            tvGamesHeader.setText("SUPPORTED GAMES (" + scannedGames.size() + "/3 DETECTED)");
+            tvGamesHeader.setText("SUPPORTED GAMES (" + scannedGames.size() + " DETECTED)");
         }
 
         // Toggle empty state vs games list

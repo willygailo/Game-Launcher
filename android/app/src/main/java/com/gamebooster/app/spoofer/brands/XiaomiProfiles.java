@@ -28,7 +28,7 @@ public class XiaomiProfiles {
             "Adreno (TM) 830", "adreno", "196610", 24576
         ));
 
-        // Xiaomi 14 Ultra — Android 14/15, Snapdragon 8 Gen 3
+        // Xiaomi 14 Ultra — Android 14/15, Snapdragon 8 Gen 3, 120Hz
         list.add(new SpoofProfile(
             "xiaomi_14_ultra",
             "Xiaomi 14 Ultra (120Hz, Android 14/15, Snapdragon 8 Gen 3)",
@@ -36,13 +36,14 @@ public class XiaomiProfiles {
             "24030PN60G", "Xiaomi", "Xiaomi",
             "aurora", "aurora_global", "24030PN60G",
             "qcom", "kalama", "SM8650",
-            "kalama", "sm8650",
+            "qcom", "kalama", "sm8650",
+            "arm64-v8a",
             "Xiaomi/aurora_global/aurora:14/UP1A.231005.007/OS1.0.4.0.UNCMIXM:user/release-keys",
             "OS1.0.4.0.UNCMIXM",
-            "Adreno (TM) 750"
+            34, "Adreno (TM) 750", "adreno", "196610", 16384, 120
         ));
 
-        // POCO F6 Pro — Android 14/15, Snapdragon 8 Gen 2
+        // POCO F6 Pro — Android 14/15, Snapdragon 8 Gen 2, 120Hz
         list.add(new SpoofProfile(
             "poco_f6_pro",
             "POCO F6 Pro (120Hz, Android 14/15, Snapdragon 8 Gen 2)",
@@ -50,13 +51,14 @@ public class XiaomiProfiles {
             "23113RKC6G", "POCO", "Xiaomi",
             "vermeer", "vermeer_global", "23113RKC6G",
             "qcom", "kalama", "SM8550",
-            "kalama", "sm8550",
+            "qcom", "kalama", "sm8550",
+            "arm64-v8a",
             "POCO/vermeer_global/vermeer:14/UP1A.231005.007/V816.0.7.0.VNOMIXM:user/release-keys",
             "V816.0.7.0.VNOMIXM",
-            "Adreno (TM) 740"
+            34, "Adreno (TM) 740", "adreno", "196610", 16384, 120
         ));
 
-        // Redmi K70 Pro — Android 14, Snapdragon 8 Gen 3
+        // Redmi K70 Pro — Android 14, Snapdragon 8 Gen 3, 120Hz
         list.add(new SpoofProfile(
             "redmi_k70_pro",
             "Redmi K70 Pro (120Hz, Android 14, Snapdragon 8 Gen 3)",
@@ -64,10 +66,11 @@ public class XiaomiProfiles {
             "23113RKC6C", "Redmi", "Xiaomi",
             "manet", "manet", "23113RKC6C",
             "qcom", "kalama", "SM8650",
-            "kalama", "sm8650",
+            "qcom", "kalama", "sm8650",
+            "arm64-v8a",
             "Redmi/manet/manet:14/UP1A.231005.007/OS1.0.5.0.UNCCNXM:user/release-keys",
             "OS1.0.5.0.UNCCNXM",
-            "Adreno (TM) 750"
+            34, "Adreno (TM) 750", "adreno", "196610", 16384, 120
         ));
 
         return list;

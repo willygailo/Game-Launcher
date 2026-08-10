@@ -738,23 +738,33 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void showSensitivityCalculatorDialog() {
         if (getContext() == null) return;
-        SensitivityModel m = SensitivityCalculator.calculate(400, 6.5, 1.5f);
-        String details = "📊 RECOMMENDED SENSITIVITY:\n\n" +
-                "• Free Look: " + m.freeLook + "\n" +
-                "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
-                "• Red Dot / Holo: " + m.redDotHolo + "\n" +
-                "• 2x Scope: " + m.scope2x + "\n" +
-                "• 4x Scope: " + m.scope4x + "\n\n" +
-                "🌀 GYROSCOPE RECS:\n" +
-                "• Gyro No Scope: " + m.gyroNoScope + "\n" +
-                "• Gyro Red Dot: " + m.gyroRedDot + "\n" +
-                "• Gyro 4x Scope: " + m.gyro4x + "\n\n" +
-                "💡 Enter these values manually inside PUBG Mobile or COD Mobile settings menu.";
+        String[] dpiOptions = new String[]{"400 DPI (Tablet / Large Screen)", "600 DPI (Standard Phone)", "800 DPI (Ultra Fast Touch)", "1200 DPI (Extreme eSports)"};
+        int[] dpiValues = new int[]{400, 600, 800, 1200};
 
         new AlertDialog.Builder(getContext())
-                .setTitle("🧮 SENSITIVITY CALCULATOR")
-                .setMessage(details)
-                .setPositiveButton("CLOSE", null)
+                .setTitle("🧮 SELECT DEVICE TOUCH DPI")
+                .setItems(dpiOptions, (dialog, which) -> {
+                    int selectedDpi = dpiValues[which];
+                    SensitivityModel m = SensitivityCalculator.calculate(selectedDpi, 6.5, 1.5f);
+                    String details = "📊 RECOMMENDED SENSITIVITY (" + selectedDpi + " DPI):\n\n" +
+                            "• Free Look: " + m.freeLook + "\n" +
+                            "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
+                            "• Red Dot / Holo: " + m.redDotHolo + "\n" +
+                            "• 2x Scope: " + m.scope2x + "\n" +
+                            "• 4x Scope: " + m.scope4x + "\n\n" +
+                            "🌀 GYROSCOPE RECS:\n" +
+                            "• Gyro No Scope: " + m.gyroNoScope + "\n" +
+                            "• Gyro Red Dot: " + m.gyroRedDot + "\n" +
+                            "• Gyro 4x Scope: " + m.gyro4x + "\n\n" +
+                            "💡 Enter these values manually inside PUBG Mobile or COD Mobile settings menu.";
+
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("🧮 SENSITIVITY CALCULATOR (" + selectedDpi + " DPI)")
+                            .setMessage(details)
+                            .setPositiveButton("CLOSE", null)
+                            .show();
+                })
+                .setNegativeButton("CANCEL", null)
                 .show();
     }
 }
