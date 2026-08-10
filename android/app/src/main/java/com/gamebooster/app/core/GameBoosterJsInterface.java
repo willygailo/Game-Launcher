@@ -204,14 +204,19 @@ public class GameBoosterJsInterface {
 
     @JavascriptInterface
     public boolean setRefreshRateForOem(int hz) {
-        if (context == null) return false;
-        return com.gamebooster.app.booster.refreshrate.RefreshRateManager.getInstance().setRefreshRate(context, hz);
+        String res = com.gamebooster.app.booster.refreshrate.RefreshRateManager.getInstance().forceRefreshRate(hz);
+        return res != null && !res.startsWith("ERROR");
     }
 
     @JavascriptInterface
     public boolean setThermalMitigationForOem(boolean disableThrottling) {
-        if (context == null) return false;
-        return com.gamebooster.app.booster.thermal.ThermalManager.getInstance().setThermalMitigation(context, disableThrottling);
+        if (disableThrottling) {
+            String res = com.gamebooster.app.booster.thermal.ThermalManager.getInstance().applyThermalOptimization();
+            return res != null && !res.startsWith("ERROR");
+        } else {
+            String res = com.gamebooster.app.booster.thermal.ThermalManager.getInstance().resetThermalSettings();
+            return res != null && !res.startsWith("ERROR");
+        }
     }
 
     @JavascriptInterface

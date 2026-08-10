@@ -1,8 +1,8 @@
 package com.gamebooster.app.tweaks;
-import com.gamebooster.app.config.*;
 
 import android.content.Context;
-
+import com.gamebooster.app.config.ManualSettingsPreferences;
+import com.gamebooster.app.config.TweakPreferences;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
@@ -54,11 +54,6 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
-    }
-
-        // ═══════════════════════════════════════════════════════════
-        // NEW GPU & RENDERING TWEAKS
-        // ═══════════════════════════════════════════════════════════
 
         TWEAKS.add(new TweakItem(
                 "disable_vsync",
@@ -77,74 +72,6 @@ public class TweakManagerRepository {
                 "setprop debug.hwui.overdraw false",
                 "setprop debug.hwui.overdraw show",
                 TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_hw_vsync",
-                "SurfaceFlinger Disable HW VSync",
-                "Disables hardware VSync for virtual displays to reduce compositor overhead",
-                "setprop debug.sf.disable_hwc_vds 1",
-                "setprop debug.sf.disable_hwc_vds 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        // ═══════════════════════════════════════════════════════════
-        // NEW TOUCH & DISPLAY TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
-        TWEAKS.add(new TweakItem(
-                "pointer_speed_max",
-                "Max Pointer Speed",
-                "Maximizes touch pointer tracking speed for faster cursor response",
-                "settings put system pointer_speed 7",
-                "settings put system pointer_speed 0",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_screen_auto_bright",
-                "Lock Screen Brightness",
-                "Disables auto-brightness to prevent display dimming during gameplay",
-                "settings put system screen_brightness_mode 0",
-                "settings put system screen_brightness_mode 1",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        // ═══════════════════════════════════════════════════════════
-        // NEW SYSTEM & SHIZUKU ADB TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
-        TWEAKS.add(new TweakItem(
-                "force_gpu_rendering",
-                "Force GPU Rendering",
-                "Forces all UI elements to use hardware GPU acceleration",
-                "settings put global force_hw_ui 1",
-                "settings put global force_hw_ui 0",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_battery_saver",
-                "Disable Low Power Mode",
-                "Prevents battery saver from throttling CPU/GPU clocks during gaming",
-                "settings put global low_power 0",
-                "settings put global low_power 1",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "kill_bg_processes",
-                "Aggressive Background Kill",
-                "Forces system to immediately destroy background activities to free RAM",
-                "settings put global always_finish_activities 1",
-                "settings put global always_finish_activities 0",
-                TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
 
@@ -218,10 +145,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // ═══════════════════════════════════════════════════════════
-        // NEW NETWORK & LATENCY TWEAKS
-        // ═══════════════════════════════════════════════════════════
-
         TWEAKS.add(new TweakItem(
                 "dns_google_fast",
                 "Google DNS Fast Resolve",
@@ -261,10 +184,6 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
-
-        // ═══════════════════════════════════════════════════════════
-        // COMPETITIVE GAMING TWEAKS (NEW — NO DUPLICATES)
-        // ═══════════════════════════════════════════════════════════
 
         TWEAKS.add(new TweakItem(
                 "super_fast_touch_165",
@@ -414,7 +333,7 @@ public class TweakManagerRepository {
                 }
             }
 
-            // 2. Re-apply manual hardware engine settings permanently (Zero Auto-Off)
+            // 2. Re-apply manual hardware engine settings permanently
             if (ManualSettingsPreferences.isAngleModeEnabled(context)) {
                 com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(true);
             }
@@ -427,15 +346,7 @@ public class TweakManagerRepository {
             boolean isPerfCpu = "performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(context));
             com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isPerfCpu ? "extreme" : "schedutil");
 
-            if (ManualSettingsPreferences.isTetherHwEnabled(context)) {
-                com.gamebooster.app.booster.NetworkOptimizer.setTetheringHwAcceleration(true);
-            }
-            if (ManualSettingsPreferences.isForceGnssEnabled(context)) {
-                com.gamebooster.app.booster.NetworkOptimizer.setForceFullGnss(true);
-            }
-
-            // 3. Execute master root performance script
-            com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript();
+            com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
         });
     }
 }

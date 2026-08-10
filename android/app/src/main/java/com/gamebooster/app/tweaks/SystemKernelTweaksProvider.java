@@ -14,7 +14,7 @@ public class SystemKernelTweaksProvider {
                 "Optimizes ZRAM swappiness and memory pressure to keep heavy game assets in RAM",
                 "setprop sys.sysctl.extra_free_kbytes 24300; setprop persist.sys.purgeable_assets 1",
                 "setprop persist.sys.purgeable_assets 0",
-                TweakCategory.MEMORY_SYSTEM,
+                TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
 
@@ -24,7 +24,7 @@ public class SystemKernelTweaksProvider {
                 "Restricts background process limits during gaming to prevent CPU stealing",
                 "cmd device_config put activity_manager max_phantom_processes 2147483647; settings put global hidden_api_policy 1",
                 "settings delete global hidden_api_policy",
-                TweakCategory.MEMORY_SYSTEM,
+                TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
 

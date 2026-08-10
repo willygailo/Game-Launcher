@@ -14,7 +14,7 @@ public class NetworkAudioTweaksProvider {
                 "Enables TCP nodelay, fastopen and reduces ping jitter in online multiplayer games",
                 "setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576; setprop net.dns1 1.1.1.1; setprop net.dns2 8.8.8.8",
                 "setprop net.dns1 8.8.8.8",
-                TweakCategory.NETWORK_PING,
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
@@ -24,7 +24,7 @@ public class NetworkAudioTweaksProvider {
                 "Boosts 2kHz - 8kHz frequency band for crystal-clear enemy footstep detection",
                 "setprop persist.audio.spatializer.enabled true; setprop persist.audio.vr.enable 1",
                 "setprop persist.audio.spatializer.enabled false",
-                TweakCategory.NETWORK_PING,
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
