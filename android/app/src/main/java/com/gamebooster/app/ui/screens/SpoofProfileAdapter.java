@@ -60,10 +60,12 @@ public class SpoofProfileAdapter extends RecyclerView.Adapter<SpoofProfileAdapte
         holder.tvDeviceName.setText(profile.displayName);
         holder.tvDeviceDetails.setText(profile.model + " • " + profile.socModel + " • " + profile.glRenderer);
 
-        boolean isActive = profile.id.equals(activeProfileId);
+        boolean isActive = activeProfileId != null && activeProfileId.equals(profile.id);
+        holder.tvActiveBadge.setText("✓ CHECK ACTIVE");
         holder.tvActiveBadge.setVisibility(isActive ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> {
+            setActiveProfileId(profile.id);
             if (listener != null) {
                 listener.onProfileClick(profile);
             }

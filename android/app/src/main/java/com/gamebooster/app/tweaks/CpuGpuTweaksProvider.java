@@ -38,6 +38,27 @@ public class CpuGpuTweaksProvider {
                 true
         ));
 
+        // Temporary Privileged Root IPC Commands via Shizuku ADB
+        list.add(new TweakItem(
+                "shizuku_cpu_governor_lock",
+                "CPU Governor & Frequency Lock (Shizuku Root IPC)",
+                "Locks CPU cores to maximum frequency scaling governor via Shizuku ADB binder IPC",
+                "cmd power set-mode 0 1; cmd power set-mode 2 1; setprop persist.sys.cpu.governor performance; setprop sys.io.scheduler deadline",
+                "cmd power set-mode 0 0; cmd power set-mode 2 0; setprop persist.sys.cpu.governor schedutil",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "shizuku_gpu_clock_boost",
+                "GPU Clock & Vulkan Driver Lock (Shizuku Root IPC)",
+                "Forces high-performance GPU driver scaling and Vulkan 3D rendering pipeline via Shizuku",
+                "settings put global game_driver_all_apps 1; settings put global angle_gl_driver_all_angle 1; setprop debug.hwui.renderer vulkan",
+                "settings put global game_driver_all_apps 0; setprop debug.hwui.renderer skia",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
         return list;
     }
 }

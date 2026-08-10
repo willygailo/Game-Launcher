@@ -39,7 +39,7 @@
         android:id="@+id/tv_active_badge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="✓ ACTIVE"
+        android:text="✓ CHECK ACTIVE"
         android:textColor="@color/accent_neon_green"
         android:textSize="11sp"
         android:textStyle="bold"

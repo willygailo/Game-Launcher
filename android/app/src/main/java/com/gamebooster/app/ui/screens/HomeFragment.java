@@ -258,7 +258,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void run() {
                 updateTelemetryMetrics();
-                telemetryHandler.postDelayed(this, 1500);
+                telemetryHandler.postDelayed(this, 1000);
             }
         };
         telemetryHandler.post(telemetryRunnable);
@@ -275,10 +275,10 @@ public class HomeFragment extends Fragment {
 
         AppExecutors.getInstance().executeCommand(() -> {
             DeviceInfoChannel.Metrics metrics = DeviceInfoChannel.getMetrics(getContext());
-            int cpuPct = metrics.cpuTempC > 0 ? (int) Math.min(95, Math.max(25, metrics.cpuTempC * 1.2f)) : (int) (35 + Math.random() * 20);
-            int gpuPct = (int) (40 + Math.random() * 25);
+            int cpuPct = metrics.cpuUsagePct;
+            int gpuPct = metrics.gpuUsagePct;
             int ramPct = metrics.ramUsagePct;
-            int pingMs = measurePingLatency();
+            int pingMs = DeviceInfoChannel.measureRealPingMs();
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (tvCpuVal != null) tvCpuVal.setText(cpuPct + "%");
@@ -294,18 +294,6 @@ public class HomeFragment extends Fragment {
                 if (pbPing != null) pbPing.setProgress(Math.min(100, pingMs));
             });
         });
-    }
-
-    private int measurePingLatency() {
-        try {
-            long startTime = System.currentTimeMillis();
-            Process process = Runtime.getRuntime().exec("ping -c 1 -w 1 1.1.1.1");
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                return (int) Math.max(12, (System.currentTimeMillis() - startTime) / 2);
-            }
-        } catch (Throwable ignored) {}
-        return (int) (18 + Math.random() * 10);
     }
 
     private void loadAndScanGamesZeroDelay() {

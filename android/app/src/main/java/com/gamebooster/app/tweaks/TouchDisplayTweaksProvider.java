@@ -20,10 +20,10 @@ public class TouchDisplayTweaksProvider {
 
         list.add(new TweakItem(
                 "aim_touch_precision",
-                "Aim Precision Touch Latency Stabilizer",
-                "Reduces input lag, touch slop, pressure threshold and FIFO scheduling for zero-delay crosshair control",
-                "setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.001",
-                "setprop view.touch_slop 8; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0; setprop persist.sys.touch.pressure.scale 1.0",
+                "0ms Zero-Delay Aim Touch Engine",
+                "Eliminates input lag, sets 0px touch slop deadzone, 1000Hz digitizer event rate, and 0ms touch response time",
+                "setprop view.touch_slop 0; setprop persist.sys.touch.response_time 0; setprop debug.input.max_events_per_sec 1000; settings put system touch_slop_reduction 1; device_config put input_native_boot touch_slop 0; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.0001",
+                "setprop view.touch_slop 8; setprop persist.sys.touch.response_time 10; setprop debug.input.max_events_per_sec 150; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0; setprop persist.sys.touch.pressure.scale 1.0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));

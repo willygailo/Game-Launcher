@@ -521,24 +521,27 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
                 if (getContext() == null) return;
-                if (!ShizukuExecutor.hasShizukuPermission()) {
-                    Toast.makeText(getContext(), "⚠️ Shizuku permission required for device spoofing", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
                 Toast.makeText(getContext(), "Applying hardware spoof: " + profile.displayName + "...", Toast.LENGTH_SHORT).show();
+
+                SpoofPreferences.setSpoofEnabled(getContext(), true);
+                SpoofPreferences.setActiveProfileId(getContext(), profile.id);
+                if (spoofProfileAdapter != null) {
+                    spoofProfileAdapter.setActiveProfileId(profile.id);
+                }
+
                 AppExecutors.getInstance().executeCommand(() -> {
                     boolean success = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         if (success) {
-                            SpoofPreferences.setSpoofEnabled(getContext(), true);
-                            SpoofPreferences.setActiveProfileId(getContext(), profile.id);
                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
                             updateSpoofUiState();
-                            Toast.makeText(getContext(), "⚡ Device Spoof Active: " + profile.displayName, Toast.LENGTH_SHORT).show();
+                            String msg = hasShizuku ? "⚡ Device Spoof Active (Full Shizuku): " : "⚡ Device Spoof Active (Safe Mode): ";
+                            Toast.makeText(getContext(), msg + profile.displayName, Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(getContext(), "Failed to apply spoof profile via Shizuku", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Failed to apply spoof profile", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });

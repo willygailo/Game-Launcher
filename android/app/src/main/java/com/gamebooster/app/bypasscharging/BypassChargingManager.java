@@ -1,11 +1,15 @@
 package com.gamebooster.app.bypasscharging;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 
 public class BypassChargingManager {
 
     private static final String TAG = "BypassChargingManager";
+    private static final String PREF_NAME = "bypass_charging_prefs";
+    private static final String KEY_ENABLED = "bypass_charging_enabled";
 
     private static BypassChargingManager instance;
     private BypassChargingInterface currentStrategy;
@@ -73,6 +77,48 @@ public class BypassChargingManager {
     public String disableBypassCharging() {
         if (currentStrategy == null) initStrategy();
         return currentStrategy.disableBypassCharging();
+    }
+
+    public String enableBypassCharging(Context context) {
+        if (context != null) {
+            setBypassEnabled(context, true);
+        }
+        return enableBypassCharging();
+    }
+
+    public String disableBypassCharging(Context context) {
+        if (context != null) {
+            setBypassEnabled(context, false);
+        }
+        return disableBypassCharging();
+    }
+
+    public boolean isBypassEnabled(Context context) {
+        if (context == null) return false;
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(KEY_ENABLED, false);
+    }
+
+    public void setBypassEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(KEY_ENABLED, enabled).apply();
+    }
+
+    public String toggleBypassCharging(Context context) {
+        boolean nextState = !isBypassEnabled(context);
+        if (nextState) {
+            return enableBypassCharging(context);
+        } else {
+            return disableBypassCharging(context);
+        }
+    }
+
+    public void restoreSavedState(Context context) {
+        if (context == null) return;
+        if (isBypassEnabled(context)) {
+            enableBypassCharging(context);
+        }
     }
 
     public String getBypassStatus() {
