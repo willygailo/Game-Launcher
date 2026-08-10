@@ -60,6 +60,17 @@ Every game package receives its optimal hardware identity strategy without causi
 - 🌀 **Zenless Zone Zero & Wuthering Waves**: `ZzzWuWaSpooferStrategy` → Galaxy S26 Ultra Profile (Maximum Vulkan Shader Cache & Metal FX preset).
 
 ### 2. 📱 Flagship OEM Brand Profiles (12 Major Manufacturers)
+
+#### 📊 Flagship Gaming Hardware Comparison Matrix
+| Phone | Chipset | GPU | Display | RAM / Storage | Battery & Thermal |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Galaxy S26 Ultra** | Snapdragon 8 Elite Gen 5 for Galaxy (3nm, Oryon V3) | Adreno 840 | 6.9" LTPO AMOLED, 120Hz / 165Hz | 12/256GB – 24/1TB, LPDDR5X | 5000mAh, 45W wired |
+| **Galaxy S25 Ultra** | Snapdragon 8 Elite for Galaxy (3nm, Oryon Gen2) | Adreno 830 | 6.9" LTPO AMOLED, 120Hz | 12/256GB – 16/1TB, LPDDR5X | 5000mAh, 45W wired |
+| **Galaxy S24 Ultra** | Snapdragon 8 Gen 3 for Galaxy (4nm) | Adreno 750 | 6.8" LTPO AMOLED, 120Hz | 12/256GB – 12/1TB, LPDDR5X | 5000mAh, 45W wired |
+| **iQOO 15 Ultra** | Snapdragon 8 Elite Gen 5 (3nm) + Active Fan | Adreno 840 (@1300MHz) | 6.85" LTPO AMOLED, 144Hz/165Hz 2K, 2600 nits | up to 24GB/1TB, LPDDR5X | 7400mAh, 100W/40W |
+| **iQOO 15 (Vanilla)** | Snapdragon 8 Elite Gen 5 (3nm) + Q3 Gaming Chip | Adreno 840 | 6.85" LTPO AMOLED, 144Hz 2K | up to 16GB/1TB, LPDDR5X | 7000mAh, 100W/40W |
+| **iQOO 13** | Snapdragon 8 Elite (3nm) + Q2 Gaming Chip | Adreno 830 | 6.82" LTPO AMOLED, 144Hz 2K | up to 16GB/512GB, LPDDR5X | 6150mAh, 120W wired |
+
 Includes complete Android 13, 14, 15, and 16 fingerprints across 6 system property namespaces (`product`, `vendor`, `system`, `odm`, `product.product`, `system_ext`):
 1. 🌌 **Samsung**: Galaxy S26 Ultra (Android 16 `BP1A.260105.001`), Galaxy S25 Ultra, S24 Ultra.
 2. ⚡ **Vivo / iQOO**: iQOO 15 Ultra (Snapdragon 8 Elite, 165Hz), iQOO 12 Pro.
