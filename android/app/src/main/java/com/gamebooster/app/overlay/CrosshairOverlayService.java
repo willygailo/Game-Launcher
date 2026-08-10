@@ -26,8 +26,15 @@ public class CrosshairOverlayService extends Service {
     private WindowManager windowManager;
     private CrosshairOverlayView overlayView;
     private boolean isOverlayActive = false;
+    private static boolean isRunning = false;
+    private static CrosshairOverlayService instance = null;
+
+    public static boolean isOverlayRunning() {
+        return isRunning;
+    }
 
     public static void startOverlay(Context context) {
+        if (context == null) return;
         Intent intent = new Intent(context, CrosshairOverlayService.class);
         intent.setAction("ACTION_START");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -38,14 +45,23 @@ public class CrosshairOverlayService extends Service {
     }
 
     public static void stopOverlay(Context context) {
+        if (context == null) return;
         Intent intent = new Intent(context, CrosshairOverlayService.class);
         intent.setAction("ACTION_STOP");
+        context.startService(intent);
+    }
+
+    public static void updateOverlay(Context context) {
+        if (context == null || !isRunning) return;
+        Intent intent = new Intent(context, CrosshairOverlayService.class);
+        intent.setAction("ACTION_UPDATE");
         context.startService(intent);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         createNotificationChannel();
     }
@@ -59,6 +75,13 @@ public class CrosshairOverlayService extends Service {
             return START_NOT_STICKY;
         }
 
+        if (intent != null && "ACTION_UPDATE".equals(intent.getAction())) {
+            if (isOverlayActive && overlayView != null) {
+                applyPreferencesToOverlay();
+            }
+            return START_STICKY;
+        }
+
         startForeground(NOTIFICATION_ID, buildNotification());
         showOverlayView();
         return START_STICKY;
@@ -68,17 +91,18 @@ public class CrosshairOverlayService extends Service {
         if (isOverlayActive || windowManager == null) return;
 
         overlayView = new CrosshairOverlayView(this);
-        overlayView.setPreset(CrosshairPreset.TACTICAL_CROSS);
-        overlayView.setColor(Color.parseColor("#00FF66"));
-        overlayView.setSizePx(100);
+        applyPreferencesToOverlay();
+
+        int sizePx = CrosshairPreferences.getSizePx(this);
+        int windowSize = sizePx + 40;
 
         int layoutFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                120,
-                120,
+                windowSize,
+                windowSize,
                 layoutFlag,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
@@ -91,8 +115,33 @@ public class CrosshairOverlayService extends Service {
         try {
             windowManager.addView(overlayView, params);
             isOverlayActive = true;
+            isRunning = true;
+            CrosshairPreferences.setCrosshairEnabled(this, true);
         } catch (Exception e) {
             isOverlayActive = false;
+            isRunning = false;
+        }
+    }
+
+    private void applyPreferencesToOverlay() {
+        if (overlayView == null) return;
+        overlayView.setPreset(CrosshairPreferences.getPreset(this));
+        overlayView.setColor(CrosshairPreferences.getColor(this));
+        overlayView.setSizePx(CrosshairPreferences.getSizePx(this));
+        overlayView.setStrokeWidth(CrosshairPreferences.getStrokeWidth(this));
+        overlayView.setOpacity(CrosshairPreferences.getOpacity(this));
+
+        if (isOverlayActive && windowManager != null) {
+            int sizePx = CrosshairPreferences.getSizePx(this);
+            int windowSize = sizePx + 40;
+            try {
+                WindowManager.LayoutParams params = (WindowManager.LayoutParams) overlayView.getLayoutParams();
+                if (params != null) {
+                    params.width = windowSize;
+                    params.height = windowSize;
+                    windowManager.updateViewLayout(overlayView, params);
+                }
+            } catch (Exception ignored) {}
         }
     }
 
@@ -104,12 +153,14 @@ public class CrosshairOverlayService extends Service {
         }
         overlayView = null;
         isOverlayActive = false;
+        isRunning = false;
+        CrosshairPreferences.setCrosshairEnabled(this, false);
     }
 
     @Override
     public void onDestroy() {
-
         removeOverlayView();
+        instance = null;
         super.onDestroy();
     }
 

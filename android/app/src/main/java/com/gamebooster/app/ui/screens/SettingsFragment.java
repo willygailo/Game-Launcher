@@ -37,6 +37,8 @@ import com.gamebooster.app.core.settings.SettingsManager;
 import com.gamebooster.app.core.profile.ProfileManager;
 import com.gamebooster.app.core.profile.InputProfile;
 import com.gamebooster.app.overlay.CrosshairOverlayService;
+import com.gamebooster.app.overlay.CrosshairOverlayManager;
+import com.gamebooster.app.overlay.CrosshairPreferences;
 import com.gamebooster.app.overlay.CrosshairPreset;
 import com.gamebooster.app.ui.sensitivity.SensitivityCalculator;
 import com.gamebooster.app.ui.sensitivity.SensitivityModel;
@@ -245,6 +247,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (switchCrosshairOverlay != null) {
+            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isOverlayRunning());
             switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
@@ -731,10 +734,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private void showCrosshairPresetDialog() {
         if (getContext() == null) return;
         String[] options = {"Dot Preset", "Tactical Cross", "Scope Ring", "Sniper Cross"};
+        CrosshairPreset[] presets = {CrosshairPreset.DOT, CrosshairPreset.TACTICAL_CROSS, CrosshairPreset.SCOPE_RING, CrosshairPreset.SNIPER_CROSS};
+
         new AlertDialog.Builder(getContext())
                 .setTitle("🎯 SELECT CROSSHAIR PRESET")
                 .setItems(options, (dialog, which) -> {
-                    Toast.makeText(getContext(), "Selected Preset: " + options[which], Toast.LENGTH_SHORT).show();
+                    CrosshairPreset selected = presets[which];
+                    CrosshairPreferences.setPreset(getContext(), selected);
+                    CrosshairOverlayService.updateOverlay(getContext());
+                    Toast.makeText(getContext(), "🎯 Preset Set: " + selected.getLabel(), Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }

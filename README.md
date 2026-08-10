@@ -2,7 +2,7 @@
   <img src="BANNER.gif" alt="Precision Aim Banner" width="100%" style="border-radius: 12px;">
 </p>
 
-<h1 align="center">🎮 Game Launcher Pro V2.0 (v10.0.0-PRO / versionCode 51) — Zero Touch Delay & Universal Game Spoofer Engine</h1>
+<h1 align="center">🎮 Game Launcher Pro V2.0 (v1.2.1-PRO / versionCode 52) — Zero Touch Delay & Universal Game Spoofer Engine</h1>
 
 <p align="center">
   <b>0ms Touch Delay, 1000Hz Digitizer Sampling Engine, Per-Game Hardware Identity Spoofer & 165Hz Game Patcher for Mobile eSports</b>
@@ -15,7 +15,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
   <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
   <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
-  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v10.0.0--PRO-emerald?style=for-the-badge" alt="Version v10.0.0-PRO"></a>
+  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v1.2.1--PRO-emerald?style=for-the-badge" alt="Version v1.2.1-PRO"></a>
 </p>
 
 ---
@@ -26,7 +26,7 @@
 
 | 👤 Developer | 🌐 Official Facebook | 🐙 Official GitHub | 📦 Latest Downloads / APK |
 | :--- | :--- | :--- | :--- |
-| **WILLY JR CARNASA GAILO** | [![Facebook](https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) | [![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo) | [![Releases](https://img.shields.io/badge/Releases-v10.0.0_PRO_APK_Downloads-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases) |
+| **WILLY JR CARNASA GAILO** | [![Facebook](https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) | [![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo) | [![Releases](https://img.shields.io/badge/Releases-v1.2.1_PRO_APK_Downloads-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases) |
 
 </div>
 
@@ -34,7 +34,7 @@
 
 ## 🚀 Overview
 
-**Game Launcher Pro V2.0 (v10.0.0-PRO / versionCode 51)** is an advanced, device-level performance utility, hardware identity spoofer, and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile*).
+**Game Launcher Pro V2.0 (v1.2.1-PRO / versionCode 52)** is an advanced, device-level performance utility, hardware identity spoofer, and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile*).
 
 By leveraging **Shizuku API (privileged ADB Binder IPC - uid 2000)**, it unlocks **120 FPS, 144 FPS, and 165 FPS**, enforces **0ms Zero Touch Delay with 1000Hz Digitizer Sampling**, applies **Per-Game Package Spoofer Profiles** (each game target receives its own custom hardware identity to eliminate conflicts), and controls **Transsion / Infinix / Tecno / ROG / Samsung Bypass Charging** directly.
 
