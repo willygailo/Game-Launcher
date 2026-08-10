@@ -246,23 +246,7 @@ public class DeviceSpooferEngine {
         java.util.Set<String> targetPackages = new java.util.HashSet<>();
 
         // 1. Popular eSports & Target Game Packages
-        String[] popularGames = new String[] {
-            // MLBB
-            "com.mobile.legends", "com.mobile.legends.vng", "com.mobile.legends.kr", "com.mobile.legends.jp",
-            // PUBGM & BGMI
-            "com.tencent.ig", "com.pubg.imobile", "com.pubg.krmobile", "com.vng.pubgmobile", "com.tencent.iglite", "com.pubg.newstate",
-            // CODM
-            "com.activision.callofduty.shooter", "com.garena.game.codm", "com.vng.codmvn",
-            // HOK / AOV
-            "com.levelinfinite.sgameGlobal", "com.tencent.tmgp.sgame", "com.garena.game.kgtw", "com.garena.game.kgvn",
-            // Genshin / Star Rail / ZZZ / WuWa
-            "com.miHoYo.GenshinImpact", "com.cognosphere.GenshinImpact", "com.HoYoverse.hkrpgoversea", "com.miHoYo.hkrpg", "com.HoYoverse.nap", "com.kurogame.wutheringwaves.global",
-            // Free Fire & Wild Rift & Delta Force & Roblox
-            "com.dts.freefireth", "com.dts.freefiremax", "com.riotgames.league.wildrift", "com.proxima.deltaforce", "com.roblox.client"
-        };
-        for (String pkg : popularGames) {
-            targetPackages.add(pkg);
-        }
+        targetPackages.addAll(com.gamebooster.app.games.TargetGameRegistry.getAllPackages());
 
         // 2. Scanned Installed Games & Custom Added Games
         if (context != null) {

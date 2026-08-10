@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
@@ -14,6 +13,10 @@ import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.gamespace.AutoGameMonitorService;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuManager;
 
 public class GameBoosterService extends Service {
 
@@ -42,11 +45,26 @@ public class GameBoosterService extends Service {
             startForeground(NOTIF_ID, notification);
         }
 
-        // Apply background auto-boost optimizations
+        // Register Shizuku Binder listeners
         try {
-            com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
-            PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+            ShizukuManager.registerBinderListeners();
         } catch (Exception ignored) {}
+
+        // Apply background auto-boost optimizations and grant permissions
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                }
+                com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
+                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+            } catch (Exception ignored) {}
+        });
+
+        // Ensure AutoGameMonitorService is running
+        if (!AutoGameMonitorService.isRunning()) {
+            AutoGameMonitorService.start(getApplicationContext());
+        }
 
         return START_STICKY;
     }

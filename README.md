@@ -101,6 +101,11 @@ Prevents device battery heating by routing charger power directly to the motherb
 ### 5. 🎮 Universal Auto Game Scanner & 2025/2026 eSports Support
 - Auto-detects 40+ AAA titles including: *Mobile Legends, PUBG Mobile, BGMI, CODM, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force: Hawk Ops, Warzone Mobile, Blood Strike, Roblox, Free Fire, Wild Rift, Standoff 2, Farlight 84*.
 
+### 6. ⚡ Unified Target Game Registry & Shizuku Auto-Grant Engine
+- 🔑 **Canonical Target Game Registry (`TargetGameRegistry.java`)**: Centralized single source of truth for 35+ eSports packages across permission grants, spoofer strategies, and manifest declarations.
+- 🔑 **Automated Shizuku System Permission Grant**: Automatically executes `pm grant` & `appops set` batch sequence upon Shizuku binder connection and boot. Grants `WRITE_SECURE_SETTINGS`, `WRITE_SETTINGS`, `PACKAGE_USAGE_STATS`, `MANAGE_EXTERNAL_STORAGE`, `SCHEDULE_EXACT_ALARM`, and unrestricted background operations without root.
+- 🔑 **Zero-Delay Background Boot Pipeline**: `BootReceiver` and `GameBoosterService` trigger asynchronous background tasks to register binder listeners, apply low-latency touch/GPU tweaks, and launch `AutoGameMonitorService` cleanly on boot.
+
 ---
 
 ## 🏗️ Project Architecture

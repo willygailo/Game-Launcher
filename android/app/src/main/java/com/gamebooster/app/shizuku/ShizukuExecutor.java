@@ -2,16 +2,34 @@ package com.gamebooster.app.shizuku;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import rikka.shizuku.Shizuku;
+import android.util.Log;
+
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.games.TargetGameRegistry;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
-import android.util.Log;
+import rikka.shizuku.Shizuku;
 
 public class ShizukuExecutor {
 
     private static final String TAG = "ShizukuDiag";
+
+    public static class GrantResult {
+        public final boolean success;
+        public final int totalCommands;
+        public final int executedCommands;
+
+        public GrantResult(boolean success, int totalCommands, int executedCommands) {
+            this.success = success;
+            this.totalCommands = totalCommands;
+            this.executedCommands = executedCommands;
+        }
+    }
 
     public static boolean isShizukuAvailable() {
         try {
@@ -50,7 +68,7 @@ public class ShizukuExecutor {
         BufferedReader stdoutReader = null;
         BufferedReader stderrReader = null;
         try {
-            java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
+            Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
             newProcessMethod.setAccessible(true);
             process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
 
@@ -89,7 +107,7 @@ public class ShizukuExecutor {
         }
     }
 
-    public static String executeShizukuBatchCommands(java.util.List<String> commands) {
+    public static String executeShizukuBatchCommands(List<String> commands) {
         if (commands == null || commands.isEmpty()) return "SUCCESS";
         StringBuilder sb = new StringBuilder();
         for (String cmd : commands) {
@@ -101,10 +119,13 @@ public class ShizukuExecutor {
         return executeShizukuCommand(sb.toString());
     }
 
-    public static void grantAppPermissionsViaShizuku(Context context) {
-        if (context == null || !hasShizukuPermission()) return;
+    public static GrantResult grantAppPermissionsViaShizuku(Context context) {
+        if (context == null || !hasShizukuPermission()) {
+            return new GrantResult(false, 0, 0);
+        }
+
         String packageName = context.getPackageName();
-        java.util.List<String> batch = new java.util.ArrayList<>();
+        List<String> batch = new ArrayList<>();
 
         // Perform Shizuku ADB Grant Combo
         batch.add("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
@@ -129,6 +150,8 @@ public class ShizukuExecutor {
         batch.add("pm grant " + packageName + " android.permission.HARDWARE_TEST");
         batch.add("pm grant " + packageName + " android.permission.INTERNET");
         batch.add("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
+        batch.add("pm grant " + packageName + " android.permission.SCHEDULE_EXACT_ALARM");
+        batch.add("pm grant " + packageName + " android.permission.USE_EXACT_ALARM");
 
         // AppOps Overrides for Unrestricted System Access
         batch.add("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
@@ -143,23 +166,24 @@ public class ShizukuExecutor {
         batch.add("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         batch.add("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
         batch.add("cmd appops set " + packageName + " NO_ISOLATED_STORAGE allow");
+        batch.add("cmd appops set " + packageName + " SCHEDULE_EXACT_ALARM allow");
 
-        // Force Target Games Permission & AppOps Overrides
-        String[] targetGames = new String[] {
-                "com.mobile.legends", "com.mobilelegends.win",
-                "com.tencent.ig", "com.pubg.krmobile", "com.vng.pubgmobile", "com.pubg.imobile", "com.pubg.newstate",
-                "com.activision.callofduty.shooter", "com.garena.game.codm",
-                "com.dts.freefireth", "com.dts.freefiremax",
-                "com.levelinfinite.sgameGlobal", "com.tencent.tmgp.sgame", "com.garena.game.kgtw",
-                "com.riotgames.league.wildrift", "com.miHoYo.GenshinImpact", "com.HoYoverse.hkrpg",
-                "com.HoYoverse.Nap", "com.kurogame.wutheringwaves.global", "com.ofg.bloodstrike"
-        };
+        // Force Target Games Permission & AppOps Overrides via TargetGameRegistry
+        int maxHz = 165;
+        try {
+            DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
+            if (caps != null && caps.getMaxRefreshRate() > 0) {
+                maxHz = caps.getMaxRefreshRate();
+            }
+        } catch (Throwable ignored) {}
+
+        List<String> targetGames = TargetGameRegistry.getAllPackages();
 
         for (String gamePkg : targetGames) {
             batch.add("cmd game mode performance " + gamePkg);
-            batch.add("cmd game set --fps 165 " + gamePkg);
-            batch.add("cmd window set-app-refresh-rate " + gamePkg + " 165");
-            batch.add("device_config put game_overlay " + gamePkg + " mode=2,fps=165:mode=3,fps=165");
+            batch.add("cmd game set --fps " + maxHz + " " + gamePkg);
+            batch.add("cmd window set-app-refresh-rate " + gamePkg + " " + maxHz);
+            batch.add("device_config put game_overlay " + gamePkg + " mode=2,fps=" + maxHz + ":mode=3,fps=" + maxHz);
             batch.add("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
             batch.add("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
             batch.add("cmd appops set " + gamePkg + " AUTO_START allow");
@@ -168,7 +192,8 @@ public class ShizukuExecutor {
             batch.add("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
         }
 
-        executeShizukuBatchCommands(batch);
+        String res = executeShizukuBatchCommands(batch);
+        boolean success = res != null && !res.startsWith("ERROR");
+        return new GrantResult(success, batch.size(), success ? batch.size() : 0);
     }
 }
-

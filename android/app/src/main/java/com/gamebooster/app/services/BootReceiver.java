@@ -7,8 +7,10 @@ import android.util.Log;
 
 import com.gamebooster.app.booster.GpuTweaksChannel;
 import com.gamebooster.app.booster.TouchLatencyChannel;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.gamespace.AutoGameMonitorService;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuManager;
 
 public class BootReceiver extends BroadcastReceiver {
 
@@ -22,25 +24,31 @@ public class BootReceiver extends BroadcastReceiver {
         Log.i(TAG, "BootReceiver triggered with action: " + action);
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) || "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
-            // Re-apply low-latency GPU & touch performance tweaks
-            try {
-                GpuTweaksChannel.enableVulkanRenderer();
-                TouchLatencyChannel.enableUltraTouchResponse();
-                ShizukuExecutor.grantAppPermissionsViaShizuku(context);
-                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
-                    String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(context);
-                    if (activeId != null) {
-                        com.gamebooster.app.spoofer.SpoofProfile profile = com.gamebooster.app.spoofer.DeviceSpooferEngine.getProfileById(activeId);
-                        if (profile != null) {
-                            com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, null);
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    ShizukuManager.registerBinderListeners();
+                    GpuTweaksChannel.enableVulkanRenderer();
+                    TouchLatencyChannel.enableUltraTouchResponse();
+
+                    if (ShizukuExecutor.hasShizukuPermission()) {
+                        ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+                    }
+
+                    if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
+                        String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(context);
+                        if (activeId != null) {
+                            com.gamebooster.app.spoofer.SpoofProfile profile = com.gamebooster.app.spoofer.DeviceSpooferEngine.getProfileById(activeId);
+                            if (profile != null) {
+                                com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, null);
+                            }
                         }
                     }
+                    AutoGameMonitorService.start(context);
+                    Log.i(TAG, "Boot optimizations, Spoofer, and AutoGameMonitorService initialized cleanly!");
+                } catch (Throwable t) {
+                    Log.e(TAG, "BootReceiver initialization error", t);
                 }
-                AutoGameMonitorService.start(context);
-                Log.i(TAG, "Boot optimizations, Spoofer, and AutoGameMonitorService initialized cleanly!");
-            } catch (Throwable t) {
-                Log.e(TAG, "BootReceiver initialization error", t);
-            }
+            });
         }
     }
 }

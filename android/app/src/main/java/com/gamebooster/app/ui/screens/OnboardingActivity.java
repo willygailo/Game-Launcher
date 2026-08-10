@@ -103,9 +103,17 @@ public class OnboardingActivity extends AppCompatActivity {
 
                 btnPrimaryAction.setOnClickListener(v -> {
                     if (ShizukuExecutor.hasShizukuPermission()) {
-                        AppExecutors.getInstance().executeCommand(() -> ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext()));
-                        currentStep = 2;
-                        updateStepUi();
+                        Toast.makeText(this, "⚡ Granting system permissions via Shizuku...", Toast.LENGTH_SHORT).show();
+                        AppExecutors.getInstance().executeCommand(() -> {
+                            ShizukuExecutor.GrantResult grantResult = ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                if (grantResult.success) {
+                                    Toast.makeText(this, "✅ " + grantResult.totalCommands + " System & Game permissions auto-granted!", Toast.LENGTH_LONG).show();
+                                }
+                                currentStep = 2;
+                                updateStepUi();
+                            });
+                        });
                     } else {
                         ShizukuManager.requestShizukuPermission();
                         if (!ShizukuExecutor.isShizukuAvailable()) {
