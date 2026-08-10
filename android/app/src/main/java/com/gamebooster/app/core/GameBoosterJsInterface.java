@@ -156,4 +156,30 @@ public class GameBoosterJsInterface {
             return "{}";
         }
     }
+
+    @JavascriptInterface
+    public String enableBypassCharging() {
+        return com.gamebooster.app.bypasscharging.BypassChargingManager.getInstance().enableBypassCharging();
+    }
+
+    @JavascriptInterface
+    public String disableBypassCharging() {
+        return com.gamebooster.app.bypasscharging.BypassChargingManager.getInstance().disableBypassCharging();
+    }
+
+    @JavascriptInterface
+    public String getBypassStatusJson() {
+        try {
+            com.gamebooster.app.bypasscharging.BypassChargingInterface strategy =
+                    com.gamebooster.app.bypasscharging.BypassChargingManager.getInstance().getCurrentStrategy();
+            JSONObject obj = new JSONObject();
+            obj.put("strategyName", strategy.getStrategyName());
+            obj.put("isSupported", strategy.isSupported());
+            obj.put("statusDetails", strategy.getBypassStatus());
+            return obj.toString();
+        } catch (Exception e) {
+            return "{\"strategyName\":\"Unknown\",\"isSupported\":false,\"statusDetails\":\"Error fetching status\"}";
+        }
+    }
 }
+

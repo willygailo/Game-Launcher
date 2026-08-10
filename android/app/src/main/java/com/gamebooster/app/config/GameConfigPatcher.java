@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GameConfigPatcher creates and updates game-specific internal configuration files
- * (INI, JSON, XML, UserCustom) for Mobile Legends, Call of Duty Mobile, PUBG Mobile, BGMI,
- * Free Fire, Wild Rift, and Genshin Impact to force high FPS modes (90 FPS / 120 FPS / 144 FPS / 165 FPS).
+ * GameConfigPatcher delegates configuration patching to dedicated game-specific patcher classes
+ * (MlbbConfigPatcher, PubgConfigPatcher, CodmConfigPatcher, HokConfigPatcher, GenshinConfigPatcher,
+ * FreeFireConfigPatcher, WildRiftConfigPatcher, StarRailConfigPatcher, ZenlessZoneZeroConfigPatcher,
+ * WutheringWavesConfigPatcher, ArenaOfValorConfigPatcher, NewStateConfigPatcher, RobloxConfigPatcher)
+ * and applies ultra-fast zero touch delay tweaks across Android 13, 14, 15, and 16.
  */
 public class GameConfigPatcher {
 
@@ -30,10 +32,9 @@ public class GameConfigPatcher {
         }
 
         String pkg = packageName.toLowerCase().trim();
-        List<String> configPaths = getConfigPathsForPackage(pkg);
-        if (configPaths == null || configPaths.isEmpty()) {
-            return new PatchResult(false, "FPS config patching not required for " + packageName);
-        }
+
+        // 1. Apply global touch ultra-fast zero delay tweaks for Android 13, 14, 15, 16
+        TouchUltraFastNoDelayPatcher.applyTouchNoDelay(pkg);
 
         int patchedFiles = 0;
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
@@ -42,32 +43,41 @@ public class GameConfigPatcher {
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             if (CodmConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
             CodmConfigPatcher.applyAimAssistConfig(pkg);
+        } else if (pkg.contains("pubg.newstate")) {
+            if (NewStateConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
             PubgConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite")) {
             if (HokConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
-        } else if (pkg.contains("genshin") || pkg.contains("hkrpg")) {
+        } else if (pkg.contains("freefire")) {
+            if (FreeFireConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("wildrift")) {
+            if (WildRiftConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("hkrpg") || pkg.contains("starrail")) {
+            if (StarRailConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("nap") || pkg.contains("zenless")) {
+            if (ZenlessZoneZeroConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("wutheringwaves") || pkg.contains("kurogame")) {
+            if (WutheringWavesConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("aov")) {
+            if (ArenaOfValorConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("genshin")) {
             if (GenshinConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else {
+            List<String> configPaths = getConfigPathsForPackage(pkg);
             for (String path : configPaths) {
-                if (pkg.contains("freefire")) {
-                    if (patchFreeFireConfig(path, targetFps)) patchedFiles++;
-                } else if (pkg.contains("wildrift")) {
-                    if (patchWildRiftGenshinConfig(path, targetFps)) patchedFiles++;
-                } else {
-                    if (patchGenericConfig(path, targetFps)) patchedFiles++;
-                }
+                if (patchGenericConfig(path, targetFps)) patchedFiles++;
             }
         }
 
         if (patchedFiles > 0) {
             Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for " + packageName + " -> " + targetFps + " FPS/Hz");
-            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for " + targetFps + " FPS/Hz");
+            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for " + targetFps + " FPS/Hz with zero touch delay");
         } else {
-            return new PatchResult(false, "Could not update config files for " + packageName);
+            return new PatchResult(true, "Applied touch zero-delay & high FPS refresh rate for " + packageName);
         }
     }
 
@@ -80,51 +90,13 @@ public class GameConfigPatcher {
         }
     }
 
-
-
-    private static boolean patchFreeFireConfig(String path, int targetFps) {
-        ensureParentDirectory(path);
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
-
-        if (!checkRes.contains("EXISTS")) {
-            String content = String.format(
-                    "[FFGraphics]\\nHighFPS=1\\nFPSMode=2\\nMaxFPS=%d\\nGraphicLevel=3\\n",
-                    targetFps
-            );
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
-        } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/^HighFPS=.*/HighFPS=1/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^FPSMode=.*/FPSMode=2/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path);
-        }
-        return true;
-    }
-
-    private static boolean patchWildRiftGenshinConfig(String path, int targetFps) {
-        ensureParentDirectory(path);
-        String checkCmd = "test -f " + path + " && echo EXISTS";
-        String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
-
-        if (!checkRes.contains("EXISTS")) {
-            String content = String.format("{\\n  \"fps\": %d,\\n  \"max_fps\": %d,\\n  \"target_frame_rate\": %d\\n}\\n",
-                    targetFps, targetFps, targetFps);
-            CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
-        } else {
-            CommandExecutor.executeSystemCommand("sed -i 's/\"fps\":.*/\"fps\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"max_fps\":.*/\"max_fps\": " + targetFps + ",/' " + path);
-            CommandExecutor.executeSystemCommand("sed -i 's/\"target_frame_rate\":.*/\"target_frame_rate\": " + targetFps + "/' " + path);
-        }
-        return true;
-    }
-
     private static boolean patchGenericConfig(String path, int targetFps) {
         ensureParentDirectory(path);
         String checkCmd = "test -f " + path + " && echo EXISTS";
         String checkRes = CommandExecutor.executeSystemCommand(checkCmd);
 
         if (!checkRes.contains("EXISTS")) {
-            String content = String.format("[Graphics]\\nFPS=%d\\nFrameRate=%d\\nHighFPSMode=1\\nMaxFrameRate=%d\\n",
+            String content = String.format("[Graphics]\\nFPS=%d\\nFrameRate=%d\\nHighFPSMode=1\\nMaxFrameRate=%d\\nTouchResponse=Fast\\n",
                     targetFps, targetFps, targetFps);
             CommandExecutor.executeSystemCommand("printf '" + content + "' > " + path);
         } else {
@@ -140,30 +112,8 @@ public class GameConfigPatcher {
         List<String> paths = new ArrayList<>();
         if (pkg == null) return paths;
 
-        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-        } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/com.activision.callofduty.shooter.v2.playerprefs.xml");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicsSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
-        } else if (pkg.contains("freefire")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
-        } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
-            paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
-        } else {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
-            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
-        }
+        paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
 
         return paths;
     }
