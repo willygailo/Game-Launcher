@@ -134,14 +134,35 @@ Open **Game Launcher Pro V2.0** → Navigate to **Settings** → Tap **RESET TO 
 
 Run these ADB commands directly on your PC, LADB, or Shizuku Terminal:
 
-#### 1. Reset ANGLE & Game Driver Settings
+#### 1. Reset ANGLE Graphics Driver & Game Driver Settings
 ```bash
 adb shell settings delete global angle_gl_driver_all_angle
+adb shell settings delete global angle_gl_driver_selection_pkgs
+adb shell settings delete global angle_gl_driver_selection_values
+adb shell settings delete global show_angle_in_use_dialog_box
 adb shell settings delete global game_driver_all_apps
 adb shell settings delete global game_driver_opt_in_apps
+adb shell setprop debug.angle.backend ""
 ```
 
-#### 2. Reset Display Refresh Rate Settings
+#### 2. Reset CPU Governor & Realtime Performance Modes
+```bash
+adb shell cmd power set-mode 0 0
+adb shell cmd power set-mode 2 0
+adb shell setprop persist.sys.cpu.governor ""
+adb shell setprop sys.io.scheduler ""
+adb shell setprop sys.use_fifo ""
+```
+
+#### 3. Reset GPU Hardware Pipeline & HWUI Composition
+```bash
+adb shell setprop debug.hwui.renderer ""
+adb shell setprop debug.sf.hw ""
+adb shell setprop debug.egl.hw ""
+adb shell setprop debug.egl.hw_renderer ""
+```
+
+#### 4. Reset Display Refresh Rate Settings
 ```bash
 adb shell settings delete system peak_refresh_rate
 adb shell settings delete system min_refresh_rate
@@ -152,14 +173,14 @@ adb shell settings delete secure user_refresh_rate
 adb shell settings delete secure refresh_rate_mode
 ```
 
-#### 3. Reset Game Mode API & Overlays
+#### 5. Reset Game Mode API & Overlays
 ```bash
 adb shell cmd game mode standard global
 adb shell cmd window reset-app-refresh-rate global
 adb shell device_config delete game_overlay global
 ```
 
-#### 4. Reset Touch Latency & Digitizer Slop
+#### 6. Reset Touch Latency & Digitizer Slop
 ```bash
 adb shell setprop debug.input.max_events_per_sec ""
 adb shell setprop view.touch_slop ""
@@ -171,7 +192,7 @@ adb shell setprop persist.sys.touch_prediction ""
 adb shell setprop persist.vendor.qti.input.touch_boost ""
 ```
 
-#### 5. Reset SurfaceFlinger & SwapInterval Overrides
+#### 7. Reset SurfaceFlinger & SwapInterval Overrides
 ```bash
 adb shell setprop debug.sf.fps_limit ""
 adb shell setprop persist.sys.NV_FPSLIMIT ""
@@ -180,10 +201,9 @@ adb shell setprop debug.gr.swapinterval ""
 adb shell setprop debug.egl.swapinterval ""
 adb shell setprop debug.sf.latch_unsignaled ""
 adb shell setprop debug.sf.disable_backpressure ""
-adb shell setprop debug.egl.hw ""
 ```
 
-#### 6. Reset Hardware Spoofer & Reboot
+#### 8. Reset Hardware Identity Spoofer & Reboot Phone
 ```bash
 adb shell setprop persist.sys.game.boost.profile 0
 adb reboot
