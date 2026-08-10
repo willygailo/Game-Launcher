@@ -121,6 +121,76 @@ Prevents device battery heating by routing charger power directly to the motherb
 
 ---
 
+## 🔄 How to Revert Back to Stock Normal Phone (Full Reset Guide)
+
+To safely revert all settings, ANGLE graphics drivers, display refresh rate overrides, touch optimizations, and hardware identity spoofer back to factory stock defaults:
+
+### Method 1: ⚡ 1-Tap Reset via Game Launcher App
+Open **Game Launcher Pro V2.0** → Navigate to **Settings** → Tap **RESET TO FACTORY DEFAULTS**, then **Reboot your Phone**.
+
+---
+
+### Method 2: 💻 Complete ADB Command Sequence (PC / Wireless Debugging)
+
+Run these ADB commands directly on your PC, LADB, or Shizuku Terminal:
+
+#### 1. Reset ANGLE & Game Driver Settings
+```bash
+adb shell settings delete global angle_gl_driver_all_angle
+adb shell settings delete global game_driver_all_apps
+adb shell settings delete global game_driver_opt_in_apps
+```
+
+#### 2. Reset Display Refresh Rate Settings
+```bash
+adb shell settings delete system peak_refresh_rate
+adb shell settings delete system min_refresh_rate
+adb shell settings delete system user_refresh_rate
+adb shell settings delete global peak_refresh_rate
+adb shell settings delete global min_refresh_rate
+adb shell settings delete secure user_refresh_rate
+adb shell settings delete secure refresh_rate_mode
+```
+
+#### 3. Reset Game Mode API & Overlays
+```bash
+adb shell cmd game mode standard global
+adb shell cmd window reset-app-refresh-rate global
+adb shell device_config delete game_overlay global
+```
+
+#### 4. Reset Touch Latency & Digitizer Slop
+```bash
+adb shell setprop debug.input.max_events_per_sec ""
+adb shell setprop view.touch_slop ""
+adb shell settings delete system touch_slop_reduction
+adb shell settings delete system pointer_speed
+adb shell setprop persist.sys.touch.response_time ""
+adb shell setprop persist.sys.touch.sensitivity ""
+adb shell setprop persist.sys.touch_prediction ""
+adb shell setprop persist.vendor.qti.input.touch_boost ""
+```
+
+#### 5. Reset SurfaceFlinger & SwapInterval Overrides
+```bash
+adb shell setprop debug.sf.fps_limit ""
+adb shell setprop persist.sys.NV_FPSLIMIT ""
+adb shell setprop persist.sys.NV_POWERMODE ""
+adb shell setprop debug.gr.swapinterval ""
+adb shell setprop debug.egl.swapinterval ""
+adb shell setprop debug.sf.latch_unsignaled ""
+adb shell setprop debug.sf.disable_backpressure ""
+adb shell setprop debug.egl.hw ""
+```
+
+#### 6. Reset Hardware Spoofer & Reboot
+```bash
+adb shell setprop persist.sys.game.boost.profile 0
+adb reboot
+```
+
+---
+
 ## 🌐 Contact & Connect with Developer
 
 - 👤 **Developer**: **WILLY JR CARNASA GAILO**
