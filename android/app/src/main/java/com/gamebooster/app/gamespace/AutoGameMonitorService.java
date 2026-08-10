@@ -136,18 +136,18 @@ public class AutoGameMonitorService extends Service {
             } else if (!isGameActive && lastActiveGamePackage != null) {
                 Log.i(TAG, "Game exited — maintaining active performance settings (Zero Auto-Off & Background Home 165Hz Lock)");
                 lastActiveGamePackage = null;
-                GameSessionSettings.restore(getApplicationContext());
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
                 
-                // Enforce Background Home 165Hz Refresh Rate & Performance state
+                // Enforce Background Home 165Hz Refresh Rate, Touch Latency & Performance state without resetting spoofer identity
                 com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
+                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
                 PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(), "⚡ Background Home Active — 165Hz & Performance Locked", android.widget.Toast.LENGTH_SHORT).show());
             } else if (!isGameActive && lastActiveGamePackage == null) {
-                // Background Home continuous refresh rate check
+                // Background Home continuous refresh rate and touch check (Zero Fallback)
                 com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
+                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
             }
         });
     }

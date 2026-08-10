@@ -63,8 +63,18 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuManager.requestShizukuPermission();
             } else if (ShizukuExecutor.hasShizukuPermission()) {
-                AppExecutors.getInstance().executeCommand(() ->
-                        ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext()));
+                AppExecutors.getInstance().executeCommand(() -> {
+                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                    if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(getApplicationContext())) {
+                        String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(getApplicationContext());
+                        if (activeId != null) {
+                            com.gamebooster.app.spoofer.SpoofProfile activeProfile = com.gamebooster.app.spoofer.DeviceSpooferEngine.getProfileById(activeId);
+                            if (activeProfile != null) {
+                                com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(getApplicationContext(), activeProfile, null);
+                            }
+                        }
+                    }
+                });
             }
         } catch (Throwable ignored) {}
 

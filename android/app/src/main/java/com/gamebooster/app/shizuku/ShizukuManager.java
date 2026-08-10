@@ -52,6 +52,13 @@ public class ShizukuManager {
         if (requestCode == REQUEST_CODE_SHIZUKU) {
             boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
             Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
+            if (granted) {
+                try {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to bind Shizuku UserService on permission granted", e);
+                }
+            }
             notifyStateChanged(granted);
         }
     };
@@ -59,17 +66,25 @@ public class ShizukuManager {
     private static final Shizuku.OnBinderReceivedListener RECEIVED_LISTENER = () -> {
         Log.i(TAG, "Shizuku binder connected cleanly.");
         try {
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                ShizukuUserServiceConnector.getInstance().bindService();
+                notifyStateChanged(true);
+            } else {
+                Log.i(TAG, "Shizuku binder connected but permission pending — requesting permission.");
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+                notifyStateChanged(false);
             }
-        } catch (Exception ignored) {}
-        notifyStateChanged(true);
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking permission on binder received", e);
+            notifyStateChanged(false);
+        }
     };
 
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {
         Log.w(TAG, "Shizuku binder died / service disconnected.");
         notifyStateChanged(false);
     };
+
 
     public static void registerBinderListeners() {
         try {

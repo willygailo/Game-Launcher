@@ -89,49 +89,62 @@ public class ShizukuExecutor {
         }
     }
 
+    public static String executeShizukuBatchCommands(java.util.List<String> commands) {
+        if (commands == null || commands.isEmpty()) return "SUCCESS";
+        StringBuilder sb = new StringBuilder();
+        for (String cmd : commands) {
+            if (cmd != null && !cmd.trim().isEmpty()) {
+                sb.append(cmd.trim()).append("; ");
+            }
+        }
+        if (sb.length() == 0) return "SUCCESS";
+        return executeShizukuCommand(sb.toString());
+    }
+
     public static void grantAppPermissionsViaShizuku(Context context) {
         if (context == null || !hasShizukuPermission()) return;
         String packageName = context.getPackageName();
+        java.util.List<String> batch = new java.util.ArrayList<>();
 
         // Perform Shizuku ADB Grant Combo
-        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.MANAGE_EXTERNAL_STORAGE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_EXTERNAL_STORAGE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.WRITE_EXTERNAL_STORAGE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.ACCESS_NOTIFICATION_POLICY");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.DUMP");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.BATTERY_STATS");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.MANAGE_GAME_MODE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.OVERRIDE_WIFI_CONFIG");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.CHANGE_NETWORK_STATE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.FORCE_STOP_PACKAGES");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.CLEAR_APP_CACHE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.REAL_GET_TASKS");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.MODIFY_PHONE_STATE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.READ_PRIVILEGED_PHONE_STATE");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.HARDWARE_TEST");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.INTERNET");
-        executeShizukuCommand("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
+        batch.add("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
+        batch.add("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
+        batch.add("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
+        batch.add("pm grant " + packageName + " android.permission.MANAGE_EXTERNAL_STORAGE");
+        batch.add("pm grant " + packageName + " android.permission.READ_EXTERNAL_STORAGE");
+        batch.add("pm grant " + packageName + " android.permission.WRITE_EXTERNAL_STORAGE");
+        batch.add("pm grant " + packageName + " android.permission.ACCESS_NOTIFICATION_POLICY");
+        batch.add("pm grant " + packageName + " android.permission.DUMP");
+        batch.add("pm grant " + packageName + " android.permission.BATTERY_STATS");
+        batch.add("pm grant " + packageName + " android.permission.MANAGE_GAME_MODE");
+        batch.add("pm grant " + packageName + " android.permission.OVERRIDE_WIFI_CONFIG");
+        batch.add("pm grant " + packageName + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
+        batch.add("pm grant " + packageName + " android.permission.CHANGE_NETWORK_STATE");
+        batch.add("pm grant " + packageName + " android.permission.FORCE_STOP_PACKAGES");
+        batch.add("pm grant " + packageName + " android.permission.CLEAR_APP_CACHE");
+        batch.add("pm grant " + packageName + " android.permission.REAL_GET_TASKS");
+        batch.add("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
+        batch.add("pm grant " + packageName + " android.permission.MODIFY_PHONE_STATE");
+        batch.add("pm grant " + packageName + " android.permission.READ_PRIVILEGED_PHONE_STATE");
+        batch.add("pm grant " + packageName + " android.permission.HARDWARE_TEST");
+        batch.add("pm grant " + packageName + " android.permission.INTERNET");
+        batch.add("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
 
         // AppOps Overrides for Unrestricted System Access
-        executeShizukuCommand("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
-        executeShizukuCommand("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
-        executeShizukuCommand("cmd appops set " + packageName + " GET_USAGE_STATS allow");
-        executeShizukuCommand("cmd appops set " + packageName + " WRITE_SETTINGS allow");
-        executeShizukuCommand("cmd appops set " + packageName + " MANAGE_GAME_MODE allow");
-        executeShizukuCommand("cmd appops set " + packageName + " RUN_IN_BACKGROUND allow");
-        executeShizukuCommand("cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow");
-        executeShizukuCommand("cmd appops set " + packageName + " AUTO_START allow");
-        executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
-        executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
-        executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
-        executeShizukuCommand("cmd appops set " + packageName + " NO_ISOLATED_STORAGE allow");
+        batch.add("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
+        batch.add("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
+        batch.add("cmd appops set " + packageName + " GET_USAGE_STATS allow");
+        batch.add("cmd appops set " + packageName + " WRITE_SETTINGS allow");
+        batch.add("cmd appops set " + packageName + " MANAGE_GAME_MODE allow");
+        batch.add("cmd appops set " + packageName + " RUN_IN_BACKGROUND allow");
+        batch.add("cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow");
+        batch.add("cmd appops set " + packageName + " AUTO_START allow");
+        batch.add("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
+        batch.add("cmd appops set " + packageName + " PROJECT_MEDIA allow");
+        batch.add("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
+        batch.add("cmd appops set " + packageName + " NO_ISOLATED_STORAGE allow");
 
-        // Force Target Games Permission & AppOps Overrides (MLBB, PUBGM, BGMI, CODM, HOK, Genshin, Star Rail, Free Fire, Wild Rift, ZZZ, WuWa, New State, AoV, Blood Strike)
+        // Force Target Games Permission & AppOps Overrides
         String[] targetGames = new String[] {
                 "com.mobile.legends", "com.mobilelegends.win",
                 "com.tencent.ig", "com.pubg.krmobile", "com.vng.pubgmobile", "com.pubg.imobile", "com.pubg.newstate",
@@ -143,16 +156,19 @@ public class ShizukuExecutor {
         };
 
         for (String gamePkg : targetGames) {
-            executeShizukuCommand("cmd game mode performance " + gamePkg);
-            executeShizukuCommand("cmd game set --fps 165 " + gamePkg);
-            executeShizukuCommand("cmd window set-app-refresh-rate " + gamePkg + " 165");
-            executeShizukuCommand("device_config put game_overlay " + gamePkg + " mode=2,fps=165:mode=3,fps=165");
-            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " AUTO_START allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
-            executeShizukuCommand("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
-            executeShizukuCommand("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
+            batch.add("cmd game mode performance " + gamePkg);
+            batch.add("cmd game set --fps 165 " + gamePkg);
+            batch.add("cmd window set-app-refresh-rate " + gamePkg + " 165");
+            batch.add("device_config put game_overlay " + gamePkg + " mode=2,fps=165:mode=3,fps=165");
+            batch.add("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
+            batch.add("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
+            batch.add("cmd appops set " + gamePkg + " AUTO_START allow");
+            batch.add("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
+            batch.add("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
+            batch.add("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
         }
+
+        executeShizukuBatchCommands(batch);
     }
 }
+

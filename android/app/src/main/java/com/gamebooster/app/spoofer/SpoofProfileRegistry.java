@@ -110,4 +110,24 @@ public class SpoofProfileRegistry {
         List<SpoofProfile> list = ALL_BY_BRAND.get(brandLabel);
         return (list != null && !list.isEmpty()) ? list.get(0) : null;
     }
+
+    /**
+     * Validates that all registered brand profiles meet mandatory non-null and valid data contracts.
+     * @return true if all registered profiles are valid, false otherwise.
+     */
+    public static boolean validateRegistryIntegrity() {
+        if (ALL_BY_ID.isEmpty()) return false;
+        for (SpoofProfile p : ALL_BY_ID.values()) {
+            if (p.id == null || p.id.trim().isEmpty() ||
+                p.displayName == null || p.displayName.trim().isEmpty() ||
+                p.brandLabel == null || p.brandLabel.trim().isEmpty() ||
+                p.model == null || p.model.trim().isEmpty() ||
+                p.brand == null || p.manufacturer == null ||
+                p.hardware == null || p.glRenderer == null) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
+

@@ -41,15 +41,24 @@ public class PermissionsFragment extends Fragment {
         btnShizuku.setOnClickListener(v -> {
             if (getContext() != null) {
                 if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
-                    Toast.makeText(getContext(), "Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show();
+                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                        ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() ->
+                                Toast.makeText(getContext(), "⚡ Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show());
+                        }
+                    });
                 } else {
-                    ShizukuManager.openOrInstallShizukuManager(getContext());
+                    ShizukuManager.requestShizukuPermission();
+                    if (!ShizukuExecutor.isShizukuAvailable()) {
+                        ShizukuManager.openOrInstallShizukuManager(getContext());
+                    }
                 }
                 EngineUIHelper.refreshEngineStatus(tvEngineStatus);
                 updateSystemSettingsStatus();
             }
         });
+
 
         btnSettings.setOnClickListener(v -> {
             if (getContext() != null) {
