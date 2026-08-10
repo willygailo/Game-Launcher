@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.engine.PermissionBatchBuilder;
 import com.gamebooster.app.games.TargetGameRegistry;
 
 import java.io.BufferedReader;
@@ -139,50 +140,11 @@ public class ShizukuExecutor {
         }
 
         String packageName = context.getPackageName();
-        List<String> batch = new ArrayList<>();
 
-        // Perform Shizuku ADB Grant Combo
-        batch.add("pm grant " + packageName + " android.permission.WRITE_SECURE_SETTINGS");
-        batch.add("pm grant " + packageName + " android.permission.WRITE_SETTINGS");
-        batch.add("pm grant " + packageName + " android.permission.PACKAGE_USAGE_STATS");
-        batch.add("pm grant " + packageName + " android.permission.MANAGE_EXTERNAL_STORAGE");
-        batch.add("pm grant " + packageName + " android.permission.READ_EXTERNAL_STORAGE");
-        batch.add("pm grant " + packageName + " android.permission.WRITE_EXTERNAL_STORAGE");
-        batch.add("pm grant " + packageName + " android.permission.ACCESS_NOTIFICATION_POLICY");
-        batch.add("pm grant " + packageName + " android.permission.DUMP");
-        batch.add("pm grant " + packageName + " android.permission.BATTERY_STATS");
-        batch.add("pm grant " + packageName + " android.permission.MANAGE_GAME_MODE");
-        batch.add("pm grant " + packageName + " android.permission.OVERRIDE_WIFI_CONFIG");
-        batch.add("pm grant " + packageName + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
-        batch.add("pm grant " + packageName + " android.permission.CHANGE_NETWORK_STATE");
-        batch.add("pm grant " + packageName + " android.permission.FORCE_STOP_PACKAGES");
-        batch.add("pm grant " + packageName + " android.permission.CLEAR_APP_CACHE");
-        batch.add("pm grant " + packageName + " android.permission.REAL_GET_TASKS");
-        batch.add("pm grant " + packageName + " android.permission.SET_PROCESS_LIMIT");
-        batch.add("pm grant " + packageName + " android.permission.MODIFY_PHONE_STATE");
-        batch.add("pm grant " + packageName + " android.permission.READ_PRIVILEGED_PHONE_STATE");
-        batch.add("pm grant " + packageName + " android.permission.HARDWARE_TEST");
-        batch.add("pm grant " + packageName + " android.permission.INTERNET");
-        batch.add("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
-        batch.add("pm grant " + packageName + " android.permission.SCHEDULE_EXACT_ALARM");
-        batch.add("pm grant " + packageName + " android.permission.USE_EXACT_ALARM");
+        // Delegate to PermissionBatchBuilder — single source of truth (no duplicates)
+        List<String> batch = new ArrayList<>(PermissionBatchBuilder.buildGrantBatch(packageName));
 
-        // AppOps Overrides for Unrestricted System Access
-        batch.add("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
-        batch.add("cmd appops set " + packageName + " SYSTEM_ALERT_WINDOW allow");
-        batch.add("cmd appops set " + packageName + " GET_USAGE_STATS allow");
-        batch.add("cmd appops set " + packageName + " WRITE_SETTINGS allow");
-        batch.add("cmd appops set " + packageName + " MANAGE_GAME_MODE allow");
-        batch.add("cmd appops set " + packageName + " RUN_IN_BACKGROUND allow");
-        batch.add("cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow");
-        batch.add("cmd appops set " + packageName + " AUTO_START allow");
-        batch.add("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
-        batch.add("cmd appops set " + packageName + " PROJECT_MEDIA allow");
-        batch.add("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
-        batch.add("cmd appops set " + packageName + " NO_ISOLATED_STORAGE allow");
-        batch.add("cmd appops set " + packageName + " SCHEDULE_EXACT_ALARM allow");
-
-        // Force Target Games Permission & AppOps Overrides via TargetGameRegistry
+        // Per-game Game Mode + FPS lock for all target games
         int maxHz = 165;
         try {
             DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
@@ -192,18 +154,8 @@ public class ShizukuExecutor {
         } catch (Throwable ignored) {}
 
         List<String> targetGames = TargetGameRegistry.getAllPackages();
-
         for (String gamePkg : targetGames) {
-            batch.add("cmd game mode performance " + gamePkg);
-            batch.add("cmd game set --fps " + maxHz + " " + gamePkg);
-            batch.add("cmd window set-app-refresh-rate " + gamePkg + " " + maxHz);
-            batch.add("device_config put game_overlay " + gamePkg + " mode=2,fps=" + maxHz + ":mode=3,fps=" + maxHz);
-            batch.add("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
-            batch.add("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
-            batch.add("cmd appops set " + gamePkg + " AUTO_START allow");
-            batch.add("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
-            batch.add("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
-            batch.add("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
+            batch.addAll(PermissionBatchBuilder.buildPerGameBatch(gamePkg, maxHz));
         }
 
         String res = executeShizukuBatchCommands(batch);

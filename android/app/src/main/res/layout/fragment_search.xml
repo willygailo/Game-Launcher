@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0A0A0F">
+
+    <!-- Search Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="#12121A">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_search_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search or enter URL"
+                android:textSize="13sp"
+                android:inputType="textUri"
+                android:imeOptions="actionGo"
+                android:singleLine="true"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btn_search_go"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GO"
+            android:backgroundTint="#7C5CFC"
+            android:layout_gravity="center_vertical"
+            style="@style/Widget.MaterialComponents.Button"/>
+    </LinearLayout>
+
+    <!-- Quick Nav Chips -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_shizuku_setup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📖 Shizuku Setup"
+                android:textSize="12sp"
+                android:layout_marginEnd="6dp"
+                style="@style/Widget.MaterialComponents.Chip.Action"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_shizuku_guide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡ Wireless Debug"
+                android:textSize="12sp"
+                android:layout_marginEnd="6dp"
+                style="@style/Widget.MaterialComponents.Chip.Action"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rikka_api"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛡️ Shizuku API"
+                android:textSize="12sp"
+                android:layout_marginEnd="6dp"
+                style="@style/Widget.MaterialComponents.Chip.Action"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_github"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🐙 GitHub"
+                android:textSize="12sp"
+                android:layout_marginEnd="6dp"
+                style="@style/Widget.MaterialComponents.Chip.Action"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- WebView -->
+    <WebView
+        android:id="@+id/wv_search"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+</LinearLayout>

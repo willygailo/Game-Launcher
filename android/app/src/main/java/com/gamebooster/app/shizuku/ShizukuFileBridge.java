@@ -10,12 +10,34 @@ import com.gamebooster.app.engine.CommandExecutor;
  * Provides:
  *  - Automatic directory creation
  *  - Safety backup (.bak) generation before patching
- *  - Safe atomic file writes
+ *  - Safe atomic file writes (fixed: no printf % issues)
  *  - Read-only locking (chmod 444 / chmod 644) to prevent games from resetting config files on boot
+ *  - File read, directory listing, JSON key patching, file addition
+ *  - File integrity verification via sha256sum
+ *
+ * Android 13+ Note: /sdcard/Android/data/<package>/ is restricted for third-party apps.
+ * Access via Shizuku (uid 2000) bypasses these restrictions legally as ADB shell.
  */
 public class ShizukuFileBridge {
 
     private static final String TAG = "ShizukuFileBridge";
+
+    // -----------------------------------------------------------------------------------------
+    // Game Data Folder Constants (Android 13-16 compatible paths)
+    // All accessed via Shizuku uid 2000 — bypasses /sdcard/Android/data/ restriction legally
+    // -----------------------------------------------------------------------------------------
+
+    public static final String MLBB_DATA    = "/sdcard/Android/data/com.mobile.legends/files/";
+    public static final String PUBG_DATA    = "/sdcard/Android/data/com.tencent.ig/files/";
+    public static final String CODM_DATA    = "/sdcard/Android/data/com.activision.callofduty.shooter/files/";
+    public static final String HOK_DATA     = "/sdcard/Android/data/com.levelinfinite.sgameGlobal/files/";
+    public static final String FF_DATA      = "/sdcard/Android/data/com.dts.freefireth/files/";
+    public static final String FF_MAX_DATA  = "/sdcard/Android/data/com.dts.freefiremax/files/";
+    public static final String GENSHIN_DATA = "/sdcard/Android/data/com.miHoYo.GenshinImpact/files/";
+    public static final String CODM_GARENA  = "/sdcard/Android/data/com.garena.game.codm/files/";
+    public static final String WILD_RIFT    = "/sdcard/Android/data/com.riotgames.league.wildrift/files/";
+    public static final String ZZZ_DATA     = "/sdcard/Android/data/com.HoYoverse.nap/files/";
+    public static final String WUWA_DATA    = "/sdcard/Android/data/com.kurogame.wutheringwaves.global/files/";
 
     public static void ensureParentDir(String filePath) {
         if (filePath == null) return;
@@ -43,8 +65,12 @@ public class ShizukuFileBridge {
         // Unlock file permissions first in case it was previously locked
         execute("chmod 666 " + filePath);
 
-        String escaped = content.replace("'", "'\\''");
-        String writeCmd = "printf '" + escaped + "' > " + filePath;
+        // BUG FIX: Use heredoc-style cat instead of printf '%s' to safely handle content
+        // containing % characters (common in JSON game config files like {"fps":60})
+        // The heredoc marker GAMEBOOSTER_WRITE_EOF is unlikely to appear in game config content
+        String writeCmd = "cat > " + filePath + " << 'GAMEBOOSTER_WRITE_EOF'\n"
+                + content
+                + "\nGAMEBOOSTER_WRITE_EOF";
         String res = execute(writeCmd);
 
         if (makeReadOnly) {
@@ -117,6 +143,89 @@ public class ShizukuFileBridge {
         String res = execute(cmd);
         Log.d(TAG, "copyDirectory from " + sourceDir + " to " + destDir + " -> " + res);
         return true;
+    }
+
+    /**
+     * Reads the content of a file via Shizuku (cat).
+     * Works on restricted /sdcard/Android/data/ paths on Android 13+ via uid 2000.
+     *
+     * @param filePath Full absolute file path
+     * @return File content string, or "ERROR: ..." message
+     */
+    public static String readFile(String filePath) {
+        if (filePath == null) return "ERROR: null path";
+        String result = execute("cat " + filePath + " 2>/dev/null");
+        Log.d(TAG, "readFile " + filePath + " -> " + result.substring(0, Math.min(80, result.length())));
+        return result;
+    }
+
+    /**
+     * Lists files in a directory via Shizuku (ls -la).
+     * Works on restricted /sdcard/Android/data/ paths on Android 13+ via uid 2000.
+     *
+     * @param dirPath Full absolute directory path
+     * @return ls -la output string
+     */
+    public static String listFiles(String dirPath) {
+        if (dirPath == null) return "ERROR: null path";
+        String result = execute("ls -la " + dirPath + " 2>/dev/null || echo 'DIR_NOT_FOUND'");
+        Log.d(TAG, "listFiles " + dirPath + " -> " + result.substring(0, Math.min(200, result.length())));
+        return result;
+    }
+
+    /**
+     * Patches a specific JSON key in a game config file using sed.
+     * Only modifies the target key without overwriting the entire file.
+     * Safe for structured JSON with simple "key": value pairs.
+     *
+     * @param filePath Full path to JSON file
+     * @param key      JSON key to patch (without quotes or colon)
+     * @param value    New value (numeric: no quotes; string: include quotes in value param)
+     * @return true if patch was applied
+     */
+    public static boolean patchJsonKey(String filePath, String key, String value) {
+        if (filePath == null || key == null || value == null) return false;
+
+        createBackup(filePath);
+        execute("chmod 666 " + filePath);
+
+        // sed pattern: replace value after "key": (handles both int and string values)
+        String sedCmd = "sed -i 's/\\(\"" + key + "\"[ ]*:[ ]*\\)[^,}]*/\\1" + value + "/g' " + filePath;
+        String res = execute(sedCmd);
+        execute("chmod 644 " + filePath);
+        Log.d(TAG, "patchJsonKey key='" + key + "' value='" + value + "' in " + filePath + " -> " + res);
+        return true;
+    }
+
+    /**
+     * Adds a new file to a game data directory.
+     * Creates the directory if it doesn't exist.
+     *
+     * @param dirPath  Full absolute directory path
+     * @param filename Filename for the new file
+     * @param content  Content to write into the file
+     * @return true if file was created successfully
+     */
+    public static boolean addFileToDir(String dirPath, String filename, String content) {
+        if (dirPath == null || filename == null || content == null) return false;
+        String fullPath = dirPath.endsWith("/") ? dirPath + filename : dirPath + "/" + filename;
+        return writeContent(fullPath, content, false);
+    }
+
+    /**
+     * Verifies file integrity using sha256sum.
+     *
+     * @param filePath     Full path to the file
+     * @param expectedHash Expected SHA-256 hash (lowercase hex, 64 chars)
+     * @return true if the file's sha256sum matches the expected hash
+     */
+    public static boolean verifyFileIntegrity(String filePath, String expectedHash) {
+        if (filePath == null || expectedHash == null) return false;
+        String result = execute("sha256sum " + filePath + " 2>/dev/null | awk '{print $1}'");
+        boolean match = expectedHash.equalsIgnoreCase(result.trim());
+        Log.d(TAG, "verifyFileIntegrity " + filePath + " expected='" + expectedHash
+                + "' got='" + result.trim() + "' match=" + match);
+        return match;
     }
 
     private static String execute(String command) {

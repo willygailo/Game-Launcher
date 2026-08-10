@@ -1,9 +1,13 @@
 package com.gamebooster.app.shizuku;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.engine.PermissionBatchBuilder;
+import com.gamebooster.app.engine.SetPropValidator;
 import com.gamebooster.app.games.TargetGameRegistry;
+import com.gamebooster.app.shizuku.ShizukuTerminalManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +47,9 @@ public class ShizukuForceApplyEngine {
         List<String> batch = new ArrayList<>();
         String appPkg = context.getPackageName();
 
-        // Section 1: Permission Fortress & AppOps Lock
-        batch.addAll(buildPermissionFortressBatch(appPkg));
+        // Section 1: Permission Fortress & AppOps Lock (via PermissionBatchBuilder — no duplicates)
+        batch.addAll(PermissionBatchBuilder.buildGrantBatch(appPkg));
+
 
         // Section 2: System Persist Properties Lock (Never revert on reboot)
         batch.addAll(buildPersistPropertyBatch(targetHz));
@@ -78,81 +83,93 @@ public class ShizukuForceApplyEngine {
         return new ForceApplyResult(success, batch.size(), resultStr);
     }
 
-    private static List<String> buildPermissionFortressBatch(String pkg) {
-        List<String> b = new ArrayList<>();
-        // Standard Privileged PM Grants
-        b.add("pm grant " + pkg + " android.permission.WRITE_SECURE_SETTINGS");
-        b.add("pm grant " + pkg + " android.permission.WRITE_SETTINGS");
-        b.add("pm grant " + pkg + " android.permission.PACKAGE_USAGE_STATS");
-        b.add("pm grant " + pkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
-        b.add("pm grant " + pkg + " android.permission.READ_EXTERNAL_STORAGE");
-        b.add("pm grant " + pkg + " android.permission.WRITE_EXTERNAL_STORAGE");
-        b.add("pm grant " + pkg + " android.permission.ACCESS_NOTIFICATION_POLICY");
-        b.add("pm grant " + pkg + " android.permission.DUMP");
-        b.add("pm grant " + pkg + " android.permission.BATTERY_STATS");
-        b.add("pm grant " + pkg + " android.permission.MANAGE_GAME_MODE");
-        b.add("pm grant " + pkg + " android.permission.OVERRIDE_WIFI_CONFIG");
-        b.add("pm grant " + pkg + " android.permission.CHANGE_COMPONENT_ENABLED_STATE");
-        b.add("pm grant " + pkg + " android.permission.CHANGE_NETWORK_STATE");
-        b.add("pm grant " + pkg + " android.permission.FORCE_STOP_PACKAGES");
-        b.add("pm grant " + pkg + " android.permission.CLEAR_APP_CACHE");
-        b.add("pm grant " + pkg + " android.permission.REAL_GET_TASKS");
-        b.add("pm grant " + pkg + " android.permission.SET_PROCESS_LIMIT");
-        b.add("pm grant " + pkg + " android.permission.MODIFY_PHONE_STATE");
-        b.add("pm grant " + pkg + " android.permission.HARDWARE_TEST");
-        b.add("pm grant " + pkg + " android.permission.SYSTEM_ALERT_WINDOW");
-        b.add("pm grant " + pkg + " android.permission.SCHEDULE_EXACT_ALARM");
-        b.add("pm grant " + pkg + " android.permission.USE_EXACT_ALARM");
+    // Removed buildPermissionFortressBatch() — replaced by PermissionBatchBuilder.buildGrantBatch()
+    // This eliminates the duplicate grant list that existed in both ShizukuExecutor and here.
 
-        // AppOps Overrides
-        b.add("cmd appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow");
-        b.add("cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow");
-        b.add("cmd appops set " + pkg + " GET_USAGE_STATS allow");
-        b.add("cmd appops set " + pkg + " WRITE_SETTINGS allow");
-        b.add("cmd appops set " + pkg + " MANAGE_GAME_MODE allow");
-        b.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow");
-        b.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow");
-        b.add("cmd appops set " + pkg + " AUTO_START allow");
-        b.add("cmd appops set " + pkg + " TURN_SCREEN_ON allow");
-        b.add("cmd appops set " + pkg + " PROJECT_MEDIA allow");
-        b.add("cmd appops set " + pkg + " ACCESS_RESTRICTED_SETTINGS allow");
-        b.add("cmd appops set " + pkg + " NO_ISOLATED_STORAGE allow");
-        b.add("cmd appops set " + pkg + " SCHEDULE_EXACT_ALARM allow");
-
-        return b;
-    }
 
     private static List<String> buildPersistPropertyBatch(int hz) {
         List<String> b = new ArrayList<>();
-        b.add("setprop persist.sys.NV_FPSLIMIT " + hz);
-        b.add("setprop persist.sys.NV_POWERMODE 1");
-        b.add("setprop persist.sys.perf.topAppRenderThreadBoost.enable 1");
-        b.add("setprop persist.vendor.thermal.enable 0");
-        b.add("setprop persist.sys.gamemode.fps " + hz);
-        b.add("setprop persist.hwui.renderer vulkan");
-        b.add("setprop persist.debug.sf.hw 1");
-        b.add("setprop persist.sys.bg_apps_limit 32");
 
-        // Volatile Immediate Locks
-        b.add("setprop debug.sf.fps_limit " + hz);
-        b.add("setprop debug.sf.hw 1");
-        b.add("setprop debug.hwui.renderer vulkan");
-        b.add("setprop debug.renderengine.backend vulkan");
-        b.add("setprop debug.sf.early_app_phase_offset_ns 500000");
+        // Detect OEM for safe thermal override (do NOT disable vendor thermal on Samsung/MediaTek)
+        String manufacturer = Build.MANUFACTURER.toLowerCase();
+        boolean isSamsung   = manufacturer.contains("samsung");
+        boolean isMediaTek  = Build.HARDWARE.toLowerCase().contains("mt")  // MediaTek SOC
+                           || Build.HARDWARE.toLowerCase().contains("mediatek");
 
-        // SurfaceFlinger Refresh Lock Commands
+        // FPS / Frame Rate Lock
+        addIfSupported(b, "setprop persist.sys.NV_FPSLIMIT " + hz);
+        addIfSupported(b, "setprop persist.sys.NV_POWERMODE 1");
+        addIfSupported(b, "setprop persist.sys.gamemode.fps " + hz);
+        addIfSupported(b, "setprop persist.sys.perf.topAppRenderThreadBoost.enable 1");
+        addIfSupported(b, "setprop persist.sys.bg_apps_limit 32");
+
+        // GPU / Rendering pipeline
+        addIfSupported(b, "setprop persist.hwui.renderer vulkan");
+        addIfSupported(b, "setprop persist.debug.sf.hw 1");
+
+        // Volatile immediate locks
+        addIfSupported(b, "setprop debug.sf.fps_limit " + hz);
+        addIfSupported(b, "setprop debug.sf.hw 1");
+        addIfSupported(b, "setprop debug.hwui.renderer vulkan");
+        addIfSupported(b, "setprop debug.renderengine.backend vulkan");
+        addIfSupported(b, "setprop debug.sf.early_app_phase_offset_ns 500000");
+        addIfSupported(b, "setprop debug.sf.early_phase_offset_ns 500000");
+        addIfSupported(b, "setprop debug.sf.latch_unsignaled 1");
+        addIfSupported(b, "setprop debug.sf.disable_backpressure 1");
+
+        // Touch latency
+        addIfSupported(b, "setprop debug.input.max_events_per_sec 1000");
+        addIfSupported(b, "setprop view.touch_slop 0");
+        addIfSupported(b, "setprop persist.sys.touch.response_time 0");
+        addIfSupported(b, "setprop persist.sys.touch_prediction 1");
+        addIfSupported(b, "setprop persist.sys.touch.sensitivity 10");
+        addIfSupported(b, "setprop persist.vendor.qti.input.touch_boost 1");
+
+        // Thermal — OEM-guarded: skip on Samsung and MediaTek to prevent thermal throttle crash
+        if (!isSamsung && !isMediaTek) {
+            addIfSupported(b, "setprop persist.vendor.thermal.enable 0");
+        } else {
+            Log.d(TAG, "OEM thermal guard: skipping persist.vendor.thermal.enable 0 on "
+                    + Build.MANUFACTURER);
+        }
+
+        // Settings namespace additions (Android 13-16 compatible)
+        b.add("settings put system pointer_speed 7");
+        b.add("settings put global low_power 0");
+        b.add("settings put global animator_duration_scale 0.5");
+        b.add("settings put global transition_animation_scale 0.5");
+        b.add("settings put global window_animation_scale 0.5");
+        b.add("settings put secure game_dashboard_shown 1");
+        // ANGLE driver per-game enforcement
+        b.add("settings put global angle_gl_driver_all_angle 1");
+
+        // SurfaceFlinger binder calls
         b.add("service call SurfaceFlinger 1035 i32 " + hz);
         b.add("service call SurfaceFlinger 1036 i32 " + hz);
 
         return b;
     }
 
+    /** Adds a setprop command only if it's supported on the current Android API level. */
+    private static void addIfSupported(List<String> batch, String setpropCmd) {
+        String filtered = SetPropValidator.filterCommand(setpropCmd);
+        if (filtered != null) {
+            batch.add(filtered);
+        }
+    }
+
     private static List<String> buildDeviceConfigBatch() {
         List<String> b = new ArrayList<>();
         b.add("device_config put activity_manager max_cached_processes 32");
+        // Android 12-13: game_driver namespace
         b.add("device_config put game_driver game_driver_all_apps 1");
+        // Android 14+ uses game_manager namespace (dual-write for cross-version compat)
+        b.add("device_config put game_manager game_driver_all_apps 1");
+        b.add("device_config put game_manager game_default_frame_rate 0");
+        b.add("device_config put activity_manager max_phantom_processes 2147483647");
         b.add("device_config put netd_native tcp_upgrade_to_v4mapped false");
         b.add("device_config put runtime_native_boot iorap_perfetto_enable true");
+        b.add("device_config put connectivity tcp_use_default_deltas false");
         return b;
     }
 
@@ -161,16 +178,8 @@ public class ShizukuForceApplyEngine {
         if (gamePkgs == null) return b;
 
         for (String gamePkg : gamePkgs) {
-            b.add("cmd game mode performance " + gamePkg);
-            b.add("cmd game set --fps " + hz + " " + gamePkg);
-            b.add("cmd window set-app-refresh-rate " + gamePkg + " " + hz);
-            b.add("device_config put game_overlay " + gamePkg + " mode=2,fps=" + hz + ":mode=3,fps=" + hz);
-            b.add("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
-            b.add("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
-            b.add("cmd appops set " + gamePkg + " AUTO_START allow");
-            b.add("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
-            b.add("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
-            b.add("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
+            // Delegate to PermissionBatchBuilder for per-game batch
+            b.addAll(PermissionBatchBuilder.buildPerGameBatch(gamePkg, hz));
         }
 
         return b;
@@ -196,23 +205,19 @@ public class ShizukuForceApplyEngine {
 
     private static List<String> buildBootScriptBatch(int hz) {
         List<String> b = new ArrayList<>();
-        String scriptPath = "/data/local/tmp/gamebooster_force.sh";
-        String scriptContent = "#!/system/bin/sh\\n" +
-                "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
-                "setprop persist.sys.NV_FPSLIMIT " + hz + "\\n" +
-                "setprop persist.sys.NV_POWERMODE 1\\n" +
-                "setprop debug.sf.fps_limit " + hz + "\\n" +
-                "setprop debug.sf.hw 1\\n" +
-                "setprop debug.hwui.renderer vulkan\\n" +
-                "service call SurfaceFlinger 1035 i32 " + hz + "\\n" +
-                "service call SurfaceFlinger 1036 i32 " + hz + "\\n" +
-                "cmd power set-mode 0 1\\n" +
-                "cmd power set-mode 2 1\\n" +
-                "cmd thermalservice override-status 0\\n";
-
-        String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
-                scriptContent, scriptPath, scriptPath, scriptPath);
-        b.add(cmd);
+        // Delegate to ShizukuTerminalManager which handles clean multi-line script writing
+        // This replaces the fragile String.format('%s') + inline \n approach that broke on
+        // some shell interpreters and with % characters in content
+        try {
+            ShizukuTerminalManager.writeForceApplyScript(hz);
+            b.add("sh " + ShizukuTerminalManager.FORCE_APPLY_SCRIPT_PATH);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to write force-apply script via terminal manager, using inline fallback", e);
+            // Inline fallback (minimal, avoids format string issues)
+            b.add("setprop persist.sys.NV_FPSLIMIT " + hz
+                    + " && setprop debug.sf.fps_limit " + hz
+                    + " && setprop debug.sf.hw 1");
+        }
         return b;
     }
 }

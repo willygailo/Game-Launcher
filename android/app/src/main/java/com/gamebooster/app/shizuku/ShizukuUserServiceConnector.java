@@ -17,6 +17,9 @@ public class ShizukuUserServiceConnector {
 
     private IUserService userServiceInstance = null;
     private boolean isBinding = false;
+    private int mRetryCount = 0;
+    private static final int MAX_RETRY_COUNT = 5;
+    private static final long BASE_RETRY_DELAY_MS = 1000L; // 1s base, doubles each retry
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -31,6 +34,18 @@ public class ShizukuUserServiceConnector {
             Log.w(TAG, "IUserService disconnected / unbound.");
             userServiceInstance = null;
             isBinding = false;
+            // Exponential backoff reconnect — waits 1s, 2s, 4s, 8s, 16s before giving up
+            if (mRetryCount < MAX_RETRY_COUNT) {
+                long delayMs = BASE_RETRY_DELAY_MS * (1L << mRetryCount);
+                mRetryCount++;
+                Log.i(TAG, "Scheduling UserService reconnect attempt " + mRetryCount
+                        + " in " + delayMs + "ms...");
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+                        ShizukuUserServiceConnector.this::bindService, delayMs
+                );
+            } else {
+                Log.w(TAG, "UserService max retry count reached — giving up reconnect.");
+            }
         }
     };
 
@@ -47,13 +62,17 @@ public class ShizukuUserServiceConnector {
 
     public synchronized void bindService() {
         if (userServiceInstance != null || isBinding) {
+            Log.d(TAG, "bindService: already bound or binding — skipping.");
             return;
         }
         try {
-            if (ShizukuManager.isShizukuInstalled(null) || Shizuku.pingBinder()) {
+            if (Shizuku.pingBinder()) {
                 Log.d(TAG, "Binding Shizuku UserService via AIDL...");
                 isBinding = true;
+                mRetryCount = 0; // Reset retry counter on fresh bind
                 Shizuku.bindUserService(serviceArgs, serviceConnection);
+            } else {
+                Log.w(TAG, "bindService: Shizuku binder not alive — skipping bind.");
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to bind Shizuku UserService", e);
@@ -72,6 +91,20 @@ public class ShizukuUserServiceConnector {
                 userServiceInstance = null;
                 isBinding = false;
             }
+        }
+    }
+
+    /** Returns true if the UserService AIDL binder is currently connected and responsive. */
+    public boolean isServiceAlive() {
+        if (userServiceInstance == null) return false;
+        try {
+            // Lightweight liveness check — IUserService.getUid() is a no-op call
+            userServiceInstance.getUid();
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "isServiceAlive: binder ping failed — service is dead: " + e.getMessage());
+            userServiceInstance = null;
+            return false;
         }
     }
 

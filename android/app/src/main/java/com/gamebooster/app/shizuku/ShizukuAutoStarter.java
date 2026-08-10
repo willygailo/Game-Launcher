@@ -8,6 +8,7 @@ import android.util.Log;
 import com.gamebooster.app.engine.ShellExecutor;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * ShizukuAutoStarter — Dynamically resolves the native starter binary path (libshizuku.so)
@@ -83,19 +84,38 @@ public class ShizukuAutoStarter {
             return new StartResult(false, null, "ERROR: Context is null");
         }
 
-        String starterPath = getShizukuStarterPath(context);
-        if (starterPath == null) {
-            return new StartResult(false, null, "ERROR: Shizuku starter binary (libshizuku.so) not found. Ensure Shizuku is installed.");
+        // Primary: use the terminal script-based approach (dynamic, hash-independent)
+        Log.i(TAG, "⚡ Attempting Shizuku start via ShizukuTerminalManager script...");
+        try {
+            ShellExecutor.CommandResult scriptResult =
+                    ShizukuTerminalManager.startShizukuViaScript(context);
+            if (scriptResult.isSuccess()) {
+                String path = ShizukuTerminalManager.START_SCRIPT_PATH;
+                Log.i(TAG, "✅ Shizuku started via terminal script: " + path);
+                return new StartResult(true, path, scriptResult.stdout);
+            }
+            Log.w(TAG, "Terminal script start failed, falling back to PackageManager path...");
+        } catch (Exception e) {
+            Log.w(TAG, "Terminal script exception, falling back: " + e.getMessage());
         }
 
-        Log.i(TAG, "⚡ Attempting 1-Tap Auto-Start of Shizuku daemon via: " + starterPath);
+        // Fallback: direct PackageManager path resolution
+        String starterPath = getShizukuStarterPath(context);
+        if (starterPath == null) {
+            return new StartResult(false, null,
+                    "ERROR: Shizuku starter binary (libshizuku.so) not found. Ensure Shizuku is installed.");
+        }
 
-        // Build root command: su -c <starterPath>
-        String cmd = starterPath.startsWith("sh ") ? starterPath : starterPath;
+        Log.i(TAG, "⚡ Attempting Shizuku daemon start via PackageManager path: " + starterPath);
+
+        // BUG FIX: was 'starterPath.startsWith("sh ") ? starterPath : starterPath' — both branches
+        // returned the same value, so the 'sh' prefix was never prepended for .sh script paths.
+        String cmd = starterPath.startsWith("sh ") ? starterPath : "sh " + starterPath;
         ShellExecutor.CommandResult res = ShellExecutor.executeRootCommand(cmd);
 
         boolean success = res.isSuccess();
-        Log.i(TAG, "Shizuku Auto-Start result exitCode=" + res.exitCode + " output='" + res.stdout + "' err='" + res.stderr + "'");
+        Log.i(TAG, "Shizuku Auto-Start result exitCode=" + res.exitCode
+                + " output='" + res.stdout + "' err='" + res.stderr + "'");
 
         return new StartResult(success, starterPath, success ? res.stdout : res.stderr);
     }

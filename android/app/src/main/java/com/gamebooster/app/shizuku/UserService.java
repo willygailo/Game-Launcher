@@ -34,7 +34,9 @@ public class UserService extends IUserService.Stub {
         BufferedReader stdoutReader = null;
         BufferedReader stderrReader = null;
         try {
-            process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+            // Use /system/bin/sh explicitly for correct PATH as uid 2000 (Shizuku ADB shell)
+            // Bare 'sh' may resolve to a different shell binary on some OEM ROMs
+            process = Runtime.getRuntime().exec(new String[]{"/system/bin/sh", "-c", command});
 
             stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder stdout = new StringBuilder();
