@@ -75,24 +75,14 @@ public class ShizukuUserServiceConnector {
         }
     }
 
-    public String executeCommand(String command) {
-        if (userServiceInstance == null) {
-            bindService();
-            // Brief polling wait for binding to establish before falling back
-            int retries = 2;
-            while (userServiceInstance == null && retries > 0) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException ignored) {}
-                retries--;
-            }
-        }
+    public boolean isConnected() {
+        return userServiceInstance != null;
+    }
 
+    public String executeCommandDirectly(String command) {
         if (userServiceInstance == null) {
-            Log.w(TAG, "UserService not bound yet — falling back to ShizukuExecutor reflection path.");
-            return ShizukuExecutor.executeShizukuCommand(command);
+            return "ERROR: UserService not bound";
         }
-
         try {
             return userServiceInstance.execCommand(command);
         } catch (Exception e) {
@@ -100,5 +90,26 @@ public class ShizukuUserServiceConnector {
             userServiceInstance = null; // Reset dead binder reference
             return "ERROR: Shizuku AIDL service call failed: " + e.getMessage();
         }
+    }
+
+    public String executeCommand(String command) {
+        if (userServiceInstance == null) {
+            bindService();
+            // Brief polling wait for binding to establish before falling back
+            int retries = 3;
+            while (userServiceInstance == null && retries > 0) {
+                try {
+                    Thread.sleep(40);
+                } catch (InterruptedException ignored) {}
+                retries--;
+            }
+        }
+
+        if (userServiceInstance != null) {
+            return executeCommandDirectly(command);
+        }
+
+        Log.w(TAG, "UserService not bound yet — executing system command.");
+        return com.gamebooster.app.engine.ShellExecutor.executeCommand(command).stdout;
     }
 }

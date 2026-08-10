@@ -64,6 +64,20 @@ public class ShizukuExecutor {
             Log.d(TAG, "executeShizukuCommand: FAILED - Permission Denied");
             return "ERROR: Shizuku Permission Denied";
         }
+
+        // 1. Primary AIDL IPC path via Shizuku UserService
+        try {
+            ShizukuUserServiceConnector connector = ShizukuUserServiceConnector.getInstance();
+            connector.bindService();
+            String aidlResult = connector.executeCommandDirectly(command);
+            if (aidlResult != null && !aidlResult.startsWith("ERROR: UserService not bound")) {
+                return aidlResult;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Shizuku UserService AIDL call pending, trying fallback: " + t.getMessage());
+        }
+
+        // 2. Fallback reflection path
         Process process = null;
         BufferedReader stdoutReader = null;
         BufferedReader stderrReader = null;

@@ -8,6 +8,8 @@ public class CommandExecutor {
     public static EngineMode getActiveEngineMode() {
         if (ShizukuExecutor.hasShizukuPermission()) {
             return EngineMode.SHIZUKU;
+        } else if (ShellExecutor.isRootAvailable()) {
+            return EngineMode.ROOT;
         } else {
             return EngineMode.SYSTEM_SETTINGS;
         }
@@ -19,10 +21,16 @@ public class CommandExecutor {
         switch (mode) {
             case SHIZUKU:
                 return ShizukuUserServiceConnector.getInstance().executeCommand(command);
+            case ROOT:
+                ShellExecutor.CommandResult rootRes = ShellExecutor.executeRootCommand(command);
+                if (!rootRes.isSuccess()) {
+                    return "ERROR: " + (rootRes.stderr.isEmpty() ? "Root command failed with code " + rootRes.exitCode : rootRes.stderr);
+                }
+                return rootRes.stdout.isEmpty() ? "SUCCESS" : rootRes.stdout;
             case SYSTEM_SETTINGS:
             case READ_ONLY:
             default:
-                ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, false);
+                ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command);
                 if (!shellRes.isSuccess()) {
                     return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
                 }
