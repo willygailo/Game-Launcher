@@ -25,9 +25,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "Home",
-            "Games",
-            "FPS/Hz",
-            "Spoofer",
             "Settings"
     };
 
@@ -148,15 +145,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         Fragment selectedFragment;
         switch (position) {
             case 1:
-                selectedFragment = new GamesFragment();
-                break;
-            case 2:
-                selectedFragment = new HzFpsFragment();
-                break;
-            case 3:
-                selectedFragment = new ProfilesFragment();
-                break;
-            case 4:
                 selectedFragment = new SettingsFragment();
                 break;
             case 0:

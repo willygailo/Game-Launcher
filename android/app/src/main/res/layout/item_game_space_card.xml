@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_container"
+    android:layout_width="145dp"
+    android:layout_height="210dp"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="6dp"
+    android:background="@drawable/bg_game_card_normal"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Inner Game Poster Content -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp">
+
+        <!-- Game Poster / Icon Frame -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_icon_holder"
+            android:layout_width="match_parent"
+            android:layout_height="125dp"
+            android:layout_alignParentTop="true"
+            app:cardBackgroundColor="#121828"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/iv_game_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
+                    android:contentDescription="Game Poster"
+                    android:src="@android:drawable/sym_def_app_icon" />
+
+                <!-- Translucent gradient overlay for title contrast -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_alignParentBottom="true"
+                    android:background="#66000000" />
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Genre Badge -->
+        <TextView
+            android:id="@+id/tv_game_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cv_icon_holder"
+            android:layout_marginTop="8dp"
+            android:background="#2000F0FF"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="ESPORTS"
+            android:textColor="#00F0FF"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+
+        <!-- Game Title -->
+        <TextView
+            android:id="@+id/tv_game_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_game_badge"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Game Title"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- Active Selected Indicator Dot -->
+        <View
+            android:id="@+id/view_selected_indicator"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="6dp"
+            android:background="#A020F0"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+</FrameLayout>

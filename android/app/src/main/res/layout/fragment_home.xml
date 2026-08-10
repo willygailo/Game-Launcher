@@ -1,225 +1,464 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:overScrollMode="never"
-    android:clipToPadding="false">
+    android:background="@drawable/home_bg_new">
 
-    <LinearLayout
+    <!-- Translucent glass scrim background -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:background="@color/glass_scrim" />
 
-        <!-- Header Row: Title + Settings Icon -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    <!-- TOP HEADER BAR -->
+    <RelativeLayout
+        android:id="@+id/layout_header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentTop="true"
+        android:paddingHorizontal="16dp">
 
-            <LinearLayout
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:orientation="vertical">
+                android:text="🎮 GAME SPACE"
+                android:textColor="#00F0FF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚡ GAME BOOSTER PRO"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.04" />
+            <TextView
+                android:id="@+id/tv_engine_status_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pro Hardware Engine • Extreme Boost Active"
+                android:textColor="#8000F0FF"
+                android:textSize="11sp" />
+        </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Mobile Legends • PUBG Mobile • CODM"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
+        <!-- Right Header Action Icons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_refresh_scan"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:backgroundTint="#2000F0FF"
+                android:padding="0dp"
+                android:text="🔄"
+                android:textColor="#00F0FF"
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/btn_open_settings"
                 style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:backgroundTint="@color/card_bg"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
                 android:text="⚙️"
-                android:textSize="22sp" />
-        </RelativeLayout>
+                android:textColor="#00F0FF"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </RelativeLayout>
 
-        <!-- Compact Status Strip: Engine mode + RAM -->
+    <!-- MAIN SCROLLABLE CONTENT BODY -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_header_bar"
+        android:layout_above="@+id/layout_bottom_bar"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:clipToPadding="false">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/card_glass_shape"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="10dp">
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
 
-            <TextView
-                android:id="@+id/tv_engine_mode"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="⚡ SHIZUKU"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_ram_usage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="RAM: —"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Featured Hero Banner Card -->
-        <androidx.cardview.widget.CardView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="145dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="#00000000">
-
+            <!-- HERO CENTER WIDGET: BOOST ENGINE DIAL -->
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/card_glass_shape">
+                android:layout_height="180dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center">
 
-                <ImageView
-                    android:id="@+id/iv_hero_banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/hero_banner"
-                    android:contentDescription="Hero banner" />
+                <!-- Outer Glowing Circular Ring -->
+                <FrameLayout
+                    android:id="@+id/layout_engine_ring"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/bg_engine_dial_ring"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                <!-- Translucent overlay for high text contrast -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#25071022" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentStart="true"
-                    android:orientation="vertical"
-                    android:padding="12dp">
+                        <TextView
+                            android:id="@+id/tv_lightning_bolt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="⚡"
+                            android:textColor="#00F0FF"
+                            android:textSize="38sp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚀 EXTREME HARDWARE ENGINE"
-                        android:textColor="@color/accent_cyan"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:shadowColor="#CC000000"
-                        android:shadowDx="0"
-                        android:shadowDy="1"
-                        android:shadowRadius="6" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="BOOST ENGINE"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.06" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="165Hz Unlocked • Ultra Low Latency • Zero Fallback"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:shadowColor="#CC000000"
-                        android:shadowDx="0"
-                        android:shadowDy="1"
-                        android:shadowRadius="6" />
-                </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_boost_status_sub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Tap to Boost"
+                            android:textColor="#00F0FF"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </FrameLayout>
+            </RelativeLayout>
+
+            <!-- PERFORMANCE MONITOR WIDGET GRID -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
+                    android:text="📊 PERFORMANCE MONITOR"
+                    android:textColor="#8000F0FF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <!-- 4 Stats Columns: CPU | GPU | RAM | PING -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:weightSum="4">
+
+                    <!-- CPU Metric -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CPU"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_cpu_val"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="45%"
+                            android:textColor="#00F0FF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_cpu"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="6dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:max="100"
+                            android:progress="45"
+                            android:progressTint="#00F0FF" />
+                    </LinearLayout>
+
+                    <!-- GPU Metric -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GPU"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_gpu_val"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="60%"
+                            android:textColor="#A020F0"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_gpu"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="6dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:max="100"
+                            android:progress="60"
+                            android:progressTint="#A020F0" />
+                    </LinearLayout>
+
+                    <!-- RAM Metric -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RAM"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_ram_val"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="72%"
+                            android:textColor="#00E5FF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_ram"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="6dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:max="100"
+                            android:progress="72"
+                            android:progressTint="#00E5FF" />
+                    </LinearLayout>
+
+                    <!-- PING Metric -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PING"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_ping_val"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="20ms"
+                            android:textColor="#00FF66"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_ping"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="6dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:max="100"
+                            android:progress="20"
+                            android:progressTint="#00FF66" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- "MY GAMES" SECTION HEADER -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tv_my_games_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="MY GAMES"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tv_games_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_margin="10dp"
-                    android:background="#B300FF66"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
-                    android:text="ACTIVE"
-                    android:textColor="#0B0E14"
-                    android:textSize="10sp"
+                    android:layout_centerVertical="true"
+                    android:text="0 GAMES DETECTED"
+                    android:textColor="#8000F0FF"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </RelativeLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- Games Count Header -->
-        <TextView
-            android:id="@+id/tv_games_header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="6dp"
-            android:text="SUPPORTED GAMES (0/3 DETECTED)"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1" />
+            <!-- HORIZONTAL GAME CAROUSEL RECYCLERVIEW -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_games_list"
+                android:layout_width="match_parent"
+                android:layout_height="225dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:scrollbars="none" />
 
-        <!-- Games RecyclerView (hero content) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_games_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:clipToPadding="false" />
-
-        <!-- Empty State (hidden by default, shown when no games detected) -->
-        <LinearLayout
-            android:id="@+id/layout_empty_state"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingTop="60dp"
-            android:paddingBottom="60dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎯"
-                android:textSize="48sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="No Target Games Found"
-                android:textColor="@color/text_primary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Install Mobile Legends, PUBG Mobile, or CODM\nand they will appear here instantly."
-                android:textColor="@color/empty_state_text"
-                android:textSize="13sp"
+            <!-- EMPTY STATE CONTAINER (shown when 0 games detected) -->
+            <LinearLayout
+                android:id="@+id/layout_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
                 android:gravity="center"
-                android:lineSpacingExtra="2dp" />
-        </LinearLayout>
+                android:orientation="vertical"
+                android:visibility="gone">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎯"
+                    android:textSize="40sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="No Games Detected"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:text="Install MLBB, PUBG, CODM, or any game\nand it will appear here automatically."
+                    android:textColor="#80FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTTOM FIXED GAME CONTROL BAR (matching Pasted image.png) -->
+    <LinearLayout
+        android:id="@+id/layout_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:background="#DD070B16"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <!-- Left Pill: Game Mode -->
+        <TextView
+            android:id="@+id/btn_game_mode"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="🎮 Game Mode\nPro Gamer ▾"
+            android:textColor="#00F0FF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <!-- Center Hero Action Button: LAUNCH GAME -->
+        <Button
+            android:id="@+id/btn_launch_game_hero"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1.4"
+            android:layout_marginHorizontal="8dp"
+            android:background="@drawable/bg_launch_game_button"
+            android:text="LAUNCH GAME"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
+
+        <!-- Right Pill: Network Boost -->
+        <TextView
+            android:id="@+id/btn_network_boost"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="📡 Network Boost\nOn ▾"
+            android:textColor="#00FF66"
+            android:textSize="10sp"
+            android:textStyle="bold" />
     </LinearLayout>
-</ScrollView>
+
+</RelativeLayout>
