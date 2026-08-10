@@ -70,22 +70,35 @@ public class GameProfileAutoConfigurator {
     public static void autoConfigAllInstalledGamesAsync(Context context, OnAutoConfigListener listener) {
         if (context == null) return;
 
-        final int targetFpsHz = getTargetFpsHz(context);
+        final int defaultTarget = getTargetFpsHz(context);
 
         AppExecutors.getInstance().executeCommand(() -> {
             List<GameAppInfo> games = GameManagerRepository.getInstalledGames(context);
             int configuredCount = 0;
 
             for (GameAppInfo game : games) {
-                if (autoConfigGamePackage(context, game.getPackageName(), targetFpsHz)) {
+                String pkg = game.getPackageName();
+                int gameTargetHz = GameProfilePreferences.getTargetHz(context, pkg);
+                if (gameTargetHz <= 0) gameTargetHz = defaultTarget;
+
+                // 1. Auto-apply per-game Competitive CFG profile
+                String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
+                                 pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
+                                 pkg.contains("cod") || pkg.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
+                CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
+                CfgProfileManager.applyProfile(context, gameKey, cfgProf);
+
+                // 2. Auto-apply game config patch & system refresh rate
+                if (autoConfigGamePackage(context, pkg, gameTargetHz)) {
                     configuredCount++;
                 }
             }
 
             final int finalCount = configuredCount;
+            final int finalHz = defaultTarget;
             if (listener != null) {
                 AppExecutors.getInstance().postToMainThread(() ->
-                        listener.onAutoConfigCompleted(finalCount, targetFpsHz));
+                        listener.onAutoConfigCompleted(finalCount, finalHz));
             }
         });
     }

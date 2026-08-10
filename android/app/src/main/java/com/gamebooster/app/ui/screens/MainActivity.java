@@ -58,6 +58,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         TweakManagerRepository.initializeStates(this);
         TweakManagerRepository.restoreAppliedTweaksAsync(this);
 
+        // Auto-start background game detection service on app startup
+        com.gamebooster.app.gamespace.AutoGameMonitorService.start(getApplicationContext());
+
+        // Auto-configure game profiles & patches for all installed games on app startup
+        GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(getApplicationContext(), (count, hz) -> {
+            Log.i("MainActivity", "Auto-configured " + count + " games @ " + hz + "Hz on app startup");
+        });
+
         // Request runtime notification permission on Android 13+ (API 33+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
