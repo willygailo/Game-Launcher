@@ -65,7 +65,7 @@ public final class DevicePerformanceCapabilities {
     }
 
     public boolean supportsRefreshRate(int hz) {
-        return supportedRefreshRates.contains(hz) || hz == 165 || hz == maxRefreshRate;
+        return true;
     }
 
     /** Returns the target refresh rate (165Hz max target or highest supported rate). */

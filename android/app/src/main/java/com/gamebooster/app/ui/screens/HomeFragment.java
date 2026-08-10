@@ -278,7 +278,6 @@ public class HomeFragment extends Fragment {
             int cpuPct = metrics.cpuUsagePct;
             int gpuPct = metrics.gpuUsagePct;
             int ramPct = metrics.ramUsagePct;
-            int pingMs = DeviceInfoChannel.measureRealPingMs();
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (tvCpuVal != null) tvCpuVal.setText(cpuPct + "%");
@@ -289,7 +288,12 @@ public class HomeFragment extends Fragment {
 
                 if (tvRamVal != null) tvRamVal.setText(ramPct + "%");
                 if (pbRam != null) pbRam.setProgress(ramPct);
+            });
+        });
 
+        AppExecutors.getInstance().executeScan(() -> {
+            int pingMs = DeviceInfoChannel.measureRealPingMs();
+            AppExecutors.getInstance().postToMainThread(() -> {
                 if (tvPingVal != null) tvPingVal.setText(pingMs + "ms");
                 if (pbPing != null) pbPing.setProgress(Math.min(100, pingMs));
             });

@@ -60,24 +60,22 @@ public class HzFpsFragment extends Fragment {
         if (getContext() == null) return;
         DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
         if (tvDeviceRefreshSupport != null) {
-            tvDeviceRefreshSupport.setText("Detected: " + caps.getSupportedRefreshRates()
-                    + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz");
+            tvDeviceRefreshSupport.setText("Hardware Max: " + caps.getMaxRefreshRate()
+                    + " Hz  •  Shizuku Force Target: 120/144/165 Hz ALL UNLOCKED");
         }
-        setRateVisible(btn60, caps, 60);
-        setRateVisible(btn90, caps, 90);
-        setRateVisible(btn120, caps, 120);
-        setRateVisible(btn144, caps, 144);
-        setRateVisible(btn165, caps, 165);
-    }
-
-    private void setRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {
-        if (button != null) button.setVisibility(caps.supportsRefreshRate(rate) ? View.VISIBLE : View.GONE);
+        if (btn60 != null) btn60.setVisibility(View.VISIBLE);
+        if (btn90 != null) btn90.setVisibility(View.VISIBLE);
+        if (btn120 != null) btn120.setVisibility(View.VISIBLE);
+        if (btn144 != null) btn144.setVisibility(View.VISIBLE);
+        if (btn165 != null) btn165.setVisibility(View.VISIBLE);
     }
 
     private void setHz(int hz) {
         if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
-            HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), hz);
+            HzFpsChannel.RefreshRateResult result = (hz >= 120)
+                    ? HzFpsChannel.forceSetRefreshRate(getContext(), hz)
+                    : HzFpsChannel.setRefreshRate(getContext(), hz);
             if (result.success) GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.appliedHz);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;

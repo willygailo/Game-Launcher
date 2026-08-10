@@ -38,6 +38,26 @@ public class TouchDisplayTweaksProvider {
                 true
         ));
 
+        list.add(new TweakItem(
+                "hz_144_unlock",
+                "144Hz Extreme Refresh Rate Lock",
+                "Forces 144Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + device_config",
+                "settings put system peak_refresh_rate 144.0; settings put system min_refresh_rate 144.0; settings put system user_refresh_rate 144; settings put global peak_refresh_rate 144.0; settings put global min_refresh_rate 144.0; cmd game mode performance global; cmd window set-app-refresh-rate global 144; device_config put game_overlay global mode=2,fps=144:mode=3,fps=144; service call SurfaceFlinger 1035 i32 144; service call SurfaceFlinger 1036 i32 144; setprop debug.sf.fps_limit 144; setprop persist.sys.NV_FPSLIMIT 144; setprop persist.sys.NV_POWERMODE 1",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "hz_165_unlock",
+                "165Hz Max Hardware Refresh Rate Lock",
+                "Forces 165Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + setprop zero-latency pipeline",
+                "settings put system peak_refresh_rate 165.0; settings put system min_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global peak_refresh_rate 165.0; settings put global min_refresh_rate 165.0; cmd game mode performance global; cmd window set-app-refresh-rate global 165; device_config put game_overlay global mode=2,fps=165:mode=3,fps=165; service call SurfaceFlinger 1035 i32 165; service call SurfaceFlinger 1036 i32 165; setprop debug.sf.fps_limit 165; setprop persist.sys.NV_FPSLIMIT 165; setprop persist.sys.NV_POWERMODE 1; setprop debug.gr.swapinterval 0; setprop debug.egl.swapinterval 0; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
         return list;
     }
 }

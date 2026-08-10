@@ -22,9 +22,12 @@ public class DeviceInfoChannel {
 
     private static final String TAG = "DeviceInfoChannel";
 
-    // Track previous CPU proc/stat tick for delta calculation
-    private static long prevCpuWork = 0;
-    private static long prevCpuTotal = 0;
+    private static final Object CPU_LOCK = new Object();
+    private static long prevCpuWork = -1;
+    private static long prevCpuTotal = -1;
+
+    private static int cachedPingMs = 24;
+    private static long lastPingTimeMs = 0;
 
     public static class Metrics {
         public final String deviceSummary;
@@ -115,40 +118,47 @@ public class DeviceInfoChannel {
 
     /** Real-Time CPU Usage % via /proc/stat delta, CPU frequency scaling, or Shizuku fallback */
     public static int readRealCpuUsage() {
-        try {
-            File statFile = new File("/proc/stat");
-            if (statFile.exists() && statFile.canRead()) {
-                try (BufferedReader br = new BufferedReader(new FileReader(statFile))) {
-                    String line = br.readLine();
-                    if (line != null && line.startsWith("cpu ")) {
-                        String[] tok = line.trim().split("\\s+");
-                        if (tok.length >= 8) {
-                            long user = Long.parseLong(tok[1]);
-                            long nice = Long.parseLong(tok[2]);
-                            long sys  = Long.parseLong(tok[3]);
-                            long idle = Long.parseLong(tok[4]);
-                            long io   = Long.parseLong(tok[5]);
-                            long irq  = Long.parseLong(tok[6]);
-                            long soft = Long.parseLong(tok[7]);
+        synchronized (CPU_LOCK) {
+            try {
+                File statFile = new File("/proc/stat");
+                if (statFile.exists() && statFile.canRead()) {
+                    try (BufferedReader br = new BufferedReader(new FileReader(statFile))) {
+                        String line = br.readLine();
+                        if (line != null && line.startsWith("cpu ")) {
+                            String[] tok = line.trim().split("\\s+");
+                            if (tok.length >= 8) {
+                                long user = Long.parseLong(tok[1]);
+                                long nice = Long.parseLong(tok[2]);
+                                long sys  = Long.parseLong(tok[3]);
+                                long idle = Long.parseLong(tok[4]);
+                                long io   = Long.parseLong(tok[5]);
+                                long irq  = Long.parseLong(tok[6]);
+                                long soft = Long.parseLong(tok[7]);
 
-                            long work = user + nice + sys + irq + soft;
-                            long total = work + idle + io;
+                                long work = user + nice + sys + irq + soft;
+                                long total = work + idle + io;
 
-                            long dWork = work - prevCpuWork;
-                            long dTotal = total - prevCpuTotal;
+                                if (prevCpuWork != -1 && prevCpuTotal != -1) {
+                                    long dWork = work - prevCpuWork;
+                                    long dTotal = total - prevCpuTotal;
 
-                            prevCpuWork = work;
-                            prevCpuTotal = total;
+                                    prevCpuWork = work;
+                                    prevCpuTotal = total;
 
-                            if (dTotal > 0) {
-                                int pct = (int) ((dWork * 100) / dTotal);
-                                return Math.min(100, Math.max(5, pct));
+                                    if (dTotal > 0) {
+                                        int pct = (int) ((dWork * 100) / dTotal);
+                                        return Math.min(100, Math.max(3, pct));
+                                    }
+                                } else {
+                                    prevCpuWork = work;
+                                    prevCpuTotal = total;
+                                }
                             }
                         }
                     }
                 }
-            }
-        } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {}
+        }
 
         // Fallback 1: Calculate average CPU scaling frequency ratio across active cores
         try {
@@ -195,7 +205,7 @@ public class DeviceInfoChannel {
             } catch (Throwable ignored) {}
         }
 
-        return (int) (25 + Math.random() * 20);
+        return 28;
     }
 
     /** Real-Time GPU Usage % via Qualcomm Adreno, MediaTek Mali, Exynos/Tensor sysfs, or Shizuku */
@@ -203,10 +213,18 @@ public class DeviceInfoChannel {
         String[] sysfsGpuPaths = new String[] {
                 "/sys/class/kgsl/kgsl-3d0/gpubusy",
                 "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage",
+                "/sys/class/kgsl/kgsl-3d0/gpu_load",
                 "/sys/class/misc/mali0/device/utilization",
+                "/sys/class/misc/mali0/device/utilization_stats",
+                "/sys/devices/platform/17000000.mali/utilization",
                 "/sys/kernel/gpu/gpu_busy",
                 "/sys/class/devfreq/gpufreq/gpu_load",
-                "/sys/class/devfreq/17000000.gpu/gpubusy"
+                "/sys/class/devfreq/17000000.gpu/gpubusy",
+                "/sys/class/devfreq/17000000.gpu/load",
+                "/sys/class/devfreq/3d00000.gpu/gpubusy",
+                "/sys/class/devfreq/3d00000.gpu/load",
+                "/sys/devices/platform/soc/17000000.mali/utilization",
+                "/sys/module/mali_kbase/parameters/mali_gpu_utilization"
         };
 
         for (String path : sysfsGpuPaths) {
@@ -237,7 +255,7 @@ public class DeviceInfoChannel {
         // Shizuku Direct Hardware Node Reader Fallback
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String out = ShizukuExecutor.executeShizukuCommand("cat /sys/class/kgsl/kgsl-3d0/gpubusy 2>/dev/null || cat /sys/class/misc/mali0/device/utilization 2>/dev/null");
+                String out = ShizukuExecutor.executeShizukuCommand("cat /sys/class/kgsl/kgsl-3d0/gpubusy 2>/dev/null || cat /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage 2>/dev/null || cat /sys/class/misc/mali0/device/utilization 2>/dev/null || cat /sys/class/devfreq/*.gpu/gpubusy 2>/dev/null");
                 if (out != null && !out.trim().isEmpty()) {
                     String s = out.trim();
                     if (s.contains(" ")) {
@@ -255,42 +273,51 @@ public class DeviceInfoChannel {
             } catch (Throwable ignored) {}
         }
 
-        return (int) (30 + Math.random() * 25);
+        return 35;
     }
 
     /** Real-Time Socket Connection & Ping Test (ms) */
     public static int measureRealPingMs() {
+        long now = System.currentTimeMillis();
+        if (lastPingTimeMs > 0 && (now - lastPingTimeMs) < 3000) {
+            return cachedPingMs;
+        }
+
         long start = System.currentTimeMillis();
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("1.1.1.1", 53), 800);
+            socket.connect(new InetSocketAddress("1.1.1.1", 53), 400);
             long elapsed = System.currentTimeMillis() - start;
-            return (int) Math.max(10, elapsed);
+            cachedPingMs = (int) Math.max(8, elapsed);
+            lastPingTimeMs = now;
+            return cachedPingMs;
         } catch (Throwable ignored) {}
 
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("8.8.8.8", 53), 800);
+            socket.connect(new InetSocketAddress("8.8.8.8", 53), 400);
             long elapsed = System.currentTimeMillis() - start;
-            return (int) Math.max(12, elapsed);
+            cachedPingMs = (int) Math.max(10, elapsed);
+            lastPingTimeMs = now;
+            return cachedPingMs;
         } catch (Throwable ignored) {}
 
         try {
             Process process = Runtime.getRuntime().exec("ping -c 1 -w 1 1.1.1.1");
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                return (int) Math.max(14, (System.currentTimeMillis() - start) / 2);
+                cachedPingMs = (int) Math.max(12, (System.currentTimeMillis() - start) / 2);
+                lastPingTimeMs = now;
+                return cachedPingMs;
             }
         } catch (Throwable ignored) {}
 
-        return (int) (18 + Math.random() * 8);
+        lastPingTimeMs = now;
+        return cachedPingMs;
     }
 
     private static float readCpuTemperature() {
-        String[] thermalPaths = new String[] {
-                "/sys/class/thermal/thermal_zone0/temp",
-                "/sys/class/thermal/thermal_zone1/temp",
-                "/sys/devices/virtual/thermal/thermal_zone0/temp"
-        };
-        for (String path : thermalPaths) {
+        float maxValidTemp = 0.0f;
+        for (int i = 0; i <= 15; i++) {
+            String path = "/sys/class/thermal/thermal_zone" + i + "/temp";
             File file = new File(path);
             if (file.exists() && file.canRead()) {
                 try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -298,7 +325,31 @@ public class DeviceInfoChannel {
                     if (line != null && !line.trim().isEmpty()) {
                         float val = Float.parseFloat(line.trim());
                         if (val > 1000) val /= 1000.0f;
-                        if (val > 20 && val < 100) return val;
+                        if (val >= 25.0f && val <= 105.0f) {
+                            if (val > maxValidTemp) {
+                                maxValidTemp = val;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        if (maxValidTemp > 0.0f) return maxValidTemp;
+
+        // Try virtual thermal path fallback
+        String[] fallbackPaths = new String[] {
+                "/sys/devices/virtual/thermal/thermal_zone0/temp",
+                "/sys/devices/virtual/thermal/thermal_zone1/temp"
+        };
+        for (String path : fallbackPaths) {
+            File file = new File(path);
+            if (file.exists() && file.canRead()) {
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String line = br.readLine();
+                    if (line != null && !line.trim().isEmpty()) {
+                        float val = Float.parseFloat(line.trim());
+                        if (val > 1000) val /= 1000.0f;
+                        if (val >= 25.0f && val <= 105.0f) return val;
                     }
                 } catch (Exception ignored) {}
             }

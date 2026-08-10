@@ -52,13 +52,13 @@ public class HzFpsChannel {
      */
     public static RefreshRateResult forceSetRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
-        if (!ShizukuExecutor.hasShizukuPermission()) {
-            return RefreshRateResult.failed(requestedHz, 0);
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
+            if (r.success) {
+                return RefreshRateResult.success(requestedHz, r.appliedHz);
+            }
         }
-        MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
-        return r.success
-                ? RefreshRateResult.success(requestedHz, r.appliedHz)
-                : RefreshRateResult.failed(requestedHz, requestedHz);
+        return setRefreshRate(context, requestedHz);
     }
 
     /**

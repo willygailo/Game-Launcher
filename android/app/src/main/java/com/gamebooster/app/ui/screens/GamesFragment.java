@@ -155,6 +155,6 @@ public class GamesFragment extends Fragment {
     }
 
     private void setTargetRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {
-        if (button != null) button.setVisibility(caps.supportsRefreshRate(rate) ? View.VISIBLE : View.GONE);
+        if (button != null) button.setVisibility(View.VISIBLE);
     }
 }

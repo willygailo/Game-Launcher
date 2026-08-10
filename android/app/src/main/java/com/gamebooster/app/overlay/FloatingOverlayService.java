@@ -166,13 +166,15 @@ public class FloatingOverlayService extends Service {
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.MaxHzForceChannel.ForceResult forceRes =
+                            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(165);
                     com.gamebooster.app.booster.PerformanceChannel.ProfileResult result =
                             com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
                                     getApplicationContext(),
                                     com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "🔥 " + result.message,
+                                "🚀 " + forceRes.message,
                                 android.widget.Toast.LENGTH_LONG).show();
                         // Auto-collapse: get HUD out of the way after action
                         scheduleAutoCollapse();
@@ -450,11 +452,11 @@ public class FloatingOverlayService extends Service {
         }
 
         if (tvPillMetrics != null) {
-            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
+            tvPillMetrics.setText(String.format("⚡ %d FPS | %dHz | %.1f°C", activeFps, currentHz, m.batteryTempC));
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d • Display: %d Hz (Max 165)", activeFps, currentHz));
+            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d • Display: %d Hz (Target 120/144/165)", activeFps, currentHz));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
