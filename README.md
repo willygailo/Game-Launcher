@@ -108,39 +108,6 @@ Prevents device battery heating by routing charger power directly to the motherb
 
 ---
 
-## 🏗️ Project Architecture
-
-```
-Game-Launcher/
-├── .github/
-│   └── workflows/        # GitHub Actions CI build & release workflow
-├── android/
-│   ├── app/              # Android app source code (SDK 36, Java 17)
-│   │   ├── src/main/assets/
-│   │   │   ├── backgrounds/ # App background image assets
-│   │   │   └── index.html   # Web Dashboard UI
-│   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/  # Refresh rate locking & OEM thermal mitigation
-│   │   │   ├── bypasscharging/ # Modular OEM Bypass Charging strategies (Infinix, Tecno, Samsung, Xiaomi, ROG, REDMAGIC)
-│   │   │   ├── config/   # Game patchers (MLBB, PUBG, CODM, HOK, Genshin, ZZZ, WuWa, Delta Force)
-│   │   │   ├── core/     # AppExecutors, PropertyResolver, GameBoosterJsInterface (JS Web Bridge)
-│   │   │   ├── device/   # Snapdragon 8 Elite & Dimensity 9400/8200 detector, Sysfs CPU Temp Monitor
-│   │   │   ├── engine/   # CommandExecutor & RefreshRateOverrideEngine
-│   │   │   ├── games/    # Game library, GameManagerRepository, package detector & search engine
-│   │   │   ├── gamespace/ # AutoGameMonitorService, DND Manager, GameCacheCleaner
-│   │   │   ├── overlay/  # SurfaceFlinger Floating FPS HUD & Reticle/Crosshair overlay
-│   │   │   ├── services/ # GameBoosterService & BootReceiver
-│   │   │   ├── shizuku/  # ShizukuExecutor, Scoped Storage ShizukuFileBridge & AIDL UserService
-│   │   │   ├── spoofer/  # Hardware Identity Spoofer Engine, 12 Brand Profiles, Per-Game Package Strategies (`spoofer/games/`)
-│   │   │   ├── tweaks/   # System tweaks repository & providers (CpuGpu, TouchDisplay, NetworkAudio, SystemKernel)
-│   │   │   └── ui/       # MainActivity & UI components
-│   │   └── src/test/     # Unit tests
-│   └── build.gradle      # App build config (versionCode 50, versionName "5.0.0")
-├── BANNER.gif            # Project banner header
-├── LICENSE               # Apache 2.0 Open Source License
-├── SECURITY.md          # Security policy & ban-safety rules
-└── README.md             # Project documentation
-```
 
 ---
 
