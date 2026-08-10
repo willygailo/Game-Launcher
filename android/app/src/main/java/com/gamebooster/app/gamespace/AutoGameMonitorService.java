@@ -112,6 +112,7 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
                         + profile.label + " up to " + targetHz + "Hz");
 
+                GameLaunchInterceptor.preApplyForGame(getApplicationContext(), currentPackage);
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
                 com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(currentPackage, targetHz);
                 com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();

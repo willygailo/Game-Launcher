@@ -278,6 +278,22 @@ public class DeviceSpooferEngine {
         }
     }
 
+    public static void applyGameGraphicsSpoof(Context context, String pkg, int targetHz) {
+        if (pkg == null || pkg.trim().isEmpty()) return;
+        try {
+            exec("cmd game mode performance " + pkg);
+            exec("cmd game set --fps " + targetHz + " " + pkg);
+            exec("cmd window set-app-refresh-rate " + pkg + " " + targetHz);
+            exec("device_config put game_overlay " + pkg + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);
+            exec("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow");
+            exec("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow");
+            exec("cmd appops set " + pkg + " AUTO_START allow");
+            exec("cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow");
+        } catch (Throwable t) {
+            Log.e(TAG, "Error applying game graphics spoof for " + pkg, t);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Reset
     // ─────────────────────────────────────────────────────────────────────────

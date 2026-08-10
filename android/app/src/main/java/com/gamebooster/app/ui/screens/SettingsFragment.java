@@ -103,11 +103,28 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnGrantShizuku.setOnClickListener(v -> {
                 if (getContext() != null) {
                     if (ShizukuExecutor.hasShizukuPermission()) {
+                        Toast.makeText(getContext(), "⚡ Executing FULL FORCE-APPLY Shizuku Engine...", Toast.LENGTH_SHORT).show();
+                        btnGrantShizuku.setEnabled(false);
                         AppExecutors.getInstance().executeCommand(() -> {
-                            ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
+                            int maxHz = 165;
+                            try {
+                                com.gamebooster.app.device.DevicePerformanceCapabilities caps = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(getContext());
+                                if (caps != null && caps.getMaxRefreshRate() > 0) {
+                                    maxHz = caps.getMaxRefreshRate();
+                                }
+                            } catch (Throwable ignored) {}
+
+                            com.gamebooster.app.shizuku.ShizukuForceApplyEngine.ForceApplyResult res =
+                                com.gamebooster.app.shizuku.ShizukuForceApplyEngine.forceApplyAll(getContext(), maxHz);
+
                             AppExecutors.getInstance().postToMainThread(() -> {
                                 if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "⚡ Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show();
+                                    btnGrantShizuku.setEnabled(true);
+                                    if (res.success) {
+                                        Toast.makeText(getContext(), "🔒 SUCCESS: " + res.totalCommands + " Commands FORCE-LOCKED via Shizuku!", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(getContext(), "Force Apply Result: " + res.outputLog, Toast.LENGTH_LONG).show();
+                                    }
                                     refreshAllStatuses();
                                 }
                             });
@@ -322,10 +339,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (getContext() == null) return;
                 ManualSettingsPreferences.setAngleMode(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
-                    GpuTweaksChannel.setAngleMode(isChecked);
+                    if (isChecked) {
+                        com.gamebooster.app.booster.AngleGraphicsDriverChannel.enableGlobalAngleDriver();
+                    } else {
+                        com.gamebooster.app.booster.AngleGraphicsDriverChannel.resetAngleDriver();
+                    }
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Google ANGLE Vulkan Driver ENABLED" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan Driver ENABLED for all games" : "ANGLE Driver Reset", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -733,16 +754,55 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void showCrosshairPresetDialog() {
         if (getContext() == null) return;
-        String[] options = {"Dot Preset", "Tactical Cross", "Scope Ring", "Sniper Cross"};
-        CrosshairPreset[] presets = {CrosshairPreset.DOT, CrosshairPreset.TACTICAL_CROSS, CrosshairPreset.SCOPE_RING, CrosshairPreset.SNIPER_CROSS};
+        String[] mainOptions = {"Change Shape Preset", "Change Color (Neon / Custom)", "Adjust Size & Opacity"};
 
         new AlertDialog.Builder(getContext())
-                .setTitle("🎯 SELECT CROSSHAIR PRESET")
-                .setItems(options, (dialog, which) -> {
-                    CrosshairPreset selected = presets[which];
-                    CrosshairPreferences.setPreset(getContext(), selected);
-                    CrosshairOverlayService.updateOverlay(getContext());
-                    Toast.makeText(getContext(), "🎯 Preset Set: " + selected.getLabel(), Toast.LENGTH_SHORT).show();
+                .setTitle("🎯 CUSTOMIZE CROSSHAIR OVERLAY")
+                .setItems(mainOptions, (dialog, which) -> {
+                    if (which == 0) {
+                        String[] options = {"Dot Preset", "Tactical Cross", "Scope Ring", "Sniper Cross", "T-Shape Target", "Dynamic Cross"};
+                        CrosshairPreset[] presets = {
+                            CrosshairPreset.DOT, CrosshairPreset.TACTICAL_CROSS, CrosshairPreset.SCOPE_RING,
+                            CrosshairPreset.SNIPER_CROSS, CrosshairPreset.T_SHAPE, CrosshairPreset.DYNAMIC_CROSS
+                        };
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("🎯 SELECT SHAPE PRESET")
+                                .setItems(options, (d, idx) -> {
+                                    CrosshairPreset selected = presets[idx];
+                                    CrosshairPreferences.setPreset(getContext(), selected);
+                                    CrosshairOverlayService.updateOverlay(getContext());
+                                    Toast.makeText(getContext(), "🎯 Shape Preset: " + selected.getLabel(), Toast.LENGTH_SHORT).show();
+                                })
+                                .show();
+                    } else if (which == 1) {
+                        String[] colorNames = {"Neon Green (#00FF66)", "Cyber Cyan (#00F0FF)", "Crimson Red (#FF2A55)", "Electric Yellow (#FFEE00)", "Pure White (#FFFFFF)"};
+                        int[] colors = {
+                            android.graphics.Color.parseColor("#00FF66"),
+                            android.graphics.Color.parseColor("#00F0FF"),
+                            android.graphics.Color.parseColor("#FF2A55"),
+                            android.graphics.Color.parseColor("#FFEE00"),
+                            android.graphics.Color.parseColor("#FFFFFF")
+                        };
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("🎨 SELECT CROSSHAIR COLOR")
+                                .setItems(colorNames, (d, idx) -> {
+                                    CrosshairPreferences.setColor(getContext(), colors[idx]);
+                                    CrosshairOverlayService.updateOverlay(getContext());
+                                    Toast.makeText(getContext(), "🎨 Color Updated!", Toast.LENGTH_SHORT).show();
+                                })
+                                .show();
+                    } else {
+                        String[] sizes = {"Small (50px)", "Medium Standard (80px)", "Large (110px)", "Ultra (140px)"};
+                        int[] sizeValues = {50, 80, 110, 140};
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("📐 SELECT CROSSHAIR SIZE")
+                                .setItems(sizes, (d, idx) -> {
+                                    CrosshairPreferences.setSizePx(getContext(), sizeValues[idx]);
+                                    CrosshairOverlayService.updateOverlay(getContext());
+                                    Toast.makeText(getContext(), "📐 Size Updated: " + sizeValues[idx] + "px", Toast.LENGTH_SHORT).show();
+                                })
+                                .show();
+                    }
                 })
                 .show();
     }

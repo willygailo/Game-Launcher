@@ -150,6 +150,27 @@
                 android:value="Game space automatic game detection service" />
         </service>
 
+        <service
+            android:name="com.gamebooster.app.booster.thermal.ThermalMonitorService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name="com.gamebooster.app.services.QuickBoostTileService"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="Game Booster"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.gamebooster.app.services.GameSchedulerService"
+            android:enabled="true"
+            android:exported="false" />
+
         <receiver
             android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"

@@ -451,18 +451,23 @@ public class FloatingOverlayService extends Service {
             } catch (Throwable ignored) {}
         }
 
+        float socTemp = com.gamebooster.app.booster.thermal.ThermalMonitorService.readSocTemperatureSysfs();
+        float displayTemp = socTemp > 0 ? socTemp : m.batteryTempC;
+        int pingMs = com.gamebooster.app.booster.NetworkOptimizer.measureNetworkPingMs();
+        String pingStr = pingMs > 0 ? pingMs + "ms" : "--";
+
         if (tvPillMetrics != null) {
-            tvPillMetrics.setText(String.format("⚡ %d FPS | %dHz | %.1f°C", activeFps, currentHz, m.batteryTempC));
+            tvPillMetrics.setText(String.format("⚡ %d FPS | %dHz | %.1f°C | %s", activeFps, currentHz, displayTemp, pingStr));
         }
 
         if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ Real-Time FPS: %d • Display: %d Hz (Target 120/144/165)", activeFps, currentHz));
+            tvHudFps.setText(String.format("⚡ FPS: %d • Display: %d Hz • Ping: %s", activeFps, currentHz, pingStr));
         }
         if (tvHudRam != null) {
             tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
         }
         if (tvHudTemp != null) {
-            tvHudTemp.setText(String.format("🌡️ Battery Temp: %.1f°C", m.batteryTempC));
+            tvHudTemp.setText(String.format("🌡️ SOC Temp: %.1f°C (Bat: %.1f°C)", displayTemp, m.batteryTempC));
         }
         if (tvHudMa != null) {
             if (m.batteryCurrentMa != 0) {

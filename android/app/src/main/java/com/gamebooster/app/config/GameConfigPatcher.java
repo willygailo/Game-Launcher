@@ -61,6 +61,16 @@ public class GameConfigPatcher {
             if (ArenaOfValorConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("genshin")) {
             if (GenshinConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("dunk") || pkg.contains("bloodstrike")) {
+            if (BloodStrikeConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("warzone")) {
+            if (WarzoneConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("deltaforce")) {
+            if (DeltaForceConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
+            if (Standoff2ConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
+        } else if (pkg.contains("farlight") || pkg.contains("miracle.farlight84")) {
+            if (Farlight84ConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else {

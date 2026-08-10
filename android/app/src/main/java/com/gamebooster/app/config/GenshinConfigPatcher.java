@@ -2,70 +2,54 @@ package com.gamebooster.app.config;
 
 import android.util.Log;
 import com.gamebooster.app.shizuku.ShizukuFileBridge;
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * GenshinConfigPatcher manages internal config files for Genshin Impact & Honkai Star Rail.
- * Packages: com.miHoYo.GenshinImpact, com.HoYoverse.hkrpg, com.miHoYo.hkrpg
- *
- * Unlocks 120 FPS & Highest Graphic Presets.
- */
 public class GenshinConfigPatcher {
 
     private static final String TAG = "GenshinConfigPatcher";
 
-    public static boolean patch(String packageName, int targetFps) {
-        if (packageName == null) return false;
+    private static final String[] GENSHIN_PACKAGES = {
+            "com.miHoYo.GenshinImpact",
+            "com.cognosphere.GenshinImpact"
+    };
 
-        List<String> paths = getConfigPaths(packageName);
-        int count = 0;
+    public static boolean patchGenshinConfig(int targetHz) {
+        boolean anyPatched = false;
 
-        String jsonContent = String.format(
-                "{\n" +
-                "  \"fps\": %d,\n" +
-                "  \"max_fps\": %d,\n" +
-                "  \"target_frame_rate\": %d,\n" +
-                "  \"graphics_quality\": 5,\n" +
-                "  \"render_resolution\": 5,\n" +
-                "  \"shadow_quality\": 5,\n" +
-                "  \"visual_effects\": 5,\n" +
-                "  \"sfx_quality\": 5,\n" +
-                "  \"teammate_effects\": 1,\n" +
-                "  \"motion_blur\": 0,\n" +
-                "  \"bloom\": 1\n" +
-                "}\n",
-                targetFps, targetFps, targetFps
-        );
+        String[] keys = new String[]{
+                "TargetFrameRateValue",
+                "GraphicsQualityLevel",
+                "ShadowQuality",
+                "VisualEffects",
+                "SFXQuality"
+        };
 
-        for (String path : paths) {
-            if (path.endsWith(".json") || path.endsWith("setting_data")) {
-                if (ShizukuFileBridge.writeContent(path, jsonContent, false)) count++;
-            } else if (path.endsWith(".xml")) {
-                String xmlContent = String.format(
-                        "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
-                        "<map>\n" +
-                        "    <int name=\"FPS\" value=\"%d\" />\n" +
-                        "    <int name=\"TargetFPS\" value=\"%d\" />\n" +
-                        "    <int name=\"GraphicsQuality\" value=\"5\" />\n" +
-                        "    <int name=\"RenderScale\" value=\"5\" />\n" +
-                        "</map>\n",
-                        targetFps, targetFps
-                );
-                if (ShizukuFileBridge.writeContent(path, xmlContent, false)) count++;
+        String fpsVal = targetHz >= 120 ? "120" : "60";
+
+        String[] values = new String[]{
+                fpsVal,
+                "4",
+                "3",
+                "3",
+                "3"
+        };
+
+        for (String pkg : GENSHIN_PACKAGES) {
+            String basePath = "/sdcard/Android/data/" + pkg + "/files/config.ini";
+            try {
+                boolean ok = ShizukuFileBridge.updateIniKeys(basePath, keys, values, "[General]");
+                if (ok) {
+                    anyPatched = true;
+                    Log.i(TAG, "Successfully patched Genshin Impact config.ini for " + pkg);
+                }
+            } catch (Throwable t) {
+                Log.e(TAG, "Error patching Genshin config for " + pkg, t);
             }
         }
 
-        Log.i(TAG, "Genshin/StarRail patch applied for " + packageName + ": " + count + " paths @ " + targetFps + " FPS");
-        return count > 0;
+        return anyPatched;
     }
 
-    private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/setting_data");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
-        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
-        paths.add("/data/data/" + pkg + "/files/setting_data");
-        return paths;
+    public static boolean patch(String pkg, int targetFps) {
+        return patchGenshinConfig(targetFps);
     }
 }

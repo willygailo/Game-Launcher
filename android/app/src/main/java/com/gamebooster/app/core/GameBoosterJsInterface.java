@@ -266,6 +266,22 @@ public class GameBoosterJsInterface {
         }
         return false;
     }
+
+    @JavascriptInterface
+    public String getSessionHistoryJson() {
+        if (context == null) return "[]";
+        try {
+            java.util.List<com.gamebooster.app.session.GameSessionLogger.SessionEntry> list =
+                    com.gamebooster.app.session.GameSessionLogger.getSessionHistory(context);
+            org.json.JSONArray array = new org.json.JSONArray();
+            for (com.gamebooster.app.session.GameSessionLogger.SessionEntry entry : list) {
+                array.put(entry.toJsonObject());
+            }
+            return array.toString();
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
 }
 
 

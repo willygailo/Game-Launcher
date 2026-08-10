@@ -4,7 +4,9 @@ public enum CrosshairPreset {
     DOT("Dot"),
     TACTICAL_CROSS("Tactical Cross"),
     SCOPE_RING("Scope Ring"),
-    SNIPER_CROSS("Sniper Cross");
+    SNIPER_CROSS("Sniper Cross"),
+    T_SHAPE("T-Shape Target"),
+    DYNAMIC_CROSS("Dynamic Cross");
 
     private final String label;
 

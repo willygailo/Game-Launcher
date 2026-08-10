@@ -12,6 +12,7 @@ import com.gamebooster.app.spoofer.brands.VivoProfiles;
 import com.gamebooster.app.spoofer.brands.XiaomiProfiles;
 
 import com.gamebooster.app.spoofer.brands.InfinixProfiles;
+import com.gamebooster.app.spoofer.brands.MotorolaProfiles;
 import com.gamebooster.app.spoofer.brands.PixelProfiles;
 import com.gamebooster.app.spoofer.brands.SonyProfiles;
 import com.gamebooster.app.spoofer.brands.TecnoProfiles;
@@ -51,6 +52,7 @@ public class SpoofProfileRegistry {
         registerBrand(BlackSharkProfiles.getProfiles());
         registerBrand(PixelProfiles.getProfiles());
         registerBrand(SonyProfiles.getProfiles());
+        registerBrand(MotorolaProfiles.getProfiles());
     }
 
     private static void registerBrand(List<SpoofProfile> profiles) {

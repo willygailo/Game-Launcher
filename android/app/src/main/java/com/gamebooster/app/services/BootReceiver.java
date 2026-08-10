@@ -32,6 +32,11 @@ public class BootReceiver extends BroadcastReceiver {
 
                     if (ShizukuExecutor.hasShizukuPermission()) {
                         ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+                        if (com.gamebooster.app.shizuku.ForceApplyPreferences.isForceApplied(context)) {
+                            int hz = com.gamebooster.app.shizuku.ForceApplyPreferences.getAppliedTargetHz(context);
+                            Log.i(TAG, "⚡ Re-executing ShizukuForceApplyEngine for " + hz + " Hz on boot!");
+                            com.gamebooster.app.shizuku.ShizukuForceApplyEngine.forceApplyAll(context, hz);
+                        }
                     }
 
                     if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
@@ -44,7 +49,7 @@ public class BootReceiver extends BroadcastReceiver {
                         }
                     }
                     AutoGameMonitorService.start(context);
-                    Log.i(TAG, "Boot optimizations, Spoofer, and AutoGameMonitorService initialized cleanly!");
+                    Log.i(TAG, "Boot optimizations, Shizuku Force Engine, Spoofer, and AutoGameMonitorService initialized cleanly!");
                 } catch (Throwable t) {
                     Log.e(TAG, "BootReceiver initialization error", t);
                 }
