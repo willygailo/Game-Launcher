@@ -19,14 +19,21 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.engine.RefreshRateOverrideEngine;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
+import com.gamebooster.app.games.GamePackageRegistry;
+import com.gamebooster.app.config.GameConfigPatcher;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.config.GameProfilePreferences;
 import com.gamebooster.app.config.GameSessionSettings;
 import com.gamebooster.app.overlay.FloatingOverlayService;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,6 +48,12 @@ public class AutoGameMonitorService extends Service {
     private Handler handler;
     private Runnable monitorRunnable;
     private String lastActiveGamePackage = null;
+
+    /**
+     * Tracks which packages have already had competitive patch applied this session.
+     * Prevents re-patching on every 2.5s poll — only fires once per game launch.
+     */
+    private final Set<String> sessionPatchedPackages = new HashSet<>();
 
     public static boolean isRunning() {
         return isRunning;
@@ -104,51 +117,76 @@ public class AutoGameMonitorService extends Service {
             boolean isGameActive = gamePackages.contains(currentPackage);
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
+                // ═══════════════════════════════════════════════════════════
+                //  NEW GAME LAUNCHED — fire full performance burst
+                // ═══════════════════════════════════════════════════════════
                 lastActiveGamePackage = currentPackage;
                 GameSessionSettings.begin(getApplicationContext(), currentPackage);
+
                 GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
                         getApplicationContext(), currentPackage);
-                int targetHz = GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
-                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
-                        + profile.label + " up to " + targetHz + "Hz");
 
-                GameLaunchInterceptor.preApplyForGame(getApplicationContext(), currentPackage);
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
-                com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(currentPackage, targetHz);
-                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
-                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(getApplicationContext(), currentPackage,
-                        targetHz >= 165 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
-                        targetHz >= 144 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
-                        targetHz >= 120 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ :
-                        targetHz >= 90 ? com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_90HZ :
-                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_60HZ);
+                // Resolve Hz from registry (MLBB=165, HOK=120, etc.) — hard min 120
+                int targetHz = GameProfileAutoConfigurator.resolveGameHz(
+                        getApplicationContext(), currentPackage);
+
+                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage
+                        + " — Applying " + profile.label + " @ " + targetHz + "Hz (NO FALLBACK)");
+
+                // ── STEP 1: Force Hz IMMEDIATELY — before game renders frame 1 ──────
+                MaxHzForceChannel.forceApply(getApplicationContext(), targetHz, currentPackage);
+
+                // ── STEP 2: Per-app window + device_config override ────────────────
+                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(
+                        getApplicationContext(), currentPackage,
+                        targetHz >= 165 ? RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
+                        targetHz >= 144 ? RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
+                                          RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ);
+
+                // ── STEP 3: Competitive config patch (once per session per game) ────
+                if (!sessionPatchedPackages.contains(currentPackage)) {
+                    GameLaunchInterceptor.preApplyForGame(getApplicationContext(), currentPackage);
+                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(
+                            getApplicationContext(), currentPackage);
+                    GameConfigPatcher.applyCompetitivePatch(currentPackage, targetHz);
+                    sessionPatchedPackages.add(currentPackage);
+                }
+
+                // ── STEP 4: Touch latency + CPU/GPU governor ───────────────────────
+                TouchLatencyChannel.enableUltraTouchResponse();
                 PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
-                
-                // Auto-Start Floating Gaming HUD
+
+                // ── STEP 5: Show floating HUD ──────────────────────────────────────
                 if (!FloatingOverlayService.isOverlayRunning()) {
                     FloatingOverlayService.startOverlay(getApplicationContext());
                 }
 
+                final int finalHz = targetHz;
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 " + profile.label
-                                + " profile active (up to " + targetHz + "Hz)", android.widget.Toast.LENGTH_LONG).show());
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "🎮 " + profile.label + " — " + finalHz + "Hz FORCED (No Fallback)",
+                                android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — maintaining active performance settings (Zero Auto-Off & Background Home 165Hz Lock)");
+                Log.i(TAG, "Game exited — forcing 165Hz on home screen (NO FALLBACK)");
                 lastActiveGamePackage = null;
-                
-                // Enforce Background Home 165Hz Refresh Rate, Touch Latency & Performance state without resetting spoofer identity
-                com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
-                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                
+
+                // Background home: always force 165Hz — NEVER fall back to 60/90
+                MaxHzForceChannel.forceApply(getApplicationContext(), 165, null);
+                TouchLatencyChannel.enableUltraTouchResponse();
+                PerformanceChannel.applyProfile(getApplicationContext(),
+                        PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "⚡ Background Home Active — 165Hz & Performance Locked", android.widget.Toast.LENGTH_SHORT).show());
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "⚡ Home Screen — 165Hz FORCED (No Fallback)",
+                                android.widget.Toast.LENGTH_SHORT).show());
+
             } else if (!isGameActive && lastActiveGamePackage == null) {
-                // Background Home continuous refresh rate and touch check (Zero Fallback)
-                com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
-                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+                // Continuous home reinforce — always 165Hz, never 60/90
+                MaxHzForceChannel.forceApply(165);
+                TouchLatencyChannel.enableUltraTouchResponse();
             }
         });
     }

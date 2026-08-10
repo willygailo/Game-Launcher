@@ -27,6 +27,7 @@ public class BootReceiver extends BroadcastReceiver {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
                     ShizukuManager.registerBinderListeners();
+                    ShizukuManager.attemptAutoStartShizuku(context);
                     GpuTweaksChannel.enableVulkanRenderer();
                     TouchLatencyChannel.enableUltraTouchResponse();
 

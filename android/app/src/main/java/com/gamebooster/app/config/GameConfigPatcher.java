@@ -88,6 +88,101 @@ public class GameConfigPatcher {
         }
     }
 
+    /**
+     * Competitive force-write: routes to per-game patchCompetitive() + applySuperFastTouch().
+     * ALWAYS force-overwrites config files — no create-if-missing fallback.
+     * Minimum FPS is enforced at 120 — never falls back to 60 or 90.
+     * Routes to the patchCompetitive method of the game-specific patcher for:
+     *   MLBB, PUBG Mobile, COD Mobile, Honor of Kings, Free Fire, Wild Rift, Genshin + HoYoverse,
+     *   Blood Strike, Warzone Mobile, Delta Force, Standoff 2, Farlight 84, Roblox.
+     * Unknown packages fall through to applyGameFpsPatch().
+     */
+    public static PatchResult applyCompetitivePatch(String packageName, int targetFps) {
+        if (packageName == null || packageName.trim().isEmpty()) {
+            return new PatchResult(false, "Invalid package name");
+        }
+
+        // Hard minimum — never competitive-patch below 120
+        int fps = Math.max(targetFps, 120);
+        String pkg = packageName.toLowerCase().trim();
+
+        Log.d(TAG, "applyCompetitivePatch: " + pkg + " @ " + fps + " FPS (no fallback)");
+
+        // Always apply touch zero-delay first (global)
+        TouchUltraFastNoDelayPatcher.applyTouchNoDelay(pkg);
+
+        boolean ok = false;
+
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            ok = MlbbConfigPatcher.patchCompetitive(pkg, fps);
+            MlbbConfigPatcher.applySuperFastTouch(pkg);
+
+        } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
+            ok = CodmConfigPatcher.patchCompetitive(pkg, fps);
+            CodmConfigPatcher.applySuperFastTouch(pkg);
+
+        } else if (pkg.contains("pubg.newstate")) {
+            ok = NewStateConfigPatcher.patch(pkg, fps);     // NewState has no competitive yet — standard is fine
+
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig")
+                || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            ok = PubgConfigPatcher.patchCompetitive(pkg, fps);
+            PubgConfigPatcher.applySuperFastTouch(pkg);
+
+        } else if (pkg.contains("sgame") || pkg.contains("levelinfinite")) {
+            ok = HokConfigPatcher.patchCompetitive(pkg, fps);
+            HokConfigPatcher.applySuperFastTouch(pkg);
+
+        } else if (pkg.contains("freefire")) {
+            ok = FreeFireConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("wildrift")) {
+            ok = WildRiftConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("hkrpg") || pkg.contains("starrail")) {
+            ok = StarRailConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("nap") || pkg.contains("zenless")) {
+            ok = ZenlessZoneZeroConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("wutheringwaves") || pkg.contains("kurogame")) {
+            ok = WutheringWavesConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("aov")) {
+            ok = ArenaOfValorConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("genshin")) {
+            ok = GenshinConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("bloodstrike") || pkg.contains("ofg.blood") || pkg.contains("netease.blood")) {
+            ok = BloodStrikeConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("warzone")) {
+            ok = WarzoneConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("tencent.dfm") || pkg.contains("deltaforce")) {
+            ok = DeltaForceConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
+            ok = Standoff2ConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("farlight") || pkg.contains("miracle.farlight84")) {
+            ok = Farlight84ConfigPatcher.patch(pkg, fps);
+
+        } else if (pkg.contains("roblox")) {
+            ok = RobloxConfigPatcher.patch(pkg, fps);
+
+        } else {
+            // Unknown game — use standard patch pipeline
+            return applyGameFpsPatch(packageName, fps);
+        }
+
+        String msg = ok
+                ? "Competitive config applied: " + packageName + " @ " + fps + " FPS (no fallback)"
+                : "Competitive config attempted (no matching file): " + packageName;
+        return new PatchResult(ok, msg);
+    }
+
     private static void ensureParentDirectory(String path) {
         if (path == null) return;
         int lastSlash = path.lastIndexOf('/');

@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
+        ShizukuManager.attemptAutoStartShizuku(getApplicationContext());
 
         // Initialize saved tweak states and restore active tweaks
         TweakManagerRepository.initializeStates(this);

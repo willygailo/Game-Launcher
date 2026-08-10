@@ -118,6 +118,20 @@ public class ShizukuManager {
         }
     }
 
+    public static void attemptAutoStartShizuku(Context context) {
+        if (context == null) return;
+        try {
+            if (!Shizuku.pingBinder() && com.gamebooster.app.engine.ShellExecutor.isRootAvailable()) {
+                Log.i(TAG, "⚡ Shizuku binder not active — launching daemon via ShizukuAutoStarter...");
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    ShizukuAutoStarter.startShizukuDaemon(context);
+                });
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error attempting Shizuku auto-start", t);
+        }
+    }
+
     public static boolean isShizukuInstalled(Context context) {
         if (context == null) return false;
         try {
