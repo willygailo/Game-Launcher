@@ -115,6 +115,7 @@ public class ShizukuExecutor {
         executeShizukuCommand("pm grant " + packageName + " android.permission.READ_PRIVILEGED_PHONE_STATE");
         executeShizukuCommand("pm grant " + packageName + " android.permission.HARDWARE_TEST");
         executeShizukuCommand("pm grant " + packageName + " android.permission.INTERNET");
+        executeShizukuCommand("pm grant " + packageName + " android.permission.SYSTEM_ALERT_WINDOW");
 
         // AppOps Overrides for Unrestricted System Access
         executeShizukuCommand("cmd appops set " + packageName + " MANAGE_EXTERNAL_STORAGE allow");
@@ -128,6 +129,7 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " TURN_SCREEN_ON allow");
         executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
+        executeShizukuCommand("cmd appops set " + packageName + " NO_ISOLATED_STORAGE allow");
 
         // Force Target Games Permission & AppOps Overrides (MLBB, PUBGM, BGMI, CODM, HOK, Genshin, Star Rail, Free Fire, Wild Rift, ZZZ, WuWa, New State, AoV, Blood Strike)
         String[] targetGames = new String[] {

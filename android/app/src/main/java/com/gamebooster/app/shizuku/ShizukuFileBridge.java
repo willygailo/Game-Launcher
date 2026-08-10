@@ -95,6 +95,30 @@ public class ShizukuFileBridge {
         return true;
     }
 
+    public static boolean recursiveChmod(String dirPath, String mode) {
+        if (dirPath == null || mode == null) return false;
+        String cmd = "chmod -R " + mode + " " + dirPath;
+        String res = execute(cmd);
+        Log.d(TAG, "recursiveChmod " + dirPath + " mode=" + mode + " -> " + res);
+        return true;
+    }
+
+    public static boolean forceRemove(String targetPath) {
+        if (targetPath == null) return false;
+        String cmd = "rm -rf " + targetPath;
+        String res = execute(cmd);
+        Log.d(TAG, "forceRemove " + targetPath + " -> " + res);
+        return true;
+    }
+
+    public static boolean copyDirectory(String sourceDir, String destDir) {
+        if (sourceDir == null || destDir == null) return false;
+        String cmd = "mkdir -p " + destDir + " && cp -r " + sourceDir + "/* " + destDir + "/";
+        String res = execute(cmd);
+        Log.d(TAG, "copyDirectory from " + sourceDir + " to " + destDir + " -> " + res);
+        return true;
+    }
+
     private static String execute(String command) {
         if (ShizukuExecutor.hasShizukuPermission()) {
             return ShizukuExecutor.executeShizukuCommand(command);
