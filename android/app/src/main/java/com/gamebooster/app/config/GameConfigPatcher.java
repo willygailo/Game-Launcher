@@ -39,15 +39,12 @@ public class GameConfigPatcher {
         int patchedFiles = 0;
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             if (MlbbConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
-            MlbbConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             if (CodmConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
-            CodmConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("pubg.newstate")) {
             if (NewStateConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
-            PubgConfigPatcher.applyAimAssistConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite")) {
             if (HokConfigPatcher.patch(pkg, targetFps)) patchedFiles++;
         } else if (pkg.contains("freefire")) {

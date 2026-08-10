@@ -117,41 +117,6 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM super-fast touch applied for " + packageName);
     }
 
-    /**
-     * Injects Aim Assist, Aimbot 80% Lock, Target Tracking, and Bullet Damage Boost into CODM config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
-     */
-    public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            ensureDirectory(path);
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/}$/,\\n  \"AimAssist\": 1,\\n  \"AimAssistStrength\": 80,\\n  \"AimbotLockRate\": 0.80,\\n  \"RotationalAimAssist\": 1,\\n  \"TargetLockSensitivity\": 100,\\n  \"AimMagnetism\": 1,\\n  \"DamageBoostRatio\": 1.80\\n}/' " + path;
-            } else if (path.endsWith(".xml")) {
-                cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/<\\/map>/  <int name=\"AimAssist\" value=\"1\" \\/>\\n  <int name=\"AimAssistStrength\" value=\"80\" \\/>\\n  <float name=\"AimbotLockRate\" value=\"0.80\" \\/>\\n<\\/map>/' " + path;
-            } else {
-                cmd = "grep -qF 'AimAssist' " + path + " || echo 'AimAssist=1' >> " + path + "; " +
-                      "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=80' >> " + path + "; " +
-                      "grep -qF 'AimbotLockRate' " + path + " || echo 'AimbotLockRate=0.80' >> " + path + "; " +
-                      "grep -qF 'RotationalAimAssist' " + path + " || echo 'RotationalAimAssist=1' >> " + path + "; " +
-                      "grep -qF 'TargetLockSensitivity' " + path + " || echo 'TargetLockSensitivity=100' >> " + path + "; " +
-                      "grep -qF 'DamageBoostRatio' " + path + " || echo 'DamageBoostRatio=1.80' >> " + path + "; " +
-                      "grep -qF 'AimMagnetism' " + path + " || echo 'AimMagnetism=1' >> " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "CODM Aim Assist & Aimbot 80% Damage config applied via Shizuku for " + packageName);
-    }
-
-
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

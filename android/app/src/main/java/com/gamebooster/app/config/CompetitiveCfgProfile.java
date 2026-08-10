@@ -32,32 +32,20 @@ public class CompetitiveCfgProfile {
     private int targetFps;
     private boolean superFastTouchEnabled;
     private boolean forceWriteSystemHz;
-    private boolean aimAssistEnabled;
-    private boolean mlbbDamageScriptEnabled;
 
     // ─── Constructors ────────────────────────────────────────────────────────
     public CompetitiveCfgProfile(String gameKey, int targetFps,
                                  boolean superFastTouchEnabled,
                                  boolean forceWriteSystemHz) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true);
-    }
-
-    public CompetitiveCfgProfile(String gameKey, int targetFps,
-                                 boolean superFastTouchEnabled,
-                                 boolean forceWriteSystemHz,
-                                 boolean aimAssistEnabled,
-                                 boolean mlbbDamageScriptEnabled) {
         this.gameKey               = gameKey;
         this.targetFps             = targetFps;
         this.superFastTouchEnabled = superFastTouchEnabled;
         this.forceWriteSystemHz    = forceWriteSystemHz;
-        this.aimAssistEnabled      = aimAssistEnabled;
-        this.mlbbDamageScriptEnabled = mlbbDamageScriptEnabled;
     }
 
     /** Returns default competitive profile for the given game key (165fps, all enabled). */
     public static CompetitiveCfgProfile defaultCompetitive(String gameKey) {
-        return new CompetitiveCfgProfile(gameKey, FPS_165, true, true, true, true);
+        return new CompetitiveCfgProfile(gameKey, FPS_165, true, true);
     }
 
     // ─── Getters / Setters ───────────────────────────────────────────────────
@@ -72,12 +60,6 @@ public class CompetitiveCfgProfile {
     public boolean isForceWriteSystemHz() { return forceWriteSystemHz; }
     public void setForceWriteSystemHz(boolean enabled) { this.forceWriteSystemHz = enabled; }
 
-    public boolean isAimAssistEnabled() { return aimAssistEnabled; }
-    public void setAimAssistEnabled(boolean enabled) { this.aimAssistEnabled = enabled; }
-
-    public boolean isMlbbDamageScriptEnabled() { return mlbbDamageScriptEnabled; }
-    public void setMlbbDamageScriptEnabled(boolean enabled) { this.mlbbDamageScriptEnabled = enabled; }
-
     // ─── SharedPrefs Key Builder ─────────────────────────────────────────────
     /** Returns the SharedPreferences key prefix for this profile. */
     public String getPrefsKey() {
@@ -88,11 +70,9 @@ public class CompetitiveCfgProfile {
     public String toString() {
         return "CompetitiveCfgProfile{" +
                 "game='" + gameKey + '\'' +
-                ", fps=" + targetFps +
+                ", targetFps=" + targetFps +
                 ", superTouch=" + superFastTouchEnabled +
                 ", forceHz=" + forceWriteSystemHz +
-                ", aimAssist=" + aimAssistEnabled +
-                ", damageScript=" + mlbbDamageScriptEnabled +
                 '}';
     }
 }

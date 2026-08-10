@@ -94,47 +94,6 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM super-fast touch applied for " + packageName);
     }
 
-    /**
-     * Injects Aim Assist, Aimbot 80% Lock, and Bullet Damage Boost CVars into PUBGM/BGMI config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
-     */
-    public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimCvars = {
-            "+CVars=r.PUBGAimAssist=1",
-            "+CVars=r.PUBGAimLockSensitivity=100",
-            "+CVars=r.AimAssistStrength=0.80",
-            "+CVars=r.PUBGAimbotLock=1",
-            "+CVars=r.AimbotTrackingRate=0.80",
-            "+CVars=r.CrosshairMagnetism=1",
-            "+CVars=r.GyroSensitivityRatio=1.8",
-            "+CVars=r.BulletTrackingOptimization=1",
-            "+CVars=r.MobileTouchAssistMode=1",
-            "+CVars=r.DamageMultiplier=1.80",
-            "+CVars=r.BulletDamageBoost=0.80",
-            "bEnableAimAssist=True",
-            "AimAssistLevel=3"
-        };
-        for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : aimCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "PUBGM Aim Assist & Aimbot 80% Damage CVars applied via Shizuku for " + packageName);
-    }
-
-
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

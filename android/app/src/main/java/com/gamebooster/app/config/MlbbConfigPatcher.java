@@ -95,57 +95,15 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB super-fast touch applied for " + packageName);
     }
 
-    /**
-     * Injects Damage Script, Physical/Magic Damage Boost, and Penetration Asset Config keys into MLBB config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
-     */
-    public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageKeys = {
-            "PhysicalDamageBoost=1.80",
-            "MagicDamageBoost=1.80",
-            "PhysicalPenetrationBoost=100",
-            "MagicPenetrationBoost=100",
-            "DamageMultiplier=1.80",
-            "CriticalDamageRate=100",
-            "SkillCoolDownReduceMode=1",
-            "HighDamageRateMode=1",
-            "DamageAssetOverride=1",
-            "AutoDamageExecutionMode=1"
-        };
-        for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "MLBB magic/physical damage script asset config applied via Shizuku for " + packageName);
-    }
-
-
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
-        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         return paths;
     }
 
