@@ -63,27 +63,7 @@ public class DeviceSpooferEngine {
      * Picks the best-fit device to unlock the highest FPS/graphics tier.
      */
     public static SpoofProfile getRecommendedProfile(String packageName) {
-        if (packageName == null) return SpoofProfileRegistry.getById("asus_rog8_pro");
-        String pkg = packageName.toLowerCase();
-
-        // MLBB / Wild Rift / Honor of Kings → ROG Phone 8 Pro (165 Hz extreme)
-        if (pkg.contains("mobile.legends") || pkg.contains("wildrift") || pkg.contains("sgame")) {
-            return SpoofProfileRegistry.getById("asus_rog8_pro");
-        }
-        // CODM / Blood Strike → Black Shark 5 Pro (max CODM graphics)
-        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike")) {
-            return SpoofProfileRegistry.getById("black_shark_5_pro");
-        }
-        // PUBGM / BGMI / FreeFire → REDMAGIC 9 Pro (165 Hz extreme PUBG)
-        if (pkg.contains("tencent.ig") || pkg.contains("pubg") || pkg.contains("imobile") || pkg.contains("freefire")) {
-            return SpoofProfileRegistry.getById("redmagic_9_pro");
-        }
-        // Genshin / Honkai → Xiaomi 14 Ultra (ultra graphics)
-        if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai")) {
-            return SpoofProfileRegistry.getById("xiaomi_14_ultra");
-        }
-        // Default → ROG Phone 8 Pro
-        return SpoofProfileRegistry.getById("asus_rog8_pro");
+        return com.gamebooster.app.spoofer.games.GameSpooferManager.getInstance().getStrategyForPackage(packageName).getSpoofProfile();
     }
 
     // ─────────────────────────────────────────────────────────────────────────

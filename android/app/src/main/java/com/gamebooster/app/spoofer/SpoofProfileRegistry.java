@@ -11,6 +11,9 @@ import com.gamebooster.app.spoofer.brands.SamsungProfiles;
 import com.gamebooster.app.spoofer.brands.VivoProfiles;
 import com.gamebooster.app.spoofer.brands.XiaomiProfiles;
 
+import com.gamebooster.app.spoofer.brands.InfinixProfiles;
+import com.gamebooster.app.spoofer.brands.TecnoProfiles;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -39,6 +42,8 @@ public class SpoofProfileRegistry {
         registerBrand(OnePlusProfiles.getProfiles());
         registerBrand(OppoProfiles.getProfiles());
         registerBrand(VivoProfiles.getProfiles());
+        registerBrand(InfinixProfiles.getProfiles());
+        registerBrand(TecnoProfiles.getProfiles());
         registerBrand(AppleProfiles.getProfiles());
         registerBrand(NubiaProfiles.getProfiles());
         registerBrand(BlackSharkProfiles.getProfiles());

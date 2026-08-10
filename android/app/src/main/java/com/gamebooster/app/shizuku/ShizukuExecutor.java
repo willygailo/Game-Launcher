@@ -129,13 +129,15 @@ public class ShizukuExecutor {
         executeShizukuCommand("cmd appops set " + packageName + " PROJECT_MEDIA allow");
         executeShizukuCommand("cmd appops set " + packageName + " ACCESS_RESTRICTED_SETTINGS allow");
 
-        // Force Target Games Permission & AppOps Overrides (PUBGM, MLBB, CODM, BGMI, Free Fire)
+        // Force Target Games Permission & AppOps Overrides (MLBB, PUBGM, BGMI, CODM, HOK, Genshin, Star Rail, Free Fire, Wild Rift, ZZZ, WuWa, New State, AoV, Blood Strike)
         String[] targetGames = new String[] {
                 "com.mobile.legends", "com.mobilelegends.win",
                 "com.tencent.ig", "com.pubg.krmobile", "com.vng.pubgmobile", "com.pubg.imobile", "com.pubg.newstate",
                 "com.activision.callofduty.shooter", "com.garena.game.codm",
                 "com.dts.freefireth", "com.dts.freefiremax",
-                "com.riotgames.league.wildrift", "com.miHoYo.GenshinImpact", "com.HoYoverse.hkrpg"
+                "com.levelinfinite.sgameGlobal", "com.tencent.tmgp.sgame", "com.garena.game.kgtw",
+                "com.riotgames.league.wildrift", "com.miHoYo.GenshinImpact", "com.HoYoverse.hkrpg",
+                "com.HoYoverse.Nap", "com.kurogame.wutheringwaves.global", "com.ofg.bloodstrike"
         };
 
         for (String gamePkg : targetGames) {

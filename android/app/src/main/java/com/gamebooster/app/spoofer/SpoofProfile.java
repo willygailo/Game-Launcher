@@ -1,12 +1,14 @@
 package com.gamebooster.app.spoofer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * SpoofProfile — Complete device identity profile for hardware spoofing.
  *
- * Each profile contains real-world device properties sourced from actual
- * `getprop` output on physical devices. When applied via Shizuku (temporary
- * full root), ALL Android property namespaces are overwritten to fully hide
- * the real device identity from game anti-cheat and device-detection systems.
+ * Sourced from real-world `getprop` output on physical devices.
+ * Overwrites ALL Android property namespaces to hide real device identity from
+ * game anti-cheat & device detection systems.
  */
 public class SpoofProfile {
 
@@ -34,14 +36,16 @@ public class SpoofProfile {
     // ── Build Identity ──
     public final String fingerprint;
     public final String displayId;
+    public final int androidSdkVersion;
 
     // ── GPU / Graphics Driver ──
     public final String glRenderer;
     public final String eglHardware;
     public final String glesVersion;
 
-    // ── Memory / RAM ──
+    // ── Memory & Display Capabilities ──
     public final int ramTotalMb;
+    public final int targetRefreshRate;
 
     public SpoofProfile(String id, String displayName, String brandLabel,
                          String model, String brand, String manufacturer,
@@ -52,7 +56,7 @@ public class SpoofProfile {
                          String glRenderer) {
         this(id, displayName, brandLabel, model, brand, manufacturer, device, productName,
                 buildProduct, hardware, platform, socModel, "Qualcomm", board, chipname,
-                "arm64-v8a", fingerprint, displayId, glRenderer, "adreno", "196610", 16384);
+                "arm64-v8a", fingerprint, displayId, 34, glRenderer, "adreno", "196610", 16384, 165);
     }
 
     public SpoofProfile(String id, String displayName, String brandLabel,
@@ -63,6 +67,19 @@ public class SpoofProfile {
                          String cpuAbi, String fingerprint, String displayId,
                          String glRenderer, String eglHardware, String glesVersion,
                          int ramTotalMb) {
+        this(id, displayName, brandLabel, model, brand, manufacturer, device, productName,
+                buildProduct, hardware, platform, socModel, socVendor, board, chipname,
+                cpuAbi, fingerprint, displayId, 34, glRenderer, eglHardware, glesVersion, ramTotalMb, 165);
+    }
+
+    public SpoofProfile(String id, String displayName, String brandLabel,
+                         String model, String brand, String manufacturer,
+                         String device, String productName, String buildProduct,
+                         String hardware, String platform, String socModel,
+                         String socVendor, String board, String chipname,
+                         String cpuAbi, String fingerprint, String displayId,
+                         int androidSdkVersion, String glRenderer, String eglHardware,
+                         String glesVersion, int ramTotalMb, int targetRefreshRate) {
         this.id = id;
         this.displayName = displayName;
         this.brandLabel = brandLabel;
@@ -81,14 +98,35 @@ public class SpoofProfile {
         this.cpuAbi = cpuAbi != null ? cpuAbi : "arm64-v8a";
         this.fingerprint = fingerprint;
         this.displayId = displayId;
+        this.androidSdkVersion = androidSdkVersion > 0 ? androidSdkVersion : 34;
         this.glRenderer = glRenderer;
         this.eglHardware = eglHardware != null ? eglHardware : "adreno";
         this.glesVersion = glesVersion != null ? glesVersion : "196610";
         this.ramTotalMb = ramTotalMb > 0 ? ramTotalMb : 16384;
+        this.targetRefreshRate = targetRefreshRate > 0 ? targetRefreshRate : 165;
+    }
+
+    public JSONObject toJsonObject() {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("id", id);
+            obj.put("displayName", displayName);
+            obj.put("brandLabel", brandLabel);
+            obj.put("model", model);
+            obj.put("brand", brand);
+            obj.put("manufacturer", manufacturer);
+            obj.put("device", device);
+            obj.put("socModel", socModel);
+            obj.put("glRenderer", glRenderer);
+            obj.put("ramTotalMb", ramTotalMb);
+            obj.put("targetRefreshRate", targetRefreshRate);
+            obj.put("androidSdkVersion", androidSdkVersion);
+        } catch (JSONException ignored) {}
+        return obj;
     }
 
     @Override
     public String toString() {
-        return displayName + " [" + model + " / " + brand + " / " + socModel + " / " + (ramTotalMb / 1024) + "GB RAM]";
+        return displayName + " [" + model + " / " + brand + " / " + socModel + " / " + (ramTotalMb / 1024) + "GB RAM / " + targetRefreshRate + "Hz]";
     }
 }

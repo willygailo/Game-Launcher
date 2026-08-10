@@ -15,7 +15,17 @@ import java.util.List;
 public final class DevicePerformanceCapabilities {
 
     public enum OemFamily {
-        TRANSSION, XIAOMI, SAMSUNG, OPPO_FAMILY, VIVO_IQOO, ASUS, MOTOROLA, GOOGLE, GENERIC
+        TRANSSION,
+        XIAOMI,
+        SAMSUNG,
+        OPPO_FAMILY,
+        VIVO_IQOO,
+        ASUS_ROG,
+        NUBIA_REDMAGIC,
+        BLACK_SHARK,
+        MOTOROLA,
+        GOOGLE,
+        GENERIC
     }
 
     private final List<Integer> supportedRefreshRates;
@@ -80,10 +90,12 @@ public final class DevicePerformanceCapabilities {
         switch (oemFamily) {
             case TRANSSION: return "Transsion (Infinix / Tecno / itel)";
             case XIAOMI: return "Xiaomi / Redmi / POCO";
-            case SAMSUNG: return "Samsung";
+            case SAMSUNG: return "Samsung Galaxy";
             case OPPO_FAMILY: return "OPPO / realme / OnePlus";
             case VIVO_IQOO: return "vivo / iQOO";
-            case ASUS: return "ASUS";
+            case ASUS_ROG: return "ASUS ROG Phone";
+            case NUBIA_REDMAGIC: return "Nubia REDMAGIC";
+            case BLACK_SHARK: return "Black Shark";
             case MOTOROLA: return "Motorola";
             case GOOGLE: return "Google Pixel";
             default: return "Generic Android";
@@ -99,16 +111,42 @@ public final class DevicePerformanceCapabilities {
     private static OemFamily detectOemFamily() {
         String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase();
         String brand = Build.BRAND == null ? "" : Build.BRAND.toLowerCase();
-        String identity = manufacturer + " " + brand;
-        if (identity.contains("infinix") || identity.contains("tecno") || identity.contains("itel")
-                || identity.contains("transsion")) return OemFamily.TRANSSION;
-        if (identity.contains("xiaomi") || identity.contains("redmi") || identity.contains("poco")) return OemFamily.XIAOMI;
-        if (identity.contains("samsung")) return OemFamily.SAMSUNG;
-        if (identity.contains("oppo") || identity.contains("realme") || identity.contains("oneplus")) return OemFamily.OPPO_FAMILY;
-        if (identity.contains("vivo") || identity.contains("iqoo")) return OemFamily.VIVO_IQOO;
-        if (identity.contains("asus")) return OemFamily.ASUS;
-        if (identity.contains("motorola") || identity.contains("moto")) return OemFamily.MOTOROLA;
-        if (identity.contains("google") || identity.contains("pixel")) return OemFamily.GOOGLE;
+
+        if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("itel")
+                || brand.contains("infinix") || brand.contains("tecno")) {
+            return OemFamily.TRANSSION;
+        }
+        if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains("poco")
+                || brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")) {
+            return OemFamily.XIAOMI;
+        }
+        if (manufacturer.contains("samsung") || brand.contains("samsung")) {
+            return OemFamily.SAMSUNG;
+        }
+        if (manufacturer.contains("oppo") || manufacturer.contains("oneplus") || manufacturer.contains("realme")
+                || brand.contains("oppo") || brand.contains("oneplus") || brand.contains("realme")) {
+            return OemFamily.OPPO_FAMILY;
+        }
+        if (manufacturer.contains("vivo") || manufacturer.contains("iqoo")
+                || brand.contains("vivo") || brand.contains("iqoo")) {
+            return OemFamily.VIVO_IQOO;
+        }
+        if (manufacturer.contains("asus") || brand.contains("asus")) {
+            return OemFamily.ASUS_ROG;
+        }
+        if (manufacturer.contains("nubia") || manufacturer.contains("redmagic")
+                || brand.contains("nubia") || brand.contains("redmagic")) {
+            return OemFamily.NUBIA_REDMAGIC;
+        }
+        if (manufacturer.contains("blackshark") || brand.contains("blackshark")) {
+            return OemFamily.BLACK_SHARK;
+        }
+        if (manufacturer.contains("motorola") || brand.contains("moto")) {
+            return OemFamily.MOTOROLA;
+        }
+        if (manufacturer.contains("google") || brand.contains("google")) {
+            return OemFamily.GOOGLE;
+        }
         return OemFamily.GENERIC;
     }
 }

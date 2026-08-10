@@ -6,17 +6,32 @@ import java.util.List;
 
 /**
  * OnePlus device spoof profiles.
- * Real-world getprop values for OnePlus flagship and Ace gaming series.
+ * Sourced for Android 13, 14, 15, and 16 OxygenOS.
  */
 public class OnePlusProfiles {
 
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
 
-        // OnePlus 12 — Snapdragon 8 Gen 3
+        // OnePlus 13 — Android 15/16, Snapdragon 8 Elite
+        list.add(new SpoofProfile(
+            "oneplus_13",
+            "OnePlus 13 (165Hz, Android 15/16, Snapdragon 8 Elite)",
+            "OnePlus",
+            "CPH2681", "OnePlus", "OnePlus",
+            "OP611DL1", "CPH2681", "CPH2681",
+            "qcom", "sun", "SM8750",
+            "qcom", "sun", "SM8750",
+            "arm64-v8a",
+            "OnePlus/CPH2681/OP611DL1:15/AP1A.240505.005/R.183a1ef-1:user/release-keys",
+            "CPH2681_15.0.0.100",
+            "Adreno (TM) 830", "adreno", "196610", 24576
+        ));
+
+        // OnePlus 12 — Android 14, Snapdragon 8 Gen 3
         list.add(new SpoofProfile(
             "oneplus_12",
-            "OnePlus 12 (Snapdragon 8 Gen 3)",
+            "OnePlus 12 (120Hz, Android 14, Snapdragon 8 Gen 3)",
             "OnePlus",
             "CPH2583", "OnePlus", "OnePlus",
             "aston", "CPH2583", "CPH2583",
@@ -27,10 +42,10 @@ public class OnePlusProfiles {
             "Adreno (TM) 750"
         ));
 
-        // OnePlus 11 — Snapdragon 8 Gen 2
+        // OnePlus 11 — Android 13/14, Snapdragon 8 Gen 2
         list.add(new SpoofProfile(
             "oneplus_11",
-            "OnePlus 11 (Snapdragon 8 Gen 2)",
+            "OnePlus 11 (120Hz, Android 13/14, Snapdragon 8 Gen 2)",
             "OnePlus",
             "CPH2449", "OnePlus", "OnePlus",
             "salami", "CPH2449", "CPH2449",
@@ -39,34 +54,6 @@ public class OnePlusProfiles {
             "OnePlus/CPH2449/salami:14/UP1A.231005.007/202406170038:user/release-keys",
             "CPH2449_14.0.0.623(EX01)",
             "Adreno (TM) 740"
-        ));
-
-        // OnePlus Ace 3 Pro — Snapdragon 8 Gen 3
-        list.add(new SpoofProfile(
-            "oneplus_ace3_pro",
-            "OnePlus Ace 3 Pro (Snapdragon 8 Gen 3)",
-            "OnePlus",
-            "PJZ110", "OnePlus", "OnePlus",
-            "aston_chn", "PJZ110", "PJZ110",
-            "qcom", "kalama", "SM8650",
-            "kalama", "sm8650",
-            "OnePlus/PJZ110/aston_chn:14/UP1A.231005.007/202405010038:user/release-keys",
-            "PJZ110_14.0.0.500(CN01)",
-            "Adreno (TM) 750"
-        ));
-
-        // OnePlus Nord 4 — Snapdragon 7+ Gen 3
-        list.add(new SpoofProfile(
-            "oneplus_nord4",
-            "OnePlus Nord 4 (Snapdragon 7+ Gen 3)",
-            "OnePlus",
-            "CPH2625", "OnePlus", "OnePlus",
-            "larry", "CPH2625", "CPH2625",
-            "qcom", "kalama", "SM7675",
-            "kalama", "sm7675",
-            "OnePlus/CPH2625/larry:14/UP1A.231005.007/202406280038:user/release-keys",
-            "CPH2625_14.0.0.402(EX01)",
-            "Adreno (TM) 732"
         ));
 
         return list;

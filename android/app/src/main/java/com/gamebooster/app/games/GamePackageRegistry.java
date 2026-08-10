@@ -66,12 +66,17 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.cognosphere.GenshinImpact", new GameInfoSpec("Genshin Impact (Global)", "Action RPG", 120));
         KNOWN_GAMES.put("com.HoYoverse.hkrpgoversea", new GameInfoSpec("Honkai: Star Rail", "RPG", 120));
         KNOWN_GAMES.put("com.HoYoverse.nap", new GameInfoSpec("Zenless Zone Zero", "Action RPG", 120));
+        KNOWN_GAMES.put("com.kurogame.wutheringwaves.global", new GameInfoSpec("Wuthering Waves", "Action RPG", 120));
         KNOWN_GAMES.put("com.miHoYo.bh3oversea", new GameInfoSpec("Honkai Impact 3rd", "Action RPG", 120));
 
-        // Roblox & FPS Competitors
+        // Roblox & Tactical FPS / Competitors
+        KNOWN_GAMES.put("com.tencent.dfm", new GameInfoSpec("Delta Force: Hawk Ops", "FPS", 165));
+        KNOWN_GAMES.put("com.activision.callofduty.warzone", new GameInfoSpec("Call of Duty: Warzone Mobile", "Battle Royale", 165));
+        KNOWN_GAMES.put("com.riotgames.valorant", new GameInfoSpec("Valorant Mobile", "Tactical FPS", 165));
         KNOWN_GAMES.put("com.roblox.client", new GameInfoSpec("Roblox", "Sandbox", 165));
         KNOWN_GAMES.put("com.axlebolt.standoff2", new GameInfoSpec("Standoff 2", "FPS", 165));
-        KNOWN_GAMES.put("com.netease.bloodstrike", new GameInfoSpec("Blood Strike", "FPS", 144));
+        KNOWN_GAMES.put("com.ofg.bloodstrike", new GameInfoSpec("Blood Strike", "FPS", 144));
+        KNOWN_GAMES.put("com.netease.bloodstrike", new GameInfoSpec("Blood Strike (NetEase)", "FPS", 144));
         KNOWN_GAMES.put("com.miracle.farlight84", new GameInfoSpec("Farlight 84", "Battle Royale", 144));
 
         // Sports & Racing

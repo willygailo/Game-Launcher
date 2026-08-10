@@ -62,8 +62,13 @@
         <package android:name="com.riotgames.league.wildrift" />
         <package android:name="com.levelinfinite.sgameGlobal" />
         <package android:name="com.cognosphere.GenshinImpact" />
+        <package android:name="com.HoYoverse.nap" />
+        <package android:name="com.kurogame.wutheringwaves.global" />
+        <package android:name="com.tencent.dfm" />
+        <package android:name="com.activision.callofduty.warzone" />
         <package android:name="com.roblox.client" />
         <package android:name="com.axlebolt.standoff2" />
+        <package android:name="com.ofg.bloodstrike" />
         <package android:name="com.netease.bloodstrike" />
         <package android:name="com.miracle.farlight84" />
         <!-- Third-Party Gaming Platforms & App Stores -->

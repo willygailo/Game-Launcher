@@ -13,6 +13,21 @@ public class VivoProfiles {
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
 
+        // iQOO 15 Ultra — Snapdragon 8 Elite, 165Hz, 24GB RAM
+        list.add(new SpoofProfile(
+            "iqoo_15_ultra",
+            "iQOO 15 Ultra (165Hz, Snapdragon 8 Elite, 24GB RAM)",
+            "Vivo",
+            "V2500A", "vivo", "vivo",
+            "V2500A", "V2500A", "V2500A",
+            "qcom", "sun", "SM8750",
+            "qcom", "sun", "SM8750",
+            "arm64-v8a",
+            "vivo/V2500A/V2500A:15/AP1A.240505.005/compileV2500A_15.0.1.1:user/release-keys",
+            "V2500A_15.0.1.1",
+            "Adreno (TM) 830", "adreno", "196610", 24576
+        ));
+
         // Vivo X100 Ultra — Snapdragon 8 Gen 3
         list.add(new SpoofProfile(
             "vivo_x100_ultra",
@@ -53,20 +68,6 @@ public class VivoProfiles {
             "vivo/V2348A/V2348A:14/UP1A.231005.007/compileV2348A_14.0.2.8:user/release-keys",
             "V2348A_14.0.2.8",
             "Adreno (TM) 740"
-        ));
-
-        // Vivo V30 Pro — Dimensity 8200
-        list.add(new SpoofProfile(
-            "vivo_v30_pro",
-            "Vivo V30 Pro (Dimensity 8200)",
-            "Vivo",
-            "V2318", "vivo", "vivo",
-            "V2318", "V2318", "V2318",
-            "mt6985", "mt6985", "Dimensity8200",
-            "mt6985", "mt6985",
-            "vivo/V2318/V2318:14/UP1A.231005.007/compileV2318_14.0.1.5:user/release-keys",
-            "V2318_14.0.1.5",
-            "Mali-G610 MC6"
         ));
 
         return list;

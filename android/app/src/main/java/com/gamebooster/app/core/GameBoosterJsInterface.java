@@ -181,5 +181,73 @@ public class GameBoosterJsInterface {
             return "{\"strategyName\":\"Unknown\",\"isSupported\":false,\"statusDetails\":\"Error fetching status\"}";
         }
     }
+
+    @JavascriptInterface
+    public String getGameSpoofStrategyJson(String packageName) {
+        try {
+            com.gamebooster.app.spoofer.games.GameSpooferInterface strategy =
+                    com.gamebooster.app.spoofer.games.GameSpooferManager.getInstance().getStrategyForPackage(packageName);
+            JSONObject obj = new JSONObject();
+            obj.put("strategyName", strategy.getStrategyName());
+            obj.put("profile", strategy.getSpoofProfile().toJsonObject());
+            return obj.toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public boolean applyGameSpoofForPackage(String packageName) {
+        if (context == null || packageName == null) return false;
+        return com.gamebooster.app.spoofer.games.GameSpooferManager.getInstance().applySpoofForPackage(context, packageName);
+    }
+
+    @JavascriptInterface
+    public boolean setRefreshRateForOem(int hz) {
+        if (context == null) return false;
+        return com.gamebooster.app.booster.refreshrate.RefreshRateManager.getInstance().setRefreshRate(context, hz);
+    }
+
+    @JavascriptInterface
+    public boolean setThermalMitigationForOem(boolean disableThrottling) {
+        if (context == null) return false;
+        return com.gamebooster.app.booster.thermal.ThermalManager.getInstance().setThermalMitigation(context, disableThrottling);
+    }
+
+    @JavascriptInterface
+    public String getAllTweaksJson() {
+        try {
+            org.json.JSONArray array = new org.json.JSONArray();
+            for (com.gamebooster.app.tweaks.TweakItem tweak : com.gamebooster.app.tweaks.TweakManagerRepository.getAllTweaks()) {
+                array.put(tweak.toJsonObject());
+            }
+            return array.toString();
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
+
+    @JavascriptInterface
+    public boolean applyTweakById(String tweakId) {
+        if (context == null || tweakId == null) return false;
+        for (com.gamebooster.app.tweaks.TweakItem tweak : com.gamebooster.app.tweaks.TweakManagerRepository.getAllTweaks()) {
+            if (tweak.getId().equalsIgnoreCase(tweakId)) {
+                return com.gamebooster.app.tweaks.TweakManagerRepository.applyTweak(context, tweak);
+            }
+        }
+        return false;
+    }
+
+    @JavascriptInterface
+    public boolean revertTweakById(String tweakId) {
+        if (context == null || tweakId == null) return false;
+        for (com.gamebooster.app.tweaks.TweakItem tweak : com.gamebooster.app.tweaks.TweakManagerRepository.getAllTweaks()) {
+            if (tweak.getId().equalsIgnoreCase(tweakId)) {
+                return com.gamebooster.app.tweaks.TweakManagerRepository.revertTweak(context, tweak);
+            }
+        }
+        return false;
+    }
 }
+
 

@@ -6,17 +6,32 @@ import java.util.List;
 
 /**
  * Xiaomi / POCO / Redmi device spoof profiles.
- * Real-world getprop values for Xiaomi flagship and gaming series.
+ * Sourced for Android 13, 14, 15, and 16 HyperOS / MIUI.
  */
 public class XiaomiProfiles {
 
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
 
-        // Xiaomi 14 Ultra — Snapdragon 8 Gen 3
+        // Xiaomi 15 Ultra — Android 16, Snapdragon 8 Elite, 165Hz
+        list.add(new SpoofProfile(
+            "xiaomi_15_ultra",
+            "Xiaomi 15 Ultra (165Hz, Android 16, Snapdragon 8 Elite)",
+            "Xiaomi",
+            "25010PN60G", "Xiaomi", "Xiaomi",
+            "xuanyuan", "xuanyuan_global", "25010PN60G",
+            "qcom", "sun", "SM8750",
+            "qcom", "sun", "SM8750",
+            "arm64-v8a",
+            "Xiaomi/xuanyuan_global/xuanyuan:16/BP1A.260105.001/OS2.0.1.0.UNCMIXM:user/release-keys",
+            "OS2.0.1.0.UNCMIXM",
+            "Adreno (TM) 830", "adreno", "196610", 24576
+        ));
+
+        // Xiaomi 14 Ultra — Android 14/15, Snapdragon 8 Gen 3
         list.add(new SpoofProfile(
             "xiaomi_14_ultra",
-            "Xiaomi 14 Ultra (Snapdragon 8 Gen 3)",
+            "Xiaomi 14 Ultra (120Hz, Android 14/15, Snapdragon 8 Gen 3)",
             "Xiaomi",
             "24030PN60G", "Xiaomi", "Xiaomi",
             "aurora", "aurora_global", "24030PN60G",
@@ -27,24 +42,10 @@ public class XiaomiProfiles {
             "Adreno (TM) 750"
         ));
 
-        // Xiaomi 14 Pro — Snapdragon 8 Gen 3
-        list.add(new SpoofProfile(
-            "xiaomi_14_pro",
-            "Xiaomi 14 Pro (Snapdragon 8 Gen 3)",
-            "Xiaomi",
-            "23116PN5BC", "Xiaomi", "Xiaomi",
-            "shennong", "shennong", "23116PN5BC",
-            "qcom", "kalama", "SM8650",
-            "kalama", "sm8650",
-            "Xiaomi/shennong/shennong:14/UP1A.231005.007/OS1.0.3.0.UNCMIXM:user/release-keys",
-            "OS1.0.3.0.UNCMIXM",
-            "Adreno (TM) 750"
-        ));
-
-        // POCO F6 Pro — Snapdragon 8 Gen 2
+        // POCO F6 Pro — Android 14/15, Snapdragon 8 Gen 2
         list.add(new SpoofProfile(
             "poco_f6_pro",
-            "POCO F6 Pro (Snapdragon 8 Gen 2)",
+            "POCO F6 Pro (120Hz, Android 14/15, Snapdragon 8 Gen 2)",
             "Xiaomi",
             "23113RKC6G", "POCO", "Xiaomi",
             "vermeer", "vermeer_global", "23113RKC6G",
@@ -55,10 +56,10 @@ public class XiaomiProfiles {
             "Adreno (TM) 740"
         ));
 
-        // Redmi K70 Pro — Snapdragon 8 Gen 3
+        // Redmi K70 Pro — Android 14, Snapdragon 8 Gen 3
         list.add(new SpoofProfile(
             "redmi_k70_pro",
-            "Redmi K70 Pro (Snapdragon 8 Gen 3)",
+            "Redmi K70 Pro (120Hz, Android 14, Snapdragon 8 Gen 3)",
             "Xiaomi",
             "23113RKC6C", "Redmi", "Xiaomi",
             "manet", "manet", "23113RKC6C",
@@ -67,20 +68,6 @@ public class XiaomiProfiles {
             "Redmi/manet/manet:14/UP1A.231005.007/OS1.0.5.0.UNCCNXM:user/release-keys",
             "OS1.0.5.0.UNCCNXM",
             "Adreno (TM) 750"
-        ));
-
-        // Redmi Note 13 Pro+ — Dimensity 7200 Ultra
-        list.add(new SpoofProfile(
-            "redmi_note13_pro_plus",
-            "Redmi Note 13 Pro+ (Dimensity 7200 Ultra)",
-            "Xiaomi",
-            "23090RA98G", "Redmi", "Xiaomi",
-            "duchesse", "duchesse_global", "23090RA98G",
-            "mt6985", "mt6985", "Dimensity7200Ultra",
-            "mt6985", "mt6985",
-            "Redmi/duchesse_global/duchesse:14/UP1A.231005.007/V816.0.5.0.UMZMIXM:user/release-keys",
-            "V816.0.5.0.UMZMIXM",
-            "Mali-G615 MC6"
         ));
 
         return list;

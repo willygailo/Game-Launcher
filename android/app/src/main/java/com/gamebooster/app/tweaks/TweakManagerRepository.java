@@ -19,87 +19,10 @@ public class TweakManagerRepository {
     private static final List<TweakItem> TWEAKS = new ArrayList<>();
 
     static {
-        // CPU & GPU Tweaks
-        TWEAKS.add(new TweakItem(
-                "gpu_hw_composition",
-                "Vulkan HWUI Renderer",
-                "Forces Vulkan hardware graphics pipeline to boost rendering throughput",
-                "setprop debug.hwui.renderer vulkan",
-                "setprop debug.hwui.renderer skia",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "hw_overlays",
-                "Force SurfaceFlinger HW Composition",
-                "Forces GPU hardware composition to eliminate CPU rendering overhead",
-                "setprop debug.sf.hw 1",
-                "setprop debug.sf.hw 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "fifo_audio_render",
-                "FIFO Realtime Scheduling Queue",
-                "Forces realtime FIFO scheduling queue for ultra-low audio & touch latency",
-                "setprop sys.use_fifo 1",
-                "setprop sys.use_fifo 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        // Touch & Display Tweaks
-        TWEAKS.add(new TweakItem(
-                "scrolling_cache_boost",
-                "Zero Scroll Cache Latency",
-                "Disables scrolling cache compression to save CPU render cycles",
-                "setprop persist.sys.scrollingcache 3",
-                "setprop persist.sys.scrollingcache 1",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "aim_touch_precision",
-                "Aim Precision Touch Latency Stabilizer",
-                "Reduces input lag, touch slop, pressure threshold and FIFO scheduling for zero-delay crosshair control",
-                "setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.001",
-                "setprop view.touch_slop 8; settings put system touch_slop_reduction 0; setprop sys.use_fifo 0; setprop persist.sys.touch.pressure.scale 1.0",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "hz_120_unlock",
-                "120Hz Ultra Refresh Rate Lock",
-                "Forces 120Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + device_config",
-                "settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0; settings put system user_refresh_rate 120; settings put global peak_refresh_rate 120.0; settings put global min_refresh_rate 120.0; cmd game mode performance global; cmd window set-app-refresh-rate global 120; device_config put game_overlay global mode=2,fps=120:mode=3,fps=120; service call SurfaceFlinger 1035 i32 120; service call SurfaceFlinger 1036 i32 120; setprop debug.sf.fps_limit 120; setprop persist.sys.NV_FPSLIMIT 120; setprop persist.sys.NV_POWERMODE 1",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "hz_144_unlock",
-                "144Hz Extreme Refresh Rate Lock",
-                "Forces 144Hz via Shizuku: system settings + Game Mode + SurfaceFlinger + device_config",
-                "settings put system peak_refresh_rate 144.0; settings put system min_refresh_rate 144.0; settings put system user_refresh_rate 144; settings put global peak_refresh_rate 144.0; settings put global min_refresh_rate 144.0; cmd game mode performance global; cmd window set-app-refresh-rate global 144; device_config put game_overlay global mode=2,fps=144:mode=3,fps=144; service call SurfaceFlinger 1035 i32 144; service call SurfaceFlinger 1036 i32 144; setprop debug.sf.fps_limit 144; setprop persist.sys.NV_FPSLIMIT 144; setprop persist.sys.NV_POWERMODE 1",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "hz_165_unlock",
-                "165Hz Max Hardware Refresh Rate Lock",
-                "Forces 165Hz via Shizuku: system settings + Game Mode + SurfaceFlinger 1035/1036 + device_config",
-                "settings put system peak_refresh_rate 165.0; settings put system min_refresh_rate 165.0; settings put system user_refresh_rate 165; settings put global peak_refresh_rate 165.0; settings put global min_refresh_rate 165.0; cmd game mode performance global; cmd window set-app-refresh-rate global 165; device_config put game_overlay global mode=2,fps=165:mode=3,fps=165; service call SurfaceFlinger 1035 i32 165; service call SurfaceFlinger 1036 i32 165; setprop debug.sf.fps_limit 165; setprop persist.sys.NV_FPSLIMIT 165; setprop persist.sys.NV_POWERMODE 1; setprop debug.gr.swapinterval 0",
-                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
+        TWEAKS.addAll(CpuGpuTweaksProvider.getTweaks());
+        TWEAKS.addAll(TouchDisplayTweaksProvider.getTweaks());
+        TWEAKS.addAll(NetworkAudioTweaksProvider.getTweaks());
+        TWEAKS.addAll(SystemKernelTweaksProvider.getTweaks());
 
         // Shizuku / ADB System Tweaks
         TWEAKS.add(new TweakItem(
@@ -111,109 +34,6 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
-
-        TWEAKS.add(new TweakItem(
-                "tcp_latency_tuning",
-                "TCP Low Latency Buffer Tuning",
-                "Optimizes Wi-Fi and Cellular TCP buffer limits to lower multiplayer gaming ping",
-                "setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576; setprop net.tcp.buffersize.mobile 524288,1048576,2097152,262144,524288,1048576",
-                "setprop net.tcp.buffersize.wifi default; setprop net.tcp.buffersize.mobile default",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "force_4x_msaa",
-                "Force 4x MSAA Anti-Aliasing",
-                "Forces 4x Multi-Sample Anti-Aliasing for crisp 3D graphics rendering",
-                "setprop debug.egl.force_msaa 1",
-                "setprop debug.egl.force_msaa 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "gpu_16bit_color",
-                "GPU High-Speed 16-Bit Alpha",
-                "Uses fast 16-bit texture format to boost rendering FPS",
-                "setprop persist.sys.use_16bpp_alpha 1",
-                "setprop persist.sys.use_16bpp_alpha 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "bypass_game_throttle",
-                "Bypass Game Throttling Interventions",
-                "Disables Android system default FPS caps & enables Game Driver for all apps",
-                "setprop debug.graphics.game_default_frame_rate.disabled 1; settings put global game_driver_all_apps 2",
-                "setprop debug.graphics.game_default_frame_rate.disabled 0; settings put global game_driver_all_apps 0",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "wifi_latency_mode",
-                "Low Latency Wi-Fi Packet Mode",
-                "Forces high-power Wi-Fi lock to eliminate packet jitter during online games",
-                "cmd wlan set-power-mode 0 || settings put global wifi_sleep_policy 2",
-                "cmd wlan set-power-mode 2 || settings put global wifi_sleep_policy 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "cpu_affinity_priority",
-                "CPU Thread Affinity Priority",
-                "Directs game process threads to high-performance CPU cores",
-                "setprop sys.games.cpu_affinity 1",
-                "setprop sys.games.cpu_affinity 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "sf_latch_unsignaled",
-                "Zero Frame Latency Latching",
-                "Forces SurfaceFlinger to latch unsignaled buffers immediately for lower input latency",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.performance.tuning 1",
-                "setprop debug.sf.latch_unsignaled 0; setprop debug.performance.tuning 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "tethering_hw_offload",
-                "Tethering Hardware Acceleration",
-                "Enables hardware-offloaded tethering to reduce CPU overhead during hotspot gaming",
-                "settings put global tether_offload_disabled 0",
-                "settings put global tether_offload_disabled 1",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "force_full_gnss_raw",
-                "Force Full GNSS Raw Measurements",
-                "Forces raw GNSS/GPS measurements for high-precision location tracking in games",
-                "settings put global development_settings_enabled 1; settings put global force_gnss_raw_measurements 1",
-                "settings put global force_gnss_raw_measurements 0",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "sf_zero_vsync_phase",
-                "Zero VSync Phase Frame Offsets",
-                "Eliminates SurfaceFlinger VSync app/render phase offsets to render frames instantly",
-                "setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0",
-                "setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        // touch_pressure_scale_boost — slop line removed (covered by aim_touch_precision)
-        // display_vsync_offset — removed: contradicts sf_zero_vsync_phase (0ns vs 500000ns conflict)
 
         TWEAKS.add(new TweakItem(
                 "powerhal_sustained_perf",
@@ -234,26 +54,7 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
-
-        TWEAKS.add(new TweakItem(
-                "gpu_power_mode",
-                "GPU Maximum Clocks & Power Mode",
-                "Locks GPU frequency governor at maximum performance state",
-                "setprop vendor.gpu.power_mode 1; setprop debug.gpu.performance 1",
-                "setprop vendor.gpu.power_mode 0; setprop debug.gpu.performance 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "renderthread_vulkan_backend",
-                "Vulkan RenderEngine & Skia Optimization",
-                "Routes System UI & app rendering pipelines through Vulkan backend",
-                "setprop debug.renderengine.backend vulkan; setprop renderthread.skia.reduceopstasksplitting true",
-                "setprop debug.renderengine.backend gles; setprop renderthread.skia.reduceopstasksplitting false",
-                TweakCategory.CPU_GPU,
-                true
-        ));
+    }
 
         // ═══════════════════════════════════════════════════════════
         // NEW GPU & RENDERING TWEAKS
