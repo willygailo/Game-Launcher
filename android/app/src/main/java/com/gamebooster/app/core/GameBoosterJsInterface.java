@@ -203,6 +203,19 @@ public class GameBoosterJsInterface {
     }
 
     @JavascriptInterface
+    public boolean applySpoofProfileById(String profileId) {
+        if (context == null || profileId == null) return false;
+        com.gamebooster.app.spoofer.SpoofProfile profile = com.gamebooster.app.spoofer.DeviceSpooferEngine.getProfileById(profileId);
+        if (profile == null) return false;
+        boolean result = com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, null);
+        if (result) {
+            com.gamebooster.app.spoofer.SpoofPreferences.setSpoofEnabled(context, true);
+            com.gamebooster.app.spoofer.SpoofPreferences.setActiveProfileId(context, profileId);
+        }
+        return result;
+    }
+
+    @JavascriptInterface
     public boolean setRefreshRateForOem(int hz) {
         String res = com.gamebooster.app.booster.refreshrate.RefreshRateManager.getInstance().forceRefreshRate(hz);
         return res != null && !res.startsWith("ERROR");
