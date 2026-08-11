@@ -195,6 +195,8 @@ public class TerminalFragment extends Fragment {
         });
     }
 
+    private final java.util.List<String> mCommandHistory = new java.util.ArrayList<>();
+
     private void runCustomCommand() {
         if (mCommandInput == null) return;
         String cmd = mCommandInput.getText() != null ? mCommandInput.getText().toString().trim() : "";
@@ -204,6 +206,10 @@ public class TerminalFragment extends Fragment {
         if (!rm.canUseTerminal()) {
             appendOutput("❌ Terminal access requires ADMIN role. Current: " + rm.getRole().getDisplayName());
             return;
+        }
+
+        if (!mCommandHistory.contains(cmd)) {
+            mCommandHistory.add(cmd);
         }
 
         appendOutput("$ " + cmd);

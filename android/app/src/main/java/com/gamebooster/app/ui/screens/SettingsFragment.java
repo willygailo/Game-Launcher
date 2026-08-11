@@ -166,12 +166,20 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchEsportsAudio = view.findViewById(R.id.switch_esports_audio);
         Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
 
-        if (switchOverlayHud != null) {
-            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
+        if (switchOverlayHud != null && getContext() != null) {
+            boolean savedOverlay = EsportsPreferences.isOverlayHudEnabled(getContext());
+            boolean isRunning = com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning();
+            if (savedOverlay && !isRunning && (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(getContext()))) {
+                com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
+                isRunning = true;
+            }
+            switchOverlayHud.setChecked(savedOverlay || isRunning);
             switchOverlayHud.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                EsportsPreferences.setOverlayHud(getContext(), isChecked);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
                     switchOverlayHud.setChecked(false);
+                    EsportsPreferences.setOverlayHud(getContext(), false);
                     Toast.makeText(getContext(), "Please grant 'Draw over other apps' permission first", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                     intent.setData(Uri.parse("package:" + getContext().getPackageName()));
@@ -188,19 +196,28 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (switchGamingDnd != null) {
-            switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
+        if (switchGamingDnd != null && getContext() != null) {
+            boolean savedDnd = EsportsPreferences.isGamingDndEnabled(getContext());
+            switchGamingDnd.setChecked(savedDnd);
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                EsportsPreferences.setGamingDnd(getContext(), isChecked);
                 com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
                 Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
             });
         }
 
-        if (switchAutoGameBoost != null) {
-            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
+        if (switchAutoGameBoost != null && getContext() != null) {
+            boolean savedAutoBoost = EsportsPreferences.isAutoGameBoostEnabled(getContext());
+            boolean isRunning = com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning();
+            if (savedAutoBoost && !isRunning) {
+                com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                isRunning = true;
+            }
+            switchAutoGameBoost.setChecked(savedAutoBoost || isRunning);
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                EsportsPreferences.setAutoGameBoost(getContext(), isChecked);
                 if (isChecked) {
                     com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
                     Toast.makeText(getContext(), "🎮 Auto Game Launch Monitor: ENABLED", Toast.LENGTH_SHORT).show();
@@ -211,10 +228,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (switchEsportsAudio != null) {
-            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
+        if (switchEsportsAudio != null && getContext() != null) {
+            boolean savedAudio = EsportsPreferences.isEsportsAudioEnabled(getContext());
+            switchEsportsAudio.setChecked(savedAudio);
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                EsportsPreferences.setEsportsAudio(getContext(), isChecked);
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
                 Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
             });
@@ -244,12 +263,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         btnCrosshairPreset = view.findViewById(R.id.btn_crosshair_preset);
         btnSensitivityCalculator = view.findViewById(R.id.btn_sensitivity_calculator);
 
-        if (precisionSettingsManager != null && switchPrecisionInputTuner != null) {
-            switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
+        if (precisionSettingsManager != null && switchPrecisionInputTuner != null && getContext() != null) {
+            boolean savedInputTuner = PrecisionAimPreferences.isInputTunerEnabled(getContext());
+            switchPrecisionInputTuner.setChecked(savedInputTuner || precisionSettingsManager.isDeviceTuned());
             switchPrecisionInputTuner.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                PrecisionAimPreferences.setInputTunerEnabled(getContext(), isChecked);
                 if (!ShizukuExecutor.hasShizukuPermission()) {
                     switchPrecisionInputTuner.setChecked(false);
+                    PrecisionAimPreferences.setInputTunerEnabled(getContext(), false);
                     ShizukuManager.showShizukuPermissionDialog(getContext(), "Precision Input Tuner");
                     return;
                 }
@@ -268,6 +290,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         } else {
                             Toast.makeText(getContext(), "Failed to modify system properties via Shizuku", Toast.LENGTH_SHORT).show();
                             switchPrecisionInputTuner.setChecked(!isChecked);
+                            PrecisionAimPreferences.setInputTunerEnabled(getContext(), !isChecked);
                         }
                         updatePrecisionAimStatus();
                     });
@@ -275,12 +298,20 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (switchCrosshairOverlay != null) {
-            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isOverlayRunning());
+        if (switchCrosshairOverlay != null && getContext() != null) {
+            boolean savedCrosshair = PrecisionAimPreferences.isCrosshairOverlayEnabled(getContext());
+            boolean isRunning = CrosshairOverlayService.isOverlayRunning();
+            if (savedCrosshair && !isRunning && (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(getContext()))) {
+                CrosshairOverlayService.startOverlay(getContext());
+                isRunning = true;
+            }
+            switchCrosshairOverlay.setChecked(savedCrosshair || isRunning);
             switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
+                PrecisionAimPreferences.setCrosshairOverlayEnabled(getContext(), isChecked);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
                     switchCrosshairOverlay.setChecked(false);
+                    PrecisionAimPreferences.setCrosshairOverlayEnabled(getContext(), false);
                     Toast.makeText(getContext(), "Overlay Permission Required", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
                     startActivity(intent);
@@ -295,8 +326,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             CrosshairOverlayService.startOverlay(getContext());
                             Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
                         })
-                        .setNegativeButton("CANCEL", (dialog, which) -> switchCrosshairOverlay.setChecked(false))
-                        .setOnCancelListener(dialog -> switchCrosshairOverlay.setChecked(false))
+                        .setNegativeButton("CANCEL", (dialog, which) -> {
+                            switchCrosshairOverlay.setChecked(false);
+                            PrecisionAimPreferences.setCrosshairOverlayEnabled(getContext(), false);
+                        })
+                        .setOnCancelListener(dialog -> {
+                            switchCrosshairOverlay.setChecked(false);
+                            PrecisionAimPreferences.setCrosshairOverlayEnabled(getContext(), false);
+                        })
                         .show();
                 } else {
                     CrosshairOverlayService.stopOverlay(getContext());

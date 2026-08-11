@@ -1,6 +1,8 @@
 package com.gamebooster.app.booster;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -34,19 +36,39 @@ public class NetworkOptimizer {
             return true;
         }
 
-        // Set private DNS mode to opportunistic / hostname
         CommandExecutor.executeSystemCommand("settings put global private_dns_mode hostname");
         CommandExecutor.executeSystemCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
         ShizukuExecutor.executeShizukuCommand("settings put global private_dns_mode hostname");
         ShizukuExecutor.executeShizukuCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
 
-        // System property DNS fallback
-        CommandExecutor.executeSystemCommand("setprop net.dns1 " + mode.primary);
-        CommandExecutor.executeSystemCommand("setprop net.dns2 " + mode.secondary);
-
-        // TCP buffer tuning for gaming
-        optimizeTcpBuffers();
+        optimizeNetworkStack(context);
         return true;
+    }
+
+    public static void optimizeNetworkStack(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
+        
+        if (nc != null) {
+            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                optimizeTcpBuffers("wifi");
+            } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                if (nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING)) {
+                    optimizeTcpBuffers("5g");
+                } else {
+                    optimizeTcpBuffers("lte");
+                }
+            }
+        }
+    }
+
+    private static void optimizeTcpBuffers(String type) {
+        String base = "524288,1048576,2097152,262144,524288,1048576";
+        String fast = "1048576,2097152,4194304,524288,1048576,2097152";
+        String values = type.equals("5g") ? fast : base;
+        
+        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize." + type + " " + values);
+        ShizukuExecutor.executeShizukuCommand("setprop net.tcp.buffersize." + type + " " + values);
     }
 
     public static boolean enableWifiLowLatencyGameMode() {
@@ -56,9 +78,6 @@ public class NetworkOptimizer {
 
         CommandExecutor.executeSystemCommand("settings put global wifi_scan_throttle_enabled 0");
         ShizukuExecutor.executeShizukuCommand("settings put global wifi_scan_throttle_enabled 0");
-
-        CommandExecutor.executeSystemCommand("settings put global wifi_scan_interval_ms 60000");
-        ShizukuExecutor.executeShizukuCommand("settings put global wifi_scan_interval_ms 60000");
         return true;
     }
 
@@ -77,27 +96,19 @@ public class NetworkOptimizer {
         return CommandExecutor.isSuccessOutput(res);
     }
 
-    public static void optimizeTcpBuffers() {
-        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576");
-        CommandExecutor.executeSystemCommand("setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576");
-        ShizukuExecutor.executeShizukuCommand("setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576");
-        ShizukuExecutor.executeShizukuCommand("setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576");
-    }
-
     public static boolean setTetheringHwAcceleration(boolean enabled) {
         String res = CommandExecutor.executeSystemCommand("settings put global tether_offload_disabled " + (enabled ? "0" : "1"));
+        ShizukuExecutor.executeShizukuCommand("settings put global tether_offload_disabled " + (enabled ? "0" : "1"));
         return CommandExecutor.isSuccessOutput(res);
     }
 
     public static boolean setForceFullGnss(boolean enabled) {
         CommandExecutor.executeSystemCommand("settings put global development_settings_enabled 1");
         String res = CommandExecutor.executeSystemCommand("settings put global force_gnss_raw_measurements " + (enabled ? "1" : "0"));
+        ShizukuExecutor.executeShizukuCommand("settings put global force_gnss_raw_measurements " + (enabled ? "1" : "0"));
         return CommandExecutor.isSuccessOutput(res);
     }
 
-    /**
-     * Measures current network round-trip ping to 1.1.1.1 in milliseconds.
-     */
     public static int measureNetworkPingMs() {
         try {
             Process process = Runtime.getRuntime().exec("ping -c 1 -w 2 1.1.1.1");
@@ -108,17 +119,14 @@ public class NetworkOptimizer {
                     int index = line.indexOf("time=");
                     String timePart = line.substring(index + 5);
                     int spaceIndex = timePart.indexOf(" ");
-                    if (spaceIndex > 0) {
-                        timePart = timePart.substring(0, spaceIndex);
-                    }
-                    float pingFloat = Float.parseFloat(timePart);
-                    return Math.round(pingFloat);
+                    if (spaceIndex > 0) timePart = timePart.substring(0, spaceIndex);
+                    return Math.round(Float.parseFloat(timePart));
                 }
             }
             process.waitFor();
         } catch (Exception e) {
             Log.w(TAG, "Ping measurement error", e);
         }
-        return -1; // Unknown / timeout
+        return -1;
     }
 }

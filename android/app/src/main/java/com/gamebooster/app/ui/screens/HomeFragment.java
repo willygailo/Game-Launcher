@@ -212,20 +212,27 @@ public class HomeFragment extends Fragment {
         if (tvBoostSub != null) tvBoostSub.setText("BOOSTING...");
 
         AppExecutors.getInstance().executeCommand(() -> {
-            try {
-                System.gc();
-                ShizukuExecutor.executeShizukuCommand("cmd activity drop-caches");
-                ShizukuExecutor.executeShizukuCommand("settings put global lock_to_app_enabled 0");
-            } catch (Throwable ignored) {}
+            com.gamebooster.app.booster.RamZramChannel.MemoryStats stats =
+                    com.gamebooster.app.booster.RamZramChannel.optimizeMemory(getContext());
+            com.gamebooster.app.booster.CpuGovernorChannel.setPerformanceLock();
 
             AppExecutors.getInstance().postToMainThread(() -> {
-                if (tvBoostSub != null) tvBoostSub.setText("MAX BOOSTED");
+                if (tvBoostSub != null) {
+                    if (stats.freedRamMb > 0) {
+                        tvBoostSub.setText("+" + stats.freedRamMb + "MB FREED");
+                    } else {
+                        tvBoostSub.setText("MAX BOOSTED");
+                    }
+                }
                 if (getContext() != null) {
-                    Toast.makeText(getContext(), "⚡ HARDWARE ENGINE BOOSTED! Memory trimmed & CPU governor set to max.", Toast.LENGTH_SHORT).show();
+                    String msg = "⚡ HARDWARE ENGINE BOOSTED!\n" +
+                            (stats.freedRamMb > 0 ? "Freed " + stats.freedRamMb + "MB RAM (" + stats.availRamMbAfter + "MB Free)"
+                                                  : "Memory trimmed & CPU Governor locked to Max Performance!");
+                    Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
                 }
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     if (tvBoostSub != null) tvBoostSub.setText("Tap to Boost");
-                }, 2500);
+                }, 3000);
             });
         });
     }
