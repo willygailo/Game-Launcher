@@ -93,20 +93,20 @@
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingTop="8dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="84dp">
 
             <!-- HERO CENTER WIDGET: BOOST ENGINE DIAL -->
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_marginTop="4dp"
+                android:layout_height="135dp"
+                android:layout_marginTop="2dp"
                 android:gravity="center">
 
                 <!-- Outer Glowing Circular Ring -->
                 <FrameLayout
                     android:id="@+id/layout_engine_ring"
-                    android:layout_width="160dp"
-                    android:layout_height="160dp"
+                    android:layout_width="125dp"
+                    android:layout_height="125dp"
                     android:layout_centerInParent="true"
                     android:background="@drawable/bg_engine_dial_ring"
                     android:clickable="true"
@@ -124,15 +124,15 @@
                             android:layout_height="wrap_content"
                             android:text="⚡"
                             android:textColor="#00F0FF"
-                            android:textSize="38sp" />
+                            android:textSize="28sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="1dp"
                             android:text="BOOST ENGINE"
                             android:textColor="#FFFFFF"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.06" />
 
@@ -140,10 +140,10 @@
                             android:id="@+id/tv_boost_status_sub"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="1dp"
                             android:text="Tap to Boost"
                             android:textColor="#00F0FF"
-                            android:textSize="10sp" />
+                            android:textSize="9sp" />
                     </LinearLayout>
                 </FrameLayout>
             </RelativeLayout>
@@ -363,7 +363,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_games_list"
                 android:layout_width="match_parent"
-                android:layout_height="225dp"
+                android:layout_height="185dp"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:scrollbars="none" />

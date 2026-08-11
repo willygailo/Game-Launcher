@@ -152,21 +152,42 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         });
     }
 
+    private HomeFragment mHomeFragment;
+    private SettingsFragment mSettingsFragment;
+    private Fragment mActiveFragment;
+
     private void showFragmentForTab(int position) {
-        Fragment selectedFragment;
-        switch (position) {
-            case 1:
-                selectedFragment = new SettingsFragment();
-                break;
-            case 0:
-            default:
-                selectedFragment = new HomeFragment();
-                break;
+        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+        androidx.fragment.app.FragmentTransaction ft = fm.beginTransaction();
+
+        // Retrieve existing instances if restoring from state
+        if (mHomeFragment == null) {
+            mHomeFragment = (HomeFragment) fm.findFragmentByTag("TAG_HOME");
+            if (mHomeFragment == null) {
+                mHomeFragment = new HomeFragment();
+                ft.add(R.id.fragment_container, mHomeFragment, "TAG_HOME");
+            }
         }
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, selectedFragment)
-                .commit();
+        if (mSettingsFragment == null) {
+            mSettingsFragment = (SettingsFragment) fm.findFragmentByTag("TAG_SETTINGS");
+            if (mSettingsFragment == null) {
+                mSettingsFragment = new SettingsFragment();
+                ft.add(R.id.fragment_container, mSettingsFragment, "TAG_SETTINGS");
+                ft.hide(mSettingsFragment);
+            }
+        }
+
+        Fragment targetFragment = (position == 1) ? mSettingsFragment : mHomeFragment;
+
+        if (mActiveFragment != targetFragment) {
+            if (mActiveFragment != null) {
+                ft.hide(mActiveFragment);
+            }
+            ft.show(targetFragment);
+            mActiveFragment = targetFragment;
+            ft.commitNow();
+        }
     }
 
     @Override

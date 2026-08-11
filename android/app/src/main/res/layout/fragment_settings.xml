@@ -21,24 +21,53 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="84dp">
 
-            <!-- HEADER -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- HEADER BAR WITH HOME BUTTON -->
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="⚙️ DASHBOARD SETTINGS &amp; TWEAKS"
-                android:textColor="@color/accent_cyan"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:paddingBottom="8dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Shizuku privileged shell, hardware engines, &amp; system tweaks"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/btn_back_home"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚙️ DASHBOARD SETTINGS"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Shizuku privileged shell &amp; hardware engine tweaks"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_back_home"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:backgroundTint="#2000F0FF"
+                    android:text="🏠 HOME"
+                    android:textColor="#00F0FF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
 
             <!-- CARD 1: SHIZUKU ADB & PRIVILEGED PERMISSIONS -->
             <LinearLayout

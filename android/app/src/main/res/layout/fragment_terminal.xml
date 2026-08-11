@@ -1,232 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0A0A0F"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_terminal_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚡ SHIZUKU TERMINAL"
+                android:textColor="#00FF9C"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/tv_shizuku_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚫ Checking Shizuku status..."
+                android:textColor="#AAAAAA"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:paddingTop="2dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_clear_output"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="CLEAR"
+            android:textSize="11sp"
+            android:backgroundTint="#1A0000"
+            android:strokeColor="#FF4040"
+            android:strokeWidth="1"
+            android:textColor="#FF4040"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+    </LinearLayout>
+
+    <!-- Terminal Log Output Area -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CONSOLE OUTPUT:"
+        android:textColor="#555566"
+        android:textSize="10sp"
+        android:fontFamily="monospace"
+        android:paddingBottom="4dp" />
+
+    <ScrollView
+        android:id="@+id/sv_terminal_output"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#050508"
+        android:padding="2dp">
+
+        <TextView
+            android:id="@+id/tv_terminal_output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="[GameBooster Terminal] Shizuku ADB shell active. Type a command below.\n"
+            android:textColor="#00FF9C"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:padding="10dp"
+            android:textIsSelectable="true" />
+    </ScrollView>
+
+    <!-- Command Prompt Input -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="COMMAND PROMPT:"
+        android:textColor="#555566"
+        android:textSize="10sp"
+        android:fontFamily="monospace"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <!-- Header -->
-        <TextView
-            android:id="@+id/tv_terminal_header"
-            android:layout_width="match_parent"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_command_input"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="⚡ SHIZUKU TERMINAL"
-            android:textColor="#00FF9C"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:fontFamily="monospace"
-            android:paddingBottom="4dp"/>
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <TextView
-            android:id="@+id/tv_shizuku_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="⚫ Checking Shizuku status..."
-            android:textColor="#AAAAAA"
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:paddingBottom="12dp"/>
-
-        <!-- Quick Action Buttons Row 1 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <Button
-                android:id="@+id/btn_start_shizuku"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="▶ Start Shizuku"
-                android:textSize="11sp"
-                android:backgroundTint="#1A3A1A"
-                android:strokeColor="#00FF9C"
-                android:strokeWidth="1"
-                android:textColor="#00FF9C"
-                android:layout_marginEnd="6dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-            <Button
-                android:id="@+id/btn_grant_permissions"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="🔑 Grant All"
-                android:textSize="11sp"
-                android:backgroundTint="#1A1A3A"
-                android:strokeColor="#7C5CFC"
-                android:strokeWidth="1"
-                android:textColor="#7C5CFC"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-        </LinearLayout>
-
-        <!-- Quick Action Buttons Row 2 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <Button
-                android:id="@+id/btn_force_apply"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="⚡ Force Apply"
-                android:textSize="11sp"
-                android:backgroundTint="#3A1A00"
-                android:strokeColor="#FF9C00"
-                android:strokeWidth="1"
-                android:textColor="#FF9C00"
-                android:layout_marginEnd="6dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-            <Button
-                android:id="@+id/btn_list_folders"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="📁 Game Folders"
-                android:textSize="11sp"
-                android:backgroundTint="#1A002A"
-                android:strokeColor="#FF5FE0"
-                android:strokeWidth="1"
-                android:textColor="#FF5FE0"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-        </LinearLayout>
-
-        <!-- Quick Action Buttons Row 3 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <Button
-                android:id="@+id/btn_device_info"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="🔍 Device Info"
-                android:textSize="11sp"
-                android:backgroundTint="#001A3A"
-                android:strokeColor="#00B4FF"
-                android:strokeWidth="1"
-                android:textColor="#00B4FF"
-                android:layout_marginEnd="6dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-            <Button
-                android:id="@+id/btn_clear_output"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="🗑 Clear"
-                android:textSize="11sp"
-                android:backgroundTint="#1A0000"
-                android:strokeColor="#FF4040"
-                android:strokeWidth="1"
-                android:textColor="#FF4040"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-        </LinearLayout>
-
-        <!-- Terminal Output -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="OUTPUT:"
-            android:textColor="#555566"
-            android:textSize="11sp"
-            android:fontFamily="monospace"
-            android:paddingBottom="4dp"/>
-
-        <ScrollView
-            android:id="@+id/sv_terminal_output"
-            android:layout_width="match_parent"
-            android:layout_height="280dp"
-            android:background="#050508"
-            android:padding="1dp">
-
-            <TextView
-                android:id="@+id/tv_terminal_output"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_command_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="[GameBooster Terminal] Ready. Tap a button or type a command below.\n"
-                android:textColor="#00FF9C"
-                android:textSize="11sp"
+                android:hint="e.g. getprop ro.build.version.release"
+                android:textColor="#CCCCDD"
+                android:textColorHint="#555566"
                 android:fontFamily="monospace"
-                android:padding="8dp"
-                android:textIsSelectable="true"/>
-        </ScrollView>
+                android:textSize="12sp"
+                android:inputType="text"
+                android:imeOptions="actionDone"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Custom Command Input -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="CUSTOM COMMAND:"
-            android:textColor="#555566"
-            android:textSize="11sp"
-            android:fontFamily="monospace"
-            android:paddingTop="10dp"
-            android:paddingBottom="4dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_command_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_command_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="e.g. getprop ro.build.version.release"
-                    android:textColor="#CCCCDD"
-                    android:textColorHint="#555566"
-                    android:fontFamily="monospace"
-                    android:textSize="12sp"
-                    android:inputType="text"
-                    android:imeOptions="actionDone"
-                    android:singleLine="true"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <Button
-                android:id="@+id/btn_run_command"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="RUN"
-                android:textColor="#00FF9C"
-                android:backgroundTint="#0D2B0D"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:strokeColor="#00FF9C"
-                android:strokeWidth="1"
-                android:layout_gravity="center_vertical"/>
-        </LinearLayout>
-
-        <!-- Shizuku Setup Hint -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="ℹ️  Shizuku must be running. Start via: Wireless Debugging → Shizuku app, or ADB from PC."
-            android:textColor="#444455"
-            android:textSize="11sp"
-            android:paddingTop="12dp"
-            android:paddingBottom="8dp"/>
-
+        <Button
+            android:id="@+id/btn_run_command"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="EXEC"
+            android:textColor="#00FF9C"
+            android:backgroundTint="#0D2B0D"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:strokeColor="#00FF9C"
+            android:strokeWidth="1" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- Info Footer -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ℹ️  Shizuku ADB shell active. Enter any shell command to execute with granted permissions."
+        android:textColor="#444455"
+        android:textSize="10sp"
+        android:paddingTop="6dp" />
+
+</LinearLayout>

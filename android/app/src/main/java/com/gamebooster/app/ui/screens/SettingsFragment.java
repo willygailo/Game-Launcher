@@ -93,6 +93,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             precisionProfileManager = new ProfileManager(getContext());
         }
 
+        // Top Header Navigation: Back to Home
+        View btnBackHome = view.findViewById(R.id.btn_back_home);
+        if (btnBackHome != null) {
+            btnBackHome.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).selectTab(0);
+                }
+            });
+        }
+
         // Card 1: Shizuku & System Permissions
         tvEngineStatus = view.findViewById(R.id.tv_engine_status);
         tvRootStatus = view.findViewById(R.id.tv_root_status);
