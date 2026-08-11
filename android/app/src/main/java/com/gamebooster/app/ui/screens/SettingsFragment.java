@@ -164,7 +164,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     if (isAdded() && getParentFragmentManager() != null) {
                         getParentFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, new TerminalFragment())
-                                .addToBackStack(null)
+                                .addToBackStack("TerminalFragment")
                                 .commit();
                     }
                 } catch (Exception e) {

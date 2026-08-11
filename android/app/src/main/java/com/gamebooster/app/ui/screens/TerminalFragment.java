@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -36,6 +37,7 @@ import java.util.concurrent.Executors;
  *  - High-performance full screen console output window
  *  - Arbitrary shell command input bar powered directly by Shizuku ADB binder execution
  *  - Role-based command execution enforcement
+ *  - Clear exit navigation & back press dispatcher support
  */
 public class TerminalFragment extends Fragment {
 
@@ -47,6 +49,7 @@ public class TerminalFragment extends Fragment {
     private TextInputEditText mCommandInput;
     private Button mBtnRunCommand;
     private Button mBtnClear;
+    private Button mBtnExit;
 
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private final StringBuilder mOutputBuffer = new StringBuilder();
@@ -83,6 +86,28 @@ public class TerminalFragment extends Fragment {
         mCommandInput  = view.findViewById(R.id.et_command_input);
         mBtnRunCommand = view.findViewById(R.id.btn_run_command);
         mBtnClear      = view.findViewById(R.id.btn_clear_output);
+        mBtnExit       = view.findViewById(R.id.btn_exit_terminal);
+
+        // Register system back button callback so user can cleanly exit terminal
+        if (getActivity() != null) {
+            getActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    exitTerminal();
+                }
+            });
+        }
+
+        // Header Exit button listener
+        if (mBtnExit != null) {
+            mBtnExit.setOnClickListener(v -> exitTerminal());
+        }
+
+        // Quick Preset Chips
+        bindPresetChip(view, R.id.chip_cmd_getprop, "getprop ro.build.version.release");
+        bindPresetChip(view, R.id.chip_cmd_wmsize, "wm size");
+        bindPresetChip(view, R.id.chip_cmd_dumpsys, "dumpsys display | grep -E \"mBaseDisplayInfo|DisplayDeviceInfo\"");
+        bindPresetChip(view, R.id.chip_cmd_pmlist, "pm list packages -3");
 
         updateButtonStates();
 
@@ -116,6 +141,26 @@ public class TerminalFragment extends Fragment {
                 }
                 return false;
             });
+        }
+    }
+
+    private void bindPresetChip(View parent, int chipId, String commandText) {
+        Button chip = parent.findViewById(chipId);
+        if (chip != null) {
+            chip.setOnClickListener(v -> {
+                if (mCommandInput != null) {
+                    mCommandInput.setText(commandText);
+                    mCommandInput.setSelection(commandText.length());
+                }
+            });
+        }
+    }
+
+    private void exitTerminal() {
+        if (isAdded() && getParentFragmentManager() != null) {
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            }
         }
     }
 
@@ -178,7 +223,7 @@ public class TerminalFragment extends Fragment {
             if (!canUse) {
                 mCommandInput.setHint("Connect Shizuku to execute commands");
             } else {
-                mCommandInput.setHint("e.g. setprop debug.sf.latch_unsignaled 1");
+                mCommandInput.setHint("Enter ADB command...");
             }
         }
     }

@@ -14,6 +14,20 @@
         android:gravity="center_vertical"
         android:paddingBottom="8dp">
 
+        <Button
+            android:id="@+id/btn_exit_terminal"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:text="← EXIT"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#222233"
+            android:strokeColor="#555577"
+            android:strokeWidth="1"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -26,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:text="⚡ SHIZUKU TERMINAL"
                 android:textColor="#00FF9C"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace" />
 
@@ -36,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="⚫ Checking Shizuku status..."
                 android:textColor="#AAAAAA"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:fontFamily="monospace"
                 android:paddingTop="2dp" />
         </LinearLayout>
@@ -84,6 +98,80 @@
             android:textIsSelectable="true" />
     </ScrollView>
 
+    <!-- Quick Commands Bar -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="QUICK PRESETS:"
+        android:textColor="#555566"
+        android:textSize="10sp"
+        android:fontFamily="monospace"
+        android:paddingTop="6dp"
+        android:paddingBottom="2dp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/chip_cmd_getprop"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="6dp"
+                android:text="getprop"
+                android:textSize="10sp"
+                android:textColor="#00FF9C"
+                android:backgroundTint="#0A2211"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:strokeColor="#00FF9C"
+                android:strokeWidth="1" />
+
+            <Button
+                android:id="@+id/chip_cmd_wmsize"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="6dp"
+                android:text="wm size"
+                android:textSize="10sp"
+                android:textColor="#88CCFF"
+                android:backgroundTint="#0A1C2A"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:strokeColor="#88CCFF"
+                android:strokeWidth="1" />
+
+            <Button
+                android:id="@+id/chip_cmd_dumpsys"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="6dp"
+                android:text="dumpsys display"
+                android:textSize="10sp"
+                android:textColor="#FFCC00"
+                android:backgroundTint="#2A220A"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:strokeColor="#FFCC00"
+                android:strokeWidth="1" />
+
+            <Button
+                android:id="@+id/chip_cmd_pmlist"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="pm list packages -3"
+                android:textSize="10sp"
+                android:textColor="#FF99FF"
+                android:backgroundTint="#2A0A2A"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:strokeColor="#FF99FF"
+                android:strokeWidth="1" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <!-- Command Prompt Input -->
     <TextView
         android:layout_width="match_parent"
@@ -92,7 +180,7 @@
         android:textColor="#555566"
         android:textSize="10sp"
         android:fontFamily="monospace"
-        android:paddingTop="8dp"
+        android:paddingTop="6dp"
         android:paddingBottom="4dp" />
 
     <LinearLayout
@@ -113,9 +201,9 @@
                 android:id="@+id/et_command_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="e.g. getprop ro.build.version.release"
+                android:hint="Enter ADB command..."
                 android:textColor="#CCCCDD"
-                android:textColorHint="#555566"
+                android:textColorHint="#444455"
                 android:fontFamily="monospace"
                 android:textSize="12sp"
                 android:inputType="text"

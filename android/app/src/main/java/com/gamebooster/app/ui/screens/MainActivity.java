@@ -119,7 +119,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             public void onTabUnselected(TabLayout.Tab tab) {}
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+                clearBackStackIfAny();
+            }
         });
 
         TabLayout.Tab initialTab = tabLayout.getTabAt(currentTabIndex);
@@ -156,7 +158,16 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     private SettingsFragment mSettingsFragment;
     private Fragment mActiveFragment;
 
+    private void clearBackStackIfAny() {
+        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStackImmediate(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+    }
+
     private void showFragmentForTab(int position) {
+        clearBackStackIfAny();
+
         androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
         androidx.fragment.app.FragmentTransaction ft = fm.beginTransaction();
 

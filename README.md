@@ -34,7 +34,7 @@
 
 ## 🚀 Overview
 
-**Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210)** is an advanced, device-level performance utility, hardware identity spoofer, and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile, Roblox*).
+**Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210)** is an advanced, device-level performance and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile, Roblox*).
 
 By leveraging **Shizuku API (privileged ADB Binder IPC - uid 2000)**, it unlocks **Dynamic Refresh Rates (60Hz, 90Hz, 120Hz, 144Hz, 165Hz+)** detected directly from hardware panel capabilities, enforces **0ms Zero Touch Delay with 1000Hz Digitizer Sampling**, applies **Per-Game Package Spoofer Profiles** (each game target receives its own custom hardware identity to eliminate conflicts), integrates an **In-Game HUD Turbo Overlay with Quick Hz Locks, Charge Bypass & Touch Boost**, features a **Transparent Glassmorphic Design across Home, Settings, and Terminal**, and provides a **Deep Search Game Folder Resolver** for Android 13–16 restricted storage.
 
