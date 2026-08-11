@@ -150,11 +150,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnOpenTerminal = view.findViewById(R.id.btn_open_terminal);
         if (btnOpenTerminal != null) {
             btnOpenTerminal.setOnClickListener(v -> {
-                if (getParentFragmentManager() != null) {
-                    getParentFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, new TerminalFragment())
-                            .addToBackStack(null)
-                            .commit();
+                try {
+                    if (isAdded() && getParentFragmentManager() != null) {
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, new TerminalFragment())
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                } catch (Exception e) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Unable to open Terminal: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -202,8 +208,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 EsportsPreferences.setGamingDnd(getContext(), isChecked);
-                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
                 Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (getContext() != null) {
+                        com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
+                    }
+                });
             });
         }
 
@@ -218,13 +228,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 EsportsPreferences.setAutoGameBoost(getContext(), isChecked);
-                if (isChecked) {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
-                    Toast.makeText(getContext(), "🎮 Auto Game Launch Monitor: ENABLED", Toast.LENGTH_SHORT).show();
-                } else {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
-                    Toast.makeText(getContext(), "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), isChecked ? "🎮 Auto Game Launch Monitor: ENABLED" : "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (getContext() != null) {
+                        if (isChecked) {
+                            com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                        } else {
+                            com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                        }
+                    }
+                });
             });
         }
 
@@ -234,8 +247,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 EsportsPreferences.setEsportsAudio(getContext(), isChecked);
-                com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
                 Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (getContext() != null) {
+                        com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
+                    }
+                });
             });
         }
 
@@ -246,11 +263,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & Storage Caches...", Toast.LENGTH_SHORT).show();
 
                 AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = com.gamebooster.app.gamespace.GameCacheCleaner.performDeepGameCacheClean(getContext());
+                    com.gamebooster.app.gamespace.GameCacheCleaner.CleanResult res =
+                            com.gamebooster.app.gamespace.GameCacheCleaner.performDeepGameCacheCleanDetailed(getContext());
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         btnCleanCaches.setEnabled(true);
-                        Toast.makeText(getContext(), ok ? "🧹 Game Storage & Shaders Cleaned!" : "Cache Clean Complete", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), res.summary, Toast.LENGTH_LONG).show();
                     });
                 });
             });

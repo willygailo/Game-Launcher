@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Application Theme using MaterialComponents -->
+    <style name="Theme.GameBooster" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Brand Colors -->
+        <item name="colorPrimary">@color/accent_cyan</item>
+        <item name="colorPrimaryVariant">@color/accent_purple</item>
+        <item name="colorOnPrimary">#000000</item>
+
+        <!-- Secondary Accent Colors -->
+        <item name="colorSecondary">@color/accent_neon_green</item>
+        <item name="colorSecondaryVariant">@color/accent_cyan</item>
+        <item name="colorOnSecondary">#000000</item>
+
+        <!-- Surface and Background Colors -->
+        <item name="android:colorBackground">@color/bg_dark</item>
+        <item name="colorSurface">#10141D</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Status & Navigation Bar Colors -->
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
+
+        <!-- Material Component Styles Overrides -->
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+    </style>
+</resources>

@@ -78,31 +78,29 @@ public class GameManagerRepository {
         } catch (Throwable ignored) {}
 
         // 3. Tertiary Scanner & Deep Search Engine (Multi-User & Multi-Platform)
-        if (ShizukuExecutor.isShizukuAvailable()) {
-            try {
-                Set<String> deepDiscovered = com.gamebooster.app.games.search.DeepSearchScanner.performDeepSearch(context);
-                for (String pkgName : deepDiscovered) {
-                    if (pkgName == null || pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
-                    if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
+        try {
+            Set<String> deepDiscovered = com.gamebooster.app.games.search.DeepSearchScanner.performDeepSearch(context);
+            for (String pkgName : deepDiscovered) {
+                if (pkgName == null || pkgName.isEmpty() || addedPackages.contains(pkgName)) continue;
+                if (pkgName.equalsIgnoreCase(context.getPackageName())) continue;
 
-                    try {
-                        ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
-                        String label = pm.getApplicationLabel(appInfo).toString();
-                        Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
-                        Drawable icon = pm.getApplicationIcon(appInfo);
-                        gamesList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
-                        addedPackages.add(pkgName);
-                    } catch (Throwable e) {
-                        GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkgName);
-                        String label = spec != null ? spec.title : pkgName;
-                        Drawable defaultAppIcon = context.getApplicationInfo().loadIcon(pm);
-                        gamesList.add(new GameAppInfo(label, pkgName, defaultAppIcon, null));
-                        addedPackages.add(pkgName);
-                    }
+                try {
+                    ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+                    String label = pm.getApplicationLabel(appInfo).toString();
+                    Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+                    Drawable icon = pm.getApplicationIcon(appInfo);
+                    gamesList.add(new GameAppInfo(label, pkgName, icon, launchIntent));
+                    addedPackages.add(pkgName);
+                } catch (Throwable e) {
+                    GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkgName);
+                    String label = spec != null ? spec.title : pkgName;
+                    Drawable defaultAppIcon = context.getApplicationInfo().loadIcon(pm);
+                    gamesList.add(new GameAppInfo(label, pkgName, defaultAppIcon, null));
+                    addedPackages.add(pkgName);
                 }
-            } catch (Throwable e) {
-                Log.w(TAG, "Deep search scanner error: " + e.getMessage());
             }
+        } catch (Throwable e) {
+            Log.w(TAG, "Deep search scanner error: " + e.getMessage());
         }
 
         // 4. Custom Packages Explicit Enforcement

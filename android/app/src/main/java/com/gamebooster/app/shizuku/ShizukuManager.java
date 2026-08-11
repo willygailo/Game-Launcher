@@ -24,9 +24,25 @@ public class ShizukuManager {
 
     private static final List<ShizukuStateListener> STATE_LISTENERS = new CopyOnWriteArrayList<>();
 
+    public static boolean isShizukuConnectedAndGranted() {
+        try {
+            return Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     public static void addStateListener(ShizukuStateListener listener) {
         if (listener != null && !STATE_LISTENERS.contains(listener)) {
             STATE_LISTENERS.add(listener);
+            // Immediately notify listener if Shizuku binder is already connected and granted
+            if (isShizukuConnectedAndGranted()) {
+                try {
+                    listener.onBinderStateChanged(true);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error notifying state listener on add", e);
+                }
+            }
         }
     }
 
@@ -92,6 +108,14 @@ public class ShizukuManager {
             Shizuku.addBinderDeadListener(DEAD_LISTENER);
             Shizuku.addRequestPermissionResultListener(PERMISSION_RESULT_LISTENER);
             Log.d(TAG, "Shizuku binder listeners registered successfully.");
+
+            // Immediate check if binder is already active
+            if (isShizukuConnectedAndGranted()) {
+                try {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                } catch (Throwable ignored) {}
+                notifyStateChanged(true);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Failed to register Shizuku binder listeners", e);
         }

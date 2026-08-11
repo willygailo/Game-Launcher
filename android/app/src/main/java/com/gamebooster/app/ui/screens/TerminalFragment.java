@@ -63,9 +63,12 @@ public class TerminalFragment extends Fragment {
 
     // Health monitor listener
     private final ShizukuHealthMonitor.HealthListener mHealthListener = health -> {
-        if (mStatusView != null) {
-            requireActivity().runOnUiThread(() ->
-                    mStatusView.setText(health.getFullLabel()));
+        if (mStatusView != null && isAdded() && getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                if (mStatusView != null) {
+                    mStatusView.setText(health.getFullLabel());
+                }
+            });
         }
     };
 
@@ -97,35 +100,41 @@ public class TerminalFragment extends Fragment {
         updateButtonStates();
 
         // Shizuku health status subscription
-        ShizukuHealthMonitor monitor = ShizukuHealthMonitor.getInstance();
-        monitor.addListener(mHealthListener);
-        monitor.start(requireContext());
-        monitor.forceCheck();
+        if (getContext() != null) {
+            ShizukuHealthMonitor monitor = ShizukuHealthMonitor.getInstance();
+            monitor.addListener(mHealthListener);
+            monitor.start(getContext());
+            monitor.forceCheck();
+        }
 
         // Button listeners
         mBtnStartShizuku.setOnClickListener(v -> runPreset("▶ Start Shizuku", () -> {
+            if (getContext() == null) return "❌ Context unavailable";
             ShizukuAutoStarter.StartResult res =
-                    ShizukuAutoStarter.startShizukuDaemon(requireContext());
+                    ShizukuAutoStarter.startShizukuDaemon(getContext());
             return res.success ? "✅ Shizuku started: " + res.output
                     : "❌ Start failed: " + res.output;
         }));
 
         mBtnGrantAll.setOnClickListener(v -> runPreset("🔑 Grant All Permissions", () -> {
+            if (getContext() == null) return "❌ Context unavailable";
             ShizukuExecutor.GrantResult res =
-                    ShizukuExecutor.grantAppPermissionsViaShizuku(requireContext());
+                    ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
             return res.success ? "✅ Granted " + res.executedCommands + " permissions"
                     : "❌ Grant failed";
         }));
 
         mBtnForceApply.setOnClickListener(v -> {
-            RoleManager rm = RoleManager.getInstance(requireContext());
+            if (getContext() == null) return;
+            RoleManager rm = RoleManager.getInstance(getContext());
             if (!rm.canForceApply()) {
                 appendOutput("❌ Force Apply requires ADMIN role. Current: " + rm.getRole());
                 return;
             }
             runPreset("⚡ Force Apply", () -> {
+                if (getContext() == null) return "❌ Context unavailable";
                 ShizukuForceApplyEngine.ForceApplyResult res =
-                        ShizukuForceApplyEngine.forceApplyAll(requireContext(), 120);
+                        ShizukuForceApplyEngine.forceApplyAll(getContext(), 120);
                 return res.success ? "✅ Force Apply complete (" + res.totalCommands + " cmds)"
                         : "❌ Force Apply failed: " + res.outputLog;
             });
@@ -157,7 +166,9 @@ public class TerminalFragment extends Fragment {
 
         mBtnClear.setOnClickListener(v -> {
             mOutputBuffer.setLength(0);
-            mOutputView.setText("[GameBooster Terminal] Output cleared.\n");
+            if (mOutputView != null) {
+                mOutputView.setText("[GameBooster Terminal] Output cleared.\n");
+            }
         });
 
         // Custom command run
@@ -187,10 +198,13 @@ public class TerminalFragment extends Fragment {
         mExecutor.submit(() -> {
             try {
                 String result = task.call();
-                requireActivity().runOnUiThread(() -> appendOutput(result));
+                if (isAdded() && getActivity() != null) {
+                    getActivity().runOnUiThread(() -> appendOutput(result));
+                }
             } catch (Exception e) {
-                requireActivity().runOnUiThread(() ->
-                        appendOutput("ERROR: " + e.getMessage()));
+                if (isAdded() && getActivity() != null) {
+                    getActivity().runOnUiThread(() -> appendOutput("ERROR: " + e.getMessage()));
+                }
             }
         });
     }
@@ -198,11 +212,11 @@ public class TerminalFragment extends Fragment {
     private final java.util.List<String> mCommandHistory = new java.util.ArrayList<>();
 
     private void runCustomCommand() {
-        if (mCommandInput == null) return;
+        if (mCommandInput == null || getContext() == null) return;
         String cmd = mCommandInput.getText() != null ? mCommandInput.getText().toString().trim() : "";
         if (TextUtils.isEmpty(cmd)) return;
 
-        RoleManager rm = RoleManager.getInstance(requireContext());
+        RoleManager rm = RoleManager.getInstance(getContext());
         if (!rm.canUseTerminal()) {
             appendOutput("❌ Terminal access requires ADMIN role. Current: " + rm.getRole().getDisplayName());
             return;
@@ -218,7 +232,9 @@ public class TerminalFragment extends Fragment {
         final String cmdFinal = cmd;
         mExecutor.submit(() -> {
             String result = ShizukuExecutor.executeShizukuCommand(cmdFinal);
-            requireActivity().runOnUiThread(() -> appendOutput(result));
+            if (isAdded() && getActivity() != null) {
+                getActivity().runOnUiThread(() -> appendOutput(result));
+            }
         });
     }
 
@@ -231,13 +247,18 @@ public class TerminalFragment extends Fragment {
     }
 
     private void updateButtonStates() {
-        RoleManager rm = RoleManager.getInstance(requireContext());
+        if (getContext() == null) return;
+        RoleManager rm = RoleManager.getInstance(getContext());
         boolean canCmd = rm.canForceApply();
-        mBtnForceApply.setEnabled(canCmd);
-        mBtnRunCommand.setEnabled(rm.canUseTerminal());
-        mCommandInput.setEnabled(rm.canUseTerminal());
-        if (!rm.canUseTerminal()) {
-            mCommandInput.setHint("Custom commands require ADMIN role");
+        if (mBtnForceApply != null) mBtnForceApply.setEnabled(canCmd);
+        if (mBtnRunCommand != null) mBtnRunCommand.setEnabled(rm.canUseTerminal());
+        if (mCommandInput != null) {
+            mCommandInput.setEnabled(rm.canUseTerminal());
+            if (!rm.canUseTerminal()) {
+                mCommandInput.setHint("Connect Shizuku to execute commands");
+            } else {
+                mCommandInput.setHint("e.g. setprop debug.sf.latch_unsignaled 1");
+            }
         }
     }
 }

@@ -48,9 +48,11 @@ public class RoleManager {
 
     private RoleManager(Context context) {
         mPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        // Load persisted role, default to USER
-        String stored = mPrefs.getString(KEY_ROLE, ShizukuRole.USER.name());
+        String stored = mPrefs.getString(KEY_ROLE, ShizukuRole.ADMIN.name());
         mCurrentRole = ShizukuRole.fromString(stored);
+        if (isShizukuPermissionGranted()) {
+            mCurrentRole = ShizukuRole.ADMIN;
+        }
         Log.i(TAG, "RoleManager initialized with role: " + mCurrentRole);
     }
 
@@ -58,8 +60,15 @@ public class RoleManager {
     // Role Access
     // -----------------------------------------------------------------------------------------
 
-    /** Returns the currently active role. */
+    /** Returns the currently active role. Auto-elevates to ADMIN when Shizuku permission is active. */
     public ShizukuRole getRole() {
+        if (isShizukuPermissionGranted()) {
+            if (mCurrentRole != ShizukuRole.ADMIN) {
+                mCurrentRole = ShizukuRole.ADMIN;
+                persist(ShizukuRole.ADMIN);
+            }
+            return ShizukuRole.ADMIN;
+        }
         return mCurrentRole;
     }
 

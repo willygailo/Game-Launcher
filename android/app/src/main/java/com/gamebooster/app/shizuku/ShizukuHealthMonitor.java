@@ -28,7 +28,7 @@ import rikka.shizuku.Shizuku;
 public class ShizukuHealthMonitor {
 
     private static final String TAG = "ShizukuHealth";
-    private static final long POLL_INTERVAL_MS = 30_000L; // 30 seconds
+    private static final long POLL_INTERVAL_MS = 3_000L; // 3 seconds for instant UI response
 
     // -----------------------------------------------------------------------------------------
     // Health Status
@@ -137,6 +137,7 @@ public class ShizukuHealthMonitor {
     public void addListener(HealthListener listener) {
         if (listener != null && !mListeners.contains(listener)) {
             mListeners.add(listener);
+            forceCheck();
         }
     }
 
@@ -174,9 +175,6 @@ public class ShizukuHealthMonitor {
             if (health == ShizukuHealth.RUNNING) {
                 tryAutoReconnectUserService();
             }
-
-            // Notify ShizukuManager state listeners
-            ShizukuManager.addStateListener(null); // noop — just ensures list exists
 
             notifyListeners(health);
         }

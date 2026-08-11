@@ -170,6 +170,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (ShizukuManager.isShizukuConnectedAndGranted()) {
+            com.gamebooster.app.shizuku.ShizukuHealthMonitor.getInstance().forceCheck();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         ShizukuManager.removeStateListener(this);
