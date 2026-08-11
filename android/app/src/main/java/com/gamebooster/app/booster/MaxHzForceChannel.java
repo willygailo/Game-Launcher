@@ -136,11 +136,14 @@ public final class MaxHzForceChannel {
         ok += run("service call SurfaceFlinger 1034 i32 1");                         total++;
         ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
         ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
+        ok += run("service call SurfaceFlinger 1037 i32 1");                         total++;
 
         // ── Layer 5: setprop Runtime Overrides & Touch Latency Zero Delay ──────────
         ok += run("setprop debug.sf.fps_limit "      + hz);                          total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT " + hz);                          total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
+        ok += run("setprop persist.vendor.dfps.level " + hz);                        total++;
+        ok += run("setprop persist.sys.thermal.mitigation 0");                       total++;
         ok += run("setprop debug.gr.swapinterval 0");                                total++;
         ok += run("setprop debug.egl.swapinterval 0");                               total++;
         ok += run("setprop debug.sf.latch_unsignaled 1");                            total++;
@@ -166,11 +169,15 @@ public final class MaxHzForceChannel {
         if (id.contains("xiaomi") || id.contains("redmi") || id.contains("poco")) {
             // Xiaomi / Redmi / POCO (MIUI / HyperOS)
             ok += run("settings put secure user_refresh_rate " + hz);                total++;
+            ok += run("settings put system user_refresh_rate " + hz);                total++;
             ok += run("settings put global surface_flinger_peak_refresh_rate " + hz); total++;
+            ok += run("settings put secure speed_mode 1");                            total++;
 
         } else if (id.contains("samsung")) {
             // Samsung (OneUI) — mode 2 = Dynamic / High, mode 1 = Standard 60Hz
             ok += run("settings put secure refresh_rate_mode " + (targetHz >= 90 ? "2" : "1")); total++;
+            ok += run("settings put system min_refresh_rate " + hzF);                total++;
+            ok += run("settings put system peak_refresh_rate " + hzF);               total++;
             ok += run("settings put system sec_display_fps " + hz);                  total++;
 
         } else if (id.contains("oneplus") || id.contains("oppo") || id.contains("realme")) {
@@ -178,6 +185,7 @@ public final class MaxHzForceChannel {
             ok += run("settings put global oneplus_screen_refresh_rate "
                     + (targetHz >= 90 ? "2" : "1"));                                total++;
             ok += run("settings put global realme_screen_refresh_rate " + hz);       total++;
+            ok += run("settings put system oppo_display_refresh_rate " + hz);        total++;
 
         } else if (id.contains("asus")) {
             // ASUS ROG Phone / ZenFone
@@ -187,6 +195,7 @@ public final class MaxHzForceChannel {
         } else if (id.contains("vivo") || id.contains("iqoo")) {
             // vivo / iQOO (Funtouch OS / Origin OS)
             ok += run("settings put system screen_refresh_rate " + hz);              total++;
+            ok += run("settings put system user_refresh_rate " + hz);                total++;
             ok += run("settings put system iqoo_refresh_rate " + hz);                total++;
 
         } else if (id.contains("nubia") || id.contains("redmagic") || id.contains("zte")) {
