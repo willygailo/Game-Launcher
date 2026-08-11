@@ -120,6 +120,9 @@ public final class MaxHzForceChannel {
         ok += run("settings put system user_refresh_rate "  + hz);  total++;
         ok += run("settings put global peak_refresh_rate "  + hzF); total++;
         ok += run("settings put global min_refresh_rate "   + hzF); total++;
+        ok += run("settings put secure user_refresh_rate "  + hz);  total++;
+        ok += run("settings put secure peak_refresh_rate "  + hzF); total++;
+        ok += run("settings put secure min_refresh_rate "   + hzF); total++;
 
         // ── Layer 2: Android Game Mode API + Window Manager ───────────────────────────
         ok += run("cmd game mode performance global");                               total++;
@@ -130,10 +133,11 @@ public final class MaxHzForceChannel {
                 + "mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);             total++;
 
         // ── Layer 4: SurfaceFlinger Direct Binder ────────────────────────────────────
+        ok += run("service call SurfaceFlinger 1034 i32 1");                         total++;
         ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
         ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
 
-        // ── Layer 5: setprop Runtime Overrides ───────────────────────────────────────
+        // ── Layer 5: setprop Runtime Overrides & Touch Latency Zero Delay ──────────
         ok += run("setprop debug.sf.fps_limit "      + hz);                          total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT " + hz);                          total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
@@ -144,6 +148,15 @@ public final class MaxHzForceChannel {
         ok += run("setprop debug.egl.hw 1");                                         total++;
         ok += run("setprop debug.sf.early_app_phase_offset_ns 500000");              total++;
         ok += run("setprop debug.sf.early_sf_phase_offset_ns 500000");               total++;
+        ok += run("setprop debug.sf.showfps 0");                                     total++;
+        ok += run("setprop persist.sys.sf.native_mode 1");                           total++;
+        ok += run("setprop vendor.display.enable_default_color_mode 1");             total++;
+        ok += run("setprop ro.surface_flinger.set_idle_timer_ms 0");                 total++;
+        ok += run("setprop ro.surface_flinger.set_touch_timer_ms 0");                total++;
+        ok += run("settings put system touch_response_boost 1");                     total++;
+        ok += run("settings put system pointer_speed 7");                            total++;
+        ok += run("setprop persist.sys.touch_boost 1");                              total++;
+        ok += run("setprop touch.pressure.scale 0.001");                             total++;
 
         // ── Layer 6: OEM / Vendor-Specific Keys (auto-detected) ──────────────────────
         String mfr    = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";

@@ -129,52 +129,133 @@
             <Button
                 android:id="@+id/btn_hud_boost"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="3dp"
+                android:layout_marginEnd="2dp"
                 android:backgroundTint="@color/accent_cyan"
                 android:padding="0dp"
                 android:text="⚡ CLEAN"
                 android:textColor="#000000"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_hud_extreme"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="3dp"
+                android:layout_marginEnd="2dp"
                 android:backgroundTint="@color/accent_neon_green"
                 android:padding="0dp"
                 android:text="🔥 MAX Hz"
                 android:textColor="#000000"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_hud_dnd"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="3dp"
+                android:layout_marginEnd="2dp"
                 android:backgroundTint="@color/card_bg"
                 android:padding="0dp"
                 android:text="🚫 DND"
                 android:textColor="@color/text_primary"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_hud_crosshair"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
                 android:backgroundTint="@color/card_bg"
                 android:padding="0dp"
                 android:text="🎯 AIM"
                 android:textColor="@color/accent_orange"
-                android:textSize="10sp"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- REFRESH RATE LOCK & BYPASS CHARGING ROW -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="HARDWARE HZ UNLOCK &amp; BYPASS"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_hud_hz120"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="2dp"
+                android:backgroundTint="#2000F0FF"
+                android:padding="0dp"
+                android:text="120Hz"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_hz144"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="2dp"
+                android:backgroundTint="#2000FF66"
+                android:padding="0dp"
+                android:text="144Hz"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_hz165"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="2dp"
+                android:backgroundTint="#20FFB800"
+                android:padding="0dp"
+                android:text="165Hz"
+                android:textColor="@color/accent_amber"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_bypass"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1.2"
+                android:layout_marginEnd="2dp"
+                android:backgroundTint="#337000FF"
+                android:padding="0dp"
+                android:text="⚡ BYPASS"
+                android:textColor="#C080FF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_touch"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_weight="1.1"
+                android:backgroundTint="#33FF0055"
+                android:padding="0dp"
+                android:text="👆 TOUCH"
+                android:textColor="#FF6699"
+                android:textSize="9sp"
                 android:textStyle="bold" />
         </LinearLayout>
 

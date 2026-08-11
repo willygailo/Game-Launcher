@@ -136,6 +136,12 @@ public class FloatingOverlayService extends Service {
         View btnExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
         View btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
         View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
+        View btnHz120 = overlayView.findViewById(R.id.btn_hud_hz120);
+        View btnHz144 = overlayView.findViewById(R.id.btn_hud_hz144);
+        View btnHz165 = overlayView.findViewById(R.id.btn_hud_hz165);
+        View btnBypass = overlayView.findViewById(R.id.btn_hud_bypass);
+        View btnTouch = overlayView.findViewById(R.id.btn_hud_touch);
+
         isDndActive = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
 
         // Store DND button reference and sync initial tint
@@ -156,7 +162,6 @@ public class FloatingOverlayService extends Service {
                         android.widget.Toast.makeText(getApplicationContext(),
                                 "⚡ Executed: pm trim-caches 1000M & sync",
                                 android.widget.Toast.LENGTH_LONG).show();
-                        // Auto-collapse: get HUD out of the way after action
                         scheduleAutoCollapse();
                     });
                 });
@@ -168,7 +173,7 @@ public class FloatingOverlayService extends Service {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     int targetHz = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
                     com.gamebooster.app.booster.MaxHzForceChannel.ForceResult forceRes =
-                            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
+                            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(getApplicationContext(), targetHz, null);
                     com.gamebooster.app.booster.PerformanceChannel.ProfileResult result =
                             com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
                                     getApplicationContext(),
@@ -177,7 +182,6 @@ public class FloatingOverlayService extends Service {
                         android.widget.Toast.makeText(getApplicationContext(),
                                 "🚀 " + forceRes.message,
                                 android.widget.Toast.LENGTH_LONG).show();
-                        // Auto-collapse: get HUD out of the way after action
                         scheduleAutoCollapse();
                     });
                 });
@@ -196,9 +200,7 @@ public class FloatingOverlayService extends Service {
                                 ? (targetDnd ? "🚫 Gaming DND enabled" : "🔔 Gaming DND disabled")
                                 : "DND permission is required",
                                 android.widget.Toast.LENGTH_LONG).show();
-                        // Reflect active/inactive state visually on the button
                         updateDndButtonTint();
-                        // Auto-collapse: get HUD out of the way after action
                         scheduleAutoCollapse();
                     });
                 });
@@ -211,8 +213,50 @@ public class FloatingOverlayService extends Service {
                 android.widget.Toast.makeText(getApplicationContext(),
                         active ? "🎯 FPS Crosshair Overlay ON" : "🎯 Crosshair OFF",
                         android.widget.Toast.LENGTH_SHORT).show();
-                // Auto-collapse: get HUD out of the way after action
                 scheduleAutoCollapse();
+            });
+        }
+
+        if (btnHz120 != null) {
+            btnHz120.setOnClickListener(v -> applyHzFromHud(120));
+        }
+        if (btnHz144 != null) {
+            btnHz144.setOnClickListener(v -> applyHzFromHud(144));
+        }
+        if (btnHz165 != null) {
+            btnHz165.setOnClickListener(v -> applyHzFromHud(165));
+        }
+
+        if (btnBypass != null) {
+            btnBypass.setOnClickListener(v -> {
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.bypasscharging.BypassChargingManager manager =
+                            com.gamebooster.app.bypasscharging.BypassChargingManager.getInstance();
+                    boolean currentlyEnabled = manager.isBypassEnabled(getApplicationContext());
+                    String msg = currentlyEnabled
+                            ? manager.disableBypassCharging(getApplicationContext())
+                            : manager.enableBypassCharging(getApplicationContext());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                (currentlyEnabled ? "🔌 Charge Bypass OFF: " : "⚡ Charge Bypass ON: ") + msg,
+                                android.widget.Toast.LENGTH_LONG).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        if (btnTouch != null) {
+            btnTouch.setOnClickListener(v -> {
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.config.TouchUltraFastNoDelayPatcher.applyTouchNoDelay(null);
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "👆 Touch Zero-Delay Response Applied",
+                                android.widget.Toast.LENGTH_LONG).show();
+                        scheduleAutoCollapse();
+                    });
+                });
             });
         }
 
@@ -340,6 +384,22 @@ public class FloatingOverlayService extends Service {
             isRunning = false;
             return false;
         }
+    }
+
+    private void applyHzFromHud(int hz) {
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+            com.gamebooster.app.booster.MaxHzForceChannel.ForceResult forceRes =
+                    com.gamebooster.app.booster.MaxHzForceChannel.forceApply(getApplicationContext(), hz, null);
+            com.gamebooster.app.device.DisplayRefreshRatePreferences.saveSelectedHz(getApplicationContext(), hz);
+            com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getApplicationContext(), hz);
+
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                android.widget.Toast.makeText(getApplicationContext(),
+                        "🔒 Locked: " + forceRes.message,
+                        android.widget.Toast.LENGTH_LONG).show();
+                scheduleAutoCollapse();
+            });
+        });
     }
 
     /**

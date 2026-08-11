@@ -2,13 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/settings_bg_new">
-
-    <!-- Translucent glass scrim overlay -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/glass_scrim" />
+    android:background="@android:color/transparent">
 
     <ScrollView
         android:layout_width="match_parent"
