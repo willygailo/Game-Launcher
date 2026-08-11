@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header Bar -->
+    <dimen name="header_bar_height">64dp</dimen>
+    <dimen name="header_padding_horizontal">18dp</dimen>
+    <dimen name="header_title_size">22sp</dimen>
+    <dimen name="header_subtitle_size">11sp</dimen>
+    <dimen name="header_action_btn_size">44dp</dimen>
+    <dimen name="header_action_btn_text_size">18sp</dimen>
+
+    <!-- Boost Engine Dial -->
+    <dimen name="dial_container_height">140dp</dimen>
+    <dimen name="dial_ring_size">130dp</dimen>
+    <dimen name="dial_icon_size">28sp</dimen>
+    <dimen name="dial_title_size">12sp</dimen>
+    <dimen name="dial_sub_size">10sp</dimen>
+
+    <!-- Performance Telemetry Monitor -->
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_title_size">11sp</dimen>
+    <dimen name="metric_col_margin">8dp</dimen>
+    <dimen name="metric_label_size">10sp</dimen>
+    <dimen name="metric_value_size">16sp</dimen>
+    <dimen name="metric_pb_height">6dp</dimen>
+    <dimen name="metric_pb_margin_horizontal">8dp</dimen>
+
+    <!-- Floating HUD Overlay -->
+    <dimen name="hud_dock_width">310dp</dimen>
+    <dimen name="hud_pill_padding_horizontal">16dp</dimen>
+    <dimen name="hud_pill_padding_vertical">10dp</dimen>
+    <dimen name="hud_pill_text_size">13sp</dimen>
+    <dimen name="hud_title_text_size">14sp</dimen>
+    <dimen name="hud_body_text_size">12sp</dimen>
+
+    <!-- Game Cards -->
+    <dimen name="game_card_width">160dp</dimen>
+    <dimen name="game_card_height">215dp</dimen>
+    <dimen name="game_icon_box_size">90dp</dimen>
+    <dimen name="game_card_title_size">13sp</dimen>
+    <dimen name="game_card_sub_size">10sp</dimen>
+</resources>

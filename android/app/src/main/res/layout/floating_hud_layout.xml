@@ -10,10 +10,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/card_glass_shape"
-        android:paddingStart="14dp"
-        android:paddingTop="9dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="9dp"
+        android:paddingStart="@dimen/hud_pill_padding_horizontal"
+        android:paddingTop="@dimen/hud_pill_padding_vertical"
+        android:paddingEnd="@dimen/hud_pill_padding_horizontal"
+        android:paddingBottom="@dimen/hud_pill_padding_vertical"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:elevation="6dp"
@@ -25,18 +25,18 @@
             android:layout_height="wrap_content"
             android:text="⚡ 119 FPS | 38.5°C"
             android:textColor="@color/accent_neon_green"
-            android:textSize="12sp"
+            android:textSize="@dimen/hud_pill_text_size"
             android:textStyle="bold" />
     </LinearLayout>
 
     <!-- EXPANDED GAME DOCK DASHBOARD MODE -->
     <LinearLayout
         android:id="@+id/layout_expanded_dock"
-        android:layout_width="280dp"
+        android:layout_width="@dimen/hud_dock_width"
         android:layout_height="wrap_content"
         android:background="@drawable/card_glass_shape"
         android:orientation="vertical"
-        android:padding="14dp"
+        android:padding="@dimen/card_padding"
         android:elevation="8dp"
         android:visibility="gone">
 
@@ -53,7 +53,7 @@
                 android:layout_weight="1"
                 android:text="⚡ GAME HUD TURBO PRO"
                 android:textColor="@color/accent_cyan"
-                android:textSize="13sp"
+                android:textSize="@dimen/hud_title_text_size"
                 android:textStyle="bold" />
 
             <TextView
@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:text="✖️"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp"
+                android:textSize="@dimen/hud_title_text_size"
                 android:padding="10dp" />
         </LinearLayout>
 

@@ -9,9 +9,11 @@
     <RelativeLayout
         android:id="@+id/layout_header_bar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/header_bar_height"
         android:layout_alignParentTop="true"
-        android:paddingHorizontal="16dp">
+        android:paddingHorizontal="@dimen/header_padding_horizontal"
+        android:paddingVertical="4dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -25,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:text="🎮 GAME SPACE"
                 android:textColor="#00F0FF"
-                android:textSize="22sp"
+                android:textSize="@dimen/header_title_size"
                 android:textStyle="bold"
                 android:letterSpacing="0.08" />
 
@@ -35,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="Pro Hardware Engine • Extreme Boost Active"
                 android:textColor="#8000F0FF"
-                android:textSize="11sp" />
+                android:textSize="@dimen/header_subtitle_size" />
         </LinearLayout>
 
         <!-- Right Header Action Icons -->
@@ -49,25 +51,25 @@
             <Button
                 android:id="@+id/btn_refresh_scan"
                 style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/header_action_btn_size"
+                android:layout_height="@dimen/header_action_btn_size"
                 android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
                 android:text="🔄"
                 android:textColor="#00F0FF"
-                android:textSize="18sp" />
+                android:textSize="@dimen/header_action_btn_text_size" />
 
             <Button
                 android:id="@+id/btn_open_settings"
                 style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/header_action_btn_size"
+                android:layout_height="@dimen/header_action_btn_size"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
                 android:text="⚙️"
                 android:textColor="#00F0FF"
-                android:textSize="18sp" />
+                android:textSize="@dimen/header_action_btn_text_size" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -85,22 +87,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="@dimen/header_padding_horizontal"
             android:paddingTop="8dp"
             android:paddingBottom="16dp">
 
             <!-- HERO CENTER WIDGET: BOOST ENGINE DIAL -->
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="135dp"
+                android:layout_height="@dimen/dial_container_height"
                 android:layout_marginTop="2dp"
                 android:gravity="center">
 
                 <!-- Outer Glowing Circular Ring -->
                 <FrameLayout
                     android:id="@+id/layout_engine_ring"
-                    android:layout_width="125dp"
-                    android:layout_height="125dp"
+                    android:layout_width="@dimen/dial_ring_size"
+                    android:layout_height="@dimen/dial_ring_size"
                     android:layout_centerInParent="true"
                     android:background="@drawable/bg_engine_dial_ring"
                     android:clickable="true"
@@ -118,7 +120,7 @@
                             android:layout_height="wrap_content"
                             android:text="⚡"
                             android:textColor="#00F0FF"
-                            android:textSize="28sp" />
+                            android:textSize="@dimen/dial_icon_size" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -126,7 +128,7 @@
                             android:layout_marginTop="1dp"
                             android:text="BOOST ENGINE"
                             android:textColor="#FFFFFF"
-                            android:textSize="11sp"
+                            android:textSize="@dimen/dial_title_size"
                             android:textStyle="bold"
                             android:letterSpacing="0.06" />
 
@@ -137,7 +139,7 @@
                             android:layout_marginTop="1dp"
                             android:text="Tap to Boost"
                             android:textColor="#00F0FF"
-                            android:textSize="9sp" />
+                            android:textSize="@dimen/dial_sub_size" />
                     </LinearLayout>
                 </FrameLayout>
             </RelativeLayout>
@@ -149,14 +151,14 @@
                 android:layout_marginTop="12dp"
                 android:background="@drawable/card_glass_shape"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="@dimen/card_padding">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📊 PERFORMANCE MONITOR"
                     android:textColor="#8000F0FF"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/card_title_size"
                     android:textStyle="bold"
                     android:letterSpacing="0.08" />
 
@@ -181,7 +183,7 @@
                             android:layout_height="wrap_content"
                             android:text="CPU"
                             android:textColor="#80FFFFFF"
-                            android:textSize="10sp"
+                            android:textSize="@dimen/metric_label_size"
                             android:textStyle="bold" />
 
                         <TextView
@@ -191,16 +193,16 @@
                             android:layout_marginTop="2dp"
                             android:text="45%"
                             android:textColor="#00F0FF"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
                         <ProgressBar
                             android:id="@+id/pb_cpu"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
+                            android:layout_height="@dimen/metric_pb_height"
                             android:layout_marginTop="6dp"
-                            android:layout_marginHorizontal="8dp"
+                            android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="45"
                             android:progressTint="#00F0FF" />
@@ -219,7 +221,7 @@
                             android:layout_height="wrap_content"
                             android:text="GPU"
                             android:textColor="#80FFFFFF"
-                            android:textSize="10sp"
+                            android:textSize="@dimen/metric_label_size"
                             android:textStyle="bold" />
 
                         <TextView
@@ -229,16 +231,16 @@
                             android:layout_marginTop="2dp"
                             android:text="60%"
                             android:textColor="#A020F0"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
                         <ProgressBar
                             android:id="@+id/pb_gpu"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
+                            android:layout_height="@dimen/metric_pb_height"
                             android:layout_marginTop="6dp"
-                            android:layout_marginHorizontal="8dp"
+                            android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="60"
                             android:progressTint="#A020F0" />
@@ -257,7 +259,7 @@
                             android:layout_height="wrap_content"
                             android:text="RAM"
                             android:textColor="#80FFFFFF"
-                            android:textSize="10sp"
+                            android:textSize="@dimen/metric_label_size"
                             android:textStyle="bold" />
 
                         <TextView
@@ -267,16 +269,16 @@
                             android:layout_marginTop="2dp"
                             android:text="72%"
                             android:textColor="#00E5FF"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
                         <ProgressBar
                             android:id="@+id/pb_ram"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
+                            android:layout_height="@dimen/metric_pb_height"
                             android:layout_marginTop="6dp"
-                            android:layout_marginHorizontal="8dp"
+                            android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="72"
                             android:progressTint="#00E5FF" />
@@ -295,7 +297,7 @@
                             android:layout_height="wrap_content"
                             android:text="PING"
                             android:textColor="#80FFFFFF"
-                            android:textSize="10sp"
+                            android:textSize="@dimen/metric_label_size"
                             android:textStyle="bold" />
 
                         <TextView
@@ -305,16 +307,16 @@
                             android:layout_marginTop="2dp"
                             android:text="20ms"
                             android:textColor="#00FF66"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
                         <ProgressBar
                             android:id="@+id/pb_ping"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
-                            android:layout_height="6dp"
+                            android:layout_height="@dimen/metric_pb_height"
                             android:layout_marginTop="6dp"
-                            android:layout_marginHorizontal="8dp"
+                            android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="20"
                             android:progressTint="#00FF66" />
@@ -357,7 +359,8 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_games_list"
                 android:layout_width="match_parent"
-                android:layout_height="185dp"
+                android:layout_height="wrap_content"
+                android:minHeight="210dp"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:scrollbars="none" />

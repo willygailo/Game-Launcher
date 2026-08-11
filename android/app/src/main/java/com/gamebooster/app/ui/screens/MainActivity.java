@@ -10,6 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
+import android.view.View;
+
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
@@ -49,6 +54,15 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         }
 
         setContentView(R.layout.activity_main);
+
+        View rootLayout = findViewById(R.id.main_root_layout);
+        if (rootLayout != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(0, systemBars.top, 0, 0);
+                return insets;
+            });
+        }
 
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
         ShizukuManager.registerBinderListeners();
