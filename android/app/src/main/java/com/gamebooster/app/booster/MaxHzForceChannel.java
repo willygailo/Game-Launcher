@@ -70,25 +70,23 @@ public final class MaxHzForceChannel {
 
     /**
      * Forces the display to {@code targetHz} via Shizuku — NO capability check, NO fallback.
-     * Clamps minimum to 120Hz: 60 / 90 are never applied.
+     * Applies the exact Hz value the user selected (as reported by the panel).
      * Also writes the applied Hz + game package to SharedPreferences for the HUD overlay.
      *
      * @param context   App context (used to write HUD SharedPref)
-     * @param targetHz  Target refresh rate — enforced minimum 120Hz
+     * @param targetHz  Target refresh rate in Hz (any rate supported by the panel)
      * @param gamePkg   Foreground game package (or null if global)
      * @return ForceResult with per-layer success tracking
      */
     public static ForceResult forceApply(Context context, int targetHz, String gamePkg) {
-        // ── HARD MINIMUM: Never fall back below 120Hz ──────────────────────────────
-        int hz = Math.max(targetHz, 120);
-        ForceResult result = forceApply(hz);
+        ForceResult result = forceApply(targetHz);
         if (context != null) {
             try {
                 android.content.SharedPreferences prefs =
                         context.getApplicationContext()
                                .getSharedPreferences(PREFS_HZ_STATE, Context.MODE_PRIVATE);
                 prefs.edit()
-                     .putInt(PREFS_KEY_HZ, hz)
+                     .putInt(PREFS_KEY_HZ, targetHz)
                      .putString(PREFS_KEY_GAME, gamePkg != null ? gamePkg : "")
                      .apply();
             } catch (Throwable ignored) {}
@@ -98,15 +96,13 @@ public final class MaxHzForceChannel {
 
     /**
      * Forces the display to {@code targetHz} via Shizuku — NO capability check, NO fallback.
-     * Enforces minimum 120Hz: values below 120 are clamped up.
+     * Applies the exact Hz value provided (any rate supported by the panel).
      * Uses ShizukuExecutor directly to avoid UserService binding delays.
      *
-     * @param targetHz Target refresh rate — minimum 120, prefer 144 or 165
+     * @param targetHz Target refresh rate in Hz
      * @return ForceResult with per-layer success tracking
      */
     public static ForceResult forceApply(int targetHz) {
-        // ── HARD MINIMUM: Never fall back below 120Hz ──────────────────────────────
-        targetHz = Math.max(targetHz, 120);
         if (!ShizukuExecutor.hasShizukuPermission()) {
             Log.w(TAG, "forceApply(" + targetHz + "Hz): Shizuku not available, aborting.");
             return ForceResult.noShizuku(targetHz);

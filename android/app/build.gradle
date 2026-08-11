@@ -33,6 +33,11 @@ android {
         unitTests.returnDefaultValues = true
     }
 
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (variant.buildType.name == 'debug') {

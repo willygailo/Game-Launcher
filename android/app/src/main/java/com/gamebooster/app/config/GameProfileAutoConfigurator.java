@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.device.DisplayCapabilitiesDetector;
+import com.gamebooster.app.device.DisplayRefreshRatePreferences;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.games.*;
 
@@ -14,20 +16,19 @@ import java.util.List;
 /**
  * GameProfileAutoConfigurator — fires per-game and batch auto-configuration.
  *
- * Hz selection policy (NO FALLBACK to 60 or 90):
- *   1. Use per-game saved preference if set AND >= 120
- *   2. Else use GamePackageRegistry.maxSupportedFps (MLBB=165, HOK=120, etc.)
- *   3. Else use global user preference IF >= 120
- *   4. Hard floor: 120Hz minimum — never 60, never 90
+ * <p>Hz selection policy: use the user's persisted selection first, then per-game
+ * preference from GamePackageRegistry, then fall back to the hardware panel's max rate.
+ * No hardcoded Hz floor is applied — the display hardware decides what is valid.
  */
 public class GameProfileAutoConfigurator {
 
     private static final String TAG = "GameAutoConfigurator";
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
 
-    /** Hard minimum Hz — never fall back below this. */
-    public static final int MIN_FORCED_HZ = 120;
-    /** Default when no preference set and registry has no entry. */
+    /**
+     * Default target Hz when no preference is stored and no panel info is available.
+     * This is a soft default only — the actual value is always read from the panel.
+     */
     public static final int DEFAULT_TARGET_HZ = 120;
 
     public interface OnAutoConfigListener {
@@ -35,92 +36,103 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Stores the global target Hz. Clamps to minimum 120.
+     * Stores the global target Hz (user selection — no forced clamp).
      */
     public static void setTargetFpsHz(Context context, int targetFpsHz) {
         if (context == null) return;
-        int clamped = Math.max(targetFpsHz, MIN_FORCED_HZ);
         context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .putInt(KEY_TARGET_HZ_FPS, clamped)
+                .putInt(KEY_TARGET_HZ_FPS, targetFpsHz)
                 .apply();
+        // Also keep DisplayRefreshRatePreferences in sync
+        DisplayRefreshRatePreferences.saveSelectedHz(context, targetFpsHz);
     }
 
     /**
-     * Returns the global target Hz. Always >= 120.
+     * Returns the global target Hz as stored by the user, or the panel's max rate if not set.
      */
     public static int getTargetFpsHz(Context context) {
         if (context == null) return DEFAULT_TARGET_HZ;
         int stored = context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
-                .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
-        return Math.max(stored, MIN_FORCED_HZ);
+                .getInt(KEY_TARGET_HZ_FPS, 0);
+        if (stored > 0) return stored;
+        // Fall back to the display's actual max rate
+        try {
+            DisplayCapabilitiesDetector.DisplayCaps caps =
+                    DisplayCapabilitiesDetector.detect(context);
+            if (caps != null && caps.maxRefreshRate > 0) return caps.maxRefreshRate;
+        } catch (Throwable ignored) {}
+        return DEFAULT_TARGET_HZ;
     }
 
+    /**
+     * Returns all refresh rates supported by the physical display panel.
+     * List is populated dynamically from {@link DisplayCapabilitiesDetector} —
+     * no hardcoded values.
+     */
     public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
         if (context == null) return new ArrayList<>();
-        // Return only high-refresh options — 120, 144, 165
-        List<Integer> rates = new ArrayList<>();
-        rates.add(120);
-        rates.add(144);
-        rates.add(165);
-        return rates;
+        try {
+            DisplayCapabilitiesDetector.DisplayCaps caps =
+                    DisplayCapabilitiesDetector.detect(context);
+            if (caps != null && !caps.getRecommendedRates().isEmpty()) {
+                return new ArrayList<>(caps.getRecommendedRates());
+            }
+        } catch (Throwable ignored) {}
+        return new ArrayList<>();
     }
 
     /**
      * Resolves the target Hz for a specific game package:
-     *  1. Per-game saved preference (if >= 120)
+     *  1. Per-game saved preference
      *  2. GamePackageRegistry.maxSupportedFps
-     *  3. Global preference
-     *  4. Hard floor: 120
+     *  3. Global user preference
+     *  4. Panel max rate
      */
     public static int resolveGameHz(Context context, String packageName) {
         // Per-game preference
         int perGame = GameProfilePreferences.getTargetHz(context, packageName);
-        if (perGame >= MIN_FORCED_HZ) return perGame;
+        if (perGame > 0) return perGame;
 
         // Registry max
         GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(packageName);
-        if (spec != null && spec.maxSupportedFps >= MIN_FORCED_HZ) return spec.maxSupportedFps;
+        if (spec != null && spec.maxSupportedFps > 0) return spec.maxSupportedFps;
 
-        // Global preference (already clamped >= 120)
+        // Global preference / panel max
         return getTargetFpsHz(context);
     }
 
     /**
      * Configures a single game package with max performance:
-     *  1. MaxHzForceChannel.forceApply() — 6-layer Shizuku Hz force, NO capability gate
+     *  1. MaxHzForceChannel.forceApply() — 6-layer Shizuku Hz force
      *  2. GameConfigPatcher.applyCompetitivePatch() — force-writes game config files
      *  3. Android Game Mode performance per-app
      *  4. Per-app window refresh rate override
-     *
-     * NEVER falls back below 120Hz.
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
 
-        // Hard minimum — never 60 or 90
-        int hz = Math.max(targetFpsHz, MIN_FORCED_HZ);
-        Log.d(TAG, "autoConfigGamePackage: " + packageName + " @ " + hz + "Hz (no fallback)");
+        Log.d(TAG, "autoConfigGamePackage: " + packageName + " @ " + targetFpsHz + "Hz");
 
-        // 1. Force Hz via MaxHzForceChannel — bypasses DevicePerformanceCapabilities gate
+        // 1. Force Hz via MaxHzForceChannel
         MaxHzForceChannel.ForceResult forceResult =
-                MaxHzForceChannel.forceApply(context, hz, packageName);
+                MaxHzForceChannel.forceApply(context, targetFpsHz, packageName);
 
         // 2. Per-app Game Mode + window refresh rate override
         CommandExecutor.executeSystemCommand("cmd game mode performance " + packageName);
-        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + hz);
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetFpsHz);
 
         // 3. Competitive force-write game config files
-        GameConfigPatcher.applyCompetitivePatch(packageName, hz);
+        GameConfigPatcher.applyCompetitivePatch(packageName, targetFpsHz);
 
         return forceResult.success;
     }
 
     /**
      * Asynchronously configures ALL installed games with their max supported Hz.
-     * Each game is resolved individually from GamePackageRegistry — no global 60Hz default.
+     * Each game is resolved individually from GamePackageRegistry.
      */
     public static void autoConfigAllInstalledGamesAsync(Context context, OnAutoConfigListener listener) {
         if (context == null) return;
@@ -131,8 +143,6 @@ public class GameProfileAutoConfigurator {
 
             for (GameAppInfo game : games) {
                 String pkg = game.getPackageName();
-
-                // Resolve Hz — always >= 120
                 int gameHz = resolveGameHz(context, pkg);
 
                 // Apply competitive CFG profile
@@ -156,4 +166,3 @@ public class GameProfileAutoConfigurator {
         });
     }
 }
-

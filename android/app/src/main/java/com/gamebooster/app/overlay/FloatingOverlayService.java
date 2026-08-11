@@ -166,8 +166,9 @@ public class FloatingOverlayService extends Service {
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    int targetHz = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
                     com.gamebooster.app.booster.MaxHzForceChannel.ForceResult forceRes =
-                            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(165);
+                            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
                     com.gamebooster.app.booster.PerformanceChannel.ProfileResult result =
                             com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
                                     getApplicationContext(),
@@ -402,7 +403,7 @@ public class FloatingOverlayService extends Service {
         updateMetricsText();
     }
 
-    private int realTimeFps = 60;
+    private int realTimeFps = 0;
     private int frameCounter = 0;
     private long lastFpsCalcTimeNanos = 0;
 
@@ -431,9 +432,9 @@ public class FloatingOverlayService extends Service {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
+        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 0;
 
-        int activeFps = realTimeFps > 0 ? Math.min(165, realTimeFps) : currentHz;
+        int activeFps = realTimeFps > 0 ? realTimeFps : currentHz;
 
         // Try querying live SurfaceFlinger game FPS via Shizuku ADB
         if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {

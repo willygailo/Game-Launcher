@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             } else if (ShizukuExecutor.hasShizukuPermission()) {
                 AppExecutors.getInstance().executeCommand(() -> {
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                    com.gamebooster.app.engine.RefreshRateOverrideEngine.restorePersistedRefreshRate(getApplicationContext());
                     if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(getApplicationContext())) {
                         String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(getApplicationContext());
                         if (activeId != null) {
@@ -142,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System Permissions...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                    com.gamebooster.app.engine.RefreshRateOverrideEngine.restorePersistedRefreshRate(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                     AppExecutors.getInstance().postToMainThread(() ->
                             Toast.makeText(getApplicationContext(), "⚡ All System Permissions Auto-Configured!", Toast.LENGTH_SHORT).show());

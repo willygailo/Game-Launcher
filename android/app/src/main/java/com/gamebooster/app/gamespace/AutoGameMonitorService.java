@@ -138,10 +138,7 @@ public class AutoGameMonitorService extends Service {
 
                 // ── STEP 2: Per-app window + device_config override ────────────────
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(
-                        getApplicationContext(), currentPackage,
-                        targetHz >= 165 ? RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ :
-                        targetHz >= 144 ? RefreshRateOverrideEngine.RefreshRateMode.MODE_144HZ :
-                                          RefreshRateOverrideEngine.RefreshRateMode.MODE_120HZ);
+                        getApplicationContext(), currentPackage, targetHz);
 
                 // ── STEP 3: Competitive config patch (once per session per game) ────
                 if (!sessionPatchedPackages.contains(currentPackage)) {
@@ -169,23 +166,25 @@ public class AutoGameMonitorService extends Service {
                                 android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — forcing 165Hz on home screen (NO FALLBACK)");
+                int homeHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
+                Log.i(TAG, "Game exited — applying target rate (" + homeHz + "Hz) on home screen");
                 lastActiveGamePackage = null;
 
-                // Background home: always force 165Hz — NEVER fall back to 60/90
-                MaxHzForceChannel.forceApply(getApplicationContext(), 165, null);
+                // Restore user target rate on home exit
+                MaxHzForceChannel.forceApply(getApplicationContext(), homeHz, null);
                 TouchLatencyChannel.enableUltraTouchResponse();
                 PerformanceChannel.applyProfile(getApplicationContext(),
                         PerformanceChannel.Profile.EXTREME_PERFORMANCE);
 
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "⚡ Home Screen — 165Hz FORCED (No Fallback)",
+                                "⚡ Home Screen — " + homeHz + "Hz FORCED",
                                 android.widget.Toast.LENGTH_SHORT).show());
 
             } else if (!isGameActive && lastActiveGamePackage == null) {
-                // Continuous home reinforce — always 165Hz, never 60/90
-                MaxHzForceChannel.forceApply(165);
+                // Continuous home reinforce — use user target rate
+                int homeHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
+                MaxHzForceChannel.forceApply(homeHz);
                 TouchLatencyChannel.enableUltraTouchResponse();
             }
         });
