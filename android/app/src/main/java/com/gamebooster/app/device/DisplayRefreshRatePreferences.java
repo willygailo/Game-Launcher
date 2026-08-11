@@ -56,6 +56,10 @@ public final class DisplayRefreshRatePreferences {
         prefs(context).edit().remove(KEY_USER_HZ).apply();
     }
 
+    public static void clearSelectedHz(Context context) {
+        clearOverride(context);
+    }
+
     private static SharedPreferences prefs(Context context) {
         return context.getApplicationContext()
                       .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

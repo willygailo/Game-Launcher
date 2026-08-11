@@ -47,6 +47,7 @@ public class HzFpsFragment extends Fragment {
         btn120 = view.findViewById(R.id.btn_lock_120);
         btn144 = view.findViewById(R.id.btn_lock_144);
         btn165 = view.findViewById(R.id.btn_lock_165);
+        Button btnUnlock = view.findViewById(R.id.btn_unlock_hz);
         tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
         if (btn60 != null)  btn60.setOnClickListener(v  -> applyHz(60));
@@ -54,6 +55,7 @@ public class HzFpsFragment extends Fragment {
         if (btn120 != null) btn120.setOnClickListener(v -> applyHz(120));
         if (btn144 != null) btn144.setOnClickListener(v -> applyHz(144));
         if (btn165 != null) btn165.setOnClickListener(v -> applyHz(165));
+        if (btnUnlock != null) btnUnlock.setOnClickListener(v -> unlockHz());
 
         refreshSupportedRates();
         return view;
@@ -99,13 +101,27 @@ public class HzFpsFragment extends Fragment {
         if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
             MaxHzForceChannel.ForceResult result =
-                    MaxHzForceChannel.forceApply(getContext(), hz, null);
+                    MaxHzForceChannel.lockHz(getContext(), hz, null);
             DisplayRefreshRatePreferences.saveSelectedHz(getContext(), hz);
             GameProfileAutoConfigurator.setTargetFpsHz(getContext(), hz);
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                Toast.makeText(getContext(), result.message, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "🔒 Locked to " + hz + "Hz • " + result.message, Toast.LENGTH_LONG).show();
+                refreshSupportedRates();
+            });
+        });
+    }
+
+    private void unlockHz() {
+        if (getContext() == null) return;
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean ok = MaxHzForceChannel.unlockHz(getContext());
+            DisplayRefreshRatePreferences.clearSelectedHz(getContext());
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                Toast.makeText(getContext(), "🔓 Refresh rate unlocked — system dynamic mode restored", Toast.LENGTH_LONG).show();
                 refreshSupportedRates();
             });
         });

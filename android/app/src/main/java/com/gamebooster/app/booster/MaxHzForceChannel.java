@@ -29,6 +29,7 @@ public final class MaxHzForceChannel {
     public static final String PREFS_HZ_STATE   = "hz_state";
     public static final String PREFS_KEY_HZ     = "current_hz";
     public static final String PREFS_KEY_GAME   = "current_game_pkg";
+    public static final String PREFS_KEY_LOCKED = "hz_locked";
 
     // ── Result ────────────────────────────────────────────────────────────────────────
 
@@ -92,6 +93,69 @@ public final class MaxHzForceChannel {
             } catch (Throwable ignored) {}
         }
         return result;
+    }
+
+    /**
+     * Locks the display refresh rate to targetHz persistently.
+     */
+    public static ForceResult lockHz(Context context, int targetHz, String gamePkg) {
+        ForceResult res = forceApply(context, targetHz, gamePkg);
+        if (context != null) {
+            try {
+                context.getApplicationContext()
+                       .getSharedPreferences(PREFS_HZ_STATE, Context.MODE_PRIVATE)
+                       .edit()
+                       .putBoolean(PREFS_KEY_LOCKED, true)
+                       .putInt(PREFS_KEY_HZ, targetHz)
+                       .apply();
+            } catch (Throwable ignored) {}
+        }
+        return res;
+    }
+
+    /**
+     * Unlocks the display refresh rate state.
+     */
+    public static boolean unlockHz(Context context) {
+        if (context != null) {
+            try {
+                context.getApplicationContext()
+                       .getSharedPreferences(PREFS_HZ_STATE, Context.MODE_PRIVATE)
+                       .edit()
+                       .putBoolean(PREFS_KEY_LOCKED, false)
+                       .apply();
+                return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if refresh rate lock is enabled.
+     */
+    public static boolean isHzLocked(Context context) {
+        if (context == null) return false;
+        try {
+            return context.getApplicationContext()
+                          .getSharedPreferences(PREFS_HZ_STATE, Context.MODE_PRIVATE)
+                          .getBoolean(PREFS_KEY_LOCKED, false);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * Gets the current locked refresh rate Hz (default 120).
+     */
+    public static int getLockedHz(Context context) {
+        if (context == null) return 120;
+        try {
+            return context.getApplicationContext()
+                          .getSharedPreferences(PREFS_HZ_STATE, Context.MODE_PRIVATE)
+                          .getInt(PREFS_KEY_HZ, 120);
+        } catch (Throwable t) {
+            return 120;
+        }
     }
 
     /**

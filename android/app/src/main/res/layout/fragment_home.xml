@@ -87,7 +87,7 @@
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingTop="8dp"
-            android:paddingBottom="84dp">
+            android:paddingBottom="16dp">
 
             <!-- HERO CENTER WIDGET: BOOST ENGINE DIAL -->
             <RelativeLayout

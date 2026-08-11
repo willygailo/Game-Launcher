@@ -60,6 +60,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchGameDriver;
     private Switch switchGpuMode;
     private Switch switchCpuMode;
+    private Switch switchEnforceHzLock;
+    private Switch switchEnhanceGraphicsLock;
+    private Switch switchMaxPerfLock;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switchOverlayHud;
@@ -390,6 +393,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
+        switchEnforceHzLock = view.findViewById(R.id.switch_enforce_hz_lock);
+        switchEnhanceGraphicsLock = view.findViewById(R.id.switch_enhance_graphics_lock);
+        switchMaxPerfLock = view.findViewById(R.id.switch_max_perf_lock);
 
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile"));
@@ -409,6 +415,68 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
+            if (switchEnforceHzLock != null) switchEnforceHzLock.setChecked(com.gamebooster.app.booster.MaxHzForceChannel.isHzLocked(getContext()));
+            if (switchEnhanceGraphicsLock != null) switchEnhanceGraphicsLock.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
+            if (switchMaxPerfLock != null) switchMaxPerfLock.setChecked(PerformanceChannel.isMaxPerformanceLocked(getContext()));
+        }
+
+        if (switchEnforceHzLock != null) {
+            switchEnforceHzLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        int maxHz = 165;
+                        try {
+                            com.gamebooster.app.device.DevicePerformanceCapabilities caps = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(getContext());
+                            if (caps != null && caps.getMaxRefreshRate() > 0) maxHz = caps.getMaxRefreshRate();
+                        } catch (Throwable ignored) {}
+                        com.gamebooster.app.booster.MaxHzForceChannel.lockHz(getContext(), maxHz, null);
+                    } else {
+                        com.gamebooster.app.booster.MaxHzForceChannel.unlockHz(getContext());
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🔒 Max Hz & FPS Forced and Locked!" : "🔓 Refresh Rate Lock Removed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchEnhanceGraphicsLock != null) {
+            switchEnhanceGraphicsLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        GpuTweaksChannel.applyEnhancedGraphics(true);
+                    } else {
+                        GpuTweaksChannel.unlockEnhancedGraphics();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🔒 Enhanced Ultra Graphics & MSAA Enforced!" : "🔓 Enhanced Graphics Unlocked", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchMaxPerfLock != null) {
+            switchMaxPerfLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        PerformanceChannel.lockMaxPerformance(getContext());
+                    } else {
+                        PerformanceChannel.unlockMaxPerformance(getContext());
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🔥 Performance Set to High Max (Pinaka-Taas Locked)!" : "🔓 Extreme Performance Unlocked", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
         }
 
         if (switchAngleMode != null) {

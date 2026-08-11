@@ -48,4 +48,43 @@ public class GpuTweaksChannel {
             return CommandExecutor.isSuccessOutput(res);
         }
     }
+
+    /**
+     * Enhances graphics performance and locks/unlocks ultra rendering modes.
+     */
+    public static boolean applyEnhancedGraphics(boolean lock) {
+        boolean ok = enableVulkanRenderer();
+        ok &= enableForceMsaa();
+        CommandExecutor.setSystemProperty("debug.egl.swapinterval", "0");
+        CommandExecutor.setSystemProperty("debug.gr.swapinterval", "0");
+        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
+        CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "500000");
+        CommandExecutor.setSystemProperty("debug.sf.early_sf_phase_offset_ns", "500000");
+        CommandExecutor.setSystemProperty("persist.sys.sf.native_mode", "1");
+        CommandExecutor.setSystemProperty("vendor.display.enable_default_color_mode", "1");
+        
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.hwui.renderer vulkan");
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.renderengine.backend vulkan");
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.egl.force_msaa 1");
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.sf.hw 1");
+        
+        if (lock) {
+            setAngleMode(true);
+            setGameDriverMode(true);
+        }
+        return ok;
+    }
+
+    /**
+     * Unlocks enhanced graphics settings, restoring default renderer behavior.
+     */
+    public static boolean unlockEnhancedGraphics() {
+        CommandExecutor.setSystemProperty("debug.egl.force_msaa", "0");
+        CommandExecutor.setSystemProperty("debug.hwui.renderer", "opengl");
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.egl.force_msaa 0");
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("setprop debug.hwui.renderer opengl");
+        setAngleMode(false);
+        setGameDriverMode(false);
+        return true;
+    }
 }

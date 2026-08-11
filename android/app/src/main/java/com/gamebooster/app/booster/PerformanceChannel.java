@@ -134,4 +134,53 @@ public class PerformanceChannel {
     public static boolean executeOneTapBoost(Context context) {
         return applyProfile(context, Profile.PERFORMANCE);
     }
+
+    public static final String PREFS_PERF_STATE  = "perf_state";
+    public static final String PREFS_KEY_MAX_PERF_LOCKED = "max_perf_locked";
+
+    /**
+     * Locks maximum extreme performance profile (Pinaka-Taas kung kaya).
+     */
+    public static ProfileResult lockMaxPerformance(Context context) {
+        ProfileResult result = applyProfileWithResult(context, Profile.EXTREME_PERFORMANCE);
+        if (context != null) {
+            try {
+                context.getApplicationContext()
+                       .getSharedPreferences(PREFS_PERF_STATE, Context.MODE_PRIVATE)
+                       .edit()
+                       .putBoolean(PREFS_KEY_MAX_PERF_LOCKED, true)
+                       .apply();
+            } catch (Throwable ignored) {}
+        }
+        return result;
+    }
+
+    /**
+     * Unlocks maximum performance mode and restores balanced state.
+     */
+    public static boolean unlockMaxPerformance(Context context) {
+        if (context != null) {
+            try {
+                context.getApplicationContext()
+                       .getSharedPreferences(PREFS_PERF_STATE, Context.MODE_PRIVATE)
+                       .edit()
+                       .putBoolean(PREFS_KEY_MAX_PERF_LOCKED, false)
+                       .apply();
+                CpuGovernorChannel.setGovernor("schedutil");
+                return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean isMaxPerformanceLocked(Context context) {
+        if (context == null) return false;
+        try {
+            return context.getApplicationContext()
+                          .getSharedPreferences(PREFS_PERF_STATE, Context.MODE_PRIVATE)
+                          .getBoolean(PREFS_KEY_MAX_PERF_LOCKED, false);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 }
