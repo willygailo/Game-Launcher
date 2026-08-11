@@ -61,16 +61,32 @@ public class ShizukuExecutor {
 
     public static String executeShizukuCommand(String command) {
         Log.d(TAG, "executeShizukuCommand input: " + command);
+        if (command == null || command.trim().isEmpty()) {
+            return "ERROR: Empty command";
+        }
+        String cleanCmd = command.trim();
+        if (cleanCmd.startsWith("adb shell ")) {
+            cleanCmd = cleanCmd.substring("adb shell ".length()).trim();
+        } else if (cleanCmd.equals("adb shell")) {
+            return "SUCCESS";
+        }
+
         if (!hasShizukuPermission()) {
-            Log.d(TAG, "executeShizukuCommand: FAILED - Permission Denied");
-            return "ERROR: Shizuku Permission Denied";
+            Log.d(TAG, "Shizuku permission not active — executing command via local process fallback: " + cleanCmd);
+            com.gamebooster.app.engine.ShellExecutor.CommandResult res =
+                    com.gamebooster.app.engine.ShellExecutor.executeCommand(cleanCmd);
+            if (res.isSuccess()) {
+                return res.stdout.isEmpty() ? "SUCCESS" : res.stdout;
+            } else {
+                return "ERROR: Shizuku permission not active & local execution failed (code " + res.exitCode + "): " + res.stderr;
+            }
         }
 
         // 1. Primary AIDL IPC path via Shizuku UserService
         try {
             ShizukuUserServiceConnector connector = ShizukuUserServiceConnector.getInstance();
             connector.bindService();
-            String aidlResult = connector.executeCommandDirectly(command);
+            String aidlResult = connector.executeCommandDirectly(cleanCmd);
             if (aidlResult != null && !aidlResult.startsWith("ERROR: UserService not bound")) {
                 return aidlResult;
             }
@@ -85,7 +101,7 @@ public class ShizukuExecutor {
         try {
             Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
             newProcessMethod.setAccessible(true);
-            process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
+            process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", cleanCmd}, null, null);
 
             stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder stdout = new StringBuilder();

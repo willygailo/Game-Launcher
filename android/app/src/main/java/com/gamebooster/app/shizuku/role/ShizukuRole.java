@@ -73,7 +73,7 @@ public enum ShizukuRole {
 
     /** Returns true if this role can access the terminal and execute raw shell commands. */
     public boolean canUseTerminal() {
-        return this == ADMIN;
+        return this == ADMIN || this == USER;
     }
 
     /** Returns true if this role can modify spoofer profiles. */

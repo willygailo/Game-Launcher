@@ -147,6 +147,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        Button btnOpenTerminal = view.findViewById(R.id.btn_open_terminal);
+        if (btnOpenTerminal != null) {
+            btnOpenTerminal.setOnClickListener(v -> {
+                if (getParentFragmentManager() != null) {
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new TerminalFragment())
+                            .addToBackStack(null)
+                            .commit();
+                }
+            });
+        }
+
         // Card 2: Esports Gaming Controls
         switchOverlayHud = view.findViewById(R.id.switch_overlay_hud);
         switchGamingDnd = view.findViewById(R.id.switch_gaming_dnd);

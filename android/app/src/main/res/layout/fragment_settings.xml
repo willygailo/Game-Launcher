@@ -106,6 +106,17 @@
                         android:textColor="@color/text_primary"
                         android:textSize="11sp" />
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_open_terminal"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/card_bg"
+                    android:text="💻 SHIZUKU TERMINAL"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
 
