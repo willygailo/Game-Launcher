@@ -1,154 +1,188 @@
-<p align="center">
-  <img src="BANNER.gif" alt="Precision Aim Banner" width="100%" style="border-radius: 12px;">
-</p>
-
-<h1 align="center">🎮 Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210) — Zero Touch Delay & Universal Game Spoofer Engine</h1>
-
-<p align="center">
-  <b>0ms Touch Delay, 1000Hz Digitizer Sampling Engine, Per-Game Hardware Identity Spoofer, In-Game HUD Turbo Overlay & Dynamic Panel Refresh Rate Engine for Mobile eSports</b>
-</p>
-
-<p align="center">
-  <a href="https://github.com/willygailo/Game-Launcher"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
-  <a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook"></a>
-  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Releases-Download_APK-FF6C37?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
-  <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
-  <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
-  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v2.2.1.0-emerald?style=for-the-badge" alt="Version v2.2.1.0"></a>
-</p>
-
----
-
-## 👨‍💻 Lead Developer & Author Information
-
 <div align="center">
 
-| 👤 Developer | 🌐 Official Facebook | 🐙 Official GitHub | 📦 Latest Downloads / APK |
-| :--- | :--- | :--- | :--- |
-| **WILLY JR CARNASA GAILO** | [![Facebook](https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) | [![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo) | [![Releases](https://img.shields.io/badge/Releases-v2.2.1.0_APK_Downloads-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases) |
+<!-- ANIMATED HEADER -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,10,14,26&height=220&section=header&text=🎮%20GAME%20LAUNCHER%20PRO%20V2.0&fontSize=42&fontAlign=50&fontAlignY=36&desc=⚡%200ms%20Touch%20Delay%20•%20165Hz%2B%20Dynamic%20Refresh%20Rate%20•%20Shizuku%20ADB%20Engine&descSize=15&descAlign=50&descAlignY=60&stroke=00FF9C" width="100%">
 
+<br/>
+
+<!-- ANIMATED BANNER WITH NEON GLOW -->
+<img src="BANNER.gif" alt="Game Launcher Pro Banner" width="100%" style="border-radius: 16px; border: 2px solid #00FF9C; box-shadow: 0px 0px 30px rgba(0, 255, 156, 0.35);">
+
+<br/><br/>
+
+<!-- BADGES -->
+<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Release-v2.2.1.0-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Release"></a>
+<a href="https://shizuku.rikka.app/"><img src="https://img.shields.io/badge/Shizuku-ADB_Binder_IPC-00FF9C?style=for-the-badge&logo=android&logoColor=black" alt="Shizuku"></a>
+<a href="android"><img src="https://img.shields.io/badge/Android-API_21--36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-007ACC?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"></a>
+<a href="https://github.com/willygailo"><img src="https://img.shields.io/badge/Developer-WILLY_GAILO-181717?style=for-the-badge&logo=github&logoColor=white" alt="Developer"></a>
+
+<br/><br/>
+
+<!-- METRICS CARDS -->
+<table align="center" width="100%" style="border-collapse: collapse; border: none;">
+  <tr>
+    <td align="center" width="25%" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 12px; padding: 12px;">
+      <h2 style="color: #00FF9C; margin: 0;">⚡ 0ms</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Touch Latency</p>
+    </td>
+    <td align="center" width="25%" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 12px; padding: 12px;">
+      <h2 style="color: #88CCFF; margin: 0;">🔥 165Hz+</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Dynamic Hz Lock</p>
+    </td>
+    <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 12px; padding: 12px;">
+      <h2 style="color: #FFCC00; margin: 0;">🎯 1000Hz</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Digitizer Rate</p>
+    </td>
+    <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 12px; padding: 12px;">
+      <h2 style="color: #FF99FF; margin: 0;">🛡️ UID 2000</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Shizuku Privileged</p>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<!-- ANIMATED DIVIDER -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-8408-04b2b2b1a132.gif" width="100%">
+
+<br/>
+
+```
+  ██████╗  █████╗ ███╗   ███╗███████╗   ██╗      █████╗ ██╗   ██╗███╗   ██╗██╗  ██╗███████╗██████╗ 
+ ██╔════╝ ██╔══██╗████╗ ████║██╔════╝   ██║     ██╔══██╗██║   ██║████╗  ██║██║  ██║██╔════╝██╔══██╗
+ ██║  ███╗███████║██╔████╔██║█████╗     ██║     ███████║██║   ██║██╔██╗ ██║███████║█████╗  ██████╔╝
+ ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝     ██║     ██╔══██║██║   ██║██║╚██╗██║██╔══██║██╔══╝  ██╔══██╗
+ ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗   ███████╗██║  ██║╚██████╔╝██║ ╚████║██║  ██║███████╗██║  ██║
+  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+```
+
+<h3>⚡ Next-Generation eSports Game Launcher & Performance Optimization Engine</h3>
+<p><i>Engineered for Competitive Mobile Gamers (Mobile Legends, PUBG Mobile, COD Mobile, Genshin Impact, Wuthering Waves, Standoff 2 & more)</i></p>
+
+<br/>
+
+<!-- ANIMATED DIVIDER -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-8408-04b2b2b1a132.gif" width="100%">
+
+<br/><br/>
+
+<!-- FEATURE CARDS GRID -->
+<h2>🌟 Key Performance Features</h2>
+
+<table align="center" width="100%" style="border-collapse: separate; border-spacing: 10px;">
+  <tr>
+    <td width="50%" align="center" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 14px; padding: 18px;">
+      <h3 style="color: #00FF9C; margin-top: 0;">⚡ Dynamic Refresh Rate Lock</h3>
+      <p style="color: #c9d1d9;">Unlocks <b>60Hz, 90Hz, 120Hz, 144Hz, and 165Hz+</b> natively by querying live display hardware panel capabilities through Shizuku ADB execution.</p>
+    </td>
+    <td width="50%" align="center" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 14px; padding: 18px;">
+      <h3 style="color: #88CCFF; margin-top: 0;">🎯 0ms Touch Delay & 1000Hz Sampling</h3>
+      <p style="color: #c9d1d9;">Eliminates touch slop and input buffer latency. Enforces <b>1000Hz digitizer event polling rate</b> for instant aiming and touch response.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 14px; padding: 18px;">
+      <h3 style="color: #FFCC00; margin-top: 0;">🎮 Per-Game Hardware Spoofer</h3>
+      <p style="color: #c9d1d9;">Applies custom device profile identities on a per-package basis to unlock high FPS graphics options in competitive titles.</p>
+    </td>
+    <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 14px; padding: 18px;">
+      <h3 style="color: #FF99FF; margin-top: 0;">📊 In-Game Turbo HUD Overlay</h3>
+      <p style="color: #c9d1d9;">Real-time FPS monitoring counter, quick Hz lock switches, touch sensitivity boosters, and charge bypass toggles right inside your game.</p>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<!-- ANIMATED DIVIDER -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-8408-04b2b2b1a132.gif" width="100%">
+
+<br/><br/>
+
+<!-- INSTALLATION GUIDE CARDS -->
+<h2>🛠️ Quick Installation Guide</h2>
+
+<table align="center" width="100%" style="border-collapse: separate; border-spacing: 8px;">
+  <tr>
+    <td align="center" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px;">
+      <b style="color: #00FF9C; font-size: 16px;">1️⃣ Step 1 — Prerequisites</b><br/>
+      <span style="color: #8b949e;">Android device running <b>Android 5.0 (API 21) up to Android 16 (API 36)</b>.<br/>
+      Download & set up <a href="https://shizuku.rikka.app/" style="color: #00FF9C;">Shizuku</a> via Wireless Debugging or ADB PC.</span>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px;">
+      <b style="color: #88CCFF; font-size: 16px;">2️⃣ Step 2 — Download & Install</b><br/>
+      <span style="color: #8b949e;">Grab the latest APK from the <a href="https://github.com/willygailo/Game-Launcher/releases" style="color: #88CCFF;">Official GitHub Releases</a>.</span>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px;">
+      <b style="color: #FFCC00; font-size: 16px;">3️⃣ Step 3 — Grant Shizuku Permission</b><br/>
+      <span style="color: #8b949e;">Open <b>Game Launcher Pro V2.0</b> and tap <b>Grant Shizuku Permission</b>.</span>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px;">
+      <b style="color: #FF99FF; font-size: 16px;">4️⃣ Step 4 — Boost & Play</b><br/>
+      <span style="color: #8b949e;">Choose your game, select your refresh rate lock (120Hz / 165Hz), and tap <b>Launch Game</b>!</span>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<!-- ANIMATED DIVIDER -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-8408-04b2b2b1a132.gif" width="100%">
+
+<br/><br/>
+
+<!-- SHIZUKU TERMINAL BOX -->
+<h2>💻 Integrated Shizuku ADB Terminal</h2>
+
+<div style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 14px; padding: 18px; margin: 10px 0;">
+  <p style="color: #c9d1d9; margin: 0;">Includes a standalone, built-in <b>Shizuku ADB Shell Console</b> for power users:</p>
+  <br/>
+  <span style="color: #00FF9C;">⚡ <b>Privileged Execution</b></span>: Run <code>setprop</code>, <code>settings put system/secure/global</code>, and <code>cmd</code> shell commands directly.<br/>
+  <span style="color: #88CCFF;">🎯 <b>Quick Command Presets</b></span>: One-tap buttons for <code>getprop</code>, <code>wm size</code>, <code>dumpsys display</code>, and <code>pm list packages</code>.<br/>
+  <span style="color: #FFCC00;">🛡️ <b>Role-Based Safety</b></span>: Built-in permission checks to ensure commands run cleanly and safely.
 </div>
 
----
+<br/>
 
-## 🚀 Overview
+<!-- FACTORY RESET BOX -->
+<h2>🔄 Reverting to Factory Stock Defaults</h2>
 
-**Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210)** is an advanced, device-level performance and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile, Roblox*).
+<div style="background: #0d1117; border: 1px solid #FF4040; border-radius: 14px; padding: 18px; margin: 10px 0;">
+  <p style="color: #FF4040; font-weight: bold; margin-top: 0;">Need to reset all overrides back to normal phone behavior?</p>
+  <span style="color: #c9d1d9;">1️⃣ Open <b>Game Launcher Pro V2.0</b> → Navigate to <b>Settings</b>.<br/>
+  2️⃣ Tap <b>RESET TO FACTORY DEFAULTS</b>.<br/>
+  3️⃣ Reboot your device to restore default system properties and refresh rates.</span>
+</div>
 
-By leveraging **Shizuku API (privileged ADB Binder IPC - uid 2000)**, it unlocks **Dynamic Refresh Rates (60Hz, 90Hz, 120Hz, 144Hz, 165Hz+)** detected directly from hardware panel capabilities, enforces **0ms Zero Touch Delay with 1000Hz Digitizer Sampling**, applies **Per-Game Package Spoofer Profiles** (each game target receives its own custom hardware identity to eliminate conflicts), integrates an **In-Game HUD Turbo Overlay with Quick Hz Locks, Charge Bypass & Touch Boost**, features a **Transparent Glassmorphic Design across Home, Settings, and Terminal**, and provides a **Deep Search Game Folder Resolver** for Android 13–16 restricted storage.
+<br/><br/>
 
+<!-- AUTHOR CARD -->
+<h2>👨‍💻 Author & Connect</h2>
 
+<p style="color: #c9d1d9;">Developed with ❤️ by <b style="color: #00FF9C;">WILLY JR CARNASA GAILO</b></p>
 
-## 🛠️ Installation & Shizuku Setup
+<br/>
 
-1. **📥 Download APK**: Download `Game_Space_Debug.apk` or `Game_Space.apk` from [Official Releases](https://github.com/willygailo/Game-Launcher/releases).
-2. **🔌 Install & Launch Shizuku**: Install [Shizuku from Play Store or GitHub](https://shizuku.rikka.app/).
-3. **⚡ Start Shizuku**: Start Shizuku service via **Wireless Debugging** or **ADB PC (`adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh`)**.
-4. **🔑 Grant Privileges**: Open Game Launcher Pro V2.0 and tap **"Grant Shizuku Permission"**.
-5. **🔥 Lock Frame Rate & Enjoy**: Select your target game, choose your device spoofer profile (e.g. S26 Ultra, iQOO 15 Ultra, ROG 9 Pro), enable 165Hz refresh rate lock, and launch your game!
+<a href="https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"><img src="https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook"></a>
+<a href="https://github.com/willygailo"><img src="https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Releases-Download_APK-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Releases"></a>
 
----
+<br/><br/>
 
-## 🔄 How to Revert Back to Stock Normal Phone (Full Reset Guide)
+<!-- ANIMATED DIVIDER -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-8408-04b2b2b1a132.gif" width="100%">
 
-To safely revert all settings, ANGLE graphics drivers, display refresh rate overrides, touch optimizations, and hardware identity spoofer back to factory stock defaults:
+<br/><br/>
 
-### Method 1: ⚡ 1-Tap Reset via Game Launcher App
-Open **Game Launcher Pro V2.0** → Navigate to **Settings** → Tap **RESET TO FACTORY DEFAULTS**, then **Reboot your Phone**.
+<p style="color: #8b949e; font-size: 12px;">
+  Licensed under the <a href="LICENSE" style="color: #00FF9C;">Apache License 2.0</a>. Copyright © 2026 WILLY JR CARNASA GAILO.
+</p>
 
----
-
-### Method 2: 💻 Complete ADB Command Sequence (PC / Wireless Debugging)
-
-Run these ADB commands directly on your PC, LADB, or Shizuku Terminal:
-
-#### 1. Reset ANGLE Graphics Driver & Game Driver Settings
-```bash
-adb shell settings delete global angle_gl_driver_all_angle
-adb shell settings delete global angle_gl_driver_selection_pkgs
-adb shell settings delete global angle_gl_driver_selection_values
-adb shell settings delete global show_angle_in_use_dialog_box
-adb shell settings delete global game_driver_all_apps
-adb shell settings delete global game_driver_opt_in_apps
-adb shell setprop debug.angle.backend ""
-```
-
-#### 2. Reset CPU Governor & Realtime Performance Modes
-```bash
-adb shell cmd power set-mode 0 0
-adb shell cmd power set-mode 2 0
-adb shell setprop persist.sys.cpu.governor ""
-adb shell setprop sys.io.scheduler ""
-adb shell setprop sys.use_fifo ""
-```
-
-#### 3. Reset GPU Hardware Pipeline & HWUI Composition
-```bash
-adb shell setprop debug.hwui.renderer ""
-adb shell setprop debug.sf.hw ""
-adb shell setprop debug.egl.hw ""
-adb shell setprop debug.egl.hw_renderer ""
-```
-
-#### 4. Reset Display Refresh Rate Settings
-```bash
-adb shell settings delete system peak_refresh_rate
-adb shell settings delete system min_refresh_rate
-adb shell settings delete system user_refresh_rate
-adb shell settings delete global peak_refresh_rate
-adb shell settings delete global min_refresh_rate
-adb shell settings delete secure user_refresh_rate
-adb shell settings delete secure refresh_rate_mode
-```
-
-#### 5. Reset Game Mode API & Overlays
-```bash
-adb shell cmd game mode standard global
-adb shell cmd window reset-app-refresh-rate global
-adb shell device_config delete game_overlay global
-```
-
-#### 6. Reset Touch Latency & Digitizer Slop
-```bash
-adb shell setprop debug.input.max_events_per_sec ""
-adb shell setprop view.touch_slop ""
-adb shell settings delete system touch_slop_reduction
-adb shell settings delete system pointer_speed
-adb shell setprop persist.sys.touch.response_time ""
-adb shell setprop persist.sys.touch.sensitivity ""
-adb shell setprop persist.sys.touch_prediction ""
-adb shell setprop persist.vendor.qti.input.touch_boost ""
-```
-
-#### 7. Reset SurfaceFlinger & SwapInterval Overrides
-```bash
-adb shell setprop debug.sf.fps_limit ""
-adb shell setprop persist.sys.NV_FPSLIMIT ""
-adb shell setprop persist.sys.NV_POWERMODE ""
-adb shell setprop debug.gr.swapinterval ""
-adb shell setprop debug.egl.swapinterval ""
-adb shell setprop debug.sf.latch_unsignaled ""
-adb shell setprop debug.sf.disable_backpressure ""
-```
-
-#### 8. Reset Hardware Identity Spoofer & Reboot Phone
-```bash
-adb shell setprop persist.sys.game.boost.profile 0
-adb reboot
-```
-
----
-
-## 🌐 Contact & Connect with Developer
-
-- 👤 **Developer**: **WILLY JR CARNASA GAILO**
-- 🔵 **Facebook**: [https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
-- 🐙 **GitHub**: [https://github.com/willygailo](https://github.com/willygailo)
-- 📦 **Releases & APK Downloads**: [https://github.com/willygailo/Game-Launcher/releases](https://github.com/willygailo/Game-Launcher/releases)
-
----
-
-## 📄 License
-
-This project is open source under the **Apache License 2.0**. Developed with ❤️ by **WILLY JR CARNASA GAILO**.
+</div>
