@@ -27,17 +27,70 @@ public class ShizukuFileBridge {
     // All accessed via Shizuku uid 2000 — bypasses /sdcard/Android/data/ restriction legally
     // -----------------------------------------------------------------------------------------
 
-    public static final String MLBB_DATA    = "/sdcard/Android/data/com.mobile.legends/files/";
-    public static final String PUBG_DATA    = "/sdcard/Android/data/com.tencent.ig/files/";
-    public static final String CODM_DATA    = "/sdcard/Android/data/com.activision.callofduty.shooter/files/";
-    public static final String HOK_DATA     = "/sdcard/Android/data/com.levelinfinite.sgameGlobal/files/";
-    public static final String FF_DATA      = "/sdcard/Android/data/com.dts.freefireth/files/";
-    public static final String FF_MAX_DATA  = "/sdcard/Android/data/com.dts.freefiremax/files/";
-    public static final String GENSHIN_DATA = "/sdcard/Android/data/com.miHoYo.GenshinImpact/files/";
-    public static final String CODM_GARENA  = "/sdcard/Android/data/com.garena.game.codm/files/";
-    public static final String WILD_RIFT    = "/sdcard/Android/data/com.riotgames.league.wildrift/files/";
-    public static final String ZZZ_DATA     = "/sdcard/Android/data/com.HoYoverse.nap/files/";
-    public static final String WUWA_DATA    = "/sdcard/Android/data/com.kurogame.wutheringwaves.global/files/";
+    public static final String MLBB_DATA        = "/sdcard/Android/data/com.mobile.legends/files/";
+    public static final String MLBB_VNG         = "/sdcard/Android/data/com.mobile.legends.vng/files/";
+    public static final String MLBB_KR          = "/sdcard/Android/data/com.mobile.legends.kr/files/";
+    public static final String MLBB_JP          = "/sdcard/Android/data/com.mobile.legends.jp/files/";
+
+    public static final String PUBG_DATA        = "/sdcard/Android/data/com.tencent.ig/files/";
+    public static final String PUBG_BGMI        = "/sdcard/Android/data/com.pubg.imobile/files/";
+    public static final String PUBG_KR          = "/sdcard/Android/data/com.pubg.krmobile/files/";
+    public static final String PUBG_VNG         = "/sdcard/Android/data/com.vng.pubgmobile/files/";
+    public static final String PUBG_NEWSTATE    = "/sdcard/Android/data/com.pubg.newstate/files/";
+
+    public static final String CODM_DATA        = "/sdcard/Android/data/com.activision.callofduty.shooter/files/";
+    public static final String CODM_GARENA      = "/sdcard/Android/data/com.garena.game.codm/files/";
+    public static final String CODM_VN          = "/sdcard/Android/data/com.vng.codmvn/files/";
+    public static final String WARZONE_DATA     = "/sdcard/Android/data/com.activision.callofduty.warzone/files/";
+
+    public static final String HOK_DATA         = "/sdcard/Android/data/com.levelinfinite.sgameGlobal/files/";
+    public static final String HOK_CN           = "/sdcard/Android/data/com.tencent.tmgp.sgame/files/";
+    public static final String AOV_TW           = "/sdcard/Android/data/com.garena.game.kgtw/files/";
+    public static final String AOV_VN           = "/sdcard/Android/data/com.garena.game.kgvn/files/";
+
+    public static final String GENSHIN_DATA     = "/sdcard/Android/data/com.miHoYo.GenshinImpact/files/";
+    public static final String GENSHIN_GLOBAL   = "/sdcard/Android/data/com.cognosphere.GenshinImpact/files/";
+    public static final String STAR_RAIL_DATA   = "/sdcard/Android/data/com.HoYoverse.hkrpgoversea/files/";
+    public static final String ZZZ_DATA         = "/sdcard/Android/data/com.HoYoverse.nap/files/";
+    public static final String WUWA_DATA        = "/sdcard/Android/data/com.kurogame.wutheringwaves.global/files/";
+
+    public static final String ROBLOX_DATA      = "/sdcard/Android/data/com.roblox.client/files/";
+    public static final String FF_DATA          = "/sdcard/Android/data/com.dts.freefireth/files/";
+    public static final String FF_MAX_DATA      = "/sdcard/Android/data/com.dts.freefiremax/files/";
+    public static final String WILD_RIFT        = "/sdcard/Android/data/com.riotgames.league.wildrift/files/";
+    public static final String DELTA_FORCE      = "/sdcard/Android/data/com.proxima.deltaforce/files/";
+    public static final String BLOOD_STRIKE     = "/sdcard/Android/data/com.ofg.bloodstrike/files/";
+    public static final String STANDOFF2_DATA   = "/sdcard/Android/data/com.axlebolt.standoff2/files/";
+    public static final String FARLIGHT_DATA    = "/sdcard/Android/data/com.miracle.farlight84/files/";
+
+    /**
+     * Resolves the primary Android/data or Android/obb files directory for any package name.
+     * Performs a deep search via Shizuku ADB (uid 2000) if standard path doesn't exist.
+     */
+    public static String findGameConfigFolder(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) {
+            return "/sdcard/Android/data/";
+        }
+        String pkg = packageName.trim();
+        String standardPath = "/sdcard/Android/data/" + pkg + "/files/";
+        String checkCmd = "test -d " + standardPath + " && echo EXISTS";
+        String res = execute(checkCmd);
+        if (res != null && res.contains("EXISTS")) {
+            return standardPath;
+        }
+
+        // Deep search check for obb or alternative internal data directory
+        String obbPath = "/sdcard/Android/obb/" + pkg + "/";
+        String checkObb = "test -d " + obbPath + " && echo EXISTS";
+        String resObb = execute(checkObb);
+        if (resObb != null && resObb.contains("EXISTS")) {
+            return obbPath;
+        }
+
+        // Fallback: create standard files directory via Shizuku
+        execute("mkdir -p " + standardPath);
+        return standardPath;
+    }
 
     public static void ensureParentDir(String filePath) {
         if (filePath == null) return;

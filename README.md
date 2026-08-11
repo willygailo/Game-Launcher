@@ -2,10 +2,10 @@
   <img src="BANNER.gif" alt="Precision Aim Banner" width="100%" style="border-radius: 12px;">
 </p>
 
-<h1 align="center">🎮 Game Launcher Pro V2.0 (v2.0.0-PRO / versionCode 60) — Zero Touch Delay & Universal Game Spoofer Engine</h1>
+<h1 align="center">🎮 Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210) — Zero Touch Delay & Universal Game Spoofer Engine</h1>
 
 <p align="center">
-  <b>0ms Touch Delay, 1000Hz Digitizer Sampling Engine, Per-Game Hardware Identity Spoofer & Dynamic Panel Refresh Rate Engine for Mobile eSports</b>
+  <b>0ms Touch Delay, 1000Hz Digitizer Sampling Engine, Per-Game Hardware Identity Spoofer, In-Game HUD Turbo Overlay & Dynamic Panel Refresh Rate Engine for Mobile eSports</b>
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" alt="License"></a>
   <a href="android"><img src="https://img.shields.io/badge/Android-API_36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
   <a href=".github/workflows/android-build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
-  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v2.0.0--PRO-emerald?style=for-the-badge" alt="Version v2.0.0-PRO"></a>
+  <a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Version-v2.2.1.0-emerald?style=for-the-badge" alt="Version v2.2.1.0"></a>
 </p>
 
 ---
@@ -26,7 +26,7 @@
 
 | 👤 Developer | 🌐 Official Facebook | 🐙 Official GitHub | 📦 Latest Downloads / APK |
 | :--- | :--- | :--- | :--- |
-| **WILLY JR CARNASA GAILO** | [![Facebook](https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) | [![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo) | [![Releases](https://img.shields.io/badge/Releases-v2.0.0_PRO_APK_Downloads-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases) |
+| **WILLY JR CARNASA GAILO** | [![Facebook](https://img.shields.io/badge/Facebook-WILLY_JR_CARNASA_GAILO-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027) | [![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo) | [![Releases](https://img.shields.io/badge/Releases-v2.2.1.0_APK_Downloads-22c55e?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases) |
 
 </div>
 
@@ -34,9 +34,9 @@
 
 ## 🚀 Overview
 
-**Game Launcher Pro V2.0 (v2.0.0-PRO / versionCode 60)** is an advanced, device-level performance utility, hardware identity spoofer, and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile*).
+**Game Launcher Pro V2.0 (v2.2.1.0 / versionCode 2210)** is an advanced, device-level performance utility, hardware identity spoofer, and game launcher engineered by **WILLY JR CARNASA GAILO** for competitive eSports gaming (*Mobile Legends, PUBG Mobile, COD Mobile, Honor of Kings, Genshin Impact, Wuthering Waves, Zenless Zone Zero, Delta Force, Free Fire, Wild Rift, Blood Strike, Warzone Mobile, Roblox*).
 
-By leveraging **Shizuku API (privileged ADB Binder IPC - uid 2000)**, it unlocks **Dynamic Refresh Rates (60Hz, 90Hz, 120Hz, 144Hz, 165Hz+)** detected directly from hardware panel capabilities, enforces **0ms Zero Touch Delay with 1000Hz Digitizer Sampling**, applies **Per-Game Package Spoofer Profiles** (each game target receives its own custom hardware identity to eliminate conflicts), integrates a **Streamlined 2-Tab UX (Home & Settings)** with nested **Shizuku Shell Terminal**, and controls **Transsion / Infinix / Tecno / ROG / Samsung Bypass Charging** directly.
+By leveraging **Shizuku API (privileged ADB Binder IPC - uid 2000)**, it unlocks **Dynamic Refresh Rates (60Hz, 90Hz, 120Hz, 144Hz, 165Hz+)** detected directly from hardware panel capabilities, enforces **0ms Zero Touch Delay with 1000Hz Digitizer Sampling**, applies **Per-Game Package Spoofer Profiles** (each game target receives its own custom hardware identity to eliminate conflicts), integrates an **In-Game HUD Turbo Overlay with Quick Hz Locks, Charge Bypass & Touch Boost**, features a **Transparent Glassmorphic Design across Home, Settings, and Terminal**, and provides a **Deep Search Game Folder Resolver** for Android 13–16 restricted storage.
 
 
 
