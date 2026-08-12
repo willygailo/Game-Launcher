@@ -33,7 +33,7 @@ public class GameLauncherHelper {
             try {
                 int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
-                PerformanceChannel.applyProfile(context, profile.performanceProfile);
+                PerformanceChannel.applyTuningProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
             } catch (Throwable ignored) {}

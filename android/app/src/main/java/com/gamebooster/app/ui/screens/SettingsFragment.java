@@ -691,7 +691,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
                 if (getContext() == null) return;
                 boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
-                Toast.makeText(getContext(), "Applying hardware spoof: " + profile.displayName + "...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Saving app-only device profile: " + profile.displayName + "...", Toast.LENGTH_SHORT).show();
 
                 SpoofPreferences.setSpoofEnabled(getContext(), true);
                 SpoofPreferences.setActiveProfileId(getContext(), profile.id);
@@ -707,7 +707,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
                             updateSpoofUiState();
-                            String msg = hasShizuku ? "⚡ Device Spoof Active (Full Shizuku): " : "⚡ Device Spoof Active (Safe Mode): ";
+                            String msg = hasShizuku ? "⚡ App profile active; native display request sent: " : "⚡ App profile saved (display permission unavailable): ";
                             Toast.makeText(getContext(), msg + profile.displayName, Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(getContext(), "Failed to apply spoof profile", Toast.LENGTH_SHORT).show();
@@ -727,12 +727,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 }
                 if (!isChecked) {
                     AppExecutors.getInstance().executeCommand(() -> {
-                        DeviceSpooferEngine.resetSpoofing();
+                        DeviceSpooferEngine.resetSpoofing(getContext());
                         SpoofPreferences.clearActiveProfile(getContext());
                         AppExecutors.getInstance().postToMainThread(() -> {
                             if (isAdded() && getContext() != null) {
                                 updateSpoofUiState();
-                                Toast.makeText(getContext(), "Device Spoofing Disabled", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "App device profile disabled; saved display values restored", Toast.LENGTH_SHORT).show();
                             }
                         });
                     });
@@ -856,14 +856,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (enabled && activeId != null) {
                 SpoofProfile activeProf = DeviceSpooferEngine.getProfileById(activeId);
                 if (activeProf != null) {
-                    tvSpoofActiveProfile.setText("Active Spoof Profile: " + activeProf.displayName + " (" + activeProf.model + ")");
+                    tvSpoofActiveProfile.setText("Active App Profile: " + activeProf.displayName + " (" + activeProf.model + ")");
                     tvSpoofActiveProfile.setTextColor(0xFF00FF66);
                 } else {
-                    tvSpoofActiveProfile.setText("Active Spoof Profile: ENABLED (No profile selected)");
+                    tvSpoofActiveProfile.setText("Active App Profile: ENABLED (No profile selected)");
                     tvSpoofActiveProfile.setTextColor(0xFFFFB800);
                 }
             } else {
-                tvSpoofActiveProfile.setText("Active Spoof Profile: NONE (Disabled)");
+                tvSpoofActiveProfile.setText("Active App Profile: NONE (Disabled)");
                 tvSpoofActiveProfile.setTextColor(0xFF888888);
             }
         }

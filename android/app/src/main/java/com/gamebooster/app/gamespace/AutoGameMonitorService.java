@@ -148,8 +148,7 @@ public class AutoGameMonitorService extends Service {
                 }
 
                 // ── STEP 3: Touch latency + CPU/GPU governor ───────────────────────
-                TouchLatencyChannel.enableUltraTouchResponse();
-                PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
+                PerformanceChannel.applyTuningProfile(getApplicationContext(), profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
 
                 // ── STEP 4: Show floating HUD ──────────────────────────────────────

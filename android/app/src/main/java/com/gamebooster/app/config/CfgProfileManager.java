@@ -13,13 +13,13 @@ import java.util.List;
  * CfgProfileManager — Manages saving, loading, and applying per-game competitive profiles.
  *
  * Each profile (MLBB / PUBGM / CODM / ALL) is independently stored in SharedPreferences
- * and applied via Shizuku (temporary full root) using the per-game patchers + Hz commands.
+ * and translated into launcher-owned per-game preferences plus capability-checked Android
+ * display/Game Mode requests.
  *
  * Apply pipeline per profile:
- *   1. Force-write game config files via patcher.patchCompetitive()
- *   2. Inject super-fast touch into game config via patcher.applySuperFastTouch()
- *   3. Apply Shizuku system-level Hz force commands (if forceWriteSystemHz is enabled)
- *   4. Persist profile to SharedPreferences
+ *   1. Save the selected launcher profile for installed packages
+ *   2. Request a supported native display mode/Game Mode
+ *   3. Persist the profile to SharedPreferences
  */
 public class CfgProfileManager {
 
@@ -121,7 +121,8 @@ public class CfgProfileManager {
 
         List<String> packages = getPackagesForKey(gameKey);
         for (String pkg : packages) {
-            boolean ok = applyToPackage(pkg, profile);
+            boolean ok = context != null &&
+                    GameConfigPatcher.applyGameFpsPatch(context, pkg, profile.getTargetFps()).success;
             if (ok) patched++;
         }
 
@@ -162,14 +163,6 @@ public class CfgProfileManager {
     }
 
     // ─── Internal helpers ────────────────────────────────────────────────────
-
-    private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
-        // Do not inject settings into an online game's private files. The saved
-        // profile is a launcher preference and is applied through Android's
-        // capability-checked display/Game Mode request at game launch.
-        Log.i(TAG, "Skipped unsupported game-file profile for " + pkg);
-        return false;
-    }
 
     /** Applies a display preference only after confirming it is a native panel mode. */
     private static void applyShizukuHzForce(Context context, int hz) {

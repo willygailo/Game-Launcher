@@ -397,7 +397,7 @@ public class FloatingOverlayService extends Service {
 
             com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                 android.widget.Toast.makeText(getApplicationContext(),
-                        "🔒 Locked: " + forceRes.message,
+                        "Requested supported refresh mode: " + forceRes.message,
                         android.widget.Toast.LENGTH_LONG).show();
                 scheduleAutoCollapse();
             });

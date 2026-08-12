@@ -176,11 +176,19 @@ public class ProfilesFragment extends Fragment {
                             : "Request " + requestedFps + " FPS (native display limit: " + targetFps + "Hz)";
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
+                    com.gamebooster.app.config.GameProfilePreferences.Profile selectedProfile =
+                            requestedFps <= 90
+                                    ? com.gamebooster.app.config.GameProfilePreferences.Profile.BALANCED
+                                    : requestedFps <= 144
+                                    ? com.gamebooster.app.config.GameProfilePreferences.Profile.COMPETITIVE
+                                    : com.gamebooster.app.config.GameProfilePreferences.Profile.MAX_SUPPORTED;
+                    com.gamebooster.app.config.GameProfilePreferences.setProfile(
+                            getContext(), game.getPackageName(), selectedProfile);
+
                     AppExecutors.getInstance().executeCommand(() -> {
-                        com.gamebooster.app.engine.DisplayOverrideController.Result result =
-                                com.gamebooster.app.engine.DisplayOverrideController.applyGameProfile(
+                        com.gamebooster.app.config.GameConfigPatcher.PatchResult result =
+                                com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(
                                         getContext(), game.getPackageName(), targetFps);
-                        com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), targetFps);
 
                         AppExecutors.getInstance().postToMainThread(() -> {
                             if (!isAdded() || getContext() == null) return;

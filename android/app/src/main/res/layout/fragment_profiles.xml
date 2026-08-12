@@ -200,7 +200,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- PER-GAME MANUAL CONFIG PATCHER CARD -->
+        <!-- PER-GAME PERFORMANCE PROFILE CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -212,7 +212,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🛠️ MANUAL GAME CONFIG PATCHER"
+                android:text="🛠️ GAME PERFORMANCE PROFILE"
                 android:textColor="#00F0FF"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -221,7 +221,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Patches graphics/FPS config files inside /sdcard/Android/data/&lt;package_name&gt;/ for MLBB, PUBG, CODM, Free Fire, Wild Rift, HOK, Genshin, etc."
+                android:text="Saves a launcher-owned profile per installed game and requests Android-supported display/Game Mode settings. It does not edit game files or bypass game limits."
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
@@ -231,7 +231,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:backgroundTint="#00F0FF"
-                android:text="🎮 SELECT GAME &amp; APPLY MANUAL CONFIG"
+                android:text="🎮 SELECT GAME &amp; APPLY SUPPORTED PROFILE"
                 android:textColor="#0A0E1A"
                 android:textStyle="bold" />
         </LinearLayout>

@@ -1,5 +1,10 @@
 package com.gamebooster.app.config;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
+
 /**
  * Compatibility boundary for legacy game-file patch calls.
  *
@@ -25,8 +30,42 @@ public final class GameConfigPatcher {
         return unavailable(packageName);
     }
 
+    /**
+     * Applies a launcher-owned profile for an installed game. This is the safe
+     * replacement for the old file-injection API: it persists the user's choice
+     * in this app and requests Android's supported display/Game Mode controls.
+     */
+    public static PatchResult applyGameFpsPatch(Context context, String packageName, int targetFps) {
+        if (context == null || packageName == null || packageName.trim().isEmpty()) {
+            return new PatchResult(false, "Invalid game or device context");
+        }
+        try {
+            context.getPackageManager().getApplicationInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return new PatchResult(false, "The selected game is not installed");
+        }
+
+        int requested = Math.max(30, targetFps);
+        GameProfilePreferences.Profile profile = requested <= 90
+                ? GameProfilePreferences.Profile.BALANCED
+                : requested <= 144
+                ? GameProfilePreferences.Profile.COMPETITIVE
+                : GameProfilePreferences.Profile.MAX_SUPPORTED;
+        GameProfilePreferences.setProfile(context, packageName, profile);
+        int applied = DevicePerformanceCapabilities.detect(context).resolveRefreshRate(requested);
+        boolean requestedToAndroid = GameProfileAutoConfigurator.autoConfigGamePackage(
+                context, packageName, applied);
+        return new PatchResult(true, requestedToAndroid
+                ? "Saved launcher profile and requested Android-supported " + applied + "Hz. Actual FPS/graphics remain game-controlled."
+                : "Saved launcher profile. Android did not accept the display request; check permissions and device support.");
+    }
+
     public static PatchResult applyCompetitivePatch(String packageName, int targetFps) {
         return unavailable(packageName);
+    }
+
+    public static PatchResult applyCompetitivePatch(Context context, String packageName, int targetFps) {
+        return applyGameFpsPatch(context, packageName, targetFps);
     }
 
     private static PatchResult unavailable(String packageName) {

@@ -8,7 +8,10 @@ import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TweakManagerRepository {
 
@@ -17,6 +20,14 @@ public class TweakManagerRepository {
     }
 
     private static final List<TweakItem> TWEAKS = new ArrayList<>();
+    /** Only reversible user-experience settings remain visible in the UI. */
+    private static final Set<String> SAFE_TWEAK_IDS = new HashSet<>(Arrays.asList(
+            "shizuku_fast_anim",
+            "force_dark_mode",
+            "disable_notification_alerts",
+            "disable_haptic_feedback",
+            "disable_blur_effects"
+    ));
 
     static {
         TWEAKS.addAll(CpuGpuTweaksProvider.getTweaks());
@@ -197,14 +208,18 @@ public class TweakManagerRepository {
     }
 
     public static List<TweakItem> getAllTweaks() {
-        return TWEAKS;
+        List<TweakItem> safe = new ArrayList<>();
+        for (TweakItem tweak : TWEAKS) {
+            if (SAFE_TWEAK_IDS.contains(tweak.getId())) safe.add(tweak);
+        }
+        return safe;
     }
 
     public static List<TweakItem> getTweaksByCategory(TweakCategory category) {
-        if (category == TweakCategory.ALL) return TWEAKS;
+        if (category == TweakCategory.ALL) return getAllTweaks();
 
         List<TweakItem> filtered = new ArrayList<>();
-        for (TweakItem tweak : TWEAKS) {
+        for (TweakItem tweak : getAllTweaks()) {
             if (tweak.getCategory() == category) {
                 filtered.add(tweak);
             }
@@ -224,6 +239,7 @@ public class TweakManagerRepository {
 
     public static boolean applyTweak(Context context, TweakItem tweak) {
         if (tweak == null) return false;
+        if (!SAFE_TWEAK_IDS.contains(tweak.getId())) return false;
 
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
         if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) {
@@ -279,7 +295,7 @@ public class TweakManagerRepository {
         int appliedCount = 0;
         EngineMode engineMode = CommandExecutor.getActiveEngineMode();
 
-        for (TweakItem tweak : TWEAKS) {
+        for (TweakItem tweak : getAllTweaks()) {
             if (tweak.isRequiresShizuku() && engineMode == EngineMode.READ_ONLY) continue;
 
             if (applyTweak(context, tweak)) {
@@ -305,7 +321,7 @@ public class TweakManagerRepository {
             if (mode == EngineMode.READ_ONLY) return;
 
             // 1. Re-apply all enabled Shizuku ADB system tweaks
-            for (TweakItem tweak : TWEAKS) {
+            for (TweakItem tweak : getAllTweaks()) {
                 boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
                 if (wasSavedApplied) {
                     if (tweak.isRequiresShizuku() && mode != EngineMode.SHIZUKU) continue;

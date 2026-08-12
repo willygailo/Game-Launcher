@@ -43,25 +43,7 @@ public class RamZramChannel {
             }
         }
 
-        Log.d(TAG, "Starting RAM & ZRAM Optimization. Avail Before: " + availBefore + "MB / " + totalRam + "MB");
-
-        // 1. Kill cached non-foreground processes via ADB shell
-        CommandExecutor.executeSystemCommand("am kill-all");
-        ShizukuExecutor.executeShizukuCommand("am kill-all");
-
-        // 2. Instruct ActivityManager to perform full memory trim & compaction
-        CommandExecutor.executeSystemCommand("cmd activity trim-memory --mode COMPLETE");
-        ShizukuExecutor.executeShizukuCommand("cmd activity trim-memory --mode COMPLETE");
-
-        CommandExecutor.executeSystemCommand("cmd activity compact full");
-        ShizukuExecutor.executeShizukuCommand("cmd activity compact full");
-
-        // 3. Pagecache & ZRAM memory compaction via sysfs
-        CommandExecutor.executeSystemCommand("echo 3 > /proc/sys/vm/drop_caches");
-        ShizukuExecutor.executeShizukuCommand("echo 3 > /proc/sys/vm/drop_caches");
-
-        CommandExecutor.executeSystemCommand("echo 1 > /proc/sys/vm/compact_memory");
-        ShizukuExecutor.executeShizukuCommand("echo 1 > /proc/sys/vm/compact_memory");
+        Log.d(TAG, "Read-only memory check; Android retains control of processes and ZRAM");
 
         if (context != null) {
             ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);

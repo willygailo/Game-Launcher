@@ -183,7 +183,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="HARDWARE HZ UNLOCK &amp; BYPASS"
+            android:text="SUPPORTED REFRESH REQUEST &amp; BYPASS"
             android:textColor="@color/accent_neon_green"
             android:textSize="10sp"
             android:textStyle="bold" />
@@ -202,7 +202,7 @@
                 android:layout_marginEnd="2dp"
                 android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
-                android:text="120Hz"
+                android:text="Request 120Hz"
                 android:textColor="@color/accent_cyan"
                 android:textSize="9sp"
                 android:textStyle="bold" />
@@ -215,7 +215,7 @@
                 android:layout_marginEnd="2dp"
                 android:backgroundTint="#2000FF66"
                 android:padding="0dp"
-                android:text="144Hz"
+                android:text="Request 144Hz"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="9sp"
                 android:textStyle="bold" />
@@ -228,7 +228,7 @@
                 android:layout_marginEnd="2dp"
                 android:backgroundTint="#20FFB800"
                 android:padding="0dp"
-                android:text="165Hz"
+                android:text="Request max"
                 android:textColor="@color/accent_amber"
                 android:textSize="9sp"
                 android:textStyle="bold" />

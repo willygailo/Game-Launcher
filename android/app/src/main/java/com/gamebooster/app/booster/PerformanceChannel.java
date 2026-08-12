@@ -61,25 +61,33 @@ public class PerformanceChannel {
             return new ProfileResult(false, targetHz, refreshResult.message);
         }
 
-        // Thermal protection remains enabled. It prevents heat-related frame drops in longer sessions.
+        applyTuningProfile(context, profile);
+        return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
+    }
+
+    /**
+     * Applies only launcher-side tuning. Game launchers use this after their
+     * single per-game display/Game Mode request to avoid duplicate refresh-rate
+     * writes. Thermal protection remains enabled.
+     */
+    public static boolean applyTuningProfile(Context context, Profile profile) {
+        if (context == null || profile == null) return false;
         if (profile == Profile.EXTREME_PERFORMANCE || profile == Profile.PERFORMANCE) {
             CpuGovernorChannel.setPerformanceLock();
             GpuTweaksChannel.enableVulkanRenderer();
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
-            // Root-only tuning is intentionally not auto-executed. It must be an explicit,
-            // device-specific action because kernel paths and thermal policies are OEM-specific.
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
         }
-        return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
+        return true;
     }
 
-    /** Writes and executes a root shell script to apply the maximum boost at 165Hz. */
+    /** Retained for API compatibility; unsupported root/property scripts are disabled. */
     public static boolean writeAndExecuteRootTweaksScript() {
-        return writeAndExecuteRootTweaksScript(165);
+        return false;
     }
 
     /**
@@ -89,42 +97,11 @@ public class PerformanceChannel {
      * @param targetHz Target refresh rate written into the script (120, 144, or 165)
      */
     public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
-        try {
-            String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
-            String scriptContent = "#!/system/bin/sh\\n" +
-                    "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
-                    "setprop debug.sf.hw 1\\n" +
-                    "setprop debug.hwui.renderer vulkan\\n" +
-                    "setprop debug.renderengine.backend vulkan\\n" +
-                    "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
-                    "setprop debug.sf.fps_limit " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_POWERMODE 1\\n" +
-                    "service call SurfaceFlinger 1035 i32 " + targetHz + "\\n" +
-                    "service call SurfaceFlinger 1036 i32 " + targetHz + "\\n" +
-                    "cmd power set-mode 0 1\\n" +
-                    "cmd power set-mode 2 1\\n" +
-                    "cmd thermalservice override-status 0\\n";
-
-            String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
-                    scriptContent, scriptPath, scriptPath, scriptPath);
-            String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
-            return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
-        } catch (Throwable ignored) {
-            return false;
-        }
+        return false;
     }
 
     public static boolean setGpuRenderMode(boolean is3D) {
-        if (is3D) {
-            boolean ok = GpuTweaksChannel.enableVulkanRenderer();
-            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "1");
-            return ok;
-        } else {
-            boolean ok = com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
-            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "0");
-            return ok;
-        }
+        return false;
     }
 
     public static boolean executeOneTapBoost(Context context) {

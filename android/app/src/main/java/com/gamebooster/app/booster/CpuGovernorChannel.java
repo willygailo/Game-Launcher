@@ -1,22 +1,17 @@
 package com.gamebooster.app.booster;
-import com.gamebooster.app.config.*;
 
-import com.gamebooster.app.engine.CommandExecutor;
+import android.util.Log;
 
-public class CpuGovernorChannel {
+/** Safe facade: CPU governors and thermal policy remain under Android/OEM control. */
+public final class CpuGovernorChannel {
+    private CpuGovernorChannel() { }
 
     public static boolean setGovernor(String governor) {
-        if ("extreme".equalsIgnoreCase(governor) || "performance".equalsIgnoreCase(governor)) {
-            CommandExecutor.executeSystemCommand("cmd power set-mode 2 1");
-            CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
-        } else {
-            CommandExecutor.executeSystemCommand("cmd power set-mode 2 0");
-            CommandExecutor.executeSystemCommand("cmd power set-mode 0 0");
-        }
-        return true;
+        Log.i("CpuGovernorChannel", "Ignoring unsupported governor override: " + governor);
+        return false;
     }
 
     public static boolean setPerformanceLock() {
-        return setGovernor("extreme");
+        return setGovernor("performance");
     }
 }

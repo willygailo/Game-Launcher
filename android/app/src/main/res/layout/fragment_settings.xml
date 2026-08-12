@@ -680,7 +680,7 @@
                     android:nestedScrollingEnabled="false" />
             </LinearLayout>
 
-            <!-- CARD SPOOF: HARDWARE DEVICE SPOOFING -->
+            <!-- CARD: APP-ONLY DEVICE PROFILE -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -692,7 +692,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎭 HARDWARE DEVICE SPOOFING"
+                    android:text="🎭 APP-ONLY DEVICE PROFILE"
                     android:textColor="@color/accent_cyan"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -701,7 +701,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Spoof model, brand, vendor &amp; SoC identity via Shizuku temporary root access."
+                    android:text="Stores a local performance profile and requests a real display mode supported by Android. Device identity and game files are never changed."
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -717,7 +717,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Enable Device Spoofing"
+                        android:text="Enable App Device Profile"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -728,7 +728,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Active Spoof Profile: NONE"
+                    android:text="Active App Profile: NONE"
                     android:textColor="@color/accent_neon_green"
                     android:textSize="12sp"
                     android:textStyle="bold" />
