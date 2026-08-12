@@ -27,9 +27,9 @@ public class TweakManagerRepository {
         // Shizuku / ADB System Tweaks
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
-                "0.0x Instant Zero-Delay Animations",
-                "Eliminates system window transition, scale and animator delay completely (0.0x scale)",
-                "settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put system window_animation_scale 0.0; settings put system transition_animation_scale 0.0; settings put system animator_duration_scale 0.0",
+                "0.5x Ultra Fast Smooth Animations",
+                "Accelerates system window transition, scale and animator duration to 0.5x for optimal fast & smooth response",
+                "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5; settings put system window_animation_scale 0.5; settings put system transition_animation_scale 0.5; settings put system animator_duration_scale 0.5",
                 "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true

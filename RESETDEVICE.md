@@ -129,10 +129,24 @@ setprop reset:ro.hardware
 
 ---
 
-## 🚀 1-Tap Complete Device Reset Script
+## 7. 📱 Display Density & DPI Scale Reset
 
-Execute this single command in ADB Shell or Shizuku Terminal to instantly reset all tweaked settings at once:
+Resets custom ADB display density (`wm density`) overrides back to device factory stock DPI and restores native window scaling.
 
 ```bash
-sh -c "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate; settings delete secure user_refresh_rate; settings delete global angle_gl_driver_all_angle; settings delete global angle_gl_driver_selection_pkgs; settings delete global angle_gl_driver_selection_values; settings delete global game_driver_all_apps; setprop debug.hwui.renderer ''; setprop debug.egl.force_msaa 0; setprop debug.angle.backend ''; setprop debug.sf.fps_limit ''; service call SurfaceFlinger 1035 i32 0; echo '✅ Device reset complete!'"
+# Reset system display density back to stock factory default
+wm density reset
+
+# Reset display resolution & size overrides
+wm size reset
+```
+
+---
+
+## 🚀 1-Tap Complete Device Reset Script
+
+Execute this single command in ADB Shell or Shizuku Terminal to instantly reset all tweaked settings, refresh rates, graphics drivers, and display density at once:
+
+```bash
+sh -c "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate; settings delete secure user_refresh_rate; settings delete global angle_gl_driver_all_angle; settings delete global angle_gl_driver_selection_pkgs; settings delete global angle_gl_driver_selection_values; settings delete global game_driver_all_apps; setprop debug.hwui.renderer ''; setprop debug.egl.force_msaa 0; setprop debug.angle.backend ''; setprop debug.sf.fps_limit ''; service call SurfaceFlinger 1035 i32 0; wm density reset; wm size reset; echo '✅ Complete device hardware & display density reset finished!'"
 ```

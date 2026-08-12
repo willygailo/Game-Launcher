@@ -133,6 +133,10 @@ public class ShizukuForceApplyEngine {
                     + Build.MANUFACTURER);
         }
 
+        // EGL / GPU VSync uncap — disables the hard VSync barrier on Adreno/Mali
+        addIfSupported(b, "setprop debug.egl.swapinterval 0");
+        addIfSupported(b, "setprop debug.gr.swapinterval 0");
+
         // Settings namespace additions (Android 13-16 compatible)
         b.add("settings put system pointer_speed 7");
         b.add("settings put global low_power 0");
@@ -142,6 +146,15 @@ public class ShizukuForceApplyEngine {
         b.add("settings put secure game_dashboard_shown 1");
         // ANGLE driver per-game enforcement
         b.add("settings put global angle_gl_driver_all_angle 1");
+
+        // Peak / minimum refresh rate — dual namespace (system + global) for OEM compat
+        // Some firmware (OnePlus, Realme, VIVO, IQOO) reads from global, not system
+        b.add("settings put system peak_refresh_rate " + hz + ".0");
+        b.add("settings put system min_refresh_rate " + hz + ".0");
+        b.add("settings put global peak_refresh_rate " + hz + ".0");
+        b.add("settings put global min_refresh_rate " + hz + ".0");
+        // Android 14+ user_refresh_rate (Window Manager source of truth)
+        b.add("settings put system user_refresh_rate " + hz + ".0");
 
         // SurfaceFlinger binder calls
         b.add("service call SurfaceFlinger 1035 i32 " + hz);
@@ -170,6 +183,24 @@ public class ShizukuForceApplyEngine {
         b.add("device_config put netd_native tcp_upgrade_to_v4mapped false");
         b.add("device_config put runtime_native_boot iorap_perfetto_enable true");
         b.add("device_config put connectivity tcp_use_default_deltas false");
+
+        // Android 15: Official developer flag — lifts the 60 FPS default cap system-wide.
+        // This is the most effective AOSP-blessed unlock and is what Developer Options toggles.
+        b.add("device_config put game_manager disable_default_frame_rate_for_games true");
+
+        // Android 14-15: Enable game frame rate override enforcement in GameManager
+        b.add("device_config put game_manager game_frame_rate_override_enabled true");
+
+        // Android 14-15: Application startup optimization (reduces cold-launch latency)
+        b.add("device_config put activity_manager default_application_start_info_enabled true");
+
+        // Remove any game_overlay frame caps that might linger from previous sessions
+        b.add("device_config delete game_overlay com.mobile.legends");
+        b.add("device_config delete game_overlay com.tencent.ig");
+        b.add("device_config delete game_overlay com.garena.game.codm");
+        b.add("device_config delete game_overlay com.levelinfinite.sgameGlobal");
+        b.add("device_config delete game_overlay com.miHoYo.GenshinImpact");
+
         return b;
     }
 
@@ -198,8 +229,13 @@ public class ShizukuForceApplyEngine {
     private static List<String> buildThermalLockBatch() {
         List<String> b = new ArrayList<>();
         b.add("cmd thermalservice override-status 0");
+        // mode 0 = NORMAL (baseline), mode 2 = PERFORMANCE, mode 6 = SUSTAINED_PERFORMANCE
+        // Applying all three ensures the highest performance policy wins regardless of OEM override
         b.add("cmd power set-mode 0 1");
         b.add("cmd power set-mode 2 1");
+        // Android 15 SUSTAINED_PERFORMANCE_MODE — designed explicitly for long gaming sessions
+        // Prevents throttle-triggered FPS drops after the first 5 minutes of gameplay
+        b.add("cmd power set-mode 6 1");
         return b;
     }
 

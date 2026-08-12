@@ -44,6 +44,7 @@ public class GameLauncherHelper {
                 int targetFps = cfgProf.getTargetFps();
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName, targetFps);
+                com.gamebooster.app.config.GameConfigAutoEngine.autoApplyGameConfigAsync(context, pkgName);
                 PerformanceChannel.applyProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();

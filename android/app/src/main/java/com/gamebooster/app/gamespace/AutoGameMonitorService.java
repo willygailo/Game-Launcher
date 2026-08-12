@@ -146,6 +146,8 @@ public class AutoGameMonitorService extends Service {
                     com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(
                             getApplicationContext(), currentPackage);
                     GameConfigPatcher.applyCompetitivePatch(currentPackage, targetHz);
+                    com.gamebooster.app.config.GameConfigAutoEngine.autoApplyGameConfigAsync(
+                            getApplicationContext(), currentPackage);
                     sessionPatchedPackages.add(currentPackage);
                 }
 

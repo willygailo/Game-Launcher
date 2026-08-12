@@ -58,6 +58,26 @@ public class TouchDisplayTweaksProvider {
                 true
         ));
 
+        list.add(new TweakItem(
+                "pubgm_165fps_hdr_ultra_extreme",
+                "PUBGM 165FPS & UltraExtreme HDR Unlock",
+                "Injects 165FPS level 9 CVars, Active.sav binary patch, and r.PUBGUltraExtreme into PUBG Mobile / BGMI config paths",
+                "setprop persist.sys.gamemode.fps 165; setprop debug.sf.fps_limit 165; device_config put game_manager disable_default_frame_rate_for_games true",
+                "setprop persist.sys.gamemode.fps 60",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "mlbb_165fps_ultra_graphics",
+                "MLBB 165FPS & Ultra Graphics Unlock",
+                "Force writes FrameRateLevel=9, HighFPSMode=1, Unlock165Hz=1, and UltraHDMode=1 into MLBB INI configs",
+                "setprop persist.sys.gamemode.fps 165; setprop debug.sf.fps_limit 165; device_config put game_manager disable_default_frame_rate_for_games true",
+                "setprop persist.sys.gamemode.fps 60",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
         return list;
     }
 }

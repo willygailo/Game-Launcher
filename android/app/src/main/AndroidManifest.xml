@@ -61,6 +61,7 @@
         <package android:name="com.tencent.ig" />
         <package android:name="com.pubg.imobile" />
         <package android:name="com.pubg.krmobile" />
+        <package android:name="com.repubg.krmobile" />
         <package android:name="com.vng.pubgmobile" />
         <package android:name="com.tencent.iglite" />
         <package android:name="com.pubg.newstate" />

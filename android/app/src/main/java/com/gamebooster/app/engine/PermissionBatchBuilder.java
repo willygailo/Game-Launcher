@@ -110,6 +110,14 @@ public class PermissionBatchBuilder {
         b.add("device_config put game_manager " + gamePkg
                 + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);
 
+        // Game Driver opt-in — tells Android to use the system Vulkan/GLES game driver for this pkg
+        // This unlocks GPU optimizations that OEMs only enable for whitelisted "flagship" devices
+        b.add("settings put global game_driver_opt_in_apps " + gamePkg);
+
+        // Transition opacity 0.0 — launcher→game switch becomes instantaneous (no fade animation)
+        // Requires WRITE_SECURE_SETTINGS which is already granted by buildGrantBatch above
+        b.add("cmd wm set-app-transition-opacity " + gamePkg + " 0.0");
+
         b.add("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
         b.add("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
         b.add("cmd appops set " + gamePkg + " AUTO_START allow");

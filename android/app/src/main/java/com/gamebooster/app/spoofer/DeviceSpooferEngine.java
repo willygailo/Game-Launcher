@@ -131,78 +131,80 @@ public class DeviceSpooferEngine {
             // ── Full System ADB Property Overrides via Shizuku (when available) ──
             if (ShizukuExecutor.isShizukuAvailable()) {
                 // ── Model — 6 namespaces ──
-                exec("resetprop ro.product.model " + profile.model);
-                exec("resetprop ro.product.vendor.model " + profile.model);
-                exec("resetprop ro.product.system.model " + profile.model);
-                exec("resetprop ro.product.odm.model " + profile.model);
-                exec("resetprop ro.product.product.model " + profile.model);
-                exec("resetprop ro.product.system_ext.model " + profile.model);
+                safeProp("ro.product.model", profile.model);
+                safeProp("ro.product.vendor.model", profile.model);
+                safeProp("ro.product.system.model", profile.model);
+                safeProp("ro.product.odm.model", profile.model);
+                safeProp("ro.product.product.model", profile.model);
+                safeProp("ro.product.system_ext.model", profile.model);
 
                 // ── Brand — 6 namespaces ──
-                exec("resetprop ro.product.brand " + profile.brand);
-                exec("resetprop ro.product.vendor.brand " + profile.brand);
-                exec("resetprop ro.product.system.brand " + profile.brand);
-                exec("resetprop ro.product.odm.brand " + profile.brand);
-                exec("resetprop ro.product.product.brand " + profile.brand);
-                exec("resetprop ro.product.system_ext.brand " + profile.brand);
+                safeProp("ro.product.brand", profile.brand);
+                safeProp("ro.product.vendor.brand", profile.brand);
+                safeProp("ro.product.system.brand", profile.brand);
+                safeProp("ro.product.odm.brand", profile.brand);
+                safeProp("ro.product.product.brand", profile.brand);
+                safeProp("ro.product.system_ext.brand", profile.brand);
 
                 // ── Manufacturer — 6 namespaces ──
-                exec("resetprop ro.product.manufacturer " + profile.manufacturer);
-                exec("resetprop ro.product.vendor.manufacturer " + profile.manufacturer);
-                exec("resetprop ro.product.system.manufacturer " + profile.manufacturer);
-                exec("resetprop ro.product.odm.manufacturer " + profile.manufacturer);
-                exec("resetprop ro.product.product.manufacturer " + profile.manufacturer);
-                exec("resetprop ro.product.system_ext.manufacturer " + profile.manufacturer);
+                safeProp("ro.product.manufacturer", profile.manufacturer);
+                safeProp("ro.product.vendor.manufacturer", profile.manufacturer);
+                safeProp("ro.product.system.manufacturer", profile.manufacturer);
+                safeProp("ro.product.odm.manufacturer", profile.manufacturer);
+                safeProp("ro.product.product.manufacturer", profile.manufacturer);
+                safeProp("ro.product.system_ext.manufacturer", profile.manufacturer);
 
                 // ── Device — 6 namespaces ──
-                exec("resetprop ro.product.device " + profile.device);
-                exec("resetprop ro.product.vendor.device " + profile.device);
-                exec("resetprop ro.product.system.device " + profile.device);
-                exec("resetprop ro.product.odm.device " + profile.device);
-                exec("resetprop ro.product.product.device " + profile.device);
-                exec("resetprop ro.product.system_ext.device " + profile.device);
+                safeProp("ro.product.device", profile.device);
+                safeProp("ro.product.vendor.device", profile.device);
+                safeProp("ro.product.system.device", profile.device);
+                safeProp("ro.product.odm.device", profile.device);
+                safeProp("ro.product.product.device", profile.device);
+                safeProp("ro.product.system_ext.device", profile.device);
 
                 // ── Product Name — 6 namespaces ──
-                exec("resetprop ro.product.name " + profile.productName);
-                exec("resetprop ro.product.vendor.name " + profile.productName);
-                exec("resetprop ro.product.system.name " + profile.productName);
-                exec("resetprop ro.product.odm.name " + profile.productName);
-                exec("resetprop ro.product.product.name " + profile.productName);
-                exec("resetprop ro.product.system_ext.name " + profile.productName);
+                safeProp("ro.product.name", profile.productName);
+                safeProp("ro.product.vendor.name", profile.productName);
+                safeProp("ro.product.system.name", profile.productName);
+                safeProp("ro.product.odm.name", profile.productName);
+                safeProp("ro.product.product.name", profile.productName);
+                safeProp("ro.product.system_ext.name", profile.productName);
 
                 // ── Hardware / SoC Identity ──
-                exec("resetprop ro.hardware " + profile.hardware);
-                exec("resetprop ro.hardware.chipname " + profile.chipname);
-                exec("resetprop ro.board.platform " + profile.platform);
-                exec("resetprop ro.soc.model " + profile.socModel);
-                exec("resetprop ro.soc.manufacturer " + profile.socVendor);
-                exec("resetprop ro.product.board " + profile.board);
-                exec("resetprop ro.chipname " + profile.chipname);
-                exec("resetprop ro.sys.cpu.hardware " + profile.socModel);
-                exec("resetprop ro.product.cpu.abi " + profile.cpuAbi);
+                safeProp("ro.hardware", profile.hardware);
+                safeProp("ro.hardware.chipname", profile.chipname);
+                safeProp("ro.board.platform", profile.platform);
+                safeProp("ro.soc.model", profile.socModel);
+                safeProp("ro.soc.manufacturer", profile.socVendor);
+                safeProp("ro.product.board", profile.board);
+                safeProp("ro.chipname", profile.chipname);
+                safeProp("ro.sys.cpu.hardware", profile.socModel);
+                safeProp("ro.product.cpu.abi", profile.cpuAbi);
 
                 // ── GPU / Graphics Driver Identity ──
-                exec("resetprop ro.hardware.egl " + profile.eglHardware);
-                exec("resetprop debug.egl.hw_renderer \"" + profile.glRenderer + "\"");
-                exec("resetprop ro.opengles.version " + profile.glesVersion);
+                safeProp("ro.hardware.egl", profile.eglHardware);
+                safeProp("debug.egl.hw_renderer", profile.glRenderer);
+                safeProp("ro.opengles.version", profile.glesVersion);
 
                 // ── Memory / RAM Capacity Overrides ──
-                exec("resetprop ro.config.ram " + profile.ramTotalMb);
-                exec("resetprop ro.sys.ram.total " + (profile.ramTotalMb * 1024L * 1024L));
-                exec("resetprop ro.config.hw_ram " + profile.ramTotalMb);
+                safeProp("ro.config.ram", String.valueOf(profile.ramTotalMb));
+                safeProp("ro.sys.ram.total", String.valueOf(profile.ramTotalMb * 1024L * 1024L));
+                safeProp("ro.config.hw_ram", String.valueOf(profile.ramTotalMb));
 
                 // ── Build Identity ──
-                exec("resetprop ro.build.product " + profile.buildProduct);
-                exec("resetprop ro.build.display.id " + profile.displayId);
-                exec("resetprop ro.build.fingerprint " + profile.fingerprint);
-                exec("resetprop ro.vendor.build.fingerprint " + profile.fingerprint);
-                exec("resetprop ro.system.build.fingerprint " + profile.fingerprint);
+                safeProp("ro.build.product", profile.buildProduct);
+                safeProp("ro.build.display.id", profile.displayId);
+                safeProp("ro.build.fingerprint", profile.fingerprint);
+                safeProp("ro.vendor.build.fingerprint", profile.fingerprint);
+                safeProp("ro.system.build.fingerprint", profile.fingerprint);
 
-                // ── Marketing Name ──
-                exec("resetprop ro.config.marketing_name \"" + profile.displayName + "\"");
+                // ── Marketing Name & Device Name Settings ──
+                safeProp("ro.config.marketing_name", profile.displayName);
+                exec("settings put system device_name \"" + sanitize(profile.model) + "\"");
+                exec("settings put global device_name \"" + sanitize(profile.model) + "\"");
 
                 // ── Persist game boost profile ID ──
-                exec("setprop persist.sys.game.boost.profile " + profile.id);
+                safeProp("persist.sys.game.boost.profile", profile.id);
 
                 // ── Display refresh rate via ADB ──
                 float targetHz = (float) profile.targetRefreshRate;
@@ -312,8 +314,22 @@ public class DeviceSpooferEngine {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  Internal helper
+    //  Internal helpers with Shell Escaping & Dual Resetprop / Setprop Fallback
     // ─────────────────────────────────────────────────────────────────────────
+
+    private static void safeProp(String key, String value) {
+        if (key == null || value == null) return;
+        String cleanVal = sanitize(value);
+        // 1. Resetprop (Magisk / Root)
+        exec("resetprop " + key + " \"" + cleanVal + "\"");
+        // 2. Setprop fallback (Standard ADB / Shizuku)
+        exec("setprop " + key + " \"" + cleanVal + "\"");
+    }
+
+    private static String sanitize(String val) {
+        if (val == null) return "";
+        return val.replace("\"", "\\\"").replace("`", "\\`");
+    }
 
     private static void exec(String command) {
         ShizukuExecutor.executeShizukuCommand(command);

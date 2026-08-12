@@ -45,23 +45,32 @@ public class PubgConfigPatcher {
         // PUBGM FPS level: 9=165fps, 7=120fps, 6=90fps, 5=60fps
         int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5));
 
-        String content = "[UserCustom DeviceProfile]\n" +
-                "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "\n" +
-                "+CVars=r.PUBGFrameRateLimit=" + targetFps + "\n" +
-                "+CVars=r.MobileFPSLimit=" + targetFps + "\n" +
-                "+CVars=r.FrameRateLimit=" + targetFps + "\n" +
+        String content = String.format(
+                "[UserCustom DeviceProfile]\n" +
+                "+CVars=r.PUBGDeviceFPS=%d\n" +
+                "+CVars=r.PUBGFrameRateLimit=%d\n" +
+                "+CVars=r.MobileFPSLimit=%d\n" +
+                "+CVars=r.FrameRateLimit=%d\n" +
+                "+CVars=r.PUBGMaxFPS=%d\n" +
                 "+CVars=r.PUBGHDRMode=1\n" +
                 "+CVars=r.MobileHDR=1\n" +
+                "+CVars=r.PUBGExtremeHDR=1\n" +
+                "+CVars=r.PUBGUltraExtreme=1\n" +
+                "+CVars=r.PUBGEnableUltraHDR=1\n" +
+                "+CVars=r.PUBGEnableUltraExtremeFPS=1\n" +
                 "+CVars=r.PUBGQualityLevel=4\n" +
                 "+CVars=r.PUBGSDKQualityLevel=4\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
                 "+CVars=r.MobileContentScaleFactor=1.0\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
-                "FrameRateLevel=" + pubgFpsLevel + "\n" +
+                "+CVars=r.MobileTouchBoostRate=165\n" +
+                "FrameRateLevel=%d\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
-                "bUseAntiAliasing=True\n";
+                "bUseAntiAliasing=True\n",
+                pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
+        );
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -69,8 +78,34 @@ public class PubgConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "PUBGM competitive HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
+
+        // Apply Active.sav binary patch for 165FPS/120FPS unlock
+        patchActiveSav(packageName, pubgFpsLevel);
+
+        Log.i(TAG, "PUBGM competitive UltraExtreme HDR 165FPS force-write: " + written + " paths @ " + targetFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Patches binary Active.sav files for PUBGM/BGMI to override internal FPS cap headers.
+     */
+    public static void patchActiveSav(String packageName, int pubgFpsLevel) {
+        if (packageName == null) return;
+        List<String> savPaths = new ArrayList<>();
+        savPaths.add("/sdcard/Android/data/" + packageName + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+        savPaths.add("/data/data/" + packageName + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+
+        // Format byte as hex string (e.g., 09 for 165FPS, 07 for 120FPS)
+        String hexByte = String.format("%02x", pubgFpsLevel);
+        for (String sav : savPaths) {
+            String cmd = "test -f " + sav + " && printf '\\x" + hexByte + "' | dd of=" + sav + " bs=1 seek=44 count=1 conv=notrunc 2>/dev/null";
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Active.sav binary FPS patch applied (Level " + pubgFpsLevel + ") for " + packageName);
     }
 
     /**
