@@ -47,6 +47,10 @@ public class OnboardingActivity extends AppCompatActivity {
         sp.edit().putBoolean(KEY_ONBOARDING_COMPLETE, completed).apply();
     }
 
+    private final ShizukuManager.ShizukuStateListener shizukuStateListener = alive -> {
+        runOnUiThread(this::updateStepUi);
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +61,9 @@ public class OnboardingActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_onboarding);
+
+        ShizukuManager.registerBinderListeners();
+        ShizukuManager.addStateListener(shizukuStateListener);
 
         tvStepTitle = findViewById(R.id.tv_onboarding_step_title);
         tvStepDescription = findViewById(R.id.tv_onboarding_step_desc);
@@ -71,6 +78,12 @@ public class OnboardingActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateStepUi();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ShizukuManager.removeStateListener(shizukuStateListener);
     }
 
     private void updateStepUi() {
@@ -104,9 +117,11 @@ public class OnboardingActivity extends AppCompatActivity {
                 btnPrimaryAction.setOnClickListener(v -> {
                     if (ShizukuExecutor.hasShizukuPermission()) {
                         Toast.makeText(this, "⚡ Granting system permissions via Shizuku...", Toast.LENGTH_SHORT).show();
+                        btnPrimaryAction.setEnabled(false);
                         AppExecutors.getInstance().executeCommand(() -> {
                             ShizukuExecutor.GrantResult grantResult = ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                             AppExecutors.getInstance().postToMainThread(() -> {
+                                btnPrimaryAction.setEnabled(true);
                                 if (grantResult.success) {
                                     Toast.makeText(this, "✅ " + grantResult.totalCommands + " System & Game permissions auto-granted!", Toast.LENGTH_LONG).show();
                                 }
@@ -115,8 +130,9 @@ public class OnboardingActivity extends AppCompatActivity {
                             });
                         });
                     } else {
-                        ShizukuManager.requestShizukuPermission();
-                        if (!ShizukuExecutor.isShizukuAvailable()) {
+                        if (ShizukuExecutor.isShizukuAvailable()) {
+                            ShizukuManager.requestShizukuPermission();
+                        } else {
                             ShizukuManager.openOrInstallShizukuManager(this);
                         }
                     }

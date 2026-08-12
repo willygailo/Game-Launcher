@@ -94,29 +94,42 @@ public class ShizukuExecutor {
             Log.w(TAG, "Shizuku UserService AIDL call pending, trying fallback: " + t.getMessage());
         }
 
-        // 2. Fallback reflection path
+        // 2. Shizuku.newProcess via setAccessible reflection path
         Process process = null;
-        BufferedReader stdoutReader = null;
-        BufferedReader stderrReader = null;
         try {
             Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
             newProcessMethod.setAccessible(true);
             process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", cleanCmd}, null, null);
 
-            stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder stdout = new StringBuilder();
-            String line;
-            while ((line = stdoutReader.readLine()) != null) {
-                stdout.append(line).append("\n");
-            }
+            final StringBuilder stdout = new StringBuilder();
+            final StringBuilder stderr = new StringBuilder();
+            final Process finalProcess = process;
 
-            stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            StringBuilder stderr = new StringBuilder();
-            while ((line = stderrReader.readLine()) != null) {
-                stderr.append(line).append("\n");
-            }
+            Thread tStdout = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(finalProcess.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stdout.append(line).append("\n");
+                    }
+                } catch (Exception ignored) {}
+            });
+
+            Thread tStderr = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(finalProcess.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stderr.append(line).append("\n");
+                    }
+                } catch (Exception ignored) {}
+            });
+
+            tStdout.start();
+            tStderr.start();
 
             int exitCode = process.waitFor();
+            tStdout.join(2000);
+            tStderr.join(2000);
+
             String stdoutStr = stdout.toString().trim();
             String stderrStr = stderr.toString().trim();
             Log.d(TAG, "executeShizukuCommand exitCode=" + exitCode + " stdout='" + stdoutStr + "' stderr='" + stderrStr + "'");
@@ -130,11 +143,11 @@ public class ShizukuExecutor {
             Log.e(TAG, "executeShizukuCommand exception: " + e.getClass().getName() + " message=" + e.getMessage(), e);
             return "ERROR: " + (e.getMessage() != null ? e.getMessage() : "Shizuku execution failed");
         } finally {
-            try {
-                if (stdoutReader != null) stdoutReader.close();
-                if (stderrReader != null) stderrReader.close();
-                if (process != null) process.destroy();
-            } catch (Exception ignored) {}
+            if (process != null) {
+                try {
+                    process.destroy();
+                } catch (Exception ignored) {}
+            }
         }
     }
 

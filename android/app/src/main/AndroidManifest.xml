@@ -38,6 +38,7 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" android:maxSdkVersion="29" />
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
 
     <!-- Package Visibility Queries for Android 11+ (Target SDK 30-35) -->
     <queries>
@@ -48,6 +49,8 @@
         <intent>
             <action android:name="android.intent.action.GAME" />
         </intent>
+        <!-- Shizuku Manager Package Declaration -->
+        <package android:name="moe.shizuku.privileged.api" />
         <!-- Popular Online Game Package Declarations -->
         <package android:name="com.mobile.legends" />
         <package android:name="com.mobile.legends.vng" />
@@ -108,8 +111,7 @@
             android:authorities="${applicationId}.shizuku"
             android:multiprocess="false"
             android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+            android:exported="true" />
 
         <service
             android:name="com.gamebooster.app.services.GameBoosterService"
