@@ -4,10 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.engine.PermissionBatchBuilder;
-import com.gamebooster.app.games.TargetGameRegistry;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
@@ -72,14 +69,10 @@ public class ShizukuExecutor {
         }
 
         if (!hasShizukuPermission()) {
-            Log.d(TAG, "Shizuku permission not active — executing command via local process fallback: " + cleanCmd);
-            com.gamebooster.app.engine.ShellExecutor.CommandResult res =
-                    com.gamebooster.app.engine.ShellExecutor.executeCommand(cleanCmd);
-            if (res.isSuccess()) {
-                return res.stdout.isEmpty() ? "SUCCESS" : res.stdout;
-            } else {
-                return "ERROR: Shizuku permission not active & local execution failed (code " + res.exitCode + "): " + res.stderr;
-            }
+            // A command requested through this class must never degrade into the app's normal
+            // process. Doing so makes a Shizuku-labelled action look privileged even though it
+            // was executed with ordinary application permissions.
+            return "ERROR: Shizuku is unavailable or permission was not granted";
         }
 
         // 1. Primary AIDL IPC path via Shizuku UserService

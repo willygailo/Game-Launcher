@@ -30,17 +30,9 @@ public class CommandExecutor {
             case SYSTEM_SETTINGS:
             case READ_ONLY:
             default:
-                ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command);
-                if (!shellRes.isSuccess()) {
-                    return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
-                }
-                if (!shellRes.stderr.isEmpty()) {
-                    return "ERROR: " + shellRes.stderr;
-                }
-                if (shellRes.stdout.isEmpty()) {
-                    return "SUCCESS";
-                }
-                return shellRes.stdout;
+                // System-changing commands require the explicit Shizuku or root backend.
+                // Executing them through a regular app shell is both misleading and unreliable.
+                return "ERROR: No privileged backend is connected";
         }
     }
 

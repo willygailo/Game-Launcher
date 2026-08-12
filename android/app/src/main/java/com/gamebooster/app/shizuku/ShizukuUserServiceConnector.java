@@ -142,7 +142,8 @@ public class ShizukuUserServiceConnector {
             return executeCommandDirectly(command);
         }
 
-        Log.w(TAG, "UserService not bound yet — executing system command.");
-        return com.gamebooster.app.engine.ShellExecutor.executeCommand(command).stdout;
+        // Do not fall back to the app process. Callers chose the Shizuku backend and must be
+        // able to distinguish a binding failure from a command that ran without privileges.
+        return "ERROR: Shizuku UserService is not connected; retry after the service binds";
     }
 }
