@@ -1,11 +1,11 @@
 package com.gamebooster.app.core;
 
-import com.gamebooster.app.engine.EngineMode;
+import com.gamebooster.app.feature.performance.display.EngineMode;
 
 import android.widget.TextView;
 
-import com.gamebooster.app.engine.EngineMode;
-import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.feature.performance.display.EngineMode;
+import com.gamebooster.app.platform.shell.CommandExecutor;
 
 public class EngineUIHelper {
 

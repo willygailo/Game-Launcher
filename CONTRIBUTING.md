@@ -1,6 +1,6 @@
-# Contributing to Precision Aim – Input Tuner 🎯
+# Contributing to Game Launcher Pro 🎮
 
-Thank you for your interest in contributing to **Precision Aim**! We welcome contributions from developers, testers, and gaming enthusiasts.
+Thank you for your interest in **Game Launcher Pro**! We welcome contributions from developers, testers, and gaming enthusiasts.
 
 ---
 
@@ -28,7 +28,7 @@ cd Game-Launcher/android
 
 ## 📐 Coding Standards & Guidelines
 
-1. **Architecture**: Clean Android architecture with separated domain/service layers (`core`, `shizuku`, `booster`, `overlay`, `ui`).
+1. **Architecture**: Follow the feature-first package layout documented in [`ARCHITECTURE.md`](ARCHITECTURE.md). Keep shared utilities in `core`, privileged integration in `shizuku`/`platform`, and screens beside their owning feature.
 2. **Safety First**: Every system property tweaked must be reversible and backed up in `SettingsManager`.
 3. **No Game Tampering**: Features must operate strictly at the Android OS/digitizer level. Never modify game memory, APK binaries, or internal config files.
 4. **Testing**: Add JUnit unit tests for new manager classes or logic changes in `android/app/src/test/`.

@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.gamebooster.app.core.profile.InputProfile;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.platform.shizuku.ShizukuExecutor;
 
 /**
  * Reads legacy input-profile backups and provides restoration for values created by older

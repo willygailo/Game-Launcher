@@ -114,7 +114,7 @@
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <service
-            android:name="com.gamebooster.app.services.GameBoosterService"
+            android:name="com.gamebooster.app.platform.service.GameBoosterService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -124,7 +124,7 @@
         </service>
 
         <service
-            android:name="com.gamebooster.app.overlay.FloatingOverlayService"
+            android:name="com.gamebooster.app.feature.overlay.FloatingOverlayService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -134,7 +134,7 @@
         </service>
 
         <service
-            android:name="com.gamebooster.app.overlay.CrosshairOverlayService"
+            android:name="com.gamebooster.app.feature.overlay.CrosshairOverlayService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -144,7 +144,7 @@
         </service>
 
         <service
-            android:name="com.gamebooster.app.gamespace.AutoGameMonitorService"
+            android:name="com.gamebooster.app.feature.games.space.AutoGameMonitorService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -154,12 +154,12 @@
         </service>
 
         <service
-            android:name="com.gamebooster.app.booster.thermal.ThermalMonitorService"
+            android:name="com.gamebooster.app.feature.performance.thermal.ThermalMonitorService"
             android:enabled="true"
             android:exported="false" />
 
         <service
-            android:name="com.gamebooster.app.services.QuickBoostTileService"
+            android:name="com.gamebooster.app.platform.tile.QuickBoostTileService"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:label="Game Booster"
@@ -170,12 +170,12 @@
         </service>
 
         <receiver
-            android:name="com.gamebooster.app.services.GameSchedulerService"
+            android:name="com.gamebooster.app.feature.performance.scheduling.GameSchedulerReceiver"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:name="com.gamebooster.app.services.BootReceiver"
+            android:name="com.gamebooster.app.platform.receiver.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -184,13 +184,13 @@
         </receiver>
 
         <activity
-            android:name="com.gamebooster.app.ui.screens.OnboardingActivity"
+            android:name="com.gamebooster.app.feature.onboarding.ui.OnboardingActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:hardwareAccelerated="true" />
 
         <activity
-            android:name="com.gamebooster.app.ui.screens.MainActivity"
+            android:name="com.gamebooster.app.app.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:hardwareAccelerated="true">

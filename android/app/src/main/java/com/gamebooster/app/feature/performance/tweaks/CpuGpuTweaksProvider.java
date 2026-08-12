@@ -1,0 +1,64 @@
+package com.gamebooster.app.feature.performance.tweaks;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CpuGpuTweaksProvider {
+
+    public static List<TweakItem> getTweaks() {
+        List<TweakItem> list = new ArrayList<>();
+
+        list.add(new TweakItem(
+                "gpu_hw_composition",
+                "Vulkan HWUI Renderer",
+                "Forces Vulkan hardware graphics pipeline to boost rendering throughput",
+                "setprop debug.hwui.renderer vulkan",
+                "setprop debug.hwui.renderer skia",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "hw_overlays",
+                "Force SurfaceFlinger HW Composition",
+                "Forces GPU hardware composition to eliminate CPU rendering overhead",
+                "setprop debug.sf.hw 1",
+                "setprop debug.sf.hw 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "fifo_audio_render",
+                "FIFO Realtime Scheduling Queue",
+                "Forces realtime FIFO scheduling queue for ultra-low audio & touch latency",
+                "setprop sys.use_fifo 1",
+                "setprop sys.use_fifo 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        // Temporary Privileged Root IPC Commands via Shizuku ADB
+        list.add(new TweakItem(
+                "shizuku_cpu_governor_lock",
+                "CPU Governor & Frequency Lock (Shizuku Root IPC)",
+                "Locks CPU cores to maximum frequency scaling governor via Shizuku ADB binder IPC",
+                "cmd power set-mode 0 1; cmd power set-mode 2 1; setprop persist.sys.cpu.governor performance; setprop sys.io.scheduler deadline",
+                "cmd power set-mode 0 0; cmd power set-mode 2 0; setprop persist.sys.cpu.governor schedutil",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        list.add(new TweakItem(
+                "shizuku_gpu_clock_boost",
+                "GPU Clock & Vulkan Driver Lock (Shizuku Root IPC)",
+                "Forces high-performance GPU driver scaling and Vulkan 3D rendering pipeline via Shizuku",
+                "settings put global game_driver_all_apps 1; settings put global angle_gl_driver_all_angle 1; setprop debug.hwui.renderer vulkan",
+                "settings put global game_driver_all_apps 0; setprop debug.hwui.renderer skia",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        return list;
+    }
+}

@@ -1,7 +1,7 @@
 package com.gamebooster.app.core;
 
 import android.content.Context;
-import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.platform.shell.CommandExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
