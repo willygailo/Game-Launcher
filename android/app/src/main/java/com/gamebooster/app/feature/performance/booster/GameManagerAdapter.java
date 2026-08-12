@@ -20,7 +20,7 @@ public class GameManagerAdapter {
     private final Context context;
 
     public GameManagerAdapter(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context != null ? context.getApplicationContext() : null;
     }
 
     /**
@@ -31,18 +31,17 @@ public class GameManagerAdapter {
      * @return true if applied successfully or commanded via Shizuku.
      */
     public boolean setGameMode(String packageName, int gameMode) {
-        if (packageName == null || packageName.isEmpty()) {
+        if (packageName == null || packageName.trim().isEmpty()) {
             return false;
         }
 
-        boolean apiSuccess = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context != null) {
             try {
                 Object gameManager = context.getSystemService("game");
                 if (gameManager != null) {
                     java.lang.reflect.Method setModeMethod = gameManager.getClass().getMethod("setGameMode", String.class, int.class);
                     setModeMethod.invoke(gameManager, packageName, gameMode);
-                    apiSuccess = true;
+                    return true;
                 }
             } catch (Throwable ignored) {
                 // Hidden system API or MANAGE_GAME_MODE permission missing; fallback to Shizuku shell below.
@@ -66,9 +65,7 @@ public class GameManagerAdapter {
 
         String cmd = "cmd game set --mode " + modeName + " " + packageName;
         String shellResult = CommandExecutor.executeSystemCommand(cmd);
-        boolean shellSuccess = CommandExecutor.isSuccessOutput(shellResult);
-
-        return apiSuccess || shellSuccess;
+        return CommandExecutor.isSuccessOutput(shellResult);
     }
 
     /**
@@ -78,7 +75,7 @@ public class GameManagerAdapter {
      * @return Active game mode integer constant.
      */
     public int getGameMode(String packageName) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && packageName != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context != null && packageName != null) {
             try {
                 Object gameManager = context.getSystemService("game");
                 if (gameManager != null) {
