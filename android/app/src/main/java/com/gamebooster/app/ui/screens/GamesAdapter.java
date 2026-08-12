@@ -62,37 +62,35 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
         int selected = 0;
         for (int i = 0; i < profiles.length; i++) {
             int fps = GameProfilePreferences.getTargetHz(context, profiles[i]);
-            labels[i] = profiles[i].label + " — Force " + fps + " FPS/Hz into game files";
+            labels[i] = profiles[i].label + " — request up to " + fps + "Hz";
             if (profiles[i] == current) selected = i;
         }
 
         final int[] chosenIdx = {selected};
 
         new AlertDialog.Builder(context)
-                .setTitle("⚙️ " + game.getLabel() + " FPS Config")
-                .setMessage("Package: " + game.getPackageName() + "\nChoose target rate to force inject into internal game config files:")
+                .setTitle("⚙️ " + game.getLabel() + " Performance Profile")
+                .setMessage("Package: " + game.getPackageName()
+                        + "\nRequests a native display rate and Android Game Mode only. The game decides its FPS and graphics options.")
                 .setSingleChoiceItems(labels, selected, (dialog, which) -> chosenIdx[0] = which)
-                .setPositiveButton("⚡ FORCE WRITE FPS TO GAME FILES", (dialog, which) -> {
+                .setPositiveButton("SAVE & REQUEST", (dialog, which) -> {
                     GameProfilePreferences.Profile chosen = profiles[chosenIdx[0]];
                     int targetFps = GameProfilePreferences.getTargetHz(context, chosen);
                     GameProfilePreferences.setProfile(context, game.getPackageName(), chosen);
                     holder.tvProfile.setText(GameProfilePreferences.getSummary(context, game.getPackageName()));
 
-                    Toast.makeText(context, "⚡ Forcing " + targetFps + " FPS config into " + game.getLabel() + " game files...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Saving a supported performance request for " + game.getLabel() + "…", Toast.LENGTH_SHORT).show();
 
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        // 1. Force patch internal & external game INI config files
-                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
-
-                        // 2. Configure Game Mode API & refresh rate overrides
-                        GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);
-
-                        // 3. Opt game package into System Game Driver via Shizuku
-                        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + game.getPackageName());
-                        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("settings put global updatable_driver_production_opt_in_apps " + game.getPackageName());
+                        // Android and the installed game remain the authorities for actual FPS.
+                        boolean requested = GameProfileAutoConfigurator.autoConfigGamePackage(
+                                context, game.getPackageName(), targetFps);
 
                         com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                            Toast.makeText(context, "✅ FORCED " + targetFps + " FPS CONFIG TO " + game.getLabel() + " GAME FILES!\n" + result.message, Toast.LENGTH_LONG).show();
+                            String message = requested
+                                    ? "Requested up to " + targetFps + "Hz. Actual FPS and graphics are controlled by the game."
+                                    : "Android did not accept this performance request. Check device support and permissions.";
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
                         });
                     });
                 })

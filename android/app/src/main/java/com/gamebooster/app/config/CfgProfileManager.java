@@ -164,35 +164,11 @@ public class CfgProfileManager {
     // ─── Internal helpers ────────────────────────────────────────────────────
 
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
-        boolean result = false;
-        String key = profile.getGameKey();
-        int fps = profile.getTargetFps();
-
-        if (CompetitiveCfgProfile.GAME_MLBB.equals(key)) {
-            result = MlbbConfigPatcher.patchCompetitive(pkg, fps);
-            if (profile.isSuperFastTouchEnabled()) {
-                MlbbConfigPatcher.applySuperFastTouch(pkg);
-            }
-        } else if (CompetitiveCfgProfile.GAME_PUBGM.equals(key)) {
-            result = PubgConfigPatcher.patchCompetitive(pkg, fps);
-            if (profile.isSuperFastTouchEnabled()) {
-                PubgConfigPatcher.applySuperFastTouch(pkg);
-            }
-        } else if (CompetitiveCfgProfile.GAME_CODM.equals(key)) {
-            result = CodmConfigPatcher.patchCompetitive(pkg, fps);
-            if (profile.isSuperFastTouchEnabled()) {
-                CodmConfigPatcher.applySuperFastTouch(pkg);
-            }
-        } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
-            result = HokConfigPatcher.patch(pkg, fps);
-        } else if (CompetitiveCfgProfile.GAME_GENSHIN.equals(key)) {
-            result = GenshinConfigPatcher.patch(pkg, fps);
-        } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
-            result = RobloxConfigPatcher.patch(pkg, fps);
-        } else {
-            result = GameConfigPatcher.applyGameFpsPatch(pkg, fps).success;
-        }
-        return result;
+        // Do not inject settings into an online game's private files. The saved
+        // profile is a launcher preference and is applied through Android's
+        // capability-checked display/Game Mode request at game launch.
+        Log.i(TAG, "Skipped unsupported game-file profile for " + pkg);
+        return false;
     }
 
     /** Applies a display preference only after confirming it is a native panel mode. */

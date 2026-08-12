@@ -46,26 +46,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "thermalservice_override",
-                "Thermal Throttling Bypass Override",
-                "Overrides thermal service status to cool (0) to eliminate thermal clock throttling",
-                "cmd thermalservice override-status 0",
-                "cmd thermalservice override-status -1",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_vsync",
-                "Disable VSync Lock",
-                "Removes VSync frame cap to unlock maximum GPU frame output",
-                "setprop debug.egl.swapinterval 0",
-                "setprop debug.egl.swapinterval 1",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "gpu_overdraw_debug_off",
                 "Disable GPU Overdraw Debug",
                 "Turns off GPU overdraw visualization layer to reclaim rendering cycles",

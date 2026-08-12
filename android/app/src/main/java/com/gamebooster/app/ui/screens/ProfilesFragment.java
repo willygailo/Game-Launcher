@@ -177,13 +177,14 @@ public class ProfilesFragment extends Fragment {
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
-                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
-                        com.gamebooster.app.booster.HzFpsChannel.forceGameFps(getContext(), game.getPackageName(), targetFps);
+                        com.gamebooster.app.engine.DisplayOverrideController.Result result =
+                                com.gamebooster.app.engine.DisplayOverrideController.applyGameProfile(
+                                        getContext(), game.getPackageName(), targetFps);
                         com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), targetFps);
 
                         AppExecutors.getInstance().postToMainThread(() -> {
                             if (!isAdded() || getContext() == null) return;
-                            Toast.makeText(getContext(), "✅ " + label + " applied to " + game.getLabel() + "! " + result.message, Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), result.message, Toast.LENGTH_LONG).show();
                         });
                     });
                 })

@@ -142,14 +142,8 @@ public class AutoGameMonitorService extends Service {
                 DisplayOverrideController.Result game = DisplayOverrideController.applyGameProfile(
                         getApplicationContext(), currentPackage, targetHz);
 
-                // ── STEP 2: Competitive config patch (once per session per game) ────
+                // ── STEP 2: Record the session once. Game files and device identity are never modified. ──
                 if (!sessionPatchedPackages.contains(currentPackage)) {
-                    GameLaunchInterceptor.preApplyForGame(getApplicationContext(), currentPackage);
-                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(
-                            getApplicationContext(), currentPackage);
-                    GameConfigPatcher.applyCompetitivePatch(currentPackage, targetHz);
-                    com.gamebooster.app.config.GameConfigAutoEngine.autoApplyGameConfigAsync(
-                            getApplicationContext(), currentPackage);
                     sessionPatchedPackages.add(currentPackage);
                 }
 

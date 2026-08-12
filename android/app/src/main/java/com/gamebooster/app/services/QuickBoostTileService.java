@@ -40,7 +40,7 @@ public class QuickBoostTileService extends TileService {
 
         if (isBoostActive) {
             tile.setState(Tile.STATE_ACTIVE);
-            tile.setSubtitle("EXTREME Active ⚡");
+            setSubtitleIfSupported(tile, "EXTREME Active ⚡");
             tile.updateTile();
 
             AppExecutors.getInstance().executeCommand(() -> {
@@ -56,7 +56,7 @@ public class QuickBoostTileService extends TileService {
             });
         } else {
             tile.setState(Tile.STATE_INACTIVE);
-            tile.setSubtitle("Tap to Boost");
+            setSubtitleIfSupported(tile, "Tap to Boost");
             tile.updateTile();
 
             AppExecutors.getInstance().executeCommand(() -> {
@@ -74,8 +74,14 @@ public class QuickBoostTileService extends TileService {
         if (tile != null) {
             tile.setState(isBoostActive ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
             tile.setLabel("Game Booster");
-            tile.setSubtitle(isBoostActive ? "EXTREME Active ⚡" : "Tap to Boost");
+            setSubtitleIfSupported(tile, isBoostActive ? "EXTREME Active ⚡" : "Tap to Boost");
             tile.updateTile();
+        }
+    }
+
+    private void setSubtitleIfSupported(Tile tile, String subtitle) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            tile.setSubtitle(subtitle);
         }
     }
 }

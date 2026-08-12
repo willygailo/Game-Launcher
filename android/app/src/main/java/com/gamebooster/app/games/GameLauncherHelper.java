@@ -31,21 +31,8 @@ public class GameLauncherHelper {
         // 1. Offload background optimizations to AppExecutors so launch is instant
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
-                com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkgName);
-
-                // Auto-apply saved per-game Competitive CFG Profile (FPS + Super Touch + Shizuku Hz)
-                String gameKey = pkgName.contains("mobile.legends") || pkgName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                                 pkgName.contains("pubg") || pkgName.contains("tencent.ig") || pkgName.contains("imobile") || pkgName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                                 pkgName.contains("cod") || pkgName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
-                CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
-                CfgProfileManager.applyProfile(context, gameKey, cfgProf);
-
-                int targetFps = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(context)
-                        .resolveRefreshRate(cfgProf.getTargetFps());
+                int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
-                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName, targetFps);
-                com.gamebooster.app.config.GameConfigAutoEngine.autoApplyGameConfigAsync(context, pkgName);
                 PerformanceChannel.applyProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();

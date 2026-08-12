@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.gamebooster.app'
-    compileSdk 36
+    namespace = 'com.gamebooster.app'
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -10,23 +10,25 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.gamebooster.app"
-        minSdk 24
-        targetSdk 36
-        versionCode 2220
-        versionName "2.2.2.0"
+        applicationId = "com.gamebooster.app"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 2220
+        versionName = "2.2.2.0"
     }
 
     buildFeatures {
-        aidl true
-        buildConfig true
+        aidl = true
+        buildConfig = true
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
-            minifyEnabled false
-            shrinkResources false
+            // Replace this with your upload-key signing configuration before publishing.
+            signingConfig = signingConfigs.debug
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     testOptions {
@@ -34,8 +36,8 @@ android {
     }
 
     lint {
-        abortOnError false
-        checkReleaseBuilds false
+        abortOnError = true
+        checkReleaseBuilds = true
     }
 
     applicationVariants.all { variant ->
@@ -65,5 +67,4 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.11.0'
     testImplementation 'org.json:json:20240303'
 }
-
 

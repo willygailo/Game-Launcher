@@ -105,11 +105,9 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Configures a single game package with max performance:
-     *  1. Native display-rate preference, capability-gated by Android
-     *  2. GameConfigPatcher.applyCompetitivePatch() — force-writes game config files
-     *  3. Android Game Mode performance per-app
-     *  4. Per-app window refresh rate override
+     * Configures a single game with supported Android controls only:
+     * a native display-rate preference and an advisory Android Game Mode request.
+     * These requests cannot bypass a game's internal FPS, HDR, or graphics limits.
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
@@ -125,9 +123,6 @@ public class GameProfileAutoConfigurator {
 
         // Game Mode is advisory: the game, panel and OEM policy still determine actual FPS.
         com.gamebooster.app.engine.DisplayOverrideController.applyGameProfile(context, packageName, targetFpsHz);
-
-        // 2. Competitive config patch (when the app exposes a writable supported config).
-        GameConfigPatcher.applyCompetitivePatch(packageName, targetFpsHz);
 
         return forceResult.success;
     }
@@ -146,13 +141,6 @@ public class GameProfileAutoConfigurator {
             for (GameAppInfo game : games) {
                 String pkg = game.getPackageName();
                 int gameHz = resolveGameHz(context, pkg);
-
-                // Apply competitive CFG profile
-                String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                                 pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                                 pkg.contains("cod") || pkg.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
-                CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
-                CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
                 if (autoConfigGamePackage(context, pkg, gameHz)) {
                     configuredCount++;

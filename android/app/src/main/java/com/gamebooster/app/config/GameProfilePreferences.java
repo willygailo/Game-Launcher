@@ -64,11 +64,10 @@ public final class GameProfilePreferences {
     }
 
     public static String getSummary(Context context, String packageName) {
-        if (context == null || packageName == null) return "CFG: 165 FPS • SUPER TOUCH 165Hz";
-        String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                         packageName.contains("pubg") || packageName.contains("tencent.ig") || packageName.contains("imobile") || packageName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         packageName.contains("cod") || packageName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM : CompetitiveCfgProfile.GAME_ALL;
-        CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "165Hz" : "STD") + " • SHIZUKU HZ " + (cfg.isForceWriteSystemHz() ? "ON" : "OFF");
+        if (context == null || packageName == null) return "Display & Game Mode request";
+        Profile profile = getProfile(context, packageName);
+        int targetHz = getTargetHz(context, profile);
+        return profile.label + " • request up to " + targetHz
+                + "Hz (game support required)";
     }
 }
