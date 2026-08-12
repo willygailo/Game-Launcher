@@ -3,6 +3,7 @@ package com.gamebooster.app.config;
 import android.content.Context;
 
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.engine.DisplayOverrideController;
 import com.gamebooster.app.gamespace.GameSpaceDndManager;
 import com.gamebooster.app.booster.HzFpsChannel;
 
@@ -36,8 +37,8 @@ public final class GameSessionSettings {
                 .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         if (!preferences.contains(KEY_ACTIVE_PACKAGE)) return false;
 
-        // Preserve high performance refresh rate state & active tweaks permanently (Zero Auto-Off)
+        DisplayOverrideController.Result restore = DisplayOverrideController.restore(context);
         preferences.edit().clear().apply();
-        return true;
+        return restore.isSuccess();
     }
 }

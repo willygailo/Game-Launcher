@@ -39,11 +39,13 @@ public class GameSchedulerService extends BroadcastReceiver {
         AppExecutors.getInstance().executeCommand(() -> {
             if (currentHour >= startHour && currentHour < endHour) {
                 Log.i(TAG, "⚡ Inside gaming window — Auto-activating EXTREME Performance!");
-                MaxHzForceChannel.forceApply(165);
+                MaxHzForceChannel.forceApply(context,
+                        com.gamebooster.app.engine.DisplayOverrideController.highestSupportedRate(context), null);
                 PerformanceChannel.applyProfileWithResult(context, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 TouchLatencyChannel.enableUltraTouchResponse();
             } else {
                 Log.i(TAG, "Outside gaming window — Reverting to Balanced mode");
+                com.gamebooster.app.engine.DisplayOverrideController.restore(context);
                 PerformanceChannel.applyProfileWithResult(context, PerformanceChannel.Profile.BALANCED);
             }
         });

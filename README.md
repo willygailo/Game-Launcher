@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- ANIMATED HEADER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,10,14,26&height=220&section=header&text=🎮%20GAME%20LAUNCHER%20PRO%20V2.0&fontSize=42&fontAlign=50&fontAlignY=36&desc=⚡%200ms%20Touch%20Delay%20•%20165Hz%2B%20Dynamic%20Refresh%20Rate%20•%20Shizuku%20ADB%20Engine&descSize=15&descAlign=50&descAlignY=60&stroke=00FF9C" width="100%">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,10,14,26&height=220&section=header&text=🎮%20GAME%20LAUNCHER%20PRO%20V2.0&fontSize=42&fontAlign=50&fontAlignY=36&desc=⚡%20Native%20Display%20Rate%20Profiles%20•%20Shizuku%20ADB%20Engine&descSize=15&descAlign=50&descAlignY=60&stroke=00FF9C" width="100%">
 
 <br/>
 
@@ -23,16 +23,16 @@
 <table align="center" width="100%" style="border-collapse: collapse; border: none;">
   <tr>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #00FF9C; margin: 0;">⚡ 0ms</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Touch Latency</p>
+      <h2 style="color: #00FF9C; margin: 0;">⚡ Safe</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Session Overrides</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #88CCFF; margin: 0;">🔥 165Hz+</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Dynamic Hz Lock</p>
+      <h2 style="color: #88CCFF; margin: 0;">🔥 Native Hz</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Verified Panel Modes</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #FFCC00; margin: 0;">🎯 1000Hz</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Digitizer Rate</p>
+      <h2 style="color: #FFCC00; margin: 0;">🎯 Per-Game</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Game Mode Requests</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 12px; padding: 12px;">
       <h2 style="color: #FF99FF; margin: 0;">🛡️ UID 2000</h2>
@@ -74,11 +74,11 @@
   <tr>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 14px; padding: 18px;">
       <h3 style="color: #00FF9C; margin-top: 0;">⚡ Dynamic Refresh Rate Lock</h3>
-      <p style="color: #c9d1d9;">Unlocks <b>60Hz, 90Hz, 120Hz, 144Hz, and 165Hz+</b> natively by querying live display hardware panel capabilities through Shizuku ADB execution.</p>
+      <p style="color: #c9d1d9;">Detects the live panel modes and requests only native rates such as <b>60Hz, 90Hz, 120Hz, 144Hz, and 165Hz</b> when supported by the device.</p>
     </td>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 14px; padding: 18px;">
-      <h3 style="color: #88CCFF; margin-top: 0;">🎯 0ms Touch Delay & 1000Hz Sampling</h3>
-      <p style="color: #c9d1d9;">Eliminates touch slop and input buffer latency. Enforces <b>1000Hz digitizer event polling rate</b> for instant aiming and touch response.</p>
+      <h3 style="color: #88CCFF; margin-top: 0;">🎯 Device-Aware Touch Settings</h3>
+      <p style="color: #c9d1d9;">Offers compatibility-checked touch settings; the actual sampling rate remains determined by device hardware and OEM drivers.</p>
     </td>
   </tr>
   <tr>

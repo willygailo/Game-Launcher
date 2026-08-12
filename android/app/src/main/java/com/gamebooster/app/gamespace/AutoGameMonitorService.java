@@ -19,11 +19,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
-import com.gamebooster.app.engine.RefreshRateOverrideEngine;
+import com.gamebooster.app.engine.DisplayOverrideController;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.GameManagerRepository;
 import com.gamebooster.app.games.GamePackageRegistry;
@@ -126,21 +125,24 @@ public class AutoGameMonitorService extends Service {
                 GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
                         getApplicationContext(), currentPackage);
 
-                // Resolve Hz from registry (MLBB=165, HOK=120, etc.) — hard min 120
+                // Resolve the saved profile, then clamp it to a native panel mode.
                 int targetHz = GameProfileAutoConfigurator.resolveGameHz(
                         getApplicationContext(), currentPackage);
 
+                com.gamebooster.app.device.DevicePerformanceCapabilities caps =
+                        com.gamebooster.app.device.DevicePerformanceCapabilities.detect(getApplicationContext());
+                targetHz = caps.resolveRefreshRate(targetHz);
+
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage
-                        + " — Applying " + profile.label + " @ " + targetHz + "Hz (NO FALLBACK)");
+                        + " — Requesting " + profile.label + " @ native " + targetHz + "Hz");
 
-                // ── STEP 1: Force Hz IMMEDIATELY — before game renders frame 1 ──────
-                MaxHzForceChannel.forceApply(getApplicationContext(), targetHz, currentPackage);
-
-                // ── STEP 2: Per-app window + device_config override ────────────────
-                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(
+                // ── STEP 1: Request native display + supported Game Mode profile ──────
+                DisplayOverrideController.Result display = DisplayOverrideController.applyDisplayRate(
+                        getApplicationContext(), targetHz, currentPackage);
+                DisplayOverrideController.Result game = DisplayOverrideController.applyGameProfile(
                         getApplicationContext(), currentPackage, targetHz);
 
-                // ── STEP 3: Competitive config patch (once per session per game) ────
+                // ── STEP 2: Competitive config patch (once per session per game) ────
                 if (!sessionPatchedPackages.contains(currentPackage)) {
                     GameLaunchInterceptor.preApplyForGame(getApplicationContext(), currentPackage);
                     com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(
@@ -151,12 +153,12 @@ public class AutoGameMonitorService extends Service {
                     sessionPatchedPackages.add(currentPackage);
                 }
 
-                // ── STEP 4: Touch latency + CPU/GPU governor ───────────────────────
+                // ── STEP 3: Touch latency + CPU/GPU governor ───────────────────────
                 TouchLatencyChannel.enableUltraTouchResponse();
                 PerformanceChannel.applyProfile(getApplicationContext(), profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
 
-                // ── STEP 5: Show floating HUD ──────────────────────────────────────
+                // ── STEP 4: Show floating HUD ──────────────────────────────────────
                 if (!FloatingOverlayService.isOverlayRunning()) {
                     FloatingOverlayService.startOverlay(getApplicationContext());
                 }
@@ -164,30 +166,19 @@ public class AutoGameMonitorService extends Service {
                 final int finalHz = targetHz;
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "🎮 " + profile.label + " — " + finalHz + "Hz FORCED (No Fallback)",
+                                "🎮 " + profile.label + " — " + display.message + " • " + game.message,
                                 android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                int homeHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                Log.i(TAG, "Game exited — applying target rate (" + homeHz + "Hz) on home screen");
+                Log.i(TAG, "Game exited — restoring saved display and Game Mode values");
                 lastActiveGamePackage = null;
 
-                // Restore user target rate on home exit
-                MaxHzForceChannel.forceApply(getApplicationContext(), homeHz, null);
-                TouchLatencyChannel.enableUltraTouchResponse();
-                PerformanceChannel.applyProfile(getApplicationContext(),
-                        PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                DisplayOverrideController.Result restored = DisplayOverrideController.restore(getApplicationContext());
 
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "⚡ Home Screen — " + homeHz + "Hz FORCED",
+                                "⚡ " + restored.message,
                                 android.widget.Toast.LENGTH_SHORT).show());
-
-            } else if (!isGameActive && lastActiveGamePackage == null) {
-                // Continuous home reinforce — use user target rate
-                int homeHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                MaxHzForceChannel.forceApply(homeHz);
-                TouchLatencyChannel.enableUltraTouchResponse();
             }
         });
     }

@@ -390,8 +390,10 @@ public class FloatingOverlayService extends Service {
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             com.gamebooster.app.booster.MaxHzForceChannel.ForceResult forceRes =
                     com.gamebooster.app.booster.MaxHzForceChannel.forceApply(getApplicationContext(), hz, null);
-            com.gamebooster.app.device.DisplayRefreshRatePreferences.saveSelectedHz(getApplicationContext(), hz);
-            com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getApplicationContext(), hz);
+            if (forceRes.success) {
+                com.gamebooster.app.device.DisplayRefreshRatePreferences.saveSelectedHz(getApplicationContext(), forceRes.appliedHz);
+                com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getApplicationContext(), forceRes.appliedHz);
+            }
 
             com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                 android.widget.Toast.makeText(getApplicationContext(),

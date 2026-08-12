@@ -65,14 +65,11 @@ public final class DevicePerformanceCapabilities {
     }
 
     public boolean supportsRefreshRate(int hz) {
-        return true;
+        return supportedRefreshRates.contains(hz);
     }
 
-    /** Returns the target refresh rate (165Hz max target or highest supported rate). */
+    /** Returns the highest physical panel rate that does not exceed the request. */
     public int resolveRefreshRate(int requestedHz) {
-        if (requestedHz >= 165) {
-            return 165;
-        }
         int resolved = supportedRefreshRates.get(0);
         for (int rate : supportedRefreshRates) {
             if (rate > requestedHz) break;

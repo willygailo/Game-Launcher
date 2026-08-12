@@ -106,25 +106,27 @@ public class GameProfileAutoConfigurator {
 
     /**
      * Configures a single game package with max performance:
-     *  1. MaxHzForceChannel.forceApply() — 6-layer Shizuku Hz force
+     *  1. Native display-rate preference, capability-gated by Android
      *  2. GameConfigPatcher.applyCompetitivePatch() — force-writes game config files
      *  3. Android Game Mode performance per-app
      *  4. Per-app window refresh rate override
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
+        if (context == null) return false;
+        targetFpsHz = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(context)
+                .resolveRefreshRate(targetFpsHz);
 
-        Log.d(TAG, "autoConfigGamePackage: " + packageName + " @ " + targetFpsHz + "Hz");
+        Log.d(TAG, "autoConfigGamePackage: " + packageName + " @ native " + targetFpsHz + "Hz");
 
-        // 1. Force Hz via MaxHzForceChannel
+        // 1. Request a native display rate and a valid per-package Game Mode profile.
         MaxHzForceChannel.ForceResult forceResult =
                 MaxHzForceChannel.forceApply(context, targetFpsHz, packageName);
 
-        // 2. Per-app Game Mode + window refresh rate override
-        CommandExecutor.executeSystemCommand("cmd game mode performance " + packageName);
-        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetFpsHz);
+        // Game Mode is advisory: the game, panel and OEM policy still determine actual FPS.
+        com.gamebooster.app.engine.DisplayOverrideController.applyGameProfile(context, packageName, targetFpsHz);
 
-        // 3. Competitive force-write game config files
+        // 2. Competitive config patch (when the app exposes a writable supported config).
         GameConfigPatcher.applyCompetitivePatch(packageName, targetFpsHz);
 
         return forceResult.success;

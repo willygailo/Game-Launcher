@@ -40,7 +40,7 @@ public class PerformanceChannel {
         int targetHz;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                targetHz = 165;
+                targetHz = caps.resolveRefreshRate(165);
                 break;
 
             case PERFORMANCE:
@@ -56,12 +56,7 @@ public class PerformanceChannel {
         }
 
         HzFpsChannel.RefreshRateResult refreshResult;
-        if (profile == Profile.EXTREME_PERFORMANCE) {
-            // EXTREME: force unconditionally via Shizuku — no capability gate, no fallback
-            refreshResult = HzFpsChannel.forceSetRefreshRate(context, targetHz);
-        } else {
-            refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
-        }
+        refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
         if (!refreshResult.success) {
             return new ProfileResult(false, targetHz, refreshResult.message);
         }
@@ -73,7 +68,8 @@ public class PerformanceChannel {
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
-            writeAndExecuteRootTweaksScript(targetHz);
+            // Root-only tuning is intentionally not auto-executed. It must be an explicit,
+            // device-specific action because kernel paths and thermal policies are OEM-specific.
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();

@@ -2,8 +2,6 @@ package com.gamebooster.app.engine;
 
 import android.content.Context;
 import android.util.Log;
-import com.gamebooster.app.booster.MaxHzForceChannel;
-import com.gamebooster.app.device.DisplayCapabilitiesDetector;
 import com.gamebooster.app.device.DisplayRefreshRatePreferences;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
@@ -41,28 +39,20 @@ public class RefreshRateOverrideEngine {
         try {
             Log.d(TAG, "Applying Refresh Rate Override: " + targetHz + "Hz for package: " + packageName);
 
-            // Persist user choice before applying so it survives crashes / reconnects
-            if (context != null) {
-                DisplayRefreshRatePreferences.saveSelectedHz(context, targetHz);
+            DisplayOverrideController.Result display =
+                    DisplayOverrideController.applyDisplayRate(context, targetHz, packageName);
+            if (!display.isSuccess()) {
+                Log.w(TAG, "Refresh-rate request rejected: " + display.message);
+                return false;
             }
-
-            // Delegate global system forcing to MaxHzForceChannel (17+ commands, 6 layers)
-            MaxHzForceChannel.ForceResult forceResult =
-                    MaxHzForceChannel.forceApply(context, targetHz, packageName);
-
-            // Apply per-package constraints if a specific game package was provided
             if (packageName != null && !packageName.trim().isEmpty()) {
-                ShizukuExecutor.executeShizukuCommand(
-                    "cmd window set-app-refresh-rate " + packageName + " " + targetHz);
-                ShizukuExecutor.executeShizukuCommand(
-                    "device_config put game_overlay " + packageName
-                    + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);
-                ShizukuExecutor.executeShizukuCommand(
-                    "cmd game set --fps " + targetHz + " " + packageName);
+                DisplayOverrideController.Result game =
+                        DisplayOverrideController.applyGameProfile(context, packageName, targetHz);
+                Log.i(TAG, "Game FPS request: " + game.message);
             }
-
-            Log.i(TAG, "RefreshRateOverrideEngine: " + forceResult.message);
-            return forceResult.success;
+            if (context != null) DisplayRefreshRatePreferences.saveSelectedHz(context, display.selectedHz);
+            Log.i(TAG, "RefreshRateOverrideEngine: " + display.message);
+            return true;
         } catch (Throwable e) {
             Log.e(TAG, "Failed to apply refresh rate override", e);
             return false;
@@ -76,7 +66,6 @@ public class RefreshRateOverrideEngine {
      * @return true if Shizuku commands fired successfully
      */
     public static boolean applyMaxRefreshRateForce(int targetHz) {
-        if (!ShizukuExecutor.hasShizukuPermission()) return false;
         return applyRefreshRate(null, null, targetHz);
     }
 
@@ -102,18 +91,13 @@ public class RefreshRateOverrideEngine {
      * Resets system refresh rate to auto/adaptive and clears the persisted override.
      */
     public static boolean resetRefreshRate(Context context) {
-        if (!ShizukuExecutor.isShizukuAvailable()) return false;
         try {
-            ShizukuExecutor.executeShizukuCommand("settings delete system peak_refresh_rate");
-            ShizukuExecutor.executeShizukuCommand("settings delete system min_refresh_rate");
-            ShizukuExecutor.executeShizukuCommand("settings delete system user_refresh_rate");
-            ShizukuExecutor.executeShizukuCommand("settings delete global peak_refresh_rate");
-            ShizukuExecutor.executeShizukuCommand("settings delete global min_refresh_rate");
+            DisplayOverrideController.Result restore = DisplayOverrideController.restore(context);
             if (context != null) {
                 DisplayRefreshRatePreferences.clearOverride(context);
             }
-            Log.i(TAG, "Reset system refresh rate settings to adaptive default.");
-            return true;
+            Log.i(TAG, restore.message);
+            return restore.isSuccess();
         } catch (Throwable e) {
             Log.e(TAG, "Failed to reset system refresh rate settings", e);
             return false;

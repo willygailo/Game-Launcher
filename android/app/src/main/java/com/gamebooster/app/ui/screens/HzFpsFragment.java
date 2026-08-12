@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.booster.MaxHzForceChannel;
+import com.gamebooster.app.engine.DisplayOverrideController;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DisplayCapabilitiesDetector;
@@ -25,8 +25,8 @@ import java.util.List;
  * HzFpsFragment — Display Refresh Rate Override Control Screen.
  *
  * <p>Queries the physical display panel dynamically via {@link DisplayCapabilitiesDetector}
- * and enables selection for all panel-supported rates. Selection is persisted via
- * {@link DisplayRefreshRatePreferences} and applied via Shizuku across all 6 forcing layers.
+ * and enables selection only for physical panel-supported rates. Selection is persisted via
+ * {@link DisplayRefreshRatePreferences} and applied through the verified privilege backend.
  */
 public class HzFpsFragment extends Fragment {
 
@@ -100,14 +100,16 @@ public class HzFpsFragment extends Fragment {
     private void applyHz(int hz) {
         if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
-            MaxHzForceChannel.ForceResult result =
-                    MaxHzForceChannel.lockHz(getContext(), hz, null);
-            DisplayRefreshRatePreferences.saveSelectedHz(getContext(), hz);
-            GameProfileAutoConfigurator.setTargetFpsHz(getContext(), hz);
+            DisplayOverrideController.Result result =
+                    DisplayOverrideController.applyDisplayRate(getContext(), hz, null);
+            if (result.isSuccess()) {
+                DisplayRefreshRatePreferences.saveSelectedHz(getContext(), result.selectedHz);
+                GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.selectedHz);
+            }
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                Toast.makeText(getContext(), "🔒 Locked to " + hz + "Hz • " + result.message, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), result.message, Toast.LENGTH_LONG).show();
                 refreshSupportedRates();
             });
         });
@@ -116,12 +118,12 @@ public class HzFpsFragment extends Fragment {
     private void unlockHz() {
         if (getContext() == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
-            boolean ok = MaxHzForceChannel.unlockHz(getContext());
-            DisplayRefreshRatePreferences.clearSelectedHz(getContext());
+            DisplayOverrideController.Result result = DisplayOverrideController.restore(getContext());
+            if (result.isSuccess()) DisplayRefreshRatePreferences.clearSelectedHz(getContext());
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                Toast.makeText(getContext(), "🔓 Refresh rate unlocked — system dynamic mode restored", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), result.message, Toast.LENGTH_LONG).show();
                 refreshSupportedRates();
             });
         });

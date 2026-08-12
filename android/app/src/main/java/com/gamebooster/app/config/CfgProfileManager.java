@@ -125,9 +125,9 @@ public class CfgProfileManager {
             if (ok) patched++;
         }
 
-        // System-level Hz force via Shizuku (applies globally, not per-package)
+        // Request only a native display rate; per-package Game Mode is handled by the launcher.
         if (profile.isForceWriteSystemHz()) {
-            applyShizukuHzForce(profile.getTargetFps());
+            applyShizukuHzForce(context, profile.getTargetFps());
         }
 
         // Persist
@@ -157,7 +157,7 @@ public class CfgProfileManager {
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
-        if (forceHz) applyShizukuHzForce(targetFps);
+        if (forceHz) applyShizukuHzForce(context, targetFps);
         return total;
     }
 
@@ -195,28 +195,12 @@ public class CfgProfileManager {
         return result;
     }
 
-    /** Builds the 165Hz / 144Hz / 120Hz / 90Hz Shizuku force command string. */
-    private static void applyShizukuHzForce(int hz) {
-        String cmd =
-            "settings put system peak_refresh_rate " + hz + ".0; " +
-            "settings put system min_refresh_rate "  + hz + ".0; " +
-            "settings put system user_refresh_rate " + hz + "; "   +
-            "settings put global peak_refresh_rate " + hz + ".0; " +
-            "settings put global min_refresh_rate "  + hz + ".0; " +
-            "cmd game mode performance global; " +
-            "cmd window set-app-refresh-rate global " + hz + "; "  +
-            "device_config put game_overlay global mode=2,fps=" + hz + ":mode=3,fps=" + hz + "; " +
-            "service call SurfaceFlinger 1035 i32 " + hz + "; "    +
-            "service call SurfaceFlinger 1036 i32 " + hz + "; "    +
-            "setprop debug.sf.fps_limit "           + hz + "; "    +
-            "setprop persist.sys.NV_FPSLIMIT "      + hz + "; "    +
-            "setprop persist.sys.NV_POWERMODE 1; "                  +
-            "setprop debug.gr.swapinterval 0";
-
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommand(cmd);
-        }
-        Log.i(TAG, "Shizuku Hz force applied: " + hz + "Hz");
+    /** Applies a display preference only after confirming it is a native panel mode. */
+    private static void applyShizukuHzForce(Context context, int hz) {
+        if (context == null) return;
+        com.gamebooster.app.engine.DisplayOverrideController.Result result =
+                com.gamebooster.app.engine.DisplayOverrideController.applyDisplayRate(context, hz, null);
+        Log.i(TAG, "Display-rate request: " + result.message);
     }
 
     private static List<String> getPackagesForKey(String gameKey) {

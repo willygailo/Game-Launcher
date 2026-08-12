@@ -44,7 +44,8 @@ public class QuickBoostTileService extends TileService {
             tile.updateTile();
 
             AppExecutors.getInstance().executeCommand(() -> {
-                MaxHzForceChannel.forceApply(165);
+                MaxHzForceChannel.forceApply(getApplicationContext(),
+                        com.gamebooster.app.engine.DisplayOverrideController.highestSupportedRate(getApplicationContext()), null);
                 PerformanceChannel.applyProfileWithResult(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 TouchLatencyChannel.enableUltraTouchResponse();
                 RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
@@ -59,6 +60,7 @@ public class QuickBoostTileService extends TileService {
             tile.updateTile();
 
             AppExecutors.getInstance().executeCommand(() -> {
+                com.gamebooster.app.engine.DisplayOverrideController.restore(getApplicationContext());
                 PerformanceChannel.applyProfileWithResult(getApplicationContext(), PerformanceChannel.Profile.BALANCED);
                 AppExecutors.getInstance().postToMainThread(() -> {
                     Toast.makeText(getApplicationContext(), "Balanced Mode Reverted", Toast.LENGTH_SHORT).show();

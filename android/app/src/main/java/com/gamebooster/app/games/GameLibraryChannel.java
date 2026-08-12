@@ -39,7 +39,8 @@ public class GameLibraryChannel {
 
         // Auto-optimize game on launch
         setAndroidGameMode(packageName, true);
-        int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(context);
+        int targetHz = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(context)
+                .resolveRefreshRate(GameProfileAutoConfigurator.getTargetFpsHz(context));
         HzFpsChannel.forceGameFps(context, packageName, targetHz);
         PerformanceChannel.executeOneTapBoost(context);
 

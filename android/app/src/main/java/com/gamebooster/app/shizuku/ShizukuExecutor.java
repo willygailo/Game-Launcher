@@ -173,19 +173,9 @@ public class ShizukuExecutor {
         // Delegate to PermissionBatchBuilder — single source of truth (no duplicates)
         List<String> batch = new ArrayList<>(PermissionBatchBuilder.buildGrantBatch(packageName));
 
-        // Per-game Game Mode + FPS lock for all target games
-        int maxHz = 165;
-        try {
-            DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
-            if (caps != null && caps.getMaxRefreshRate() > 0) {
-                maxHz = caps.getMaxRefreshRate();
-            }
-        } catch (Throwable ignored) {}
-
-        List<String> targetGames = TargetGameRegistry.getAllPackages();
-        for (String gamePkg : targetGames) {
-            batch.addAll(PermissionBatchBuilder.buildPerGameBatch(gamePkg, maxHz));
-        }
+        // Do not configure every known game package as a side effect of connecting Shizuku.
+        // The selected foreground game is configured later by DisplayOverrideController after
+        // package validation, native-mode detection, and a rollback snapshot.
 
         String res = executeShizukuBatchCommands(batch);
         boolean success = res != null && !res.startsWith("ERROR");

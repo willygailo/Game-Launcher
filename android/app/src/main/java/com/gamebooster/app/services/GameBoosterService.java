@@ -56,7 +56,8 @@ public class GameBoosterService extends Service {
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                 }
-                com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), 165);
+                int maxHz = com.gamebooster.app.engine.DisplayOverrideController.highestSupportedRate(getApplicationContext());
+                com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getApplicationContext(), maxHz);
                 PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
             } catch (Exception ignored) {}
         });

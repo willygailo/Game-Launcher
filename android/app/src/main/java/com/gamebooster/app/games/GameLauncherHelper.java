@@ -41,7 +41,8 @@ public class GameLauncherHelper {
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
-                int targetFps = cfgProf.getTargetFps();
+                int targetFps = com.gamebooster.app.device.DevicePerformanceCapabilities.detect(context)
+                        .resolveRefreshRate(cfgProf.getTargetFps());
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName, targetFps);
                 com.gamebooster.app.config.GameConfigAutoEngine.autoApplyGameConfigAsync(context, pkgName);

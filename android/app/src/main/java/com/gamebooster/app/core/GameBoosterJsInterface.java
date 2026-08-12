@@ -217,8 +217,9 @@ public class GameBoosterJsInterface {
 
     @JavascriptInterface
     public boolean setRefreshRateForOem(int hz) {
-        String res = com.gamebooster.app.booster.refreshrate.RefreshRateManager.getInstance().forceRefreshRate(hz);
-        return res != null && !res.startsWith("ERROR");
+        if (context == null) return false;
+        return com.gamebooster.app.engine.DisplayOverrideController
+                .applyDisplayRate(context, hz, null).isSuccess();
     }
 
     @JavascriptInterface
@@ -283,5 +284,4 @@ public class GameBoosterJsInterface {
         }
     }
 }
-
 

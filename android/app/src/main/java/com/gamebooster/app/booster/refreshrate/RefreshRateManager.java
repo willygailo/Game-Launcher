@@ -50,12 +50,10 @@ public class RefreshRateManager {
     }
 
     public String forceRefreshRate(int targetHz) {
-        if (currentStrategy == null) initStrategy();
-        return currentStrategy.forceRefreshRate(targetHz);
+        return "ERROR: A Context is required to verify native display modes. Use DisplayOverrideController.";
     }
 
     public String resetRefreshRate() {
-        if (currentStrategy == null) initStrategy();
-        return currentStrategy.resetRefreshRate();
+        return "ERROR: A Context is required to restore saved display settings. Use DisplayOverrideController.";
     }
 }
