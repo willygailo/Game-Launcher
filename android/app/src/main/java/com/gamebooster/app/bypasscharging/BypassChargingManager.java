@@ -35,32 +35,11 @@ public class BypassChargingManager {
 
         Log.d(TAG, "Detecting device for Bypass Charging strategy... Manufacturer=" + manufacturer + " Brand=" + brand + " Model=" + model + " SDK=" + Build.VERSION.SDK_INT);
 
-        if (manufacturer.contains("samsung") || brand.contains("samsung")) {
-            currentStrategy = new SamsungBypassStrategy();
-        } else if (manufacturer.contains("xiaomi") || manufacturer.contains("poco") || manufacturer.contains("redmi") || manufacturer.contains("blackshark") ||
-                   brand.contains("xiaomi") || brand.contains("poco") || brand.contains("redmi")) {
-            currentStrategy = new XiaomiBypassStrategy();
-        } else if (manufacturer.contains("asus") || brand.contains("asus") || model.contains("rog")) {
-            currentStrategy = new AsusRogBypassStrategy();
-        } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("transsion") || manufacturer.contains("itel") ||
-                   brand.contains("infinix") || brand.contains("tecno")) {
-            currentStrategy = new InfinixTecnoBypassStrategy();
-        } else if (manufacturer.contains("sony") || brand.contains("sony")) {
-            currentStrategy = new SonyBypassStrategy();
-        } else if (manufacturer.contains("nubia") || manufacturer.contains("zte") || brand.contains("redmagic") || model.contains("redmagic")) {
-            currentStrategy = new RedMagicBypassStrategy();
-        } else if (manufacturer.contains("oneplus") || manufacturer.contains("oppo") || manufacturer.contains("realme") ||
-                   brand.contains("oneplus") || brand.contains("oppo") || brand.contains("realme")) {
-            currentStrategy = new OnePlusOppoBypassStrategy();
-        } else {
-            currentStrategy = new GenericSysfsBypassStrategy();
-        }
-
-        // If specific strategy isn't supported, fall back to GenericSysfsBypassStrategy
-        if (!currentStrategy.isSupported()) {
-            Log.d(TAG, "Primary strategy (" + currentStrategy.getStrategyName() + ") not supported by nodes/settings. Falling back to GenericSysfsBypassStrategy.");
-            currentStrategy = new GenericSysfsBypassStrategy();
-        }
+        // Do not select a strategy from brand strings alone. The old implementation guessed
+        // vendor settings and then fell back to generic sysfs writes, which could disable
+        // charging or alter the power path on an unrelated model. Add an OEM strategy only after
+        // it has been verified against the exact model and firmware, including restore checks.
+        currentStrategy = new UnsupportedBypassStrategy();
 
         Log.d(TAG, "Selected Bypass Charging Strategy: " + currentStrategy.getStrategyName());
     }
@@ -80,17 +59,15 @@ public class BypassChargingManager {
     }
 
     public String enableBypassCharging(Context context) {
-        if (context != null) {
-            setBypassEnabled(context, true);
-        }
-        return enableBypassCharging();
+        String result = enableBypassCharging();
+        if (context != null && isSuccessful(result)) setBypassEnabled(context, true);
+        return result;
     }
 
     public String disableBypassCharging(Context context) {
-        if (context != null) {
-            setBypassEnabled(context, false);
-        }
-        return disableBypassCharging();
+        String result = disableBypassCharging();
+        if (context != null && isSuccessful(result)) setBypassEnabled(context, false);
+        return result;
     }
 
     public boolean isBypassEnabled(Context context) {
@@ -124,5 +101,11 @@ public class BypassChargingManager {
     public String getBypassStatus() {
         if (currentStrategy == null) initStrategy();
         return currentStrategy.getBypassStatus();
+    }
+
+    private static boolean isSuccessful(String result) {
+        if (result == null) return false;
+        String normalized = result.trim().toLowerCase();
+        return !normalized.startsWith("error") && !normalized.contains("not verified");
     }
 }

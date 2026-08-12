@@ -48,10 +48,14 @@ public class RoleManager {
 
     private RoleManager(Context context) {
         mPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String stored = mPrefs.getString(KEY_ROLE, ShizukuRole.ADMIN.name());
+        String stored = mPrefs.getString(KEY_ROLE, ShizukuRole.USER.name());
         mCurrentRole = ShizukuRole.fromString(stored);
         if (isShizukuPermissionGranted()) {
             mCurrentRole = ShizukuRole.ADMIN;
+        } else if (mCurrentRole == ShizukuRole.ADMIN) {
+            // A persisted role must never outlive the underlying Shizuku grant.
+            mCurrentRole = ShizukuRole.USER;
+            persist(ShizukuRole.USER);
         }
         Log.i(TAG, "RoleManager initialized with role: " + mCurrentRole);
     }
@@ -68,6 +72,10 @@ public class RoleManager {
                 persist(ShizukuRole.ADMIN);
             }
             return ShizukuRole.ADMIN;
+        }
+        if (mCurrentRole == ShizukuRole.ADMIN) {
+            mCurrentRole = ShizukuRole.USER;
+            persist(ShizukuRole.USER);
         }
         return mCurrentRole;
     }
@@ -107,7 +115,7 @@ public class RoleManager {
      * @return true if action was executed; false if blocked by role
      */
     public boolean requireAdmin(Runnable action) {
-        if (mCurrentRole.canExecuteCommands()) {
+        if (mCurrentRole.canExecuteCommands() && isShizukuPermissionGranted()) {
             action.run();
             return true;
         }
@@ -134,14 +142,14 @@ public class RoleManager {
      * Returns true if the current role allows Force Apply engine.
      */
     public boolean canForceApply() {
-        return mCurrentRole.canForceApply();
+        return mCurrentRole.canForceApply() && isShizukuPermissionGranted();
     }
 
     /**
      * Returns true if the current role allows terminal command execution.
      */
     public boolean canUseTerminal() {
-        return mCurrentRole.canUseTerminal();
+        return mCurrentRole.canUseTerminal() && isShizukuPermissionGranted();
     }
 
     /**

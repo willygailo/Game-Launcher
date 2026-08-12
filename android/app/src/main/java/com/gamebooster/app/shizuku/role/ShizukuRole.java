@@ -4,8 +4,8 @@ package com.gamebooster.app.shizuku.role;
  * ShizukuRole — Defines privilege levels for the Game Booster Shizuku bridge.
  *
  * <ul>
- *   <li>{@link #ADMIN}    — Full access: Force Apply, setprop, file bridge, permission grants,
- *                           terminal execution, spoofer profiles. Requires Shizuku permission.</li>
+ *   <li>{@link #ADMIN}    — Explicitly approved access to supported system requests and the
+ *                           terminal. Requires a live Shizuku permission grant.</li>
  *   <li>{@link #USER}     — Standard access: Apply tweaks, launch games, view/select spoofer
  *                           profiles, toggle Hz/FPS, view stats. Cannot execute raw terminal
  *                           commands or apply Force Apply.</li>
@@ -15,8 +15,8 @@ package com.gamebooster.app.shizuku.role;
  */
 public enum ShizukuRole {
 
-    /** Full system-level privileged access. All features enabled. */
-    ADMIN("Admin", "Full Shizuku privileged access — all features unlocked", "⚡"),
+    /** Explicitly approved privileged access. */
+    ADMIN("Admin", "Approved Shizuku access — supported system requests and terminal", "⚡"),
 
     /** Standard user access. Tweaks and game launch only. */
     USER("User", "Standard access — tweaks, profiles and game launch", "👤"),
@@ -73,7 +73,7 @@ public enum ShizukuRole {
 
     /** Returns true if this role can access the terminal and execute raw shell commands. */
     public boolean canUseTerminal() {
-        return this == ADMIN || this == USER;
+        return this == ADMIN;
     }
 
     /** Returns true if this role can modify spoofer profiles. */

@@ -91,8 +91,8 @@ public class OnboardingActivity extends AppCompatActivity {
             case 0:
                 tvStepTitle.setText("🎮 Welcome to Game Launcher Pro V2.0");
                 tvStepDescription.setText("Engineered by WILLY JR CARNASA GAILO.\n\n" +
-                        "Unlocks 0ms Touch Delay, 1000Hz Digitizer Sampling, Per-Game Hardware Identity Spoofer, and 165Hz Game Patcher for Mobile eSports.\n\n" +
-                        "Let's configure system permissions for zero-latency gameplay!");
+                        "Detects your panel's real refresh modes, prepares supported Android Game Mode requests, and keeps every temporary change reversible. Touch sampling, game FPS, and charging controls remain device and game dependent.\n\n" +
+                        "Let's configure the permissions needed for verified performance profiles.");
                 tvStatusBadge.setText("STEP 1 / 4");
                 btnPrimaryAction.setText("BEGIN SETUP 🚀");
                 btnSecondaryAction.setVisibility(android.view.View.GONE);
@@ -106,7 +106,7 @@ public class OnboardingActivity extends AppCompatActivity {
             case 1:
                 boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
                 tvStepTitle.setText("⚡ Step 1: Shizuku Service Privilege");
-                tvStepDescription.setText("Game Launcher Pro V2.0 uses Shizuku ADB Binder IPC (uid 2000) to safely apply 165Hz display locks and device spoofer profiles without root.\n\n" +
+                tvStepDescription.setText("Game Launcher Pro V2.0 uses Shizuku's user-approved shell service (usually uid 2000 in ADB mode) for supported display and Game Mode requests. It cannot create a missing hardware mode or change a game's identity.\n\n" +
                         "Please launch Shizuku and grant permission to Game Launcher Pro V2.0.");
                 tvStatusBadge.setText(hasShizuku ? "✅ SHIZUKU CONNECTED" : "⚠️ SHIZUKU REQUIRED");
                 tvStatusBadge.setTextColor(hasShizuku ? 0xFF00FF66 : 0xFFFFB800);
@@ -147,7 +147,7 @@ public class OnboardingActivity extends AppCompatActivity {
             case 2:
                 boolean canWriteSettings = Settings.System.canWrite(this);
                 tvStepTitle.setText("⚙️ Step 2: Write System Settings");
-                tvStepDescription.setText("Required to override device refresh rates (60Hz / 90Hz / 120Hz / 144Hz / 165Hz) and system performance profiles.");
+                tvStepDescription.setText("Optional for native refresh-rate preferences. The app will only offer modes reported by this panel (for example 60Hz, 90Hz, 120Hz, 144Hz, or 165Hz); Android or the OEM may defer the request.");
                 tvStatusBadge.setText(canWriteSettings ? "✅ WRITE_SETTINGS GRANTED" : "⚠️ PERMISSION NEEDED");
                 tvStatusBadge.setTextColor(canWriteSettings ? 0xFF00FF66 : 0xFFFFB800);
                 btnPrimaryAction.setText(canWriteSettings ? "NEXT STEP ➔" : "OPEN SYSTEM SETTINGS ⚙️");

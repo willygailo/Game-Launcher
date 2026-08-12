@@ -1,14 +1,12 @@
 {
   "version": 2,
   "max_hardware_hz": 165,
-  "supported_target_fps": [60, 90, 120, 144, 165, 240],
+  "supported_target_fps": [90, 120, 144, 165],
   "fps_modes": {
-    "60": "Standard 60Hz Mode",
     "90": "High 90Hz Cyber Mode",
     "120": "Ultra 120Hz Gaming Mode",
     "144": "Pro 144Hz Cyber Mode",
-    "165": "Max 165Hz Display Limit",
-    "240": "FORCE SET OVERRIDE (MAX UNLOCKED)"
+    "165": "Max 165Hz Display Limit"
   },
   "supported_profiles": [
     {

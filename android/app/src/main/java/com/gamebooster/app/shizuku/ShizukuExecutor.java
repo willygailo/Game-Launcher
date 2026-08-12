@@ -4,9 +4,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.util.List;
 
 import rikka.shizuku.Shizuku;
@@ -73,72 +70,16 @@ public class ShizukuExecutor {
             return "ERROR: Shizuku is unavailable or permission was not granted";
         }
 
-        // 1. Primary AIDL IPC path via Shizuku UserService
+        // Execute only through the UserService AIDL path. Shizuku's legacy
+        // newProcess API is deprecated and reflective access made failures
+        // difficult to distinguish from a working privileged backend.
         try {
             ShizukuUserServiceConnector connector = ShizukuUserServiceConnector.getInstance();
-            connector.bindService();
-            String aidlResult = connector.executeCommandDirectly(cleanCmd);
-            if (aidlResult != null && !aidlResult.startsWith("ERROR: UserService not bound")) {
-                return aidlResult;
-            }
+            return connector.executeCommand(cleanCmd);
         } catch (Throwable t) {
-            Log.w(TAG, "Shizuku UserService AIDL call pending, trying fallback: " + t.getMessage());
-        }
-
-        // 2. Shizuku.newProcess via setAccessible reflection path
-        Process process = null;
-        try {
-            Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
-            newProcessMethod.setAccessible(true);
-            process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", cleanCmd}, null, null);
-
-            final StringBuilder stdout = new StringBuilder();
-            final StringBuilder stderr = new StringBuilder();
-            final Process finalProcess = process;
-
-            Thread tStdout = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(finalProcess.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        stdout.append(line).append("\n");
-                    }
-                } catch (Exception ignored) {}
-            });
-
-            Thread tStderr = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(finalProcess.getErrorStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        stderr.append(line).append("\n");
-                    }
-                } catch (Exception ignored) {}
-            });
-
-            tStdout.start();
-            tStderr.start();
-
-            int exitCode = process.waitFor();
-            tStdout.join(2000);
-            tStderr.join(2000);
-
-            String stdoutStr = stdout.toString().trim();
-            String stderrStr = stderr.toString().trim();
-            Log.d(TAG, "executeShizukuCommand exitCode=" + exitCode + " stdout='" + stdoutStr + "' stderr='" + stderrStr + "'");
-
-            if (exitCode == 0) {
-                return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
-            } else {
-                return "ERROR: Shizuku command failed with exit code " + exitCode + (stderrStr.isEmpty() ? "" : ": " + stderrStr);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "executeShizukuCommand exception: " + e.getClass().getName() + " message=" + e.getMessage(), e);
-            return "ERROR: " + (e.getMessage() != null ? e.getMessage() : "Shizuku execution failed");
-        } finally {
-            if (process != null) {
-                try {
-                    process.destroy();
-                } catch (Exception ignored) {}
-            }
+            Log.e(TAG, "Shizuku UserService execution failed", t);
+            return "ERROR: Shizuku UserService execution failed: "
+                    + (t.getMessage() == null ? t.getClass().getSimpleName() : t.getMessage());
         }
     }
 

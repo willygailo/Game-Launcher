@@ -21,7 +21,6 @@ public class CompetitiveCfgProfile {
     public static final String GAME_ALL      = "ALL";
 
     // ─── FPS Tier Constants ──────────────────────────────────────────────────
-    public static final int FPS_60  = 60;
     public static final int FPS_90  = 90;
     public static final int FPS_120 = 120;
     public static final int FPS_144 = 144;

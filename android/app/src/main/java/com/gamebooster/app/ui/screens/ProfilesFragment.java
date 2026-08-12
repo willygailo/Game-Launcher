@@ -160,10 +160,9 @@ public class ProfilesFragment extends Fragment {
                 "🔥 Request 165 FPS (native 165Hz panel + game support required)",
                 "⚡ Request 144 FPS (native 144Hz panel + game support required)",
                 "🚀 Request 120 FPS",
-                "🎮 Request 90 FPS",
-                "⚖️ Request 60 FPS"
+                "🎮 Request 90 FPS"
         };
-        int[] fpsValues = new int[]{165, 144, 120, 90, 60};
+        int[] fpsValues = new int[]{165, 144, 120, 90};
 
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("⚡ Target FPS & Override for " + game.getLabel())
@@ -172,6 +171,10 @@ public class ProfilesFragment extends Fragment {
                     com.gamebooster.app.device.DevicePerformanceCapabilities caps =
                             com.gamebooster.app.device.DevicePerformanceCapabilities.detect(getContext());
                     int targetFps = caps.resolveRefreshRate(requestedFps);
+                    if (targetFps < 90) {
+                        Toast.makeText(getContext(), "This device has no native 90Hz+ display mode.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     String label = requestedFps == targetFps ? "Request " + targetFps + " FPS"
                             : "Request " + requestedFps + " FPS (native display limit: " + targetFps + "Hz)";
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();

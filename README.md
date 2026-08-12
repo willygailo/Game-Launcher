@@ -83,12 +83,12 @@
   </tr>
   <tr>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 14px; padding: 18px;">
-      <h3 style="color: #FFCC00; margin-top: 0;">🎮 Per-Game Hardware Spoofer</h3>
-      <p style="color: #c9d1d9;">Applies custom device profile identities on a per-package basis to unlock high FPS graphics options in competitive titles.</p>
+      <h3 style="color: #FFCC00; margin-top: 0;">🎮 Per-Game Compatibility Profiles</h3>
+      <p style="color: #c9d1d9;">Stores launcher-owned profiles and requests supported Android display/Game Mode settings. It does not change device identity or edit game files.</p>
     </td>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 14px; padding: 18px;">
       <h3 style="color: #FF99FF; margin-top: 0;">📊 In-Game Turbo HUD Overlay</h3>
-      <p style="color: #c9d1d9;">Real-time FPS monitoring counter, quick Hz lock switches, touch sensitivity boosters, and charge bypass toggles right inside your game.</p>
+      <p style="color: #c9d1d9;">Real-time telemetry, verified native Hz requests, supported Game Mode controls, touch-setting guidance, and OEM charge-separation status where an integration is verified.</p>
     </td>
   </tr>
 </table>

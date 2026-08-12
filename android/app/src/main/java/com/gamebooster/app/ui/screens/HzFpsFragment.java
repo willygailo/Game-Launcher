@@ -30,7 +30,6 @@ import java.util.List;
  */
 public class HzFpsFragment extends Fragment {
 
-    private Button btn60;
     private Button btn90;
     private Button btn120;
     private Button btn144;
@@ -42,7 +41,6 @@ public class HzFpsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_hz_fps, container, false);
-        btn60 = view.findViewById(R.id.btn_lock_60);
         btn90 = view.findViewById(R.id.btn_lock_90);
         btn120 = view.findViewById(R.id.btn_lock_120);
         btn144 = view.findViewById(R.id.btn_lock_144);
@@ -50,7 +48,6 @@ public class HzFpsFragment extends Fragment {
         Button btnUnlock = view.findViewById(R.id.btn_unlock_hz);
         tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
-        if (btn60 != null)  btn60.setOnClickListener(v  -> applyHz(60));
         if (btn90 != null)  btn90.setOnClickListener(v  -> applyHz(90));
         if (btn120 != null) btn120.setOnClickListener(v -> applyHz(120));
         if (btn144 != null) btn144.setOnClickListener(v -> applyHz(144));
@@ -73,7 +70,6 @@ public class HzFpsFragment extends Fragment {
                 DisplayCapabilitiesDetector.detect(getContext());
 
         List<Integer> recommended = caps.getRecommendedRates();
-        int maxHz = caps.maxRefreshRate > 0 ? caps.maxRefreshRate : 0;
         int currentHz = caps.currentRefreshRate > 0 ? caps.currentRefreshRate : 0;
         int savedHz = DisplayRefreshRatePreferences.getSelectedHz(getContext());
 
@@ -84,12 +80,11 @@ public class HzFpsFragment extends Fragment {
             tvDeviceRefreshSupport.setText(status);
         }
 
-        // Show buttons based on whether rate is supported by hardware panel
-        updateButton(btn60,  60,  recommended.contains(60)  || maxHz >= 60);
-        updateButton(btn90,  90,  recommended.contains(90)  || maxHz >= 90);
-        updateButton(btn120, 120, recommended.contains(120) || maxHz >= 120);
-        updateButton(btn144, 144, recommended.contains(144) || maxHz >= 144);
-        updateButton(btn165, 165, recommended.contains(165) || maxHz >= 165);
+        // High-performance targets are available only when the exact native display mode exists.
+        updateButton(btn90,  90,  recommended.contains(90));
+        updateButton(btn120, 120, recommended.contains(120));
+        updateButton(btn144, 144, recommended.contains(144));
+        updateButton(btn165, 165, recommended.contains(165));
     }
 
     private void updateButton(Button btn, int hz, boolean supported) {

@@ -54,15 +54,6 @@
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/btn_lock_60"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="12dp"
-                android:backgroundTint="#243354"
-                android:text="Lock to 60Hz (Battery Saver)"
-                android:textColor="#FFFFFF" />
-
-            <Button
                 android:id="@+id/btn_lock_90"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
