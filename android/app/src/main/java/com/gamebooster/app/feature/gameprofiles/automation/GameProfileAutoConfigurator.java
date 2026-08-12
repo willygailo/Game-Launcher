@@ -125,6 +125,13 @@ public class GameProfileAutoConfigurator {
         // Game Mode is advisory: the game, panel and OEM policy still determine actual FPS.
         com.gamebooster.app.feature.performance.display.DisplayOverrideController.applyGameProfile(context, packageName, targetFpsHz);
 
+        // Request system-level Performance mode via Android 12+ GameManager framework bridge
+        try {
+            com.gamebooster.app.feature.performance.booster.GameManagerAdapter gma =
+                    new com.gamebooster.app.feature.performance.booster.GameManagerAdapter(context);
+            gma.setGameMode(packageName, com.gamebooster.app.feature.performance.booster.GameManagerAdapter.GAME_MODE_PERFORMANCE);
+        } catch (Throwable ignored) {}
+
         return forceResult.success;
     }
 

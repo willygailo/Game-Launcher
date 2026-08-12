@@ -71,15 +71,22 @@ public class PerformanceChannel {
      */
     public static boolean applyTuningProfile(Context context, Profile profile) {
         if (context == null || profile == null) return false;
+        int targetHz = (profile == Profile.EXTREME_PERFORMANCE) ? 165 : (profile == Profile.PERFORMANCE ? 144 : 90);
         if (profile == Profile.EXTREME_PERFORMANCE || profile == Profile.PERFORMANCE) {
             CpuGovernorChannel.setPerformanceLock();
             GpuTweaksChannel.enableVulkanRenderer();
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
+
+            // Execute automated SetEdit property enforcer & OEM hardware matrix optimizations
+            com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(targetHz);
+            com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceUltraTouchSettings();
+            com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(targetHz);
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
+            com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.revertToDefaults();
         }
         return true;
     }
