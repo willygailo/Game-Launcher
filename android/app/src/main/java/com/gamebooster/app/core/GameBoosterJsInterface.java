@@ -7,6 +7,7 @@ import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.role.RoleManager;
 
 import org.json.JSONObject;
 
@@ -21,6 +22,9 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public String executeShizukuCmd(String command) {
         if (command == null || command.trim().isEmpty()) return "ERROR: Empty command";
+        if (context == null || !RoleManager.getInstance(context).canUseTerminal()) {
+            return "ERROR: Admin role and a live Shizuku permission are required for terminal commands";
+        }
         return ShizukuExecutor.executeShizukuCommand(command.trim());
     }
 
@@ -284,4 +288,3 @@ public class GameBoosterJsInterface {
         }
     }
 }
-

@@ -32,8 +32,8 @@ public class GameBoosterService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("GAME SPACE — 165Hz Auto Booster")
-                .setContentText("Background Home Gaming Engine Active • 165Hz Lock")
+                .setContentTitle("GAME SPACE — Performance Profile")
+                .setContentText("Monitoring active • native display requests are capability-checked")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)

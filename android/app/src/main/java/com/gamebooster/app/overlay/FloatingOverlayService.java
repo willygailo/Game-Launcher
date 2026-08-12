@@ -238,7 +238,7 @@ public class FloatingOverlayService extends Service {
                             : manager.enableBypassCharging(getApplicationContext());
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                         android.widget.Toast.makeText(getApplicationContext(),
-                                (currentlyEnabled ? "🔌 Charge Bypass OFF: " : "⚡ Charge Bypass ON: ") + msg,
+                                (currentlyEnabled ? "🔌 Charge separation OFF: " : "⚡ Charge separation: ") + msg,
                                 android.widget.Toast.LENGTH_LONG).show();
                         scheduleAutoCollapse();
                     });
@@ -252,7 +252,7 @@ public class FloatingOverlayService extends Service {
                     com.gamebooster.app.config.TouchUltraFastNoDelayPatcher.applyTouchNoDelay(null);
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "👆 Touch Zero-Delay Response Applied",
+                                "👆 Input pipeline is device-controlled; no global touch override applied",
                                 android.widget.Toast.LENGTH_LONG).show();
                         scheduleAutoCollapse();
                     });

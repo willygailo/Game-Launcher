@@ -9,8 +9,7 @@ import java.util.Set;
 
 /**
  * TargetGameRegistry — Canonical registry of target eSports titles & gaming platforms.
- * Used for Shizuku permission grants, Game Mode performance forcing, device spoofing strategies,
- * and manifest package queries.
+ * Used for game discovery, supported Android Game Mode requests, and manifest package queries.
  */
 public final class TargetGameRegistry {
 

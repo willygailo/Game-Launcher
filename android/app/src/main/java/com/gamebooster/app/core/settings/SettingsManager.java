@@ -8,9 +8,9 @@ import com.gamebooster.app.core.profile.InputProfile;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 /**
- * Manages device-level input, touch, and gyroscope property tuning.
- * Backs up pre-existing system state before applying changes, and provides
- * complete restoration on app exit, profile change, or uninstall.
+ * Reads legacy input-profile backups and provides restoration for values created by older
+ * versions. Android/OEM input calibration is device-owned, so this class no longer writes
+ * guessed global touch, gyro, pressure, or event-rate properties.
  */
 public class SettingsManager {
 
@@ -91,24 +91,10 @@ public class SettingsManager {
      * Applies a given InputProfile to system properties via Shizuku.
      */
     public boolean applyProfile(InputProfile profile) {
-        if (!ShizukuExecutor.hasShizukuPermission()) {
-            Log.w(TAG, "Cannot apply profile: Shizuku permission missing.");
-            return false;
-        }
-
-        backupOriginalValues();
-
-        Log.i(TAG, "Applying tuning profile: " + profile.getProfileName());
-
-        ShizukuExecutor.executeShizukuCommand("setprop " + KEY_MAX_EVENTS_PER_SEC + " " + profile.getMaxEventsPerSec());
-        ShizukuExecutor.executeShizukuCommand("setprop " + KEY_VIEW_TOUCH_SLOP + " " + profile.getTouchSlop());
-        ShizukuExecutor.executeShizukuCommand("setprop " + KEY_TOUCH_SLOP_REDUCTION + " " + profile.getTouchSlopReduction());
-        ShizukuExecutor.executeShizukuCommand("setprop " + KEY_GYRO_RATE + " " + profile.getGyroRate());
-        ShizukuExecutor.executeShizukuCommand("settings put system " + KEY_POINTER_SPEED + " " + profile.getPointerSpeed());
-        ShizukuExecutor.executeShizukuCommand("setprop " + KEY_PRESSURE_SCALE + " " + profile.getPressureScale());
-
-        prefs.edit().putBoolean(KEY_IS_TUNED, true).apply();
-        return true;
+        if (profile == null) return false;
+        Log.i(TAG, "Skipped unsupported global input-property changes for " + profile.getProfileName()
+                + "; touch sampling and sensor calibration remain OEM-controlled.");
+        return false;
     }
 
     /**

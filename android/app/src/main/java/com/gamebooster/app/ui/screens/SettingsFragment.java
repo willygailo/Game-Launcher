@@ -317,9 +317,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         if (success) {
-                            Toast.makeText(getContext(), isChecked ? "🎯 Precision Aim: 1000Hz Input & Zero Slop APPLIED!" : "System Input Defaults Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "🎯 Input profile applied" : "System input defaults restored", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(getContext(), "Failed to modify system properties via Shizuku", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Input sampling is device-controlled; no unsupported global override was applied", Toast.LENGTH_LONG).show();
                             switchPrecisionInputTuner.setChecked(!isChecked);
                             PrecisionAimPreferences.setInputTunerEnabled(getContext(), !isChecked);
                         }
@@ -398,16 +398,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchMaxPerfLock = view.findViewById(R.id.switch_max_perf_lock);
 
         if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Executed: 165Hz Lock & Vulkan Profile"));
+            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, "🔥 Native max-rate request sent & performance profile prepared"));
         }
         if (btnPro144 != null) {
-            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
+            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, "🎮 Native high-rate request sent & pro profile prepared"));
         }
         if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Executed: 120Hz Lock & Vulkan Profile"));
+            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, "⚡ Native high-rate request sent & performance profile prepared"));
         }
         if (btnBalanced != null) {
-            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Executed: 90Hz Lock & Schedutil Profile"));
+            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, "⚖️ Native 90Hz request sent when supported"));
         }
 
         if (getContext() != null) {
@@ -889,7 +889,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (tvPrecisionAimStatus == null || precisionSettingsManager == null) return;
         boolean tuned = precisionSettingsManager.isDeviceTuned();
         if (tuned) {
-            tvPrecisionAimStatus.setText("⚡ OPTIMIZED: 1000Hz Input & 1000Hz Gyro Active");
+            tvPrecisionAimStatus.setText("⚡ Input readiness profile selected; sampling remains OEM-controlled");
             tvPrecisionAimStatus.setTextColor(0xFF00FF66);
         } else {
             tvPrecisionAimStatus.setText("Status: Device Input Stock / Default");

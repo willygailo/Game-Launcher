@@ -239,7 +239,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Shizuku 1000Hz Polling &amp; Zero Touch Slop"
+                    android:text="Input readiness (OEM-controlled)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
