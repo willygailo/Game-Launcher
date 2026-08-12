@@ -47,22 +47,15 @@ public final class DeviceSpooferEngine {
         return null;
     }
 
-    /** Kept only so old UI code can list legacy entries; it is never applied. */
+    /** Resolves recommended device profile for target package. */
     public static SpoofProfile getRecommendedProfile(String packageName) {
-        return null;
+        return AppDeviceProfileRepository.resolveProfileForGame(null, packageName);
     }
 
     public static boolean applySpoofing(Context context, String packageName) {
         if (context == null) return false;
-        SpoofProfile profile = null;
-        String customId = packageName == null ? null
-                : SpoofPreferences.getGameSpoofProfileId(context, packageName);
-        if (customId != null) profile = getProfileById(customId);
-        if (profile == null) {
-            String activeId = SpoofPreferences.getActiveProfileId(context);
-            if (activeId != null) profile = getProfileById(activeId);
-        }
-        return profile != null && applyProfile(context, profile, packageName);
+        SpoofProfile profile = AppDeviceProfileRepository.resolveProfileForGame(context, packageName);
+        return applyProfile(context, profile, packageName);
     }
 
     public static boolean applyProfile(Context context, SpoofProfile profile, String packageName) {
@@ -80,10 +73,14 @@ public final class DeviceSpooferEngine {
                 .resolveRefreshRate(requestedHz);
         DisplayOverrideController.Result display =
                 DisplayOverrideController.applyDisplayRate(context, supportedHz, packageName);
-        Log.i(TAG, "Saved app-only device profile " + profile.displayName
+
+        // Enforce high refresh rate & OEM hardware matrix tuning via SetEdit engine
+        com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(supportedHz);
+        com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(supportedHz);
+
+        Log.i(TAG, "Applied app-only device profile " + profile.displayName
+                + " for " + PackageIdentityMasker.maskPackageName(packageName)
                 + "; native display request: " + display.message);
-        // The local profile is applied even when Android requires Shizuku or
-        // WRITE_SETTINGS for the optional display request.
         return true;
     }
 
