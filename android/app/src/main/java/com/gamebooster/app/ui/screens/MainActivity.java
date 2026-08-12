@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         }
 
-        // Bind Shizuku AIDL UserService & Auto-Grant Privileges
+        // Bind the Shizuku UserService. App and game permissions are never bulk-granted.
         try {
             com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
             if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
@@ -156,13 +156,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (!alive) {
                 Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System Permissions...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "⚡ Shizuku connected — verifying the service…", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.engine.RefreshRateOverrideEngine.restorePersistedRefreshRate(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                     AppExecutors.getInstance().postToMainThread(() ->
-                            Toast.makeText(getApplicationContext(), "⚡ All System Permissions Auto-Configured!", Toast.LENGTH_SHORT).show());
+                            Toast.makeText(getApplicationContext(), "⚡ Shizuku service ready for supported requests.", Toast.LENGTH_SHORT).show());
                 });
             }
         });

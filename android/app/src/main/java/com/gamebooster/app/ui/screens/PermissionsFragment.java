@@ -42,10 +42,14 @@ public class PermissionsFragment extends Fragment {
             if (getContext() != null) {
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
+                        ShizukuExecutor.GrantResult result =
+                                ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), "⚡ Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show());
+                                Toast.makeText(getContext(), result.success
+                                        ? "⚡ Shizuku is connected and ready for verified features."
+                                        : "Shizuku is authorized but its service is not ready. Please retry.",
+                                        Toast.LENGTH_SHORT).show());
                         }
                     });
                 } else {

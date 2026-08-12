@@ -116,7 +116,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnGrantShizuku.setOnClickListener(v -> {
                 if (getContext() != null) {
                     if (ShizukuExecutor.hasShizukuPermission()) {
-                        Toast.makeText(getContext(), "⚡ Executing FULL FORCE-APPLY Shizuku Engine...", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "⚡ Applying verified native display preference via Shizuku...", Toast.LENGTH_SHORT).show();
                         btnGrantShizuku.setEnabled(false);
                         AppExecutors.getInstance().executeCommand(() -> {
                             int maxHz = 165;
@@ -134,7 +134,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                                 if (isAdded() && getContext() != null) {
                                     btnGrantShizuku.setEnabled(true);
                                     if (res.success) {
-                                        Toast.makeText(getContext(), "🔒 SUCCESS: " + res.totalCommands + " Commands FORCE-LOCKED via Shizuku!", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getContext(), "✅ " + res.outputLog, Toast.LENGTH_LONG).show();
                                     } else {
                                         Toast.makeText(getContext(), "Force Apply Result: " + res.outputLog, Toast.LENGTH_LONG).show();
                                     }

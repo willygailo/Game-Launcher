@@ -4,11 +4,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import com.gamebooster.app.engine.PermissionBatchBuilder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import rikka.shizuku.Shizuku;
@@ -161,17 +159,18 @@ public class ShizukuExecutor {
             return new GrantResult(false, 0, 0);
         }
 
-        String packageName = context.getPackageName();
-
-        // Delegate to PermissionBatchBuilder — single source of truth (no duplicates)
-        List<String> batch = new ArrayList<>(PermissionBatchBuilder.buildGrantBatch(packageName));
-
-        // Do not configure every known game package as a side effect of connecting Shizuku.
-        // The selected foreground game is configured later by DisplayOverrideController after
-        // package validation, native-mode detection, and a rollback snapshot.
-
-        String res = executeShizukuBatchCommands(batch);
-        boolean success = res != null && !res.startsWith("ERROR");
-        return new GrantResult(success, batch.size(), success ? batch.size() : 0);
+        // Shizuku's user approval is the authorization boundary. Do not turn it into a
+        // blanket pm-grant/appops batch for this launcher or other game packages.
+        ShizukuUserServiceConnector connector = ShizukuUserServiceConnector.getInstance();
+        connector.bindService();
+        for (int retry = 0; retry < 25 && !connector.isServiceAlive(); retry++) {
+            try {
+                Thread.sleep(40L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return new GrantResult(false, 1, 0);
+            }
+        }
+        return new GrantResult(connector.isServiceAlive(), 1, connector.isServiceAlive() ? 1 : 0);
     }
 }
