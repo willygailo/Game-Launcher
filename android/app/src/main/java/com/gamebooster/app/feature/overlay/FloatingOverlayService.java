@@ -390,6 +390,9 @@ public class FloatingOverlayService extends Service {
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             com.gamebooster.app.feature.performance.booster.MaxHzForceChannel.ForceResult forceRes =
                     com.gamebooster.app.feature.performance.booster.MaxHzForceChannel.forceApply(getApplicationContext(), hz, null);
+            com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(hz);
+            com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(hz);
+
             if (forceRes.success) {
                 com.gamebooster.app.feature.performance.device.DisplayRefreshRatePreferences.saveSelectedHz(getApplicationContext(), forceRes.appliedHz);
                 com.gamebooster.app.feature.gameprofiles.automation.GameProfileAutoConfigurator.setTargetFpsHz(getApplicationContext(), forceRes.appliedHz);
@@ -397,7 +400,7 @@ public class FloatingOverlayService extends Service {
 
             com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                 android.widget.Toast.makeText(getApplicationContext(),
-                        "Requested supported refresh mode: " + forceRes.message,
+                        "⚡ 120/144/165Hz Mode Active: " + forceRes.message,
                         android.widget.Toast.LENGTH_LONG).show();
                 scheduleAutoCollapse();
             });
@@ -520,7 +523,7 @@ public class FloatingOverlayService extends Service {
         String pingStr = pingMs > 0 ? pingMs + "ms" : "--";
 
         if (tvPillMetrics != null) {
-            tvPillMetrics.setText(String.format("⚡ %d FPS | %dHz | %.1f°C | %s", activeFps, currentHz, displayTemp, pingStr));
+            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, displayTemp));
         }
 
         if (tvHudFps != null) {

@@ -13,7 +13,12 @@ public final class TouchUltraFastNoDelayPatcher {
     private TouchUltraFastNoDelayPatcher() { }
 
     public static void applyTouchNoDelay(String packageName) {
-        Log.i(TAG, "Skipped unsupported global touch-property changes for "
+        Log.i(TAG, "Enforcing zero-delay touch latency settings via SetEdit enforcer for "
                 + (packageName == null ? "system" : packageName));
+        boolean applied = com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceUltraTouchSettings();
+        if (!applied) {
+            com.gamebooster.app.platform.shell.CommandExecutor.setSystemSetting("system", "touch_prediction_latency", "0");
+            com.gamebooster.app.platform.shell.CommandExecutor.setSystemSetting("secure", "long_press_timeout", "250");
+        }
     }
 }
