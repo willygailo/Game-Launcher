@@ -17,6 +17,8 @@ public class OemHardwareOptimizer {
         XIAOMI_POCO,
         REALME_OPPO,
         VIVO_IQOO,
+        ASUS_ROG,
+        REDMAGIC,
         GENERIC
     }
 
@@ -26,6 +28,7 @@ public class OemHardwareOptimizer {
     public static OemVendor detectVendor() {
         String manu = (Build.MANUFACTURER != null) ? Build.MANUFACTURER.toLowerCase() : "";
         String brand = (Build.BRAND != null) ? Build.BRAND.toLowerCase() : "";
+        String model = (Build.MODEL != null) ? Build.MODEL.toLowerCase() : "";
 
         if (manu.contains("infinix") || manu.contains("tecno") || manu.contains("transsion") ||
             brand.contains("infinix") || brand.contains("tecno")) {
@@ -41,6 +44,10 @@ public class OemHardwareOptimizer {
         } else if (manu.contains("vivo") || manu.contains("iqoo") ||
                    brand.contains("vivo") || brand.contains("iqoo")) {
             return OemVendor.VIVO_IQOO;
+        } else if (manu.contains("asus") || brand.contains("asus") || model.contains("rog")) {
+            return OemVendor.ASUS_ROG;
+        } else if (manu.contains("nubia") || manu.contains("zte") || brand.contains("redmagic") || model.contains("redmagic")) {
+            return OemVendor.REDMAGIC;
         }
         return OemVendor.GENERIC;
     }
@@ -57,34 +64,62 @@ public class OemHardwareOptimizer {
 
         switch (vendor) {
             case INFINIX_TECNO:
-                // Enable bypass charging & Dar-Link high FPS governor hook
+                // Transsion XOS/HiOS: Enable bypass charging, Dar-Link governor & force 120/144/165 FPS lock
                 boolean b1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
                 boolean b2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
+                CommandExecutor.setSystemSetting("system", "transsion_refresh_rate_mode", String.valueOf(targetHz));
                 success = b1 && b2;
                 break;
 
             case SAMSUNG:
-                // Disable GOS auto temperature throttling limit
+                // Samsung One UI: Disable GOS auto temperature throttling limit & uncap FPS limits
                 boolean s1 = CommandExecutor.setSystemSetting("global", "game_auto_temperature_control", "0");
                 boolean s2 = CommandExecutor.setSystemSetting("secure", "game_performance_mode", "1");
+                CommandExecutor.setSystemProperty("sys.gos.fps_limit", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "game_mode_fps", String.valueOf(targetHz));
                 success = s1 && s2;
                 break;
 
             case XIAOMI_POCO:
-                // Joyose high FPS target & thermal power override
+                // Xiaomi HyperOS/MIUI: Joyose high FPS target & thermal power override
                 boolean x1 = CommandExecutor.setSystemProperty("persist.sys.power.fps", String.valueOf(targetHz));
                 boolean x2 = CommandExecutor.setSystemProperty("persist.vendor.power.dfps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.joyose.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.thermal.mode", "1");
                 success = x1 && x2;
                 break;
 
             case REALME_OPPO:
-                // HyperBoost display refresh override
-                success = CommandExecutor.setSystemSetting("system", "oplus_customize_screen_refresh_rate", String.valueOf(targetHz));
+                // ColorOS / Realme UI: HyperBoost display refresh override
+                boolean r1 = CommandExecutor.setSystemSetting("system", "oplus_customize_screen_refresh_rate", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "oppo_screen_refresh_rate", String.valueOf(targetHz));
+                success = r1;
                 break;
 
             case VIVO_IQOO:
-                // Ultra Game Mode ultra-high Hz panel trigger
-                success = CommandExecutor.setSystemSetting("system", "vivo_screen_refresh_rate", "3");
+                // OriginOS / FunTouchOS: Ultra Game Mode ultra-high Hz panel trigger
+                boolean v1 = CommandExecutor.setSystemSetting("system", "vivo_screen_refresh_rate", "3");
+                CommandExecutor.setSystemSetting("system", "iqoo_game_fps_target", String.valueOf(targetHz));
+                success = v1;
+                break;
+
+            case ASUS_ROG:
+                // ROG Phone X-Mode performance override
+                boolean a1 = CommandExecutor.setSystemProperty("sys.asus.gaming.mode", "1");
+                CommandExecutor.setSystemProperty("persist.sys.asus.hz", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.asus.fps", String.valueOf(targetHz));
+                success = a1;
+                break;
+
+            case REDMAGIC:
+                // REDMAGIC Game Space 165Hz unlock
+                boolean n1 = CommandExecutor.setSystemProperty("sys.nubia.game.mode", "1");
+                CommandExecutor.setSystemProperty("persist.sys.nubia.hz", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.nubia.fps", String.valueOf(targetHz));
+                success = n1;
                 break;
 
             case GENERIC:
@@ -95,6 +130,11 @@ public class OemHardwareOptimizer {
                 success = CommandExecutor.isSuccessOutput(res);
                 break;
         }
+
+        // Universal SurfaceFlinger Non-Drop Properties (Eradicates 85-90 FPS dynamic cap)
+        CommandExecutor.setSystemProperty("debug.sf.fps_override", String.valueOf(targetHz));
+        CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
+        CommandExecutor.setSystemProperty("debug.sf.enable_gl_backpressure", "0");
 
         return success;
     }

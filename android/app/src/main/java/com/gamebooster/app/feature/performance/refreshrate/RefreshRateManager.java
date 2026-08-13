@@ -38,6 +38,10 @@ public class RefreshRateManager {
             currentStrategy = new OnePlusOppoHzStrategy();
         } else if (manufacturer.contains("nubia") || manufacturer.contains("zte") || brand.contains("redmagic") || model.contains("redmagic")) {
             currentStrategy = new RedMagicHzStrategy();
+        } else if (manufacturer.contains("vivo") || manufacturer.contains("iqoo") || brand.contains("vivo") || brand.contains("iqoo")) {
+            currentStrategy = new VivoIqooHzStrategy();
+        } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("transsion") || brand.contains("infinix") || brand.contains("tecno")) {
+            currentStrategy = new TranssionHzStrategy();
         } else {
             currentStrategy = new GenericHzStrategy();
         }

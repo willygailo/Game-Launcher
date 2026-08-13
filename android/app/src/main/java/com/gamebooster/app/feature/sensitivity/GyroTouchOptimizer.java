@@ -77,4 +77,19 @@ public class GyroTouchOptimizer {
         boolean p2 = CommandExecutor.setSystemSetting("system", "touch_prediction_latency", highPollingRate ? "0" : "10");
         return p1 && p2;
     }
+
+    /**
+     * Applies a complete TouchSensitivityPreset across view touch slop, digitizer event rate, and pressure scale properties.
+     *
+     * @param preset TouchSensitivityPreset to inject.
+     * @return true if properties were applied cleanly.
+     */
+    public static boolean applyPreset(com.gamebooster.app.feature.sensitivity.model.TouchSensitivityPreset preset) {
+        if (preset == null) return false;
+        boolean p1 = CommandExecutor.setSystemProperty("view.touch_slop", String.valueOf(preset.touchSlop));
+        boolean p2 = CommandExecutor.setSystemProperty("persist.sys.touch.pressure.scale", String.valueOf(preset.pressureScale));
+        boolean p3 = CommandExecutor.setSystemProperty("debug.input.max_events_per_sec", String.valueOf(preset.maxEventsPerSec));
+        boolean p4 = CommandExecutor.setSystemSetting("system", "touch_slop_reduction", preset.touchSlop == 0 ? "1" : "0");
+        return p1 && p2 && p3 && p4;
+    }
 }

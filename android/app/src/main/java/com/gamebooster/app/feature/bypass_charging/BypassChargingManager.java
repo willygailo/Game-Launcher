@@ -35,11 +35,23 @@ public class BypassChargingManager {
 
         Log.d(TAG, "Detecting device for Bypass Charging strategy... Manufacturer=" + manufacturer + " Brand=" + brand + " Model=" + model + " SDK=" + Build.VERSION.SDK_INT);
 
-        // Do not select a strategy from brand strings alone. The old implementation guessed
-        // vendor settings and then fell back to generic sysfs writes, which could disable
-        // charging or alter the power path on an unrelated model. Add an OEM strategy only after
-        // it has been verified against the exact model and firmware, including restore checks.
-        currentStrategy = new UnsupportedBypassStrategy();
+        if (manufacturer.contains("asus") || brand.contains("asus") || model.contains("rog")) {
+            currentStrategy = new AsusRogBypassStrategy();
+        } else if (manufacturer.contains("nubia") || brand.contains("redmagic") || model.contains("redmagic")) {
+            currentStrategy = new RedMagicBypassStrategy();
+        } else if (manufacturer.contains("xiaomi") || manufacturer.contains("poco") || manufacturer.contains("redmi") || brand.contains("xiaomi")) {
+            currentStrategy = new XiaomiBypassStrategy();
+        } else if (manufacturer.contains("samsung") || brand.contains("samsung")) {
+            currentStrategy = new SamsungBypassStrategy();
+        } else if (manufacturer.contains("oneplus") || manufacturer.contains("oppo") || manufacturer.contains("realme") || brand.contains("oneplus")) {
+            currentStrategy = new OnePlusOppoBypassStrategy();
+        } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("transsion") || brand.contains("infinix")) {
+            currentStrategy = new InfinixTecnoBypassStrategy();
+        } else if (manufacturer.contains("sony") || brand.contains("sony")) {
+            currentStrategy = new SonyBypassStrategy();
+        } else {
+            currentStrategy = new GenericSysfsBypassStrategy();
+        }
 
         Log.d(TAG, "Selected Bypass Charging Strategy: " + currentStrategy.getStrategyName());
     }

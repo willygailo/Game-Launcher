@@ -170,7 +170,7 @@ public final class DisplayOverrideController {
     }
 
     private static boolean isDocumentedOverlayFps(int fps) {
-        return fps == 30 || fps == 40 || fps == 45 || fps == 60 || fps == 90 || fps == 120;
+        return fps == 30 || fps == 40 || fps == 45 || fps == 60 || fps == 90 || fps == 120 || fps == 144 || fps == 165;
     }
 
     private static void backupIfNeeded(SharedPreferences prefs, String namespace, String key, String preferenceKey) {

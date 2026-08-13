@@ -26,7 +26,28 @@ public class TweakManagerRepository {
             "force_dark_mode",
             "disable_notification_alerts",
             "disable_haptic_feedback",
-            "disable_blur_effects"
+            "disable_blur_effects",
+            "powerhal_sustained_perf",
+            "gpu_overdraw_debug_off",
+            "disable_hw_overlay_compositor",
+            "gpu_buffer_count",
+            "max_background_limit",
+            "dns_google_fast",
+            "private_dns_cloudflare",
+            "disable_captive_portal",
+            "disable_mobile_data_always",
+            "super_fast_touch_165",
+            "ram_turbo_mode",
+            "io_scheduler_gaming",
+            "gpu_hw_composition",
+            "hw_overlays",
+            "fifo_audio_render",
+            "shizuku_cpu_governor_lock",
+            "shizuku_gpu_clock_boost",
+            "tcp_nodelay",
+            "esports_audio_spatial",
+            "zram_memory_boost",
+            "app_background_killer"
     ));
 
     static {

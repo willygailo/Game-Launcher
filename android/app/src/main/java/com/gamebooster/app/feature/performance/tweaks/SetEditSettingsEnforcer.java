@@ -21,16 +21,33 @@ public class SetEditSettingsEnforcer {
             return false;
         }
 
-        String hzStr = String.valueOf((float) targetHz);
+        String hzStr = String.format(java.util.Locale.US, "%.1f", (float) targetHz);
         String intHzStr = String.valueOf(targetHz);
 
+        // System Namespace
         boolean s1 = CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzStr);
         boolean s2 = CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
         boolean s3 = CommandExecutor.setSystemSetting("system", "user_refresh_rate", intHzStr);
-        boolean g1 = CommandExecutor.setSystemSetting("global", "user_refresh_rate", intHzStr);
-        boolean g2 = CommandExecutor.setSystemSetting("global", "display_downscale_disable", "1");
+        boolean s4 = CommandExecutor.setSystemSetting("system", "default_refresh_rate", hzStr);
 
-        return s1 && s2 && s3 && g1 && g2;
+        // Global Namespace (Crucial for Android 13-16 dynamic display daemons)
+        boolean g1 = CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
+        boolean g2 = CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzStr);
+        boolean g3 = CommandExecutor.setSystemSetting("global", "user_refresh_rate", intHzStr);
+        boolean g4 = CommandExecutor.setSystemSetting("global", "default_refresh_rate", hzStr);
+        boolean g5 = CommandExecutor.setSystemSetting("global", "display_downscale_disable", "1");
+        boolean g6 = CommandExecutor.setSystemSetting("global", "mode_fps_override", intHzStr);
+
+        // Secure Namespace (Disables VRR/LTPO dynamic drop to 90Hz)
+        CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", "2");
+        CommandExecutor.setSystemSetting("secure", "match_content_frame_rate", "0");
+
+        // SurfaceFlinger & WindowManager Direct IPC
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + targetHz);
+        CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + targetHz);
+        CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + targetHz);
+
+        return s1 && s2 && s3 && g1 && g2 && g3 && g5;
     }
 
     /**
