@@ -39,15 +39,19 @@ public final class ShizukuForceApplyEngine {
         // 3. Ultra Touch Settings & Thermal Bypass
         com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceUltraTouchSettings();
 
-        // 4. Batch apply all supported Shizuku system tweaks
+        // 4. Batch apply all supported Shizuku system tweaks & device spoofer profile locks
         int tweaksCount = com.gamebooster.app.feature.performance.tweaks.TweakManagerRepository.applyAllSupportedTweaks(context);
+        com.gamebooster.app.feature.spoofer.DeviceSpooferEngine.applySpoofing(context, null);
+
+        // 5. Auto-config and patch all installed target games (PUBGM, CODM, MLBB, HOK, Genshin, Roblox, etc.)
+        com.gamebooster.app.feature.gameprofiles.automation.GameProfileAutoConfigurator.autoConfigAllInstalledGamesAsync(context, null);
 
         if (displayResult.isSuccess()) {
             ForceApplyPreferences.setForceApplied(context, true, displayResult.selectedHz);
         }
 
-        String logMessage = "Shizuku Full Combo Executed: Native " + displayResult.selectedHz + "Hz Locked • "
-                + tweaksCount + " Tweaks Applied • Storage & System Permissions Granted";
-        return new ForceApplyResult(true, 10 + tweaksCount, logMessage);
+        String logMessage = "Shizuku Master Full Combo Executed: " + displayResult.selectedHz + "Hz Locked • "
+                + tweaksCount + " System Tweaks Locked • Device Spoofer & All Game Configs Applied";
+        return new ForceApplyResult(true, 15 + tweaksCount, logMessage);
     }
 }
