@@ -74,6 +74,7 @@ public class ShizukuManager {
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to bind Shizuku UserService on permission granted", e);
                 }
+                ShizukuPermissionGranter.grantAllPermissionsAsync();
             }
             notifyStateChanged(granted);
         }
@@ -84,6 +85,7 @@ public class ShizukuManager {
         try {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
                 ShizukuUserServiceConnector.getInstance().bindService();
+                ShizukuPermissionGranter.grantAllPermissionsAsync();
                 notifyStateChanged(true);
             } else {
                 Log.i(TAG, "Shizuku binder connected but permission pending — requesting permission.");

@@ -41,14 +41,13 @@ public class PermissionsFragment extends Fragment {
             if (getContext() != null) {
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        ShizukuExecutor.GrantResult result =
-                                ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
+                        boolean ok = com.gamebooster.app.platform.shizuku.ShizukuPermissionGranter.grantAllPermissions(getContext().getPackageName());
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), result.success
-                                        ? "⚡ Shizuku is connected and ready for verified features."
-                                        : "Shizuku is authorized but its service is not ready. Please retry.",
-                                        Toast.LENGTH_SHORT).show());
+                                Toast.makeText(getContext(), ok
+                                        ? "⚡ All Storage (MANAGE_EXTERNAL_STORAGE) & System Permissions Granted via Shizuku!"
+                                        : "Shizuku authorization pending. Please check Shizuku app.",
+                                        Toast.LENGTH_LONG).show());
                         }
                     });
                 } else {

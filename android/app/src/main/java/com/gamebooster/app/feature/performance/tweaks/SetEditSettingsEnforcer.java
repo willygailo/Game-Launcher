@@ -46,6 +46,13 @@ public class SetEditSettingsEnforcer {
         CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + targetHz);
+        CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1037 i32 " + targetHz);
+
+        // PowerHAL & Thermal Bypass to prevent thermal drop of display Hz
+        CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
+        CommandExecutor.executeSystemCommand("cmd power set-mode 2 1");
+        CommandExecutor.executeSystemCommand("cmd thermalservice override-status 0");
+        CommandExecutor.executeSystemCommand("cmd thermal override-status 0");
 
         return s1 && s2 && s3 && g1 && g2 && g3 && g5;
     }

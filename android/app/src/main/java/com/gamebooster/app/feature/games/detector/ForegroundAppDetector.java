@@ -70,10 +70,7 @@ public class ForegroundAppDetector {
         if (!isMonitoring) return;
         isMonitoring = false;
         handler.removeCallbacks(monitorRunnable);
-        if (settingsManager.isDeviceTuned()) {
-            settingsManager.restoreOriginalValues();
-        }
-        Log.i(TAG, "ForegroundAppDetector stopped monitoring.");
+        Log.i(TAG, "ForegroundAppDetector stopped monitoring. Active lock settings preserved.");
     }
 
     private final Runnable monitorRunnable = new Runnable() {
@@ -103,9 +100,8 @@ public class ForegroundAppDetector {
         if (isTargetGame && profile != null) {
             Log.i(TAG, "Target game in foreground: " + packageName + ". Applying tuning profile.");
             settingsManager.applyProfile(profile);
-        } else if (!isTargetGame && settingsManager.isDeviceTuned()) {
-            Log.i(TAG, "Game exited foreground. Restoring original settings.");
-            settingsManager.restoreOriginalValues();
+        } else if (!isTargetGame) {
+            Log.i(TAG, "Game exited foreground. Active user tuning locks remain intact.");
         }
     }
 

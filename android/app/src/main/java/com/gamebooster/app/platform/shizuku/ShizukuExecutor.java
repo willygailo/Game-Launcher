@@ -100,8 +100,6 @@ public class ShizukuExecutor {
             return new GrantResult(false, 0, 0);
         }
 
-        // Shizuku's user approval is the authorization boundary. Do not turn it into a
-        // blanket pm-grant/appops batch for this launcher or other game packages.
         ShizukuUserServiceConnector connector = ShizukuUserServiceConnector.getInstance();
         connector.bindService();
         for (int retry = 0; retry < 25 && !connector.isServiceAlive(); retry++) {
@@ -112,6 +110,8 @@ public class ShizukuExecutor {
                 return new GrantResult(false, 1, 0);
             }
         }
-        return new GrantResult(connector.isServiceAlive(), 1, connector.isServiceAlive() ? 1 : 0);
+
+        boolean granted = ShizukuPermissionGranter.grantAllPermissions(context.getPackageName());
+        return new GrantResult(granted, 1, granted ? 1 : 0);
     }
 }

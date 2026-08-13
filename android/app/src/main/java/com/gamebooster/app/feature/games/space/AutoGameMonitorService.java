@@ -162,15 +162,8 @@ public class AutoGameMonitorService extends Service {
                                 android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — restoring saved display and Game Mode values");
+                Log.i(TAG, "Game exited: " + lastActiveGamePackage + " — active refresh rate and tweak locks remain set per user toggle");
                 lastActiveGamePackage = null;
-
-                DisplayOverrideController.Result restored = DisplayOverrideController.restore(getApplicationContext());
-
-                AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(),
-                                "⚡ " + restored.message,
-                                android.widget.Toast.LENGTH_SHORT).show());
             }
         });
     }

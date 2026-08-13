@@ -86,7 +86,6 @@ public class PerformanceChannel {
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
-            com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.revertToDefaults();
         }
         return true;
     }
