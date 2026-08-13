@@ -97,4 +97,20 @@ public class GameManagerAdapter {
         }
         return GAME_MODE_UNSUPPORTED;
     }
+
+    /**
+     * Injects a SurfaceFlinger frame rate hint command for the target package.
+     *
+     * @param packageName Target package name.
+     * @param frameRate Desired rendering frame rate (e.g. 165.0f).
+     * @return true if command succeeded.
+     */
+    public boolean setSurfaceFrameRateHint(String packageName, float frameRate) {
+        if (packageName == null || packageName.trim().isEmpty()) {
+            return false;
+        }
+        String cmd = "cmd game set --fps " + ((int) frameRate) + " " + packageName;
+        String shellResult = CommandExecutor.executeSystemCommand(cmd);
+        return CommandExecutor.isSuccessOutput(shellResult);
+    }
 }

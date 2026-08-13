@@ -34,6 +34,17 @@ public class SetEditSettingsEnforcer {
     }
 
     /**
+     * Enforces maximum 165Hz display refresh rate lock across system & OEM properties.
+     *
+     * @return true if 165Hz mode was injected successfully.
+     */
+    public static boolean enforceMax165HzMode() {
+        boolean base = enforceRefreshRate(165);
+        boolean oem  = OemHardwareOptimizer.applyOemOptimizations(165);
+        return base && oem;
+    }
+
+    /**
      * Configures Android Updatable Graphics Driver (ANGLE) channel for targeted game packages.
      *
      * @param commaSeparatedPackages Comma-separated list of target package names.

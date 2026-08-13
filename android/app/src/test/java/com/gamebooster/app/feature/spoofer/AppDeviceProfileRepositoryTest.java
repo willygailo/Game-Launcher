@@ -9,7 +9,7 @@ public class AppDeviceProfileRepositoryTest {
     public void testDefaultGameProfileResolution() {
         SpoofProfile profile = AppDeviceProfileRepository.resolveProfileForGame(null, "com.tencent.ig");
         assertNotNull(profile);
-        assertEquals("asus_rog8_pro", profile.id);
+        assertEquals("asus_rog9_pro", profile.id);
         assertEquals(165, profile.targetRefreshRate);
     }
 

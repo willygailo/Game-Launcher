@@ -16,56 +16,71 @@ public class SpoofPreferences {
     private static final String PREFIX_GAME_PROFILE = "game_spoof_profile_";
 
     private static SharedPreferences getPrefs(Context context) {
+        if (context == null) return null;
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     public static boolean isSpoofEnabled(Context context) {
-        return getPrefs(context).getBoolean(KEY_SPOOF_ENABLED, false);
+        SharedPreferences prefs = getPrefs(context);
+        return prefs != null && prefs.getBoolean(KEY_SPOOF_ENABLED, false);
     }
 
     public static void setSpoofEnabled(Context context, boolean enabled) {
-        getPrefs(context).edit().putBoolean(KEY_SPOOF_ENABLED, enabled).apply();
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) prefs.edit().putBoolean(KEY_SPOOF_ENABLED, enabled).apply();
     }
 
     public static String getActiveProfileId(Context context) {
-        return getPrefs(context).getString(KEY_ACTIVE_PROFILE_ID, null);
+        SharedPreferences prefs = getPrefs(context);
+        return prefs != null ? prefs.getString(KEY_ACTIVE_PROFILE_ID, null) : null;
     }
 
     public static void setActiveProfileId(Context context, String profileId) {
-        getPrefs(context).edit().putString(KEY_ACTIVE_PROFILE_ID, profileId).apply();
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) prefs.edit().putString(KEY_ACTIVE_PROFILE_ID, profileId).apply();
     }
 
     public static void clearActiveProfile(Context context) {
-        getPrefs(context).edit().remove(KEY_ACTIVE_PROFILE_ID).apply();
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) prefs.edit().remove(KEY_ACTIVE_PROFILE_ID).apply();
     }
 
     // ── Per-Game Package Overrides ──
 
     public static boolean isGameSpoofEnabled(Context context, String packageName) {
+        if (context == null) return false;
         if (packageName == null) return isSpoofEnabled(context);
-        return getPrefs(context).getBoolean(PREFIX_GAME_ENABLED + packageName, true);
+        SharedPreferences prefs = getPrefs(context);
+        return prefs != null && prefs.getBoolean(PREFIX_GAME_ENABLED + packageName, true);
     }
 
     public static void setGameSpoofEnabled(Context context, String packageName, boolean enabled) {
-        if (packageName == null) return;
-        getPrefs(context).edit().putBoolean(PREFIX_GAME_ENABLED + packageName, enabled).apply();
+        if (context == null || packageName == null) return;
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) prefs.edit().putBoolean(PREFIX_GAME_ENABLED + packageName, enabled).apply();
     }
 
     public static String getGameSpoofProfileId(Context context, String packageName) {
+        if (context == null) return null;
         if (packageName == null) return getActiveProfileId(context);
-        return getPrefs(context).getString(PREFIX_GAME_PROFILE + packageName, null);
+        SharedPreferences prefs = getPrefs(context);
+        return prefs != null ? prefs.getString(PREFIX_GAME_PROFILE + packageName, null) : null;
     }
 
     public static void setGameSpoofProfileId(Context context, String packageName, String profileId) {
-        if (packageName == null) return;
-        getPrefs(context).edit().putString(PREFIX_GAME_PROFILE + packageName, profileId).apply();
+        if (context == null || packageName == null) return;
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) prefs.edit().putString(PREFIX_GAME_PROFILE + packageName, profileId).apply();
     }
 
     public static void clearGameSpoof(Context context, String packageName) {
-        if (packageName == null) return;
-        getPrefs(context).edit()
-                .remove(PREFIX_GAME_ENABLED + packageName)
-                .remove(PREFIX_GAME_PROFILE + packageName)
-                .apply();
+        if (context == null || packageName == null) return;
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) {
+            prefs.edit()
+                 .remove(PREFIX_GAME_ENABLED + packageName)
+                 .remove(PREFIX_GAME_PROFILE + packageName)
+                 .apply();
+        }
     }
 }

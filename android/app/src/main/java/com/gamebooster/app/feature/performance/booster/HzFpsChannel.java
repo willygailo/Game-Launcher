@@ -54,4 +54,25 @@ public class HzFpsChannel {
     public static boolean forceGameFps(Context context, String packageName, int targetFps) {
         return DisplayOverrideController.applyGameProfile(context, packageName, targetFps).isSuccess();
     }
+
+    /**
+     * Executes full 165Hz display lock & 165 FPS game engine injection.
+     *
+     * @param context Application context.
+     * @param packageName Target package name.
+     * @return RefreshRateResult detailing native rate applied.
+     */
+    public static RefreshRateResult force165HzEngine(Context context, String packageName) {
+        RefreshRateResult res = setRefreshRate(context, 165);
+        if (packageName != null && !packageName.trim().isEmpty()) {
+            forceGameFps(context, packageName, 165);
+            try {
+                GameManagerAdapter gma = new GameManagerAdapter(context);
+                gma.setGameMode(packageName, GameManagerAdapter.GAME_MODE_PERFORMANCE);
+                gma.setSurfaceFrameRateHint(packageName, 165.0f);
+            } catch (Throwable ignored) {}
+        }
+        com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceMax165HzMode();
+        return res;
+    }
 }
