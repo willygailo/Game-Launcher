@@ -279,21 +279,33 @@ public class FloatingOverlayService extends Service {
 
         // Force overlay window to request maximum hardware refresh rate (120Hz, 144Hz, 165Hz)
         try {
-            com.gamebooster.app.feature.performance.device.DisplayCapabilitiesDetector.DisplayCaps caps =
-                    com.gamebooster.app.feature.performance.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-            if (caps != null && caps.maxRefreshRate > 0) {
-                params.preferredRefreshRate = (float) caps.maxRefreshRate;
+            int targetHz = com.gamebooster.app.feature.gameprofiles.automation.GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
+            if (targetHz > 0) {
+                params.preferredRefreshRate = (float) targetHz;
+            } else {
+                com.gamebooster.app.feature.performance.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                        com.gamebooster.app.feature.performance.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
+                if (caps != null && caps.maxRefreshRate > 0) {
+                    params.preferredRefreshRate = (float) caps.maxRefreshRate;
+                }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
                 android.view.Display display = windowManager.getDefaultDisplay();
                 if (display != null) {
                     android.view.Display.Mode[] modes = display.getSupportedModes();
                     int bestModeId = 0;
-                    float maxFps = 0.0f;
+                    float bestFps = 0.0f;
                     for (android.view.Display.Mode m : modes) {
-                        if (m != null && m.getRefreshRate() > maxFps) {
-                            maxFps = m.getRefreshRate();
-                            bestModeId = m.getModeId();
+                        if (m != null) {
+                            float r = m.getRefreshRate();
+                            if (targetHz > 0 && Math.abs(r - targetHz) < 1.0f) {
+                                bestModeId = m.getModeId();
+                                bestFps = r;
+                                break;
+                            } else if (r > bestFps) {
+                                bestFps = r;
+                                bestModeId = m.getModeId();
+                            }
                         }
                     }
                     if (bestModeId != 0) {

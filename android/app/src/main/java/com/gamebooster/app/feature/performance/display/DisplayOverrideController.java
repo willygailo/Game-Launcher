@@ -71,6 +71,11 @@ public final class DisplayOverrideController {
         boolean min = succeeds(exec("settings put system min_refresh_rate " + value));
         // user_refresh_rate is OEM optional, so a failed write does not invalidate stock AOSP keys.
         exec("settings put system user_refresh_rate " + requestedHz);
+
+        // Inject full SetEdit matrix, SurfaceFlinger IPC (1035, 1036, 1037), and OEM thermal overrides
+        com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(requestedHz);
+        com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(requestedHz);
+
         prefs.edit().putBoolean(KEY_ACTIVE, true).putString(KEY_GAME, safePackage(packageName)).apply();
 
         int observed = DevicePerformanceCapabilities.detect(context).getCurrentRefreshRate();

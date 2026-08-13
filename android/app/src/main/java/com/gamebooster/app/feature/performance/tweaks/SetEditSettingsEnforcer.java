@@ -29,6 +29,9 @@ public class SetEditSettingsEnforcer {
         boolean s2 = CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzStr);
         boolean s3 = CommandExecutor.setSystemSetting("system", "user_refresh_rate", intHzStr);
         boolean s4 = CommandExecutor.setSystemSetting("system", "default_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("system", "miui_refresh_rate", intHzStr);
+        CommandExecutor.setSystemSetting("system", "oppo_display_refresh_rate", intHzStr);
+        CommandExecutor.setSystemSetting("system", "thermal_limit_refresh_rate", intHzStr);
 
         // Global Namespace (Crucial for Android 13-16 dynamic display daemons)
         boolean g1 = CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzStr);
@@ -37,8 +40,10 @@ public class SetEditSettingsEnforcer {
         boolean g4 = CommandExecutor.setSystemSetting("global", "default_refresh_rate", hzStr);
         boolean g5 = CommandExecutor.setSystemSetting("global", "display_downscale_disable", "1");
         boolean g6 = CommandExecutor.setSystemSetting("global", "mode_fps_override", intHzStr);
+        CommandExecutor.setSystemSetting("global", "fps_limit", "0");
+        CommandExecutor.setSystemSetting("global", "sf_max_fps", intHzStr);
 
-        // Secure Namespace (Disables VRR/LTPO dynamic drop to 90Hz)
+        // Secure Namespace (Disables VRR/LTPO dynamic drop to 60/80/90Hz)
         CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", "2");
         CommandExecutor.setSystemSetting("secure", "match_content_frame_rate", "0");
 
