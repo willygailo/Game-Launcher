@@ -82,7 +82,15 @@ public class CrosshairOverlayService extends Service {
             return START_STICKY;
         }
 
-        startForeground(NOTIFICATION_ID, buildNotification());
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(NOTIFICATION_ID, buildNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(NOTIFICATION_ID, buildNotification());
+            }
+        } catch (Exception e) {
+            android.util.Log.e("CrosshairOverlay", "Failed to start foreground service", e);
+        }
         showOverlayView();
         return START_STICKY;
     }

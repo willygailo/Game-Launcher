@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,15 @@ public class OnboardingActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_onboarding);
+
+        View rootLayout = getWindow().getDecorView().findViewById(android.R.id.content);
+        if (rootLayout != null) {
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+                androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+                v.setPadding(0, systemBars.top, 0, systemBars.bottom);
+                return insets;
+            });
+        }
 
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(shizukuStateListener);

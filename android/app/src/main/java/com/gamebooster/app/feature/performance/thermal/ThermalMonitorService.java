@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 import com.gamebooster.app.platform.shell.CommandExecutor;
+import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.RandomAccessFile;
 
@@ -47,7 +48,7 @@ public class ThermalMonitorService extends Service {
         super.onCreate();
         handler = new Handler(Looper.getMainLooper());
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(batteryReceiver, filter);
+        ContextCompat.registerReceiver(this, batteryReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         monitorRunnable = new Runnable() {
             @Override

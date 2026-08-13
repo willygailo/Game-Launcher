@@ -78,10 +78,14 @@ public class AutoGameMonitorService extends Service {
         super.onCreate();
         isRunning = true;
         createNotificationChannel();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIF_ID, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-        } else {
-            startForeground(NOTIF_ID, createNotification());
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(NOTIF_ID, createNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(NOTIF_ID, createNotification());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start foreground service", e);
         }
 
         setupMonitorLoop();
