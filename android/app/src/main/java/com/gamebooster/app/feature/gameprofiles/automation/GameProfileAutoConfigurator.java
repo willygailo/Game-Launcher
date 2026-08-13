@@ -132,7 +132,42 @@ public class GameProfileAutoConfigurator {
             gma.setGameMode(packageName, com.gamebooster.app.feature.performance.booster.GameManagerAdapter.GAME_MODE_PERFORMANCE);
         } catch (Throwable ignored) {}
 
+        // Execute package-specific Shizuku file config patchers for target com. packages (PUBGM, CODM, MLBB, HOK, Genshin, Roblox, etc.)
+        applyTargetGameFilePatcher(packageName, targetFpsHz);
+
         return forceResult.success;
+    }
+
+    private static void applyTargetGameFilePatcher(String packageName, int targetFpsHz) {
+        if (packageName == null) return;
+        String lower = packageName.toLowerCase();
+
+        try {
+            if (lower.contains("mobile.legends") || lower.contains("mobilelegends")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.MlbbConfigPatcher.patchCompetitive(packageName, targetFpsHz);
+                com.gamebooster.app.feature.gameprofiles.patcher.MlbbConfigPatcher.applySuperFastTouch(packageName);
+            } else if (lower.contains("tencent.ig") || lower.contains("pubg") || lower.contains("imobile") || lower.contains("vng.pubgmobile")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.PubgMobileConfigPatcher.patchPubgMobileConfig(targetFpsHz);
+            } else if (lower.contains("codm") || lower.contains("callofduty")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.CodmConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("sgame") || lower.contains("honorofkings") || lower.contains("arenaofvalor")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.HokConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("genshin") || lower.contains("mihoyo") || lower.contains("cognosphere")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.GenshinConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("roblox")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.RobloxConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("freefire")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.FreeFireConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("bloodstrike")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.BloodStrikeConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("wildrift")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.WildRiftConfigPatcher.patch(packageName, targetFpsHz);
+            } else if (lower.contains("deltaforce") || lower.contains("dfm")) {
+                com.gamebooster.app.feature.gameprofiles.patcher.DeltaForceConfigPatcher.patch(packageName, targetFpsHz);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error applying Shizuku file config patch for " + packageName, t);
+        }
     }
 
     /**
