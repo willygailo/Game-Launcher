@@ -20,6 +20,10 @@ public class SamsungHzStrategy implements RefreshRateInterface {
         sb.append("min_refresh_rate: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put system min_refresh_rate " + hzF)).append("\n");
         sb.append("user_refresh_rate: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put system user_refresh_rate " + hz)).append("\n");
         sb.append("refresh_rate_mode: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put system refresh_rate_mode 2")).append("\n");
+        sb.append("game_auto_temp: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put global game_auto_temperature_control 0")).append("\n");
+        sb.append("game_perf_mode: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put secure game_performance_mode 1")).append("\n");
+        sb.append("gos_fps_limit: ").append(ShizukuExecutor.executeShizukuCommand("setprop sys.gos.fps_limit " + hz)).append("\n");
+        sb.append("game_mode_fps: ").append(ShizukuExecutor.executeShizukuCommand("cmd settings put system game_mode_fps " + hz)).append("\n");
 
         sb.append("cmd window set-app-refresh-rate: ").append(ShizukuExecutor.executeShizukuCommand("cmd window set-app-refresh-rate global " + targetHz)).append("\n");
         sb.append("cmd game set fps: ").append(ShizukuExecutor.executeShizukuCommand("cmd game set --fps " + targetHz + " global")).append("\n");

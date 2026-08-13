@@ -53,6 +53,14 @@ public class SetEditSettingsEnforcer {
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1037 i32 " + targetHz);
 
+        // SurfaceFlinger Frame-Pacing & Micro-Stutter Reduction
+        CommandExecutor.setSystemProperty("debug.sf.early_phase_offset_ns", "5000000");
+        CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "5000000");
+        CommandExecutor.setSystemProperty("debug.sf.early_sf_phase_offset_ns", "5000000");
+        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_phase_offset_ns", "1000000");
+        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_app_phase_offset_ns", "1000000");
+        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_sf_phase_offset_ns", "1000000");
+
         // PowerHAL & Thermal Bypass to prevent thermal drop of display Hz
         CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
         CommandExecutor.executeSystemCommand("cmd power set-mode 2 1");
@@ -98,7 +106,10 @@ public class SetEditSettingsEnforcer {
     public static boolean enforceUltraTouchSettings() {
         boolean t1 = CommandExecutor.setSystemSetting("system", "touch_prediction_latency", "0");
         boolean t2 = CommandExecutor.setSystemSetting("secure", "long_press_timeout", "250");
-        boolean t3 = CommandExecutor.setSystemProperty("persist.sys.touch.rate", "240");
+        boolean t3 = CommandExecutor.setSystemProperty("persist.sys.touch.rate", "480");
+        CommandExecutor.setSystemSetting("system", "pointer_speed", "7");
+        CommandExecutor.setSystemProperty("debug.touch.pressure.scale", "0.001");
+        CommandExecutor.setSystemProperty("persist.sys.touch.glove_mode", "0");
 
         return t1 && t2 && t3;
     }

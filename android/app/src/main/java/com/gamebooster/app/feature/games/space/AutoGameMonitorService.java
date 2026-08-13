@@ -168,7 +168,8 @@ public class AutoGameMonitorService extends Service {
                                 android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited: " + lastActiveGamePackage + " — active refresh rate and tweak locks remain set per user toggle");
+                Log.i(TAG, "Game exited: " + lastActiveGamePackage + " — stopping continuous real-world Hz lock pulse and restoring baseline state");
+                com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine.getInstance().stopLock(getApplicationContext());
                 lastActiveGamePackage = null;
             }
         });

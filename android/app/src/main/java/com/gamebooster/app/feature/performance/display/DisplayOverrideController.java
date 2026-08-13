@@ -76,6 +76,9 @@ public final class DisplayOverrideController {
         com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(requestedHz);
         com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(requestedHz);
 
+        // Start active Real-World Hz Lock Engine daemon pulse
+        com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine.getInstance().startLock(context, requestedHz, packageName);
+
         prefs.edit().putBoolean(KEY_ACTIVE, true).putString(KEY_GAME, safePackage(packageName)).apply();
 
         int observed = DevicePerformanceCapabilities.detect(context).getCurrentRefreshRate();
@@ -133,6 +136,10 @@ public final class DisplayOverrideController {
     /** Restores only values that this controller backed up for the current temporary session. */
     public static Result restore(Context context) {
         if (context == null) return result(Status.FAILED, 0, 0, 0, "Device context is unavailable");
+
+        // Stop active Hz Lock daemon
+        com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine.getInstance().stopLock(context);
+
         SharedPreferences prefs = prefs(context);
         if (!prefs.getBoolean(KEY_ACTIVE, false)) {
             return result(Status.RESTORED, 0, 0, DevicePerformanceCapabilities.detect(context).getCurrentRefreshRate(), "No temporary override is active.");

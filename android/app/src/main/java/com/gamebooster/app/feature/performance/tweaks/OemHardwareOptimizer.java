@@ -12,13 +12,16 @@ import com.gamebooster.app.platform.shell.CommandExecutor;
 public class OemHardwareOptimizer {
 
     public enum OemVendor {
-        INFINIX_TECNO,
+        INFINIX,
+        TECNO,
+        TRANSSION,
         SAMSUNG,
         XIAOMI_POCO,
         REALME_OPPO,
         VIVO_IQOO,
         ASUS_ROG,
         REDMAGIC,
+        HONOR_HUAWEI,
         GENERIC
     }
 
@@ -30,9 +33,12 @@ public class OemHardwareOptimizer {
         String brand = (Build.BRAND != null) ? Build.BRAND.toLowerCase() : "";
         String model = (Build.MODEL != null) ? Build.MODEL.toLowerCase() : "";
 
-        if (manu.contains("infinix") || manu.contains("tecno") || manu.contains("transsion") ||
-            brand.contains("infinix") || brand.contains("tecno")) {
-            return OemVendor.INFINIX_TECNO;
+        if (manu.contains("infinix") || brand.contains("infinix")) {
+            return OemVendor.INFINIX;
+        } else if (manu.contains("tecno") || brand.contains("tecno")) {
+            return OemVendor.TECNO;
+        } else if (manu.contains("transsion") || manu.contains("itel")) {
+            return OemVendor.TRANSSION;
         } else if (manu.contains("samsung") || brand.contains("samsung")) {
             return OemVendor.SAMSUNG;
         } else if (manu.contains("xiaomi") || manu.contains("poco") || manu.contains("redmi") ||
@@ -48,6 +54,8 @@ public class OemHardwareOptimizer {
             return OemVendor.ASUS_ROG;
         } else if (manu.contains("nubia") || manu.contains("zte") || brand.contains("redmagic") || model.contains("redmagic")) {
             return OemVendor.REDMAGIC;
+        } else if (manu.contains("honor") || manu.contains("huawei") || brand.contains("honor") || brand.contains("huawei")) {
+            return OemVendor.HONOR_HUAWEI;
         }
         return OemVendor.GENERIC;
     }
@@ -63,8 +71,34 @@ public class OemHardwareOptimizer {
         boolean success = true;
 
         switch (vendor) {
-            case INFINIX_TECNO:
-                // Transsion XOS/HiOS: Enable bypass charging, Dar-Link governor & force 120/144/165 FPS lock
+            case INFINIX:
+                // Infinix XOS: Enable bypass charging, Dar-Link 3.0/4.0 governor & force FPS lock
+                boolean i1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
+                boolean i2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.infinix.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
+                CommandExecutor.setSystemSetting("system", "infinix_refresh_rate_mode", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "xos_display_refresh_rate", String.valueOf(targetHz));
+                success = i1 && i2;
+                break;
+
+            case TECNO:
+                // Tecno HiOS: Enable bypass charging, Panther Engine & force FPS lock
+                boolean t1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
+                boolean t2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.tecno.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
+                CommandExecutor.setSystemSetting("system", "tecno_refresh_rate_mode", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "hios_display_refresh_rate", String.valueOf(targetHz));
+                success = t1 && t2;
+                break;
+
+            case TRANSSION:
+                // Transsion: Enable bypass charging & Dar-Link governor
                 boolean b1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
                 boolean b2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
                 CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
@@ -120,6 +154,14 @@ public class OemHardwareOptimizer {
                 CommandExecutor.setSystemProperty("persist.sys.nubia.hz", String.valueOf(targetHz));
                 CommandExecutor.setSystemProperty("sys.nubia.fps", String.valueOf(targetHz));
                 success = n1;
+                break;
+
+            case HONOR_HUAWEI:
+                // Honor MagicOS / Huawei EMUI performance override
+                boolean h1 = CommandExecutor.setSystemSetting("system", "honor_screen_refresh_rate", String.valueOf(targetHz));
+                boolean h2 = CommandExecutor.setSystemSetting("system", "hw_display_refresh_rate", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.hw.fps", String.valueOf(targetHz));
+                success = h1 || h2;
                 break;
 
             case GENERIC:

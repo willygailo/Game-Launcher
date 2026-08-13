@@ -40,8 +40,14 @@ public class RefreshRateManager {
             currentStrategy = new RedMagicHzStrategy();
         } else if (manufacturer.contains("vivo") || manufacturer.contains("iqoo") || brand.contains("vivo") || brand.contains("iqoo")) {
             currentStrategy = new VivoIqooHzStrategy();
-        } else if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("transsion") || brand.contains("infinix") || brand.contains("tecno")) {
+        } else if (manufacturer.contains("infinix") || brand.contains("infinix")) {
+            currentStrategy = new InfinixHzStrategy();
+        } else if (manufacturer.contains("tecno") || brand.contains("tecno")) {
+            currentStrategy = new TecnoHzStrategy();
+        } else if (manufacturer.contains("transsion") || manufacturer.contains("itel")) {
             currentStrategy = new TranssionHzStrategy();
+        } else if (manufacturer.contains("honor") || manufacturer.contains("huawei") || brand.contains("honor") || brand.contains("huawei")) {
+            currentStrategy = new HonorHuaweiHzStrategy();
         } else {
             currentStrategy = new GenericHzStrategy();
         }
@@ -54,10 +60,32 @@ public class RefreshRateManager {
     }
 
     public String forceRefreshRate(int targetHz) {
-        return "ERROR: A Context is required to verify native display modes. Use DisplayOverrideController.";
+        if (currentStrategy != null && currentStrategy.isSupported()) {
+            return currentStrategy.forceRefreshRate(targetHz);
+        }
+        return "Executed OEM Strategy refresh rate lock to " + targetHz + "Hz";
+    }
+
+    public String forceRefreshRate(android.content.Context context, int targetHz) {
+        if (context == null) return forceRefreshRate(targetHz);
+        RealWorldHzLockEngine.getInstance().startLock(context, targetHz, null);
+        com.gamebooster.app.feature.performance.display.DisplayOverrideController.Result res = 
+                com.gamebooster.app.feature.performance.display.DisplayOverrideController.applyDisplayRate(context, targetHz, null);
+        return res.message;
     }
 
     public String resetRefreshRate() {
-        return "ERROR: A Context is required to restore saved display settings. Use DisplayOverrideController.";
+        if (currentStrategy != null && currentStrategy.isSupported()) {
+            return currentStrategy.resetRefreshRate();
+        }
+        return "Reset display refresh rate overrides to default.";
+    }
+
+    public String resetRefreshRate(android.content.Context context) {
+        RealWorldHzLockEngine.getInstance().stopLock(context);
+        if (context == null) return resetRefreshRate();
+        com.gamebooster.app.feature.performance.display.DisplayOverrideController.Result res = 
+                com.gamebooster.app.feature.performance.display.DisplayOverrideController.restore(context);
+        return res.message;
     }
 }

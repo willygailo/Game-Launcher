@@ -1,19 +1,16 @@
 package com.gamebooster.app.feature.performance.booster;
 
 import android.util.Log;
+import com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer;
 
-/**
- * Safe compatibility facade for the former global input-property tuner.
- * Input sampling, slop, pressure, and prediction are device/OEM-owned and are
- * not rewritten globally by the launcher.
- */
+/** Input prediction, latency tuning, and touch sampling response facade. */
 public final class TouchLatencyChannel {
     private static final String TAG = "TouchLatencyChannel";
 
     private TouchLatencyChannel() { }
 
     public static boolean enableUltraTouchResponse() {
-        Log.i(TAG, "Using Android/OEM input configuration; no global touch properties changed.");
-        return true;
+        Log.i(TAG, "Enforcing Ultra Low Touch Latency & High Sampling properties...");
+        return SetEditSettingsEnforcer.enforceUltraTouchSettings();
     }
 }
