@@ -163,10 +163,47 @@ wm size reset
 
 ---
 
-## 🚀 1-Tap Complete Device Reset Script
+## 8. 🌐 Gaming Private DNS & Network Reset
 
-Execute this single command in ADB Shell or Shizuku Terminal to instantly reset all tweaked settings, refresh rates, graphics drivers, touch parameters, OEM hardware flags, and display density at once:
+Restores Private DNS mode back to opportunistic default and clears gaming DNS host overrides.
 
 ```bash
-sh -c "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate; settings delete global user_refresh_rate; settings delete global display_downscale_disable; settings delete secure user_refresh_rate; settings delete system oplus_customize_screen_refresh_rate; settings delete system vivo_screen_refresh_rate; settings delete global angle_gl_driver_all_angle; settings delete global game_driver_all_apps; settings delete global updatable_driver_production_opt_in_apps; settings delete system touch_prediction_latency; settings delete secure long_press_timeout; settings delete global game_auto_temperature_control; setprop sys.bypass.charging 0; setprop persist.sys.power.fps ''; setprop persist.vendor.power.dfps ''; setprop persist.sys.touch.rate ''; setprop debug.hwui.renderer ''; setprop debug.egl.force_msaa 0; setprop debug.angle.backend ''; setprop debug.sf.fps_limit ''; service call SurfaceFlinger 1035 i32 0; wm density reset; wm size reset; echo '✅ Complete device hardware & display density reset finished!'"
+# Reset AOSP Private DNS Mode & Specifier
+settings put global private_dns_mode opportunistic
+settings delete global private_dns_specifier
+
+# Direct Connectivity Manager Shell Reset
+cmd connectivity set-private-dns-mode opportunistic
+```
+
+---
+
+## 9. 🧹 Custom Games & Profile Storage Reset
+
+Clears cached user-added custom games, saved JSON profiles, and app preferences.
+
+```bash
+# Clear app preferences, custom game registry & cached session profiles
+pm clear com.gamebooster.app
+```
+
+---
+
+## 10. 🛡️ Android 13–16 Foreground Service & Notification Reset
+
+Gracefully terminates active background monitoring services (`GameBoosterService`, `FloatingOverlayService`, `CrosshairOverlayService`, `AutoGameMonitorService`, `ThermalMonitorService`) and releases overlay locks.
+
+```bash
+# Terminate all active Game Space foreground services & floating overlays
+am force-stop com.gamebooster.app
+```
+
+---
+
+## 🚀 1-Tap Complete Device Reset Script
+
+Execute this single command in ADB Shell or Shizuku Terminal to instantly reset all tweaked settings, refresh rates, graphics drivers, touch parameters, OEM hardware flags, Private DNS, display density, and stop all services at once:
+
+```bash
+sh -c "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate; settings delete global user_refresh_rate; settings delete global display_downscale_disable; settings delete secure user_refresh_rate; settings delete system oplus_customize_screen_refresh_rate; settings delete system vivo_screen_refresh_rate; settings delete global angle_gl_driver_all_angle; settings delete global game_driver_all_apps; settings delete global updatable_driver_production_opt_in_apps; settings delete system touch_prediction_latency; settings delete secure long_press_timeout; settings delete global game_auto_temperature_control; settings put global private_dns_mode opportunistic; settings delete global private_dns_specifier; cmd connectivity set-private-dns-mode opportunistic; setprop sys.bypass.charging 0; setprop persist.sys.power.fps ''; setprop persist.vendor.power.dfps ''; setprop persist.sys.touch.rate ''; setprop debug.hwui.renderer ''; setprop debug.egl.force_msaa 0; setprop debug.angle.backend ''; setprop debug.sf.fps_limit ''; service call SurfaceFlinger 1035 i32 0; wm density reset; wm size reset; am force-stop com.gamebooster.app; echo '✅ Complete device hardware, display density & Private DNS reset finished!'"
 ```
