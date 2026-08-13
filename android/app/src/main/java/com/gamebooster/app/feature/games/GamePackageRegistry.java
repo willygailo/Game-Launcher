@@ -100,6 +100,12 @@ public class GamePackageRegistry {
         return packageName != null && KNOWN_GAMES.containsKey(packageName.toLowerCase());
     }
 
+    public static boolean isKnownGame(android.content.Context context, String packageName) {
+        if (packageName == null) return false;
+        if (KNOWN_GAMES.containsKey(packageName.toLowerCase())) return true;
+        return CustomGameManager.isCustomGame(context, packageName);
+    }
+
     public static GameInfoSpec getSpec(String packageName) {
         if (packageName == null) return null;
         return KNOWN_GAMES.get(packageName.toLowerCase());

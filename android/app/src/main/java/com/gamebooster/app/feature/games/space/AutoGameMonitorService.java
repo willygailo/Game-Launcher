@@ -150,8 +150,10 @@ public class AutoGameMonitorService extends Service {
                     sessionPatchedPackages.add(currentPackage);
                 }
 
-                // ── STEP 3: Touch latency + CPU/GPU governor ───────────────────────
+                // ── STEP 3: Touch latency + CPU/GPU governor + RAM Purge & Gaming DNS ────
                 PerformanceChannel.applyTuningProfile(getApplicationContext(), profile.performanceProfile);
+                com.gamebooster.app.feature.performance.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                com.gamebooster.app.feature.performance.network.GamingDnsOptimizer.enableGamingDns(null);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
 
                 // ── STEP 4: Show floating HUD ──────────────────────────────────────
