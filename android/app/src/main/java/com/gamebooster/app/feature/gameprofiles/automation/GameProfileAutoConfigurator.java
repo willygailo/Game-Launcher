@@ -30,7 +30,7 @@ public class GameProfileAutoConfigurator {
      * Default target Hz when no preference is stored and no panel info is available.
      * This is a soft default only — the actual value is always read from the panel.
      */
-    public static final int DEFAULT_TARGET_HZ = 120;
+    public static final int DEFAULT_TARGET_HZ = 165;
 
     public interface OnAutoConfigListener {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);

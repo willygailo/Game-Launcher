@@ -37,13 +37,13 @@ public final class GameProfilePreferences {
     private GameProfilePreferences() {}
 
     public static Profile getProfile(Context context, String packageName) {
-        if (context == null || packageName == null) return Profile.COMPETITIVE;
+        if (context == null || packageName == null) return Profile.MAX_SUPPORTED;
         String stored = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-                .getString(KEY_PROFILE_PREFIX + packageName, Profile.COMPETITIVE.name());
+                .getString(KEY_PROFILE_PREFIX + packageName, Profile.MAX_SUPPORTED.name());
         try {
             return Profile.valueOf(stored);
         } catch (IllegalArgumentException ignored) {
-            return Profile.COMPETITIVE;
+            return Profile.MAX_SUPPORTED;
         }
     }
 

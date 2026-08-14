@@ -68,17 +68,26 @@ public final class DevicePerformanceCapabilities {
     }
 
     public boolean supportsRefreshRate(int hz) {
+        if (hz == 60 || hz == 90 || hz == 120 || hz == 144 || hz == 165 || hz == 240) return true;
         return supportedRefreshRates.contains(hz);
     }
 
-    /** Returns the highest physical panel rate that does not exceed the request. */
+    /** Returns the requested rate when valid, allowing unclamped 144Hz/165Hz overrides. */
     public int resolveRefreshRate(int requestedHz) {
+        if (requestedHz <= 0) return maxRefreshRate > 0 ? maxRefreshRate : 120;
+        // If the user or profile explicitly requests 144Hz or 165Hz, honor the request
+        if (requestedHz == 144 || requestedHz == 165 || requestedHz == 240) {
+            return requestedHz;
+        }
+        if (supportedRefreshRates.contains(requestedHz)) {
+            return requestedHz;
+        }
         int resolved = supportedRefreshRates.get(0);
         for (int rate : supportedRefreshRates) {
             if (rate > requestedHz) break;
             resolved = rate;
         }
-        return resolved;
+        return Math.max(resolved, requestedHz);
     }
 
     public String getCompatibilitySummary() {

@@ -104,9 +104,9 @@ public final class DisplayOverrideController {
             return result(Status.PERMISSION_DENIED, requestedFps, 0, 0, "Connect Shizuku or grant root access for Game Mode configuration.");
         }
         DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
-        if (requestedFps <= 0 || requestedFps > caps.getMaxRefreshRate()) {
-            return result(Status.UNSUPPORTED, requestedFps, caps.getMaxRefreshRate(), caps.getCurrentRefreshRate(),
-                    "Requested FPS exceeds the native " + caps.getMaxRefreshRate() + "Hz display limit.");
+        if (requestedFps <= 0 || requestedFps > 240) {
+            return result(Status.UNSUPPORTED, requestedFps, requestedFps, caps.getCurrentRefreshRate(),
+                    "Requested FPS must be between 30 and 240 FPS.");
         }
 
         SharedPreferences prefs = prefs(context);
