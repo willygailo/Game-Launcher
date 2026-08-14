@@ -58,10 +58,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         setContentView(R.layout.activity_main);
 
         View rootLayout = findViewById(R.id.main_root_layout);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
         if (rootLayout != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(0, systemBars.top, 0, 0);
+                if (tabLayout != null) {
+                    tabLayout.setPadding(0, 0, 0, systemBars.bottom);
+                }
                 return insets;
             });
         }
@@ -119,34 +123,35 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             Log.i("TabPersist", "fresh start index=0");
         }
 
-        TabLayout tabLayout = findViewById(R.id.tab_layout);
-        for (String title : TAB_TITLES) {
-            tabLayout.addTab(tabLayout.newTab().setText(title));
-        }
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                currentTabIndex = tab.getPosition();
-                showFragmentForTab(currentTabIndex);
+        if (tabLayout != null) {
+            for (String title : TAB_TITLES) {
+                tabLayout.addTab(tabLayout.newTab().setText(title));
             }
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                clearBackStackIfAny();
-            }
-        });
-
-        TabLayout.Tab initialTab = tabLayout.getTabAt(currentTabIndex);
-        if (initialTab != null) {
-            if (tabLayout.getSelectedTabPosition() != currentTabIndex) {
-                initialTab.select();
-            } else {
-                if (savedInstanceState == null) {
+            tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    currentTabIndex = tab.getPosition();
                     showFragmentForTab(currentTabIndex);
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {}
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+                    clearBackStackIfAny();
+                }
+            });
+
+            TabLayout.Tab initialTab = tabLayout.getTabAt(currentTabIndex);
+            if (initialTab != null) {
+                if (tabLayout.getSelectedTabPosition() != currentTabIndex) {
+                    initialTab.select();
+                } else {
+                    if (savedInstanceState == null) {
+                        showFragmentForTab(currentTabIndex);
+                    }
                 }
             }
         }

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <!-- Header Section -->
     <LinearLayout
@@ -12,20 +13,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingBottom="8dp">
+        android:paddingBottom="6dp">
 
         <Button
             android:id="@+id/btn_exit_terminal"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="38dp"
             android:layout_marginEnd="8dp"
             android:text="← EXIT"
             android:textSize="11sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:backgroundTint="#222233"
-            android:strokeColor="#555577"
-            android:strokeWidth="1"
+            android:paddingHorizontal="10dp"
+            app:strokeColor="#555577"
+            app:strokeWidth="1dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
         <LinearLayout
@@ -40,9 +42,11 @@
                 android:layout_height="wrap_content"
                 android:text="⚡ SHIZUKU TERMINAL"
                 android:textColor="#00FF9C"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:fontFamily="monospace" />
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/tv_shizuku_status"
@@ -52,19 +56,22 @@
                 android:textColor="#AAAAAA"
                 android:textSize="11sp"
                 android:fontFamily="monospace"
-                android:paddingTop="2dp" />
+                android:paddingTop="1dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
         </LinearLayout>
 
         <Button
             android:id="@+id/btn_clear_output"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="38dp"
             android:text="CLEAR"
             android:textSize="11sp"
             android:backgroundTint="#1A0000"
-            android:strokeColor="#FF4040"
-            android:strokeWidth="1"
             android:textColor="#FF4040"
+            android:paddingHorizontal="10dp"
+            app:strokeColor="#FF4040"
+            app:strokeWidth="1dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
     </LinearLayout>
 
@@ -76,7 +83,7 @@
         android:textColor="#555566"
         android:textSize="10sp"
         android:fontFamily="monospace"
-        android:paddingBottom="4dp" />
+        android:paddingBottom="2dp" />
 
     <ScrollView
         android:id="@+id/sv_terminal_output"
@@ -84,7 +91,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@drawable/card_glass_shape"
-        android:padding="2dp">
+        android:padding="2dp"
+        android:fillViewport="true">
 
         <TextView
             android:id="@+id/tv_terminal_output"
@@ -94,7 +102,7 @@
             android:textColor="#00FF9C"
             android:textSize="12sp"
             android:fontFamily="monospace"
-            android:padding="10dp"
+            android:padding="8dp"
             android:textIsSelectable="true" />
     </ScrollView>
 
@@ -112,63 +120,69 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="none">
+        android:scrollbars="none"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingVertical="2dp">
 
             <Button
                 android:id="@+id/chip_cmd_getprop"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="34dp"
                 android:layout_marginEnd="6dp"
                 android:text="getprop"
                 android:textSize="10sp"
                 android:textColor="#00FF9C"
                 android:backgroundTint="#0A2211"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:strokeColor="#00FF9C"
-                android:strokeWidth="1" />
+                android:paddingHorizontal="10dp"
+                app:strokeColor="#00FF9C"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <Button
                 android:id="@+id/chip_cmd_wmsize"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="34dp"
                 android:layout_marginEnd="6dp"
                 android:text="wm size"
                 android:textSize="10sp"
                 android:textColor="#88CCFF"
                 android:backgroundTint="#0A1C2A"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:strokeColor="#88CCFF"
-                android:strokeWidth="1" />
+                android:paddingHorizontal="10dp"
+                app:strokeColor="#88CCFF"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <Button
                 android:id="@+id/chip_cmd_dumpsys"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="34dp"
                 android:layout_marginEnd="6dp"
                 android:text="dumpsys display"
                 android:textSize="10sp"
                 android:textColor="#FFCC00"
                 android:backgroundTint="#2A220A"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:strokeColor="#FFCC00"
-                android:strokeWidth="1" />
+                android:paddingHorizontal="10dp"
+                app:strokeColor="#FFCC00"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <Button
                 android:id="@+id/chip_cmd_pmlist"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="34dp"
                 android:text="pm list packages -3"
                 android:textSize="10sp"
                 android:textColor="#FF99FF"
                 android:backgroundTint="#2A0A2A"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:strokeColor="#FF99FF"
-                android:strokeWidth="1" />
+                android:paddingHorizontal="10dp"
+                app:strokeColor="#FF99FF"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -181,7 +195,7 @@
         android:textSize="10sp"
         android:fontFamily="monospace"
         android:paddingTop="6dp"
-        android:paddingBottom="4dp" />
+        android:paddingBottom="2dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -195,7 +209,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusBottomEnd="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_command_input"
@@ -218,9 +236,10 @@
             android:text="EXEC"
             android:textColor="#00FF9C"
             android:backgroundTint="#0D2B0D"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:strokeColor="#00FF9C"
-            android:strokeWidth="1" />
+            android:paddingHorizontal="14dp"
+            app:strokeColor="#00FF9C"
+            app:strokeWidth="1dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
     </LinearLayout>
 
     <!-- Info Footer -->
@@ -230,6 +249,6 @@
         android:text="ℹ️  Shizuku ADB shell active. Enter any shell command to execute with granted permissions."
         android:textColor="#444455"
         android:textSize="10sp"
-        android:paddingTop="6dp" />
+        android:paddingTop="4dp" />
 
 </LinearLayout>

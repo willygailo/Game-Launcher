@@ -13,35 +13,43 @@
         android:minHeight="@dimen/header_bar_height"
         android:layout_alignParentTop="true"
         android:paddingHorizontal="@dimen/header_padding_horizontal"
-        android:paddingVertical="4dp">
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/layout_header_actions"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🎮 GAME SPACE"
-                android:textColor="#00F0FF"
+                android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/header_title_size"
                 android:textStyle="bold"
-                android:letterSpacing="0.08" />
+                android:letterSpacing="0.08"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/tv_engine_status_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:text="Pro Hardware Engine • Extreme Boost Active"
                 android:textColor="#8000F0FF"
-                android:textSize="@dimen/header_subtitle_size" />
+                android:textSize="@dimen/header_subtitle_size"
+                android:maxLines="1"
+                android:ellipsize="end" />
         </LinearLayout>
 
         <!-- Right Header Action Icons -->
         <LinearLayout
+            android:id="@+id/layout_header_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -56,7 +64,7 @@
                 android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
                 android:text="🔄"
-                android:textColor="#00F0FF"
+                android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/header_action_btn_text_size" />
 
             <Button
@@ -68,7 +76,7 @@
                 android:backgroundTint="#2000F0FF"
                 android:padding="0dp"
                 android:text="⚙️"
-                android:textColor="#00F0FF"
+                android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/header_action_btn_text_size" />
         </LinearLayout>
     </RelativeLayout>
@@ -78,7 +86,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/layout_header_bar"
-        android:layout_above="@+id/layout_bottom_bar"
         android:fillViewport="true"
         android:overScrollMode="never"
         android:clipToPadding="false">
@@ -88,14 +95,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/header_padding_horizontal"
-            android:paddingTop="8dp"
-            android:paddingBottom="16dp">
+            android:paddingTop="4dp"
+            android:paddingBottom="24dp">
 
             <!-- HERO CENTER WIDGET: BOOST ENGINE DIAL -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dial_container_height"
-                android:layout_marginTop="2dp"
                 android:gravity="center">
 
                 <!-- Outer Glowing Circular Ring -->
@@ -112,34 +118,39 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
                         <TextView
                             android:id="@+id/tv_lightning_bolt"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="⚡"
-                            android:textColor="#00F0FF"
+                            android:textColor="@color/accent_cyan"
                             android:textSize="@dimen/dial_icon_size" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="1dp"
+                            android:layout_marginTop="2dp"
                             android:text="BOOST ENGINE"
                             android:textColor="#FFFFFF"
                             android:textSize="@dimen/dial_title_size"
                             android:textStyle="bold"
-                            android:letterSpacing="0.06" />
+                            android:letterSpacing="0.06"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
                         <TextView
                             android:id="@+id/tv_boost_status_sub"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="1dp"
+                            android:layout_marginTop="2dp"
                             android:text="Tap to Boost"
-                            android:textColor="#00F0FF"
-                            android:textSize="@dimen/dial_sub_size" />
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="@dimen/dial_sub_size"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
                     </LinearLayout>
                 </FrameLayout>
             </RelativeLayout>
@@ -148,7 +159,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/card_glass_shape"
                 android:orientation="vertical"
                 android:padding="@dimen/card_padding">
@@ -176,7 +187,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingHorizontal="2dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -192,7 +204,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="45%"
-                            android:textColor="#00F0FF"
+                            android:textColor="@color/accent_cyan"
                             android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
@@ -205,7 +217,7 @@
                             android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="45"
-                            android:progressTint="#00F0FF" />
+                            android:progressTint="@color/accent_cyan" />
                     </LinearLayout>
 
                     <!-- GPU Metric -->
@@ -214,7 +226,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingHorizontal="2dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -252,7 +265,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingHorizontal="2dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -290,7 +304,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:paddingHorizontal="2dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -306,7 +321,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="--"
-                            android:textColor="#00FF66"
+                            android:textColor="@color/accent_neon_green"
                             android:textSize="@dimen/metric_value_size"
                             android:textStyle="bold" />
 
@@ -319,7 +334,7 @@
                             android:layout_marginHorizontal="@dimen/metric_pb_margin_horizontal"
                             android:max="100"
                             android:progress="20"
-                            android:progressTint="#00FF66" />
+                            android:progressTint="@color/accent_neon_green" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -328,8 +343,8 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp">
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="6dp">
 
                 <TextView
                     android:id="@+id/tv_my_games_title"
@@ -360,7 +375,7 @@
                 android:id="@+id/rv_games_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="210dp"
+                android:minHeight="195dp"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:scrollbars="none" />
@@ -369,7 +384,7 @@
             <LinearLayout
                 android:id="@+id/layout_empty_state"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="160dp"
                 android:gravity="center"
                 android:orientation="vertical"
                 android:visibility="gone">
@@ -378,84 +393,90 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🎯"
-                    android:textSize="40sp" />
+                    android:textSize="36sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:text="No Games Detected"
                     android:textColor="#FFFFFF"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:gravity="center"
                     android:text="Install MLBB, PUBG, CODM, or any game\nand it will appear here automatically."
                     android:textColor="#80FFFFFF"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- RESPONSIVE GAME CONTROL ACTION BAR -->
+            <LinearLayout
+                android:id="@+id/layout_bottom_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="54dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/card_glass_shape"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="6dp">
+
+                <!-- Left Pill: Game Mode -->
+                <TextView
+                    android:id="@+id/btn_game_mode"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
+                    android:text="🎮 Game Mode\nPro Gamer ▾"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <!-- Center Hero Action Button: LAUNCH GAME -->
+                <Button
+                    android:id="@+id/btn_launch_game_hero"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1.5"
+                    android:layout_marginHorizontal="6dp"
+                    android:background="@drawable/bg_launch_game_button"
+                    android:text="LAUNCH GAME"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.04"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Right Pill: Network Boost -->
+                <TextView
+                    android:id="@+id/btn_network_boost"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="4dp"
+                    android:text="📡 Network Boost\nOn ▾"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- BOTTOM FIXED GAME CONTROL BAR (matching Pasted image.png) -->
-    <LinearLayout
-        android:id="@+id/layout_bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/nav_bg"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp">
-
-        <!-- Left Pill: Game Mode -->
-        <TextView
-            android:id="@+id/btn_game_mode"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_pill_button"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="🎮 Game Mode\nPro Gamer ▾"
-            android:textColor="#00F0FF"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-
-        <!-- Center Hero Action Button: LAUNCH GAME -->
-        <Button
-            android:id="@+id/btn_launch_game_hero"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_weight="1.4"
-            android:layout_marginHorizontal="8dp"
-            android:background="@drawable/bg_launch_game_button"
-            android:text="LAUNCH GAME"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.04" />
-
-        <!-- Right Pill: Network Boost -->
-        <TextView
-            android:id="@+id/btn_network_boost"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_pill_button"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="📡 Network Boost\nOn ▾"
-            android:textColor="#00FF66"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-    </LinearLayout>
 
 </RelativeLayout>

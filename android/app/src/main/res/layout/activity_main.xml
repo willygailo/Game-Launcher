@@ -4,7 +4,6 @@
     android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="@drawable/home_bg_new">
 
     <!-- Translucent glass scrim so app_bg is clearly visible -->
@@ -23,12 +22,16 @@
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="56dp"
         android:layout_alignParentBottom="true"
         android:background="@color/nav_bg"
+        android:elevation="8dp"
         app:tabMode="fixed"
         app:tabGravity="fill"
         app:tabIndicatorColor="#00F0FF"
+        app:tabIndicatorHeight="3dp"
         app:tabSelectedTextColor="#00F0FF"
-        app:tabTextColor="#8000F0FF" />
+        app:tabTextColor="#8000F0FF"
+        app:tabTextAppearance="@android:style/TextAppearance.Material.Widget.TabWidget" />
 
 </RelativeLayout>

@@ -18,7 +18,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="8dp"
         android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:paddingBottom="8dp">
 
         <!-- 1:1 Square Boxed Game Icon Frame -->
         <FrameLayout
@@ -45,22 +45,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:background="@drawable/bg_badge_pill"
             android:paddingHorizontal="8dp"
-            android:paddingVertical="3dp"
+            android:paddingVertical="2dp"
             android:text="ESPORTS"
-            android:textColor="#00F0FF"
+            android:textColor="@color/accent_cyan"
             android:textSize="@dimen/game_card_sub_size"
             android:textStyle="bold"
-            android:letterSpacing="0.04" />
+            android:letterSpacing="0.04"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <!-- Game Title -->
         <TextView
             android:id="@+id/tv_game_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
             android:gravity="center"
             android:ellipsize="end"
             android:maxLines="2"
