@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_bg_new">
 
-    <!-- Translucent glass scrim so app_bg is clearly visible -->
+    <!-- Translucent glass scrim so background is clear & crisp -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,22 +16,100 @@
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/tab_layout" />
+        android:layout_above="@id/bottom_nav_container" />
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
+    <!-- Cyberpunk Glassmorphic Bottom Navigation Dock -->
+    <LinearLayout
+        android:id="@+id/bottom_nav_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="56dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/nav_bg"
-        android:elevation="8dp"
-        app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:tabIndicatorColor="#00F0FF"
-        app:tabIndicatorHeight="3dp"
-        app:tabSelectedTextColor="#00F0FF"
-        app:tabTextColor="#8000F0FF"
-        app:tabTextAppearance="@android:style/TextAppearance.Material.Widget.TabWidget" />
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="12dp"
+        android:clipToPadding="false"
+        android:elevation="12dp">
+
+        <LinearLayout
+            android:id="@+id/bottom_nav_dock"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_bottom_nav_dock"
+            android:gravity="center"
+            android:weightSum="2">
+
+            <!-- HOME Button -->
+            <LinearLayout
+                android:id="@+id/nav_btn_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/bg_nav_button_active"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp">
+
+                <ImageView
+                    android:id="@+id/nav_icon_home"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_home"
+                    app:tint="#00F0FF" />
+
+                <TextView
+                    android:id="@+id/nav_text_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="HOME"
+                    android:textColor="#00F0FF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+            </LinearLayout>
+
+            <!-- SETTINGS Button -->
+            <LinearLayout
+                android:id="@+id/nav_btn_settings"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/bg_nav_button_inactive"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp">
+
+                <ImageView
+                    android:id="@+id/nav_icon_settings"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_settings"
+                    app:tint="#8094A3B8" />
+
+                <TextView
+                    android:id="@+id/nav_text_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="SETTINGS"
+                    android:textColor="#8094A3B8"
+                    android:textSize="13sp"
+                    android:textStyle="normal"
+                    android:letterSpacing="0.08" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>
