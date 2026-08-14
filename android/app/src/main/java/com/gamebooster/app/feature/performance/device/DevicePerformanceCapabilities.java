@@ -15,6 +15,8 @@ import java.util.List;
 public final class DevicePerformanceCapabilities {
 
     public enum OemFamily {
+        INFINIX,
+        TECNO,
         TRANSSION,
         XIAOMI,
         SAMSUNG,
@@ -22,6 +24,7 @@ public final class DevicePerformanceCapabilities {
         VIVO_IQOO,
         ASUS_ROG,
         NUBIA_REDMAGIC,
+        HONOR_HUAWEI,
         BLACK_SHARK,
         MOTOROLA,
         GOOGLE,
@@ -85,13 +88,16 @@ public final class DevicePerformanceCapabilities {
 
     public String getOemFamilyLabel() {
         switch (oemFamily) {
-            case TRANSSION: return "Transsion (Infinix / Tecno / itel)";
+            case INFINIX: return "Infinix XOS";
+            case TECNO: return "Tecno HiOS";
+            case TRANSSION: return "Transsion (itel)";
             case XIAOMI: return "Xiaomi / Redmi / POCO";
             case SAMSUNG: return "Samsung Galaxy";
             case OPPO_FAMILY: return "OPPO / realme / OnePlus";
             case VIVO_IQOO: return "vivo / iQOO";
             case ASUS_ROG: return "ASUS ROG Phone";
             case NUBIA_REDMAGIC: return "Nubia REDMAGIC";
+            case HONOR_HUAWEI: return "Honor MagicOS / Huawei EMUI";
             case BLACK_SHARK: return "Black Shark";
             case MOTOROLA: return "Motorola";
             case GOOGLE: return "Google Pixel";
@@ -109,8 +115,13 @@ public final class DevicePerformanceCapabilities {
         String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase();
         String brand = Build.BRAND == null ? "" : Build.BRAND.toLowerCase();
 
-        if (manufacturer.contains("infinix") || manufacturer.contains("tecno") || manufacturer.contains("itel")
-                || brand.contains("infinix") || brand.contains("tecno")) {
+        if (manufacturer.contains("infinix") || brand.contains("infinix")) {
+            return OemFamily.INFINIX;
+        }
+        if (manufacturer.contains("tecno") || brand.contains("tecno")) {
+            return OemFamily.TECNO;
+        }
+        if (manufacturer.contains("transsion") || manufacturer.contains("itel")) {
             return OemFamily.TRANSSION;
         }
         if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains("poco")
@@ -134,6 +145,10 @@ public final class DevicePerformanceCapabilities {
         if (manufacturer.contains("nubia") || manufacturer.contains("redmagic")
                 || brand.contains("nubia") || brand.contains("redmagic")) {
             return OemFamily.NUBIA_REDMAGIC;
+        }
+        if (manufacturer.contains("honor") || manufacturer.contains("huawei")
+                || brand.contains("honor") || brand.contains("huawei")) {
+            return OemFamily.HONOR_HUAWEI;
         }
         if (manufacturer.contains("blackshark") || brand.contains("blackshark")) {
             return OemFamily.BLACK_SHARK;
