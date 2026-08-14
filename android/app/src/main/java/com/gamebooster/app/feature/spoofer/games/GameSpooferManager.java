@@ -54,4 +54,11 @@ public class GameSpooferManager {
         Log.i(TAG, "Executing Spoofer Strategy: " + strategy.getStrategyName() + " for package " + packageName);
         return strategy.applyGameSpoof(context, packageName);
     }
+
+    public void resetSpoofForPackage(Context context, String packageName) {
+        GameSpooferInterface strategy = getStrategyForPackage(packageName);
+        Log.i(TAG, "Resetting Spoofer Strategy for package " + packageName);
+        strategy.resetGameSpoof(context, packageName);
+    }
 }
+

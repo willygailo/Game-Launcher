@@ -21,9 +21,37 @@ public class ShellExecutor {
         }
     }
 
+    private static final String[] SU_PATHS = {
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/sbin/su",
+            "/system/sd/xbin/su",
+            "/system/bin/failsafe/su",
+            "/data/local/xbin/su",
+            "/data/local/bin/su",
+            "/data/local/su",
+            "/data/adb/ksu/bin/su",
+            "/data/adb/ap/bin/su",
+            "/data/adb/magisk/busybox"
+    };
+
     public static boolean isRootAvailable() {
+        boolean hasBinary = false;
+        for (String path : SU_PATHS) {
+            if (new java.io.File(path).exists()) {
+                hasBinary = true;
+                break;
+            }
+        }
+        if (!hasBinary) {
+            return false;
+        }
+
         try {
             Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", "id"});
+            try {
+                process.getOutputStream().close();
+            } catch (Throwable ignored) {}
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = reader.readLine();
             int exitCode = process.waitFor();
