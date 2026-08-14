@@ -35,6 +35,8 @@ public class GameLauncherHelper {
             try {
                 int targetFps = GameProfilePreferences.getTargetHz(context, pkgName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
+                com.gamebooster.app.feature.performance.booster.TouchLatencyChannel.enableUltraTouchResponse();
+                com.gamebooster.app.feature.performance.booster.GyroLatencyChannel.enableZeroDelayGyro();
                 PerformanceChannel.applyTuningProfile(context, profile.performanceProfile);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.feature.performance.booster.NetworkOptimizer.flushDnsCache();

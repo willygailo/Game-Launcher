@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="10dp"
+    android:layout_marginBottom="6dp"
+    android:background="@drawable/bg_game_card_normal">
+
+    <ImageView
+        android:id="@+id/iv_discovered_game_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_game_icon_box" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/tv_discovered_game_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Game Name"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_discovered_game_pkg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="com.example.game"
+            android:textColor="#888888"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/tv_discovered_engine_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UNREAL ENGINE"
+                android:textColor="#00FFCC"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:background="@drawable/bg_badge_pill" />
+
+            <TextView
+                android:id="@+id/tv_discovered_source_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="MULTI-USER ADB"
+                android:textColor="#FFAA00"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:background="@drawable/bg_badge_pill" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_add_to_library"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:text="➕ ADD"
+        android:textColor="#00FFCC"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:background="@drawable/bg_nav_button_inactive" />
+
+</LinearLayout>

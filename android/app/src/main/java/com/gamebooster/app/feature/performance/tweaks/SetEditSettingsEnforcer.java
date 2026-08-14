@@ -112,19 +112,43 @@ public class SetEditSettingsEnforcer {
     }
 
     /**
-     * Applies high-responsiveness touch sensitivity & latency tuning properties.
+     * Applies high-responsiveness touch sensitivity, 1000Hz digitizer polling, and 0px deadzone.
      *
      * @return true if touch properties were applied successfully.
      */
     public static boolean enforceUltraTouchSettings() {
         boolean t1 = CommandExecutor.setSystemSetting("system", "touch_prediction_latency", "0");
         boolean t2 = CommandExecutor.setSystemSetting("secure", "long_press_timeout", "250");
-        boolean t3 = CommandExecutor.setSystemProperty("persist.sys.touch.rate", "480");
+        boolean t3 = CommandExecutor.setSystemProperty("debug.input.max_events_per_sec", "1000");
+        CommandExecutor.setSystemSetting("system", "touch_slop_reduction", "1");
+        CommandExecutor.setSystemProperty("view.touch_slop", "0");
         CommandExecutor.setSystemSetting("system", "pointer_speed", "7");
-        CommandExecutor.setSystemProperty("debug.touch.pressure.scale", "0.001");
+        CommandExecutor.setSystemProperty("persist.sys.touch.pressure.scale", "0.0001");
+        CommandExecutor.setSystemProperty("touch.filter.level", "0");
+        CommandExecutor.setSystemProperty("persist.vendor.qti.inputopts.enable", "true");
+        CommandExecutor.setSystemProperty("persist.vendor.qti.inputopts.movetouchslop", "0");
+        CommandExecutor.setSystemProperty("sys.touch.boost", "1");
+        CommandExecutor.setSystemProperty("persist.sys.touch.rate", "1000");
         CommandExecutor.setSystemProperty("persist.sys.touch.glove_mode", "0");
 
         return t1 && t2 && t3;
+    }
+
+    /**
+     * Applies 1000Hz Gyroscope & Accelerometer sampling with sensor HAL batching bypass for zero delay.
+     *
+     * @return true if gyro properties were applied successfully.
+     */
+    public static boolean enforceZeroDelayGyroSettings() {
+        boolean g1 = CommandExecutor.setSystemProperty("debug.sensor.gyro.rate", "1000");
+        CommandExecutor.setSystemProperty("vendor.sensor.gyro.rate", "1000");
+        CommandExecutor.setSystemProperty("debug.sensor.accel.rate", "1000");
+        CommandExecutor.setSystemProperty("vendor.sensor.accel.rate", "1000");
+        CommandExecutor.setSystemProperty("persist.sensor.fast_rate", "1");
+        CommandExecutor.setSystemProperty("debug.sensor.latency", "0");
+        CommandExecutor.setSystemProperty("persist.sys.sensor.polling_rate", "1000");
+        CommandExecutor.setSystemProperty("ro.sensor.gyro.rate", "1000");
+        return g1;
     }
 
     /**

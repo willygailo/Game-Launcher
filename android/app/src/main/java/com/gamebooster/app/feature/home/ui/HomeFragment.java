@@ -114,6 +114,15 @@ public class HomeFragment extends Fragment {
             });
         }
 
+        View btnDeepSearch = view.findViewById(R.id.btn_deep_search);
+        if (btnDeepSearch != null) {
+            btnDeepSearch.setOnClickListener(v -> {
+                DeepSearchDialog dialog = new DeepSearchDialog();
+                dialog.setOnGamesUpdatedListener(this::loadAndScanGamesZeroDelay);
+                dialog.show(getParentFragmentManager(), "DeepSearchDialog");
+            });
+        }
+
         // Horizontal Carousel Recycler Setup with LinearSnapHelper
         if (rvGames != null) {
             LinearLayoutManager lm = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
