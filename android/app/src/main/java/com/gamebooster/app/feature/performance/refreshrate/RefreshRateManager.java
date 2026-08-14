@@ -1,5 +1,6 @@
 package com.gamebooster.app.feature.performance.refreshrate;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
@@ -22,9 +23,9 @@ public class RefreshRateManager {
     }
 
     private void initStrategy() {
-        String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";
-        String brand = Build.BRAND != null ? Build.BRAND.toLowerCase() : "";
-        String model = Build.MODEL != null ? Build.MODEL.toLowerCase() : "";
+        String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT) : "";
+        String brand = Build.BRAND != null ? Build.BRAND.toLowerCase(java.util.Locale.ROOT) : "";
+        String model = Build.MODEL != null ? Build.MODEL.toLowerCase(java.util.Locale.ROOT) : "";
 
         Log.d(TAG, "Detecting Refresh Rate Strategy for Manufacturer=" + manufacturer + " Brand=" + brand + " Model=" + model);
 
@@ -60,32 +61,55 @@ public class RefreshRateManager {
     }
 
     public String forceRefreshRate(int targetHz) {
+        return forceRefreshRate(targetHz, null);
+    }
+
+    public String forceRefreshRate(int targetHz, String packageName) {
         if (currentStrategy != null && currentStrategy.isSupported()) {
-            return currentStrategy.forceRefreshRate(targetHz);
+            return currentStrategy.forceRefreshRate(targetHz, packageName);
         }
         return "Executed OEM Strategy refresh rate lock to " + targetHz + "Hz";
     }
 
-    public String forceRefreshRate(android.content.Context context, int targetHz) {
-        if (context == null) return forceRefreshRate(targetHz);
-        RealWorldHzLockEngine.getInstance().startLock(context, targetHz, null);
+    public String forceRefreshRate(Context context, int targetHz) {
+        return forceRefreshRate(context, targetHz, null);
+    }
+
+    public String forceRefreshRate(Context context, int targetHz, String packageName) {
+        if (context == null) return forceRefreshRate(targetHz, packageName);
+        RealWorldHzLockEngine.getInstance().startLock(context, targetHz, packageName);
+        if (currentStrategy != null && currentStrategy.isSupported()) {
+            currentStrategy.forceRefreshRate(targetHz, packageName);
+        }
         com.gamebooster.app.feature.performance.display.DisplayOverrideController.Result res = 
-                com.gamebooster.app.feature.performance.display.DisplayOverrideController.applyDisplayRate(context, targetHz, null);
+                com.gamebooster.app.feature.performance.display.DisplayOverrideController.applyDisplayRate(context, targetHz, packageName);
         return res.message;
     }
 
     public String resetRefreshRate() {
+        return resetRefreshRate((String) null);
+    }
+
+    public String resetRefreshRate(String packageName) {
         if (currentStrategy != null && currentStrategy.isSupported()) {
-            return currentStrategy.resetRefreshRate();
+            return currentStrategy.resetRefreshRate(packageName);
         }
         return "Reset display refresh rate overrides to default.";
     }
 
-    public String resetRefreshRate(android.content.Context context) {
+    public String resetRefreshRate(Context context) {
+        return resetRefreshRate(context, null);
+    }
+
+    public String resetRefreshRate(Context context, String packageName) {
         RealWorldHzLockEngine.getInstance().stopLock(context);
-        if (context == null) return resetRefreshRate();
+        if (currentStrategy != null && currentStrategy.isSupported()) {
+            currentStrategy.resetRefreshRate(packageName);
+        }
+        if (context == null) return resetRefreshRate(packageName);
         com.gamebooster.app.feature.performance.display.DisplayOverrideController.Result res = 
                 com.gamebooster.app.feature.performance.display.DisplayOverrideController.restore(context);
         return res.message;
     }
 }
+

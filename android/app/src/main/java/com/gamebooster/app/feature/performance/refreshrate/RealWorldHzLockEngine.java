@@ -100,14 +100,14 @@ public class RealWorldHzLockEngine {
                 CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", "2");
                 CommandExecutor.setSystemSetting("secure", "match_content_frame_rate", "0");
 
-                // Execute SetEdit settings enforcer & OEM hardware locks
-                SetEditSettingsEnforcer.enforceRefreshRate(hz);
-                OemHardwareOptimizer.applyOemOptimizations(hz);
+                // Execute SetEdit settings enforcer & OEM hardware locks with package context
+                SetEditSettingsEnforcer.enforceRefreshRate(hz, lockedPackage);
+                OemHardwareOptimizer.applyOemOptimizations(hz, lockedPackage);
 
                 // Re-apply window manager app refresh rate lock
-                CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + hz);
-                if (lockedPackage != null && !lockedPackage.isEmpty()) {
-                    CommandExecutor.executeSystemCommand("cmd window set-game-refresh-rate " + lockedPackage + " " + hz);
+                if (lockedPackage != null && !lockedPackage.trim().isEmpty() && !"global".equalsIgnoreCase(lockedPackage.trim())) {
+                    CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + lockedPackage + " " + hz);
+                    CommandExecutor.executeSystemCommand("cmd game set --mode 2 --fps " + hz + " " + lockedPackage);
                 }
 
                 // SurfaceFlinger FPS override to override display driver 60 FPS cap
@@ -117,7 +117,7 @@ public class RealWorldHzLockEngine {
                 CommandExecutor.executeSystemCommand("cmd thermalservice override-status 0");
                 CommandExecutor.executeSystemCommand("cmd thermal override-status 0");
 
-                Log.d(TAG, "Hz Lock Pulse executed: locked at " + hz + "Hz");
+                Log.d(TAG, "Hz Lock Pulse executed: locked at " + hz + "Hz for " + (lockedPackage != null ? lockedPackage : "global"));
             } catch (Throwable t) {
                 Log.e(TAG, "Error executing Hz Lock Pulse", t);
             }

@@ -73,8 +73,8 @@ public final class DisplayOverrideController {
         exec("settings put system user_refresh_rate " + requestedHz);
 
         // Inject full SetEdit matrix, SurfaceFlinger IPC (1035, 1036, 1037), and OEM thermal overrides
-        com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(requestedHz);
-        com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(requestedHz);
+        com.gamebooster.app.feature.performance.tweaks.SetEditSettingsEnforcer.enforceRefreshRate(requestedHz, packageName);
+        com.gamebooster.app.feature.performance.tweaks.OemHardwareOptimizer.applyOemOptimizations(requestedHz, packageName);
 
         // Start active Real-World Hz Lock Engine daemon pulse
         com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine.getInstance().startLock(context, requestedHz, packageName);

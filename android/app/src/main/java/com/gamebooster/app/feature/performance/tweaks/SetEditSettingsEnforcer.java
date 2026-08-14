@@ -17,6 +17,17 @@ public class SetEditSettingsEnforcer {
      * @return true if all refresh rate properties were successfully injected.
      */
     public static boolean enforceRefreshRate(int targetHz) {
+        return enforceRefreshRate(targetHz, null);
+    }
+
+    /**
+     * Enforces the target display refresh rate globally and for the specific game package.
+     *
+     * @param targetHz Refresh rate target (e.g. 120, 144, 165).
+     * @param packageName Target package name (optional/nullable).
+     * @return true if refresh rate properties were injected.
+     */
+    public static boolean enforceRefreshRate(int targetHz, String packageName) {
         if (targetHz <= 0) {
             return false;
         }
@@ -48,12 +59,16 @@ public class SetEditSettingsEnforcer {
         CommandExecutor.setSystemSetting("secure", "match_content_frame_rate", "0");
 
         // SurfaceFlinger & WindowManager Direct IPC
-        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + targetHz);
+        if (packageName != null && !packageName.trim().isEmpty() && !"global".equalsIgnoreCase(packageName.trim())) {
+            CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetHz);
+            CommandExecutor.executeSystemCommand("cmd game set --mode 2 --fps " + targetHz + " " + packageName);
+        }
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1037 i32 " + targetHz);
 
         // SurfaceFlinger Frame-Pacing & Micro-Stutter Reduction
+        CommandExecutor.setSystemProperty("debug.sf.fps_override", intHzStr);
         CommandExecutor.setSystemProperty("debug.sf.early_phase_offset_ns", "5000000");
         CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "5000000");
         CommandExecutor.setSystemProperty("debug.sf.early_sf_phase_offset_ns", "5000000");

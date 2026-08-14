@@ -61,12 +61,23 @@ public class OemHardwareOptimizer {
     }
 
     /**
-     * Applies vendor-tailored performance properties.
+     * Applies vendor-tailored performance properties globally.
      *
      * @param targetHz Desired refresh rate target (e.g., 120, 144, 165).
      * @return true if OEM optimizations were successfully applied.
      */
     public static boolean applyOemOptimizations(int targetHz) {
+        return applyOemOptimizations(targetHz, null);
+    }
+
+    /**
+     * Applies vendor-tailored performance properties globally and for target package.
+     *
+     * @param targetHz Desired refresh rate target (e.g., 120, 144, 165).
+     * @param packageName Target package name (optional/nullable).
+     * @return true if OEM optimizations were successfully applied.
+     */
+    public static boolean applyOemOptimizations(int targetHz, String packageName) {
         OemVendor vendor = detectVendor();
         boolean success = true;
 
@@ -137,6 +148,14 @@ public class OemHardwareOptimizer {
                 // OriginOS / FunTouchOS: Ultra Game Mode ultra-high Hz panel trigger
                 boolean v1 = CommandExecutor.setSystemSetting("system", "vivo_screen_refresh_rate", "3");
                 CommandExecutor.setSystemSetting("system", "iqoo_game_fps_target", String.valueOf(targetHz));
+                if (packageName != null && !packageName.trim().isEmpty() && !"global".equalsIgnoreCase(packageName.trim())) {
+                    String currentList = CommandExecutor.executeSystemCommand("cmd settings get secure high_refresh_rate_apps_list");
+                    if (currentList == null || currentList.contains("null") || currentList.trim().isEmpty()) {
+                        CommandExecutor.executeSystemCommand("cmd settings put secure high_refresh_rate_apps_list " + packageName);
+                    } else if (!currentList.contains(packageName)) {
+                        CommandExecutor.executeSystemCommand("cmd settings put secure high_refresh_rate_apps_list \"" + currentList.trim() + "," + packageName + "\"");
+                    }
+                }
                 success = v1;
                 break;
 
