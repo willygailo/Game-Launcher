@@ -161,10 +161,11 @@ public class FloatingOverlayService extends Service {
         if (btnBoost != null) {
             btnBoost.setOnClickListener(v -> {
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.feature.performance.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                    com.gamebooster.app.feature.performance.booster.RamZramChannel.MemoryStats stats =
+                            com.gamebooster.app.feature.performance.booster.RamZramChannel.optimizeMemory(getApplicationContext());
                     com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "⚡ Executed: pm trim-caches 1000M & sync",
+                                "⚡ Memory Cleaned: Freed " + stats.freedRamMb + "MB (" + stats.availRamMbAfter + "MB Free)",
                                 android.widget.Toast.LENGTH_LONG).show();
                         scheduleAutoCollapse();
                     });
@@ -316,6 +317,9 @@ public class FloatingOverlayService extends Service {
                         params.preferredDisplayModeId = bestModeId;
                     }
                 }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
             }
         } catch (Throwable ignored) {}
 

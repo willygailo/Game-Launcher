@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_dark"
@@ -8,23 +9,24 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚡ EXECUTION &amp; PERMISSIONS"
+            android:text="⚡ PERMISSIONS &amp; INTEGRATIONS"
             android:textColor="@color/accent_cyan"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="100% Non-Rooted Shizuku ADB &amp; System Settings Access"
+            android:text="100% Legal Non-Root ADB &amp; Framework Compliant System Access"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tv_engine_status"
@@ -39,8 +41,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -49,24 +51,61 @@
                 android:layout_height="wrap_content"
                 android:text="⚡ 1-TAP SHIZUKU ADB CONNECTION"
                 android:textColor="@color/accent_neon_green"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="No Root required! Connects directly to Shizuku service for non-rooted refresh rate locking, Vulkan HWUI acceleration, and thermal overrides."
+                android:layout_marginTop="4dp"
+                android:text="No Root required. Connects directly to Shizuku service for non-rooted refresh rate locking, Game Mode overrides, Vulkan HWUI acceleration, and thermal limits."
                 android:textColor="@color/text_primary"
-                android:textSize="13sp" />
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_grant_shizuku"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="14dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
                 android:backgroundTint="@color/accent_neon_green"
                 android:text="CONNECT VIA SHIZUKU"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Battery Optimization Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_glass_shape"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔋 UNRESTRICTED BATTERY ACCESS"
+                android:textColor="#FFCC00"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_battery_opt_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Exempt Game Booster from OEM background task killing (Xiaomi Cleaner, Samsung Device Care) so Hz lock and HUD remain active during gameplay."
+                android:textColor="@color/text_primary"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_battery_unrestricted"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#FFCC00"
+                android:text="DISABLE BATTERY RESTRICTION"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -75,35 +114,72 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚙️ SYSTEM SETTINGS PERMISSION"
+                android:text="⚙️ WRITE SYSTEM SETTINGS"
                 android:textColor="@color/accent_cyan"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_root_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="4dp"
                 android:text="Engine Access: System Settings API Active"
                 android:textColor="@color/text_primary"
-                android:textSize="13sp" />
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_open_settings"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="14dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
                 android:backgroundTint="@color/accent_cyan"
                 android:text="OPEN WRITE SETTINGS PERMISSION"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Floating Overlay Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_glass_shape"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🪟 IN-GAME FLOATING HUD OVERLAY"
+                android:textColor="#FF99FF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_overlay_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Allows displaying real-time FPS, RAM usage, temperature telemetry dock, and custom eSports crosshairs on top of games."
+                android:textColor="@color/text_primary"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_open_overlay_settings"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#FF99FF"
+                android:text="GRANT OVERLAY PERMISSION"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>

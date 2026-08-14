@@ -6,8 +6,10 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,26 +18,35 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.feature.performance.booster.PerformanceChannel;
-import com.gamebooster.app.feature.performance.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
-import com.gamebooster.app.feature.performance.display.DisplayOverrideController;
 import com.gamebooster.app.feature.games.GameAppInfo;
 import com.gamebooster.app.feature.games.GameManagerRepository;
-import com.gamebooster.app.feature.games.GamePackageRegistry;
-import com.gamebooster.app.feature.gameprofiles.patcher.GameConfigPatcher;
 import com.gamebooster.app.feature.gameprofiles.automation.GameProfileAutoConfigurator;
 import com.gamebooster.app.feature.gameprofiles.preferences.GameProfilePreferences;
 import com.gamebooster.app.feature.gameprofiles.preferences.GameSessionSettings;
 import com.gamebooster.app.feature.overlay.FloatingOverlayService;
+import com.gamebooster.app.feature.performance.booster.PerformanceChannel;
+import com.gamebooster.app.feature.performance.booster.RamZramChannel;
+import com.gamebooster.app.feature.performance.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.feature.performance.display.DisplayOverrideController;
+import com.gamebooster.app.feature.performance.network.GamingDnsOptimizer;
+import com.gamebooster.app.feature.performance.network.WifiLatencyOptimizer;
+import com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * AutoGameMonitorService — Real-time game launch detection and lifecycle automation engine.
+ *
+ * Automatically triggers display Hz lock, Wi-Fi low-latency lock, gaming DNS, RAM cache optimization,
+ * DND mode, and Floating HUD when games launch, and cleanly reverts all states when games exit.
+ */
 public class AutoGameMonitorService extends Service {
 
     private static final String TAG = "AutoGameMonitor";
@@ -52,6 +63,23 @@ public class AutoGameMonitorService extends Service {
      * Prevents re-patching on every 2.5s poll — only fires once per game launch.
      */
     private final Set<String> sessionPatchedPackages = new HashSet<>();
+
+    private final BroadcastReceiver screenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || intent.getAction() == null) return;
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                Log.d(TAG, "Screen off detected: pausing real-world Hz lock pulse to conserve power");
+                RealWorldHzLockEngine.getInstance().stopLock(getApplicationContext());
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                if (lastActiveGamePackage != null) {
+                    Log.d(TAG, "Screen on detected with active game: resuming real-world Hz lock pulse");
+                    int targetHz = GameProfileAutoConfigurator.resolveGameHz(getApplicationContext(), lastActiveGamePackage);
+                    RealWorldHzLockEngine.getInstance().startLock(getApplicationContext(), targetHz, lastActiveGamePackage);
+                }
+            }
+        }
+    };
 
     public static boolean isRunning() {
         return isRunning;
@@ -87,6 +115,11 @@ public class AutoGameMonitorService extends Service {
         } catch (Exception e) {
             Log.e(TAG, "Failed to start foreground service", e);
         }
+
+        IntentFilter screenFilter = new IntentFilter();
+        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+        ContextCompat.registerReceiver(this, screenStateReceiver, screenFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         setupMonitorLoop();
     }
@@ -132,8 +165,8 @@ public class AutoGameMonitorService extends Service {
                 int targetHz = GameProfileAutoConfigurator.resolveGameHz(
                         getApplicationContext(), currentPackage);
 
-                com.gamebooster.app.feature.performance.device.DevicePerformanceCapabilities caps =
-                        com.gamebooster.app.feature.performance.device.DevicePerformanceCapabilities.detect(getApplicationContext());
+                DevicePerformanceCapabilities caps =
+                        DevicePerformanceCapabilities.detect(getApplicationContext());
                 targetHz = caps.resolveRefreshRate(targetHz);
 
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage
@@ -145,15 +178,15 @@ public class AutoGameMonitorService extends Service {
                 DisplayOverrideController.Result game = DisplayOverrideController.applyGameProfile(
                         getApplicationContext(), currentPackage, targetHz);
 
-                // ── STEP 2: Record the session once. Game files and device identity are never modified. ──
+                // ── STEP 2: Record the session once ──────────────────────────────
                 if (!sessionPatchedPackages.contains(currentPackage)) {
                     sessionPatchedPackages.add(currentPackage);
                 }
 
                 // ── STEP 3: Touch latency + CPU/GPU governor + RAM Purge & Gaming DNS ────
                 PerformanceChannel.applyTuningProfile(getApplicationContext(), profile.performanceProfile);
-                com.gamebooster.app.feature.performance.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
-                com.gamebooster.app.feature.performance.network.GamingDnsOptimizer.enableGamingDns(null);
+                RamZramChannel.trimMemoryAndCleanCache(getApplicationContext(), currentPackage);
+                GamingDnsOptimizer.enableGamingDns(null, getApplicationContext());
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
 
                 // ── STEP 4: Show floating HUD ──────────────────────────────────────
@@ -168,8 +201,12 @@ public class AutoGameMonitorService extends Service {
                                 android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited: " + lastActiveGamePackage + " — stopping continuous real-world Hz lock pulse and restoring baseline state");
-                com.gamebooster.app.feature.performance.refreshrate.RealWorldHzLockEngine.getInstance().stopLock(getApplicationContext());
+                Log.i(TAG, "Game exited: " + lastActiveGamePackage + " — restoring baseline state and releasing locks");
+                RealWorldHzLockEngine.getInstance().stopLock(getApplicationContext());
+                WifiLatencyOptimizer.releaseLowLatencyLock();
+                GamingDnsOptimizer.revertPrivateDns();
+                GameSpaceDndManager.setGamingDndMode(getApplicationContext(), false);
+                FloatingOverlayService.stopOverlay(getApplicationContext());
                 lastActiveGamePackage = null;
             }
         });
@@ -207,6 +244,11 @@ public class AutoGameMonitorService extends Service {
         if (handler != null && monitorRunnable != null) {
             handler.removeCallbacks(monitorRunnable);
         }
+        try {
+            unregisterReceiver(screenStateReceiver);
+        } catch (Exception ignored) {}
+        WifiLatencyOptimizer.releaseLowLatencyLock();
+        GamingDnsOptimizer.revertPrivateDns();
     }
 
     @Nullable

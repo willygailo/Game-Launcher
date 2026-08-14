@@ -6,8 +6,8 @@ import com.gamebooster.app.platform.shell.CommandExecutor;
 /**
  * OemHardwareOptimizer — Vendor-specific hardware tuning & thermal throttling bypass engine.
  *
- * Applies tailored hardware profiles for Transsion (Infinix/Tecno), Samsung, Xiaomi/POCO,
- * Realme/OPPO, and Vivo/iQOO devices via Shizuku shell IPC.
+ * Applies tailored hardware profiles for Transsion (Infinix/Tecno), Samsung, Xiaomi/POCO/HyperOS,
+ * Realme/OPPO, Vivo/iQOO, ASUS ROG, REDMAGIC, and Honor/Huawei devices via Shizuku shell IPC.
  */
 public class OemHardwareOptimizer {
 
@@ -80,18 +80,19 @@ public class OemHardwareOptimizer {
     public static boolean applyOemOptimizations(int targetHz, String packageName) {
         OemVendor vendor = detectVendor();
         boolean success = true;
+        String hzStr = String.valueOf(targetHz);
 
         switch (vendor) {
             case INFINIX:
                 // Infinix XOS: Enable bypass charging, Dar-Link 3.0/4.0 governor & force FPS lock
                 boolean i1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
                 boolean i2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
-                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("sys.infinix.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", hzStr);
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
+                CommandExecutor.setSystemProperty("sys.infinix.fps", hzStr);
                 CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
-                CommandExecutor.setSystemSetting("system", "infinix_refresh_rate_mode", String.valueOf(targetHz));
-                CommandExecutor.setSystemSetting("system", "xos_display_refresh_rate", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "infinix_refresh_rate_mode", hzStr);
+                CommandExecutor.setSystemSetting("system", "xos_display_refresh_rate", hzStr);
                 success = i1 && i2;
                 break;
 
@@ -99,12 +100,12 @@ public class OemHardwareOptimizer {
                 // Tecno HiOS: Enable bypass charging, Panther Engine & force FPS lock
                 boolean t1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
                 boolean t2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
-                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("sys.tecno.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", hzStr);
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
+                CommandExecutor.setSystemProperty("sys.tecno.fps", hzStr);
                 CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
-                CommandExecutor.setSystemSetting("system", "tecno_refresh_rate_mode", String.valueOf(targetHz));
-                CommandExecutor.setSystemSetting("system", "hios_display_refresh_rate", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "tecno_refresh_rate_mode", hzStr);
+                CommandExecutor.setSystemSetting("system", "hios_display_refresh_rate", hzStr);
                 success = t1 && t2;
                 break;
 
@@ -112,10 +113,10 @@ public class OemHardwareOptimizer {
                 // Transsion: Enable bypass charging & Dar-Link governor
                 boolean b1 = CommandExecutor.setSystemProperty("sys.bypass.charging", "1");
                 boolean b2 = CommandExecutor.setSystemProperty("persist.sys.darlink.mode", "1");
-                CommandExecutor.setSystemProperty("persist.sys.phx.fps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("persist.sys.game.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.phx.fps", hzStr);
+                CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
                 CommandExecutor.setSystemProperty("sys.oem.fps_limit", "0");
-                CommandExecutor.setSystemSetting("system", "transsion_refresh_rate_mode", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "transsion_refresh_rate_mode", hzStr);
                 success = b1 && b2;
                 break;
 
@@ -123,31 +124,35 @@ public class OemHardwareOptimizer {
                 // Samsung One UI: Disable GOS auto temperature throttling limit & uncap FPS limits
                 boolean s1 = CommandExecutor.setSystemSetting("global", "game_auto_temperature_control", "0");
                 boolean s2 = CommandExecutor.setSystemSetting("secure", "game_performance_mode", "1");
-                CommandExecutor.setSystemProperty("sys.gos.fps_limit", String.valueOf(targetHz));
-                CommandExecutor.setSystemSetting("system", "game_mode_fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("sys.gos.fps_limit", hzStr);
+                CommandExecutor.setSystemSetting("system", "game_mode_fps", hzStr);
+                CommandExecutor.setSystemSetting("system", "refresh_rate_mode", "2");
                 success = s1 && s2;
                 break;
 
             case XIAOMI_POCO:
                 // Xiaomi HyperOS/MIUI: Joyose high FPS target & thermal power override
-                boolean x1 = CommandExecutor.setSystemProperty("persist.sys.power.fps", String.valueOf(targetHz));
-                boolean x2 = CommandExecutor.setSystemProperty("persist.vendor.power.dfps", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("persist.sys.joyose.fps", String.valueOf(targetHz));
+                boolean x1 = CommandExecutor.setSystemProperty("persist.sys.power.fps", hzStr);
+                boolean x2 = CommandExecutor.setSystemProperty("persist.vendor.power.dfps", hzStr);
+                CommandExecutor.setSystemProperty("persist.sys.joyose.fps", hzStr);
                 CommandExecutor.setSystemProperty("sys.thermal.mode", "1");
+                CommandExecutor.setSystemSetting("system", "miui_refresh_rate", hzStr);
+                CommandExecutor.setSystemSetting("system", "joyose_game_fps", hzStr);
                 success = x1 && x2;
                 break;
 
             case REALME_OPPO:
                 // ColorOS / Realme UI: HyperBoost display refresh override
-                boolean r1 = CommandExecutor.setSystemSetting("system", "oplus_customize_screen_refresh_rate", String.valueOf(targetHz));
-                CommandExecutor.setSystemSetting("system", "oppo_screen_refresh_rate", String.valueOf(targetHz));
+                boolean r1 = CommandExecutor.setSystemSetting("system", "oplus_customize_screen_refresh_rate", hzStr);
+                CommandExecutor.setSystemSetting("system", "oppo_screen_refresh_rate", hzStr);
+                CommandExecutor.setSystemSetting("secure", "oplus_customize_display_level", "3");
                 success = r1;
                 break;
 
             case VIVO_IQOO:
                 // OriginOS / FunTouchOS: Ultra Game Mode ultra-high Hz panel trigger
                 boolean v1 = CommandExecutor.setSystemSetting("system", "vivo_screen_refresh_rate", "3");
-                CommandExecutor.setSystemSetting("system", "iqoo_game_fps_target", String.valueOf(targetHz));
+                CommandExecutor.setSystemSetting("system", "iqoo_game_fps_target", hzStr);
                 if (packageName != null && !packageName.trim().isEmpty() && !"global".equalsIgnoreCase(packageName.trim())) {
                     String currentList = CommandExecutor.executeSystemCommand("cmd settings get secure high_refresh_rate_apps_list");
                     if (currentList == null || currentList.contains("null") || currentList.trim().isEmpty()) {
@@ -162,24 +167,27 @@ public class OemHardwareOptimizer {
             case ASUS_ROG:
                 // ROG Phone X-Mode performance override
                 boolean a1 = CommandExecutor.setSystemProperty("sys.asus.gaming.mode", "1");
-                CommandExecutor.setSystemProperty("persist.sys.asus.hz", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("sys.asus.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.asus.hz", hzStr);
+                CommandExecutor.setSystemProperty("sys.asus.fps", hzStr);
                 success = a1;
                 break;
 
             case REDMAGIC:
                 // REDMAGIC Game Space 165Hz unlock
                 boolean n1 = CommandExecutor.setSystemProperty("sys.nubia.game.mode", "1");
-                CommandExecutor.setSystemProperty("persist.sys.nubia.hz", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("sys.nubia.fps", String.valueOf(targetHz));
+                CommandExecutor.setSystemProperty("persist.sys.nubia.hz", hzStr);
+                CommandExecutor.setSystemProperty("sys.nubia.fps", hzStr);
+                CommandExecutor.setSystemSetting("system", "nubia_refresh_rate", hzStr);
+                CommandExecutor.setSystemSetting("system", "redmagic_game_mode", "1");
                 success = n1;
                 break;
 
             case HONOR_HUAWEI:
                 // Honor MagicOS / Huawei EMUI performance override
-                boolean h1 = CommandExecutor.setSystemSetting("system", "honor_screen_refresh_rate", String.valueOf(targetHz));
-                boolean h2 = CommandExecutor.setSystemSetting("system", "hw_display_refresh_rate", String.valueOf(targetHz));
-                CommandExecutor.setSystemProperty("persist.sys.hw.fps", String.valueOf(targetHz));
+                boolean h1 = CommandExecutor.setSystemSetting("system", "honor_screen_refresh_rate", hzStr);
+                boolean h2 = CommandExecutor.setSystemSetting("system", "hw_display_refresh_rate", hzStr);
+                CommandExecutor.setSystemProperty("persist.sys.hw.fps", hzStr);
+                CommandExecutor.setSystemProperty("sys.perf.game", "1");
                 success = h1 || h2;
                 break;
 
@@ -192,8 +200,8 @@ public class OemHardwareOptimizer {
                 break;
         }
 
-        // Universal SurfaceFlinger Non-Drop Properties (Eradicates 85-90 FPS dynamic cap)
-        CommandExecutor.setSystemProperty("debug.sf.fps_override", String.valueOf(targetHz));
+        // Universal SurfaceFlinger Non-Drop Properties (Eradicates dynamic FPS caps)
+        CommandExecutor.setSystemProperty("debug.sf.fps_override", hzStr);
         CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
         CommandExecutor.setSystemProperty("debug.sf.enable_gl_backpressure", "0");
 
