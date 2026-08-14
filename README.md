@@ -11,7 +11,7 @@
 <br/><br/>
 
 <!-- BADGES -->
-<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Release-v2.7.0.0-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Release"></a>
+<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Release-v2.7.1.0-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Release"></a>
 <a href="https://shizuku.rikka.app/"><img src="https://img.shields.io/badge/Shizuku-ADB_Binder_IPC-00FF9C?style=for-the-badge&logo=android&logoColor=black" alt="Shizuku"></a>
 <a href="android"><img src="https://img.shields.io/badge/Android-API_21--36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-007ACC?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"></a>

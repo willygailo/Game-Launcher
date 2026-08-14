@@ -27,7 +27,7 @@ public class ProfileBackupEngine {
     public static JSONObject exportBackupJsonObject(Context context) {
         JSONObject backupJson = new JSONObject();
         try {
-            backupJson.put("version", "2.7.0.0");
+            backupJson.put("version", "2.7.1.0");
             backupJson.put("timestamp", System.currentTimeMillis());
 
             // Export Custom Games
