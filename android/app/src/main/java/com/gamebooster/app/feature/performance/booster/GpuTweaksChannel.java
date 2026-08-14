@@ -28,7 +28,8 @@ public final class GpuTweaksChannel {
     }
 
     public static boolean setAngleMode(boolean enabled) {
-        return CommandExecutor.setSystemSetting("global", "updatable_driver_all_apps", enabled ? "1" : "0");
+        AngleGraphicsDriverChannel.resetAngleDriver();
+        return true;
     }
 
     public static boolean setGameDriverMode(boolean enabled) {

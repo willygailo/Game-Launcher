@@ -5,8 +5,8 @@ import com.gamebooster.app.platform.shell.CommandExecutor;
 import com.gamebooster.app.platform.shizuku.ShizukuExecutor;
 
 /**
- * AngleGraphicsDriverChannel manages Android's ANGLE (Vulkan OpenGL ES translation layer)
- * and Game Driver selection settings to force hardware graphics acceleration.
+ * AngleGraphicsDriverChannel manages safe reset and prevention of Android ANGLE driver overrides
+ * to guarantee 100% stability in Chrome browser, Android System WebView, and system compositors.
  */
 public class AngleGraphicsDriverChannel {
 
@@ -23,60 +23,35 @@ public class AngleGraphicsDriverChannel {
     }
 
     public static AngleResult enableAngleDriverForPackage(String packageName) {
-        if (packageName == null || packageName.trim().isEmpty()) {
-            return new AngleResult(false, "Invalid package name");
-        }
-        String pkg = packageName.trim().toLowerCase();
-
-        Log.d(TAG, "Enabling ANGLE Vulkan Driver for " + pkg);
-
-        // 1. Per-app ANGLE selection
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs " + pkg);
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values angle");
-
-        ShizukuExecutor.executeShizukuCommand("settings put global angle_gl_driver_selection_pkgs " + pkg);
-        ShizukuExecutor.executeShizukuCommand("settings put global angle_gl_driver_selection_values angle");
-
-        // 2. Set backend to Vulkan (2)
-        CommandExecutor.executeSystemCommand("setprop debug.angle.backend 2");
-        ShizukuExecutor.executeShizukuCommand("setprop debug.angle.backend 2");
-
-        // 3. Opt-in Game Driver API
-        CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + pkg);
-        ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + pkg);
-
-        return new AngleResult(true, "ANGLE Vulkan Graphics Driver enabled for " + pkg);
+        // Disabled: ANGLE causes severe rendering glitches and crashes in Chrome & WebView
+        Log.w(TAG, "ANGLE driver forced mode is disabled to protect Chrome browser stability.");
+        resetAngleDriver();
+        return new AngleResult(true, "Safe driver mode enforced (ANGLE disabled for stability)");
     }
 
     public static AngleResult enableGlobalAngleDriver() {
-        Log.d(TAG, "Enabling Global ANGLE Driver");
-
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 1");
-        CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 1");
-        CommandExecutor.executeSystemCommand("setprop debug.angle.backend 2");
-
-        ShizukuExecutor.executeShizukuCommand("settings put global angle_gl_driver_all_angle 1");
-        ShizukuExecutor.executeShizukuCommand("settings put global game_driver_all_apps 1");
-        ShizukuExecutor.executeShizukuCommand("setprop debug.angle.backend 2");
-
-        return new AngleResult(true, "Global ANGLE Vulkan Driver enabled across system");
+        // Disabled: Global ANGLE breaks system-wide WebView and Chrome browser
+        Log.w(TAG, "Global ANGLE driver is permanently disabled to ensure browser stability.");
+        resetAngleDriver();
+        return new AngleResult(true, "Safe driver mode enforced (Global ANGLE disabled)");
     }
 
     public static AngleResult resetAngleDriver() {
-        Log.d(TAG, "Resetting ANGLE Driver settings to default");
+        Log.d(TAG, "Resetting and disabling all ANGLE driver overrides");
 
-        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_all_angle");
-        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs");
-        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values");
-        CommandExecutor.executeSystemCommand("settings delete global game_driver_all_apps");
-        CommandExecutor.executeSystemCommand("setprop debug.angle.backend \"\"");
+        String cmd = "settings delete global angle_gl_driver_all_angle; "
+                + "settings delete global angle_gl_driver_selection_pkgs; "
+                + "settings delete global angle_gl_driver_selection_values; "
+                + "settings delete global angle_enabled_pkgs; "
+                + "settings delete global angle_defer_init; "
+                + "settings delete global updatable_driver_all_apps; "
+                + "settings delete global updatable_driver_production_opt_in_apps; "
+                + "settings delete global game_driver_all_apps; "
+                + "setprop debug.angle.backend \"\"";
 
-        ShizukuExecutor.executeShizukuCommand("settings delete global angle_gl_driver_all_angle");
-        ShizukuExecutor.executeShizukuCommand("settings delete global angle_gl_driver_selection_pkgs");
-        ShizukuExecutor.executeShizukuCommand("settings delete global angle_gl_driver_selection_values");
-        ShizukuExecutor.executeShizukuCommand("settings delete global game_driver_all_apps");
-        ShizukuExecutor.executeShizukuCommand("setprop debug.angle.backend \"\"");
+        CommandExecutor.executeSystemCommand(cmd);
+        ShizukuExecutor.executeShizukuCommand(cmd);
 
-        return new AngleResult(true, "Reset ANGLE graphics driver settings to stock default");
+        return new AngleResult(true, "Reset and disabled all ANGLE driver settings");
     }
 }

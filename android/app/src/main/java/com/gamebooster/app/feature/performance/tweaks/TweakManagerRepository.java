@@ -350,10 +350,8 @@ public class TweakManagerRepository {
                 }
             }
 
-            // 2. Re-apply manual hardware engine settings permanently
-            if (ManualSettingsPreferences.isAngleModeEnabled(context)) {
-                com.gamebooster.app.feature.performance.booster.GpuTweaksChannel.setAngleMode(true);
-            }
+            // 2. Re-apply manual hardware engine settings permanently (ANGLE disabled to protect Chrome/WebView)
+            com.gamebooster.app.feature.performance.booster.AngleGraphicsDriverChannel.resetAngleDriver();
             if (ManualSettingsPreferences.isGameDriverEnabled(context)) {
                 com.gamebooster.app.feature.performance.booster.GpuTweaksChannel.setGameDriverMode(true);
             }

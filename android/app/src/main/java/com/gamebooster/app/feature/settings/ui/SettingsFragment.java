@@ -62,7 +62,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private TweaksAdapter tweaksAdapter;
 
     // Hardware & Boost Switches
-    private Switch switchAngleMode;
     private Switch switchGameDriver;
     private Switch switchGpuMode;
     private Switch switchCpuMode;
@@ -395,7 +394,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
         Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
 
-        switchAngleMode = view.findViewById(R.id.switch_angle_mode);
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
@@ -417,12 +415,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (getContext() != null) {
-            if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
             if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
             if (switchEnforceHzLock != null) switchEnforceHzLock.setChecked(com.gamebooster.app.feature.performance.booster.MaxHzForceChannel.isHzLocked(getContext()));
-            if (switchEnhanceGraphicsLock != null) switchEnhanceGraphicsLock.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
+            if (switchEnhanceGraphicsLock != null) switchEnhanceGraphicsLock.setChecked(false);
             if (switchMaxPerfLock != null) switchMaxPerfLock.setChecked(PerformanceChannel.isMaxPerformanceLocked(getContext()));
         }
 
@@ -485,24 +482,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (switchAngleMode != null) {
-            switchAngleMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setAngleMode(getContext(), isChecked);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    if (isChecked) {
-                        com.gamebooster.app.feature.performance.booster.AngleGraphicsDriverChannel.enableGlobalAngleDriver();
-                    } else {
-                        com.gamebooster.app.feature.performance.booster.AngleGraphicsDriverChannel.resetAngleDriver();
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan Driver ENABLED for all games" : "ANGLE Driver Reset", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
+
 
         if (switchGameDriver != null) {
             switchGameDriver.setOnCheckedChangeListener((buttonView, isChecked) -> {

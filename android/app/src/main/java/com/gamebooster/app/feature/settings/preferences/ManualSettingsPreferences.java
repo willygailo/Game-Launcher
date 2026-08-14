@@ -39,12 +39,11 @@ public class ManualSettingsPreferences {
 
     public static void setAngleMode(Context context, boolean enabled) {
         if (context == null) return;
-        getPrefs(context).edit().putBoolean(KEY_ANGLE_MODE, enabled).apply();
+        getPrefs(context).edit().putBoolean(KEY_ANGLE_MODE, false).apply();
     }
 
     public static boolean isAngleModeEnabled(Context context) {
-        if (context == null) return false;
-        return getPrefs(context).getBoolean(KEY_ANGLE_MODE, false);
+        return false;
     }
 
     public static void setGameDriverEnabled(Context context, boolean enabled) {

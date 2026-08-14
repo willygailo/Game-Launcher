@@ -85,12 +85,8 @@ public final class DeviceSpooferEngine {
             gmAdapter.setGameMode(packageName, GameManagerAdapter.GAME_MODE_PERFORMANCE);
             gmAdapter.setGameModeAndFps(packageName, GameManagerAdapter.GAME_MODE_PERFORMANCE, supportedHz);
 
-            boolean useAngle = profile.glRenderer != null && profile.glRenderer.toLowerCase(java.util.Locale.ROOT).contains("adreno");
-            gmAdapter.applyGameOverlay(packageName, GameManagerAdapter.GAME_MODE_PERFORMANCE, supportedHz, 1.0f, useAngle);
+            gmAdapter.applyGameOverlay(packageName, GameManagerAdapter.GAME_MODE_PERFORMANCE, supportedHz, 1.0f, false);
             gmAdapter.setSurfaceFrameRateHint(packageName, (float) supportedHz);
-
-            // 3. Opt-in to Android Updatable Graphics Driver (ANGLE/Vulkan channel)
-            SetEditSettingsEnforcer.enforceAngleDriverOptIn(packageName);
         }
 
         // 4. Enforce high refresh rate & touch matrix tuning via SetEdit engine

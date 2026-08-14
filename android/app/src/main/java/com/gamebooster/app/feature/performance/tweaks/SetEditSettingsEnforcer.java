@@ -97,20 +97,11 @@ public class SetEditSettingsEnforcer {
     }
 
     /**
-     * Configures Android Updatable Graphics Driver (ANGLE) channel for targeted game packages.
-     *
-     * @param commaSeparatedPackages Comma-separated list of target package names.
-     * @return true if ANGLE production opt-in property was updated.
+     * Cleans up Android Updatable Graphics Driver & ANGLE settings to prevent breaking Chrome and WebViews.
      */
     public static boolean enforceAngleDriverOptIn(String commaSeparatedPackages) {
-        if (commaSeparatedPackages == null || commaSeparatedPackages.isEmpty()) {
-            return false;
-        }
-
-        boolean disableAll = CommandExecutor.setSystemSetting("global", "updatable_driver_all_apps", "0");
-        boolean setOptIn   = CommandExecutor.setSystemSetting("global", "updatable_driver_production_opt_in_apps", commaSeparatedPackages);
-
-        return disableAll && setOptIn;
+        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_all_angle; settings delete global updatable_driver_all_apps; settings delete global updatable_driver_production_opt_in_apps");
+        return true;
     }
 
     /**

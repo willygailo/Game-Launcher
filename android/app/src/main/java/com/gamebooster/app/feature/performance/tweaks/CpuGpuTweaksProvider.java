@@ -51,10 +51,10 @@ public class CpuGpuTweaksProvider {
 
         list.add(new TweakItem(
                 "shizuku_gpu_clock_boost",
-                "GPU Clock & Vulkan Driver Lock (Shizuku Root IPC)",
-                "Forces high-performance GPU driver scaling and Vulkan 3D rendering pipeline via Shizuku",
-                "settings put global game_driver_all_apps 1; settings put global angle_gl_driver_all_angle 1; setprop debug.hwui.renderer vulkan",
-                "settings put global game_driver_all_apps 0; setprop debug.hwui.renderer skia",
+                "GPU Clock & Hardware Composition Boost (Shizuku Root IPC)",
+                "Forces high-performance GPU driver scaling and hardware composition via Shizuku",
+                "setprop debug.egl.hw 1; setprop debug.sf.hw 1; setprop vendor.gpu.boost 1",
+                "setprop debug.egl.hw 0; setprop debug.sf.hw 0; setprop vendor.gpu.boost 0",
                 TweakCategory.CPU_GPU,
                 true
         ));
