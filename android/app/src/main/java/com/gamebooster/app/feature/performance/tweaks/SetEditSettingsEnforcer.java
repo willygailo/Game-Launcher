@@ -55,26 +55,33 @@ public class SetEditSettingsEnforcer {
         CommandExecutor.setSystemSetting("global", "sf_max_fps", intHzStr);
 
         // Secure Namespace (Disables VRR/LTPO dynamic drop to 60/80/90Hz)
+        CommandExecutor.setSystemSetting("secure", "peak_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("secure", "min_refresh_rate", hzStr);
+        CommandExecutor.setSystemSetting("secure", "user_refresh_rate", intHzStr);
         CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", "2");
         CommandExecutor.setSystemSetting("secure", "match_content_frame_rate", "0");
+        CommandExecutor.setSystemSetting("secure", "oplus_customize_display_level", "3");
 
         // SurfaceFlinger & WindowManager Direct IPC
         if (packageName != null && !packageName.trim().isEmpty() && !"global".equalsIgnoreCase(packageName.trim())) {
             CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate " + packageName + " " + targetHz);
             CommandExecutor.executeSystemCommand("cmd game set --mode 2 --fps " + targetHz + " " + packageName);
+            CommandExecutor.setSystemSetting("secure", "high_refresh_rate_apps_list", packageName);
         }
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + targetHz);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1037 i32 " + targetHz);
 
-        // SurfaceFlinger Frame-Pacing & Micro-Stutter Reduction
+        // SurfaceFlinger Frame-Pacing & GPU Composition
+        CommandExecutor.setSystemProperty("debug.composition.type", "gpu");
+        CommandExecutor.setSystemProperty("persist.sys.composition.type", "gpu");
+        CommandExecutor.setSystemProperty("debug.egl.hw", "1");
+        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+        CommandExecutor.setSystemProperty("vendor.gpu.boost", "1");
         CommandExecutor.setSystemProperty("debug.sf.fps_override", intHzStr);
-        CommandExecutor.setSystemProperty("debug.sf.early_phase_offset_ns", "5000000");
-        CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "5000000");
-        CommandExecutor.setSystemProperty("debug.sf.early_sf_phase_offset_ns", "5000000");
-        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_phase_offset_ns", "1000000");
-        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_app_phase_offset_ns", "1000000");
-        CommandExecutor.setSystemProperty("debug.sf.high_fps_early_sf_phase_offset_ns", "1000000");
+        CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
+        CommandExecutor.setSystemProperty("debug.sf.enable_gl_backpressure", "0");
+        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
 
         // PowerHAL & Thermal Bypass to prevent thermal drop of display Hz
         CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
