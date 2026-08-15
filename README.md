@@ -11,7 +11,7 @@
 <br/><br/>
 
 <!-- BADGES -->
-<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Release-v2.7.1.0-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Release"></a>
+<a href="https://github.com/willygailo/Game-Launcher/releases"><img src="https://img.shields.io/badge/Release-v2.9.0.0-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Release"></a>
 <a href="https://shizuku.rikka.app/"><img src="https://img.shields.io/badge/Shizuku-ADB_Binder_IPC-00FF9C?style=for-the-badge&logo=android&logoColor=black" alt="Shizuku"></a>
 <a href="android"><img src="https://img.shields.io/badge/Android-API_21--36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-007ACC?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"></a>
@@ -23,16 +23,16 @@
 <table align="center" width="100%" style="border-collapse: collapse; border: none;">
   <tr>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #00FF9C; margin: 0;">⚡ Safe</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Session Overrides</p>
+      <h2 style="color: #00FF9C; margin: 0;">⚡ Full APK</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Silent Install / Freeze</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #88CCFF; margin: 0;">🔥 Native Hz</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Verified Panel Modes</p>
+      <h2 style="color: #88CCFF; margin: 0;">📁 Files Verified</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Scoped Storage Bypass</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 12px; padding: 12px;">
-      <h2 style="color: #FFCC00; margin: 0;">🎯 Per-Game</h2>
-      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">Game Mode Requests</p>
+      <h2 style="color: #FFCC00; margin: 0;">🔥 165Hz Lock</h2>
+      <p style="color: #8b949e; margin: 4px 0 0 0; font-size: 12px;">SurfaceFlinger Frame Latch</p>
     </td>
     <td align="center" width="25%" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 12px; padding: 12px;">
       <h2 style="color: #FF99FF; margin: 0;">🛡️ UID 2000</h2>
@@ -57,7 +57,7 @@
   ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 ```
 
-<h3>⚡ Next-Generation eSports Game Launcher & Performance Optimization Engine</h3>
+<h3>⚡ Next-Generation eSports Game Launcher & Shizuku Full Control Engine</h3>
 <p><i>Engineered for Competitive Mobile Gamers (Mobile Legends, PUBG Mobile, COD Mobile, Genshin Impact, Wuthering Waves, Standoff 2 & more)</i></p>
 
 <br/>
@@ -68,27 +68,27 @@
 <br/><br/>
 
 <!-- FEATURE CARDS GRID -->
-<h2>🌟 Key Performance Features</h2>
+<h2>🌟 Key Performance & Control Features</h2>
 
 <table align="center" width="100%" style="border-collapse: separate; border-spacing: 10px;">
   <tr>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #00FF9C; border-radius: 14px; padding: 18px;">
-      <h3 style="color: #00FF9C; margin-top: 0;">⚡ Dynamic Refresh Rate Lock</h3>
-      <p style="color: #c9d1d9;">Detects the live panel modes and requests only native rates such as <b>60Hz, 90Hz, 120Hz, 144Hz, and 165Hz</b> when supported by the device.</p>
+      <h3 style="color: #00FF9C; margin-top: 0;">⚡ Shizuku Full APK Management</h3>
+      <p style="color: #c9d1d9;">Silent APK install/uninstall, app freezing/unfreezing (<code>pm disable-user</code>), cache purges, and instant system permission granting without popups.</p>
     </td>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #88CCFF; border-radius: 14px; padding: 18px;">
-      <h3 style="color: #88CCFF; margin-top: 0;">🎯 Device-Aware Touch Settings</h3>
-      <p style="color: #c9d1d9;">Offers compatibility-checked touch settings; the actual sampling rate remains determined by device hardware and OEM drivers.</p>
+      <h3 style="color: #88CCFF; margin-top: 0;">📁 Scoped Storage Bypass & Verified Files</h3>
+      <p style="color: #c9d1d9;">Unrestricted read/write access to <code>/sdcard/Android/data/</code> and <code>/obb/</code> on Android 11-16. All new folders, files, and backups are verified automatically with post-checks.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FFCC00; border-radius: 14px; padding: 18px;">
-      <h3 style="color: #FFCC00; margin-top: 0;">🎮 Per-Game Compatibility Profiles</h3>
-      <p style="color: #c9d1d9;">Stores launcher-owned profiles and requests supported Android display/Game Mode settings. It does not change device identity or edit game files.</p>
+      <h3 style="color: #FFCC00; margin-top: 0;">🎮 Display Hz & SurfaceFlinger Lock</h3>
+      <p style="color: #c9d1d9;">Force 60Hz, 90Hz, 120Hz, 144Hz, and 165Hz display modes, SurfaceFlinger latching, RAM cache compacting, and ANGLE graphics drivers per game.</p>
     </td>
     <td width="50%" align="center" style="background: #0d1117; border: 1px solid #FF99FF; border-radius: 14px; padding: 18px;">
       <h3 style="color: #FF99FF; margin-top: 0;">📊 In-Game Turbo HUD Overlay</h3>
-      <p style="color: #c9d1d9;">Real-time telemetry, verified native Hz requests, supported Game Mode controls, touch-setting guidance, and OEM charge-separation status where an integration is verified.</p>
+      <p style="color: #c9d1d9;">Real-time FPS telemetry, verified native Hz requests, touch-latency tuning, and OEM bypass charging telemetry.</p>
     </td>
   </tr>
 </table>
