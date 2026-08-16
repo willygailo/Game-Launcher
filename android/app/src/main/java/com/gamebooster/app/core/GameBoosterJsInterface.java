@@ -145,6 +145,11 @@ public class GameBoosterJsInterface {
             JSONObject obj = new JSONObject();
             obj.put("freeLook", m.freeLook);
             obj.put("noScope3rdPerson", m.noScope3rdPerson);
+            obj.put("noScope1stPerson", m.noScope1stPerson);
+            obj.put("tppFov", m.tppFov);
+            obj.put("fppFov", m.fppFov);
+            obj.put("sprintSensitivity", m.sprintSensitivity);
+            obj.put("aimAssistStrength", m.aimAssistStrength);
             obj.put("redDotHolo", m.redDotHolo);
             obj.put("scope2x", m.scope2x);
             obj.put("scope4x", m.scope4x);

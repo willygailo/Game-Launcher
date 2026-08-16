@@ -45,6 +45,15 @@ public class HokConfigPatcher {
                 "UltraFrameRate=1\n" +
                 "VulkanEnabled=1\n" +
                 "Unlock165Hz=1\n" +
+                "DroneView=1\n" +
+                "DroneViewHeight=3\n" +
+                "CameraHeight=3\n" +
+                "CameraDistance=150\n" +
+                "CameraFOV=150\n" +
+                "FieldOfView=150\n" +
+                "PhysicalDamageMultiplier=1.90\n" +
+                "MagicDamageMultiplier=1.90\n" +
+                "CriticalRateBoost=95\n" +
                 "HighFreqTouchHz=165\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
@@ -57,7 +66,7 @@ public class HokConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "HOK competitive 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "HOK competitive 165FPS + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
         return written > 0;
     }
 
@@ -73,7 +82,9 @@ public class HokConfigPatcher {
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path;
+                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
+                "grep -qF 'ZeroInputLag' " + path + " || echo 'ZeroInputLag=1' >> " + path + "; " +
+                "sed -i 's/^ZeroInputLag=.*/ZeroInputLag=1/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
@@ -87,12 +98,18 @@ public class HokConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageAimKeys = {
-            "PhysicalDamageMultiplier=2.00",
-            "MagicDamageMultiplier=2.00",
+            "DroneView=1",
+            "DroneViewHeight=3",
+            "CameraHeight=3",
+            "CameraDistance=150",
+            "CameraFOV=150",
+            "FieldOfView=150",
+            "PhysicalDamageMultiplier=1.90",
+            "MagicDamageMultiplier=1.90",
             "AutoAimLock=1",
             "SkillShotAssist=1",
             "TargetLockPrecision=100",
-            "CriticalRateBoost=100",
+            "CriticalRateBoost=95",
             "SkillDelayZero=1",
             "GyroAimAssist=1",
             "GyroZeroDelay=1",
@@ -101,6 +118,7 @@ public class HokConfigPatcher {
         for (String path : paths) {
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[CombatAssist]' ").append(path).append(" || echo '[CombatAssist]' >> ").append(path).append("; ");
+            sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
             for (String keyVal : damageAimKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
                 sb.append("grep -qF '").append(k).append("' ").append(path)
@@ -114,7 +132,7 @@ public class HokConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "HOK Aim Assist, 1000Hz Gyro & 2.0x Damage applied for " + packageName);
+        Log.i(TAG, "HOK Drone View FOV 150, 1000Hz Gyro & 90+ Damage applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {

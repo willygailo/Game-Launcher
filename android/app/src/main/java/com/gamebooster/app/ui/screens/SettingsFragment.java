@@ -879,8 +879,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     SensitivityModel m = SensitivityCalculator.calculate(dpi, 6.5, gameProfile, recoilMode);
 
                     String details = "📊 " + m.summary.toUpperCase() + "\n\n" +
+                            "🎯 VIEW & MOVEMENT CALIBRATION:\n" +
+                            "• TPP View FOV: " + m.tppFov + "\n" +
+                            "• FPP View FOV: " + m.fppFov + "\n" +
+                            "• Sprint Sensitivity: " + m.sprintSensitivity + "\n" +
+                            "• Aim Assist Tuning: " + m.aimAssistStrength + "%\n\n" +
+                            "🎮 CAMERA SENSITIVITY:\n" +
                             "• Free Look: " + m.freeLook + "\n" +
-                            "• 3rd Person No Scope: " + m.noScope3rdPerson + "\n" +
+                            "• TPP No Scope: " + m.noScope3rdPerson + "\n" +
+                            "• FPP No Scope: " + m.noScope1stPerson + "\n" +
                             "• Red Dot / Holo: " + m.redDotHolo + "\n" +
                             "• 2x Scope: " + m.scope2x + "\n" +
                             "• 4x Scope: " + m.scope4x + "\n\n" +

@@ -63,10 +63,22 @@ public class MlbbConfigPatcher {
                 "UnlockFPS=1\n" +
                 "SuperHighFPS=1\n" +
                 "Unlock165Hz=1\n" +
+                "DroneView=1\n" +
+                "DroneViewHeight=3\n" +
+                "CameraHeight=3\n" +
+                "CameraDistance=150\n" +
+                "CameraFOV=150\n" +
+                "WideScreenMode=1\n" +
+                "FieldOfView=150\n" +
                 "HighFreqTouchHz=165\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
-                "TouchResponseLevel=3\n";
+                "TouchResponseLevel=3\n" +
+                "PhysicalDamageBoost=1.90\n" +
+                "MagicDamageBoost=1.90\n" +
+                "TrueDamageBoost=1.90\n" +
+                "DamageMultiplier=1.90\n" +
+                "CriticalDamageRate=95\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -74,13 +86,13 @@ public class MlbbConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "MLBB competitive HDR 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "MLBB competitive HDR 165FPS + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
         return written > 0;
     }
 
     /**
      * Injects super-fast zero-delay touch response keys into MLBB config files.
-     * Optimized for 165Hz panels — sets HighFreqTouchHz=165, TouchPollingRate=1000, and max touch response level.
+     * Optimized for 165Hz panels — sets HighFreqTouchHz=165, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -96,7 +108,11 @@ public class MlbbConfigPatcher {
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path;
+                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
+                "grep -qF 'TouchLatencyReduction' " + path + " || echo 'TouchLatencyReduction=1' >> " + path + "; " +
+                "sed -i 's/^TouchLatencyReduction=.*/TouchLatencyReduction=1/' " + path + "; " +
+                "grep -qF 'ZeroInputLag' " + path + " || echo 'ZeroInputLag=1' >> " + path + "; " +
+                "sed -i 's/^ZeroInputLag=.*/ZeroInputLag=1/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
@@ -107,21 +123,29 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Damage Script, Physical/Magic/True Damage Boost, and Penetration Asset Config keys into MLBB config files.
+     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, and Penetration keys into MLBB config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
-        String[] damageKeys = {
-            "PhysicalDamageBoost=2.00",
-            "MagicDamageBoost=2.00",
-            "TrueDamageBoost=2.00",
-            "PhysicalPenetrationBoost=100",
-            "MagicPenetrationBoost=100",
-            "DamageMultiplier=2.00",
-            "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=3.00",
+        String[] damageDroneKeys = {
+            "DroneView=1",
+            "DroneViewHeight=3",
+            "CameraHeight=3",
+            "CameraDistance=150",
+            "CameraFOV=150",
+            "FieldOfView=150",
+            "WideScreenMode=1",
+            "UltraWideCamera=1",
+            "PhysicalDamageBoost=1.90",
+            "MagicDamageBoost=1.90",
+            "TrueDamageBoost=1.90",
+            "PhysicalPenetrationBoost=95",
+            "MagicPenetrationBoost=95",
+            "DamageMultiplier=1.90",
+            "CriticalDamageRate=95",
+            "CriticalDamageMultiplier=2.90",
             "SkillCoolDownReduceMode=1",
             "HighDamageRateMode=1",
             "DamageAssetOverride=1",
@@ -134,7 +158,8 @@ public class MlbbConfigPatcher {
             ensureDirectory(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
-            for (String keyVal : damageKeys) {
+            sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
+            for (String keyVal : damageDroneKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
                 sb.append("grep -qF '").append(k).append("' ").append(path)
                   .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
@@ -147,7 +172,7 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB 2.0x magic/physical damage script asset config applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & 90+ damage script config applied via Shizuku for " + packageName);
     }
 
 

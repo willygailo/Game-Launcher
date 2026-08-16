@@ -62,8 +62,14 @@ public class SensitivityCalculator {
         double baseCoeff = 100.0 * dpiFactor * screenFactor * gameModifier * recoilMultiplier;
 
         model.freeLook = clamp((int) (baseCoeff * 1.2));
-        model.noScope3rdPerson = clamp((int) (baseCoeff * 1.1));
-        model.noScope1stPerson = clamp((int) (baseCoeff * 1.0));
+        model.noScope3rdPerson = clamp((int) (baseCoeff * 1.0)); // TPP sensitivity
+        model.noScope1stPerson = clamp((int) (baseCoeff * 1.2)); // FPP sensitivity
+
+        // Presets requested: TPP 100, FPP 150, Sprint 150, Aim Assist 100%
+        model.tppFov = 100;
+        model.fppFov = 150;
+        model.sprintSensitivity = 150;
+        model.aimAssistStrength = 100;
 
         // Focal length reduction scope ratios
         model.redDotHolo = clamp((int) (baseCoeff * 0.68));

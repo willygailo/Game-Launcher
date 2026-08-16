@@ -1,11 +1,11 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner v2.2.1.1 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v2.2.2.1 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v2.2.1.1-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Version](https://img.shields.io/badge/Release-v2.2.2.1-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
@@ -24,7 +24,7 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ## 🎨 UI & Layout Design System
 
-Game Launcher Pro v2.2.1.1 features a state-of-the-art **Cyberpunk Glassmorphic** UI architecture crafted for seamless ergonomics and ultra-responsive responsiveness.
+Game Launcher Pro v2.2.2.1 features a state-of-the-art **Cyberpunk Glassmorphic** UI architecture crafted for seamless ergonomics and ultra-responsive responsiveness.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -48,7 +48,7 @@ Game Launcher Pro v2.2.1.1 features a state-of-the-art **Cyberpunk Glassmorphic*
 │  [ Crosshair Overlay ]  [ Gyro 1000Hz ]  [ Touch Boost ]     │
 ├──────────────────────────────────────────────────────────────┤
 │  [ 🏠 Home ] [ 🎮 Games ] [ ⚡ Tweaks ] [ 🎯 Profiles ] [ ⚙️ Settings ]
-└──────────────────────────────────────────────────────────────┘
+│  └──────────────────────────────────────────────────────────────┘
 ```
 
 ### ✨ Visual & Aesthetic Highlights:
@@ -59,9 +59,9 @@ Game Launcher Pro v2.2.1.1 features a state-of-the-art **Cyberpunk Glassmorphic*
 
 ---
 
-## 📌 1. Introduction & Highlights in v2.2.1.1
+## 📌 1. Introduction & Highlights in v2.2.2.1
 
-**Game Launcher Pro (v2.2.1.1)** is engineered specifically for competitive mobile esports across 7 major titles:
+**Game Launcher Pro (v2.2.2.1)** is engineered specifically for competitive mobile esports across 7 major titles:
 1. 🎮 **Mobile Legends: Bang Bang (MLBB)** — 120/144/165 FPS, instant response scripts, battle performance injection.
 2. 🪂 **PUBG Mobile / BGMI** — 120/144/165 FPS, UE4 CVar injection, zero-delay gyroscope, and recoil steadiness tuning.
 3. 🎯 **Call of Duty: Mobile (CODM)** — JSON/XML/INI graphics unlocks, 165Hz touch boost, max shader pre-warming.
@@ -109,7 +109,7 @@ Game-Launcher-PRO/
 │   │   └── src/main/res/
 │   │       ├── drawable/         # Custom Cyberpunk UI, Glass Cards & Neon Vector Assets
 │   │       └── layout/           # Clean Glassmorphism Fragment & Activity Layouts
-│   └── build.gradle              # versionCode 2211, versionName "2.2.1.1", targetSdk 36
+│   └── build.gradle              # versionCode 2221, versionName "2.2.2.1", targetSdk 36
 ├── Game_Space.apk
 └── README.md
 ```
@@ -120,7 +120,7 @@ Game-Launcher-PRO/
 
 ### Download Release APK
 Get the latest compiled binary directly from GitHub Releases:
-👉 **[Download Latest Version (v2.2.1.1 APK)](https://github.com/willygailo/Game-Launcher/releases)**
+👉 **[Download Latest Version (v2.2.2.1 APK)](https://github.com/willygailo/Game-Launcher/releases)**
 
 ### Setup Steps (Shizuku Privileged Access)
 

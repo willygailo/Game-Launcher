@@ -61,13 +61,31 @@ public class PubgConfigPatcher {
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
                 "+CVars=r.MobileContentScaleFactor=1.0\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
+                "+CVars=r.PUBGTPPViewRange=100.00\n" +
+                "+CVars=r.PUBGFPPViewRange=150.00\n" +
+                "+CVars=r.SprintSensitivity=150\n" +
                 "+CVars=r.Vsync=0\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
                 "+CVars=r.TouchBoostHz=165\n" +
+                "+CVars=r.PUBGAimAssist=1\n" +
+                "+CVars=r.AimAssistStrength=1.00\n" +
+                "+CVars=r.PUBGRecoilScale=0.00\n" +
+                "+CVars=r.WeaponKickReduction=1.00\n" +
+                "+CVars=r.AllGunsRecoilReduction=1.00\n" +
+                "+CVars=r.NoRecoilAllScopes=1\n" +
+                "+CVars=r.BulletDamageBoost=1.90\n" +
+                "+CVars=r.DamageMultiplier=1.90\n" +
+                "+CVars=r.HeadshotDamageMultiplier=2.90\n" +
+                "+CVars=r.CriticalDamageRate=95\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
-                "bUseAntiAliasing=True\n";
+                "bUseAntiAliasing=True\n" +
+                "bEnableAimAssist=True\n" +
+                "AimAssistLevel=3\n" +
+                "SprintSensitivity=150\n" +
+                "TPPFieldOfView=100\n" +
+                "FPPFieldOfView=150\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -115,7 +133,7 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Injects Aim Assist, Aimbot Lock, Gyro 1000Hz Ultra Response, and Bullet Damage Boost CVars into PUBGM/BGMI config files.
+     * Injects Aim Assist 100%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response, and 90+ Damage Boost CVars into PUBGM/BGMI config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
@@ -127,6 +145,9 @@ public class PubgConfigPatcher {
             "+CVars=r.AimAssistStrength=1.00",
             "+CVars=r.PUBGAimbotLock=1",
             "+CVars=r.AimbotTrackingRate=1.00",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SprintSensitivity=150",
             "+CVars=r.CrosshairMagnetism=1",
             "+CVars=r.GyroSensitivityRatio=2.0",
             "+CVars=r.GyroZeroDelay=1",
@@ -137,12 +158,16 @@ public class PubgConfigPatcher {
             "+CVars=r.GyroLatencyMode=0",
             "+CVars=r.BulletTrackingOptimization=1",
             "+CVars=r.MobileTouchAssistMode=1",
-            "+CVars=r.DamageMultiplier=2.00",
-            "+CVars=r.BulletDamageBoost=1.00",
-            "+CVars=r.HeadshotDamageMultiplier=2.00",
-            "+CVars=r.CriticalDamageRate=100",
+            "+CVars=r.DamageMultiplier=1.90",
+            "+CVars=r.BulletDamageBoost=1.90",
+            "+CVars=r.HeadshotDamageMultiplier=2.90",
+            "+CVars=r.CriticalDamageRate=95",
+            "+CVars=r.DamageBoostRatio=1.90",
             "bEnableAimAssist=True",
-            "AimAssistLevel=3"
+            "AimAssistLevel=3",
+            "SprintSensitivity=150",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -160,12 +185,12 @@ public class PubgConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "PUBGM Aim Assist, 1000Hz Gyro & 2.0x Damage CVars applied via Shizuku for " + packageName);
+        Log.i(TAG, "PUBGM Aim Assist 100%, TPP 100, FPP 150, Sprint 150, Gyro 1000Hz & 90+ Damage CVars applied via Shizuku for " + packageName);
     }
 
     /**
-     * Injects Zero Recoil & Weapon Stability CVars into PUBGM/BGMI config files.
-     * Eliminates vertical and horizontal weapon kick (0.00 scale) via Shizuku root access.
+     * Injects Zero Recoil & Weapon Stability CVars for ALL guns and ALL scopes into PUBGM/BGMI config files.
+     * Eliminates vertical and horizontal weapon kick (0.00 scale) and camera shake via Shizuku root access.
      */
     public static void applyRecoilControlConfig(String packageName) {
         if (packageName == null) return;
@@ -179,7 +204,17 @@ public class PubgConfigPatcher {
             "+CVars=r.GunShakeOptimization=1",
             "+CVars=r.GunBobbing=0",
             "+CVars=r.CameraShakeMultiplier=0.00",
-            "+CVars=r.ScopeStabilizationMode=1"
+            "+CVars=r.ScopeStabilizationMode=1",
+            "+CVars=r.AllGunsRecoilReduction=1.00",
+            "+CVars=r.NoRecoilAllScopes=1",
+            "+CVars=r.RedDotRecoilScale=0.00",
+            "+CVars=r.Scope2xRecoilScale=0.00",
+            "+CVars=r.Scope3xRecoilScale=0.00",
+            "+CVars=r.Scope4xRecoilScale=0.00",
+            "+CVars=r.Scope6xRecoilScale=0.00",
+            "+CVars=r.Scope8xRecoilScale=0.00",
+            "+CVars=r.WeaponSwayMultiplier=0.00",
+            "+CVars=r.GyroRecoilCompensation=1.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -197,7 +232,7 @@ public class PubgConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "PUBGM Zero Recoil (0.00 Scale) applied via Shizuku for " + packageName);
+        Log.i(TAG, "PUBGM Zero Recoil All Guns & All Scopes (0.00 Scale) applied via Shizuku for " + packageName);
     }
 
 

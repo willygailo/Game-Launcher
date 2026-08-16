@@ -41,6 +41,25 @@ public class FreeFireConfigPatcher {
                 "HighResolution=1\n" +
                 "VulkanEnabled=1\n" +
                 "Unlock165Hz=1\n" +
+                "AimAssist=1\n" +
+                "AutoAimPrecision=1.0\n" +
+                "SprintSensitivity=150\n" +
+                "GeneralSensitivity=100\n" +
+                "RedDotSensitivity=100\n" +
+                "TPPFov=100\n" +
+                "FPPFov=150\n" +
+                "NoRecoil=1\n" +
+                "RecoilReduction=1.00\n" +
+                "AllWeaponRecoilFix=1\n" +
+                "ScopeStabilization=1\n" +
+                "Scope2xRecoil=0.00\n" +
+                "Scope4xRecoil=0.00\n" +
+                "SniperScopeRecoil=0.00\n" +
+                "GunShakeReduction=1.00\n" +
+                "DamageBoostRatio=1.90\n" +
+                "HeadshotDamageMultiplier=2.90\n" +
+                "BulletDamageBoost=1.90\n" +
+                "CriticalHitRate=95\n" +
                 "TouchResponseLevel=3\n" +
                 "HighFreqTouchHz=165\n" +
                 "TouchPollingRate=1000\n" +
@@ -89,17 +108,27 @@ public class FreeFireConfigPatcher {
             "AutoAimPrecision=1.0",
             "HeadshotSensitivityBoost=2.0",
             "DragShotAssist=1",
+            "SprintSensitivity=150",
+            "GeneralSensitivity=100",
+            "RedDotSensitivity=100",
+            "TPPFov=100",
+            "FPPFov=150",
             "TouchSlopReduction=1",
-            "DamageBoostRatio=2.00",
-            "HeadshotDamageMultiplier=2.00",
-            "BulletDamageBoost=1.00",
-            "CriticalHitRate=100",
+            "DamageBoostRatio=1.90",
+            "HeadshotDamageMultiplier=2.90",
+            "BulletDamageBoost=1.90",
+            "CriticalHitRate=95",
             "GyroSensitivityBoost=2.0",
             "GyroZeroDelay=1",
             "GyroResponseRate=1000",
             "GyroAimAssist=1",
             "NoRecoil=1",
             "RecoilReduction=1.00",
+            "AllWeaponRecoilFix=1",
+            "ScopeStabilization=1",
+            "Scope2xRecoil=0.00",
+            "Scope4xRecoil=0.00",
+            "SniperScopeRecoil=0.00",
             "GunShakeReduction=1.00",
             "CrosshairSpread=0.00"
         };
@@ -119,7 +148,7 @@ public class FreeFireConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "FreeFire Aim Assist, 1000Hz Gyro, 2.0x Damage & Zero Recoil applied for " + packageName);
+        Log.i(TAG, "FreeFire Aim Assist 100%, TPP 100, FPP 150, Sprint 150, 1000Hz Gyro, 90+ Damage & Zero Recoil applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
