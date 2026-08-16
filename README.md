@@ -8,6 +8,8 @@
 [![Version](https://img.shields.io/badge/Release-v2.2.2.1-00F0FF?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku API](https://img.shields.io/badge/Privileged-Shizuku%20ADB-7B2CBF?style=flat-square&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](#)
+[![GitHub Profile](https://img.shields.io/badge/GitHub-willygailo-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo)
+[![Facebook Profile](https://img.shields.io/badge/Facebook-Willy%20Gailo-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 
 A high-performance Android gaming optimization suite designed to minimize input latency, unlock maximum refresh rates (up to 165Hz), and streamline per-title performance configurations via privileged ADB access (Shizuku).
 
@@ -80,6 +82,18 @@ Game-Launcher-PRO/
 2. Ensure Shizuku is active on your device.
 3. Launch **Game Launcher Pro** and grant Shizuku privileged access when prompted.
 4. Select your installed game from the dashboard to apply performance profiles and launch.
+
+---
+
+## Connect & Developer
+
+<div align="center">
+
+[![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo)
+&nbsp;&nbsp;
+[![Facebook](https://img.shields.io/badge/Facebook-Willy%20Jr%20Carnasa%20Gailo-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+
+</div>
 
 ---
 
