@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds & Surfaces -->
+    <color name="bg_dark">#080B11</color>
+    <color name="glass_scrim">#00000000</color>
+    <color name="card_bg">#200F172A</color>
+    <color name="card_bg_elevated">#330F1A30</color>
+    <color name="card_bg_glass">#1A111E38</color>
+    <color name="card_stroke">#4000F0FF</color>
+    <color name="card_stroke_strong">#8000F0FF</color>
+    <color name="card_stroke_green">#8000FF66</color>
+    <color name="card_stroke_subtle">#22334D6E</color>
+
+    <!-- Neon Accents -->
+    <color name="accent_cyan">#00F0FF</color>
+    <color name="accent_cyan_glow">#3300F0FF</color>
+    <color name="accent_neon_green">#00FF66</color>
+    <color name="accent_neon_green_glow">#3300FF66</color>
+    <color name="accent_purple">#8A2BE2</color>
+    <color name="accent_purple_glow">#338A2BE2</color>
+    <color name="accent_amber">#FFB800</color>
+    <color name="accent_lock_amber">#FFB800</color>
+    <color name="accent_orange">#FF8800</color>
+    <color name="accent_red">#FF0055</color>
+    <color name="accent_red_glow">#33FF0055</color>
+
+    <!-- Typography -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_muted">#64748B</color>
+    <color name="section_header">#F8FAFC</color>
+    <color name="empty_state_text">#94A3B8</color>
+
+    <!-- Navigation & Badges -->
+    <color name="nav_bg">#D90A0E18</color>
+    <color name="nav_pill_selected">#2600F0FF</color>
+    <color name="nav_unselected">#64748B</color>
+    <color name="game_card_accent">#00FF66</color>
+    <color name="status_strip_bg">#180F172A</color>
+
+    <!-- Game Specific Highlights -->
+    <color name="accent_ml_blue">#38BDF8</color>
+    <color name="accent_pubg_orange">#FB923C</color>
+    <color name="accent_codm_red">#F43F5E</color>
+    <color name="accent_ff_gold">#FACC15</color>
+</resources>

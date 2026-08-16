@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/card_glass_shape"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="12dp"
+    android:layout_marginBottom="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_tweak_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[SHIZUKU]"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:background="@drawable/badge_neon_green"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tv_tweak_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tweak Title"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp">
+
+            <Switch
+                android:id="@+id/switch_tweak_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:id="@+id/iv_tweak_lock"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_secure"
+                android:tint="@color/accent_lock_amber"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_tweak_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tweak description details..."
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:layout_marginTop="6dp"
+        android:lineSpacingExtra="1dp" />
+
+</LinearLayout>

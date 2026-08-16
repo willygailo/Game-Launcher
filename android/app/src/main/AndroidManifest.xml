@@ -1,0 +1,202 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Hardware Feature Declarations for High Performance Gaming -->
+    <uses-feature android:glEsVersion="0x00030002" android:required="false" />
+    <uses-feature android:name="android.hardware.vulkan.level" android:version="1" android:required="false" />
+    <uses-feature android:name="android.hardware.vulkan.version" android:version="0x401000" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
+    <uses-feature android:name="android.software.game_service" android:required="false" />
+
+    <!-- System and Performance Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.DUMP" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.MANAGE_GAME_MODE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.OVERRIDE_WIFI_CONFIG" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SET_PROCESS_LIMIT" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REAL_GET_TASKS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.SET_ALWAYS_FINISH" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" android:maxSdkVersion="29" />
+
+    <!-- Package Visibility Queries for Android 11+ (Target SDK 30-36) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GAME" />
+        </intent>
+        <!-- Popular Online Game Package Declarations -->
+        <package android:name="com.mobile.legends" />
+        <package android:name="com.mobilelegends.mi" />
+        <package android:name="com.vng.mlbbvn" />
+        <package android:name="com.mobilelegends.na" />
+        <package android:name="com.garena.game.codm" />
+        <package android:name="com.activision.callofduty.shooter" />
+        <package android:name="com.vng.codmvn" />
+        <package android:name="com.tencent.tmgp.kr.codm" />
+        <package android:name="com.tencent.ig" />
+        <package android:name="com.pubg.imobile" />
+        <package android:name="com.pubg.krmobile" />
+        <package android:name="com.vng.pubgmobile" />
+        <package android:name="com.pubg.newstate" />
+        <package android:name="com.dts.freefireth" />
+        <package android:name="com.dts.freefiremax" />
+        <package android:name="com.riotgames.league.wildrift" />
+        <package android:name="com.levelinfinite.sgameGlobal" />
+        <package android:name="com.tencent.tmgp.sgame" />
+        <package android:name="com.garena.game.kgtw" />
+        <package android:name="com.garena.game.kgvn" />
+        <package android:name="com.miHoYo.GenshinImpact" />
+        <package android:name="com.cognosphere.GenshinImpact" />
+        <package android:name="com.HoYoverse.hkrpgoversea" />
+        <package android:name="com.HoYoverse.nap" />
+        <package android:name="com.roblox.client" />
+        <package android:name="com.axlebolt.standoff2" />
+        <package android:name="com.netease.bloodstrike" />
+        <package android:name="com.miracle.farlight84" />
+        <package android:name="com.proximabeta.mf.uamo" />
+        <!-- Third-Party Gaming Platforms & App Stores -->
+        <package android:name="com.taptap.global" />
+        <package android:name="com.taptap" />
+        <package android:name="com.garena.appstore" />
+        <package android:name="com.sec.android.app.samsungapps" />
+        <package android:name="com.apkpure.aether" />
+        <package android:name="com.qooapp.qoohelper" />
+    </queries>
+
+    <application
+        android:label="Game Booster"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        android:allowBackup="true"
+        android:supportsRtl="true"
+        android:hardwareAccelerated="true"
+        android:isGame="true"
+        android:appCategory="game"
+        android:hasFragileUserData="false"
+        android:enableOnBackInvokedCallback="true">
+
+        <!-- Display & Gaming Engine Metadata -->
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.5" />
+        <meta-data
+            android:name="android.supports_size_changes"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/app_name" />
+        <meta-data
+            android:name="android.game_service"
+            android:value="true" />
+
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <service
+            android:name="com.gamebooster.app.services.GameBoosterService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Game performance monitor and background auto-booster" />
+        </service>
+
+        <service
+            android:name="com.gamebooster.app.overlay.FloatingOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Game space performance monitoring overlay HUD" />
+        </service>
+
+        <service
+            android:name="com.gamebooster.app.overlay.CrosshairOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Crosshair visual target overlay" />
+        </service>
+
+        <service
+            android:name="com.gamebooster.app.gamespace.AutoGameMonitorService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Game space automatic game detection service" />
+        </service>
+
+        <receiver
+            android:name="com.gamebooster.app.services.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="com.gamebooster.app.ui.screens.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:hardwareAccelerated="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.gamebooster.app.terminal.TerminalActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:label="Shizuku Core Console" />
+
+    </application>
+</manifest>

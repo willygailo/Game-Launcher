@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GAME SPACE</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_games">Games</string>
+    <string name="nav_tweaks">Tweaks</string>
+    <string name="nav_hz_fps">Hz &amp; FPS</string>
+    <string name="nav_profiles">Profiles</string>
+    <string name="nav_permissions">Permissions</string>
+</resources>

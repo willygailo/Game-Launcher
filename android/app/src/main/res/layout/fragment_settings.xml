@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Background Image (omni.jpeg) -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/omni"
+        android:scaleType="centerCrop"
+        android:contentDescription="Settings Background" />
+
+    <!-- Translucent glass scrim overlay (Crystal Glassmorphism) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#55080B12" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingBottom="90dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="16dp">
+
+            <!-- HEADER -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚙️ DASHBOARD SETTINGS &amp; TWEAKS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Shizuku privileged shell, hardware engines, &amp; system tweaks"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <!-- CARD 1: SHIZUKU ADB & PRIVILEGED PERMISSIONS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔒 SHIZUKU ADB &amp; SYSTEM PERMISSIONS"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:id="@+id/tv_engine_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Active Engine: Checking..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_storage_access_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="📁 Shizuku File &amp; Data Control: Checking..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_grant_shizuku"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="5dp"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:padding="0dp"
+                        android:text="⚡ 1-TAP ALL PERMISSIONS"
+                        android:textColor="#000000"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_grant_storage_access"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="5dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="📁 UNLOCK GAME DATA"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_open_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:padding="0dp"
+                    android:text="⚙️ SYSTEM APP SETTINGS"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+
+            <!-- CARD 2: ESPORTS GAMING CONTROLS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎮 ESPORTS GAMING CONTROLS"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <Switch
+                    android:id="@+id/switch_overlay_hud"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Floating Performance Overlay HUD"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_gaming_dnd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Gaming DND &amp; Banner Blocker"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_auto_game_boost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Auto Game Launch Detection &amp; Boost"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_esports_audio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Esports Footstep Audio Boost (2kHz-4kHz)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btn_clean_game_caches"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="🧹 CLEAN GAME STORAGE &amp; SHADERS"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- CARD 2.5: PRECISION AIM - INPUT & GYRO TUNER -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎯 PRECISION AIM – INPUT &amp; GYRO TUNER"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:id="@+id/tv_precision_aim_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Status: Device Input Stock / Default"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <Switch
+                    android:id="@+id/switch_precision_input_tuner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Shizuku 1000Hz Polling &amp; Zero Touch Slop"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_crosshair_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Hardware Crosshair Target Overlay"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_crosshair_preset"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="5dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🎯 CROSSHAIR PRESETS"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_sensitivity_calculator"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="5dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🧮 SENSITIVITY CALCULATOR"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- CARD 3: HARDWARE ENGINE & PERFORMANCE PRESETS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ HARDWARE ENGINE &amp; PERFORMANCE PRESETS"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_apply_pubg_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="3dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🔥 EXTREME\n165Hz"
+                        android:textColor="@color/accent_red"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_144_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🎮 PRO\n144Hz"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_2d_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="⚡ HIGH\n120Hz"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_balanced_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="3dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="⚖️ BALANCED\n90Hz"
+                        android:textColor="@color/accent_amber"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/switch_angle_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Google ANGLE Vulkan Driver (OpenGL ES to Vulkan)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_game_driver"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="System Game Driver for All Games"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_gpu_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="GPU Vulkan 3D HWUI Renderer"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_cpu_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="CPU Extreme Performance Governor"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- CARD 4: NETWORK & LATENCY OPTIMIZATION -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌐 NETWORK &amp; LATENCY OPTIMIZATION"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:id="@+id/tv_game_ping_ms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="📡 Game Server Ping: Not Tested"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btn_ping_test"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="📡 TEST GAME SERVER LATENCY"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="1-Tap Gaming DNS Latency Booster:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_dns_cloudflare"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:padding="0dp"
+                        android:text="⚡ 1.1.1.1"
+                        android:textColor="#000000"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_dns_google"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🌐 8.8.8.8"
+                        android:textColor="@color/text_primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_dns_default"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🔄 DEFAULT"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/switch_tethering_hw"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Tethering Hardware Acceleration (Hotspot Offload)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_force_gnss"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Force Full GNSS Raw Measurements"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- CARD 5: ADVANCED SYSTEM TWEAKS ENGINE -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛠️ ADVANCED SYSTEM TWEAKS ENGINE"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:id="@+id/tv_tweaks_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="System Engine: Active"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Disconnect Alert Banner -->
+                <LinearLayout
+                    android:id="@+id/banner_shizuku_disconnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#40FF0055"
+                    android:padding="10dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚠️ Shizuku Binder Disconnected. Reconnect Shizuku to apply system tweaks."
+                        android:textColor="#FF8888"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_apply_all_tweaks"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/btn_cyber_green"
+                    android:text="⚡ APPLY ALL SYSTEM OPTIMIZATIONS"
+                    android:textColor="#0B0E14"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Tweak Filter Buttons -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_filter_all"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="ALL"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_filter_cpugpu"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="CPU/GPU"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <Button
+                            android:id="@+id/btn_filter_touch"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="TOUCH"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <Button
+                            android:id="@+id/btn_filter_shizuku"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="SHIZUKU"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <Button
+                            android:id="@+id/btn_filter_network"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="NETWORK"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_tweaks_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+
+            <!-- CARD SPOOF: HARDWARE DEVICE SPOOFING -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎭 HARDWARE DEVICE SPOOFING"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Spoof model, brand, vendor &amp; SoC identity via Shizuku temporary root access."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Switch
+                        android:id="@+id/switch_device_spoof"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Enable Device Spoofing"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_spoof_active_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Active Spoof Profile: NONE"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_spoof_profiles"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="10dp"
+                    android:clipToPadding="false"
+                    android:scrollbars="vertical"
+                    android:nestedScrollingEnabled="true"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- CARD 6: SHIZUKU ROOT & ADB TERMINAL EMULATOR -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.03"
+                        android:text="💻 SHIZUKU ADB &amp; ROOT TERMINAL"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="#2000F0FF"
+                        android:fontFamily="monospace"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp"
+                        android:text="shizuku@android:~$"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Real-time elevated shell console for Android 13, 14, 15 &amp; 16. Executes custom scripts, kernel tweaks, and dumpsys properties via /data/local/tmp."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Quick Launcher Button -->
+                <Button
+                    android:id="@+id/btn_launch_terminal"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="⚡ OPEN CYBER TERMINAL CONSOLE"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- CARD 7: APP INFO & LINKS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="28dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ℹ️ ABOUT GAME BOOSTER PRO"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:id="@+id/tv_settings_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Version 2.0.0 PRO • Compatible with Android 13, 14, 15, 16"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_github_releases"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="5dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🐙 GITHUB"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_facebook_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="5dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="👤 DEVELOPER"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

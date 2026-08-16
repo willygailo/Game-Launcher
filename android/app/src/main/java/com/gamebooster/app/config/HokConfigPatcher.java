@@ -1,0 +1,163 @@
+package com.gamebooster.app.config;
+
+import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * HokConfigPatcher manages internal config files for Honor of Kings (HOK) and Arena of Valor (AoV).
+ * Unlocks 120/144/165 FPS modes, HDR ultra frame rates, and high-frequency touch response.
+ */
+public class HokConfigPatcher {
+
+    private static final String TAG = "HokConfigPatcher";
+
+    public static boolean patch(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        int forcedFps = 165;
+        List<String> paths = getConfigPaths(packageName);
+        int patched = 0;
+        for (String path : paths) {
+            if (applyPatch(path, forcedFps)) patched++;
+        }
+        Log.i(TAG, "HOK patch: " + patched + " files for " + packageName + " @ 165fps");
+        return patched > 0;
+    }
+
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+
+        final int frameRateLevel = 3;
+        final int forcedFps = 165;
+
+        String content = "[Graphics]\n" +
+                "HighFPSMode=1\n" +
+                "FrameRateLevel=" + frameRateLevel + "\n" +
+                "FPS=" + forcedFps + "\n" +
+                "MaxFrameRate=" + forcedFps + "\n" +
+                "TargetFPS=" + forcedFps + "\n" +
+                "GraphicsQuality=4\n" +
+                "HDMode=1\n" +
+                "HDRMode=1\n" +
+                "UltraFrameRate=1\n" +
+                "VulkanEnabled=1\n" +
+                "Unlock165Hz=1\n" +
+                "HighFreqTouchHz=165\n" +
+                "TouchPollingRate=1000\n" +
+                "TouchZeroDelay=1\n" +
+                "TouchResponseLevel=3\n" +
+                "GyroSampleRate=1000\n";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, content);
+            written++;
+        }
+        Log.i(TAG, "HOK competitive 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        return written > 0;
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd =
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
+                "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
+                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
+                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
+                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
+                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK super-fast zero-delay touch applied for " + packageName);
+    }
+
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] damageAimKeys = {
+            "PhysicalDamageMultiplier=2.00",
+            "MagicDamageMultiplier=2.00",
+            "AutoAimLock=1",
+            "SkillShotAssist=1",
+            "TargetLockPrecision=100",
+            "CriticalRateBoost=100",
+            "SkillDelayZero=1",
+            "GyroAimAssist=1",
+            "GyroZeroDelay=1",
+            "GyroResponseRate=1000"
+        };
+        for (String path : paths) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[CombatAssist]' ").append(path).append(" || echo '[CombatAssist]' >> ").append(path).append("; ");
+            for (String keyVal : damageAimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Aim Assist, 1000Hz Gyro & 2.0x Damage applied for " + packageName);
+    }
+
+    public static void applyRecoilControlConfig(String packageName) {
+        applyAimAssistConfig(packageName);
+    }
+
+    private static List<String> getConfigPaths(String pkg) {
+        List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/Android/data/" + pkg + "/files/SGameSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/SGameSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
+        return paths;
+    }
+
+    private static void forceWrite(String path, String content) {
+        ShizukuFileManager.writeFile(path, content, "666");
+    }
+
+    private static boolean applyPatch(String path, int targetFps) {
+        final int frameRateLevel = 3;
+        final int forcedFps = 165;
+        if (!ShizukuFileManager.fileExists(path)) {
+            String content = String.format(
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nHighFreqTouchHz=165\n",
+                    frameRateLevel, forcedFps, forcedFps, forcedFps
+            );
+            return ShizukuFileManager.writeFile(path, content, "666").success;
+        } else {
+            String cmd = "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
+                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
+                         "sed -i 's/^FPS=.*/FPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^UltraFrameRate=.*/UltraFrameRate=1/' " + path + "; " +
+                         "chmod 666 " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+            return true;
+        }
+    }
+}

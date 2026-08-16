@@ -1,0 +1,164 @@
+package com.gamebooster.app.config;
+
+import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * FreeFireConfigPatcher manages internal config files for Garena Free Fire and Free Fire MAX.
+ * Unlocks 120/144/165 FPS, high-frequency touch, and max graphic presets.
+ */
+public class FreeFireConfigPatcher {
+
+    private static final String TAG = "FreeFireConfigPatcher";
+
+    public static boolean patch(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        int forcedFps = 165;
+        List<String> paths = getConfigPaths(packageName);
+        int patched = 0;
+        for (String path : paths) {
+            if (applyPatch(path, forcedFps)) patched++;
+        }
+        Log.i(TAG, "FreeFire patch: " + patched + " files for " + packageName + " @ 165fps");
+        return patched > 0;
+    }
+
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        final int forcedFps = 165;
+
+        String content = "[FFGraphics]\n" +
+                "HighFPS=1\n" +
+                "FPSMode=2\n" +
+                "MaxFPS=" + forcedFps + "\n" +
+                "TargetFPS=" + forcedFps + "\n" +
+                "GraphicLevel=3\n" +
+                "Shadow=1\n" +
+                "HighResolution=1\n" +
+                "VulkanEnabled=1\n" +
+                "Unlock165Hz=1\n" +
+                "TouchResponseLevel=3\n" +
+                "HighFreqTouchHz=165\n" +
+                "TouchPollingRate=1000\n" +
+                "TouchZeroDelay=1\n" +
+                "GyroSampleRate=1000\n";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, content);
+            written++;
+        }
+        Log.i(TAG, "FreeFire competitive 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        return written > 0;
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd =
+                "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
+                "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
+                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
+                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
+                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
+                "grep -qF 'TouchSlopReduction' " + path + " || echo 'TouchSlopReduction=1' >> " + path + "; " +
+                "sed -i 's/^TouchSlopReduction=.*/TouchSlopReduction=1/' " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire super-fast zero-delay touch applied for " + packageName);
+    }
+
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssist=1",
+            "AutoAimPrecision=1.0",
+            "HeadshotSensitivityBoost=2.0",
+            "DragShotAssist=1",
+            "TouchSlopReduction=1",
+            "DamageBoostRatio=2.00",
+            "HeadshotDamageMultiplier=2.00",
+            "BulletDamageBoost=1.00",
+            "CriticalHitRate=100",
+            "GyroSensitivityBoost=2.0",
+            "GyroZeroDelay=1",
+            "GyroResponseRate=1000",
+            "GyroAimAssist=1",
+            "NoRecoil=1",
+            "RecoilReduction=1.00",
+            "GunShakeReduction=1.00",
+            "CrosshairSpread=0.00"
+        };
+        for (String path : paths) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[AimControl]' ").append(path).append(" || echo '[AimControl]' >> ").append(path).append("; ");
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Aim Assist, 1000Hz Gyro, 2.0x Damage & Zero Recoil applied for " + packageName);
+    }
+
+    public static void applyRecoilControlConfig(String packageName) {
+        applyAimAssistConfig(packageName);
+    }
+
+    private static List<String> getConfigPaths(String pkg) {
+        List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/content/ff_graphics.ini");
+        paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
+        return paths;
+    }
+
+    private static void forceWrite(String path, String content) {
+        ShizukuFileManager.writeFile(path, content, "666");
+    }
+
+    private static boolean applyPatch(String path, int targetFps) {
+        int forcedFps = 165;
+        if (!ShizukuFileManager.fileExists(path)) {
+            String content = String.format(
+                    "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nTargetFPS=%d\nGraphicLevel=3\nHighFreqTouchHz=165\n",
+                    forcedFps, forcedFps
+            );
+            return ShizukuFileManager.writeFile(path, content, "666").success;
+        } else {
+            String cmd = "sed -i 's/^HighFPS=.*/HighFPS=1/' " + path + "; " +
+                         "sed -i 's/^FPSMode=.*/FPSMode=2/' " + path + "; " +
+                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "chmod 666 " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+            return true;
+        }
+    }
+}

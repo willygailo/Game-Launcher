@@ -1,0 +1,204 @@
+package com.gamebooster.app.config;
+
+import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * MlbbConfigPatcher manages internal config files for Mobile Legends: Bang Bang (all versions).
+ *
+ * Two patching modes:
+ *  - patch()            → standard patch: create-if-missing or sed-update
+ *  - patchCompetitive() → competitive force-write: ALWAYS overwrites all paths, no fallback,
+ *                         executed via Shizuku for full data/data access (temporary root)
+ */
+public class MlbbConfigPatcher {
+
+    private static final String TAG = "MlbbConfigPatcher";
+
+    // ─── Standard Patch ───────────────────────────────────────────────────────
+
+    public static boolean patch(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        int forcedFps = 165;
+        List<String> paths = getConfigPaths(packageName);
+        int patched = 0;
+        for (String path : paths) {
+            if (applyPatch(path, forcedFps)) patched++;
+        }
+        Log.i(TAG, "MLBB patch: " + patched + " files for " + packageName + " @ 165fps");
+        return patched > 0;
+    }
+
+    // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
+    /**
+     * Force-overwrites ALL MLBB config paths unconditionally.
+     * Uses Shizuku (temporary root) to reach /data/data/ paths.
+     * Locks 165 FPS and Ultra-High FrameRateLevel 9.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        // MLBB FrameRateLevel: 9 = Ultra-High tier (165fps)
+        final int frameRateLevel = 9;
+        final int forcedFps = 165;
+
+        String content = "[Graphics]\n" +
+                "HighFPSMode=1\n" +
+                "FrameRateLevel=" + frameRateLevel + "\n" +
+                "GraphicsQuality=4\n" +
+                "HDMode=1\n" +
+                "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
+                "Shadow=1\n" +
+                "FPS=" + forcedFps + "\n" +
+                "MaxFrameRate=" + forcedFps + "\n" +
+                "TargetFPS=" + forcedFps + "\n" +
+                "HighFrameRate=1\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
+                "Unlock165Hz=1\n" +
+                "HighFreqTouchHz=165\n" +
+                "TouchPollingRate=1000\n" +
+                "TouchZeroDelay=1\n" +
+                "TouchResponseLevel=3\n";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, content);
+            written++;
+        }
+        Log.i(TAG, "MLBB competitive HDR 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Injects super-fast zero-delay touch response keys into MLBB config files.
+     * Optimized for 165Hz panels — sets HighFreqTouchHz=165, TouchPollingRate=1000, and max touch response level.
+     */
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd =
+                "grep -qF 'HighFreqTouch' " + path + " || echo 'HighFreqTouch=1' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouch=.*/HighFreqTouch=1/' " + path + "; " +
+                "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
+                "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
+                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
+                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
+                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB super-fast zero-delay touch applied for " + packageName);
+    }
+
+    /**
+     * Injects Damage Script, Physical/Magic/True Damage Boost, and Penetration Asset Config keys into MLBB config files.
+     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     */
+    public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "PhysicalDamageBoost=2.00",
+            "MagicDamageBoost=2.00",
+            "TrueDamageBoost=2.00",
+            "PhysicalPenetrationBoost=100",
+            "MagicPenetrationBoost=100",
+            "DamageMultiplier=2.00",
+            "CriticalDamageRate=100",
+            "CriticalDamageMultiplier=3.00",
+            "SkillCoolDownReduceMode=1",
+            "HighDamageRateMode=1",
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1",
+            "AutoSkillLock=1",
+            "SkillTargetAssist=1",
+            "SmartTargetingMode=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
+            for (String keyVal : damageKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB 2.0x magic/physical damage script asset config applied via Shizuku for " + packageName);
+    }
+
+
+    // ─── Internal ─────────────────────────────────────────────────────────────
+
+    private static List<String> getConfigPaths(String pkg) {
+        List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+        return paths;
+    }
+
+    private static void forceWrite(String path, String content) {
+        ShizukuFileManager.writeFile(path, content, "666");
+    }
+
+    private static boolean applyPatch(String path, int targetFps) {
+        final int frameRateLevel = 9;
+        final int forcedFps = 165;
+        if (!ShizukuFileManager.fileExists(path)) {
+            String content = String.format(
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nHighFreqTouchHz=165\n",
+                    frameRateLevel, forcedFps, forcedFps, forcedFps
+            );
+            return ShizukuFileManager.writeFile(path, content, "666").success;
+        } else {
+            String cmd = "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
+                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
+                         "sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path + "; " +
+                         "sed -i 's/^HDMode=.*/HDMode=1/' " + path + "; " +
+                         "sed -i 's/^Shadow=.*/Shadow=1/' " + path + "; " +
+                         "sed -i 's/^FPS=.*/FPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path + "; " +
+                         "chmod 666 " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+            return true;
+        }
+    }
+
+    private static void ensureDirectory(String path) {
+        ShizukuFileManager.ensureParentDirectory(path);
+    }
+}

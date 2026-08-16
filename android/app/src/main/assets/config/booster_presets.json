@@ -1,0 +1,12 @@
+{
+  "system_tweaks": {
+    "vulkan_renderer": true,
+    "drop_caches": true,
+    "tcp_congestion": "bbr",
+    "dns_flush": true,
+    "touch_response_us": 0
+  },
+  "max_hardware_hz": 165,
+  "refresh_rate_presets": [60, 90, 120, 144, 165],
+  "force_override_max_fps": 240
+}

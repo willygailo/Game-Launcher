@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Neon green left accent bar -->
+    <item android:width="4dp" android:gravity="start">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/game_card_accent" />
+            <corners android:topLeftRadius="16dp" android:bottomLeftRadius="16dp" />
+        </shape>
+    </item>
+    <!-- Card background fill -->
+    <item android:left="4dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/card_bg" />
+            <corners android:topRightRadius="16dp" android:bottomRightRadius="16dp" />
+            <stroke android:width="1.5dp" android:color="@color/card_stroke" />
+        </shape>
+    </item>
+</layer-list>

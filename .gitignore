@@ -1,0 +1,67 @@
+# Built Android binaries, APKs & AAB outputs
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Gradle build cache & output directories
+.gradle/
+build/
+app/build/
+**/build/
+.externalNativeBuild/
+.cxx/
+/android/.gradle/
+/android/app/build/
+/android/build/
+
+# Local configuration & environment files
+local.properties
+*.local.properties
+
+# Android Studio & IntelliJ IDE configuration
+.idea/
+*.iml
+.navigation/
+captures/
+.shelf/
+*.hprof
+
+# Eclipse & VS Code configuration
+.project
+.classpath
+.settings/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# OS generated files & caches
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+*~
+*.swp
+*.bak
+
+# Signing & Keystores
+*.jks
+*.keystore
+*.pepk
+
+# Private & Google services configuration
+google-services.json
+GoogleService-Info.plist
+
+# Logs, scratch scripts & agent workspace data
+*.log
+scratch/
+.antigravity/
+.gemini/

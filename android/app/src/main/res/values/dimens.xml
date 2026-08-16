@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standard Phone Dimensions (Android 13, 14, 15, 16) -->
+    <dimen name="terminal_header_height">48dp</dimen>
+    <dimen name="terminal_header_title_size">13sp</dimen>
+    <dimen name="terminal_status_size">10sp</dimen>
+    <dimen name="terminal_button_height">28dp</dimen>
+    <dimen name="terminal_button_text_size">10sp</dimen>
+    <dimen name="terminal_output_text_size">11.5sp</dimen>
+    <dimen name="terminal_input_min_height">38dp</dimen>
+    <dimen name="terminal_input_text_size">11.5sp</dimen>
+    <dimen name="terminal_side_margin">0dp</dimen>
+</resources>

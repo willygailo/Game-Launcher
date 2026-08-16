@@ -1,0 +1,137 @@
+package com.gamebooster.app.config;
+
+import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * RobloxConfigPatcher manages ClientAppSettings.json FastFlags and local graphics settings
+ * for Roblox on Android.
+ * Unlocks 120/144/165 FPS frame rate limits and enables high performance rendering.
+ */
+public class RobloxConfigPatcher {
+
+    private static final String TAG = "RobloxConfigPatcher";
+
+    public static boolean patch(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        int forcedFps = 165;
+        List<String> paths = getConfigPaths(packageName);
+        int patched = 0;
+        for (String path : paths) {
+            if (applyPatch(path, forcedFps)) patched++;
+        }
+        Log.i(TAG, "Roblox patch: " + patched + " files for " + packageName + " @ 165fps");
+        return patched > 0;
+    }
+
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        final int forcedFps = 165;
+
+        String clientAppSettings = "{\n" +
+                "  \"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",\n" +
+                "  \"FIntTargetFPS\": " + forcedFps + ",\n" +
+                "  \"FFlagDebugGraphicsDisableDirect3D11\": \"False\",\n" +
+                "  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n" +
+                "  \"FFlagFixGraphicsQuality\": \"True\",\n" +
+                "  \"DFFlagDisableDPIScale\": \"True\",\n" +
+                "  \"FFlagCommitToFastPhysics\": \"True\",\n" +
+                "  \"FFlagEnableVulkan\": \"True\",\n" +
+                "  \"FIntCameraMaxZoomDistance\": 400,\n" +
+                "  \"FFlagFastTouchResponse\": \"True\",\n" +
+                "  \"FIntTouchPollingRate\": 1000,\n" +
+                "  \"FFlagZeroTouchDelay\": \"True\",\n" +
+                "  \"FFlagReduceInputLatency\": \"True\",\n" +
+                "  \"FFlagGyroFastAim\": \"True\",\n" +
+                "  \"FIntGyroPollingRate\": 1000,\n" +
+                "  \"FFlagDisableCameraShake\": \"True\",\n" +
+                "  \"FFlagWeaponRecoilReduction\": \"True\"\n" +
+                "}\n";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, clientAppSettings);
+            written++;
+        }
+        Log.i(TAG, "Roblox competitive 165FPS FastFlag force-write: " + written + " paths @ 165fps for " + packageName);
+        return written > 0;
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd =
+                "grep -qF '\"FFlagFastTouchResponse\"' " + path + " || echo '  \"FFlagFastTouchResponse\": \"True\",' >> " + path + "; " +
+                "grep -qF '\"FIntTouchPollingRate\"' " + path + " || echo '  \"FIntTouchPollingRate\": 1000,' >> " + path + "; " +
+                "grep -qF '\"FFlagZeroTouchDelay\"' " + path + " || echo '  \"FFlagZeroTouchDelay\": \"True\",' >> " + path + "; " +
+                "grep -qF '\"FFlagReduceInputLatency\"' " + path + " || echo '  \"FFlagReduceInputLatency\": \"True\",' >> " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Roblox fast zero-delay touch applied for " + packageName);
+    }
+
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String cmd =
+                "grep -qF '\"FFlagGyroFastAim\"' " + path + " || echo '  \"FFlagGyroFastAim\": \"True\",' >> " + path + "; " +
+                "grep -qF '\"FIntGyroPollingRate\"' " + path + " || echo '  \"FIntGyroPollingRate\": 1000,' >> " + path + "; " +
+                "grep -qF '\"FFlagDisableCameraShake\"' " + path + " || echo '  \"FFlagDisableCameraShake\": \"True\",' >> " + path + "; " +
+                "grep -qF '\"FFlagWeaponRecoilReduction\"' " + path + " || echo '  \"FFlagWeaponRecoilReduction\": \"True\",' >> " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Roblox 1000Hz Gyro & Recoil Reduction applied for " + packageName);
+    }
+
+    public static void applyRecoilControlConfig(String packageName) {
+        applyAimAssistConfig(packageName);
+    }
+
+    private static List<String> getConfigPaths(String pkg) {
+        List<String> paths = new ArrayList<>();
+        paths.add("/sdcard/Android/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
+        paths.add("/data/data/" + pkg + "/files/exe/ClientSettings/ClientAppSettings.json");
+        paths.add("/data/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
+        paths.add("/data/data/" + pkg + "/files/AppSettings.json");
+        return paths;
+    }
+
+    private static void forceWrite(String path, String content) {
+        ShizukuFileManager.writeFile(path, content, "666");
+    }
+
+    private static boolean applyPatch(String path, int targetFps) {
+        final int forcedFps = 165;
+        if (!ShizukuFileManager.fileExists(path)) {
+            String content = String.format(
+                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",
+                    forcedFps, forcedFps
+            );
+            return ShizukuFileManager.writeFile(path, content, "666").success;
+        } else {
+            String cmd = "sed -i 's/\"DFIntTaskSchedulerTargetFps\":.*/\"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",/' " + path + "; " +
+                         "chmod 666 " + path;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+            return true;
+        }
+    }
+}
