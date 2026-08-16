@@ -44,45 +44,54 @@ public class GameConfigPatcher {
         int patchedFiles = 0;
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             if (MlbbConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (MlbbConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
             if (FreeFireConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (FreeFireConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             FreeFireConfigPatcher.applySuperFastTouch(pkg);
             FreeFireConfigPatcher.applyAimAssistConfig(pkg);
             FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg")) {
             if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             GenshinConfigPatcher.applySuperFastTouch(pkg);
             GenshinConfigPatcher.applyAimAssistConfig(pkg);
             GenshinConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             HokConfigPatcher.applySuperFastTouch(pkg);
             HokConfigPatcher.applyAimAssistConfig(pkg);
             HokConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (RobloxConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             RobloxConfigPatcher.applySuperFastTouch(pkg);
             RobloxConfigPatcher.applyAimAssistConfig(pkg);
             RobloxConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
             if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             ValorantConfigPatcher.applySuperFastTouch(pkg);
             ValorantConfigPatcher.applyAimAssistConfig(pkg);
             ValorantConfigPatcher.applyRecoilControlConfig(pkg);
         } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
             if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             FarlightConfigPatcher.applySuperFastTouch(pkg);
             FarlightConfigPatcher.applyAimAssistConfig(pkg);
             FarlightConfigPatcher.applyRecoilControlConfig(pkg);

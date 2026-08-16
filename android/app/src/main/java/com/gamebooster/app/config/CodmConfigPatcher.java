@@ -277,6 +277,24 @@ public class CodmConfigPatcher {
         paths.add("/data/data/" + pkg + "/files/GraphicsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/ControlsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/app_pref.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.json\" -o -name \"*.ini\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 

@@ -192,11 +192,29 @@ public class ValorantConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
         paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/Config/GraphicsSettings.ini");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 

@@ -117,6 +117,24 @@ public class RobloxConfigPatcher {
         paths.add("/data/data/" + pkg + "/files/exe/ClientSettings/ClientAppSettings.json");
         paths.add("/data/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
         paths.add("/data/data/" + pkg + "/files/AppSettings.json");
+        paths.add("/data/data/" + pkg + "/shared_prefs/AppStorage.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 

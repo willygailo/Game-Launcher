@@ -184,9 +184,31 @@ public class MlbbConfigPatcher {
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Config/HighFPS.xml");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Config/Performance.xml");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Config/Setting.xml");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/" + pkg + ".v2.playerprefs.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/com.mobile.legends.v2.playerprefs.xml");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 

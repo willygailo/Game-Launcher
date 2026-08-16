@@ -160,8 +160,29 @@ public class FreeFireConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/content/ff_graphics.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/ff_graphics.json");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/client_settings.json");
         paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/ff_graphics.json");
         paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/com.dts.freefireth.v2.playerprefs.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/com.dts.freefiremax.v2.playerprefs.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 

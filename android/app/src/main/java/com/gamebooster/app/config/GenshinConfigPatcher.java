@@ -154,9 +154,29 @@ public class GenshinConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
         paths.add("/sdcard/Android/data/" + pkg + "/files/hardware_model_config.json");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.json");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UserSettings.json");
         paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
         paths.add("/data/data/" + pkg + "/files/hardware_model_config.json");
+        paths.add("/data/data/" + pkg + "/files/GraphicSettings.json");
+        paths.add("/data/data/" + pkg + "/files/UserSettings.json");
         paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 
@@ -165,7 +185,7 @@ public class GenshinConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
                     "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"vulkan_enabled\": true\n}\n",

@@ -144,9 +144,30 @@ public class HokConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/SGameSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameUserSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/Setting.xml");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/HighFPS.xml");
         paths.add("/data/data/" + pkg + "/files/SGameSettings.ini");
         paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/Config/GameUserSettings.ini");
         paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
+        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
+
+        // Deep Search discovered paths via Shizuku
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.xml\" \\) 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty()) {
+                    for (String line : output.split("\n")) {
+                        line = line.trim();
+                        if (!line.isEmpty() && !paths.contains(line)) {
+                            paths.add(line);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
         return paths;
     }
 
