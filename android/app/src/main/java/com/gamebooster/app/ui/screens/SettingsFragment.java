@@ -292,6 +292,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         updatePrecisionAimStatus();
 
         // Card 3: Hardware Engine & Performance Presets
+        Button btnRog185 = view.findViewById(R.id.btn_apply_185_profile);
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
         Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
@@ -302,6 +303,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
 
+        if (btnRog185 != null) {
+            btnRog185.setOnClickListener(v -> applyPresetProfile(btnRog185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🚀 Executed: 185Hz ROG Extreme Profile"));
+        }
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & Extreme Profile"));
         }

@@ -23,13 +23,13 @@ public class PubgConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "PUBGM patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "PUBGM patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
@@ -38,15 +38,15 @@ public class PubgConfigPatcher {
     /**
      * Force-overwrites ALL PUBGM/BGMI config paths unconditionally.
      * Uses Shizuku (temporary root) to reach /data/data/ paths.
-     * Includes full UE4 CVar injection for 165 FPS, 165 Hz frame rate limit, and content scale.
+     * Includes full UE4 CVar injection for 120 / 144 / 165 / 185 FPS, frame rate limits, and content scale.
      *
      * @return true if at least one path was written
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        // PUBGM FPS level: 9=165fps
-        final int pubgFpsLevel = 9;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        // PUBGM FPS level: 10=185fps, 9=165fps, 8=144fps, 7=120fps, 6=90fps
+        final int pubgFpsLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
 
         String content = "[UserCustom DeviceProfile]\n" +
                 "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "\n" +
@@ -65,8 +65,10 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGFPPViewRange=150.00\n" +
                 "+CVars=r.SprintSensitivity=150\n" +
                 "+CVars=r.Vsync=0\n" +
+                "+CVars=r.Unlock185Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
-                "+CVars=r.TouchBoostHz=165\n" +
+                "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
+                "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
                 "+CVars=r.AimAssistStrength=1.00\n" +
                 "+CVars=r.PUBGRecoilScale=0.00\n" +
@@ -93,7 +95,7 @@ public class PubgConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "PUBGM competitive HDR 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -254,11 +256,11 @@ public class PubgConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        int pubgFpsLevel = targetFps >= 165 ? 9 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5));
+        int pubgFpsLevel = targetFps >= 185 ? 10 : (targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5))));
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\nFrameRateLevel=%d\n",
-                    pubgFpsLevel, targetFps, targetFps, pubgFpsLevel
+                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.TouchBoostHz=%d\nFrameRateLevel=%d\n",
+                    pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {

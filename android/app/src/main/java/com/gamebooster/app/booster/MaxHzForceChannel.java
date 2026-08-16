@@ -6,7 +6,7 @@ import android.util.Log;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 /**
- * MaxHzForceChannel — Dedicated Shizuku-direct engine for forcing 120Hz / 144Hz / 165Hz.
+ * MaxHzForceChannel — Dedicated Shizuku-direct engine for forcing 120Hz / 144Hz / 165Hz / 185Hz.
  *
  * Unlike HzFpsChannel.setRefreshRate() which gates on Display.getSupportedModes(),
  * this class fires ALL known commands unconditionally via ShizukuExecutor —
@@ -18,7 +18,7 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
  *   Layer 3 — device_config game_overlay global policy
  *   Layer 4 — SurfaceFlinger direct binder (1035 + 1036)
  *   Layer 5 — setprop runtime overrides (NV_FPSLIMIT, fps_limit, swapinterval)
- *   Layer 6 — OEM/vendor-specific refresh rate keys (auto-detected per manufacturer)
+ *   Layer 6 — OEM/vendor-specific refresh rate keys (auto-detected per manufacturer: ASUS ROG 185Hz, RedMagic, Xiaomi, Samsung, etc.)
  */
 public final class MaxHzForceChannel {
 
@@ -66,7 +66,7 @@ public final class MaxHzForceChannel {
      * Forces the display to {@code targetHz} via Shizuku — NO capability check, NO fallback.
      * Uses ShizukuExecutor directly to avoid UserService binding delays.
      *
-     * @param targetHz Target refresh rate: 120, 144, or 165
+     * @param targetHz Target refresh rate: 120, 144, 165, or 185
      * @return ForceResult with per-layer success tracking
      */
     public static ForceResult forceApply(int targetHz) {

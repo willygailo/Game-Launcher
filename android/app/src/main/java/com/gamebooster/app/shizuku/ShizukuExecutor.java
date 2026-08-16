@@ -127,81 +127,49 @@ public class ShizukuExecutor {
 
     public static void grantAppPermissionsViaShizuku(Context context) {
         if (context == null) return;
-        String packageName = context.getPackageName();
+        ShizukuPermissionEnforcer.enforceAllPermissions(context);
+    }
 
-        // 1. Core Dangerous & Protected System Permissions
-        String[] permissions = new String[]{
-                "android.permission.WRITE_SECURE_SETTINGS",
-                "android.permission.WRITE_SETTINGS",
-                "android.permission.PACKAGE_USAGE_STATS",
-                "android.permission.MANAGE_EXTERNAL_STORAGE",
-                "android.permission.READ_EXTERNAL_STORAGE",
-                "android.permission.WRITE_EXTERNAL_STORAGE",
-                "android.permission.ACCESS_NOTIFICATION_POLICY",
-                "android.permission.POST_NOTIFICATIONS",
-                "android.permission.SCHEDULE_EXACT_ALARM",
-                "android.permission.USE_EXACT_ALARM",
-                "android.permission.DUMP",
-                "android.permission.BATTERY_STATS",
-                "android.permission.MANAGE_GAME_MODE",
-                "android.permission.OVERRIDE_WIFI_CONFIG",
-                "android.permission.CHANGE_COMPONENT_ENABLED_STATE",
-                "android.permission.CHANGE_NETWORK_STATE",
-                "android.permission.FORCE_STOP_PACKAGES",
-                "android.permission.CLEAR_APP_CACHE",
-                "android.permission.REAL_GET_TASKS",
-                "android.permission.SET_PROCESS_LIMIT",
-                "android.permission.READ_MEDIA_IMAGES",
-                "android.permission.READ_MEDIA_VIDEO",
-                "android.permission.READ_MEDIA_AUDIO"
-        };
-
-        for (String perm : permissions) {
-            executeShizukuCommand("pm grant " + packageName + " " + perm);
+    /**
+     * Executes multiple shell commands sequentially in a single batch.
+     */
+    public static void executeShizukuCommands(String... commands) {
+        if (commands == null || commands.length == 0) return;
+        StringBuilder sb = new StringBuilder();
+        for (String cmd : commands) {
+            if (cmd != null && !cmd.trim().isEmpty()) {
+                sb.append(cmd.trim()).append("; ");
+            }
         }
-
-        // 2. Complete AppOps Overrides for Unrestricted Access & Scoped Storage Bypass
-        String[] appOps = new String[]{
-                "MANAGE_EXTERNAL_STORAGE",
-                "READ_EXTERNAL_STORAGE",
-                "WRITE_EXTERNAL_STORAGE",
-                "NO_ISOLATED_STORAGE",
-                "LEGACY_STORAGE",
-                "SYSTEM_ALERT_WINDOW",
-                "GET_USAGE_STATS",
-                "WRITE_SETTINGS",
-                "MANAGE_GAME_MODE",
-                "RUN_IN_BACKGROUND",
-                "RUN_ANY_IN_BACKGROUND",
-                "AUTO_START",
-                "TURN_SCREEN_ON",
-                "PROJECT_MEDIA",
-                "ACCESS_RESTRICTED_SETTINGS"
-        };
-
-        for (String op : appOps) {
-            executeShizukuCommand("cmd appops set " + packageName + " " + op + " allow");
+        if (sb.length() > 0) {
+            executeShizukuCommand(sb.toString());
         }
+    }
 
-        // 3. Whitelist from Battery Optimization / Doze mode
-        executeShizukuCommand("dumpsys deviceidle whitelist +" + packageName);
-        executeShizukuCommand("cmd deviceidle whitelist +" + packageName);
-
-        // 4. Grant Target Games Permission & AppOps Overrides
-        for (String gamePkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
-            executeShizukuCommand("cmd game mode performance " + gamePkg);
-            executeShizukuCommand("cmd game set --fps 165 " + gamePkg);
-            executeShizukuCommand("cmd window set-app-refresh-rate " + gamePkg + " 165");
-            executeShizukuCommand("device_config put game_overlay " + gamePkg + " mode=2,fps=165:mode=3,fps=165");
-            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_IN_BACKGROUND allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " RUN_ANY_IN_BACKGROUND allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " AUTO_START allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " SYSTEM_ALERT_WINDOW allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " MANAGE_EXTERNAL_STORAGE allow");
-            executeShizukuCommand("cmd appops set " + gamePkg + " NO_ISOLATED_STORAGE allow");
-            executeShizukuCommand("pm grant " + gamePkg + " android.permission.WRITE_SETTINGS");
-            executeShizukuCommand("pm grant " + gamePkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
+    /**
+     * Executes a list of shell commands in a single batch.
+     */
+    public static void executeShizukuCommands(java.util.List<String> commands) {
+        if (commands == null || commands.isEmpty()) return;
+        StringBuilder sb = new StringBuilder();
+        for (String cmd : commands) {
+            if (cmd != null && !cmd.trim().isEmpty()) {
+                sb.append(cmd.trim()).append("; ");
+            }
         }
+        if (sb.length() > 0) {
+            executeShizukuCommand(sb.toString());
+        }
+    }
+
+    /**
+     * Executes an entire multiline shell script via base64 pipeline.
+     */
+    public static String executeShizukuScript(String scriptContent) {
+        if (scriptContent == null || scriptContent.trim().isEmpty()) return "SUCCESS";
+        String b64 = android.util.Base64.encodeToString(scriptContent.getBytes(java.nio.charset.StandardCharsets.UTF_8), android.util.Base64.NO_WRAP);
+        String cmd = "echo '" + b64 + "' | base64 -d | sh";
+        return executeShizukuCommand(cmd);
     }
 
     public static String injectTouchTap(int x, int y) {

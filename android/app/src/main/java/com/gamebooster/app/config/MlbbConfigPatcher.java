@@ -23,13 +23,13 @@ public class MlbbConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "MLBB patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "MLBB patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
@@ -38,15 +38,14 @@ public class MlbbConfigPatcher {
     /**
      * Force-overwrites ALL MLBB config paths unconditionally.
      * Uses Shizuku (temporary root) to reach /data/data/ paths.
-     * Locks 165 FPS and Ultra-High FrameRateLevel 9.
+     * Locks 120 / 144 / 165 / 185 FPS and Ultra-High FrameRateLevel (10=185fps, 9=165fps, 8=144fps, 7=120fps).
      *
      * @return true if at least one path was written
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        // MLBB FrameRateLevel: 9 = Ultra-High tier (165fps)
-        final int frameRateLevel = 9;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
 
         String content = "[Graphics]\n" +
                 "HighFPSMode=1\n" +
@@ -62,6 +61,7 @@ public class MlbbConfigPatcher {
                 "HighFrameRate=1\n" +
                 "UnlockFPS=1\n" +
                 "SuperHighFPS=1\n" +
+                "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
@@ -70,7 +70,7 @@ public class MlbbConfigPatcher {
                 "CameraFOV=150\n" +
                 "WideScreenMode=1\n" +
                 "FieldOfView=150\n" +
-                "HighFreqTouchHz=165\n" +
+                "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
@@ -86,7 +86,7 @@ public class MlbbConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "MLBB competitive HDR 165FPS + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -195,12 +195,12 @@ public class MlbbConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int frameRateLevel = 9;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nHighFreqTouchHz=165\n",
-                    frameRateLevel, forcedFps, forcedFps, forcedFps
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nHighFreqTouchHz=%d\n",
+                    frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {

@@ -23,13 +23,13 @@ public class CodmConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "CODM patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "CODM patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
@@ -44,7 +44,7 @@ public class CodmConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -57,8 +57,9 @@ public class CodmConfigPatcher {
                         "  \"FPSLimit\": " + forcedFps + ",\n" +
                         "  \"HDRMode\": 1,\n" +
                         "  \"HDRColorMode\": 2,\n" +
+                        "  \"Unlock185Hz\": 1,\n" +
                         "  \"Unlock165Hz\": 1,\n" +
-                        "  \"TouchBoostHz\": 165,\n" +
+                        "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroSampleRate\": 1000,\n" +
@@ -91,8 +92,9 @@ public class CodmConfigPatcher {
                         "  <int name=\"FPSLimit\" value=\"" + forcedFps + "\" />\n" +
                         "  <int name=\"GraphicQuality\" value=\"4\" />\n" +
                         "  <int name=\"HDRMode\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock185Hz\" value=\"1\" />\n" +
                         "  <int name=\"Unlock165Hz\" value=\"1\" />\n" +
-                        "  <int name=\"TouchBoostHz\" value=\"165\" />\n" +
+                        "  <int name=\"TouchBoostHz\" value=\"" + forcedFps + "\" />\n" +
                         "  <int name=\"TouchPollingRate\" value=\"1000\" />\n" +
                         "  <int name=\"GyroSampleRate\" value=\"1000\" />\n" +
                         "  <int name=\"FieldOfView\" value=\"150\" />\n" +
@@ -116,9 +118,10 @@ public class CodmConfigPatcher {
                         "GraphicQuality=4\n" +
                         "HDRMode=1\n" +
                         "HDRColorMode=2\n" +
+                        "Unlock185Hz=1\n" +
                         "Unlock165Hz=1\n" +
                         "SuperResolution=1\n" +
-                        "TouchBoostHz=165\n" +
+                        "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchPollingRate=1000\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroSampleRate=1000\n" +
@@ -143,7 +146,7 @@ public class CodmConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "CODM competitive HDR 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "CODM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 

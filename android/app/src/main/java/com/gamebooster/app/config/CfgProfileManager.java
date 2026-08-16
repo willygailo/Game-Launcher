@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.util.Arrays;
@@ -99,7 +100,7 @@ public class CfgProfileManager {
         SharedPreferences.Editor ed = context.getApplicationContext()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
         String key = profile.getPrefsKey();
-        ed.putInt    (key + KEY_FPS_SUFFIX,    CompetitiveCfgProfile.FPS_165);
+        ed.putInt    (key + KEY_FPS_SUFFIX,    profile.getTargetFps());
         ed.putBoolean(key + KEY_TOUCH_SUFFIX,  profile.isSuperFastTouchEnabled());
         ed.putBoolean(key + KEY_HZ_SUFFIX,     profile.isForceWriteSystemHz());
         ed.putBoolean(key + KEY_AIM_SUFFIX,    profile.isAimAssistEnabled());
@@ -117,7 +118,7 @@ public class CfgProfileManager {
         SharedPreferences prefs = context.getApplicationContext()
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String key = "cfg_profile_" + gameKey.toLowerCase();
-        int fps          = CompetitiveCfgProfile.FPS_165;
+        int fps          = prefs.getInt(key + KEY_FPS_SUFFIX, CompetitiveCfgProfile.FPS_185);
         boolean touch    = prefs.getBoolean(key + KEY_TOUCH_SUFFIX, true);
         boolean forceHz  = prefs.getBoolean(key + KEY_HZ_SUFFIX, true);
         boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
@@ -144,15 +145,15 @@ public class CfgProfileManager {
             if (ok) patched++;
         }
 
-        // System-level 165Hz force via Shizuku (applies globally, not per-package)
+        // System-level refresh rate force via Shizuku (applies globally, not per-package)
         if (profile.isForceWriteSystemHz()) {
-            applyShizukuHzForce(165);
+            applyShizukuHzForce(profile.getTargetFps());
         }
 
         // Persist
         if (context != null) saveProfile(context, profile);
 
-        Log.i(TAG, "CfgProfileManager applied " + gameKey + " profile to " + patched + " packages @ 165fps");
+        Log.i(TAG, "CfgProfileManager applied " + gameKey + " profile to " + patched + " packages @ " + profile.getTargetFps() + "fps");
         return patched;
     }
 
@@ -163,6 +164,7 @@ public class CfgProfileManager {
      */
     public static int applyAllGames(Context context, int targetFps, boolean superTouch, boolean forceHz) {
         int total = 0;
+        int effectiveFps = targetFps > 0 ? targetFps : CompetitiveCfgProfile.FPS_185;
         for (String gameKey : new String[]{
                 CompetitiveCfgProfile.GAME_MLBB,
                 CompetitiveCfgProfile.GAME_PUBGM,
@@ -171,11 +173,11 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_GENSHIN,
                 CompetitiveCfgProfile.GAME_HOK,
                 CompetitiveCfgProfile.GAME_ROBLOX}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, 165, superTouch, forceHz, true, true, true);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
-        if (forceHz) applyShizukuHzForce(165);
+        if (forceHz) applyShizukuHzForce(effectiveFps);
         return total;
     }
 
@@ -184,7 +186,7 @@ public class CfgProfileManager {
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
         boolean result = false;
         String key = profile.getGameKey();
-        final int fps = 165;
+        final int fps = profile.getTargetFps() > 0 ? profile.getTargetFps() : 185;
 
         if (CompetitiveCfgProfile.GAME_MLBB.equals(key)) {
             result = MlbbConfigPatcher.patchCompetitive(pkg, fps);
@@ -260,33 +262,27 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 RobloxConfigPatcher.applyRecoilControlConfig(pkg);
             }
+        } else {
+            // GAME_ALL: patch all 7 games with this profile
+            result  = MlbbConfigPatcher.patchCompetitive(pkg, fps);
+            result |= PubgConfigPatcher.patchCompetitive(pkg, fps);
+            result |= CodmConfigPatcher.patchCompetitive(pkg, fps);
+            result |= FreeFireConfigPatcher.patchCompetitive(pkg, fps);
+            result |= GenshinConfigPatcher.patchCompetitive(pkg, fps);
+            result |= HokConfigPatcher.patchCompetitive(pkg, fps);
+            result |= RobloxConfigPatcher.patchCompetitive(pkg, fps);
         }
+
         return result;
     }
 
-    /** Builds the 165Hz Shizuku force command string. */
+    /** Builds and applies the dynamic Shizuku force command for target Hz (120/144/165/185). */
     private static void applyShizukuHzForce(int hz) {
-        final int forcedHz = 165;
-        String cmd =
-            "settings put system peak_refresh_rate " + forcedHz + ".0; " +
-            "settings put system min_refresh_rate "  + forcedHz + ".0; " +
-            "settings put system user_refresh_rate " + forcedHz + "; "   +
-            "settings put global peak_refresh_rate " + forcedHz + ".0; " +
-            "settings put global min_refresh_rate "  + forcedHz + ".0; " +
-            "cmd game mode performance global; " +
-            "cmd window set-app-refresh-rate global " + forcedHz + "; "  +
-            "device_config put game_overlay global mode=2,fps=" + forcedHz + ":mode=3,fps=" + forcedHz + "; " +
-            "service call SurfaceFlinger 1035 i32 " + forcedHz + "; "    +
-            "service call SurfaceFlinger 1036 i32 " + forcedHz + "; "    +
-            "setprop debug.sf.fps_limit "           + forcedHz + "; "    +
-            "setprop persist.sys.NV_FPSLIMIT "      + forcedHz + "; "    +
-            "setprop persist.sys.NV_POWERMODE 1; "                       +
-            "setprop debug.gr.swapinterval 0";
-
+        final int forcedHz = hz > 0 ? hz : 185;
         if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommand(cmd);
+            MaxHzForceChannel.forceApply(forcedHz);
         }
-        Log.i(TAG, "Shizuku 165Hz force applied: " + forcedHz + "Hz");
+        Log.i(TAG, "Shizuku force applied: " + forcedHz + "Hz");
     }
 
     private static List<String> getPackagesForKey(String gameKey) {

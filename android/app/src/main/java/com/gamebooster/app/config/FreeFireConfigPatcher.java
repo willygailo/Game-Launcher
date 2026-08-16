@@ -17,19 +17,19 @@ public class FreeFireConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "FreeFire patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "FreeFire patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
 
         String content = "[FFGraphics]\n" +
                 "HighFPS=1\n" +
@@ -40,6 +40,7 @@ public class FreeFireConfigPatcher {
                 "Shadow=1\n" +
                 "HighResolution=1\n" +
                 "VulkanEnabled=1\n" +
+                "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
                 "AimAssist=1\n" +
                 "AutoAimPrecision=1.0\n" +
@@ -61,7 +62,7 @@ public class FreeFireConfigPatcher {
                 "BulletDamageBoost=1.90\n" +
                 "CriticalHitRate=95\n" +
                 "TouchResponseLevel=3\n" +
-                "HighFreqTouchHz=165\n" +
+                "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "GyroSampleRate=1000\n";
@@ -72,7 +73,7 @@ public class FreeFireConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "FreeFire competitive 165FPS force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "FreeFire competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -169,11 +170,11 @@ public class FreeFireConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nTargetFPS=%d\nGraphicLevel=3\nHighFreqTouchHz=165\n",
-                    forcedFps, forcedFps
+                    "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nTargetFPS=%d\nGraphicLevel=3\nHighFreqTouchHz=%d\n",
+                    forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {

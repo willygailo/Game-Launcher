@@ -103,6 +103,16 @@
                 android:text="🚀 Lock to 165Hz / Max Hardware Mode"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_lock_185"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/accent_cyan"
+                android:text="⚡ Lock to 185Hz ROG Extreme Mode"
+                android:textColor="#000000"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Thermal protection status -->

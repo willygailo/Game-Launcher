@@ -302,16 +302,29 @@
                     android:orientation="horizontal">
 
                     <Button
+                        android:id="@+id/btn_apply_185_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🚀 ROG\n185Hz"
+                        android:textColor="@color/accent_purple"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <Button
                         android:id="@+id/btn_apply_pubg_profile"
                         android:layout_width="0dp"
                         android:layout_height="46dp"
                         android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
+                        android:layout_marginHorizontal="2dp"
                         android:background="@drawable/btn_cyber_dark"
                         android:padding="0dp"
-                        android:text="🔥 EXTREME\n165Hz"
+                        android:text="🔥 MAX\n165Hz"
                         android:textColor="@color/accent_red"
-                        android:textSize="9sp"
+                        android:textSize="8sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -324,7 +337,7 @@
                         android:padding="0dp"
                         android:text="🎮 PRO\n144Hz"
                         android:textColor="@color/accent_cyan"
-                        android:textSize="9sp"
+                        android:textSize="8sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -337,7 +350,7 @@
                         android:padding="0dp"
                         android:text="⚡ HIGH\n120Hz"
                         android:textColor="@color/accent_neon_green"
-                        android:textSize="9sp"
+                        android:textSize="8sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -345,12 +358,12 @@
                         android:layout_width="0dp"
                         android:layout_height="46dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="3dp"
+                        android:layout_marginStart="2dp"
                         android:background="@drawable/btn_cyber_dark"
                         android:padding="0dp"
-                        android:text="⚖️ BALANCED\n90Hz"
+                        android:text="⚖️ BAL\n90Hz"
                         android:textColor="@color/accent_amber"
-                        android:textSize="9sp"
+                        android:textSize="8sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 

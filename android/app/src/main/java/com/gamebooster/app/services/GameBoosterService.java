@@ -28,9 +28,12 @@ public class GameBoosterService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        int targetHz = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(this);
+        if (targetHz <= 0) targetHz = 185;
+
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("GAME SPACE — 165Hz Auto Booster")
-                .setContentText("Background Home Gaming Engine Active • 165Hz Lock")
+                .setContentTitle("GAME SPACE — " + targetHz + " FPS/Hz Auto Booster")
+                .setContentText("Background Gaming Engine Active • " + targetHz + "Hz Mode Lock")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
@@ -42,12 +45,14 @@ public class GameBoosterService extends Service {
             startForeground(NOTIF_ID, notification);
         }
 
-        // Apply background auto-boost optimizations (165Hz zero fallback)
+        // Apply background auto-boost optimizations and enforce privileged Shizuku permissions
+        final int forcedHz = targetHz;
         try {
-            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(165);
-            com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), 165);
+            com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(forcedHz);
+            com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
             PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-            PerformanceChannel.writeAndExecuteRootTweaksScript(165);
+            PerformanceChannel.writeAndExecuteRootTweaksScript(forcedHz);
         } catch (Exception ignored) {}
 
         return START_STICKY;

@@ -40,6 +40,7 @@ public class HomeFragment extends Fragment {
     private Button btnTarget120;
     private Button btnTarget144;
     private Button btnTarget165;
+    private Button btnTarget185;
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
     private HomeGamesAdapter adapter;
@@ -60,6 +61,7 @@ public class HomeFragment extends Fragment {
         btnTarget120 = view.findViewById(R.id.btn_home_target_120);
         btnTarget144 = view.findViewById(R.id.btn_home_target_144);
         btnTarget165 = view.findViewById(R.id.btn_home_target_165);
+        btnTarget185 = view.findViewById(R.id.btn_home_target_185);
 
         ImageView ivHeroBanner = view.findViewById(R.id.iv_hero_banner);
         if (ivHeroBanner != null && getContext() != null) {
@@ -107,6 +109,9 @@ public class HomeFragment extends Fragment {
         if (btnTarget165 != null) {
             btnTarget165.setOnClickListener(v -> applyTargetRate(165));
         }
+        if (btnTarget185 != null) {
+            btnTarget185.setOnClickListener(v -> applyTargetRate(185));
+        }
     }
 
     private void applyTargetRate(int targetHz) {
@@ -143,6 +148,12 @@ public class HomeFragment extends Fragment {
             boolean active = (targetHz == 165);
             btnTarget165.setBackgroundResource(active ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
             btnTarget165.setTextColor(active ? Color.parseColor("#000000") : Color.parseColor("#00F0FF"));
+        }
+
+        if (btnTarget185 != null) {
+            boolean active = (targetHz == 185);
+            btnTarget185.setBackgroundResource(active ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
+            btnTarget185.setTextColor(active ? Color.parseColor("#000000") : Color.parseColor("#00F0FF"));
         }
     }
 

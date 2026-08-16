@@ -18,7 +18,7 @@ public class GameProfileAutoConfigurator {
 
     private static final String TAG = "GameAutoConfigurator";
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
-    public static final int DEFAULT_TARGET_HZ = 165;
+    public static final int DEFAULT_TARGET_HZ = 185;
 
     public interface OnAutoConfigListener {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);
@@ -26,15 +26,19 @@ public class GameProfileAutoConfigurator {
 
     public static void setTargetFpsHz(Context context, int targetFpsHz) {
         if (context == null) return;
+        int validHz = targetFpsHz > 0 ? targetFpsHz : DEFAULT_TARGET_HZ;
         context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .putInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ)
+                .putInt(KEY_TARGET_HZ_FPS, validHz)
                 .apply();
     }
 
     public static int getTargetFpsHz(Context context) {
-        return DEFAULT_TARGET_HZ;
+        if (context == null) return DEFAULT_TARGET_HZ;
+        return context.getApplicationContext()
+                .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
+                .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
     }
 
     public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
@@ -43,14 +47,14 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Auto-configures a game package and display for 165 FPS/Hz.
+     * Auto-configures a game package and display for target FPS/Hz (120 / 144 / 165 / 185).
      * Uses Shizuku direct force channel to ensure zero-fallback execution.
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
 
-        final int forcedFpsHz = 165;
-        Log.d(TAG, "Configuring " + packageName + " for target 165 FPS / Hz...");
+        final int forcedFpsHz = targetFpsHz > 0 ? targetFpsHz : DEFAULT_TARGET_HZ;
+        Log.d(TAG, "Configuring " + packageName + " for target " + forcedFpsHz + " FPS / Hz...");
 
         // 1. Android Game Mode API Performance tuning
         CommandExecutor.executeSystemCommand("cmd game mode performance " + packageName);
@@ -68,7 +72,7 @@ public class GameProfileAutoConfigurator {
             HzFpsChannel.setRefreshRate(context, forcedFpsHz);
         }
 
-        // 5. Auto-patch and create game configuration files for target 165 FPS/Hz
+        // 5. Auto-patch and create game configuration files for target FPS/Hz
         GameConfigPatcher.applyGameFpsPatch(packageName, forcedFpsHz);
 
         // 6. Apply Competitive CFG Profile
@@ -80,7 +84,7 @@ public class GameProfileAutoConfigurator {
                          packageName.contains("sgame") || packageName.contains("levelinfinite") || packageName.contains("arenaofvalor") || packageName.contains("kgtw") || packageName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
                          packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX : CompetitiveCfgProfile.GAME_ALL;
         
-        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFpsHz, true, true);
+        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true);
         if (context != null) {
             CfgProfileManager.applyProfile(context, gameKey, profile);
         }

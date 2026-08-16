@@ -18,19 +18,19 @@ public class GenshinConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "Genshin patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "Genshin patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
 
         String jsonContent = "{\n" +
                 "  \"fps\": " + forcedFps + ",\n" +
@@ -48,6 +48,7 @@ public class GenshinConfigPatcher {
                 "  \"subsurface_scattering\": 1,\n" +
                 "  \"co_op_teammate_effects\": 1,\n" +
                 "  \"vulkan_enabled\": true,\n" +
+                "  \"unlock_185hz\": true,\n" +
                 "  \"unlock_165hz\": true,\n" +
                 "  \"camera_distance\": 6.0,\n" +
                 "  \"camera_fov\": 150,\n" +
@@ -83,7 +84,7 @@ public class GenshinConfigPatcher {
             }
             written++;
         }
-        Log.i(TAG, "Genshin competitive 165FPS + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "Genshin competitive " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 

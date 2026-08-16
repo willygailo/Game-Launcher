@@ -105,6 +105,85 @@ public class GameStorageEngine {
     }
 
     /**
+     * Edits an existing game configuration file in-place using search & replace.
+     */
+    public static boolean editGameConfig(String targetFilePath, String search, String replace, boolean autoBackup) {
+        if (targetFilePath == null || search == null || replace == null) return false;
+        if (autoBackup && ShizukuFileManager.fileExists(targetFilePath)) {
+            backupFile(targetFilePath);
+        }
+        ShizukuFileManager.FileOpResult res = ShizukuFileManager.editFile(targetFilePath, search, replace);
+        if (res.success) {
+            fixFilePermissions(targetFilePath);
+            Log.i(TAG, "Config successfully edited: " + targetFilePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Adds / creates a new game configuration file.
+     */
+    public static boolean addGameConfigFile(String targetFilePath, String initialContent) {
+        ShizukuFileManager.FileOpResult res = ShizukuFileManager.addFile(targetFilePath, initialContent);
+        if (res.success) {
+            fixFilePermissions(targetFilePath);
+            Log.i(TAG, "New config file added: " + targetFilePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Deletes a game configuration file or directory.
+     */
+    public static boolean deleteGameConfigFile(String targetFilePath) {
+        ShizukuFileManager.FileOpResult res = ShizukuFileManager.deleteFile(targetFilePath);
+        if (res.success) {
+            Log.i(TAG, "Config file deleted: " + targetFilePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Uploads / imports a local configuration file into a protected game folder.
+     */
+    public static boolean uploadGameConfigFile(String localFilePath, String targetGameConfigPath) {
+        ShizukuFileManager.FileOpResult res = ShizukuFileManager.uploadFile(localFilePath, targetGameConfigPath);
+        if (res.success) {
+            fixFilePermissions(targetGameConfigPath);
+            Log.i(TAG, "Uploaded config file to: " + targetGameConfigPath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Extracts / downloads a protected game config file to local app storage or cache.
+     */
+    public static boolean extractGameConfigFile(String targetGameConfigPath, String localDestPath) {
+        ShizukuFileManager.FileOpResult res = ShizukuFileManager.downloadFile(targetGameConfigPath, localDestPath);
+        return res.success;
+    }
+
+    /**
+     * Cleans temporary game files, cached shaders, and junk logs to free up memory and storage.
+     */
+    public static boolean cleanGameTempFiles(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String cacheDir = getGameDataDirectory(packageName) + "/cache";
+        String privateCacheDir = getGamePrivateDirectory(packageName) + "/cache";
+        String codeCache = getGamePrivateDirectory(packageName) + "/code_cache";
+
+        ShizukuFileManager.deletePath(cacheDir);
+        ShizukuFileManager.deletePath(privateCacheDir);
+        ShizukuFileManager.deletePath(codeCache);
+        Log.i(TAG, "Cleaned temp caches for " + packageName);
+        return true;
+    }
+
+    /**
      * Reads a protected game configuration or log file.
      */
     public static String readConfig(String targetFilePath) {

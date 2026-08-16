@@ -252,6 +252,153 @@ public final class ShizukuFileManager {
     }
 
     /**
+     * Edits an existing file in-place by searching for a pattern and replacing it (sed / regex).
+     */
+    public static FileOpResult editFile(String path, String searchPattern, String replacement) {
+        if (path == null || path.trim().isEmpty()) {
+            return FileOpResult.fail(path, "Invalid file path");
+        }
+        if (!fileExists(path)) {
+            return FileOpResult.fail(path, "File does not exist: " + path);
+        }
+
+        try {
+            // Escape single quotes for shell
+            String safeSearch = searchPattern.replace("'", "'\\''");
+            String safeReplace = replacement.replace("'", "'\\''");
+            String sedCmd = "sed -i 's/" + safeSearch + "/" + safeReplace + "/g' '" + path + "' && chmod 666 '" + path + "'";
+
+            if (hasFullAccess()) {
+                String res = ShizukuExecutor.executeShizukuCommand(sedCmd);
+                boolean ok = res != null && !res.toLowerCase().contains("error");
+                return ok ? FileOpResult.ok(path, "File edited successfully via Shizuku sed")
+                          : FileOpResult.fail(path, "Sed edit failed: " + res);
+            } else {
+                CommandExecutor.executeSystemCommand(sedCmd);
+                return FileOpResult.ok(path, "File edited via shell sed");
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "editFile exception for " + path, t);
+            return FileOpResult.fail(path, "Exception: " + t.getMessage());
+        }
+    }
+
+    /**
+     * Edits an entire file with completely new content atomically.
+     */
+    public static FileOpResult editFileContent(String path, String newContent) {
+        return writeFileAtomic(path, newContent, "666");
+    }
+
+    /**
+     * Adds / creates a new file at path with initial content and sets permissions.
+     */
+    public static FileOpResult addFile(String path, String initialContent) {
+        ensureParentDirectory(path);
+        return writeFileAtomic(path, initialContent != null ? initialContent : "", "666");
+    }
+
+    /**
+     * Adds / creates an empty file (touch) at the given path.
+     */
+    public static FileOpResult touchFile(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return FileOpResult.fail(path, "Invalid file path");
+        }
+        ensureParentDirectory(path);
+        String cmd = "touch '" + path + "' && chmod 666 '" + path + "'";
+        if (hasFullAccess()) {
+            String res = ShizukuExecutor.executeShizukuCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error")
+                    ? FileOpResult.ok(path, "File created (touched)")
+                    : FileOpResult.fail(path, "Touch failed: " + res);
+        } else {
+            CommandExecutor.executeSystemCommand(cmd);
+            return FileOpResult.ok(path, "File created (touched)");
+        }
+    }
+
+    /**
+     * Adds / creates a new directory (and all parent directories) at the given path.
+     */
+    public static FileOpResult addDirectory(String dirPath) {
+        boolean ok = makeDirectory(dirPath);
+        return ok ? FileOpResult.ok(dirPath, "Directory created: " + dirPath)
+                  : FileOpResult.fail(dirPath, "Failed to create directory: " + dirPath);
+    }
+
+    /**
+     * Uploads / imports a local file to a protected destination path (e.g. into /data/data/ or /sdcard/Android/data/).
+     */
+    public static FileOpResult uploadFile(String localSourcePath, String targetProtectedPath) {
+        if (localSourcePath == null || targetProtectedPath == null) {
+            return FileOpResult.fail(targetProtectedPath, "Source or destination path is null");
+        }
+        ensureParentDirectory(targetProtectedPath);
+        boolean ok = copyFile(localSourcePath, targetProtectedPath);
+        return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded file from " + localSourcePath + " to " + targetProtectedPath)
+                  : FileOpResult.fail(targetProtectedPath, "Failed to upload file to " + targetProtectedPath);
+    }
+
+    /**
+     * Uploads raw bytes to a protected destination path via Base64 stream.
+     */
+    public static FileOpResult uploadBytes(String targetProtectedPath, byte[] data, String chmodMode) {
+        if (targetProtectedPath == null || data == null) {
+            return FileOpResult.fail(targetProtectedPath, "Path or data is null");
+        }
+        ensureParentDirectory(targetProtectedPath);
+        String b64 = Base64.encodeToString(data, Base64.NO_WRAP);
+        String mode = chmodMode != null ? chmodMode : "666";
+        String cmd = "echo '" + b64 + "' | base64 -d > '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
+
+        if (hasFullAccess()) {
+            String res = ShizukuExecutor.executeShizukuCommand(cmd);
+            boolean ok = res != null && !res.toLowerCase().contains("error");
+            return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath)
+                      : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
+        } else {
+            CommandExecutor.executeSystemCommand(cmd);
+            return FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell");
+        }
+    }
+
+    /**
+     * Downloads / extracts a protected file to a local destination directory or cache.
+     */
+    public static FileOpResult downloadFile(String protectedSourcePath, String localDestPath) {
+        if (protectedSourcePath == null || localDestPath == null) {
+            return FileOpResult.fail(localDestPath, "Path is null");
+        }
+        ensureParentDirectory(localDestPath);
+        boolean ok = copyFile(protectedSourcePath, localDestPath);
+        return ok ? FileOpResult.ok(localDestPath, "Downloaded " + protectedSourcePath + " to " + localDestPath)
+                  : FileOpResult.fail(localDestPath, "Failed to download " + protectedSourcePath);
+    }
+
+    /**
+     * Appends text to the end of a file.
+     */
+    public static FileOpResult appendToFile(String path, String textToAppend) {
+        if (path == null || textToAppend == null) {
+            return FileOpResult.fail(path, "Invalid path or text");
+        }
+        ensureParentDirectory(path);
+        String b64 = Base64.encodeToString(textToAppend.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+        String cmd = "echo '" + b64 + "' | base64 -d >> '" + path + "' && chmod 666 '" + path + "'";
+
+        if (hasFullAccess()) {
+            String res = ShizukuExecutor.executeShizukuCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error")
+                    ? FileOpResult.ok(path, "Appended text to " + path)
+                    : FileOpResult.fail(path, "Append failed: " + res);
+        } else {
+            CommandExecutor.executeSystemCommand(cmd);
+            return FileOpResult.ok(path, "Appended text via shell");
+        }
+    }
+
+    /**
      * Copies a file from src to dest with permission preservation.
      */
     public static boolean copyFile(String src, String dest) {
@@ -273,7 +420,7 @@ public final class ShizukuFileManager {
     }
 
     /**
-     * Recursively deletes a file or directory.
+     * Recursively deletes a file or directory (delete operation).
      */
     public static boolean deletePath(String path) {
         if (path == null || path.trim().isEmpty()) return false;
@@ -290,6 +437,24 @@ public final class ShizukuFileManager {
             Log.w(TAG, "deletePath exception for " + path, t);
             return false;
         }
+    }
+
+    /**
+     * Deletes a specific file.
+     */
+    public static FileOpResult deleteFile(String path) {
+        boolean ok = deletePath(path);
+        return ok ? FileOpResult.ok(path, "File deleted: " + path)
+                  : FileOpResult.fail(path, "Failed to delete file: " + path);
+    }
+
+    /**
+     * Deletes an entire directory recursively.
+     */
+    public static FileOpResult deleteDirectory(String dirPath) {
+        boolean ok = deletePath(dirPath);
+        return ok ? FileOpResult.ok(dirPath, "Directory deleted: " + dirPath)
+                  : FileOpResult.fail(dirPath, "Failed to delete directory: " + dirPath);
     }
 
     /**
@@ -348,19 +513,6 @@ public final class ShizukuFileManager {
      */
     public static void grantAllStoragePermissions(Context context) {
         if (context == null || !hasFullAccess()) return;
-
-        String myPkg = context.getPackageName();
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.MANAGE_EXTERNAL_STORAGE");
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.READ_EXTERNAL_STORAGE");
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.WRITE_EXTERNAL_STORAGE");
-        ShizukuExecutor.executeShizukuCommand("cmd appops set " + myPkg + " MANAGE_EXTERNAL_STORAGE allow");
-        ShizukuExecutor.executeShizukuCommand("cmd appops set " + myPkg + " READ_EXTERNAL_STORAGE allow");
-        ShizukuExecutor.executeShizukuCommand("cmd appops set " + myPkg + " WRITE_EXTERNAL_STORAGE allow");
-        ShizukuExecutor.executeShizukuCommand("cmd appops set " + myPkg + " ACCESS_RESTRICTED_SETTINGS allow");
-
-        // Unlock permissions for Android 13-16 Media Permissions
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.READ_MEDIA_IMAGES");
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.READ_MEDIA_VIDEO");
-        ShizukuExecutor.executeShizukuCommand("pm grant " + myPkg + " android.permission.READ_MEDIA_AUDIO");
+        ShizukuPermissionEnforcer.enforceAllPermissions(context);
     }
 }

@@ -27,6 +27,7 @@ public class HzFpsFragment extends Fragment {
     private Button btn120;
     private Button btn144;
     private Button btn165;
+    private Button btn185;
     private TextView tvDeviceRefreshSupport;
 
     @Nullable
@@ -39,6 +40,7 @@ public class HzFpsFragment extends Fragment {
         btn120 = view.findViewById(R.id.btn_lock_120);
         btn144 = view.findViewById(R.id.btn_lock_144);
         btn165 = view.findViewById(R.id.btn_lock_165);
+        btn185 = view.findViewById(R.id.btn_lock_185);
         tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
         btn60.setOnClickListener(v -> setHz(60));
@@ -46,6 +48,7 @@ public class HzFpsFragment extends Fragment {
         btn120.setOnClickListener(v -> setHz(120));
         btn144.setOnClickListener(v -> setHz(144));
         btn165.setOnClickListener(v -> setHz(165));
+        if (btn185 != null) btn185.setOnClickListener(v -> setHz(185));
         refreshSupportedRates();
         return view;
     }
@@ -68,6 +71,7 @@ public class HzFpsFragment extends Fragment {
         setRateVisible(btn120, caps, 120);
         setRateVisible(btn144, caps, 144);
         setRateVisible(btn165, caps, 165);
+        setRateVisible(btn185, caps, 185);
     }
 
     private void setRateVisible(Button button, DevicePerformanceCapabilities caps, int rate) {

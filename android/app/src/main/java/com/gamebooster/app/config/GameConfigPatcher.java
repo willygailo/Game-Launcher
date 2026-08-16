@@ -34,7 +34,7 @@ public class GameConfigPatcher {
             return new PatchResult(false, "Invalid package name");
         }
 
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
         String pkg = packageName.toLowerCase().trim();
         List<String> configPaths = getConfigPathsForPackage(pkg);
         if (configPaths == null || configPaths.isEmpty()) {
@@ -83,8 +83,8 @@ public class GameConfigPatcher {
         }
 
         if (patchedFiles > 0) {
-            Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for " + packageName + " -> 165 FPS/Hz");
-            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for 165 FPS/Hz");
+            Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for " + packageName + " -> " + forcedFps + " FPS/Hz");
+            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for " + forcedFps + " FPS/Hz");
         } else {
             return new PatchResult(false, "Could not update config files for " + packageName);
         }

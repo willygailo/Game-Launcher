@@ -102,6 +102,16 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "hz_185_unlock",
+                "185Hz Extreme ROG Hardware Refresh Rate Lock",
+                "Forces 185Hz via Shizuku: system settings + Game Mode + SurfaceFlinger 1035/1036 + ASUS/RedMagic OEM keys",
+                "settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; settings put system user_refresh_rate 185; settings put global peak_refresh_rate 185.0; settings put global min_refresh_rate 185.0; cmd game mode performance global; cmd window set-app-refresh-rate global 185; device_config put game_overlay global mode=2,fps=185:mode=3,fps=185; service call SurfaceFlinger 1035 i32 185; service call SurfaceFlinger 1036 i32 185; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; setprop persist.sys.NV_POWERMODE 1; setprop debug.gr.swapinterval 0; settings put system asus_option_display_refresh_rate 185; settings put system asus_hfr_mode 1",
+                "settings delete system peak_refresh_rate; settings delete system min_refresh_rate; settings delete system user_refresh_rate; settings delete global peak_refresh_rate; settings delete global min_refresh_rate",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "mlbb_165fps_unlock",
                 "Mobile Legends 165 FPS Max Unlock",
                 "Forces MLBB package to run at 165Hz with Game Mode performance intervention via Shizuku",

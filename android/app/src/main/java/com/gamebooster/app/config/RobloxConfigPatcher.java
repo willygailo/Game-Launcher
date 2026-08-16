@@ -18,19 +18,19 @@ public class RobloxConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "Roblox patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "Roblox patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
 
         String clientAppSettings = "{\n" +
                 "  \"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",\n" +
@@ -62,7 +62,7 @@ public class RobloxConfigPatcher {
             forceWrite(path, clientAppSettings);
             written++;
         }
-        Log.i(TAG, "Roblox competitive 165FPS FastFlag + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -125,7 +125,7 @@ public class RobloxConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
                     "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",

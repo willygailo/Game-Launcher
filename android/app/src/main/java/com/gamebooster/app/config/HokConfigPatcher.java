@@ -17,13 +17,13 @@ public class HokConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = 165;
+        int forcedFps = targetFps > 0 ? targetFps : 185;
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
-        Log.i(TAG, "HOK patch: " + patched + " files for " + packageName + " @ 165fps");
+        Log.i(TAG, "HOK patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
 
@@ -31,7 +31,7 @@ public class HokConfigPatcher {
         if (packageName == null) return false;
 
         final int frameRateLevel = 3;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
 
         String content = "[Graphics]\n" +
                 "HighFPSMode=1\n" +
@@ -44,6 +44,7 @@ public class HokConfigPatcher {
                 "HDRMode=1\n" +
                 "UltraFrameRate=1\n" +
                 "VulkanEnabled=1\n" +
+                "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
@@ -54,7 +55,7 @@ public class HokConfigPatcher {
                 "PhysicalDamageMultiplier=1.90\n" +
                 "MagicDamageMultiplier=1.90\n" +
                 "CriticalRateBoost=95\n" +
-                "HighFreqTouchHz=165\n" +
+                "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
@@ -66,7 +67,7 @@ public class HokConfigPatcher {
             forceWrite(path, content);
             written++;
         }
-        Log.i(TAG, "HOK competitive 165FPS + Drone View force-write: " + written + " paths @ 165fps for " + packageName);
+        Log.i(TAG, "HOK competitive " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -155,11 +156,11 @@ public class HokConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         final int frameRateLevel = 3;
-        final int forcedFps = 165;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nHighFreqTouchHz=165\n",
-                    frameRateLevel, forcedFps, forcedFps, forcedFps
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nHighFreqTouchHz=%d\n",
+                    frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {

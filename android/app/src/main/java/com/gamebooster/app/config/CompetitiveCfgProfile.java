@@ -20,7 +20,10 @@ public class CompetitiveCfgProfile {
     public static final String GAME_ALL      = "ALL";
 
     // ─── FPS Tier Constants ──────────────────────────────────────────────────
+    public static final int FPS_120 = 120;
+    public static final int FPS_144 = 144;
     public static final int FPS_165 = 165;
+    public static final int FPS_185 = 185;
 
     // ─── Fields ──────────────────────────────────────────────────────────────
     private final String gameKey;
@@ -58,7 +61,7 @@ public class CompetitiveCfgProfile {
                                  boolean gyroTuningEnabled,
                                  boolean touchNoDelayEnabled) {
         this.gameKey               = gameKey;
-        this.targetFps             = FPS_165; // Enforce 165 FPS exclusively
+        this.targetFps             = targetFps > 0 ? targetFps : FPS_185;
         this.superFastTouchEnabled = superFastTouchEnabled;
         this.forceWriteSystemHz    = forceWriteSystemHz;
         this.aimAssistEnabled      = aimAssistEnabled;
@@ -68,16 +71,16 @@ public class CompetitiveCfgProfile {
         this.touchNoDelayEnabled   = touchNoDelayEnabled;
     }
 
-    /** Returns default competitive profile for the given game key (165fps, all enabled). */
+    /** Returns default competitive profile for the given game key (185fps extreme, all enabled). */
     public static CompetitiveCfgProfile defaultCompetitive(String gameKey) {
-        return new CompetitiveCfgProfile(gameKey, FPS_165, true, true, true, true, true, true, true);
+        return new CompetitiveCfgProfile(gameKey, FPS_185, true, true, true, true, true, true, true);
     }
 
     // ─── Getters / Setters ───────────────────────────────────────────────────
     public String getGameKey() { return gameKey; }
 
-    public int getTargetFps() { return FPS_165; }
-    public void setTargetFps(int targetFps) { this.targetFps = FPS_165; }
+    public int getTargetFps() { return targetFps > 0 ? targetFps : FPS_185; }
+    public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
 
     public boolean isSuperFastTouchEnabled() { return superFastTouchEnabled; }
     public void setSuperFastTouchEnabled(boolean enabled) { this.superFastTouchEnabled = enabled; }
