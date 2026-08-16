@@ -1,17 +1,17 @@
-# 🚀 Game Launcher Pro & Precision Aim Tuner v2.1.1.1 🎯
+# 🚀 Game Launcher Pro & Precision Aim Tuner v2.2.1.1 🎯
 
 <div align="center">
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Android-12%20to%2016%20(SDK%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v2.1.1.1-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Version](https://img.shields.io/badge/Release-v2.2.1.1-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku API](https://img.shields.io/badge/Shizuku-Privileged%20ADB-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Follow%20Me-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Star%20Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher)
 
-**An ultra-high-performance Game Booster, Input Latency Tuner, Per-Game 120/144/165 FPS Unlocker, 5G/6G Latency Engine, and 2026 Hardware Device Spoofing for Android 12 to 16.**
+**An ultra-high-performance Game Booster, Precision Latency Tuner, Per-Game 120/144/165 FPS Unlocker, 5G/6G Latency Engine, and 2026 Hardware Device Spoofing for Android 12 to 16.**
 
 ---
 
@@ -22,30 +22,60 @@ If you find this project helpful, please consider **Starring ⭐ the Repository*
 
 ---
 
-## 📌 1. Introduction & v2.1.1.1 Highlights
+## 🎨 UI & Layout Design System
 
-**Game Launcher Pro (v2.1.1.1)** is a ban-safe, high-performance Android gaming utility engineered for competitive mobile esports across 7 major titles:
-1. 🎮 **Mobile Legends: Bang Bang (MLBB)**
-2. 🪂 **PUBG Mobile / BGMI**
-3. 🎯 **Call of Duty: Mobile (CODM)**
-4. 🔥 **Garena Free Fire & Free Fire MAX**
-5. ⚔️ **Genshin Impact & HoYoverse Titles (Honkai: Star Rail, ZZZ)**
-6. 👑 **Honor of Kings / Arena of Valor (HOK/AoV)**
-7. 🧱 **Roblox**
+Game Launcher Pro v2.2.1.1 features a state-of-the-art **Cyberpunk Glassmorphic** UI architecture crafted for seamless ergonomics and ultra-responsive responsiveness.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  🎮 GAME SPACE PRO                  [Shizuku: ACTIVE 🟢]     │
+├──────────────────────────────────────────────────────────────┤
+│  ⚡ QUICK BOOST STATUS                                       │
+│  [ CPU: 100% Performance ]  [ GPU: ANGLE Vulkan ]            │
+│  [ Refresh: 165Hz Lock   ]  [ Latency: Sub-1ms Touch ]       │
+├──────────────────────────────────────────────────────────────┤
+│  🎯 7 SUPPORTED ESPORTS TITLES                               │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐          │
+│  │     MLBB     │ │    PUBGM     │ │     CODM     │  ...     │
+│  │ 165 FPS CFG  │ │ Recoil + CVar│ │ Ultra Frame  │          │
+│  └──────────────┘ └──────────────┘ └──────────────┘          │
+├──────────────────────────────────────────────────────────────┤
+│  🛠️ HARDWARE PROFILE SPOOFER                                 │
+│  Selected: Samsung Galaxy S26 Ultra (Snapdragon 8 Elite)     │
+│  [ ROG Phone 9 Pro ]  [ REDMAGIC 10 Pro ]  [ Xiaomi 15 Ultra]│
+├──────────────────────────────────────────────────────────────┤
+│  ⚙️ FLOATING HUD & SENSITIVITY CALCULATOR                     │
+│  [ Crosshair Overlay ]  [ Gyro 1000Hz ]  [ Touch Boost ]     │
+├──────────────────────────────────────────────────────────────┤
+│  [ 🏠 Home ] [ 🎮 Games ] [ ⚡ Tweaks ] [ 🎯 Profiles ] [ ⚙️ Settings ]
+└──────────────────────────────────────────────────────────────┘
+```
+
+### ✨ Visual & Aesthetic Highlights:
+- 🌌 **Deep Cyber Dark Mode**: Rich `#070A0F` backdrop accented with neon cyan (`#00F0FF`) and hyper-green (`#00FF88`) highlights.
+- 💎 **Glassmorphic Surface Cards**: Custom translucent surfaces with high-contrast borders (`card_glass_shape.xml`).
+- 🔘 **Interactive Tab Dock**: Floating pill navigation bar with dynamic active-state transitions.
+- ⚡ **Real-Time Visual Status**: Instant live indicators for Shizuku Binder status, current FPS/Hz refresh modes, and DNS acceleration.
 
 ---
 
-### 🌟 What's New in v2.1.1.1
+## 📌 1. Introduction & Highlights in v2.2.1.1
+
+**Game Launcher Pro (v2.2.1.1)** is engineered specifically for competitive mobile esports across 7 major titles:
+1. 🎮 **Mobile Legends: Bang Bang (MLBB)** — 120/144/165 FPS, instant response scripts, battle performance injection.
+2. 🪂 **PUBG Mobile / BGMI** — 120/144/165 FPS, UE4 CVar injection, zero-delay gyroscope, and recoil steadiness tuning.
+3. 🎯 **Call of Duty: Mobile (CODM)** — JSON/XML/INI graphics unlocks, 165Hz touch boost, max shader pre-warming.
+4. 🔥 **Garena Free Fire & Free Fire MAX** — HighFPS=1, MaxFPS=120/144/165, aim precision assist, fast drag headshot calculation.
+5. ⚔️ **Genshin Impact & HoYoverse Titles (Honkai: Star Rail, ZZZ)** — GameSettings.json hardware model overrides, Vulkan pipeline unlock.
+6. 👑 **Honor of Kings / Arena of Valor (HOK/AoV)** — SGameSettings.ini 120/144/165 FPS & UltraFrameRate unlock.
+7. 🧱 **Roblox** — FastFlags `DFIntTaskSchedulerTargetFps=165` & Vulkan rendering optimizations.
+
+---
+
+### 🌟 Features Breakdown:
 
 - ⚡ **Strict 120 / 144 / 165Hz Lock (Zero Fallback)**: Multi-layer Shizuku engine (`MaxHzForceChannel`) executing 17+ commands across AOSP, Android Game Mode API, SurfaceFlinger (1035/1036), setprop, and vendor OEM keys without capability throttling.
-- 🛠️ **Dedicated Per-Application CFG Patchers**:
-  - `MlbbConfigPatcher`: 120/144/165 FPS, super-fast touch, damage script asset configs.
-  - `PubgConfigPatcher`: 120/144/165 FPS, UE4 CVar injection, aim assist & recoil control.
-  - `CodmConfigPatcher`: JSON/XML/INI graphics unlocks, 165Hz touch boost.
-  - `FreeFireConfigPatcher`: HighFPS=1, MaxFPS=120/144/165, aim precision assist.
-  - `GenshinConfigPatcher`: GameSettings.json & hardware model overrides, Vulkan pipeline unlock.
-  - `HokConfigPatcher`: SGameSettings.ini 120/144/165 FPS & UltraFrameRate unlock.
-  - `RobloxConfigPatcher`: FastFlags `DFIntTaskSchedulerTargetFps=165` & Vulkan rendering optimizations.
+- 🛠️ **Dedicated Per-Application CFG Patchers**: Custom file injection directly into game data folders safely via Shizuku privileged access.
 - 🎯 **Targeted Game Driver & Google ANGLE Vulkan Opt-In**: Explicitly opt-in only the 7 supported games per application (`game_driver_opt_in_apps` & `angle_gl_driver_selection_pkgs`) instead of affecting unrelated system apps.
 - 📡 **5G / 6G & Dual Data / Wi-Fi Latency Acceleration**: Low-latency Wi-Fi mode (`cmd wifi force-low-latency-mode`), seamless zero-drop dual data (`mobile_data_always_on 1`), and 5G/6G NR TCP buffer tuning.
 - 📱 **2025/2026 Gaming Device Spoofing Powerhouses**:
@@ -70,15 +100,16 @@ Game-Launcher-PRO/
 │   │   │   ├── engine/           # CommandExecutor & RefreshRateOverrideEngine
 │   │   │   ├── games/            # GameLauncherHelper & HomeGameScanner
 │   │   │   ├── overlay/          # CrosshairOverlayService & FloatingOverlayService
-│   │   │   ├── shizuku/          # ShizukuExecutor & ShizukuFileManager
+│   │   │   ├── shizuku/          # ShizukuExecutor & ShizukuFileManager & RishManager
 │   │   │   ├── spoofer/          # DeviceSpooferEngine & 2026 Brand Profiles (S26 Ultra, ROG 9 Pro, etc.)
 │   │   │   ├── tweaks/           # TweakManagerRepository
 │   │   │   └── ui/
-│   │   │       ├── screens/      # HomeFragment, SettingsFragment, MainActivity
+│   │   │       ├── screens/      # HomeFragment, GamesFragment, TweaksFragment, SettingsFragment, MainActivity
 │   │   │       └── sensitivity/  # SensitivityCalculator & SensitivityModel
 │   │   └── src/main/res/
-│   │       └── drawable/         # Custom Cyberpunk UI & Glassmorphism Assets
-│   └── build.gradle              # versionCode 2111, versionName "2.1.1.1", targetSdk 36
+│   │       ├── drawable/         # Custom Cyberpunk UI, Glass Cards & Neon Vector Assets
+│   │       └── layout/           # Clean Glassmorphism Fragment & Activity Layouts
+│   └── build.gradle              # versionCode 2211, versionName "2.2.1.1", targetSdk 36
 ├── Game_Space.apk
 └── README.md
 ```
@@ -88,8 +119,8 @@ Game-Launcher-PRO/
 ## 📥 3. Download & Setup Instructions
 
 ### Download Release APK
-Get the latest compiled binary from GitHub Releases:
-👉 **[Download Latest Version (v2.1.1.1 APK)](https://github.com/willygailo/Game-Launcher/releases)**
+Get the latest compiled binary directly from GitHub Releases:
+👉 **[Download Latest Version (v2.2.1.1 APK)](https://github.com/willygailo/Game-Launcher/releases)**
 
 ### Setup Steps (Shizuku Privileged Access)
 
