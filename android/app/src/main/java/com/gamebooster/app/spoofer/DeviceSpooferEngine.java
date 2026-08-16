@@ -66,29 +66,44 @@ public class DeviceSpooferEngine {
 
     /**
      * Returns the recommended spoof profile for a given game package name.
-     * Picks the best-fit device to unlock the highest FPS/graphics tier.
+     * Picks the best-fit device to unlock the highest FPS/graphics tier:
+     * - PUBGM / BGMI / Free Fire → REDMAGIC 10 Pro+ (165Hz eSports)
+     * - CODM / Warzone / Blood Strike → Samsung Galaxy S26 Ultra (Snapdragon 8 Elite / Adreno 840)
+     * - MLBB / HOK / Wild Rift / Roblox → ASUS ROG Phone 9 Pro (185Hz / 165Hz Extreme)
+     * - Genshin / Honkai / ZZZ / Wuthering Waves → Xiaomi 15 Ultra (Vulkan Ultra)
      */
     public static SpoofProfile getRecommendedProfile(String packageName) {
         if (packageName == null) return SpoofProfileRegistry.getById("asus_rog9_pro");
         String pkg = packageName.toLowerCase();
 
-        // MLBB / Wild Rift / Honor of Kings / Roblox → ASUS ROG Phone 9 Pro (185/165Hz extreme)
-        if (pkg.contains("mobile.legends") || pkg.contains("wildrift") || pkg.contains("sgame") || pkg.contains("roblox")) {
-            return SpoofProfileRegistry.getById("asus_rog9_pro");
-        }
-        // CODM / Blood Strike → Samsung Galaxy S26 Ultra (Snapdragon 8 Elite Gen 5 / Adreno 840)
-        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike")) {
-            return SpoofProfileRegistry.getById("samsung_s26_ultra");
-        }
-        // PUBGM / BGMI / Free Fire → REDMAGIC 10 Pro (165Hz extreme eSports)
-        if (pkg.contains("tencent.ig") || pkg.contains("pubg") || pkg.contains("imobile") || pkg.contains("freefire")) {
+        // 1. PUBGM / BGMI / Free Fire / Battle Royale
+        if (pkg.contains("tencent.ig") || pkg.contains("pubg") || pkg.contains("imobile") || 
+            pkg.contains("krmobile") || pkg.contains("vng.pubgmobile") || pkg.contains("freefire") || 
+            pkg.contains("arenabreakout") || pkg.contains("farlight84")) {
             return SpoofProfileRegistry.getById("redmagic_10_pro");
         }
-        // Genshin Impact / Star Rail / ZZZ → Xiaomi 15 Ultra (Vulkan ultra graphics)
-        if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai") || pkg.contains("cognosphere")) {
+
+        // 2. CODM / Warzone / Blood Strike / Tactical FPS
+        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike") || 
+            pkg.contains("standoff2") || pkg.contains("deltaforce")) {
+            return SpoofProfileRegistry.getById("samsung_s26_ultra");
+        }
+
+        // 3. MLBB / HOK / Arena of Valor / Wild Rift / Roblox
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("sgame") || 
+            pkg.contains("wildrift") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || 
+            pkg.contains("kgvn") || pkg.contains("kgid") || pkg.contains("roblox")) {
+            return SpoofProfileRegistry.getById("asus_rog9_pro");
+        }
+
+        // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves
+        if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai") || 
+            pkg.contains("cognosphere") || pkg.contains("mihoyo") || pkg.contains("hoyoverse") || 
+            pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             return SpoofProfileRegistry.getById("xiaomi_15_ultra");
         }
-        // Default → ROG Phone 9 Pro
+
+        // Default Flagship Profile
         return SpoofProfileRegistry.getById("asus_rog9_pro");
     }
 
