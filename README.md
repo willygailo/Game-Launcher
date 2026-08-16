@@ -5,13 +5,13 @@
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android SDK](https://img.shields.io/badge/Platform-Android%2012--16%20(API%2036)-3DDC84?style=flat-square&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v2.2.2.1-00F0FF?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Version](https://img.shields.io/badge/Release-v2.2.2.2-00F0FF?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku API](https://img.shields.io/badge/Privileged-Shizuku%20ADB-7B2CBF?style=flat-square&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](#)
 [![GitHub Profile](https://img.shields.io/badge/GitHub-willygailo-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo)
 [![Facebook Profile](https://img.shields.io/badge/Facebook-Willy%20Gailo-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
 
-A high-performance Android gaming optimization suite designed to minimize input latency, unlock maximum refresh rates (up to 165Hz), and streamline per-title performance configurations via privileged ADB access (Shizuku).
+A high-performance Android gaming optimization suite designed to minimize input latency, unlock maximum refresh rates (up to 185Hz Extreme ROG Mode), and streamline per-title performance configurations via privileged ADB access (Shizuku).
 
 [Download Latest Release](https://github.com/willygailo/Game-Launcher/releases) • [Report Issue](https://github.com/willygailo/Game-Launcher/issues)
 
@@ -25,8 +25,9 @@ A high-performance Android gaming optimization suite designed to minimize input 
 
 ### Key Capabilities
 
-- **Display & Frame Rate Synchronization**: Enforces stable 120Hz, 144Hz, and 165Hz refresh rates using multi-tier SurfaceFlinger and display mode overrides.
+- **Display & Frame Rate Synchronization**: Enforces stable 120Hz, 144Hz, 165Hz, and 185Hz refresh rates using multi-tier SurfaceFlinger, Game Mode API, and display mode overrides.
 - **Low-Latency Input Engine**: Configures 1000Hz touch sampling rate and minimizes touch deadzones.
+- **Privileged File Management Engine**: Full control over protected game configurations (`edit`, `add`, `delete`, `upload`, `backup`, and `restore`) across `/data/data/<pkg>/` and `/sdcard/Android/data/<pkg>/`.
 - **Per-Game Configuration Profiles**: Manages custom graphic, FOV, and performance presets for supported titles.
 - **Network Optimization**: Activates low-latency Wi-Fi mode and optimizes TCP buffer parameters for reduced jitter.
 - **Hardware Profile Emulation**: Emulates high-end gaming hardware signatures to access higher in-game graphic and framerate tiers.
@@ -37,13 +38,13 @@ A high-performance Android gaming optimization suite designed to minimize input 
 
 | Game | Optimization Capabilities |
 | :--- | :--- |
-| **Mobile Legends: Bang Bang** | 120/165 FPS mode, Camera & FOV adjustments, Touch response acceleration |
-| **PUBG Mobile / BGMI** | 120/165 FPS UE4 CVars, FOV & Perspective scaling, Gyroscope response tuning |
-| **Call of Duty: Mobile** | Ultra frame rate presets, Touch acceleration, Sensitivity curve alignment |
-| **Free Fire / Free Fire MAX** | High-FPS mode unlocking, Touch polling optimization, Aim response tuning |
-| **Genshin Impact** | Vulkan backend preference, Expanded rendering resolution, Camera distance scaling |
-| **Honor of Kings** | Ultra frame rate presets, Response latency reduction, Rendering mode tuning |
-| **Roblox** | Client FastFlags management, Vulkan rendering, Unlocked frame rate scheduler |
+| **Mobile Legends: Bang Bang** | 120/144/165/185 FPS mode, Camera & FOV adjustments, Touch response acceleration |
+| **PUBG Mobile / BGMI** | 120/144/165/185 FPS UE4 CVars, FOV & Perspective scaling, Gyroscope response tuning |
+| **Call of Duty: Mobile** | 120/144/165/185 FPS presets, Touch acceleration, Sensitivity curve alignment |
+| **Free Fire / Free Fire MAX** | 120/144/165/185 FPS mode unlocking, Touch polling optimization, Aim response tuning |
+| **Genshin Impact** | 120/144/165/185 FPS, Vulkan backend preference, Expanded rendering resolution, Camera distance scaling |
+| **Honor of Kings** | 120/144/165/185 FPS presets, Response latency reduction, Rendering mode tuning |
+| **Roblox** | 120/144/165/185 FPS FastFlags management, Vulkan rendering, Unlocked frame rate scheduler |
 
 ---
 
