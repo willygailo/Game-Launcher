@@ -81,6 +81,9 @@ public class HomeFragment extends Fragment {
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvGames.setHasFixedSize(true);
+            rvGames.setNestedScrollingEnabled(false);
+            rvGames.setItemViewCacheSize(20);
             adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);
         }
