@@ -129,7 +129,7 @@ public class HomeFragment extends Fragment {
 
     private void updateTargetRateUI(int targetHz) {
         if (tvTargetHzBadge != null) {
-            tvTargetHzBadge.setText(targetHz + "Hz ACTIVE");
+            tvTargetHzBadge.setText("⚡ " + targetHz + "Hz ACTIVE");
         }
 
         if (btnTarget120 != null) {
@@ -152,8 +152,8 @@ public class HomeFragment extends Fragment {
 
         if (btnTarget185 != null) {
             boolean active = (targetHz == 185);
-            btnTarget185.setBackgroundResource(active ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
-            btnTarget185.setTextColor(active ? Color.parseColor("#000000") : Color.parseColor("#00F0FF"));
+            btnTarget185.setBackgroundResource(active ? R.drawable.btn_cyber_green : R.drawable.btn_cyber_dark);
+            btnTarget185.setTextColor(active ? Color.parseColor("#0B0E14") : Color.parseColor("#00FF66"));
         }
     }
 

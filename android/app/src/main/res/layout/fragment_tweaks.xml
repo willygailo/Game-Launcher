@@ -39,23 +39,6 @@
         android:visibility="gone"
         android:layout_marginBottom="12dp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="12dp">
-
-        <Button
-            android:id="@+id/btn_apply_all_tweaks"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="🚀 APPLY ALL TWEAKS"
-            android:backgroundTint="@color/accent_purple"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-    </LinearLayout>
-
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

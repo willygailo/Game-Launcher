@@ -24,21 +24,94 @@ import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 import com.gamebooster.app.shizuku.ShizukuManager;
 
+import com.gamebooster.app.tweaks.TweakCategory;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewHolder> {
 
     private final Context context;
+    private final List<TweakItem> allMasterTweaks;
     private List<TweakItem> tweaks;
     private boolean isShizukuAlive = true;
+    private String currentQuery = "";
+    private TweakCategory currentCategory = TweakCategory.ALL;
 
     public TweaksAdapter(Context context, List<TweakItem> tweaks) {
         this.context = context;
-        this.tweaks = tweaks;
+        this.allMasterTweaks = new ArrayList<>(tweaks != null ? tweaks : new ArrayList<>());
+        this.tweaks = new ArrayList<>(this.allMasterTweaks);
     }
 
     public void updateList(List<TweakItem> newTweaks) {
-        this.tweaks = newTweaks;
+        this.allMasterTweaks.clear();
+        if (newTweaks != null) {
+            this.allMasterTweaks.addAll(newTweaks);
+        }
+        applyFilter();
+    }
+
+    public void filter(String query, TweakCategory category) {
+        this.currentQuery = (query != null) ? query.trim().toLowerCase() : "";
+        if (category != null) {
+            this.currentCategory = category;
+        }
+        applyFilter();
+    }
+
+    public void setCategoryFilter(TweakCategory category) {
+        this.currentCategory = (category != null) ? category : TweakCategory.ALL;
+        applyFilter();
+    }
+
+    public void setSearchQuery(String query) {
+        this.currentQuery = (query != null) ? query.trim().toLowerCase() : "";
+        applyFilter();
+    }
+
+    private void applyFilter() {
+        List<TweakItem> result = new ArrayList<>();
+        for (TweakItem item : allMasterTweaks) {
+            if (item == null) continue;
+
+            // Category match
+            if (currentCategory != TweakCategory.ALL && item.getCategory() != currentCategory) {
+                continue;
+            }
+
+            // Search query match
+            if (!currentQuery.isEmpty()) {
+                String title = item.getTitle() != null ? item.getTitle().toLowerCase() : "";
+                String desc = item.getDescription() != null ? item.getDescription().toLowerCase() : "";
+                String id = item.getId() != null ? item.getId().toLowerCase() : "";
+
+                boolean matches = title.contains(currentQuery)
+                        || desc.contains(currentQuery)
+                        || id.contains(currentQuery);
+
+                // Smart aliases
+                if (!matches) {
+                    if ((currentQuery.equals("ml") || currentQuery.equals("mlbb")) && (id.contains("mlbb") || title.contains("mobile legends"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("pubg") || currentQuery.equals("bgmi")) && (id.contains("pubgm") || title.contains("pubg"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("cod") || currentQuery.equals("codm")) && (id.contains("codm") || title.contains("cod"))) {
+                        matches = true;
+                    } else if (currentQuery.equals("ff") && (id.contains("freefire") || title.contains("free fire"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("val") || currentQuery.equals("valo")) && (id.contains("valorant") || title.contains("valorant"))) {
+                        matches = true;
+                    }
+                }
+
+                if (!matches) continue;
+            }
+
+            result.add(item);
+        }
+
+        this.tweaks = result;
         notifyDataSetChanged();
     }
 

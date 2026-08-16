@@ -560,6 +560,47 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
+                <!-- Search Bar for Tweaks & Games -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/search_bar_cyber_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/et_search_tweaks"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:background="@null"
+                        android:hint="Search tweaks, games (MLBB, PUBG, 120/144/165/185 FPS, Vulkan)..."
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        android:textSize="11sp"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:imeOptions="actionSearch" />
+
+                    <ImageView
+                        android:id="@+id/iv_clear_search"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@android:drawable/ic_menu_close_clear_cancel"
+                        app:tint="@color/accent_cyan"
+                        android:contentDescription="Clear Search"
+                        android:visibility="gone" />
+                </LinearLayout>
+
                 <!-- Tweak Filter Buttons -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"

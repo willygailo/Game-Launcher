@@ -10,7 +10,11 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -479,6 +483,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         bannerDisconnect = view.findViewById(R.id.banner_shizuku_disconnect);
         RecyclerView rvTweaks = view.findViewById(R.id.rv_tweaks_list);
 
+        EditText etSearchTweaks = view.findViewById(R.id.et_search_tweaks);
+        ImageView ivClearSearch = view.findViewById(R.id.iv_clear_search);
+
         Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
@@ -493,11 +500,54 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             rvTweaks.setAdapter(tweaksAdapter);
         }
 
-        if (btnFilterAll != null && tweaksAdapter != null) btnFilterAll.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getAllTweaks()));
-        if (btnFilterCpuGpu != null && tweaksAdapter != null) btnFilterCpuGpu.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.CPU_GPU)));
-        if (btnFilterTouch != null && tweaksAdapter != null) btnFilterTouch.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.TOUCH_DISPLAY)));
-        if (btnFilterShizuku != null && tweaksAdapter != null) btnFilterShizuku.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.SHIZUKU_SYSTEM)));
-        if (btnFilterNetwork != null && tweaksAdapter != null) btnFilterNetwork.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.NETWORK_LATENCY)));
+        final TweakCategory[] selectedCategory = {TweakCategory.ALL};
+
+        if (etSearchTweaks != null) {
+            etSearchTweaks.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    String query = (s != null) ? s.toString() : "";
+                    if (ivClearSearch != null) {
+                        ivClearSearch.setVisibility(query.trim().isEmpty() ? View.GONE : View.VISIBLE);
+                    }
+                    if (tweaksAdapter != null) {
+                        tweaksAdapter.filter(query, selectedCategory[0]);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+
+        if (ivClearSearch != null && etSearchTweaks != null) {
+            ivClearSearch.setOnClickListener(v -> etSearchTweaks.setText(""));
+        }
+
+        Button[] filterButtons = {btnFilterAll, btnFilterCpuGpu, btnFilterTouch, btnFilterShizuku, btnFilterNetwork};
+        TweakCategory[] categories = {TweakCategory.ALL, TweakCategory.CPU_GPU, TweakCategory.TOUCH_DISPLAY, TweakCategory.SHIZUKU_SYSTEM, TweakCategory.NETWORK_LATENCY};
+
+        for (int i = 0; i < filterButtons.length; i++) {
+            final int index = i;
+            Button btn = filterButtons[i];
+            if (btn != null) {
+                btn.setOnClickListener(v -> {
+                    selectedCategory[0] = categories[index];
+                    for (int j = 0; j < filterButtons.length; j++) {
+                        if (filterButtons[j] != null) {
+                            filterButtons[j].setTextColor(j == index ? android.graphics.Color.parseColor("#00F0FF") : android.graphics.Color.parseColor("#94A3B8"));
+                        }
+                    }
+                    String currentQuery = (etSearchTweaks != null && etSearchTweaks.getText() != null) ? etSearchTweaks.getText().toString() : "";
+                    if (tweaksAdapter != null) {
+                        tweaksAdapter.filter(currentQuery, selectedCategory[0]);
+                    }
+                });
+            }
+        }
 
         // Card Spoof: Hardware Device Spoofing
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);

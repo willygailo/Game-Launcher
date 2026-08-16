@@ -127,11 +127,9 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                 "⚡ 185 FPS / Hz (Extreme ROG Mode — ROG 9 Pro / RedMagic 10 Pro / S26 Ultra)",
                 "⚡ 165 FPS / Hz (Ultra Extreme — Black Shark 5 Pro / ROG 8)",
                 "🎮 144 FPS / Hz (Ultra High Gaming — Galaxy S25 / Xiaomi 15 Ultra)",
-                "🔥 120 FPS / Hz (Pro Esports Standard — S24 Ultra / OnePlus 13)",
-                "⚖️ 90 FPS / Hz  (Smooth Competitive)",
-                "🔋 60 FPS / Hz  (Standard)"
+                "🔥 120 FPS / Hz (Pro Esports Standard — S24 Ultra / OnePlus 13)"
         };
-        int[] fpsValues = {185, 165, 144, 120, 90, 60};
+        int[] fpsValues = {185, 165, 144, 120};
 
         int selectedIdx = 0;
         for (int i = 0; i < fpsValues.length; i++) {

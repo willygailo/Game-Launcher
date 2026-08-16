@@ -35,7 +35,6 @@ public class TweaksFragment extends Fragment implements ShizukuManager.ShizukuSt
 
         tvStatus = view.findViewById(R.id.tv_tweaks_status);
         bannerDisconnect = view.findViewById(R.id.banner_shizuku_disconnect);
-        Button btnApplyAll = view.findViewById(R.id.btn_apply_all_tweaks);
         RecyclerView rvTweaks = view.findViewById(R.id.rv_tweaks_list);
 
         Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
@@ -55,21 +54,6 @@ public class TweaksFragment extends Fragment implements ShizukuManager.ShizukuSt
         rvTweaks.setAdapter(adapter);
 
         EngineUIHelper.refreshEngineStatus(tvStatus);
-
-        btnApplyAll.setOnClickListener(v -> {
-            btnApplyAll.setEnabled(false);
-            Toast.makeText(getContext(), "Applying system optimizations...", Toast.LENGTH_SHORT).show();
-
-            TweakManagerRepository.applyAllSupportedTweaksAsync(getContext(), appliedCount -> {
-                if (getContext() != null && isAdded()) {
-                    if (adapter != null) {
-                        adapter.notifyDataSetChanged();
-                    }
-                    btnApplyAll.setEnabled(true);
-                    Toast.makeText(getContext(), "Applied " + appliedCount + " system optimizations!", Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
 
         btnFilterAll.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getAllTweaks()));
         btnFilterCpuGpu.setOnClickListener(v -> adapter.updateList(TweakManagerRepository.getTweaksByCategory(TweakCategory.CPU_GPU)));

@@ -68,9 +68,11 @@ public class HzFpsChannel {
     public static RefreshRateResult setRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
 
-        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
-        if (!capabilities.supportsRefreshRate(requestedHz)) {
-            return RefreshRateResult.unsupported(requestedHz, capabilities.getMaxRefreshRate());
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
+            if (r.success) {
+                return RefreshRateResult.success(requestedHz, r.appliedHz);
+            }
         }
 
         String hzStr = String.valueOf(requestedHz);
@@ -78,13 +80,17 @@ public class HzFpsChannel {
         int hzInt = requestedHz;
         boolean ok = true;
 
-        // Stock AOSP / Pixel Standard settings (Android 11+)
+        // Stock AOSP / Pixel Standard settings (Android 11+) & Dynamic Refresh Defeat
         ok &= CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzFloatStr);
         ok &= CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzFloatStr);
         ok &= CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
         CommandExecutor.setSystemSetting("global", "peak_refresh_rate", hzFloatStr);
         CommandExecutor.setSystemSetting("global", "min_refresh_rate", hzFloatStr);
+        CommandExecutor.setSystemSetting("system", "match_content_frame_rate", "0");
+        CommandExecutor.setSystemSetting("secure", "match_content_frame_rate_preference", "0");
         CommandExecutor.executeSystemCommand("cmd game mode performance global");
+        CommandExecutor.executeSystemCommand("cmd game set --fps " + requestedHz + " global");
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + requestedHz);
 
         String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";
         String brand = Build.BRAND != null ? Build.BRAND.toLowerCase() : "";
@@ -96,8 +102,9 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("secure", "user_refresh_rate", String.valueOf(hzInt));
             CommandExecutor.setSystemSetting("global", "surface_flinger_peak_refresh_rate", hzStr);
         } else if (manufacturer.contains("samsung")) {
-            // Samsung OneUI (2 = Dynamic 120/144/165Hz, 1 = Standard 60Hz)
+            // Samsung OneUI (2 = Dynamic 120/144/165/185Hz, 1 = Standard)
             CommandExecutor.setSystemSetting("secure", "refresh_rate_mode", hzInt >= 90 ? "2" : "1");
+            CommandExecutor.setSystemSetting("system", "sec_display_fps", hzStr);
         } else if (manufacturer.contains("oneplus") || manufacturer.contains("oppo") || manufacturer.contains("realme")) {
             // OnePlus / Realme / Oppo
             CommandExecutor.setSystemSetting("global", "oneplus_screen_refresh_rate", hzInt >= 90 ? "2" : "1");
@@ -105,6 +112,7 @@ public class HzFpsChannel {
         } else if (manufacturer.contains("asus")) {
             // ASUS ROG Phone / Gaming Devices
             CommandExecutor.setSystemSetting("system", "asus_option_display_refresh_rate", String.valueOf(hzInt));
+            CommandExecutor.setSystemSetting("system", "asus_hfr_mode", "1");
         } else if (manufacturer.contains("vivo") || brand.contains("iqoo")) {
             // vivo / iQOO Funtouch OS / Origin OS
             CommandExecutor.setSystemSetting("system", "screen_refresh_rate", String.valueOf(hzInt));
@@ -123,16 +131,17 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
-        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal (Supports 165Hz)
+        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal (Supports 120/144/165/185Hz)
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + hzInt);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + hzInt);
         CommandExecutor.setSystemProperty("debug.gr.swapinterval", "0");
         CommandExecutor.setSystemProperty("debug.sf.fps_limit", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_FPSLIMIT", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_POWERMODE", "1");
+        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
+        CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
 
-        return ok ? RefreshRateResult.success(requestedHz, requestedHz)
-                : RefreshRateResult.failed(requestedHz, requestedHz);
+        return RefreshRateResult.success(requestedHz, requestedHz);
     }
 
     public static boolean forceGameFps(Context context, String packageName, int targetFps) {

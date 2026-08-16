@@ -157,26 +157,24 @@ public class ProfilesFragment extends Fragment {
         if (getContext() == null || game == null) return;
 
         String[] fpsOptions = new String[]{
-                "⚡ FORCE SET OVERRIDE (MAX UNLOCKED 240)",
-                "🔥 165 FPS / Max Gaming Mode",
-                "⚡ 144 FPS / Cyber Gaming Mode",
-                "🚀 120 FPS / Ultra Gaming Mode",
-                "🎮 90 FPS / High Gaming Mode",
-                "⚖️ 60 FPS / Standard Mode"
+                "⚡ 185 FPS / ROG Extreme Gaming Mode",
+                "🔥 165 FPS / Max Hardware Gaming Mode",
+                "⚡ 144 FPS / Cyber Ultra Gaming Mode",
+                "🚀 120 FPS / Pro Esports Gaming Mode"
         };
-        int[] fpsValues = new int[]{240, 165, 144, 120, 90, 60};
+        int[] fpsValues = new int[]{185, 165, 144, 120};
 
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("⚡ Target FPS & Override for " + game.getLabel())
                 .setItems(fpsOptions, (dialog, which) -> {
                     int targetFps = fpsValues[which];
-                    String label = targetFps >= 240 ? "FORCE OVERRIDE (MAX UNLOCKED)" : targetFps + " FPS";
+                    String label = targetFps + " FPS";
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
                         GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
                         com.gamebooster.app.booster.HzFpsChannel.forceGameFps(getContext(), game.getPackageName(), targetFps);
-                        com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), Math.min(targetFps, 165));
+                        com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), targetFps);
 
                         AppExecutors.getInstance().postToMainThread(() -> {
                             if (!isAdded() || getContext() == null) return;

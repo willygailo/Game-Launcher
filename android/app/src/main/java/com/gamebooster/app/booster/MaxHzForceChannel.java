@@ -81,15 +81,18 @@ public final class MaxHzForceChannel {
 
         Log.i(TAG, "══ MaxHzForceChannel.forceApply START (" + targetHz + "Hz) ══");
 
-        // ── Layer 1: AOSP Standard Settings ──────────────────────────────────────────
+        // ── Layer 1: AOSP Standard Settings & Dynamic Refresh Defeat ─────────────────
         ok += run("settings put system peak_refresh_rate "  + hzF); total++;
         ok += run("settings put system min_refresh_rate "   + hzF); total++;
         ok += run("settings put system user_refresh_rate "  + hz);  total++;
         ok += run("settings put global peak_refresh_rate "  + hzF); total++;
         ok += run("settings put global min_refresh_rate "   + hzF); total++;
+        ok += run("settings put system match_content_frame_rate 0"); total++;
+        ok += run("settings put secure match_content_frame_rate_preference 0"); total++;
 
         // ── Layer 2: Android Game Mode API + Window Manager ───────────────────────────
         ok += run("cmd game mode performance global");                               total++;
+        ok += run("cmd game set --fps " + targetHz + " global");                     total++;
         ok += run("cmd window set-app-refresh-rate global " + targetHz);             total++;
 
         // ── Layer 3: device_config game_overlay (per-global refresh rate policy) ─────
@@ -100,12 +103,20 @@ public final class MaxHzForceChannel {
         ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
         ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
 
-        // ── Layer 5: setprop Runtime Overrides ───────────────────────────────────────
-        ok += run("setprop debug.sf.fps_limit "      + hz);                          total++;
-        ok += run("setprop persist.sys.NV_FPSLIMIT " + hz);                          total++;
+        // ── Layer 5: setprop Runtime Overrides & Latency Eliminators ────────────────
+        ok += run("setprop debug.sf.fps_limit "                + hz);                total++;
+        ok += run("setprop persist.sys.NV_FPSLIMIT "           + hz);                total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
         ok += run("setprop debug.gr.swapinterval 0");                                total++;
         ok += run("setprop debug.egl.swapinterval 0");                               total++;
+        ok += run("setprop debug.sf.disable_backpressure 1");                        total++;
+        ok += run("setprop debug.sf.early_phase_offset_ns 0");                       total++;
+        ok += run("setprop debug.sf.early_app_phase_offset_ns 0");                   total++;
+        ok += run("setprop persist.sys.game.fps "              + hz);                total++;
+        ok += run("setprop persist.vendor.power.dfps.level "   + hz);                total++;
+        ok += run("setprop ro.vendor.display.default_fps "     + hz);                total++;
+        ok += run("setprop vendor.display.fps "                + hz);                total++;
+        ok += run("setprop debug.hwui.fps_divisor 1");                               total++;
 
         // ── Layer 6: OEM / Vendor-Specific Keys (auto-detected) ──────────────────────
         String mfr    = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";

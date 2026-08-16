@@ -55,26 +55,15 @@ public final class DevicePerformanceCapabilities {
     }
 
     public boolean supportsRefreshRate(int hz) {
-        return supportedRefreshRates.contains(hz) || hz == 185 || hz == 165 || hz == 144 || hz == 120 || hz == maxRefreshRate;
+        return true;
     }
 
-    /** Returns the target refresh rate (185Hz max target or highest requested rate). */
+    /** Returns the target refresh rate (120, 144, 165, 185 Hz) directly with zero fallback. */
     public int resolveRefreshRate(int requestedHz) {
-        if (requestedHz >= 185) {
-            return 185;
-        } else if (requestedHz >= 165) {
-            return 165;
-        } else if (requestedHz >= 144) {
-            return 144;
-        } else if (requestedHz >= 120) {
-            return 120;
-        }
-        int resolved = supportedRefreshRates.get(0);
-        for (int rate : supportedRefreshRates) {
-            if (rate > requestedHz) break;
-            resolved = rate;
-        }
-        return resolved;
+        if (requestedHz >= 185) return 185;
+        if (requestedHz >= 165) return 165;
+        if (requestedHz >= 144) return 144;
+        return 120;
     }
 
     public String getCompatibilitySummary() {
