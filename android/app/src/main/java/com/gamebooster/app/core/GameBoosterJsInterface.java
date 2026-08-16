@@ -104,6 +104,10 @@ public class GameBoosterJsInterface {
                 obj.put("model", p.model);
                 obj.put("brand", p.brand);
                 obj.put("brandLabel", p.brandLabel);
+                obj.put("gpu", p.glRenderer);
+                obj.put("soc", p.socModel);
+                obj.put("ramMb", p.ramTotalMb);
+                obj.put("androidVersion", p.androidVersion);
                 array.put(obj);
             }
             return array.toString();

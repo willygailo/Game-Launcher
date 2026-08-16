@@ -58,7 +58,8 @@ public class SpoofProfileAdapter extends RecyclerView.Adapter<SpoofProfileAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SpoofProfile profile = profiles.get(position);
         holder.tvDeviceName.setText(profile.displayName);
-        holder.tvDeviceDetails.setText(profile.model + " • " + profile.socModel + " • " + profile.glRenderer);
+        int ramGb = profile.ramTotalMb / 1024;
+        holder.tvDeviceDetails.setText(profile.model + " • " + profile.socModel + " • " + profile.glRenderer + " • " + ramGb + "GB RAM");
 
         boolean isActive = profile.id.equals(activeProfileId);
         holder.tvActiveBadge.setVisibility(isActive ? View.VISIBLE : View.GONE);
