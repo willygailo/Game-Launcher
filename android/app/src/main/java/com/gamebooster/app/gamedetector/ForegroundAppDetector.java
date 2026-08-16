@@ -129,7 +129,11 @@ public class ForegroundAppDetector {
                 || pkg.contains("levelinfinite")
                 || pkg.contains("arenaofvalor")
                 || pkg.contains("roblox")
-                || pkg.contains("wildrift");
+                || pkg.contains("wildrift")
+                || pkg.contains("projectc")
+                || pkg.contains("valorant")
+                || pkg.contains("farlight")
+                || pkg.contains("solarland");
     }
 
     public String getForegroundPackageName() {

@@ -45,6 +45,8 @@ A high-performance Android gaming optimization suite designed to minimize input 
 | **Genshin Impact** | 120/144/165/185 FPS, Vulkan backend preference, Expanded rendering resolution, Camera distance scaling |
 | **Honor of Kings** | 120/144/165/185 FPS presets, Response latency reduction, Rendering mode tuning |
 | **Roblox** | 120/144/165/185 FPS FastFlags management, Vulkan rendering, Unlocked frame rate scheduler |
+| **Valorant Mobile (CN Project C / Global)** | 120/144/165/185 FPS UE4 CVars, 1000Hz touch & gyro tuning, Zero-delay aim & crosshair stabilizer |
+| **Farlight 84** | 120/144/165/185 FPS Solarland graphics engine, Low-latency touch boost, Recoil reduction |
 
 ---
 
@@ -54,6 +56,7 @@ A high-performance Android gaming optimization suite designed to minimize input 
 Game-Launcher-PRO/
 ├── android/
 │   ├── app/
+│   │   ├── src/main/assets/shizuku/ # Bundled rish binary & dex runtime assets
 │   │   ├── src/main/java/com/gamebooster/app/
 │   │   │   ├── booster/          # Refresh rate, GPU driver, and network engines
 │   │   │   ├── config/           # Per-game configuration patchers & managers
@@ -67,6 +70,12 @@ Game-Launcher-PRO/
 │   │   │   └── ui/               # Interface views, fragments, and tools
 │   │   └── src/main/res/         # UI layouts, vector assets, and design tokens
 │   └── build.gradle              # Android build configuration (API 36 / Java 17)
+├── platform-tools-latest-linux/  # Bundled official Android SDK Platform Tools (ADB/Fastboot)
+├── shizuku/                      # Standalone Shizuku shell toolkit (rish & rish_shizuku.dex)
+├── tools/                        # Automated device setup & Shizuku activation scripts
+│   ├── activate_shizuku.sh       # One-click Shizuku service starter via ADB
+│   ├── grant_permissions.sh      # Privileged permission granter for Game Launcher Pro
+│   └── setup_device.sh           # All-in-one onboarding and installation tool
 └── README.md
 ```
 
@@ -78,11 +87,23 @@ Game-Launcher-PRO/
 - Device running **Android 12 (API 31) through Android 16 (API 36)**.
 - **[Shizuku](https://shizuku.rikka.app/)** installed and running via Wireless Debugging or ADB.
 
-### Quick Start
+### Quick Start (On Device)
 1. Download and install `Game_Space.apk` from the **[Releases](https://github.com/willygailo/Game-Launcher/releases)** page.
 2. Ensure Shizuku is active on your device.
 3. Launch **Game Launcher Pro** and grant Shizuku privileged access when prompted.
 4. Select your installed game from the dashboard to apply performance profiles and launch.
+
+### PC / ADB Automated Setup
+Connect your device to your PC via USB with USB Debugging enabled, then run:
+
+```bash
+# 1. Run all-in-one setup (Installs APK, grants permissions, and activates Shizuku)
+./tools/setup_device.sh
+
+# Or run individual tasks:
+./tools/activate_shizuku.sh    # Starts Shizuku privileged service
+./tools/grant_permissions.sh   # Grants WRITE_SECURE_SETTINGS, DUMP, etc.
+```
 
 ---
 

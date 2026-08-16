@@ -82,7 +82,9 @@ public class GameProfileAutoConfigurator {
                          packageName.contains("freefire") || packageName.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
                          packageName.contains("genshin") || packageName.contains("mihoyo") || packageName.contains("cognosphere") || packageName.contains("hoyoverse") || packageName.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
                          packageName.contains("sgame") || packageName.contains("levelinfinite") || packageName.contains("arenaofvalor") || packageName.contains("kgtw") || packageName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                         packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX : CompetitiveCfgProfile.GAME_ALL;
+                         packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
+                         packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
+                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
         
         CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true);
         if (context != null) {

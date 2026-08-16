@@ -92,6 +92,20 @@ public class CfgProfileManager {
             "com.roblox.client"
     );
 
+    private static final List<String> VALORANT_PACKAGES = Arrays.asList(
+            "com.tencent.tmgp.projectc",
+            "com.riotgames.valorantmobile",
+            "com.tencent.tmgp.valorant",
+            "com.riotgames.valorant"
+    );
+
+    private static final List<String> FARLIGHT_PACKAGES = Arrays.asList(
+            "com.miracle.farlight84",
+            "com.miraclegames.farlight84",
+            "com.farlightgames.farlight84.gp",
+            "com.farlightgames.farlight84.global"
+    );
+
     // ─── Save / Load ─────────────────────────────────────────────────────────
 
     /** Saves a competitive profile to SharedPreferences. */
@@ -158,7 +172,7 @@ public class CfgProfileManager {
     }
 
     /**
-     * Applies ALL game profiles across all 7 target games in one shot.
+     * Applies ALL game profiles across all target games in one shot.
      *
      * @return total packages patched across all games
      */
@@ -172,7 +186,9 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_FREEFIRE,
                 CompetitiveCfgProfile.GAME_GENSHIN,
                 CompetitiveCfgProfile.GAME_HOK,
-                CompetitiveCfgProfile.GAME_ROBLOX}) {
+                CompetitiveCfgProfile.GAME_ROBLOX,
+                CompetitiveCfgProfile.GAME_VALORANT,
+                CompetitiveCfgProfile.GAME_FARLIGHT}) {
             CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
@@ -262,8 +278,30 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 RobloxConfigPatcher.applyRecoilControlConfig(pkg);
             }
+        } else if (CompetitiveCfgProfile.GAME_VALORANT.equals(key)) {
+            result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                ValorantConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                ValorantConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_FARLIGHT.equals(key)) {
+            result = FarlightConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                FarlightConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                FarlightConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                FarlightConfigPatcher.applyRecoilControlConfig(pkg);
+            }
         } else {
-            // GAME_ALL: patch all 7 games with this profile
+            // GAME_ALL: patch all target games with this profile
             result  = MlbbConfigPatcher.patchCompetitive(pkg, fps);
             result |= PubgConfigPatcher.patchCompetitive(pkg, fps);
             result |= CodmConfigPatcher.patchCompetitive(pkg, fps);
@@ -271,6 +309,8 @@ public class CfgProfileManager {
             result |= GenshinConfigPatcher.patchCompetitive(pkg, fps);
             result |= HokConfigPatcher.patchCompetitive(pkg, fps);
             result |= RobloxConfigPatcher.patchCompetitive(pkg, fps);
+            result |= ValorantConfigPatcher.patchCompetitive(pkg, fps);
+            result |= FarlightConfigPatcher.patchCompetitive(pkg, fps);
         }
 
         return result;
@@ -294,6 +334,8 @@ public class CfgProfileManager {
             case CompetitiveCfgProfile.GAME_GENSHIN:  return GENSHIN_PACKAGES;
             case CompetitiveCfgProfile.GAME_HOK:      return HOK_PACKAGES;
             case CompetitiveCfgProfile.GAME_ROBLOX:   return ROBLOX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_VALORANT: return VALORANT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FARLIGHT: return FARLIGHT_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
                 List<String> all = new java.util.ArrayList<>();
                 all.addAll(MLBB_PACKAGES);
@@ -303,6 +345,8 @@ public class CfgProfileManager {
                 all.addAll(GENSHIN_PACKAGES);
                 all.addAll(HOK_PACKAGES);
                 all.addAll(ROBLOX_PACKAGES);
+                all.addAll(VALORANT_PACKAGES);
+                all.addAll(FARLIGHT_PACKAGES);
                 return all;
             default: return new java.util.ArrayList<>();
         }

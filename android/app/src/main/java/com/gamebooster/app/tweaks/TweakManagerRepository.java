@@ -113,9 +113,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "mlbb_165fps_unlock",
-                "Mobile Legends 165 FPS Max Unlock",
-                "Forces MLBB package to run at 165Hz with Game Mode performance intervention via Shizuku",
-                "cmd game mode performance com.mobile.legends; cmd game set --fps 165 com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 165; device_config put game_overlay com.mobile.legends mode=2,fps=165:mode=3,fps=165",
+                "Mobile Legends 185 FPS Extreme Unlock",
+                "Forces MLBB package to run at 185Hz/165Hz with Game Mode performance intervention via Shizuku",
+                "cmd game mode performance com.mobile.legends; cmd game set --fps 185 com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 185; device_config put game_overlay com.mobile.legends mode=2,fps=185:mode=3,fps=185",
                 "cmd game mode standard com.mobile.legends; cmd window set-app-refresh-rate com.mobile.legends 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -123,9 +123,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "pubgm_165fps_unlock",
-                "PUBG Mobile / BGMI 165 FPS Max Unlock",
-                "Forces PUBGM & BGMI packages to 165 FPS with Game Overlay override via Shizuku",
-                "cmd game mode performance com.tencent.ig; cmd game set --fps 165 com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 165; device_config put game_overlay com.tencent.ig mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.pubg.imobile; cmd game set --fps 165 com.pubg.imobile; cmd window set-app-refresh-rate com.pubg.imobile 165",
+                "PUBG Mobile / BGMI 185 FPS Extreme Unlock",
+                "Forces PUBGM & BGMI packages to 185 FPS with Game Overlay override via Shizuku",
+                "cmd game mode performance com.tencent.ig; cmd game set --fps 185 com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 185; device_config put game_overlay com.tencent.ig mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.pubg.imobile; cmd game set --fps 185 com.pubg.imobile; cmd window set-app-refresh-rate com.pubg.imobile 185",
                 "cmd game mode standard com.tencent.ig; cmd window set-app-refresh-rate com.tencent.ig 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -133,9 +133,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "codm_165fps_unlock",
-                "COD Mobile 165 FPS Max Unlock",
-                "Forces CODM package to 165 FPS with high-priority surface flinger refresh rate via Shizuku",
-                "cmd game mode performance com.activision.callofduty.shooter; cmd game set --fps 165 com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 165; device_config put game_overlay com.activision.callofduty.shooter mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.garena.game.codm; cmd game set --fps 165 com.garena.game.codm; cmd window set-app-refresh-rate com.garena.game.codm 165",
+                "COD Mobile 185 FPS Extreme Unlock",
+                "Forces CODM package to 185 FPS with high-priority surface flinger refresh rate via Shizuku",
+                "cmd game mode performance com.activision.callofduty.shooter; cmd game set --fps 185 com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 185; device_config put game_overlay com.activision.callofduty.shooter mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.garena.game.codm; cmd game set --fps 185 com.garena.game.codm; cmd window set-app-refresh-rate com.garena.game.codm 185",
                 "cmd game mode standard com.activision.callofduty.shooter; cmd window set-app-refresh-rate com.activision.callofduty.shooter 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -143,9 +143,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "freefire_165fps_unlock",
-                "Free Fire / MAX 165 FPS Unlock",
-                "Forces Free Fire & MAX packages to 165 FPS with Game Mode performance intervention via Shizuku",
-                "cmd game mode performance com.dts.freefireth; cmd game set --fps 165 com.dts.freefireth; cmd window set-app-refresh-rate com.dts.freefireth 165; device_config put game_overlay com.dts.freefireth mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.dts.freefiremax; cmd game set --fps 165 com.dts.freefiremax; cmd window set-app-refresh-rate com.dts.freefiremax 165",
+                "Free Fire / MAX 185 FPS Unlock",
+                "Forces Free Fire & MAX packages to 185 FPS with Game Mode performance intervention via Shizuku",
+                "cmd game mode performance com.dts.freefireth; cmd game set --fps 185 com.dts.freefireth; cmd window set-app-refresh-rate com.dts.freefireth 185; device_config put game_overlay com.dts.freefireth mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.dts.freefiremax; cmd game set --fps 185 com.dts.freefiremax; cmd window set-app-refresh-rate com.dts.freefiremax 185",
                 "cmd game mode standard com.dts.freefireth; cmd window set-app-refresh-rate com.dts.freefireth 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -153,9 +153,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "genshin_165fps_unlock",
-                "Genshin / Star Rail / ZZZ 165 FPS Unlock",
-                "Forces HoYoverse packages to 165 FPS with Vulkan hardware acceleration via Shizuku",
-                "cmd game mode performance com.miHoYo.GenshinImpact; cmd game set --fps 165 com.miHoYo.GenshinImpact; cmd window set-app-refresh-rate com.miHoYo.GenshinImpact 165; device_config put game_overlay com.miHoYo.GenshinImpact mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.cognosphere.GenshinImpact; cmd game set --fps 165 com.cognosphere.GenshinImpact; cmd window set-app-refresh-rate com.cognosphere.GenshinImpact 165",
+                "Genshin / Star Rail / ZZZ 185 FPS Unlock",
+                "Forces HoYoverse packages to 185 FPS with Vulkan hardware acceleration via Shizuku",
+                "cmd game mode performance com.miHoYo.GenshinImpact; cmd game set --fps 185 com.miHoYo.GenshinImpact; cmd window set-app-refresh-rate com.miHoYo.GenshinImpact 185; device_config put game_overlay com.miHoYo.GenshinImpact mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.cognosphere.GenshinImpact; cmd game set --fps 185 com.cognosphere.GenshinImpact; cmd window set-app-refresh-rate com.cognosphere.GenshinImpact 185",
                 "cmd game mode standard com.miHoYo.GenshinImpact; cmd window set-app-refresh-rate com.miHoYo.GenshinImpact 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -163,9 +163,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "hok_165fps_unlock",
-                "Honor of Kings (HOK) 165 FPS Unlock",
-                "Forces Honor of Kings / Arena of Valor to 165 FPS via Shizuku Game Mode API",
-                "cmd game mode performance com.levelinfinite.sgameGlobal; cmd game set --fps 165 com.levelinfinite.sgameGlobal; cmd window set-app-refresh-rate com.levelinfinite.sgameGlobal 165; device_config put game_overlay com.levelinfinite.sgameGlobal mode=2,fps=165:mode=3,fps=165; cmd game mode performance com.tencent.tmgp.sgame; cmd game set --fps 165 com.tencent.tmgp.sgame; cmd window set-app-refresh-rate com.tencent.tmgp.sgame 165",
+                "Honor of Kings (HOK) 185 FPS Unlock",
+                "Forces Honor of Kings / Arena of Valor to 185 FPS via Shizuku Game Mode API",
+                "cmd game mode performance com.levelinfinite.sgameGlobal; cmd game set --fps 185 com.levelinfinite.sgameGlobal; cmd window set-app-refresh-rate com.levelinfinite.sgameGlobal 185; device_config put game_overlay com.levelinfinite.sgameGlobal mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.tencent.tmgp.sgame; cmd game set --fps 185 com.tencent.tmgp.sgame; cmd window set-app-refresh-rate com.tencent.tmgp.sgame 185",
                 "cmd game mode standard com.levelinfinite.sgameGlobal; cmd window set-app-refresh-rate com.levelinfinite.sgameGlobal 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -173,10 +173,30 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "roblox_165fps_unlock",
-                "Roblox 165 FPS FastFlag Unlock",
-                "Forces Roblox client to 165 FPS target with ultra-low input latency via Shizuku",
-                "cmd game mode performance com.roblox.client; cmd game set --fps 165 com.roblox.client; cmd window set-app-refresh-rate com.roblox.client 165; device_config put game_overlay com.roblox.client mode=2,fps=165:mode=3,fps=165",
+                "Roblox 185 FPS FastFlag Unlock",
+                "Forces Roblox client to 185 FPS target with ultra-low input latency via Shizuku",
+                "cmd game mode performance com.roblox.client; cmd game set --fps 185 com.roblox.client; cmd window set-app-refresh-rate com.roblox.client 185; device_config put game_overlay com.roblox.client mode=2,fps=185:mode=3,fps=185",
                 "cmd game mode standard com.roblox.client; cmd window set-app-refresh-rate com.roblox.client 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "valorant_185fps_unlock",
+                "Valorant Mobile (CN / Global) 185 FPS Extreme Unlock",
+                "Forces Valorant Mobile Project C & Global packages to 185 FPS with Game Overlay override via Shizuku",
+                "cmd game mode performance com.tencent.tmgp.projectc; cmd game set --fps 185 com.tencent.tmgp.projectc; cmd window set-app-refresh-rate com.tencent.tmgp.projectc 185; device_config put game_overlay com.tencent.tmgp.projectc mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.riotgames.valorantmobile; cmd game set --fps 185 com.riotgames.valorantmobile; cmd window set-app-refresh-rate com.riotgames.valorantmobile 185",
+                "cmd game mode standard com.tencent.tmgp.projectc; cmd window set-app-refresh-rate com.tencent.tmgp.projectc 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "farlight_185fps_unlock",
+                "Farlight 84 185 FPS Extreme Unlock",
+                "Forces Farlight 84 packages to 185 FPS with Game Overlay override and low input latency via Shizuku",
+                "cmd game mode performance com.miracle.farlight84; cmd game set --fps 185 com.miracle.farlight84; cmd window set-app-refresh-rate com.miracle.farlight84 185; device_config put game_overlay com.miracle.farlight84 mode=2,fps=185:mode=3,fps=185; cmd game mode performance com.farlightgames.farlight84.gp; cmd game set --fps 185 com.farlightgames.farlight84.gp; cmd window set-app-refresh-rate com.farlightgames.farlight84.gp 185",
+                "cmd game mode standard com.miracle.farlight84; cmd window set-app-refresh-rate com.miracle.farlight84 0",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));

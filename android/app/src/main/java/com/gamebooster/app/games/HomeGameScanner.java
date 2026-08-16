@@ -137,8 +137,36 @@ public class HomeGameScanner {
             Color.parseColor("#00FF66")
     );
 
+    // 8. Valorant Mobile (CN Project C / Global)
+    private static final TargetGameSpec VALORANT_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.tencent.tmgp.projectc",
+                    "com.riotgames.valorantmobile",
+                    "com.tencent.tmgp.valorant",
+                    "com.riotgames.valorant"
+            },
+            "Valorant Mobile",
+            "TACTICAL FPS",
+            R.drawable.home_game_card_bg_codm,
+            Color.parseColor("#FF4655")
+    );
+
+    // 9. Farlight 84
+    private static final TargetGameSpec FARLIGHT_SPEC = new TargetGameSpec(
+            new String[]{
+                    "com.miracle.farlight84",
+                    "com.miraclegames.farlight84",
+                    "com.farlightgames.farlight84.gp",
+                    "com.farlightgames.farlight84.global"
+            },
+            "Farlight 84",
+            "HERO SHOOTER",
+            R.drawable.home_game_card_bg_pubg,
+            Color.parseColor("#FFCC00")
+    );
+
     private static final TargetGameSpec[] ALL_TARGET_SPECS = new TargetGameSpec[]{
-            MLBB_SPEC, PUBG_SPEC, CODM_SPEC, FREEFIRE_SPEC, GENSHIN_SPEC, HOK_SPEC, ROBLOX_SPEC
+            MLBB_SPEC, PUBG_SPEC, CODM_SPEC, FREEFIRE_SPEC, GENSHIN_SPEC, HOK_SPEC, ROBLOX_SPEC, VALORANT_SPEC, FARLIGHT_SPEC
     };
 
     /**

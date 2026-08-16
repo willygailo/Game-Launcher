@@ -117,18 +117,21 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                          pkg.contains("freefire") || pkg.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
                          pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
                          pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                         pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX : CompetitiveCfgProfile.GAME_ALL;
+                         pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
+                         pkg.contains("projectc") || pkg.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
+                         pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
 
         CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
 
         String[] fpsOptions = {
-                "⚡ 165 FPS / Hz (Max Extreme — ROG 9 Pro / RedMagic 10 Pro / S26 Ultra)",
-                "🎮 144 FPS / Hz (Ultra High — ROG 8 Pro / Black Shark 5)",
-                "🔥 120 FPS / Hz (Pro Gaming — Galaxy S25 / Xiaomi 15 Ultra)",
-                "⚖️ 90 FPS / Hz  (Smooth Competitive — S24 Ultra)",
+                "⚡ 185 FPS / Hz (Extreme ROG Mode — ROG 9 Pro / RedMagic 10 Pro / S26 Ultra)",
+                "⚡ 165 FPS / Hz (Ultra Extreme — Black Shark 5 Pro / ROG 8)",
+                "🎮 144 FPS / Hz (Ultra High Gaming — Galaxy S25 / Xiaomi 15 Ultra)",
+                "🔥 120 FPS / Hz (Pro Esports Standard — S24 Ultra / OnePlus 13)",
+                "⚖️ 90 FPS / Hz  (Smooth Competitive)",
                 "🔋 60 FPS / Hz  (Standard)"
         };
-        int[] fpsValues = {165, 144, 120, 90, 60};
+        int[] fpsValues = {185, 165, 144, 120, 90, 60};
 
         int selectedIdx = 0;
         for (int i = 0; i < fpsValues.length; i++) {
@@ -143,8 +146,8 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         final boolean[] forceHz = {currentCfg.isForceWriteSystemHz()};
 
         String[] multiOptions = {
-                "⚡ Super Fast Touch 165Hz (HighFreqTouch / TouchBoostHz)",
-                "📺 Force System Hz via Shizuku (SurfaceFlinger + Game Mode)"
+                "⚡ Super Fast Touch 185Hz/165Hz (HighFreqTouch / TouchBoostHz 1000Hz)",
+                "📺 Force System Hz via Shizuku (SurfaceFlinger + Game Mode + setprop)"
         };
         boolean[] initialChecked = {superTouch[0], forceHz[0]};
 

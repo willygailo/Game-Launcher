@@ -76,6 +76,16 @@ public class GameConfigPatcher {
             RobloxConfigPatcher.applySuperFastTouch(pkg);
             RobloxConfigPatcher.applyAimAssistConfig(pkg);
             RobloxConfigPatcher.applyRecoilControlConfig(pkg);
+        } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
+            if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            ValorantConfigPatcher.applySuperFastTouch(pkg);
+            ValorantConfigPatcher.applyAimAssistConfig(pkg);
+            ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+        } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
+            if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            FarlightConfigPatcher.applySuperFastTouch(pkg);
+            FarlightConfigPatcher.applyAimAssistConfig(pkg);
+            FarlightConfigPatcher.applyRecoilControlConfig(pkg);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;
@@ -185,6 +195,18 @@ public class GameConfigPatcher {
         } else if (pkg.contains("wildrift") || pkg.contains("genshin") || pkg.contains("hkrpg")) {
             paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
             paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
+        } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
+            paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
+        } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/Config/GraphicsSettings.ini");
         } else {
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
             paths.add("/data/data/" + pkg + "/files/GameSettings.ini");

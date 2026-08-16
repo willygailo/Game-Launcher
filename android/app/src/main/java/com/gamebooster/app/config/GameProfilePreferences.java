@@ -64,15 +64,18 @@ public final class GameProfilePreferences {
     }
 
     public static String getSummary(Context context, String packageName) {
-        if (context == null || packageName == null) return "CFG: 165 FPS • ZERO-DELAY TOUCH 165Hz • 1000Hz GYRO";
+        if (context == null || packageName == null) return "CFG: 185 FPS • ZERO-DELAY TOUCH 185Hz • 1000Hz GYRO";
         String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
                          packageName.contains("pubg") || packageName.contains("tencent.ig") || packageName.contains("imobile") || packageName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
                          packageName.contains("cod") || packageName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM :
                          packageName.contains("freefire") || packageName.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
                          packageName.contains("genshin") || packageName.contains("mihoyo") || packageName.contains("cognosphere") || packageName.contains("hoyoverse") || packageName.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
                          packageName.contains("sgame") || packageName.contains("levelinfinite") || packageName.contains("arenaofvalor") || packageName.contains("kgtw") || packageName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                         packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX : CompetitiveCfgProfile.GAME_ALL;
+                         packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
+                         packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
+                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
         CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: 165 FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "165Hz (0ms)" : "STD") + " • SHIZUKU HZ 165 • GYRO 1000Hz";
+        int fps = cfg.getTargetFps() > 0 ? cfg.getTargetFps() : 185;
+        return "CFG: " + fps + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? fps + "Hz (0ms)" : "STD") + " • SHIZUKU HZ " + fps + " • GYRO 1000Hz";
     }
 }

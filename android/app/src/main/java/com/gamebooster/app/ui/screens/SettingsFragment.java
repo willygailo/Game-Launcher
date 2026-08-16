@@ -477,7 +477,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Card 5: Advanced System Tweaks Engine
         tvTweaksStatus = view.findViewById(R.id.tv_tweaks_status);
         bannerDisconnect = view.findViewById(R.id.banner_shizuku_disconnect);
-        Button btnApplyAll = view.findViewById(R.id.btn_apply_all_tweaks);
         RecyclerView rvTweaks = view.findViewById(R.id.rv_tweaks_list);
 
         Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
@@ -492,24 +491,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
             tweaksAdapter = new TweaksAdapter(getContext(), TweakManagerRepository.getAllTweaks());
             rvTweaks.setAdapter(tweaksAdapter);
-        }
-
-        if (btnApplyAll != null) {
-            btnApplyAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                btnApplyAll.setEnabled(false);
-                Toast.makeText(getContext(), "Applying all system optimizations via Shizuku...", Toast.LENGTH_SHORT).show();
-
-                TweakManagerRepository.applyAllSupportedTweaksAsync(getContext(), appliedCount -> {
-                    if (getContext() != null && isAdded()) {
-                        if (tweaksAdapter != null) {
-                            tweaksAdapter.notifyDataSetChanged();
-                        }
-                        btnApplyAll.setEnabled(true);
-                        Toast.makeText(getContext(), "⚡ Applied " + appliedCount + " system optimizations!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            });
         }
 
         if (btnFilterAll != null && tweaksAdapter != null) btnFilterAll.setOnClickListener(v -> tweaksAdapter.updateList(TweakManagerRepository.getAllTweaks()));

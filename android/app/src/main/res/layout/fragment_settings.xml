@@ -560,17 +560,6 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btn_apply_all_tweaks"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/btn_cyber_green"
-                    android:text="⚡ APPLY ALL SYSTEM OPTIMIZATIONS"
-                    android:textColor="#0B0E14"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
                 <!-- Tweak Filter Buttons -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
