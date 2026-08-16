@@ -62,19 +62,23 @@ Game Launcher Pro v2.2.2.1 features a state-of-the-art **Cyberpunk Glassmorphic*
 ## 📌 1. Introduction & Highlights in v2.2.2.1
 
 **Game Launcher Pro (v2.2.2.1)** is engineered specifically for competitive mobile esports across 7 major titles:
-1. 🎮 **Mobile Legends: Bang Bang (MLBB)** — 120/144/165 FPS, instant response scripts, battle performance injection.
-2. 🪂 **PUBG Mobile / BGMI** — 120/144/165 FPS, UE4 CVar injection, zero-delay gyroscope, and recoil steadiness tuning.
-3. 🎯 **Call of Duty: Mobile (CODM)** — JSON/XML/INI graphics unlocks, 165Hz touch boost, max shader pre-warming.
-4. 🔥 **Garena Free Fire & Free Fire MAX** — HighFPS=1, MaxFPS=120/144/165, aim precision assist, fast drag headshot calculation.
-5. ⚔️ **Genshin Impact & HoYoverse Titles (Honkai: Star Rail, ZZZ)** — GameSettings.json hardware model overrides, Vulkan pipeline unlock.
-6. 👑 **Honor of Kings / Arena of Valor (HOK/AoV)** — SGameSettings.ini 120/144/165 FPS & UltraFrameRate unlock.
-7. 🧱 **Roblox** — FastFlags `DFIntTaskSchedulerTargetFps=165` & Vulkan rendering optimizations.
+1. 🎮 **Mobile Legends: Bang Bang (MLBB)** — Drone View (FOV 150, Camera Height 3), 90+ Physical/Magic/True damage scripts, Zero Touch Delay, and 165 FPS mode.
+2. 🪂 **PUBG Mobile / BGMI** — TPP 100 / FPP 150, Sprint 150, Aim Assist 100%, Zero Recoil for all guns and all scopes (0.00 scale), 90+ Damage boost CVars, and 165 FPS unlock.
+3. 🎯 **Call of Duty: Mobile (CODM)** — TPP 100 / FPP 150, Sprint 150, Rotational Aim Assist 100%, Zero Recoil for all guns & all scopes, 90+ Damage boost, and 165 FPS unlock.
+4. 🔥 **Garena Free Fire & Free Fire MAX** — TPP 100 / FPP 150, Sprint 150, Aim Assist 100%, Zero Recoil across all scopes, 90+ Damage boost, and 165 FPS unlock.
+5. ⚔️ **Genshin Impact & HoYoverse Titles (Honkai: Star Rail, ZZZ)** — Drone View (Camera Distance 6.0 / FOV 150), 90+ Damage multiplier, Zero Touch Delay, and Vulkan pipeline unlock.
+6. 👑 **Honor of Kings / Arena of Valor (HOK/AoV)** — Drone View (FOV 150 / Height 3), 90+ Damage multiplier, 1000Hz Gyro, Zero Touch Delay, and 165 FPS unlock.
+7. 🧱 **Roblox** — FastFlags `FIntCameraMaxZoomDistance=500` (Drone View), `FIntFieldOfView=150`, Zero Touch Delay, and `DFIntTaskSchedulerTargetFps=165`.
 
 ---
 
 ### 🌟 Features Breakdown:
 
 - ⚡ **Strict 120 / 144 / 165Hz Lock (Zero Fallback)**: Multi-layer Shizuku engine (`MaxHzForceChannel`) executing 17+ commands across AOSP, Android Game Mode API, SurfaceFlinger (1035/1036), setprop, and vendor OEM keys without capability throttling.
+- 🔭 **Tactical Drone View & Dynamic Ultra-Wide FOV**: Up to 150 FOV / Max Camera Height across MLBB, HOK, Genshin, Roblox, PUBGM, CODM, and Free Fire.
+- 🎯 **100% Aim Assist & Zero Recoil Engine**: Advanced recoil dampening, scope shake reduction, and zero weapon kick for all guns & scopes in FPS/TPS games.
+- 💥 **90+ Damage & Hit Registration Boost**: Script-level damage multiplier, critical hit rate enhancement, and penetration asset configs.
+- ⚡ **Sub-1ms Touch Zero Delay**: 1000Hz polling rate and zero-touch slop reduction for instant reaction times.
 - 🛠️ **Dedicated Per-Application CFG Patchers**: Custom file injection directly into game data folders safely via Shizuku privileged access.
 - 🎯 **Targeted Game Driver & Google ANGLE Vulkan Opt-In**: Explicitly opt-in only the 7 supported games per application (`game_driver_opt_in_apps` & `angle_gl_driver_selection_pkgs`) instead of affecting unrelated system apps.
 - 📡 **5G / 6G & Dual Data / Wi-Fi Latency Acceleration**: Low-latency Wi-Fi mode (`cmd wifi force-low-latency-mode`), seamless zero-drop dual data (`mobile_data_always_on 1`), and 5G/6G NR TCP buffer tuning.
