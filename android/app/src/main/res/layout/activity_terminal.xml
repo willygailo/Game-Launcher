@@ -5,18 +5,18 @@
     android:id="@+id/terminal_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D9080B12">
+    android:background="#070A11">
 
-    <!-- 1. TOP: Terminal Header Toolbar (Translucent Glass Toolbar) -->
+    <!-- 1. TOP: Terminal Header Toolbar (Cyberpunk Matrix Glass Toolbar) -->
     <LinearLayout
         android:id="@+id/terminal_header_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#99151E2E"
+        android:background="#990E1726"
         android:gravity="center_vertical"
         android:minHeight="@dimen/terminal_header_height"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp"
+        android:paddingVertical="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -41,9 +41,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
-                android:letterSpacing="0.04"
+                android:letterSpacing="0.06"
                 android:singleLine="true"
-                android:text="SHIZUKU CORE TERMINAL"
+                android:text="⚡ SHIZUKU ADB &amp; ROOT CONSOLE"
                 android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/terminal_header_title_size"
                 android:textStyle="bold" />
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
                 android:singleLine="true"
-                android:text="UID: 2000 (shell) • Shizuku Active"
+                android:text="🟢 SHIZUKU PRIVILEGED / ROOT (UID 2000)"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="@dimen/terminal_status_size" />
         </LinearLayout>
@@ -83,12 +83,12 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 2. QUICK ACTIONS: Horizontal Action Bar (Glassmorphic Chip Strip) -->
+    <!-- 2. QUICK ACTIONS: Horizontal Action Bar (Cyberpunk Chips Strip) -->
     <HorizontalScrollView
         android:id="@+id/terminal_chips_scroll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#800A101C"
+        android:background="#80060D1A"
         android:fadingEdge="horizontal"
         android:paddingHorizontal="8dp"
         android:paddingVertical="6dp"
@@ -165,6 +165,18 @@
                 android:textStyle="bold" />
 
             <Button
+                android:id="@+id/btn_script_settings_all"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="8dp"
+                android:text="⚙️ Global &amp; System"
+                android:textColor="@color/accent_cyan"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
+
+            <Button
                 android:id="@+id/btn_script_anim_scale"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/terminal_button_height"
@@ -183,7 +195,7 @@
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
-                android:text="🎮 FPS &amp; SurfaceFlinger"
+                android:text="🎮 120-185 FPS SurfaceFlinger"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />
@@ -207,7 +219,7 @@
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
-                android:text="🎯 Touch Slop 1ms"
+                android:text="🎯 1000Hz Touch Slop"
                 android:textColor="@color/accent_ml_blue"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />
@@ -228,22 +240,34 @@
                 android:id="@+id/btn_script_thermal_bypass"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
                 android:text="🛡️ Thermal Status"
                 android:textColor="@color/accent_orange"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_script_ping_diag"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:paddingHorizontal="8dp"
+                android:text="🌐 Matrix Edge Ping"
+                android:textColor="@color/accent_cyan"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- 3. MIDDLE: Terminal Output Scroll (Translucent Cyber Console) -->
+    <!-- 3. MIDDLE: Terminal Output Scroll (Cyber Console Area) -->
     <ScrollView
         android:id="@+id/scroll_terminal_output"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#7005080E"
+        android:background="#6603070E"
         android:fillViewport="true"
-        android:padding="8dp"
+        android:padding="10dp"
         app:layout_constraintBottom_toTopOf="@id/terminal_input_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -255,23 +279,23 @@
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
             android:letterSpacing="0.02"
-            android:lineSpacingMultiplier="1.15"
+            android:lineSpacingMultiplier="1.18"
             android:textIsSelectable="true"
             android:textColor="#00FF66"
             android:textSize="@dimen/terminal_output_text_size"
-            tools:text="GameBooster Cyber-Terminal v2.0\nType 'help' or execute any shell tweak.\nshizuku@android:~$ id\nuid=2000(shell) gid=2000(shell)\nshizuku@android:~$ " />
+            tools:text="SHIZUKU MATRIX TERMINAL CONSOLE v2.0" />
     </ScrollView>
 
-    <!-- 4. BOTTOM: Command Input Bar (Glassmorphism Input Dock) -->
+    <!-- 4. BOTTOM: Command Input Bar (Cyber Hacker Input Dock) -->
     <LinearLayout
         android:id="@+id/terminal_input_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#99101826"
+        android:background="#CC0A1220"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="8dp"
-        android:paddingVertical="6dp"
+        android:paddingVertical="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -280,8 +304,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
-            android:paddingHorizontal="4dp"
-            android:text="&gt;$"
+            android:paddingHorizontal="6dp"
+            android:text="&gt;_"
             android:textColor="@color/accent_neon_green"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -295,10 +319,10 @@
             android:maxLines="3"
             android:background="@drawable/card_glass_shape"
             android:fontFamily="monospace"
-            android:hint="Type commands (e.g. settings put, setprop, cp, mv, cat, chmod)..."
+            android:hint="Type command (settings, getprop, setprop, cp, mv, cat, chmod)..."
             android:imeOptions="actionSend"
             android:inputType="textMultiLine|textNoSuggestions"
-            android:paddingHorizontal="8dp"
+            android:paddingHorizontal="10dp"
             android:paddingVertical="6dp"
             android:textColor="@color/text_primary"
             android:textColorHint="#4A5568"
@@ -329,10 +353,10 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/terminal_input_min_height"
             android:layout_marginStart="4dp"
-            android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="10dp"
+            android:background="@drawable/btn_cyber_cyan"
+            android:paddingHorizontal="12dp"
             android:text="EXEC ⚡"
-            android:textColor="@color/accent_neon_green"
+            android:textColor="#000000"
             android:textSize="@dimen/terminal_button_text_size"
             android:textStyle="bold" />
     </LinearLayout>

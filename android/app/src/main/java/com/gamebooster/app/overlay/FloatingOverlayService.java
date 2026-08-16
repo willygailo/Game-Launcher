@@ -59,12 +59,31 @@ public class FloatingOverlayService extends Service {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
 
+    public static final String PREF_NAME = "floating_overlay_prefs";
+    public static final String KEY_OVERLAY_ENABLED = "overlay_enabled";
+
     public static boolean isOverlayRunning() {
         return isRunning;
     }
 
+    public static boolean isOverlayEnabled(Context context) {
+        if (context == null) return false;
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_OVERLAY_ENABLED, false);
+    }
+
+    public static void setOverlayEnabledPref(Context context, boolean enabled) {
+        if (context == null) return;
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_OVERLAY_ENABLED, enabled)
+                .apply();
+    }
+
     public static void startOverlay(Context context) {
-        if (context == null || isRunning) return;
+        if (context == null) return;
+        setOverlayEnabledPref(context, true);
+        if (isRunning) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) return;
         Intent intent = new Intent(context, FloatingOverlayService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -75,7 +94,9 @@ public class FloatingOverlayService extends Service {
     }
 
     public static void stopOverlay(Context context) {
-        if (context == null || !isRunning) return;
+        if (context == null) return;
+        setOverlayEnabledPref(context, false);
+        if (!isRunning) return;
         Intent intent = new Intent(context, FloatingOverlayService.class);
         context.stopService(intent);
     }

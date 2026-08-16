@@ -422,12 +422,80 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
 
+                <!-- Network Mode Title & Status Badge -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Gaming Acceleration Mode:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- 3-Way Mode Selector: Dual / 5G-6G / Wi-Fi -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_mode_dual"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="3dp"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:padding="0dp"
+                        android:text="⚡ DUAL ACCEL\n(DATA + WI-FI)"
+                        android:textColor="#000000"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_mode_5g_6g"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="3dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="📶 5G / 6G\nDATA ONLY"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_mode_wifi"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="3dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🌐 WI-FI\nLOW-LATENCY"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_active_network_mode_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="⚡ Active Mode: DUAL ACCELERATION (DATA + WI-FI)"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Game Server Ping Tester -->
                 <TextView
                     android:id="@+id/tv_game_ping_ms"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="📡 Game Server Ping: Not Tested"
+                    android:layout_marginTop="12dp"
+                    android:text="📡 Game Server Ping: Ready to test"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -442,6 +510,7 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
+                <!-- 1-Tap Gaming DNS -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -496,11 +565,39 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- Network Optimization Toggles -->
+                <Switch
+                    android:id="@+id/switch_dual_data_wifi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Dual Channel Concurrent Acceleration (Data + Wi-Fi)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_5g_6g_boost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="5G / 6G NR SA/NSA Low-Latency Band Prioritization"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_wifi_low_latency"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Wi-Fi 6E/7 Low-Latency Chip Mode &amp; 0ms Sleep"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
                 <Switch
                     android:id="@+id/switch_tethering_hw"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:text="Tethering Hardware Acceleration (Hotspot Offload)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
@@ -754,7 +851,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:letterSpacing="0.03"
-                        android:text="💻 SHIZUKU ADB &amp; ROOT TERMINAL"
+                        android:text="💻 CYBER HACKER &amp; ADB TERMINAL"
                         android:textColor="@color/accent_cyan"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -762,11 +859,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#2000F0FF"
+                        android:background="#2000FF66"
                         android:fontFamily="monospace"
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="2dp"
-                        android:text="shizuku@android:~$"
+                        android:text="root@matrix:~#"
                         android:textColor="@color/accent_neon_green"
                         android:textSize="10sp" />
                 </LinearLayout>
@@ -775,7 +872,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Real-time elevated shell console for Android 13, 14, 15 &amp; 16. Executes custom scripts, kernel tweaks, and dumpsys properties via /data/local/tmp."
+                    android:text="⚡ Universal Multi-Tier Shell Engine: Runs commands &amp; scripts with or without Shizuku. Executes System/Global/Secure settings, kernel tweaks, SurfaceFlinger pacing &amp; temporary root scripts."
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -783,11 +880,11 @@
                 <Button
                     android:id="@+id/btn_launch_terminal"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="46dp"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="⚡ OPEN CYBER TERMINAL CONSOLE"
-                    android:textColor="@color/accent_cyan"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="⚡ LAUNCH CYBER HACKER TERMINAL"
+                    android:textColor="#000000"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>

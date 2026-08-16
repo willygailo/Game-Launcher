@@ -84,6 +84,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnCrosshairPreset;
     private Button btnSensitivityCalculator;
 
+    // Network & Latency Optimization UI
+    private Button btnModeDual;
+    private Button btnMode5g6g;
+    private Button btnModeWifi;
+    private TextView tvActiveNetworkModeStatus;
+    private Switch switchDualDataWifi;
+    private Switch switch5g6gBoost;
+    private Switch switchWifiLowLatency;
+
     private SettingsManager precisionSettingsManager;
     private ProfileManager precisionProfileManager;
 
@@ -163,28 +172,26 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
 
         if (switchOverlayHud != null) {
-            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
+            switchOverlayHud.setOnCheckedChangeListener(null);
+            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayEnabled(getContext()));
             switchOverlayHud.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                    switchOverlayHud.setOnCheckedChangeListener(null);
                     switchOverlayHud.setChecked(false);
+                    switchOverlayHud.setOnCheckedChangeListener((bv, ic) -> handleOverlayToggle(ic));
                     Toast.makeText(getContext(), "Please grant 'Draw over other apps' permission first", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                     intent.setData(Uri.parse("package:" + getContext().getPackageName()));
                     startActivity(intent);
                     return;
                 }
-                if (isChecked) {
-                    com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
-                    Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
-                } else {
-                    com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
-                    Toast.makeText(getContext(), "Overlay Disabled", Toast.LENGTH_SHORT).show();
-                }
+                handleOverlayToggle(isChecked);
             });
         }
 
         if (switchGamingDnd != null) {
+            switchGamingDnd.setOnCheckedChangeListener(null);
             switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
@@ -194,7 +201,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (switchAutoGameBoost != null) {
-            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
+            switchAutoGameBoost.setOnCheckedChangeListener(null);
+            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 if (isChecked) {
@@ -208,7 +216,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (switchEsportsAudio != null) {
-            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
+            switchEsportsAudio.setOnCheckedChangeListener(null);
+            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
@@ -245,7 +254,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
             switchPrecisionInputTuner.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (!ShizukuExecutor.hasShizukuPermission()) {
+                if (isChecked && !ShizukuExecutor.hasShizukuPermission()) {
                     switchPrecisionInputTuner.setOnCheckedChangeListener(null);
                     switchPrecisionInputTuner.setChecked(false);
                     switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
@@ -257,31 +266,20 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (switchCrosshairOverlay != null) {
+            switchCrosshairOverlay.setOnCheckedChangeListener(null);
+            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isCrosshairEnabled(getContext()));
             switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                    switchCrosshairOverlay.setOnCheckedChangeListener(null);
                     switchCrosshairOverlay.setChecked(false);
+                    switchCrosshairOverlay.setOnCheckedChangeListener((bv, ic) -> handleCrosshairToggle(ic));
                     Toast.makeText(getContext(), "Overlay Permission Required", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
                     startActivity(intent);
                     return;
                 }
-
-                if (isChecked) {
-                    new AlertDialog.Builder(getContext())
-                        .setTitle("⚠️ THIRD-PARTY OVERLAY DISCLAIMER")
-                        .setMessage("Some competitive games regulate visual overlays. Precision Aim crosshair overlay runs strictly as a native window view and does NOT touch game processes.\n\nEnable overlay?")
-                        .setPositiveButton("ENABLE OVERLAY", (dialog, which) -> {
-                            CrosshairOverlayService.startOverlay(getContext());
-                            Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("CANCEL", (dialog, which) -> switchCrosshairOverlay.setChecked(false))
-                        .setOnCancelListener(dialog -> switchCrosshairOverlay.setChecked(false))
-                        .show();
-                } else {
-                    CrosshairOverlayService.stopOverlay(getContext());
-                    Toast.makeText(getContext(), "Crosshair Overlay Disabled", Toast.LENGTH_SHORT).show();
-                }
+                handleCrosshairToggle(isChecked);
             });
         }
 
@@ -391,49 +389,43 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         // Card 4: Network & Latency Optimization
+        btnModeDual = view.findViewById(R.id.btn_mode_dual);
+        btnMode5g6g = view.findViewById(R.id.btn_mode_5g_6g);
+        btnModeWifi = view.findViewById(R.id.btn_mode_wifi);
+        tvActiveNetworkModeStatus = view.findViewById(R.id.tv_active_network_mode_status);
+
         TextView tvGamePingMs = view.findViewById(R.id.tv_game_ping_ms);
         Button btnPingTest = view.findViewById(R.id.btn_ping_test);
         Button btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
         Button btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
         Button btnDnsDefault = view.findViewById(R.id.btn_dns_default);
+
+        switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
+        switch5g6gBoost = view.findViewById(R.id.switch_5g_6g_boost);
+        switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
         switchTetheringHw = view.findViewById(R.id.switch_tethering_hw);
         switchForceGnss = view.findViewById(R.id.switch_force_gnss);
 
-        if (getContext() != null) {
-            if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
-            if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
+        if (btnModeDual != null) {
+            btnModeDual.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.DUAL_ACCELERATION));
+        }
+        if (btnMode5g6g != null) {
+            btnMode5g6g.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY));
+        }
+        if (btnModeWifi != null) {
+            btnModeWifi.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY));
         }
 
         if (btnPingTest != null && tvGamePingMs != null) {
             btnPingTest.setOnClickListener(v -> {
-                tvGamePingMs.setText("📡 Testing Game Server Latency...");
+                tvGamePingMs.setText("📡 Pinging Game Servers (Cloudflare / Google / Asia Relay)...");
                 btnPingTest.setEnabled(false);
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    long startTime = System.currentTimeMillis();
-                    boolean reachable = false;
-                    long pingMs = -1;
-                    try {
-                        java.net.InetAddress address = java.net.InetAddress.getByName("1.1.1.1");
-                        reachable = address.isReachable(2000);
-                        pingMs = System.currentTimeMillis() - startTime;
-                    } catch (Exception ignored) {}
-
-                    final long finalPing = pingMs;
-                    final boolean isOk = reachable && finalPing > 0;
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnPingTest.setEnabled(true);
-                        if (isOk) {
-                            String quality = finalPing < 35 ? "[EXCELLENT / ULTRA PING]" : (finalPing < 70 ? "[GOOD / NORMAL]" : "[HIGH LATENCY]");
-                            tvGamePingMs.setText("📡 Game Server Ping: " + finalPing + " ms " + quality);
-                            tvGamePingMs.setTextColor(finalPing < 35 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
-                        } else {
-                            tvGamePingMs.setText("📡 Game Server Ping: 28 ms [ULTRA LOW LATENCY]");
-                            tvGamePingMs.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-                        }
-                    });
+                NetworkOptimizer.testGameServerPingAsync(getContext(), (pingMs, serverName, success) -> {
+                    if (!isAdded() || getContext() == null) return;
+                    btnPingTest.setEnabled(true);
+                    String quality = pingMs < 30 ? "[ULTRA LOW LATENCY]" : (pingMs < 60 ? "[EXCELLENT / ESPORTS]" : "[NORMAL]");
+                    tvGamePingMs.setText("📡 Game Server Ping: " + pingMs + " ms " + quality + " via " + serverName);
+                    tvGamePingMs.setTextColor(pingMs < 30 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
                 });
             });
         }
@@ -446,6 +438,37 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
         if (btnDnsDefault != null) {
             btnDnsDefault.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored"));
+        }
+
+        if (switchDualDataWifi != null) {
+            switchDualDataWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.setDualDataAndWifiAcceleration(isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Channel Data + Wi-Fi Acceleration ACTIVE" : "Dual Acceleration Disabled", Toast.LENGTH_SHORT).show();
+                            updateNetworkModeUi();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switch5g6gBoost != null) {
+            switch5g6gBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                NetworkOptimizer.set5g6gTurboEnabled(getContext(), isChecked);
+                Toast.makeText(getContext(), isChecked ? "📶 5G / 6G NR Low-Latency Radio Mode ACTIVE" : "5G Turbo Disabled", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (switchWifiLowLatency != null) {
+            switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                NetworkOptimizer.setWifiLowLatencyEnabled(getContext(), isChecked);
+                Toast.makeText(getContext(), isChecked ? "🌐 Wi-Fi 6E/7 Low-Latency Chip Mode ACTIVE" : "Wi-Fi Standard Mode", Toast.LENGTH_SHORT).show();
+            });
         }
 
         if (switchTetheringHw != null) {
@@ -477,6 +500,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 });
             });
         }
+
+        updateNetworkModeUi();
 
         // Card 5: Advanced System Tweaks Engine
         tvTweaksStatus = view.findViewById(R.id.tv_tweaks_status);
@@ -739,12 +764,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshAllStatuses();
-    }
-
     private void refreshAllStatuses() {
         EngineUIHelper.refreshEngineStatus(tvEngineStatus);
         EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
@@ -940,5 +959,176 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
+    }
+
+    private void handleOverlayToggle(boolean isChecked) {
+        if (getContext() == null) return;
+        if (isChecked) {
+            com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
+            Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
+            Toast.makeText(getContext(), "Overlay Disabled", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handleCrosshairToggle(boolean isChecked) {
+        if (getContext() == null) return;
+        if (isChecked) {
+            CrosshairOverlayService.startOverlay(getContext());
+            Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            CrosshairOverlayService.stopOverlay(getContext());
+            Toast.makeText(getContext(), "Crosshair Overlay Disabled", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void applyNetworkModeSelection(NetworkOptimizer.NetworkMode mode) {
+        if (getContext() == null || mode == null) return;
+        AppExecutors.getInstance().executeCommand(() -> {
+            NetworkOptimizer.setNetworkMode(getContext(), mode);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                Toast.makeText(getContext(), "⚡ Network Mode: " + mode.label + " ACTIVE", Toast.LENGTH_SHORT).show();
+                updateNetworkModeUi();
+            });
+        });
+    }
+
+    private void updateNetworkModeUi() {
+        if (getContext() == null) return;
+        NetworkOptimizer.NetworkMode mode = NetworkOptimizer.getSavedNetworkMode(getContext());
+
+        if (btnModeDual != null && btnMode5g6g != null && btnModeWifi != null) {
+            btnModeDual.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
+            btnModeDual.setTextColor(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
+
+            btnMode5g6g.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY ? R.drawable.btn_cyber_green : R.drawable.btn_cyber_dark);
+            btnMode5g6g.setTextColor(mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
+
+            btnModeWifi.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
+            btnModeWifi.setTextColor(mode == NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
+        }
+
+        if (tvActiveNetworkModeStatus != null) {
+            tvActiveNetworkModeStatus.setText("⚡ Active Mode: " + mode.label);
+            tvActiveNetworkModeStatus.setTextColor(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION
+                    ? android.graphics.Color.parseColor("#00FF66")
+                    : (mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY
+                    ? android.graphics.Color.parseColor("#00F0FF")
+                    : android.graphics.Color.parseColor("#38BDF8")));
+        }
+
+        if (switchDualDataWifi != null) {
+            switchDualDataWifi.setOnCheckedChangeListener(null);
+            switchDualDataWifi.setChecked(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION);
+            switchDualDataWifi.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                applyNetworkModeSelection(ic ? NetworkOptimizer.NetworkMode.DUAL_ACCELERATION : NetworkOptimizer.NetworkMode.SYSTEM_DEFAULT);
+            });
+        }
+
+        if (switch5g6gBoost != null) {
+            switch5g6gBoost.setOnCheckedChangeListener(null);
+            switch5g6gBoost.setChecked(NetworkOptimizer.is5g6gTurboEnabled(getContext()));
+            switch5g6gBoost.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                NetworkOptimizer.set5g6gTurboEnabled(getContext(), ic);
+            });
+        }
+
+        if (switchWifiLowLatency != null) {
+            switchWifiLowLatency.setOnCheckedChangeListener(null);
+            switchWifiLowLatency.setChecked(NetworkOptimizer.isWifiLowLatencyEnabled(getContext()));
+            switchWifiLowLatency.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                NetworkOptimizer.setWifiLowLatencyEnabled(getContext(), ic);
+            });
+        }
+    }
+
+    private void refreshAllSettingsSwitches() {
+        if (getContext() == null) return;
+
+        if (switchOverlayHud != null) {
+            switchOverlayHud.setOnCheckedChangeListener(null);
+            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayEnabled(getContext()));
+            switchOverlayHud.setOnCheckedChangeListener((bv, ic) -> handleOverlayToggle(ic));
+        }
+
+        if (switchGamingDnd != null) {
+            switchGamingDnd.setOnCheckedChangeListener(null);
+            switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
+            switchGamingDnd.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), ic);
+            });
+        }
+
+        if (switchAutoGameBoost != null) {
+            switchAutoGameBoost.setOnCheckedChangeListener(null);
+            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
+            switchAutoGameBoost.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                if (ic) {
+                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                } else {
+                    com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                }
+            });
+        }
+
+        if (switchEsportsAudio != null) {
+            switchEsportsAudio.setOnCheckedChangeListener(null);
+            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
+            switchEsportsAudio.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), ic);
+            });
+        }
+
+        if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
+            switchPrecisionInputTuner.setOnCheckedChangeListener(null);
+            switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
+            switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
+        }
+
+        if (switchCrosshairOverlay != null) {
+            switchCrosshairOverlay.setOnCheckedChangeListener(null);
+            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isCrosshairEnabled(getContext()));
+            switchCrosshairOverlay.setOnCheckedChangeListener((bv, ic) -> handleCrosshairToggle(ic));
+        }
+
+        if (switchTetheringHw != null) {
+            switchTetheringHw.setOnCheckedChangeListener(null);
+            switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
+            switchTetheringHw.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.setTetherHwEnabled(getContext(), ic);
+                AppExecutors.getInstance().executeCommand(() -> NetworkOptimizer.setTetheringHwAcceleration(ic));
+            });
+        }
+
+        if (switchForceGnss != null) {
+            switchForceGnss.setOnCheckedChangeListener(null);
+            switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
+            switchForceGnss.setOnCheckedChangeListener((bv, ic) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.setForceGnssEnabled(getContext(), ic);
+                AppExecutors.getInstance().executeCommand(() -> NetworkOptimizer.setForceFullGnss(ic));
+            });
+        }
+
+        updateNetworkModeUi();
+        updatePrecisionAimStatus();
+        updateSystemSettingsStatus();
+        updateSpoofUiState();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshAllStatuses();
+        refreshAllSettingsSwitches();
     }
 }

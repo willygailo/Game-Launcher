@@ -26,6 +26,7 @@ public class CrosshairOverlayService extends Service {
     public static final String KEY_PRESET = "crosshair_preset";
     public static final String KEY_COLOR = "crosshair_color";
     public static final String KEY_SIZE = "crosshair_size";
+    public static final String KEY_ACTIVE = "crosshair_overlay_active";
 
     private static final String CHANNEL_ID = "crosshair_overlay_channel";
     private static final int NOTIFICATION_ID = 2002;
@@ -40,7 +41,23 @@ public class CrosshairOverlayService extends Service {
         return instance != null && instance.isOverlayActive;
     }
 
+    public static boolean isCrosshairEnabled(Context context) {
+        if (context == null) return false;
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_ACTIVE, false);
+    }
+
+    public static void setCrosshairEnabledPref(Context context, boolean active) {
+        if (context == null) return;
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_ACTIVE, active)
+                .apply();
+    }
+
     public static void startOverlay(Context context) {
+        if (context == null) return;
+        setCrosshairEnabledPref(context, true);
         Intent intent = new Intent(context, CrosshairOverlayService.class);
         intent.setAction("ACTION_START");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -51,6 +68,8 @@ public class CrosshairOverlayService extends Service {
     }
 
     public static void stopOverlay(Context context) {
+        if (context == null) return;
+        setCrosshairEnabledPref(context, false);
         Intent intent = new Intent(context, CrosshairOverlayService.class);
         intent.setAction("ACTION_STOP");
         context.startService(intent);

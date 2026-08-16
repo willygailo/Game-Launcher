@@ -37,6 +37,9 @@ public class AutoGameMonitorService extends Service {
     private static final String CHANNEL_ID = "auto_game_monitor_channel";
     private static final int NOTIF_ID = 777;
 
+    public static final String PREF_NAME = "auto_game_monitor_prefs";
+    public static final String KEY_MONITOR_ENABLED = "auto_monitor_enabled";
+
     private static boolean isRunning = false;
     private Handler handler;
     private Runnable monitorRunnable;
@@ -46,8 +49,24 @@ public class AutoGameMonitorService extends Service {
         return isRunning;
     }
 
+    public static boolean isMonitorEnabled(Context context) {
+        if (context == null) return false;
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_MONITOR_ENABLED, false);
+    }
+
+    public static void setMonitorEnabledPref(Context context, boolean enabled) {
+        if (context == null) return;
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_MONITOR_ENABLED, enabled)
+                .apply();
+    }
+
     public static void start(Context context) {
-        if (context == null || isRunning) return;
+        if (context == null) return;
+        setMonitorEnabledPref(context, true);
+        if (isRunning) return;
         Intent intent = new Intent(context, AutoGameMonitorService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
@@ -57,7 +76,9 @@ public class AutoGameMonitorService extends Service {
     }
 
     public static void stop(Context context) {
-        if (context == null || !isRunning) return;
+        if (context == null) return;
+        setMonitorEnabledPref(context, false);
+        if (!isRunning) return;
         Intent intent = new Intent(context, AutoGameMonitorService.class);
         context.stopService(intent);
     }

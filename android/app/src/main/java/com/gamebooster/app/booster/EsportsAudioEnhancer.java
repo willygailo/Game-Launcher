@@ -10,6 +10,9 @@ import com.gamebooster.app.engine.CommandExecutor;
 public class EsportsAudioEnhancer {
 
     private static final String TAG = "EsportsAudio";
+    public static final String PREF_NAME = "esports_audio_prefs";
+    public static final String KEY_AUDIO_ENABLED = "esports_audio_enabled";
+
     private static Equalizer equalizer = null;
     private static boolean isEnabled = false;
 
@@ -17,8 +20,20 @@ public class EsportsAudioEnhancer {
         return isEnabled;
     }
 
+    public static boolean isAudioBoostEnabled(Context context) {
+        if (context == null) return isEnabled;
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_AUDIO_ENABLED, false);
+    }
+
     public static boolean setEsportsAudioMode(Context context, boolean enable) {
         isEnabled = enable;
+        if (context != null) {
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean(KEY_AUDIO_ENABLED, enable)
+                    .apply();
+        }
         if (enable) {
             return enableFootstepAudioBoost(context);
         } else {

@@ -120,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         } catch (Throwable ignored) {}
 
+        // Restore active Esports Gaming Controls & Precision Aim on startup
+        restoreActiveGamingControls();
+
         if (savedInstanceState != null) {
             currentTabIndex = savedInstanceState.getInt(KEY_SELECTED_TAB, 0);
             Log.i("TabPersist", "restored index=" + currentTabIndex);
@@ -170,6 +173,44 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         }
     }
 
+    private void restoreActiveGamingControls() {
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                if (com.gamebooster.app.overlay.FloatingOverlayService.isOverlayEnabled(this)) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || android.provider.Settings.canDrawOverlays(this)) {
+                        com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(this);
+                    }
+                }
+                if (com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(this)) {
+                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(this);
+                }
+                if (com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(this)) {
+                    com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(this, true);
+                }
+                if (com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(this)) {
+                    com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(this, true);
+                }
+                if (com.gamebooster.app.overlay.CrosshairOverlayService.isCrosshairEnabled(this)) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || android.provider.Settings.canDrawOverlays(this)) {
+                        com.gamebooster.app.overlay.CrosshairOverlayService.startOverlay(this);
+                    }
+                }
+
+                // Restore Network & Latency Optimization (Dual Data+Wi-Fi, 5G/6G, or Wi-Fi mode)
+                com.gamebooster.app.booster.NetworkOptimizer.applySavedNetworkOptimization(this);
+
+                com.gamebooster.app.core.settings.SettingsManager sm = new com.gamebooster.app.core.settings.SettingsManager(this);
+                if (sm.isDeviceTuned() && ShizukuExecutor.hasShizukuPermission()) {
+                    com.gamebooster.app.core.profile.ProfileManager pm = new com.gamebooster.app.core.profile.ProfileManager(this);
+                    sm.applyProfile(pm.getGeneralGamingProfile());
+                    Log.i("MainActivity", "🎯 Restored Precision Aim Input & Gyro Tuner on startup");
+                }
+            } catch (Throwable t) {
+                Log.e("MainActivity", "Error restoring gaming controls", t);
+            }
+        });
+    }
+
     private void updateTabStyles(TabLayout tabLayout, int selectedIndex) {
         for (int i = 0; i < tabLayout.getTabCount(); i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
@@ -197,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
+                    restoreActiveGamingControls();
                     AppExecutors.getInstance().postToMainThread(() ->
                             Toast.makeText(getApplicationContext(), "⚡ All Storage & System Permissions Active!", Toast.LENGTH_SHORT).show());
                 });
