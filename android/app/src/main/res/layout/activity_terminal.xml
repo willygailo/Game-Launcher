@@ -105,6 +105,54 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/btn_script_load_file"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_cyan"
+                android:paddingHorizontal="8dp"
+                android:text="📂 Run .sh File"
+                android:textColor="#000000"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_script_setedit_guide"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="8dp"
+                android:text="📝 SetEdit Engine"
+                android:textColor="@color/accent_amber"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_script_setedit_tweaks"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="8dp"
+                android:text="⚡ SetEdit Game Pack"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_script_setprop_gpu"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/terminal_button_height"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="8dp"
+                android:text="🚀 GPU setprop &amp; HW"
+                android:textColor="@color/accent_purple"
+                android:textSize="@dimen/terminal_button_text_size"
+                android:textStyle="bold" />
+
+            <Button
                 android:id="@+id/btn_script_whoami"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/terminal_button_height"

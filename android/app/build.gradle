@@ -4,22 +4,48 @@ android {
     namespace 'com.gamebooster.app'
     compileSdk 36
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
     defaultConfig {
         applicationId "com.gamebooster.app"
         minSdk 24
         targetSdk 36
         versionCode 2230
         versionName "2.2.3.0"
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     buildFeatures {
         aidl true
         buildConfig true
+    }
+
+    packaging {
+        resources {
+            excludes += [
+                '/META-INF/{AL2.0,LGPL2.1}',
+                '/META-INF/DEPENDENCIES',
+                '/META-INF/LICENSE',
+                '/META-INF/LICENSE.txt',
+                '/META-INF/license.txt',
+                '/META-INF/NOTICE',
+                '/META-INF/NOTICE.txt',
+                '/META-INF/notice.txt',
+                '/META-INF/ASL2.0',
+                '/META-INF/*.kotlin_module'
+            ]
+        }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
     }
 
     buildTypes {
@@ -28,7 +54,12 @@ android {
             minifyEnabled false
             shrinkResources false
         }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
     }
+
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (variant.buildType.name == 'debug') {

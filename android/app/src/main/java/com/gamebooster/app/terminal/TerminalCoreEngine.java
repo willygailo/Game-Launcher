@@ -1,7 +1,9 @@
 package com.gamebooster.app.terminal;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
@@ -9,8 +11,12 @@ import android.util.Log;
 import com.gamebooster.app.engine.ShellExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +24,9 @@ import java.util.List;
 
 /**
  * Universal Multi-Tier Terminal Engine for Game Booster PRO.
- * Handles command execution seamlessly across both non-privileged runtime mode
- * (standard shell & Android Settings) and elevated Shizuku/Root mode across Android 13, 14, 15, and 16.
+ * Built-in SetEdit (System/Secure/Global Database Editor), DeviceConfig modifier,
+ * direct storage script runner (/storage/emulated/0, /sdcard/Download),
+ * and privileged Shizuku temporary root execution across Android 13, 14, 15, and 16.
  */
 public class TerminalCoreEngine {
 
@@ -58,9 +65,12 @@ public class TerminalCoreEngine {
 
     /**
      * Executes a single or piped shell command with automatic multi-tier fallback.
-     * Tier 1: Elevated Shizuku / Root Binder
-     * Tier 2: Native Android Settings Provider (for settings get/put)
-     * Tier 3: Zero-permission Linux Runtime Process Execution (sh -c)
+     * Automatically handles:
+     * 1. Storage script execution (/storage/emulated/0, Download, etc.)
+     * 2. Built-in SetEdit commands (setedit put/get/list/search)
+     * 3. Elevated Shizuku / Root Binder (settings, setprop, device_config, dumpsys)
+     * 4. Native Android Settings Provider
+     * 5. Native Linux process execution
      */
     public String executeCommand(String command) {
         return executeCommand(null, command);
@@ -72,7 +82,18 @@ public class TerminalCoreEngine {
         }
         String trimmed = command.trim();
 
-        // 1. If Shizuku is connected, execute with elevated privileges
+        // 1. Check if command is a script execution (e.g. sh /storage/... or run tweak.sh)
+        String scriptFileResult = resolveAndExecuteScriptFile(context, trimmed);
+        if (scriptFileResult != null) {
+            return scriptFileResult;
+        }
+
+        // 2. Check if command is a SetEdit command (e.g. setedit put/get/list/search)
+        if (trimmed.startsWith("setedit ") || "setedit".equalsIgnoreCase(trimmed)) {
+            return handleSetEditCommand(context, trimmed);
+        }
+
+        // 3. If Shizuku is connected, execute with elevated privileges (Temporary Root UID 2000)
         if (isPrivilegedRootActive()) {
             try {
                 return ShizukuExecutor.executeShizukuCommand(trimmed);
@@ -81,7 +102,7 @@ public class TerminalCoreEngine {
             }
         }
 
-        // 2. Direct Settings Inspection Fallback if non-root and command is settings get/put
+        // 4. Direct Settings Inspection Fallback if non-root and command is settings get/put
         if (context != null && (trimmed.startsWith("settings get ") || trimmed.startsWith("settings put "))) {
             String settingsResult = handleDirectSettingsCommand(context, trimmed);
             if (settingsResult != null) {
@@ -89,7 +110,7 @@ public class TerminalCoreEngine {
             }
         }
 
-        // 3. Native Linux Runtime Process Execution (Zero-Permission Fallback)
+        // 5. Native Linux Runtime Process Execution (Zero-Permission Fallback)
         try {
             ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(trimmed);
             if (shellRes.isSuccess()) {
@@ -105,6 +126,314 @@ public class TerminalCoreEngine {
             Log.e(TAG, "Native shell execution failed: " + trimmed, t);
             return "ERROR: " + t.getMessage();
         }
+    }
+
+    /**
+     * Resolves script execution commands such as:
+     * - `sh /storage/emulated/0/Download/game.sh`
+     * - `run /sdcard/Download/tweak.sh`
+     * - `run my_tweak.sh`
+     * - `/storage/emulated/0/Download/boost.sh`
+     * Automatically reads the file from device storage, pushes to /data/local/tmp with chmod 777,
+     * and executes with elevated root/Shizuku permissions.
+     */
+    public String resolveAndExecuteScriptFile(Context context, String rawInput) {
+        String candidatePath = rawInput.trim();
+        boolean isExplicitScriptCmd = false;
+
+        if (candidatePath.startsWith("sh ")) {
+            candidatePath = candidatePath.substring(3).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("bash ")) {
+            candidatePath = candidatePath.substring(5).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("source ")) {
+            candidatePath = candidatePath.substring(7).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("run ")) {
+            candidatePath = candidatePath.substring(4).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("exec ")) {
+            candidatePath = candidatePath.substring(5).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("./")) {
+            candidatePath = candidatePath.substring(2).trim();
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.startsWith("/") && candidatePath.endsWith(".sh")) {
+            isExplicitScriptCmd = true;
+        } else if (candidatePath.endsWith(".sh")) {
+            isExplicitScriptCmd = true;
+        }
+
+        if (!isExplicitScriptCmd && !candidatePath.startsWith("/storage/") && !candidatePath.startsWith("/sdcard/")) {
+            return null;
+        }
+
+        if ((candidatePath.startsWith("\"") && candidatePath.endsWith("\"")) ||
+            (candidatePath.startsWith("'") && candidatePath.endsWith("'"))) {
+            candidatePath = candidatePath.substring(1, candidatePath.length() - 1).trim();
+        }
+
+        File scriptFile = findScriptFile(context, candidatePath);
+        if (scriptFile != null && scriptFile.exists() && scriptFile.isFile()) {
+            return executeScriptFileObject(context, scriptFile);
+        }
+
+        if (isExplicitScriptCmd && (candidatePath.contains("/") || candidatePath.endsWith(".sh"))) {
+            return "ERROR: Script file not found: " + candidatePath +
+                    "\n💡 Tip: Check if the file exists in /storage/emulated/0/Download/ or use the '📂 Run .sh File' button.";
+        }
+
+        return null;
+    }
+
+    /**
+     * Locates a script file across standard Android storage locations.
+     */
+    public File findScriptFile(Context context, String path) {
+        if (path == null || path.trim().isEmpty()) return null;
+
+        // 1. Direct absolute path
+        File direct = new File(path);
+        if (direct.exists() && direct.isFile()) return direct;
+
+        // 2. /storage/emulated/0/Download/
+        File dl1 = new File("/storage/emulated/0/Download", path);
+        if (dl1.exists() && dl1.isFile()) return dl1;
+
+        // 3. /sdcard/Download/
+        File dl2 = new File("/sdcard/Download", path);
+        if (dl2.exists() && dl2.isFile()) return dl2;
+
+        // 4. /storage/emulated/0/
+        File root1 = new File("/storage/emulated/0", path);
+        if (root1.exists() && root1.isFile()) return root1;
+
+        // 5. /sdcard/
+        File root2 = new File("/sdcard", path);
+        if (root2.exists() && root2.isFile()) return root2;
+
+        // 6. Environment.DIRECTORY_DOWNLOADS
+        try {
+            File extDl = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), path);
+            if (extDl.exists() && extDl.isFile()) return extDl;
+        } catch (Throwable ignored) {}
+
+        // 7. /data/local/tmp/
+        File tmp = new File(TEMP_DIR, path);
+        if (tmp.exists() && tmp.isFile()) return tmp;
+
+        // 8. App cache directory
+        if (context != null) {
+            File cache = new File(context.getCacheDir(), path);
+            if (cache.exists() && cache.isFile()) return cache;
+        }
+
+        return null;
+    }
+
+    /**
+     * Reads a script file from device storage, safely deploys it to /data/local/tmp with chmod 777,
+     * and runs it with privileged Shizuku/root execution.
+     */
+    public String executeScriptFileObject(Context context, File scriptFile) {
+        if (scriptFile == null || !scriptFile.exists()) {
+            return "ERROR: File does not exist.";
+        }
+        try {
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(scriptFile), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+            }
+            String scriptBody = sb.toString().trim();
+            if (scriptBody.isEmpty()) {
+                return "WARNING: Script file is empty: " + scriptFile.getAbsolutePath();
+            }
+
+            String fileName = scriptFile.getName();
+            String runnerTier = isPrivilegedRootActive() ?
+                    "⚡ Shizuku Privileged Root (UID 2000) -> /data/local/tmp/" + fileName :
+                    "🟡 Native Shell Runner (Standard Sandbox)";
+
+            StringBuilder report = new StringBuilder();
+            report.append("═══════════════════════════════════════════════════════\n");
+            report.append("📂 SCRIPT RUNNER: ").append(scriptFile.getAbsolutePath()).append("\n");
+            report.append("🚀 EXECUTION TIER: ").append(runnerTier).append("\n");
+            report.append("═══════════════════════════════════════════════════════\n");
+
+            String execResult = writeAndExecuteTempScript(context, fileName, scriptBody);
+            report.append(execResult).append("\n");
+            report.append("═══════════════════════════════════════════════════════\n");
+            report.append("✅ SCRIPT EXECUTION FINISHED");
+
+            return report.toString();
+        } catch (Throwable t) {
+            Log.e(TAG, "Error executing script file: " + scriptFile.getAbsolutePath(), t);
+            return "ERROR executing script: " + t.getMessage();
+        }
+    }
+
+    /**
+     * Reads and executes a script directly from a selected Storage Uri (from SAF File Picker).
+     */
+    public String executeScriptFromUri(Context context, Uri uri, String displayName) {
+        if (context == null || uri == null) {
+            return "ERROR: Invalid script URI";
+        }
+        try {
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = context.getContentResolver().openInputStream(uri);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+            }
+            String scriptBody = sb.toString().trim();
+            if (scriptBody.isEmpty()) {
+                return "WARNING: Selected script file is empty.";
+            }
+
+            if (displayName == null || displayName.trim().isEmpty()) {
+                displayName = "picked_script_" + System.currentTimeMillis() + ".sh";
+            }
+            if (!displayName.endsWith(".sh")) {
+                displayName += ".sh";
+            }
+
+            String runnerTier = isPrivilegedRootActive() ?
+                    "⚡ Shizuku Privileged Root (UID 2000) -> /data/local/tmp/" + displayName :
+                    "🟡 Native Shell Runner";
+
+            StringBuilder report = new StringBuilder();
+            report.append("═══════════════════════════════════════════════════════\n");
+            report.append("📂 LOADED SCRIPT FROM STORAGE: ").append(displayName).append("\n");
+            report.append("🚀 EXECUTION TIER: ").append(runnerTier).append("\n");
+            report.append("═══════════════════════════════════════════════════════\n");
+
+            String execResult = writeAndExecuteTempScript(context, displayName, scriptBody);
+            report.append(execResult).append("\n");
+            report.append("═══════════════════════════════════════════════════════\n");
+            report.append("✅ SCRIPT EXECUTION FINISHED");
+
+            return report.toString();
+        } catch (Throwable t) {
+            Log.e(TAG, "Error reading script URI: " + uri, t);
+            return "ERROR loading script: " + t.getMessage();
+        }
+    }
+
+    /**
+     * Built-in SetEdit Engine:
+     * Allows inspecting, listing, modifying, and searching system, secure, and global tables.
+     */
+    public String handleSetEditCommand(Context context, String command) {
+        String trimmed = command.trim();
+        String[] parts = trimmed.split("\\s+");
+        if (parts.length <= 1 || "help".equalsIgnoreCase(parts[1]) || "--help".equalsIgnoreCase(parts[1])) {
+            return "📝 SetEdit Universal Engine (Android System/Secure/Global Database Editor)\n\n" +
+                    "SYNTAX GUIDE:\n" +
+                    " • Put Value:    setedit put <system|secure|global> <key> <val>\n" +
+                    "                 settings put <system|secure|global> <key> <val>\n" +
+                    " • Get Value:    setedit get <system|secure|global> <key>\n" +
+                    "                 settings get <system|secure|global> <key>\n" +
+                    " • Delete Key:   setedit delete <system|secure|global> <key>\n" +
+                    " • List Table:   setedit list <system|secure|global>\n" +
+                    " • Search Key:   setedit search <keyword>\n\n" +
+                    "TABLES:\n" +
+                    " • system: UI animations, refresh rates, sound, touch sensitivity\n" +
+                    " • secure: ADB toggles, input methods, accessibility, device locks\n" +
+                    " • global: Game Driver, ANGLE renderer, window animations, WiFi/data policies\n\n" +
+                    "POPULAR GAMING SETEDIT TWEAKS:\n" +
+                    " • setedit put system peak_refresh_rate 120\n" +
+                    " • setedit put system min_refresh_rate 120\n" +
+                    " • setedit put global window_animation_scale 0.5\n" +
+                    " • setedit put global transition_animation_scale 0.5\n" +
+                    " • setedit put global animator_duration_scale 0.5\n" +
+                    " • setedit put global game_driver_all_apps 1\n" +
+                    " • setedit put system touch_slop_reduction 1\n" +
+                    " • setedit search refresh";
+        }
+
+        String subCmd = parts[1].toLowerCase();
+
+        if ("list".equalsIgnoreCase(subCmd)) {
+            if (parts.length < 3) {
+                return "ERROR: Usage: setedit list <system|secure|global>";
+            }
+            String table = parts[2].toLowerCase();
+            return executeCommand(context, "settings list " + table);
+        }
+
+        if ("search".equalsIgnoreCase(subCmd) || "find".equalsIgnoreCase(subCmd)) {
+            if (parts.length < 3) {
+                return "ERROR: Usage: setedit search <keyword>";
+            }
+            String query = parts[2].toLowerCase();
+            StringBuilder searchResult = new StringBuilder();
+            searchResult.append("🔍 SETEDIT SEARCH RESULTS FOR: '").append(query).append("'\n");
+            searchResult.append("───────────────────────────────────────────────────\n");
+
+            String[] tables = {"system", "secure", "global"};
+            int matchCount = 0;
+            for (String tbl : tables) {
+                String dump = executeCommand(context, "settings list " + tbl);
+                if (dump != null && !dump.startsWith("ERROR") && !dump.isEmpty()) {
+                    String[] lines = dump.split("\n");
+                    for (String l : lines) {
+                        if (l.toLowerCase().contains(query)) {
+                            searchResult.append("[").append(tbl.toUpperCase()).append("] ").append(l).append("\n");
+                            matchCount++;
+                        }
+                    }
+                }
+            }
+            if (matchCount == 0) {
+                searchResult.append("No matching keys found in system/secure/global tables.\n");
+            } else {
+                searchResult.append("───────────────────────────────────────────────────\n");
+                searchResult.append("Total Matches: ").append(matchCount);
+            }
+            return searchResult.toString();
+        }
+
+        if ("put".equalsIgnoreCase(subCmd) || "set".equalsIgnoreCase(subCmd)) {
+            if (parts.length < 5) {
+                return "ERROR: Usage: setedit put <system|secure|global> <key> <value>";
+            }
+            String table = parts[2].toLowerCase();
+            String key = parts[3];
+            StringBuilder valBuilder = new StringBuilder();
+            for (int i = 4; i < parts.length; i++) {
+                if (i > 4) valBuilder.append(" ");
+                valBuilder.append(parts[i]);
+            }
+            String val = valBuilder.toString();
+            return executeCommand(context, "settings put " + table + " " + key + " " + val);
+        }
+
+        if ("get".equalsIgnoreCase(subCmd)) {
+            if (parts.length < 4) {
+                return "ERROR: Usage: setedit get <system|secure|global> <key>";
+            }
+            String table = parts[2].toLowerCase();
+            String key = parts[3];
+            return executeCommand(context, "settings get " + table + " " + key);
+        }
+
+        if ("delete".equalsIgnoreCase(subCmd) || "del".equalsIgnoreCase(subCmd) || "rm".equalsIgnoreCase(subCmd)) {
+            if (parts.length < 4) {
+                return "ERROR: Usage: setedit delete <system|secure|global> <key>";
+            }
+            String table = parts[2].toLowerCase();
+            String key = parts[3];
+            return executeCommand(context, "settings delete " + table + " " + key);
+        }
+
+        return "Unknown SetEdit subcommand: " + subCmd + ". Type 'setedit help' for usage.";
     }
 
     /**
@@ -232,7 +561,23 @@ public class TerminalCoreEngine {
                 "id; whoami; uname -a; getprop ro.build.version.release; getprop ro.product.model"
         ));
 
-        // 2. Global / System / Secure Settings Explorer
+        // 2. SetEdit Ultra Gaming Pack
+        presetScripts.add(new TerminalScriptPreset(
+                "setedit_game_pack",
+                "⚡ SetEdit Game Pack",
+                "Applies maximum refresh rate, 0.5x animations, Game Driver, and touch slop tweaks",
+                "settings put system peak_refresh_rate 120; settings put system min_refresh_rate 120; settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5; settings put global game_driver_all_apps 1; settings put system touch_slop_reduction 1; echo '[SETEDIT GAMING PACK APPLIED]'"
+        ));
+
+        // 3. GPU Hardware Acceleration Setprop Tweaks
+        presetScripts.add(new TerminalScriptPreset(
+                "gpu_hw_setprops",
+                "🚀 GPU setprop & HW Acceleration",
+                "Applies low-level GPU rendering properties and hardware overlays",
+                "setprop debug.egl.hw 1; setprop debug.sf.hw 1; setprop debug.hwui.renderer skiagl; setprop renderthread.initialize.priority 1; getprop debug.egl.hw; echo '[GPU & HW PROPERTIES CONFIGURED]'"
+        ));
+
+        // 4. Global / System / Secure Settings Explorer
         presetScripts.add(new TerminalScriptPreset(
                 "diag_settings",
                 "⚙️ System & Global Settings",
@@ -240,7 +585,7 @@ public class TerminalCoreEngine {
                 "settings get system peak_refresh_rate; settings get system min_refresh_rate; settings get global window_animation_scale; settings get global game_driver_all_apps"
         ));
 
-        // 3. Storage & Directories
+        // 5. Storage & Directories
         presetScripts.add(new TerminalScriptPreset(
                 "diag_storage",
                 "📁 /Android/data & Storage",
@@ -248,7 +593,7 @@ public class TerminalCoreEngine {
                 "ls -la /sdcard/Android/data; df -h /sdcard; df -h /data"
         ));
 
-        // 4. Temporary /data/local/tmp Scripts Directory
+        // 6. Temporary /data/local/tmp Scripts Directory
         presetScripts.add(new TerminalScriptPreset(
                 "diag_temp",
                 "📂 /data/local/tmp Explorer",
@@ -256,7 +601,7 @@ public class TerminalCoreEngine {
                 "ls -la /data/local/tmp; ls -la /cache 2>/dev/null"
         ));
 
-        // 5. FPS, Refresh Rate & SurfaceFlinger Pacing
+        // 7. FPS, Refresh Rate & SurfaceFlinger Pacing
         presetScripts.add(new TerminalScriptPreset(
                 "diag_fps",
                 "🎮 120-185 FPS SurfaceFlinger",
@@ -264,7 +609,7 @@ public class TerminalCoreEngine {
                 "dumpsys SurfaceFlinger --latency; getprop debug.sf.fps_limit; getprop persist.sys.NV_FPSLIMIT; settings get system peak_refresh_rate"
         ));
 
-        // 6. Deep RAM Flush & Trim
+        // 8. Deep RAM Flush & Trim
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_ram",
                 "🧹 Deep RAM Flush & Trim",
@@ -272,7 +617,7 @@ public class TerminalCoreEngine {
                 "pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"
         ));
 
-        // 7. Touch & Gyro Zero-Delay Input
+        // 9. Touch & Gyro Zero-Delay Input
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_touch",
                 "🎯 1000Hz Touch Slop & Gyro",
@@ -280,7 +625,7 @@ public class TerminalCoreEngine {
                 "getprop view.touch_slop; getprop debug.input.max_events_per_sec; getprop sys.use_fifo; getprop persist.sys.touch.pressure.scale"
         ));
 
-        // 8. GPU Game Driver & ANGLE Renderer
+        // 10. GPU Game Driver & ANGLE Renderer
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_gpu",
                 "🚀 Game Driver & ANGLE Mode",
@@ -288,7 +633,7 @@ public class TerminalCoreEngine {
                 "settings get global game_driver_all_apps; settings get global angle_gl_driver_all_angle; getprop debug.hwui.renderer"
         ));
 
-        // 9. Thermal Status & Battery Governor
+        // 11. Thermal Status & Battery Governor
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_thermal",
                 "🛡️ Thermal Throttle Inspection",
@@ -296,7 +641,7 @@ public class TerminalCoreEngine {
                 "dumpsys thermalservice; dumpsys battery; cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null"
         ));
 
-        // 10. Matrix DNS & Latency Relay
+        // 12. Matrix DNS & Latency Relay
         presetScripts.add(new TerminalScriptPreset(
                 "diag_net",
                 "🌐 Matrix Edge Ping Diagnostic",
