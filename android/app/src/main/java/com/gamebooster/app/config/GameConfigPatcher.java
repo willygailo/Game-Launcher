@@ -238,6 +238,35 @@ public class GameConfigPatcher {
             paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
             paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");
             paths.add("/data/data/" + pkg + "/files/Config/GraphicsSettings.ini");
+        } else if (pkg.contains("deltaforce") || pkg.contains("proximabeta.mf.uamo")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
+        } else if (pkg.contains("wuthering") || pkg.contains("kurogame")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.json");
+            paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
+            paths.add("/data/data/" + pkg + "/files/GraphicSettings.json");
+        } else if (pkg.contains("carx")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
+        } else if (pkg.contains("apex")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ApexMobile/ApexMobile/Saved/Config/Android/UserCustom.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ApexMobile/ApexMobile/Saved/Config/Android/GameUserSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/UE4Game/ApexMobile/ApexMobile/Saved/Config/Android/GameUserSettings.ini");
+        } else if (pkg.contains("roblox")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
+            paths.add("/data/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
+            paths.add("/data/data/" + pkg + "/files/AppSettings.json");
+        } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/SGameSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameUserSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/SGameSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
+            paths.add("/data/data/" + pkg + "/files/Config/GameUserSettings.ini");
         } else {
             paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
             paths.add("/data/data/" + pkg + "/files/GameSettings.ini");

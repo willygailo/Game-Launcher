@@ -41,7 +41,13 @@ public class GameLauncherHelper {
                                  pkgName.contains("freefire") || pkgName.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
                                  pkgName.contains("genshin") || pkgName.contains("mihoyo") || pkgName.contains("cognosphere") || pkgName.contains("hoyoverse") || pkgName.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
                                  pkgName.contains("sgame") || pkgName.contains("levelinfinite") || pkgName.contains("arenaofvalor") || pkgName.contains("kgtw") || pkgName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                                 pkgName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX : CompetitiveCfgProfile.GAME_ALL;
+                                 pkgName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
+                                 pkgName.contains("projectc") || pkgName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
+                                 pkgName.contains("farlight") || pkgName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT :
+                                 pkgName.contains("deltaforce") || pkgName.contains("proximabeta.mf.uamo") ? CompetitiveCfgProfile.GAME_DELTAFORCE :
+                                 pkgName.contains("wuthering") || pkgName.contains("kurogame") ? CompetitiveCfgProfile.GAME_WUTHERING :
+                                 pkgName.contains("carx") ? CompetitiveCfgProfile.GAME_CARX :
+                                 pkgName.contains("apex") ? CompetitiveCfgProfile.GAME_APEX : CompetitiveCfgProfile.GAME_ALL;
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 

@@ -322,12 +322,17 @@ public class DeviceSpooferEngine {
         // 1. UE4 / UE5 Games (PUBG Mobile, BGMI, New State, Arena Breakout, Delta Force, Valorant Mobile)
         if (lowerPkg.contains("pubg") || lowerPkg.contains("tencent.ig") || lowerPkg.contains("imobile") ||
             lowerPkg.contains("vng.pubgmobile") || lowerPkg.contains("madfingergames") || lowerPkg.contains("arenabreakout") ||
-            lowerPkg.contains("deltaforce") || lowerPkg.contains("valorant")) {
+            lowerPkg.contains("deltaforce") || lowerPkg.contains("valorant") || lowerPkg.contains("projectc") ||
+            lowerPkg.contains("proximabeta.mf.uamo")) {
             String ue4Hardware = profile.generateUe4DeviceProfile(185);
 
             String[] paths = {
                 "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini",
                 "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini",
+                "/data/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini",
+                "/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini",
                 "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShooterGame/ShooterGame/Saved/Config/Android/DeviceProfile.ini",
                 "/data/data/" + pkg + "/files/UE4Game/ShooterGame/ShooterGame/Saved/Config/Android/DeviceProfile.ini",
                 "/sdcard/Android/data/" + pkg + "/files/UE4Game/Android/DeviceProfile.ini",
@@ -355,8 +360,8 @@ public class DeviceSpooferEngine {
             }
         }
 
-        // 3. Farlight 84 (Solarland Engine)
-        else if (lowerPkg.contains("farlight") || lowerPkg.contains("solarland") || lowerPkg.contains("miraclegames")) {
+        // 3. Farlight 84 & CarX Street
+        else if (lowerPkg.contains("farlight") || lowerPkg.contains("solarland") || lowerPkg.contains("miraclegames") || lowerPkg.contains("carx")) {
             String farlightHardware = profile.generateUe4DeviceProfile(185);
             String[] paths = {
                 "/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/DeviceProfile.ini",
@@ -364,7 +369,9 @@ public class DeviceSpooferEngine {
                 "/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/Engine.ini",
                 "/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/Engine.ini",
                 "/sdcard/Android/data/" + pkg + "/files/DeviceHardware.json",
-                "/data/data/" + pkg + "/files/DeviceHardware.json"
+                "/data/data/" + pkg + "/files/DeviceHardware.json",
+                "/sdcard/Android/data/" + pkg + "/files/DeviceHardware.ini",
+                "/data/data/" + pkg + "/files/DeviceHardware.ini"
             };
             for (String p : paths) {
                 ShizukuFileManager.ensureParentDirectory(p);
@@ -375,7 +382,7 @@ public class DeviceSpooferEngine {
         // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves
         else if (lowerPkg.contains("genshin") || lowerPkg.contains("mihoyo") || lowerPkg.contains("cognosphere") ||
                  lowerPkg.contains("hoyoverse") || lowerPkg.contains("hkrpg") || lowerPkg.contains("nap") ||
-                 lowerPkg.contains("wutheringwaves")) {
+                 lowerPkg.contains("wuthering") || lowerPkg.contains("kurogame")) {
             String genshinHardware = "{\n" +
                     "  \"device_model\": \"" + profile.model + "\",\n" +
                     "  \"device_brand\": \"" + profile.brand + "\",\n" +
@@ -410,13 +417,19 @@ public class DeviceSpooferEngine {
                     "SoC=" + profile.socModel + "\n" +
                     "RAM=" + profile.ramTotalMb + "\n" +
                     "HighFPSMode=1\n" +
-                    "FrameRateLevel=9\n" +
+                    "FrameRateLevel=10\n" +
                     "FPS=185\n" +
                     "Unlock185Hz=1\n";
 
             String[] paths = {
                 "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DeviceHardware.ini",
-                "/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DeviceHardware.ini"
+                "/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DeviceHardware.ini",
+                "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPS_Model.ini",
+                "/data/data/" + pkg + "/files/dragon2017/assets/UI/HighFPS_Model.ini",
+                "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/document/android/DeviceHardware.ini",
+                "/data/data/" + pkg + "/files/dragon2017/assets/document/android/DeviceHardware.ini",
+                "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPS_Model.ini",
+                "/data/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPS_Model.ini"
             };
             for (String p : paths) {
                 ShizukuFileManager.ensureParentDirectory(p);

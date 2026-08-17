@@ -173,8 +173,12 @@ public class FarlightConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
+        paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/Config/GraphicsSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");

@@ -299,14 +299,18 @@ public class PubgConfigPatcher {
         final int fpsLevel = targetFps >= 185 ? 10 : (targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : 6)));
         String[] savPaths = {
             "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
-            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
+            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/SrcActive.sav",
+            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/UserSettings.sav",
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/SrcActive.sav",
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/UserSettings.sav"
         };
         for (String sav : savPaths) {
             ensureDirectory(sav);
             byte[] data = ShizukuFileManager.readBytes(sav);
             if (data != null && data.length > 32) {
                 boolean modified = false;
-                String[] keys = {"FPSLevel", "BattleFPS", "LobbyFPS", "ShadowQuality", "HDRMode"};
+                String[] keys = {"FPSLevel", "BattleFPS", "LobbyFPS", "ShadowQuality", "HDRMode", "AimAssist", "FrameRateLevel", "GraphicQuality"};
                 for (String key : keys) {
                     byte[] keyBytes = key.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
                     int idx = indexOfBytes(data, keyBytes, 0);

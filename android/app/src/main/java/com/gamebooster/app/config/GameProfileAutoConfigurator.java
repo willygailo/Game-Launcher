@@ -92,7 +92,11 @@ public class GameProfileAutoConfigurator {
                          packageName.contains("sgame") || packageName.contains("levelinfinite") || packageName.contains("arenaofvalor") || packageName.contains("kgtw") || packageName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
                          packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
                          packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
+                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT :
+                         packageName.contains("deltaforce") || packageName.contains("proximabeta.mf.uamo") ? CompetitiveCfgProfile.GAME_DELTAFORCE :
+                         packageName.contains("wuthering") || packageName.contains("kurogame") ? CompetitiveCfgProfile.GAME_WUTHERING :
+                         packageName.contains("carx") ? CompetitiveCfgProfile.GAME_CARX :
+                         packageName.contains("apex") ? CompetitiveCfgProfile.GAME_APEX : CompetitiveCfgProfile.GAME_ALL;
         
         CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true);
         if (context != null) {

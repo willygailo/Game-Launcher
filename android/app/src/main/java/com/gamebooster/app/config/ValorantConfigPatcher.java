@@ -192,8 +192,12 @@ public class ValorantConfigPatcher {
         List<String> paths = new ArrayList<>();
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
         paths.add("/data/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
+        paths.add("/data/data/" + pkg + "/files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
         paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
         paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");

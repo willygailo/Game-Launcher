@@ -193,6 +193,10 @@ public class MlbbConfigPatcher {
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPSConfig.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/HighFPS_Model.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/document/android/UserSystem.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPS_Model.ini");
+        paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPSConfig.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Config/HighFPS.xml");
         paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Config/Performance.xml");
@@ -203,6 +207,9 @@ public class MlbbConfigPatcher {
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/Com/MobileLegendsSettings.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/UserSystem.ini");
         paths.add("/data/data/" + pkg + "/files/dragon2017/assets/UI/Config/DamageSystem.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/document/android/UserSystem.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPS_Model.ini");
+        paths.add("/data/data/" + pkg + "/files/dragon2017/assets/document/android/HighFPSConfig.ini");
 
         // Deep Search discovered paths via Shizuku
         if (ShizukuExecutor.hasShizukuPermission()) {

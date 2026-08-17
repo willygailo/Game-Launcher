@@ -49,6 +49,7 @@ public class GameBoosterService extends Service {
         final int forcedHz = targetHz;
         try {
             com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+            com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), null);
             com.gamebooster.app.booster.MaxHzForceChannel.forceApply(forcedHz);
             com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
             PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
