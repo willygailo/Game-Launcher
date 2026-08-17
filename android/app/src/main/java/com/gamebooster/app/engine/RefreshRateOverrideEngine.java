@@ -6,8 +6,8 @@ import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 /**
- * RefreshRateOverrideEngine manages 60Hz, 90Hz, 120Hz, 144Hz, and 165Hz display refresh rate overrides.
- * It applies system settings and per-app refresh rate constraints via Shizuku ADB.
+ * RefreshRateOverrideEngine manages 60Hz, 90Hz, 120Hz, 144Hz, 165Hz, and 185Hz display refresh rate overrides.
+ * It applies system settings and per-app refresh rate constraints via Shizuku ADB across Android 12, 13, 14, 15, and 16.
  */
 public class RefreshRateOverrideEngine {
 
@@ -18,7 +18,8 @@ public class RefreshRateOverrideEngine {
         MODE_90HZ(90.0f, "90 Hz (Smooth Performance)"),
         MODE_120HZ(120.0f, "120 Hz (Ultra Esports)"),
         MODE_144HZ(144.0f, "144 Hz (Pro Gaming)"),
-        MODE_165HZ(165.0f, "165 Hz (Extreme ROG/RedMagic)");
+        MODE_165HZ(165.0f, "165 Hz (Ultra Flagship)"),
+        MODE_185HZ(185.0f, "185 Hz (Extreme ROG Mode)");
 
         public final float fps;
         public final String label;
@@ -27,6 +28,15 @@ public class RefreshRateOverrideEngine {
             this.fps = fps;
             this.label = label;
         }
+
+        public static RefreshRateMode fromFps(int fps) {
+            if (fps >= 185) return MODE_185HZ;
+            if (fps >= 165) return MODE_165HZ;
+            if (fps >= 144) return MODE_144HZ;
+            if (fps >= 120) return MODE_120HZ;
+            if (fps >= 90) return MODE_90HZ;
+            return MODE_60HZ;
+        }
     }
 
     /**
@@ -34,7 +44,7 @@ public class RefreshRateOverrideEngine {
      *
      * @param context App context
      * @param packageName Target game package (or null for global setting)
-     * @param mode Selected refresh rate mode (60/90/120/144/165 Hz)
+     * @param mode Selected refresh rate mode (60/90/120/144/165/185 Hz)
      * @return true if commands executed via Shizuku
      */
     public static boolean applyRefreshRate(Context context, String packageName, RefreshRateMode mode) {
@@ -72,12 +82,12 @@ public class RefreshRateOverrideEngine {
     /**
      * Convenience method: force max refresh rate globally without per-package constraints.
      *
-     * @param targetHz Target Hz value (60, 90, 120, 144, or 165)
+     * @param targetHz Target Hz value (60, 90, 120, 144, 165, or 185)
      * @return true if Shizuku commands fired successfully
      */
     public static boolean applyMaxRefreshRateForce(int targetHz) {
         if (!ShizukuExecutor.hasShizukuPermission()) return false;
-        RefreshRateMode mode = RefreshRateMode.MODE_165HZ;
+        RefreshRateMode mode = RefreshRateMode.fromFps(targetHz);
         return applyRefreshRate(null, null, mode);
     }
 
