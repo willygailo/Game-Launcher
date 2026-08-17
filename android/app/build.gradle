@@ -8,8 +8,8 @@ android {
         applicationId "com.gamebooster.app"
         minSdk 24
         targetSdk 36
-        versionCode 2230
-        versionName "2.2.3.0"
+        versionCode 2400
+        versionName "2.4.0.0"
 
         vectorDrawables {
             useSupportLibrary true
