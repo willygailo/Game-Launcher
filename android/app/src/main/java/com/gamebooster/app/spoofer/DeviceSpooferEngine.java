@@ -213,6 +213,25 @@ public class DeviceSpooferEngine {
             applyInAppBuildSpoof(profile);
             exportProcMockFiles(profile);
 
+            // ═══════════════════════════════════════════════════════════════════
+            //  PRONG 5: DEEP SYSTEM ANTI-THROTTLE & POWER GOVERNOR OVERRIDES
+            // ═══════════════════════════════════════════════════════════════════
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                String pkg = packageName.trim();
+                exec("dumpsys deviceidle whitelist +" + pkg);
+                exec("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow");
+                exec("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow");
+                exec("cmd appops set " + pkg + " WAKE_LOCK allow");
+            }
+            exec("cmd thermalservice override-status 0");
+            exec("cmd power set-fixed-performance-mode-enabled true");
+            exec("service call SurfaceFlinger 1022 i32 1");
+            exec("setprop debug.egl.hw 1");
+            exec("setprop debug.sf.hw 1");
+            exec("setprop view.touch_slop 1");
+            exec("setprop debug.input.max_events_per_sec 1000");
+            exec("setprop sys.use_fifo 1");
+
             activeProfileId = profile.id;
             if (context != null) {
                 SpoofPreferences.setSpoofEnabled(context, true);
