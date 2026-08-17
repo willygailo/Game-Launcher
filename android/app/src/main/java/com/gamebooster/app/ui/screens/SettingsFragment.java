@@ -195,8 +195,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
-                Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         }
 
@@ -205,13 +211,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (isChecked) {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
-                    Toast.makeText(getContext(), "🎮 Auto Game Launch Monitor: ENABLED", Toast.LENGTH_SHORT).show();
-                } else {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
-                    Toast.makeText(getContext(), "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
-                }
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                    } else {
+                        com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🎮 Auto Game Launch Monitor: ENABLED" : "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         }
 
@@ -220,8 +231,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
-                Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         }
 
@@ -1034,7 +1051,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
             switchGamingDnd.setOnCheckedChangeListener((bv, ic) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), ic);
+                AppExecutors.getInstance().executeCommand(() ->
+                    com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), ic));
             });
         }
 
@@ -1043,11 +1061,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
             switchAutoGameBoost.setOnCheckedChangeListener((bv, ic) -> {
                 if (getContext() == null) return;
-                if (ic) {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
-                } else {
-                    com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
-                }
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (ic) {
+                        com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                    } else {
+                        com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                    }
+                });
             });
         }
 
@@ -1056,7 +1076,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
             switchEsportsAudio.setOnCheckedChangeListener((bv, ic) -> {
                 if (getContext() == null) return;
-                com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), ic);
+                AppExecutors.getInstance().executeCommand(() ->
+                    com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), ic));
             });
         }
 

@@ -205,29 +205,31 @@ public class ForegroundAppDetector {
      * Multi-tier foreground app detection.
      */
     public String detectCurrentForegroundPackage() {
-        // Tier 1: Instant Shizuku Privileged Inspection (Zero Latency)
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            String shizukuPkg = getForegroundPackageViaShizuku();
-            if (shizukuPkg != null && !shizukuPkg.isEmpty()) {
-                return shizukuPkg;
-            }
-        }
-
-        // Tier 2: UsageStatsManager Events
+        // Tier 1: UsageStatsManager Events (Instant & Native)
         String usmPkg = getForegroundPackageViaUsageStats();
         if (usmPkg != null && !usmPkg.isEmpty()) {
             return usmPkg;
         }
 
-        // Tier 3: ActivityManager Running Process fallback
-        return getForegroundPackageViaActivityManager();
+        // Tier 2: ActivityManager Running Process fallback
+        String amPkg = getForegroundPackageViaActivityManager();
+        if (amPkg != null && !amPkg.isEmpty()) {
+            return amPkg;
+        }
+
+        // Tier 3: Lightweight Shizuku Activity Command
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            return getForegroundPackageViaShizuku();
+        }
+
+        return "";
     }
 
     private String getForegroundPackageViaShizuku() {
         try {
-            String out = ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
+            // Lightweight top-resumed-activity query (1-line output instead of 50,000 line dumpsys)
+            String out = ShizukuExecutor.executeShizukuCommand("cmd activity top-resumed-activity");
             if (out != null && !out.isEmpty()) {
-                // Example line: mCurrentFocus=Window{... u0 com.tencent.ig/com.epicgames.ue4.SplashActivity}
                 int slashIdx = out.indexOf('/');
                 if (slashIdx > 0) {
                     int startIdx = out.lastIndexOf(' ', slashIdx);

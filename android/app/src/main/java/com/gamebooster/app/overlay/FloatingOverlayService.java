@@ -283,8 +283,9 @@ public class FloatingOverlayService extends Service {
         params.x = 20;
         params.y = 200;
 
-        View headerDock = overlayView.findViewById(R.id.tv_hud_collapse_btn) != null ?
-                (View) overlayView.findViewById(R.id.tv_hud_collapse_btn).getParent() : overlayView;
+        View collapseBtn = overlayView.findViewById(R.id.tv_hud_collapse_btn);
+        View headerDock = (collapseBtn != null && collapseBtn.getParent() instanceof View) ?
+                (View) collapseBtn.getParent() : overlayView;
 
         View.OnTouchListener dragListener = new View.OnTouchListener() {
             private int initialX;

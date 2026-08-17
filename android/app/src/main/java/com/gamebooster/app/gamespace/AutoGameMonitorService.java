@@ -168,10 +168,6 @@ public class AutoGameMonitorService extends Service {
                 lastActiveGamePackage = null;
                 handleGameExit(exitedPackage);
             }
-            // CASE 3: Background Home / Active Session Refresh Lock
-            else if (!isGameActive && lastActiveGamePackage == null) {
-                MaxHzForceChannel.forceApply(165);
-            }
         });
     }
 
