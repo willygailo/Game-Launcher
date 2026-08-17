@@ -28,7 +28,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:src="@android:drawable/ic_menu_revert"
-            android:tint="@color/accent_cyan" />
+            app:tint="@color/accent_cyan" />
 
         <LinearLayout
             android:layout_width="0dp"

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<game-mode-config>
+    <!-- Android 12, 13, 14, 15, and 16 Game Mode Interventions & Full FPS Tiers -->
+
+    <!-- 185 FPS / Hz Extreme ROG Flagship Tier -->
+    <mode name="extreme_185" fps="185" scaling="1.0" useAngle="true" loadingBoost="true" />
+
+    <!-- 165 FPS / Hz Ultra Flagship Esports Tier -->
+    <mode name="ultra_165" fps="165" scaling="1.0" useAngle="true" loadingBoost="true" />
+
+    <!-- 144 FPS / Hz Pro Gaming Esports Tier -->
+    <mode name="pro_144" fps="144" scaling="1.0" useAngle="true" loadingBoost="true" />
+
+    <!-- 120 FPS / Hz High Performance Tier -->
+    <mode name="performance" fps="120" scaling="1.0" useAngle="true" loadingBoost="true" />
+
+    <!-- 90 FPS / Hz Smooth Competitive Tier -->
+    <mode name="smooth_90" fps="90" scaling="1.0" useAngle="false" loadingBoost="true" />
+
+    <!-- 60 FPS / Hz Standard Battery Saver Tier -->
+    <mode name="battery" fps="60" scaling="1.0" useAngle="false" loadingBoost="false" />
+
+    <!-- Default Standard Mode -->
+    <mode name="standard" fps="120" scaling="1.0" useAngle="false" loadingBoost="false" />
+
+</game-mode-config>

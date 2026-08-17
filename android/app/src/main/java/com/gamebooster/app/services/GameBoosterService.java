@@ -53,6 +53,14 @@ public class GameBoosterService extends Service {
             com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
             PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
             PerformanceChannel.writeAndExecuteRootTweaksScript(forcedHz);
+
+            // Execute Chipset, OEM Bypass, and Version-Specific engines
+            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(getApplicationContext(), forcedHz);
+            com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(getApplicationContext(), forcedHz);
+            com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(getApplicationContext(), null, forcedHz);
+
+            // Trigger background AOT speed compilation to eliminate JIT stutter
+            com.gamebooster.app.dexopt.DexoptCompilationEngine.compileAllGamesSpeedAsync(getApplicationContext(), null);
         } catch (Exception ignored) {}
 
         return START_STICKY;

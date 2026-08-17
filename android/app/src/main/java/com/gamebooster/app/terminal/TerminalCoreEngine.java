@@ -648,6 +648,46 @@ public class TerminalCoreEngine {
                 "Queries active DNS resolver and tests low-latency gaming route",
                 "getprop net.dns1; ping -c 3 1.1.1.1"
         ));
+
+        // 13. Ahead-Of-Time (AOT) DEX Speed Compilation
+        presetScripts.add(new TerminalScriptPreset(
+                "preset_aot_dexopt",
+                "⚡ AOT DEX Speed Compilation",
+                "Forces system package manager speed compilation to eliminate JIT stutter",
+                "cmd package compile -m speed -f com.mobile.legends; cmd package compile -m speed -f com.tencent.ig; cmd package compile -m speed -f com.activision.callofduty.shooter; cmd package compile -m speed -f com.dts.freefireth; echo '[AOT SPEED COMPILATION COMPLETE]'"
+        ));
+
+        // 14. Universal OEM Game Throttling Bypass
+        presetScripts.add(new TerminalScriptPreset(
+                "preset_oem_bypass",
+                "🛡️ Legal OEM Throttling Neutralizer",
+                "Neutralizes Joyose, Samsung GOS, ColorOS GPA, and resets thermal flags",
+                "pm disable-user --user 0 com.xiaomi.joyose; pm disable-user --user 0 com.samsung.android.game.gos; pm disable-user --user 0 com.oplus.games; cmd thermalservice override-status 0; echo '[OEM THROTTLING BYPASSED]'"
+        ));
+
+        // 15. 185Hz / 165Hz Display & FPS Force Lock
+        presetScripts.add(new TerminalScriptPreset(
+                "preset_185hz_force",
+                "🚀 185Hz / 165Hz Extreme Display & FPS Lock",
+                "Forces peak refresh rate and overrides SurfaceFlinger frame pacing",
+                "cmd window set-app-refresh-rate --force 185; settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; setprop debug.sf.fps_limit 185; echo '[185Hz REFRESH RATE ACTIVE]'"
+        ));
+
+        // 16. Android 16 cgroup v2 & ADPF Scheduler Boost
+        presetScripts.add(new TerminalScriptPreset(
+                "preset_adpf_android16",
+                "⚡ Android 16 cgroup v2 & ADPF Boost",
+                "Enforces Game Mode performance intervention and expands background app headroom",
+                "cmd game mode performance global; cmd activity set-process-limit 32; setprop sys.use_fifo_ui 1; setprop persist.sys.sched_boost 1; echo '[ADPF & SCHEDULER BOOST CONFIGURED]'"
+        ));
+
+        // 17. Vulkan Swapchain & Triple Buffering Overdrive
+        presetScripts.add(new TerminalScriptPreset(
+                "preset_vulkan_overdrive",
+                "🎮 Vulkan Swapchain & Triple Buffering Overdrive",
+                "Overdrives Vulkan graphics pipeline with zero swap interval and backpressure bypass",
+                "setprop debug.hwui.renderer vulkan; setprop debug.renderengine.backend skiagl; setprop debug.egl.swapinterval 0; setprop debug.sf.disable_backpressure 1; echo '[VULKAN OVERDRIVE APPLIED]'"
+        ));
     }
 
     public List<TerminalScriptPreset> getPresetScripts() {

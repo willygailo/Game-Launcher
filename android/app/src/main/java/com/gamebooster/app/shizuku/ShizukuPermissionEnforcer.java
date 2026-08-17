@@ -146,6 +146,12 @@ public class ShizukuPermissionEnforcer {
                 setAppOp(gamePackageName, "RUN_ANY_IN_BACKGROUND", "allow");
                 setAppOp(gamePackageName, "AUTO_START", "allow");
                 setAppOp(gamePackageName, "SYSTEM_ALERT_WINDOW", "allow");
+                setAppOp(gamePackageName, "SYSTEM_EXEMPT_FROM_HIBERNATION", "allow");
+                setAppOp(gamePackageName, "SYSTEM_EXEMPT_FROM_POWER_RESTRICTIONS", "allow");
+
+                // Elevate Standby Bucket to ACTIVE on Android 12-16
+                ShizukuExecutor.executeShizukuCommand("cmd usage-stats set-app-standby-bucket " + gamePackageName + " active");
+                ShizukuExecutor.executeShizukuCommand("cmd deviceidle whitelist +" + gamePackageName);
 
                 // Enable Game Mode performance intervention
                 ShizukuExecutor.executeShizukuCommand("cmd game mode performance " + gamePackageName);

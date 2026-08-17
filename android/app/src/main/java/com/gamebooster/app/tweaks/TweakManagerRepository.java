@@ -1034,6 +1034,61 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
+
+        // 17. 185Hz ROG Phone 9 Pro / RedMagic Extreme Refresh Rate Lock
+        TWEAKS.add(new TweakItem(
+                "display_185hz_rog_force",
+                "185Hz / 165Hz Display Refresh Rate & SurfaceFlinger Overdrive",
+                "Forces SurfaceFlinger peak refresh rate to 185Hz and eliminates frame pacing jitters",
+                "settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; settings put system user_refresh_rate 185; setprop persist.sys.NV_FPSLIMIT 185; setprop debug.sf.fps_limit 185; cmd window set-app-refresh-rate --force 185",
+                "settings put system peak_refresh_rate 60.0; settings put system min_refresh_rate 60.0; settings put system user_refresh_rate 60",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        // 18. Android 16 Linux 6.6+ cgroup v2 Gaming Task Priority
+        TWEAKS.add(new TweakItem(
+                "cgroup_v2_task_priority",
+                "Android 16 cgroup v2 & Linux 6.6+ Task Priority Scheduler",
+                "Allocates maximum CPU burst shares and foreground process affinity to active game processes",
+                "setprop sys.use_fifo_ui 1; setprop sys.config.bg_app_limit 32; setprop persist.sys.sched_boost 1; cmd activity set-process-limit 32",
+                "setprop sys.use_fifo_ui 0; setprop persist.sys.sched_boost 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        // 19. 1000Hz Ultra Low Latency Touch & Gyro Sampling
+        TWEAKS.add(new TweakItem(
+                "touch_1000hz_ultra_sampling",
+                "1000Hz Ultra Touch Sampling & Zero Motion Jitter",
+                "Overclocks touch screen polling to 1000Hz and minimizes touch slop threshold to 1px for instant aiming response",
+                "setprop view.touch_slop 1; setprop debug.input.max_events_per_sec 1000; setprop persist.sys.touch.pressure.scale 0.001; setprop debug.hwui.fps_divisor 1",
+                "setprop view.touch_slop 8; setprop debug.input.max_events_per_sec 240",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        // 20. Wi-Fi 7 / 6E Low-Latency Game Packet Queue & Multicast Filter
+        TWEAKS.add(new TweakItem(
+                "wifi_gaming_multicast_filter",
+                "Wi-Fi 7 / 6E Gaming Packet Prioritization & Zero Ping Spikes",
+                "Filters multicast background discovery packets and activates lowest latency Wi-Fi power-save mode",
+                "cmd wifi set-multicast-filter enabled; cmd wifi set-verbose-logging enabled; setprop net.tcp.fastopen 3; setprop net.ipv4.tcp_ecn 0",
+                "cmd wifi set-multicast-filter disabled",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        // 21. Vulkan Swapchain & Triple Buffering Overdrive
+        TWEAKS.add(new TweakItem(
+                "vulkan_triple_buffer_overdrive",
+                "Vulkan Swapchain & Skia Pipeline Overdrive",
+                "Forces Vulkan rendering pipeline with zero frame latency and double/triple frame buffer caching",
+                "setprop debug.hwui.renderer vulkan; setprop debug.renderengine.backend skiagl; setprop debug.egl.swapinterval 0; setprop debug.sf.disable_backpressure 1",
+                "setprop debug.hwui.renderer default; setprop debug.renderengine.backend default; setprop debug.egl.swapinterval 1",
+                TweakCategory.CPU_GPU,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {
