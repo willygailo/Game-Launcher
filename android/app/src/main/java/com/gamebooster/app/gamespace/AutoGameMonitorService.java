@@ -191,29 +191,41 @@ public class AutoGameMonitorService extends Service {
             RefreshRateOverrideEngine.applyRefreshRate(appCtx, packageName,
                     RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ);
 
-            // 4. Extreme Performance Profile & Tweaks Script
+            // 4. Dedicated Chipset Optimizer (Snapdragon, Dimensity, Exynos, Tensor, Unisoc, Kirin)
+            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(appCtx, targetHz);
+
+            // 5. Legal OEM Throttling Bypass (Joyose, GOS, ColorOS GPA, Dar-Link)
+            com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(appCtx, targetHz);
+
+            // 6. Android Version Specific Optimizations (Android 12–16 / API 31–36)
+            com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(appCtx, packageName, targetHz);
+
+            // 7. Ahead-Of-Time (AOT) DEX Speed Compilation (Zero In-Game JIT Stutter)
+            com.gamebooster.app.dexopt.DexoptCompilationEngine.compileGameSpeedAsync(packageName, null);
+
+            // 8. Extreme Performance Profile & Tweaks Script
             PerformanceChannel.applyProfile(appCtx, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
             PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
 
-            // 5. Gaming DND & Heads-up Notification Suppression
+            // 9. Gaming DND & Heads-up Notification Suppression
             GameSpaceDndManager.setGamingDndMode(appCtx, profile.enableDnd);
 
-            // 6. Deep RAM & Shader Cache Purge
+            // 10. Deep RAM & Shader Cache Purge
             boolean autoCleanRam = appCtx.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
                     .getBoolean(KEY_AUTO_CLEAN_RAM, true);
             if (autoCleanRam) {
                 GameCacheCleaner.performDeepGameCacheClean(appCtx);
             }
 
-            // 7. Auto-Launch Floating Gaming HUD
+            // 11. Auto-Launch Floating Gaming HUD
             if (!FloatingOverlayService.isOverlayRunning()) {
                 FloatingOverlayService.startOverlay(appCtx);
             }
 
-            // 8. Update Live Foreground Notification
+            // 12. Update Live Foreground Notification
             updateNotification(gameTitle, true, targetHz);
 
-            // 9. Display User Toast
+            // 13. Display User Toast
             AppExecutors.getInstance().postToMainThread(() ->
                     Toast.makeText(appCtx, "⚡ " + gameTitle + " Boosted (" + targetHz + " FPS & " + targetHz + "Hz Locked)", Toast.LENGTH_LONG).show());
 

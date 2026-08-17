@@ -990,6 +990,50 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
+
+        // 13. Dedicated Chipset Hardware Turbo Engine
+        TWEAKS.add(new TweakItem(
+                "chipset_deep_turbo",
+                "Universal Chipset Hardware Turbo (Snapdragon / Dimensity / Exynos / Tensor / Unisoc)",
+                "Locks GPU frequency governor, Adreno/Mali Turbo, and Qualcomm/MediaTek PowerHAL to extreme esports mode",
+                "setprop debug.adreno.turbo 1; setprop vendor.mali.gpu.power_policy performance; setprop persist.vendor.game.turbo.enable 1; setprop debug.hwui.renderer vulkan; cmd power set-fixed-performance-mode-enabled true",
+                "setprop debug.adreno.turbo 0; setprop vendor.mali.gpu.power_policy default; setprop persist.vendor.game.turbo.enable 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        // 14. 100% Legal OEM Throttler Bypass (Joyose, GOS, GPA, Dar-Link)
+        TWEAKS.add(new TweakItem(
+                "oem_legal_bypass",
+                "Universal OEM Game Throttling Bypass (MIUI/HyperOS, OneUI, ColorOS, Transsion)",
+                "Safely bypasses Joyose, Samsung GOS, ColorOS GPA frame throttlers, and Transsion Dar-Link power caps",
+                "pm disable-user --user 0 com.xiaomi.joyose; pm disable-user --user 0 com.samsung.android.game.gos; pm disable-user --user 0 com.oplus.games; cmd thermalservice override-status 0",
+                "pm enable com.xiaomi.joyose; pm enable com.samsung.android.game.gos; pm enable com.oplus.games; cmd thermalservice override-status -1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        // 15. Ahead-Of-Time (AOT) DEX Speed Compilation
+        TWEAKS.add(new TweakItem(
+                "aot_dexopt_bytecode",
+                "Ahead-Of-Time (AOT) Bytecode & Shader Compilation",
+                "Forces system package manager speed compilation to eliminate in-game JIT micro-stutter and frame spikes",
+                "cmd package compile -m speed -f com.mobile.legends; cmd package compile -m speed -f com.tencent.ig; cmd package compile -m speed -f com.activision.callofduty.shooter; cmd package compile -m speed -f com.dts.freefireth; cmd package compile -m speed -f com.miHoYo.GenshinImpact",
+                "cmd package compile -m speed-profile -f com.mobile.legends",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        // 16. Android 12–16 Dynamic Performance Framework & App Standby Elevation
+        TWEAKS.add(new TweakItem(
+                "android_version_adpf_hub",
+                "Android 12–16 ADPF & App Standby Bucket Elevation",
+                "Elevates game processes to ACTIVE standby bucket and enforces Game Mode API across Android 12, 13, 14, 15, and 16",
+                "cmd game mode performance global; cmd activity set-process-limit 32; setprop persist.sys.game.fps 185; cmd power set-mode 0 1; cmd power set-mode 2 1",
+                "cmd game mode standard global",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

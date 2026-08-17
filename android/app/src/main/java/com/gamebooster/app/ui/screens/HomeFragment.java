@@ -37,6 +37,10 @@ public class HomeFragment extends Fragment {
     private TextView tvRamUsage;
     private TextView tvGamesHeader;
     private TextView tvTargetHzBadge;
+    private TextView tvSocDetectedName;
+    private TextView tvOemBypassStatus;
+    private TextView tvChipsetOemBadge;
+    private Button btnDexoptSpeedCompile;
     private Button btnTarget120;
     private Button btnTarget144;
     private Button btnTarget165;
@@ -55,6 +59,10 @@ public class HomeFragment extends Fragment {
         tvRamUsage = view.findViewById(R.id.tv_ram_usage);
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
         tvTargetHzBadge = view.findViewById(R.id.tv_home_target_hz_badge);
+        tvSocDetectedName = view.findViewById(R.id.tv_soc_detected_name);
+        tvOemBypassStatus = view.findViewById(R.id.tv_oem_bypass_status);
+        tvChipsetOemBadge = view.findViewById(R.id.tv_chipset_oem_badge);
+        btnDexoptSpeedCompile = view.findViewById(R.id.btn_dexopt_speed_compile);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
 
@@ -77,6 +85,10 @@ public class HomeFragment extends Fragment {
             });
         }
 
+        if (btnDexoptSpeedCompile != null) {
+            btnDexoptSpeedCompile.setOnClickListener(v -> handleDexoptSpeedCompile());
+        }
+
         setupTargetRateButtons();
 
         if (rvGames != null) {
@@ -92,6 +104,38 @@ public class HomeFragment extends Fragment {
         updateTargetRateUI(GameProfileAutoConfigurator.getTargetFpsHz(getContext()));
         loadAndScanGamesZeroDelay();
         return view;
+    }
+
+    private void handleDexoptSpeedCompile() {
+        if (getContext() == null) return;
+        if (com.gamebooster.app.dexopt.DexoptCompilationEngine.isCompiling()) {
+            Toast.makeText(getContext(), "⚡ Compilation in progress...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnDexoptSpeedCompile.setEnabled(false);
+        btnDexoptSpeedCompile.setText("⏳ Compiling DEX & Shaders...");
+        Toast.makeText(getContext(), "⚡ Starting AOT Speed Compilation across installed games...", Toast.LENGTH_SHORT).show();
+
+        com.gamebooster.app.dexopt.DexoptCompilationEngine.compileAllGamesSpeedAsync(getContext(), new com.gamebooster.app.dexopt.DexoptCompilationEngine.CompileCallback() {
+            @Override
+            public void onProgress(String packageName, int current, int total) {
+                if (btnDexoptSpeedCompile != null && isAdded()) {
+                    btnDexoptSpeedCompile.setText("⏳ Compiling [" + current + "/" + total + "]...");
+                }
+            }
+
+            @Override
+            public void onComplete(boolean success, String message) {
+                if (btnDexoptSpeedCompile != null && isAdded()) {
+                    btnDexoptSpeedCompile.setEnabled(true);
+                    btnDexoptSpeedCompile.setText("⚡ AOT Speed Compile (Zero In-Game JIT Stutter)");
+                }
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -172,6 +216,15 @@ public class HomeFragment extends Fragment {
         if (tvRamUsage != null) {
             DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
             tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
+        }
+
+        if (tvSocDetectedName != null) {
+            tvSocDetectedName.setText("🔥 " + com.gamebooster.app.device.DeviceDetector.getDetailedSocDescription());
+        }
+
+        if (tvOemBypassStatus != null) {
+            String oem = com.gamebooster.app.device.DeviceDetector.detectOemBrand().name();
+            tvOemBypassStatus.setText("🛡️ " + oem + " Throttling Bypass Active • Android " + android.os.Build.VERSION.RELEASE);
         }
     }
 

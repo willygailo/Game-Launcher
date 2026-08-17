@@ -73,12 +73,19 @@ public class PerformanceChannel {
             TouchLatencyChannel.enableUltraTouchResponse();
             NetworkTweaksChannel.enableLowLatencyNetwork();
             RamZramChannel.trimMemoryAndCleanCache(context);
+
+            // Dedicated Chipset Tuning & OEM Throttling Bypass
+            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, targetHz);
+            com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(context, targetHz);
+            com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(context, null, targetHz);
+
             writeAndExecuteRootTweaksScript(targetHz);
         } else {
             CpuGovernorChannel.setGovernor("schedutil");
             TouchLatencyChannel.enableUltraTouchResponse();
+            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, targetHz);
         }
-        return new ProfileResult(true, targetHz, refreshResult.message + " • Thermal protection stays active");
+        return new ProfileResult(true, targetHz, refreshResult.message + " • Full Chipset & OEM Bypass Active");
     }
 
     /** Writes and executes a root shell script to apply the maximum boost at 165Hz. */
