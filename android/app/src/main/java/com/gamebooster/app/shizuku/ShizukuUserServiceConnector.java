@@ -1,7 +1,6 @@
 package com.gamebooster.app.shizuku;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
@@ -39,7 +38,7 @@ public class ShizukuUserServiceConnector {
             .daemon(false)
             .processNameSuffix("service")
             .debuggable(BuildConfig.DEBUG)
-            .version(1);
+            .version(2);
 
     public static ShizukuUserServiceConnector getInstance() {
         return INSTANCE;
@@ -75,10 +74,71 @@ public class ShizukuUserServiceConnector {
         }
     }
 
+    public boolean isServiceConnected() {
+        return userServiceInstance != null;
+    }
+
     public String executeCommand(String command) {
+        ensureConnected();
         if (userServiceInstance == null) {
+            return ShizukuExecutor.executeShizukuCommand(command);
+        }
+        try {
+            return userServiceInstance.execCommand(command);
+        } catch (Exception e) {
+            Log.e(TAG, "RemoteException calling IUserService.execCommand", e);
+            userServiceInstance = null;
+            return ShizukuExecutor.executeShizukuCommand(command);
+        }
+    }
+
+    public boolean writeFile(String path, String content, String mode) {
+        ensureConnected();
+        if (userServiceInstance == null) {
+            ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFile(path, content, mode);
+            return res != null && res.success;
+        }
+        try {
+            return userServiceInstance.writeFile(path, content, mode);
+        } catch (Exception e) {
+            Log.e(TAG, "RemoteException calling IUserService.writeFile", e);
+            userServiceInstance = null;
+            ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFile(path, content, mode);
+            return res != null && res.success;
+        }
+    }
+
+    public String readFile(String path) {
+        ensureConnected();
+        if (userServiceInstance == null) {
+            return ShizukuFileManager.readFile(path);
+        }
+        try {
+            return userServiceInstance.readFile(path);
+        } catch (Exception e) {
+            Log.e(TAG, "RemoteException calling IUserService.readFile", e);
+            userServiceInstance = null;
+            return ShizukuFileManager.readFile(path);
+        }
+    }
+
+    public boolean deletePath(String path) {
+        ensureConnected();
+        if (userServiceInstance == null) {
+            return ShizukuFileManager.deletePath(path);
+        }
+        try {
+            return userServiceInstance.deletePath(path);
+        } catch (Exception e) {
+            Log.e(TAG, "RemoteException calling IUserService.deletePath", e);
+            userServiceInstance = null;
+            return ShizukuFileManager.deletePath(path);
+        }
+    }
+
+    private void ensureConnected() {
+        if (userServiceInstance == null && !isBinding) {
             bindService();
-            // Brief polling wait for binding to establish before falling back
             int retries = 2;
             while (userServiceInstance == null && retries > 0) {
                 try {
@@ -86,19 +146,6 @@ public class ShizukuUserServiceConnector {
                 } catch (InterruptedException ignored) {}
                 retries--;
             }
-        }
-
-        if (userServiceInstance == null) {
-            Log.w(TAG, "UserService not bound yet — falling back to ShizukuExecutor reflection path.");
-            return ShizukuExecutor.executeShizukuCommand(command);
-        }
-
-        try {
-            return userServiceInstance.execCommand(command);
-        } catch (Exception e) {
-            Log.e(TAG, "RemoteException calling IUserService.execCommand", e);
-            userServiceInstance = null; // Reset dead binder reference
-            return "ERROR: Shizuku AIDL service call failed: " + e.getMessage();
         }
     }
 }
