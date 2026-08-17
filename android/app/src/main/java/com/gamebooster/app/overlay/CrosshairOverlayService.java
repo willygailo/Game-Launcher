@@ -58,21 +58,27 @@ public class CrosshairOverlayService extends Service {
     public static void startOverlay(Context context) {
         if (context == null) return;
         setCrosshairEnabledPref(context, true);
-        Intent intent = new Intent(context, CrosshairOverlayService.class);
-        intent.setAction("ACTION_START");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
+        try {
+            Intent intent = new Intent(context, CrosshairOverlayService.class);
+            intent.setAction("ACTION_START");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
+        } catch (Throwable t) {
+            android.util.Log.e("CrosshairOverlay", "startOverlay exception: " + t.getMessage());
         }
     }
 
     public static void stopOverlay(Context context) {
         if (context == null) return;
         setCrosshairEnabledPref(context, false);
-        Intent intent = new Intent(context, CrosshairOverlayService.class);
-        intent.setAction("ACTION_STOP");
-        context.startService(intent);
+        try {
+            Intent intent = new Intent(context, CrosshairOverlayService.class);
+            intent.setAction("ACTION_STOP");
+            context.startService(intent);
+        } catch (Throwable ignored) {}
         // Also force manager hide cleanup
         CrosshairOverlayManager.forceHide(context);
     }
@@ -103,7 +109,11 @@ public class CrosshairOverlayService extends Service {
             return START_NOT_STICKY;
         }
 
-        startForeground(NOTIFICATION_ID, buildNotification());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, buildNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification());
+        }
         showOverlayView();
         return START_STICKY;
     }

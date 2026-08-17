@@ -85,11 +85,15 @@ public class FloatingOverlayService extends Service {
         setOverlayEnabledPref(context, true);
         if (isRunning) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) return;
-        Intent intent = new Intent(context, FloatingOverlayService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
+        try {
+            Intent intent = new Intent(context, FloatingOverlayService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
+        } catch (Throwable t) {
+            android.util.Log.e("FloatingOverlayService", "Failed to start overlay foreground service: " + t.getMessage());
         }
     }
 
@@ -97,8 +101,10 @@ public class FloatingOverlayService extends Service {
         if (context == null) return;
         setOverlayEnabledPref(context, false);
         if (!isRunning) return;
-        Intent intent = new Intent(context, FloatingOverlayService.class);
-        context.stopService(intent);
+        try {
+            Intent intent = new Intent(context, FloatingOverlayService.class);
+            context.stopService(intent);
+        } catch (Throwable ignored) {}
     }
 
     @Override

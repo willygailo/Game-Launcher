@@ -87,11 +87,15 @@ public class AutoGameMonitorService extends Service {
         if (context == null) return;
         setMonitorEnabledPref(context, true);
         if (isRunning) return;
-        Intent intent = new Intent(context, AutoGameMonitorService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
+        try {
+            Intent intent = new Intent(context, AutoGameMonitorService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to start AutoGameMonitorService: " + t.getMessage());
         }
     }
 
@@ -99,8 +103,10 @@ public class AutoGameMonitorService extends Service {
         if (context == null) return;
         setMonitorEnabledPref(context, false);
         if (!isRunning) return;
-        Intent intent = new Intent(context, AutoGameMonitorService.class);
-        context.stopService(intent);
+        try {
+            Intent intent = new Intent(context, AutoGameMonitorService.class);
+            context.stopService(intent);
+        } catch (Throwable ignored) {}
     }
 
     @Override
