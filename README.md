@@ -27,73 +27,7 @@
 
 Powered by the **Shizuku API (Privileged ADB UID 2000)**, it achieves full system-level and storage-level modification **without requiring bootloader unlocking or traditional root access (Zero-Root Architecture)**.
 
----
 
-## 🌟 Core Highlights & Features
-
-### 1. 📝 Built-in SetEdit Engine & Universal Cyber Terminal
-* **No 3rd-Party SetEdit App Needed:** Inspect, search, modify, and delete keys in `system`, `secure`, and `global` Android database tables directly.
-* **Storage Script File Runner:** Execute `.sh` script files directly from device storage (`/storage/emulated/0/Download/`) with auto-copy to `/data/local/tmp/` and execution via temporary root.
-* **SAF Script Picker:** Tap **`📂 Run .sh File`** in the terminal toolbar to pick and run shell tweak files with real-time logs.
-* **One-Click Quick Action Chips:** Instant presets for 0.5x UI Speed, 120-185 FPS SurfaceFlinger, ANGLE Game Driver, Deep RAM Flush, and 1000Hz Touch Slop.
-
-### 2. 🛡️ 6-Layer Deep Hardware Masking & Device Spoofer
-* **Engine Storage Hardware Injection:** Injects flagship hardware profiles (*Snapdragon 8 Elite / Adreno 840 / 24GB RAM*) directly into game configs in `/sdcard/Android/data/<pkg>/`.
-* **Android OS Game Manager:** Enforces `cmd game mode performance`, `cmd game set --fps 185`, and `device_config game_overlay`.
-* **SurfaceFlinger Refresh Locks:** Overrides display buffer limits via `service call SurfaceFlinger 1035/1036/1022`.
-* **Dynamic Property Masking:** Modifies runtime `ro.product.*`, `ro.soc.*`, `debug.hwui.renderer vulkan`, and Game Driver mappings.
-* **Deep Thermal & Anti-Throttle Bypass:** Overrides Android 12–16 thermal status to 0 (Cold/Normal) and whitelists games in Doze.
-* **Flagship Profiles:** ASUS ROG Phone 9 Pro, Vivo iQOO 15 Pro, Samsung Galaxy S26 Ultra, Xiaomi 15 Ultra, Nubia RedMagic 10 Pro+, and Apple iPhone Profiles.
-
-### 3. 🎮 10 Dedicated Game Optimization Engines
-* **Mobile Legends: Bang Bang (MLBB):** 120/144/165/185 FPS mode, Ultra refresh rate unlock, touch response acceleration.
-* **PUBG Mobile / BGMI:** 120/144/165/185 FPS UE4 CVars, FOV & camera scaling, gyro zero-delay tuning.
-* **Call of Duty: Mobile / Warzone:** 120/185 FPS presets, sensitivity curve alignment, JSON hardware profiling.
-* **Free Fire / Free Fire MAX:** High FPS mode unlocking, touch polling optimization, aim response tuning.
-* **Genshin Impact / Honkai / ZZZ:** 120/185 FPS unlock, Vulkan backend preference, expanded rendering resolution.
-* **Honor of Kings (HOK):** Ultra frame rate presets, latency reduction, frame pacing stabilization.
-* **Roblox:** FastFlags unlocked frame rate scheduler, Vulkan renderer binding.
-* **Valorant Mobile (CN / Global):** UE4 CVars, 1000Hz touch & gyro tuning, crosshair stabilizer.
-* **Farlight 84:** Solarland graphics engine unlock, low-latency touch boost.
-
-### 4. 🌐 100% Universal Compatibility
-* **All Device Brands:** Samsung, Xiaomi, POCO, Vivo, iQOO, Realme, OPPO, ASUS ROG, Infinix, TECNO, Google Pixel, Motorola, OnePlus, Sony, and more.
-* **All Chipsets:** Qualcomm Snapdragon, MediaTek Dimensity/Helio, Samsung Exynos, Google Tensor, Unisoc Tiger.
-* **Supported Android OS:** Android 12 (API 31/32), Android 13 (API 33), Android 14 (API 34), Android 15 (API 35), and Android 16 (API 36 Baklava).
-
----
-
-## 🏗️ System Architecture
-
-```
-Game-Launcher-PRO/
-├── android/
-│   ├── app/
-│   │   ├── src/main/assets/
-│   │   │   ├── scripts/          # Bundled device setup & permission scripts (.sh)
-│   │   │   └── shizuku/          # Bundled rish binary & rish_shizuku.dex runtime
-│   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/          # Refresh rate, GPU driver, and network optimizers
-│   │   │   ├── config/           # 10 dedicated per-game configuration patchers
-│   │   │   ├── device/           # Hardware capability & display detection
-│   │   │   ├── engine/           # Execution runtime & command handlers
-│   │   │   ├── games/            # Installed title scanner & launch handlers
-│   │   │   ├── shizuku/          # Shizuku Binder IPC & privileged file manager
-│   │   │   ├── spoofer/          # 6-Layer hardware identity masking & brand profiles
-│   │   │   │   └── brands/       # Flagship brand profiles (ROG, iQOO, Samsung, etc.)
-│   │   │   ├── terminal/         # Built-in Cyber Terminal & SetEdit engine
-│   │   │   └── ui/               # Cyberpunk UI activities, fragments, and adapters
-│   │   └── src/main/res/         # Modern vector icons, glassmorphism layouts
-│   └── build.gradle              # Android Build Config (API 36 / Java 17 LTS / AGP 8.7.3)
-├── platform-tools-latest-linux/  # PC ADB/Fastboot toolchain for desktop setup
-├── tools/                        # USB ADB provisioning tools
-│   ├── activate_shizuku.sh       # One-click Shizuku starter script
-│   ├── grant_permissions.sh      # Privileged permission granter
-│   └── setup_device.sh           # All-in-one onboarding script
-└── README.md
-```
-
----
 
 ## 💻 Terminal & SetEdit Command Guide
 
