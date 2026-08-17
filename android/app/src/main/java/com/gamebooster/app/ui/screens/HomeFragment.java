@@ -106,6 +106,7 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+
     private void handleDexoptSpeedCompile() {
         if (getContext() == null) return;
         if (com.gamebooster.app.dexopt.DexoptCompilationEngine.isCompiling()) {

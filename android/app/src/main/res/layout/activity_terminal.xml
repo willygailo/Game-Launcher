@@ -7,24 +7,24 @@
     android:layout_height="match_parent"
     android:background="#070A11">
 
-    <!-- 1. TOP: Terminal Header Toolbar (Cyberpunk Matrix Glass Toolbar) -->
+    <!-- 1. TOP: Terminal Header Toolbar -->
     <LinearLayout
         android:id="@+id/terminal_header_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#990E1726"
+        android:background="#CC0A1422"
         android:gravity="center_vertical"
-        android:minHeight="@dimen/terminal_header_height"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
             android:id="@+id/btn_terminal_back"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:src="@android:drawable/ic_menu_revert"
@@ -41,9 +41,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.04"
                 android:singleLine="true"
-                android:text="⚡ SHIZUKU ADB &amp; ROOT CONSOLE"
+                android:text="ROOT-ANDROID-WG — Privileged Shell"
                 android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/terminal_header_title_size"
                 android:textStyle="bold" />
@@ -313,9 +313,11 @@
         android:id="@+id/scroll_terminal_output"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#6603070E"
+        android:background="#03070E"
         android:fillViewport="true"
-        android:padding="10dp"
+        android:paddingHorizontal="10dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
         app:layout_constraintBottom_toTopOf="@id/terminal_input_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -327,11 +329,12 @@
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
             android:letterSpacing="0.02"
-            android:lineSpacingMultiplier="1.18"
+            android:lineSpacingMultiplier="1.25"
+            android:paddingBottom="16dp"
             android:textIsSelectable="true"
             android:textColor="#00FF66"
             android:textSize="@dimen/terminal_output_text_size"
-            tools:text="SHIZUKU MATRIX TERMINAL CONSOLE v2.0" />
+            tools:text="ROOT-ANDROID-WG TERMINAL v2.0" />
     </ScrollView>
 
     <!-- 4. BOTTOM: Command Input Bar (Cyber Hacker Input Dock) -->
@@ -339,11 +342,12 @@
         android:id="@+id/terminal_input_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#CC0A1220"
+        android:background="#EE07101C"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="8dp"
+        android:paddingHorizontal="10dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">

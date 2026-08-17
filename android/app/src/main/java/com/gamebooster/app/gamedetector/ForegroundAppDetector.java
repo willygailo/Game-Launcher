@@ -197,6 +197,14 @@ public class ForegroundAppDetector {
                     }
                 }
             }
+            List<GameAppInfo> targetGames = com.gamebooster.app.games.HomeGameScanner.scanTargetGames(context);
+            if (targetGames != null) {
+                for (GameAppInfo g : targetGames) {
+                    if (g.getPackageName() != null) {
+                        customInstalledGameCache.add(g.getPackageName());
+                    }
+                }
+            }
             lastCacheRefreshTime = System.currentTimeMillis();
         } catch (Throwable ignored) {}
     }

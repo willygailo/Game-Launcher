@@ -276,6 +276,12 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        AppExecutors.getInstance().executeCommand(this::restoreActiveGamingControls);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         ShizukuManager.removeStateListener(this);

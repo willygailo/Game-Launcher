@@ -179,17 +179,19 @@ public class TerminalActivity extends AppCompatActivity {
     }
 
     private void showWelcomeBanner() {
-        appendSpannedText("⚡ WG-RVS CYBER TERMINAL ENGINE v2.0\n", 0xFF00F0FF);
+        appendSpannedText("ROOT-ANDROID-WG — Privileged Shell (WG-RVS Engine v2.0)\n", 0xFF00FF66);
+        appendSpannedText("Game Launcher PRO 2.0  |  Legal Android Optimization Suite\n", 0xFF00F0FF);
+        appendSpannedText("─────────────────────────────────────────────────────\n", 0xFF1E3A5F);
 
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
         if (hasShizuku) {
-            appendSpannedText("🟢 Privilege: Elevated Shell / Temporary Root (UID 2000)\n", 0xFF00FF66);
+            appendSpannedText("[+] Privilege : Elevated Shell / Shizuku Root (UID 2000)\n", 0xFF00FF66);
         } else {
-            appendSpannedText("🟡 Privilege: Native Linux Runtime Engine (Zero-Root)\n", 0xFFFFB800);
+            appendSpannedText("[~] Privilege : Native Linux Runtime (Zero-Root Fallback)\n", 0xFFFFB800);
         }
 
-        appendSpannedText("💡 Tip: Type 'help' or 'setedit' for guide, or tap quick-action chips above.\n", 0xFF94A3B8);
-        appendSpannedText("📂 Run scripts: Type 'sh /storage/emulated/0/Download/name.sh' or tap '📂 Run .sh File'.\n\n", 0xFF64748B);
+        appendSpannedText("[?] Type 'help' or 'setedit' for guide.\n", 0xFF475569);
+        appendSpannedText("[?] Run scripts: sh /storage/emulated/0/Download/name.sh\n\n", 0xFF334155);
     }
 
     private void setupListeners() {
@@ -452,15 +454,14 @@ public class TerminalActivity extends AppCompatActivity {
 
         appendSpannedText("┌──(", 0xFF00F0FF);
         if (isShizuku) {
-            appendSpannedText("root㉿matrix", 0xFF00FF66);
+            appendSpannedText("ROOT-ANDROID-WG", 0xFF00FF66);
         } else {
-            appendSpannedText("user㉿system", 0xFFFFB800);
+            appendSpannedText("user㉿ANDROID-WG", 0xFFFFB800);
         }
-        appendSpannedText(")-[~]\n", 0xFF00F0FF);
+        appendSpannedText(")-[/system/bin]\n", 0xFF00F0FF);
 
         appendSpannedText("└─" + (isShizuku ? "# " : "$ "), isShizuku ? 0xFF00FF66 : 0xFFFFB800);
         appendSpannedText(command + "\n", 0xFFFFFFFF);
-        scrollToBottom();
     }
 
     private void appendSpannedText(String text, int color) {

@@ -403,6 +403,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnPingTest = view.findViewById(R.id.btn_ping_test);
         Button btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
         Button btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
+        Button btnDnsAdguard = view.findViewById(R.id.btn_dns_adguard);
         Button btnDnsDefault = view.findViewById(R.id.btn_dns_default);
 
         switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
@@ -440,6 +441,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
         if (btnDnsGoogle != null) {
             btnDnsGoogle.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.GOOGLE_8_8_8_8, "🌐 8.8.8.8 Google Gaming DNS Applied"));
+        }
+        if (btnDnsAdguard != null) {
+            btnDnsAdguard.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.ADGUARD_GAMING, "🛡️ AdGuard Gaming DNS (No-Lag / Ads Blocked) Applied"));
         }
         if (btnDnsDefault != null) {
             btnDnsDefault.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored"));

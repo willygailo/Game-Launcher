@@ -288,6 +288,14 @@ public class AutoGameMonitorService extends Service {
                     }
                 }
             }
+            List<GameAppInfo> targetGames = com.gamebooster.app.games.HomeGameScanner.scanTargetGames(getApplicationContext());
+            if (targetGames != null) {
+                for (GameAppInfo g : targetGames) {
+                    if (g.getPackageName() != null) {
+                        installedGamePackages.add(g.getPackageName());
+                    }
+                }
+            }
             lastGameListRefreshTime = System.currentTimeMillis();
         } catch (Throwable ignored) {}
     }

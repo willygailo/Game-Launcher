@@ -450,32 +450,41 @@ public class FloatingOverlayService extends Service {
     };
 
     private void updateMetricsText() {
-        DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
-        com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
-                com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
-        int activeFps = realTimeFps > 0 ? Math.min(165, realTimeFps) : currentHz;
+        if (!isRunning) return;
+        final int activeFps = realTimeFps > 0 ? Math.min(185, realTimeFps) : 165;
+        
+        com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
+            if (!isRunning) return;
+            DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
+            com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                    com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
+            int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
 
-        if (tvPillMetrics != null) {
-            tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
-        }
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isRunning || overlayView == null) return;
 
-        if (tvHudFps != null) {
-            tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz (Max 165)", activeFps, currentHz));
-        }
-        if (tvHudRam != null) {
-            tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
-        }
-        if (tvHudTemp != null) {
-            tvHudTemp.setText(String.format("🌡️ Battery Temp: %.1f°C", m.batteryTempC));
-        }
-        if (tvHudMa != null) {
-            if (m.batteryCurrentMa != 0) {
-                tvHudMa.setText(String.format("🔋 Power Current: %d mA", m.batteryCurrentMa));
-            } else {
-                tvHudMa.setText("🔋 Power Current: Normal");
-            }
-        }
+                if (tvPillMetrics != null) {
+                    tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
+                }
+
+                if (tvHudFps != null) {
+                    tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz (Max 185)", activeFps, currentHz));
+                }
+                if (tvHudRam != null) {
+                    tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
+                }
+                if (tvHudTemp != null) {
+                    tvHudTemp.setText(String.format("🌡️ Battery Temp: %.1f°C", m.batteryTempC));
+                }
+                if (tvHudMa != null) {
+                    if (m.batteryCurrentMa != 0) {
+                        tvHudMa.setText(String.format("🔋 Power Current: %d mA", m.batteryCurrentMa));
+                    } else {
+                        tvHudMa.setText("🔋 Power Current: Normal");
+                    }
+                }
+            });
+        });
     }
 
     private void setupTicker() {

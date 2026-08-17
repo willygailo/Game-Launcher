@@ -36,18 +36,21 @@ public class NetworkOptimizer {
     }
 
     public enum DnsMode {
-        CLOUDFLARE_1_1_1_1("1.1.1.1", "1.0.0.1", "one.one.one.one"),
-        GOOGLE_8_8_8_8("8.8.8.8", "8.8.4.4", "dns.google"),
-        SYSTEM_DEFAULT("default", "default", "off");
+        CLOUDFLARE_1_1_1_1("1.1.1.1", "1.0.0.1", "one.one.one.one", "Cloudflare 1.1.1.1 (Gaming Edge)"),
+        GOOGLE_8_8_8_8("8.8.8.8", "8.8.4.4", "dns.google", "Google 8.8.8.8 (Global CDN)"),
+        ADGUARD_GAMING("94.140.14.14", "94.140.15.15", "dns.adguard-dns.com", "AdGuard Gaming (No-Lag / Ads Blocked)"),
+        SYSTEM_DEFAULT("default", "default", "off", "System Default (ISP)");
 
         public final String primary;
         public final String secondary;
         public final String privateDnsHost;
+        public final String displayName;
 
-        DnsMode(String primary, String secondary, String privateDnsHost) {
+        DnsMode(String primary, String secondary, String privateDnsHost, String displayName) {
             this.primary = primary;
             this.secondary = secondary;
             this.privateDnsHost = privateDnsHost;
+            this.displayName = displayName;
         }
     }
 
