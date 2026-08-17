@@ -4,101 +4,93 @@
 
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
-[![Android Platform](https://img.shields.io/badge/Platform-Android%2012--16%20(API%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v14.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
-[![Shizuku Privileged](https://img.shields.io/badge/Privileged-Shizuku%20Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
+# 🎮 GAME LAUNCHER PRO — ULTIMATE GAMING SUITE
+### *Unlock Extreme 185 FPS • Zero-Root Hardware Masking • Low Latency Touch Engine*
 
-[![GitHub Profile](https://img.shields.io/badge/GitHub-willygailo-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/willygailo)
-&nbsp;
-[![Facebook Profile](https://img.shields.io/badge/Facebook-Willy%20Gailo-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+[![Release](https://img.shields.io/badge/Release-v14.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Android Support](https://img.shields.io/badge/Android-12--16%20(API%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
+[![License](https://img.shields.io/badge/License-MIT-FFB703?style=for-the-badge)](#)
 
-**The Ultimate Low-Latency Gaming Optimization, Hardware Masking & Universal SetEdit Terminal Suite for Android 12 through Android 16 (Baklava).**
-
-[📥 Download Latest Release](https://github.com/willygailo/Game-Launcher/releases) • [🐛 Report Bug / Feature Request](https://github.com/willygailo/Game-Launcher/issues)
+[📥 **Download Latest APK (v14.0.0-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features--capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🚀 **Quick Setup**](#-quick-start-guide)
 
 </div>
 
 ---
 
-## ⚡ Overview
+## 🌟 Highlights
 
-**Game Launcher PRO** is an enterprise-grade mobile gaming engine designed to eliminate frame pacing jitter, enforce unlocked display refresh rates (up to **185Hz Extreme Gaming Mode**), mask hardware signatures across all target game engines, and provide an integrated **SetEdit Terminal Engine** for complete low-level Android database control.
+Transform your Android device into a dedicated flagship gaming powerhouse. Powered by the **Shizuku Privileged Engine (UID 2000)**, Game Launcher PRO unlocks native graphics limits, stabilizes frame pacing, and eliminates thermal throttling without requiring root or risking account security.
 
-Powered by the **Shizuku API (Privileged ADB UID 2000)**, it achieves full system-level and storage-level modification **without requiring bootloader unlocking or traditional root access (Zero-Root Architecture)**.
-
-
-
-## 💻 Terminal & SetEdit Command Guide
-
-The built-in Cyber Terminal accepts standard Linux shell commands, Android `settings`, `device_config`, `setprop`, and custom `setedit` syntax:
-
-### SetEdit Commands:
-```bash
-# Put / Edit database values:
-setedit put system peak_refresh_rate 120
-setedit put global window_animation_scale 0.5
-setedit put global game_driver_all_apps 1
-
-# Inspect / Get database values:
-setedit get system peak_refresh_rate
-
-# Search across all tables (System, Secure, Global):
-setedit search refresh
-
-# List table contents:
-setedit list system
-setedit list global
 ```
-
-### Storage Script Execution:
-```bash
-# Execute from storage path:
-sh /storage/emulated/0/Download/custom_boost.sh
-
-# Shortcut (Auto-searches /sdcard/Download/):
-run my_tweak.sh
-```
-
-### Hardware & Low-Level Properties:
-```bash
-setprop debug.egl.hw 1
-setprop debug.sf.hw 1
-setprop debug.hwui.renderer vulkan
-getprop ro.product.model
+⚡ 185Hz Extreme ROG Mode  •  🎭 5-Layer Flagship Masking  •  🎯 1000Hz Ultra Touch  •  🛡️ 100% Safe & Zero-Root
 ```
 
 ---
 
-## 📥 Installation & Setup
+## ✨ Features & Capabilities
 
-### Method 1: On-Device Quick Start (Recommended)
-1. Download **`Game_Space.apk`** from the [Releases](https://github.com/willygailo/Game-Launcher/releases) page.
-2. Install and launch **[Shizuku](https://shizuku.rikka.app/)** on your device (via Wireless Debugging or ADB).
-3. Open **Game Launcher PRO** and grant Shizuku permission when prompted.
-4. Select your game and apply flagship masking, custom FPS locks, or run terminal tweaks.
+### ⚡ 1. Extreme 185Hz / 165Hz / 120Hz Display Lock
+* **SurfaceFlinger Binder Overrides**: Directly syncs display hardware to extreme refresh rates (**185Hz, 165Hz, 144Hz, 120Hz, 90Hz**).
+* **Android 14–16 Game Mode API**: Automates `cmd game mode performance` and sets dynamic app refresh rate targets.
 
-### Method 2: Automated PC / USB Setup
-Connect your device to your PC via USB with **USB Debugging** enabled, then run:
+### 🎭 2. Flagship Device Identity Spoofer
+* **Pre-configured Elite Presets**:
+  * 🔴 **ASUS ROG Phone 9 Pro** *(Snapdragon 8 Elite / 24GB RAM / 185Hz)*
+  * 🌌 **Samsung Galaxy S26 Ultra** *(Snapdragon 8 Elite / Adreno 840)*
+  * ⚡ **REDMAGIC 10 Pro+** *(185Hz eSports Edition)*
+  * ⚡ **Vivo iQOO 15 Pro** *(Dimensity 9400 / Immortalis-G925)*
+  * 🐉 **Xiaomi 15 Ultra** *(Vulkan Ultra Gaming)*
+* **Storage & ProcFS Masking**: Seamlessly bypasses in-game device whitelists to unlock ultra graphics options in in-game settings.
 
-```bash
-# Complete setup (Installs APK, grants permissions, and starts Shizuku):
-./tools/setup_device.sh
+### 🎯 3. Zero-Delay Touch & Esports Engine
+* **1000Hz Touch & Gyro Polling**: Reduces input lag to absolute minimum.
+* **AOT Speed Pre-compilation**: Eliminates in-game micro-stutter by compiling game dex files ahead-of-time.
+* **Low Latency Wi-Fi Mode**: Prioritizes gaming packets for ultra-stable ping.
 
-# Or run individual scripts:
-./tools/grant_permissions.sh   # Grants WRITE_SECURE_SETTINGS, DUMP, etc.
-./tools/activate_shizuku.sh    # Starts Shizuku privileged service
-```
+### 💻 4. Built-in Cyber SetEdit & Terminal Engine
+* Modify Android `system`, `secure`, and `global` table properties on the fly.
+* Run custom `.sh` optimization scripts with one-tap shortcuts.
 
 ---
 
-## 🤝 Connect & Developer
+## 🎮 Supported Esports Titles
+
+| Game Title | Supported Features |
+| :--- | :--- |
+| **PUBG Mobile / BGMI** *(All Versions)* | 90 / 120 / 185 FPS Unlock, Multithreaded Vulkan, Ultra MSAA |
+| **Mobile Legends: Bang Bang** | 120 / 185 FPS Mode, Ultra Outline, Super Sampling, Zero Slop Touch |
+| **Call of Duty: Mobile & Warzone** | Ultra 185 FPS Mode, Realtime Shadows, Low Latency Gyro |
+| **Free Fire & Free Fire MAX** | 185Hz High Freq Touch, Aim Assist Response, FPS Boost |
+| **Genshin Impact & Wuthering Waves** | Max Graphics & Frame Rate Whitelist, Vulkan Driver Routing |
+| **Delta Force & Valorant Mobile** | UE4 / UE5 High FPS Configuration, Frame Rate Limit Removal |
+| **CarX Street & Farlight 84** | Solarland & CarX High Dynamic Range, 185Hz Engine Optimization |
+| **Roblox & Honor of Kings** | FastFlags 185 FPS Override, 1000Hz Gyro / Touch Sync |
+
+---
+
+## 🚀 Quick Start Guide
+
+### 📱 3 Easy Steps:
+
+1. **Download APK**:
+   * Get the latest [**`Game_Space.apk`**](https://github.com/willygailo/Game-Launcher/releases/latest) from Releases.
+2. **Activate Shizuku**:
+   * Open [**Shizuku**](https://shizuku.rikka.app/) and start it via **Wireless Debugging** (no PC needed).
+3. **Launch & Boost**:
+   * Open **Game Launcher PRO**, grant Shizuku permission, select your favorite game, and enjoy ultra-smooth gameplay!
+
+---
+
+## 🤝 Connect & Socials
 
 <div align="center">
 
-[![GitHub](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo)
+[![GitHub Profile](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo)
 &nbsp;&nbsp;
-[![Facebook](https://img.shields.io/badge/Facebook-Willy%20Jr%20Carnasa%20Gailo-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+[![Facebook Profile](https://img.shields.io/badge/Facebook-Willy%20Jr%20Carnasa%20Gailo-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+
+⭐ **If you love this project, don't forget to give it a star on GitHub!** ⭐
 
 </div>
 
@@ -106,4 +98,4 @@ Connect your device to your PC via USB with **USB Debugging** enabled, then run:
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
