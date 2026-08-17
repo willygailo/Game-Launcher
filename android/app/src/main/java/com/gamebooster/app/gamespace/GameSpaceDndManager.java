@@ -41,8 +41,11 @@ public class GameSpaceDndManager {
             CommandExecutor.executeSystemCommand(headsUpCmd);
         }
 
-        // 2. Toggle system DND if notification policy permission is granted
+        // 2. Toggle system DND via Shizuku or NotificationManager policy
         try {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand("cmd notification set_zen_mode " + (enable ? "1" : "0"));
+            }
             NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (nm.isNotificationPolicyAccessGranted()) {

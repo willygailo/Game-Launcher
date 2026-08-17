@@ -75,7 +75,15 @@ public class GameProfileAutoConfigurator {
         // 5. Auto-patch and create game configuration files for target FPS/Hz
         GameConfigPatcher.applyGameFpsPatch(packageName, forcedFpsHz);
 
-        // 6. Apply Competitive CFG Profile
+        // 6. Apply Chipset Turbo, OEM Bypass, and Version-Specific optimizers
+        com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, forcedFpsHz);
+        com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(context, forcedFpsHz);
+        com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(context, packageName, forcedFpsHz);
+
+        // 7. Background Ahead-Of-Time (AOT) Speed Compilation to eradicate JIT micro-stutter
+        com.gamebooster.app.dexopt.DexoptCompilationEngine.compileGameSpeedAsync(packageName, null);
+
+        // 8. Apply Competitive CFG Profile
         String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
                          packageName.contains("pubg") || packageName.contains("tencent.ig") || pkgContains(packageName, "imobile", "vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
                          packageName.contains("cod") || packageName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM :

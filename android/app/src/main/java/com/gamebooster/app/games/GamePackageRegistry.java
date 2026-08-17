@@ -90,13 +90,12 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.ea.gp.fifamobile", new GameInfoSpec("EA SPORTS FC Mobile", "Sports", 185));
         KNOWN_GAMES.put("com.garena.game.fdtw", new GameInfoSpec("Speed Drifters (Garena)", "Racing", 185));
         KNOWN_GAMES.put("com.gameloft.anmp.android.glofta9hm", new GameInfoSpec("Asphalt 9: Legends", "Racing", 185));
-        KNOWN_GAMES.put("com.h20.carxstreet", new GameInfoSpec("CarX Street", "Racing", 185));
-
-        // Supercell Hits
-        KNOWN_GAMES.put("com.supercell.brawlstars", new GameInfoSpec("Brawl Stars", "Action", 185));
-        KNOWN_GAMES.put("com.supercell.clashroyale", new GameInfoSpec("Clash Royale", "Strategy", 185));
-        KNOWN_GAMES.put("com.supercell.clashofclans", new GameInfoSpec("Clash of Clans", "Strategy", 185));
-        KNOWN_GAMES.put("com.supercell.squad", new GameInfoSpec("Squad Busters", "Action", 185));
+        // Tactical FPS, Open World & Racing Competitors
+        KNOWN_GAMES.put("com.proximabeta.mf.uamo", new GameInfoSpec("Delta Force: Hawk Ops", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.kurogame.wutheringwaves.global", new GameInfoSpec("Wuthering Waves", "Action RPG", 185));
+        KNOWN_GAMES.put("com.carxtech.sr", new GameInfoSpec("CarX Street (Global)", "Racing", 185));
+        KNOWN_GAMES.put("com.riotgames.league.teamfighttactics", new GameInfoSpec("TFT: Teamfight Tactics", "Strategy", 185));
+        KNOWN_GAMES.put("com.ea.gp.apexlegendsmobilecms", new GameInfoSpec("Apex Legends Mobile", "Battle Royale", 185));
     }
 
     public static boolean isKnownGame(String packageName) {

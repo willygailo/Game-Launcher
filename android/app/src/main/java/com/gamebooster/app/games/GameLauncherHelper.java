@@ -45,13 +45,15 @@ public class GameLauncherHelper {
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
-                int targetFps = 165;
+                int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
+                if (targetFps <= 0) targetFps = 185;
+
                 GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(165);
+                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetFps);
                 com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName,
-                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.MODE_165HZ);
+                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.fromFps(targetFps));
                 PerformanceChannel.applyProfile(context, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(165);
+                PerformanceChannel.writeAndExecuteRootTweaksScript(targetFps);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
                 com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
             } catch (Throwable ignored) {}
