@@ -1,5 +1,4 @@
 package com.gamebooster.app.ui.screens;
-import com.gamebooster.app.config.*;
 
 import android.graphics.Color;
 import android.os.Build;
@@ -7,10 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
@@ -22,13 +21,17 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.google.android.material.tabs.TabLayout;
 
 public class MainActivity extends AppCompatActivity implements ShizukuManager.ShizukuStateListener {
 
+    private static final String TAG = "MainActivity";
     private static final String KEY_SELECTED_TAB = "SELECTED_TAB_INDEX";
     private int currentTabIndex = 0;
+    private long lastBackPressTime = 0;
 
     private static final String[] TAB_TITLES = {
             "HOME",
@@ -57,6 +60,26 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         // Edge-to-edge support for Android 13, 14, 15, 16
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
+
+        // Predictive Back Gesture & Double-Tap Exit Protection (Fix Auto-Back Issue)
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (currentTabIndex != 0) {
+                    // Navigate back to HOME tab first if on SETTINGS
+                    selectTab(0);
+                    return;
+                }
+
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastBackPressTime < 2000) {
+                    finish();
+                } else {
+                    lastBackPressTime = currentTime;
+                    Toast.makeText(MainActivity.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         // Handle System Insets (Status bar, Camera Notch & Gesture Navigation Bar across all 4 edges)
         View rootLayout = findViewById(R.id.main_root_layout);
@@ -90,9 +113,11 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
 
-        // Initialize saved tweak states and restore active tweaks
-        TweakManagerRepository.initializeStates(this);
-        TweakManagerRepository.restoreAppliedTweaksAsync(this);
+        // Initialize saved tweak states and restore active tweaks in background
+        AppExecutors.getInstance().executeCommand(() -> {
+            TweakManagerRepository.initializeStates(getApplicationContext());
+            TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
+        });
 
         // Request runtime notification permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -106,19 +131,18 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
         });
 
-        // Bind Shizuku AIDL UserService & Auto-Grant Privileges
-        try {
-            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
-            if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuManager.requestShizukuPermission();
-            } else if (ShizukuExecutor.hasShizukuPermission()) {
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
-                    com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
-                });
-            }
-        } catch (Throwable ignored) {}
+        // Bind Shizuku AIDL UserService & Auto-Grant Privileges in background
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
+                if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuManager.requestShizukuPermission();
+                } else if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+                    ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
+                }
+            } catch (Throwable ignored) {}
+        });
 
         // Restore active Esports Gaming Controls & Precision Aim on startup
         restoreActiveGamingControls();
@@ -203,10 +227,10 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 if (sm.isDeviceTuned() && ShizukuExecutor.hasShizukuPermission()) {
                     com.gamebooster.app.core.profile.ProfileManager pm = new com.gamebooster.app.core.profile.ProfileManager(this);
                     sm.applyProfile(pm.getGeneralGamingProfile());
-                    Log.i("MainActivity", "🎯 Restored Precision Aim Input & Gyro Tuner on startup");
+                    Log.i(TAG, "🎯 Restored Precision Aim Input & Gyro Tuner on startup");
                 }
             } catch (Throwable t) {
-                Log.e("MainActivity", "Error restoring gaming controls", t);
+                Log.e(TAG, "Error restoring gaming controls", t);
             }
         });
     }
@@ -233,14 +257,11 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (!alive) {
                 Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System & Storage Privileges...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "⚡ Shizuku Connected — Privileges Active", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
+                    ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                     restoreActiveGamingControls();
-                    AppExecutors.getInstance().postToMainThread(() ->
-                            Toast.makeText(getApplicationContext(), "⚡ All Storage & System Permissions Active!", Toast.LENGTH_SHORT).show());
                 });
             }
         });

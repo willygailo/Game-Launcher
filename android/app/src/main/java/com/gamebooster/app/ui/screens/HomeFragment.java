@@ -102,7 +102,7 @@ public class HomeFragment extends Fragment {
 
         updateStatusStrip();
         updateTargetRateUI(GameProfileAutoConfigurator.getTargetFpsHz(getContext()));
-        loadAndScanGamesZeroDelay();
+        loadAndScanGamesAsync();
         return view;
     }
 
@@ -143,7 +143,7 @@ public class HomeFragment extends Fragment {
         super.onResume();
         updateStatusStrip();
         updateTargetRateUI(GameProfileAutoConfigurator.getTargetFpsHz(getContext()));
-        loadAndScanGamesZeroDelay();
+        loadAndScanGamesAsync();
     }
 
     private void setupTargetRateButtons() {
@@ -170,7 +170,7 @@ public class HomeFragment extends Fragment {
         GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, (count, fps) -> {
             if (!isAdded() || getContext() == null) return;
             Toast.makeText(getContext(), "✅ " + fps + " FPS/Hz applied to " + count + " games & display!", Toast.LENGTH_SHORT).show();
-            loadAndScanGamesZeroDelay();
+            loadAndScanGamesAsync();
         });
     }
 
@@ -206,58 +206,73 @@ public class HomeFragment extends Fragment {
 
     private void updateStatusStrip() {
         if (getContext() == null) return;
+        final Context ctx = getContext().getApplicationContext();
 
-        EngineMode engineMode = CommandExecutor.getActiveEngineMode();
-        if (tvEngineMode != null) {
-            tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
-            tvEngineMode.setTextColor(engineMode.getColorHex());
-        }
-
-        if (tvRamUsage != null) {
-            DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
-            tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
-        }
-
-        if (tvSocDetectedName != null) {
-            tvSocDetectedName.setText("🔥 " + com.gamebooster.app.device.DeviceDetector.getDetailedSocDescription());
-        }
-
-        if (tvOemBypassStatus != null) {
+        AppExecutors.getInstance().executeScan(() -> {
+            EngineMode engineMode = CommandExecutor.getActiveEngineMode();
+            DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(ctx);
+            String socDesc = com.gamebooster.app.device.DeviceDetector.getDetailedSocDescription();
             String oem = com.gamebooster.app.device.DeviceDetector.detectOemBrand().name();
-            tvOemBypassStatus.setText("🛡️ " + oem + " Throttling Bypass Active • Android " + android.os.Build.VERSION.RELEASE);
-        }
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+
+                if (tvEngineMode != null) {
+                    tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
+                    tvEngineMode.setTextColor(engineMode.getColorHex());
+                }
+
+                if (tvRamUsage != null) {
+                    tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
+                }
+
+                if (tvSocDetectedName != null) {
+                    tvSocDetectedName.setText("🔥 " + socDesc);
+                }
+
+                if (tvOemBypassStatus != null) {
+                    tvOemBypassStatus.setText("🛡️ " + oem + " Throttling Bypass Active • Android " + android.os.Build.VERSION.RELEASE);
+                }
+            });
+        });
     }
 
     /**
-     * Zero-Delay Architecture:
-     * 1. Synchronously perform fast ML/PUBG/CODM target scan (~10ms)
-     * 2. Update UI instantly with zero flicker
+     * High-speed non-blocking asynchronous game scanner:
+     * 1. Performs targeted app detection in background thread
+     * 2. Posts results to UI thread cleanly without ANY ANR / freezing
      */
-    private void loadAndScanGamesZeroDelay() {
-        if (getContext() == null || rvGames == null) return;
+    private void loadAndScanGamesAsync() {
+        if (getContext() == null) return;
+        final Context ctx = getContext().getApplicationContext();
 
-        // Fast target scan (scans ONLY MLBB, PUBG, CODM packages directly)
-        List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(getContext());
+        AppExecutors.getInstance().executeScan(() -> {
+            List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(ctx);
 
-        gameList.clear();
-        gameList.addAll(scannedGames);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
 
-        if (adapter != null) {
-            adapter.updateList(scannedGames);
-        }
+                gameList.clear();
+                gameList.addAll(scannedGames);
 
-        // Update header count
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
-        }
+                if (adapter != null) {
+                    adapter.updateList(scannedGames);
+                }
 
-        // Toggle empty state vs games list
-        if (scannedGames.isEmpty()) {
-            rvGames.setVisibility(View.GONE);
-            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
-        } else {
-            rvGames.setVisibility(View.VISIBLE);
-            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
-        }
+                // Update header count
+                if (tvGamesHeader != null) {
+                    tvGamesHeader.setText("SUPPORTED GAMES (" + scannedGames.size() + " DETECTED)");
+                }
+
+                // Toggle empty state vs games list
+                if (scannedGames.isEmpty()) {
+                    if (rvGames != null) rvGames.setVisibility(View.GONE);
+                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
+                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+                }
+            });
+        });
     }
 }

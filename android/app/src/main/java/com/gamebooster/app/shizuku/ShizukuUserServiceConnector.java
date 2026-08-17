@@ -139,13 +139,6 @@ public class ShizukuUserServiceConnector {
     private void ensureConnected() {
         if (userServiceInstance == null && !isBinding) {
             bindService();
-            int retries = 2;
-            while (userServiceInstance == null && retries > 0) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException ignored) {}
-                retries--;
-            }
         }
     }
 }

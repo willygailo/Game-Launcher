@@ -15,7 +15,7 @@ public class AppExecutors {
     private final Handler mainThread;
 
     private AppExecutors() {
-        this.commandIO = Executors.newSingleThreadExecutor();
+        this.commandIO = Executors.newFixedThreadPool(4);
         this.scanIO = Executors.newFixedThreadPool(2);
         this.mainThread = new Handler(Looper.getMainLooper());
     }
@@ -25,14 +25,20 @@ public class AppExecutors {
     }
 
     public void executeCommand(Runnable runnable) {
-        commandIO.execute(runnable);
+        if (runnable != null) {
+            commandIO.execute(runnable);
+        }
     }
 
     public void executeScan(Runnable runnable) {
-        scanIO.execute(runnable);
+        if (runnable != null) {
+            scanIO.execute(runnable);
+        }
     }
 
     public void postToMainThread(Runnable runnable) {
-        mainThread.post(runnable);
+        if (runnable != null) {
+            mainThread.post(runnable);
+        }
     }
 }

@@ -120,21 +120,10 @@
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
-
-                <Button
-                    android:id="@+id/btn_open_settings"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:padding="0dp"
-                    android:text="⚙️ SYSTEM APP SETTINGS"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
             </LinearLayout>
 
 
-            <!-- CARD 2: ESPORTS GAMING CONTROLS -->
+            <!-- CARD 2: ESPORTS GAMING CONTROLS & JANK PURGE -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -194,7 +183,7 @@
                     android:layout_height="44dp"
                     android:layout_marginTop="12dp"
                     android:background="@drawable/btn_cyber_dark"
-                    android:text="🧹 CLEAN GAME STORAGE &amp; SHADERS"
+                    android:text="🧹 PURGE JANK &amp; CLEAR ALL CACHES"
                     android:textColor="@color/accent_neon_green"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -277,7 +266,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- CARD 3: HARDWARE ENGINE & PERFORMANCE PRESETS -->
+            <!-- CARD 3: HARDWARE & DRIVER ENGINES -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -289,83 +278,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚡ HARDWARE ENGINE &amp; PERFORMANCE PRESETS"
+                    android:text="⚡ HARDWARE &amp; DRIVER ENGINES"
                     android:textColor="@color/accent_neon_green"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_apply_185_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🚀 ROG\n185Hz"
-                        android:textColor="@color/accent_purple"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_apply_pubg_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🔥 MAX\n165Hz"
-                        android:textColor="@color/accent_red"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_apply_144_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🎮 PRO\n144Hz"
-                        android:textColor="@color/accent_cyan"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_apply_2d_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="⚡ HIGH\n120Hz"
-                        android:textColor="@color/accent_neon_green"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_apply_balanced_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="⚖️ BAL\n90Hz"
-                        android:textColor="@color/accent_amber"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
 
                 <Switch
                     android:id="@+id/switch_angle_mode"

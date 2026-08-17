@@ -229,15 +229,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnCleanCaches.setOnClickListener(v -> {
                 if (getContext() == null) return;
                 btnCleanCaches.setEnabled(false);
-                Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & Storage Caches...", Toast.LENGTH_SHORT).show();
+                btnCleanCaches.setText("⏳ Purging Jank & Caches...");
+                Toast.makeText(getContext(), "🧹 Starting 1-Tap Legal Jank & Cache Elimination...", Toast.LENGTH_SHORT).show();
 
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = com.gamebooster.app.gamespace.GameCacheCleaner.performDeepGameCacheClean(getContext());
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnCleanCaches.setEnabled(true);
-                        Toast.makeText(getContext(), ok ? "🧹 Game Storage & Shaders Cleaned!" : "Cache Clean Complete", Toast.LENGTH_SHORT).show();
-                    });
+                com.gamebooster.app.gamespace.JankAndCacheCleanerEngine.cleanJankAndCacheAsync(getContext(), new com.gamebooster.app.gamespace.JankAndCacheCleanerEngine.CleanCallback() {
+                    @Override
+                    public void onProgress(String message) {
+                        if (isAdded() && getContext() != null && btnCleanCaches != null) {
+                            btnCleanCaches.setText(message);
+                        }
+                    }
+
+                    @Override
+                    public void onComplete(boolean success, String summary) {
+                        if (isAdded() && getContext() != null && btnCleanCaches != null) {
+                            btnCleanCaches.setEnabled(true);
+                            btnCleanCaches.setText("🧹 PURGE JANK & CLEAR ALL CACHES");
+                            Toast.makeText(getContext(), summary, Toast.LENGTH_LONG).show();
+                        }
+                    }
                 });
             });
         }
@@ -293,33 +303,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         updatePrecisionAimStatus();
 
-        // Card 3: Hardware Engine & Performance Presets
-        Button btnRog185 = view.findViewById(R.id.btn_apply_185_profile);
-        Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
-        Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
-        Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
-        Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
-
+        // Card 3: Hardware & Driver Engines
         switchAngleMode = view.findViewById(R.id.switch_angle_mode);
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
-
-        if (btnRog185 != null) {
-            btnRog185.setOnClickListener(v -> applyPresetProfile(btnRog185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🚀 Executed: 185Hz ROG Extreme Profile"));
-        }
-        if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & Extreme Profile"));
-        }
-        if (btnPro144 != null) {
-            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 144, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
-        }
-        if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 120, "⚡ Executed: 120Hz Lock & High Gaming Profile"));
-        }
-        if (btnBalanced != null) {
-            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, 90, "⚖️ Executed: 90Hz Lock & Balanced Profile"));
-        }
 
         if (getContext() != null) {
             if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
@@ -703,21 +691,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (isAdded() && getContext() != null) {
                     Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                 }
-            });
-        });
-    }
-
-    private void applyPresetProfile(Button button, PerformanceChannel.Profile profile, int targetHz, String successMsg) {
-        if (getContext() == null || button == null) return;
-        button.setEnabled(false);
-        Toast.makeText(getContext(), "Applying " + targetHz + "Hz performance profile to all games & display...", Toast.LENGTH_SHORT).show();
-        AppExecutors.getInstance().executeCommand(() -> {
-            boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
-            GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, null);
-            AppExecutors.getInstance().postToMainThread(() -> {
-                if (!isAdded() || getContext() == null) return;
-                button.setEnabled(true);
-                Toast.makeText(getContext(), ok ? successMsg : "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
             });
         });
     }
