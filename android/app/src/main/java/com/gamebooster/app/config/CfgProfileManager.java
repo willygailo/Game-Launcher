@@ -106,6 +106,23 @@ public class CfgProfileManager {
             "com.farlightgames.farlight84.global"
     );
 
+    private static final List<String> DELTAFORCE_PACKAGES = Arrays.asList(
+            "com.proximabeta.mf.uamo"
+    );
+
+    private static final List<String> WUTHERING_PACKAGES = Arrays.asList(
+            "com.kurogame.wutheringwaves.global"
+    );
+
+    private static final List<String> CARX_PACKAGES = Arrays.asList(
+            "com.carxtech.sr",
+            "com.h20.carxstreet"
+    );
+
+    private static final List<String> APEX_PACKAGES = Arrays.asList(
+            "com.ea.gp.apexlegendsmobilecms"
+    );
+
     // ─── Save / Load ─────────────────────────────────────────────────────────
 
     /** Saves a competitive profile to SharedPreferences. */
@@ -300,6 +317,38 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 FarlightConfigPatcher.applyRecoilControlConfig(pkg);
             }
+        } else if (CompetitiveCfgProfile.GAME_DELTAFORCE.equals(key)) {
+            result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                ValorantConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                ValorantConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_WUTHERING.equals(key)) {
+            result = GenshinConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                GenshinConfigPatcher.applySuperFastTouch(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_CARX.equals(key)) {
+            result = FarlightConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                FarlightConfigPatcher.applySuperFastTouch(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_APEX.equals(key)) {
+            result = PubgConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                PubgConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                PubgConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                PubgConfigPatcher.applyRecoilControlConfig(pkg);
+            }
         } else {
             // GAME_ALL: patch all target games with this profile
             result  = MlbbConfigPatcher.patchCompetitive(pkg, fps);
@@ -327,15 +376,19 @@ public class CfgProfileManager {
 
     private static List<String> getPackagesForKey(String gameKey) {
         switch (gameKey) {
-            case CompetitiveCfgProfile.GAME_MLBB:     return MLBB_PACKAGES;
-            case CompetitiveCfgProfile.GAME_PUBGM:    return PUBGM_PACKAGES;
-            case CompetitiveCfgProfile.GAME_CODM:     return CODM_PACKAGES;
-            case CompetitiveCfgProfile.GAME_FREEFIRE: return FREEFIRE_PACKAGES;
-            case CompetitiveCfgProfile.GAME_GENSHIN:  return GENSHIN_PACKAGES;
-            case CompetitiveCfgProfile.GAME_HOK:      return HOK_PACKAGES;
-            case CompetitiveCfgProfile.GAME_ROBLOX:   return ROBLOX_PACKAGES;
-            case CompetitiveCfgProfile.GAME_VALORANT: return VALORANT_PACKAGES;
-            case CompetitiveCfgProfile.GAME_FARLIGHT: return FARLIGHT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_MLBB:       return MLBB_PACKAGES;
+            case CompetitiveCfgProfile.GAME_PUBGM:      return PUBGM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_CODM:       return CODM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FREEFIRE:   return FREEFIRE_PACKAGES;
+            case CompetitiveCfgProfile.GAME_GENSHIN:    return GENSHIN_PACKAGES;
+            case CompetitiveCfgProfile.GAME_HOK:        return HOK_PACKAGES;
+            case CompetitiveCfgProfile.GAME_ROBLOX:     return ROBLOX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_VALORANT:   return VALORANT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FARLIGHT:   return FARLIGHT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_DELTAFORCE: return DELTAFORCE_PACKAGES;
+            case CompetitiveCfgProfile.GAME_WUTHERING:  return WUTHERING_PACKAGES;
+            case CompetitiveCfgProfile.GAME_CARX:       return CARX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_APEX:       return APEX_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
                 List<String> all = new java.util.ArrayList<>();
                 all.addAll(MLBB_PACKAGES);
@@ -347,6 +400,10 @@ public class CfgProfileManager {
                 all.addAll(ROBLOX_PACKAGES);
                 all.addAll(VALORANT_PACKAGES);
                 all.addAll(FARLIGHT_PACKAGES);
+                all.addAll(DELTAFORCE_PACKAGES);
+                all.addAll(WUTHERING_PACKAGES);
+                all.addAll(CARX_PACKAGES);
+                all.addAll(APEX_PACKAGES);
                 return all;
             default: return new java.util.ArrayList<>();
         }

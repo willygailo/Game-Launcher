@@ -273,7 +273,7 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Patches Active.sav binary savegame file directly using byte manipulation in Shizuku temporary root.
+     * Patches Active.sav binary savegame file directly using in-memory byte manipulation in Shizuku temporary root.
      * Enforces FPSLevel, BattleFPS, and LobbyFPS to target levels (10=185fps, 9=165fps, 8=144fps, 7=120fps).
      */
     public static void patchActiveSavBinary(String pkg, int targetFps) {
@@ -285,6 +285,31 @@ public class PubgConfigPatcher {
         };
         for (String sav : savPaths) {
             ensureDirectory(sav);
+            byte[] data = ShizukuFileManager.readBytes(sav);
+            if (data != null && data.length > 32) {
+                boolean modified = false;
+                String[] keys = {"FPSLevel", "BattleFPS", "LobbyFPS", "ShadowQuality", "HDRMode"};
+                for (String key : keys) {
+                    byte[] keyBytes = key.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+                    int idx = indexOfBytes(data, keyBytes, 0);
+                    while (idx != -1) {
+                        int valOffset = idx + keyBytes.length;
+                        for (int o = valOffset; o < Math.min(valOffset + 32, data.length); o++) {
+                            if (data[o] >= 1 && data[o] <= 10) {
+                                data[o] = (byte) fpsLevel;
+                                modified = true;
+                                break;
+                            }
+                        }
+                        idx = indexOfBytes(data, keyBytes, idx + keyBytes.length);
+                    }
+                }
+                if (modified) {
+                    ShizukuFileManager.uploadBytes(sav, data, "666");
+                }
+            }
+
+            // Shell fallback stream
             String hexByte = String.format("%02x", fpsLevel);
             String cmd = "if [ -f " + sav + " ]; then " +
                          "sed -i 's/FPSLevel.*/FPSLevel\\x00\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\" + hexByte + "/g' " + sav + " 2>/dev/null; " +
@@ -299,6 +324,21 @@ public class PubgConfigPatcher {
             }
         }
         Log.i(TAG, "PUBGM Active.sav binary enforced level " + fpsLevel + " (" + targetFps + " FPS) for " + pkg);
+    }
+
+    private static int indexOfBytes(byte[] source, byte[] target, int fromIndex) {
+        if (source == null || target == null || target.length == 0 || fromIndex < 0) return -1;
+        for (int i = fromIndex; i <= source.length - target.length; i++) {
+            boolean match = true;
+            for (int j = 0; j < target.length; j++) {
+                if (source[i + j] != target[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return i;
+        }
+        return -1;
     }
 
     private static void forceWrite(String path, String content) {

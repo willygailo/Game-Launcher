@@ -95,6 +95,28 @@ public class GameConfigPatcher {
             FarlightConfigPatcher.applySuperFastTouch(pkg);
             FarlightConfigPatcher.applyAimAssistConfig(pkg);
             FarlightConfigPatcher.applyRecoilControlConfig(pkg);
+        } else if (pkg.contains("deltaforce") || pkg.contains("proximabeta.mf.uamo")) {
+            if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            ValorantConfigPatcher.applySuperFastTouch(pkg);
+            ValorantConfigPatcher.applyAimAssistConfig(pkg);
+            ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+        } else if (pkg.contains("wuthering") || pkg.contains("kurogame")) {
+            if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            GenshinConfigPatcher.applySuperFastTouch(pkg);
+            GenshinConfigPatcher.applyAimAssistConfig(pkg);
+            GenshinConfigPatcher.applyRecoilControlConfig(pkg);
+        } else if (pkg.contains("carx")) {
+            if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            FarlightConfigPatcher.applySuperFastTouch(pkg);
+        } else if (pkg.contains("apex")) {
+            if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            PubgConfigPatcher.applySuperFastTouch(pkg);
+            PubgConfigPatcher.applyAimAssistConfig(pkg);
+            PubgConfigPatcher.applyRecoilControlConfig(pkg);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;

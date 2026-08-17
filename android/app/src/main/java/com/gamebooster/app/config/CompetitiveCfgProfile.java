@@ -19,6 +19,10 @@ public class CompetitiveCfgProfile {
     public static final String GAME_ROBLOX   = "ROBLOX";
     public static final String GAME_VALORANT = "VALORANT";
     public static final String GAME_FARLIGHT = "FARLIGHT";
+    public static final String GAME_DELTAFORCE = "DELTAFORCE";
+    public static final String GAME_WUTHERING = "WUTHERING";
+    public static final String GAME_CARX     = "CARX";
+    public static final String GAME_APEX     = "APEX";
     public static final String GAME_ALL      = "ALL";
 
     // ─── FPS Tier Constants ──────────────────────────────────────────────────

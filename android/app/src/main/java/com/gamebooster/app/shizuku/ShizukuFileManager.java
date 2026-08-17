@@ -252,6 +252,33 @@ public final class ShizukuFileManager {
     }
 
     /**
+     * Reads the entire binary contents of a file as a raw byte array via Base64 stream.
+     */
+    public static byte[] readBytes(String path) {
+        if (path == null || path.trim().isEmpty()) return null;
+        try {
+            File local = new File(path);
+            if (local.exists() && local.canRead()) {
+                return java.nio.file.Files.readAllBytes(local.toPath());
+            }
+            if (hasFullAccess()) {
+                String b64 = ShizukuExecutor.executeShizukuCommand("base64 -w 0 '" + path + "' 2>/dev/null");
+                if (b64 != null && !b64.startsWith("ERROR") && !b64.trim().isEmpty()) {
+                    return Base64.decode(b64.trim(), Base64.NO_WRAP);
+                }
+            } else {
+                String b64 = CommandExecutor.executeSystemCommand("base64 -w 0 '" + path + "' 2>/dev/null");
+                if (b64 != null && !b64.startsWith("ERROR") && !b64.trim().isEmpty()) {
+                    return Base64.decode(b64.trim(), Base64.NO_WRAP);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "readBytes exception for " + path, t);
+        }
+        return null;
+    }
+
+    /**
      * Edits an existing file in-place by searching for a pattern and replacing it (sed / regex).
      */
     public static FileOpResult editFile(String path, String searchPattern, String replacement) {
