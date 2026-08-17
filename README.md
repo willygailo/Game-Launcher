@@ -7,12 +7,12 @@
 # 🎮 GAME LAUNCHER PRO — ULTIMATE GAMING SUITE
 ### *Unlock Extreme 185 FPS • Zero-Root Hardware Masking • Low Latency Touch Engine*
 
-[![Release](https://img.shields.io/badge/Release-v14.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
-[![Android Support](https://img.shields.io/badge/Android-12--16%20(API%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
+[![Release](https://img.shields.io/badge/Release-v15.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Android Support](https://img.shields.io/badge/Dedicated-Android%2012--16%20(API%2031--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
 [![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-FFB703?style=for-the-badge)](#)
 
-[📥 **Download Latest APK (v14.0.0-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features--capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🚀 **Quick Setup**](#-quick-start-guide)
+[📥 **Download Latest APK (v15.0.0-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features--capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🚀 **Quick Setup**](#-quick-start-guide)
 
 </div>
 
