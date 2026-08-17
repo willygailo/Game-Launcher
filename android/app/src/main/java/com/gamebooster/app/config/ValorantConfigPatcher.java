@@ -50,10 +50,15 @@ public class ValorantConfigPatcher {
             String content;
             if (path.endsWith(".json")) {
                 content = "{\n" +
+                        "  \"MaxFPS\": " + forcedFps + ",\n" +
+                        "  \"FrameRate\": " + forcedFps + ",\n" +
                         "  \"MaxFrameRate\": " + forcedFps + ",\n" +
                         "  \"GraphicQuality\": 4,\n" +
                         "  \"FPSLimit\": " + forcedFps + ",\n" +
                         "  \"FrameRateLimit\": " + forcedFps + ".000000,\n" +
+                        "  \"VulkanPipeline\": 1,\n" +
+                        "  \"VulkanEnabled\": 1,\n" +
+                        "  \"TouchSlop\": 0,\n" +
                         "  \"Unlock185Hz\": 1,\n" +
                         "  \"Unlock165Hz\": 1,\n" +
                         "  \"Unlock144Hz\": 1,\n" +
@@ -62,6 +67,10 @@ public class ValorantConfigPatcher {
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroSampleRate\": 1000,\n" +
+                        "  \"Gyro1000HzFilter\": 1,\n" +
+                        "  \"GyroNoRecoil\": 1,\n" +
+                        "  \"GyroRecoilCompensation\": 1.00,\n" +
+                        "  \"GyroZeroDelay\": 1,\n" +
                         "  \"SuperResolution\": 1,\n" +
                         "  \"FieldOfView\": 120,\n" +
                         "  \"FPP_FOV\": 120,\n" +
@@ -70,10 +79,13 @@ public class ValorantConfigPatcher {
                         "  \"AimAssistStrength\": 100,\n" +
                         "  \"RecoilScale\": 0.00,\n" +
                         "  \"WeaponKickReduction\": 1.00,\n" +
+                        "  \"AllGunsRecoilReduction\": 1.00,\n" +
                         "  \"BulletSpreadReduction\": 1.00,\n" +
+                        "  \"AllGunsDamageBoost\": 1.90,\n" +
+                        "  \"WeaponDamageMultiplier\": 1.90,\n" +
+                        "  \"BulletDamageBoost\": 1.90,\n" +
                         "  \"HeadshotDamageMultiplier\": 2.50,\n" +
                         "  \"AntiAliasing\": 1,\n" +
-                        "  \"VulkanEnabled\": 1,\n" +
                         "  \"LowLatencyMode\": 1\n" +
                         "}\n";
             } else {
@@ -99,7 +111,10 @@ public class ValorantConfigPatcher {
                         "sg.ShadingQuality=2\n" +
                         "[ValorantMobileGraphics]\n" +
                         "MaxFPS=" + forcedFps + "\n" +
+                        "FrameRate=" + forcedFps + "\n" +
                         "TargetFPS=" + forcedFps + "\n" +
+                        "VulkanPipeline=1\n" +
+                        "TouchSlop=0\n" +
                         "Unlock185Hz=1\n" +
                         "Unlock165Hz=1\n" +
                         "Unlock144Hz=1\n" +
@@ -109,9 +124,19 @@ public class ValorantConfigPatcher {
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
+                        "Gyro1000HzFilter=1\n" +
+                        "GyroNoRecoil=1\n" +
+                        "GyroRecoilCompensation=1.00\n" +
+                        "GyroZeroDelay=1\n" +
                         "AimAssistStrength=100\n" +
                         "RecoilReduction=1.00\n" +
                         "WeaponKickScale=0.00\n" +
+                        "WeaponKickReduction=1.00\n" +
+                        "AllGunsRecoilReduction=1.00\n" +
+                        "AllGunsDamageBoost=1.90\n" +
+                        "WeaponDamageMultiplier=1.90\n" +
+                        "BulletDamageBoost=1.90\n" +
+                        "HeadshotDamageMultiplier=2.50\n" +
                         "ZeroInputLag=1\n" +
                         "VulkanPipeline=1\n";
             }
@@ -133,6 +158,8 @@ public class ValorantConfigPatcher {
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
                 "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
+                "grep -qF 'TouchSlop' " + path + " || echo 'TouchSlop=0' >> " + path + "; " +
+                "sed -i 's/^TouchSlop=.*/TouchSlop=0/' " + path + "; " +
                 "grep -qF 'ZeroInputLag' " + path + " || echo 'ZeroInputLag=1' >> " + path + "; " +
                 "sed -i 's/^ZeroInputLag=.*/ZeroInputLag=1/' " + path + "; " +
                 "grep -qF 'LowLatencyMode' " + path + " || echo 'LowLatencyMode=1' >> " + path + "; " +
@@ -156,14 +183,20 @@ public class ValorantConfigPatcher {
                 "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=100' >> " + path + "; " +
                 "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=100/' " + path + "; " +
                 "grep -qF 'GyroPollingRate' " + path + " || echo 'GyroPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path;
+                "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path + "; " +
+                "grep -qF 'Gyro1000HzFilter' " + path + " || echo 'Gyro1000HzFilter=1' >> " + path + "; " +
+                "sed -i 's/^Gyro1000HzFilter=.*/Gyro1000HzFilter=1/' " + path + "; " +
+                "grep -qF 'GyroNoRecoil' " + path + " || echo 'GyroNoRecoil=1' >> " + path + "; " +
+                "sed -i 's/^GyroNoRecoil=.*/GyroNoRecoil=1/' " + path + "; " +
+                "grep -qF 'AllGunsDamageBoost' " + path + " || echo 'AllGunsDamageBoost=1.90' >> " + path + "; " +
+                "sed -i 's/^AllGunsDamageBoost=.*/AllGunsDamageBoost=1.90/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Valorant aim assist & 1000Hz gyro applied for " + packageName);
+        Log.i(TAG, "Valorant aim assist & 1000Hz gyro filter applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -178,7 +211,13 @@ public class ValorantConfigPatcher {
                 "grep -qF 'WeaponKickScale' " + path + " || echo 'WeaponKickScale=0.00' >> " + path + "; " +
                 "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path + "; " +
                 "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=1.00' >> " + path + "; " +
-                "sed -i 's/^WeaponKickReduction=.*/WeaponKickReduction=1.00/' " + path;
+                "sed -i 's/^WeaponKickReduction=.*/WeaponKickReduction=1.00/' " + path + "; " +
+                "grep -qF 'AllGunsRecoilReduction' " + path + " || echo 'AllGunsRecoilReduction=1.00' >> " + path + "; " +
+                "sed -i 's/^AllGunsRecoilReduction=.*/AllGunsRecoilReduction=1.00/' " + path + "; " +
+                "grep -qF 'Gyro1000HzFilter' " + path + " || echo 'Gyro1000HzFilter=1' >> " + path + "; " +
+                "sed -i 's/^Gyro1000HzFilter=.*/Gyro1000HzFilter=1/' " + path + "; " +
+                "grep -qF 'GyroNoRecoil' " + path + " || echo 'GyroNoRecoil=1' >> " + path + "; " +
+                "sed -i 's/^GyroNoRecoil=.*/GyroNoRecoil=1/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {

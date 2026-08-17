@@ -88,7 +88,17 @@ public class MlbbConfigPatcher {
                 "MagicDamageBoost=1.90\n" +
                 "TrueDamageBoost=1.90\n" +
                 "DamageMultiplier=1.90\n" +
-                "CriticalDamageRate=95\n";
+                "CriticalDamageRate=95\n" +
+                "PhysicalPenetrationBoost=95\n" +
+                "MagicPenetrationBoost=95\n" +
+                "HeroEmblemDamageBoost=1.90\n" +
+                "AllHeroEmblemMax=1\n" +
+                "EmblemPhysicalAttackBoost=95\n" +
+                "EmblemMagicPowerBoost=95\n" +
+                "EmblemCooldownReduction=45\n" +
+                "EmblemMovementSpeedBoost=25\n" +
+                "EmblemHybridPenetration=95\n" +
+                "EmblemDamageBoostAllHeroes=1\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -102,7 +112,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch response keys into MLBB config files.
-     * Optimized for 165Hz panels — sets HighFreqTouchHz=165, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
+     * Optimized for 185Hz panels — sets HighFreqTouchHz=185, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -113,8 +123,8 @@ public class MlbbConfigPatcher {
                 "sed -i 's/^HighFreqTouch=.*/HighFreqTouch=1/' " + path + "; " +
                 "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
                 "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
@@ -133,7 +143,7 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, and Penetration keys into MLBB config files.
+     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, and All Hero Emblem keys into MLBB config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyDamageScriptConfig(String packageName) {
@@ -156,6 +166,14 @@ public class MlbbConfigPatcher {
             "DamageMultiplier=1.90",
             "CriticalDamageRate=95",
             "CriticalDamageMultiplier=2.90",
+            "HeroEmblemDamageBoost=1.90",
+            "AllHeroEmblemMax=1",
+            "EmblemPhysicalAttackBoost=95",
+            "EmblemMagicPowerBoost=95",
+            "EmblemCooldownReduction=45",
+            "EmblemMovementSpeedBoost=25",
+            "EmblemHybridPenetration=95",
+            "EmblemDamageBoostAllHeroes=1",
             "SkillCoolDownReduceMode=1",
             "HighDamageRateMode=1",
             "DamageAssetOverride=1",
@@ -168,6 +186,7 @@ public class MlbbConfigPatcher {
             ensureDirectory(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
+            sb.append("grep -qF '[HeroEmblemConfig]' ").append(path).append(" || echo '[HeroEmblemConfig]' >> ").append(path).append("; ");
             sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
             for (String keyVal : damageDroneKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -182,7 +201,7 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB Drone View FOV 150 & 90+ damage script config applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & Hero Emblem damage script applied via Shizuku for " + packageName);
     }
 
 

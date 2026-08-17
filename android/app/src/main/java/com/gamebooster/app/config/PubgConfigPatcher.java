@@ -65,7 +65,7 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGSDKQualityLevel=4\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
-                "+CVars=r.MobileContentScaleFactor=1.0\n" +
+                "+CVars=r.MobileContentScaleFactor=1.5\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
                 "+CVars=r.PUBGMSAASampleCount=4\n" +
                 "+CVars=r.ShadowQuality=4\n" +
@@ -89,14 +89,27 @@ public class PubgConfigPatcher {
                 "+CVars=r.InputLatencyReduction=1\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
                 "+CVars=r.AimAssistStrength=1.00\n" +
+                "+CVars=r.GyroAimAssist=1\n" +
+                "+CVars=r.Gyro1000HzFilter=1\n" +
+                "+CVars=r.GyroSampleRate=1000\n" +
+                "+CVars=r.GyroZeroDelay=1\n" +
+                "+CVars=r.GyroSensitivityRatio=2.0\n" +
+                "+CVars=r.GyroNoRecoil=1\n" +
+                "+CVars=r.GyroRecoilCompensation=1.00\n" +
                 "+CVars=r.PUBGRecoilScale=0.00\n" +
                 "+CVars=r.WeaponKickReduction=1.00\n" +
                 "+CVars=r.AllGunsRecoilReduction=1.00\n" +
                 "+CVars=r.NoRecoilAllScopes=1\n" +
+                "+CVars=r.BulletSpread=0.00\n" +
+                "+CVars=r.AllGunsDamageBoost=1.90\n" +
                 "+CVars=r.BulletDamageBoost=1.90\n" +
                 "+CVars=r.DamageMultiplier=1.90\n" +
                 "+CVars=r.HeadshotDamageMultiplier=2.90\n" +
                 "+CVars=r.CriticalDamageRate=95\n" +
+                "+CVars=r.AR_DamageMultiplier=1.90\n" +
+                "+CVars=r.SMG_DamageMultiplier=1.90\n" +
+                "+CVars=r.Sniper_DamageMultiplier=2.90\n" +
+                "+CVars=r.Shotgun_DamageMultiplier=2.00\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
@@ -120,13 +133,13 @@ public class PubgConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch CVar into PUBGM/BGMI config files.
-     * Sets r.MobileTouchBoostRate=165 for 165Hz touch acceleration and 1000Hz polling rate.
+     * Sets r.MobileTouchBoostRate=185 for 185Hz touch acceleration and 1000Hz polling rate.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] touchCvars = {
-            "+CVars=r.MobileTouchBoostRate=165",
+            "+CVars=r.MobileTouchBoostRate=185",
             "+CVars=r.TouchSampleRate=1000",
             "+CVars=r.TouchResponseTime=0",
             "+CVars=r.ZeroTouchDelay=1",
@@ -174,16 +187,23 @@ public class PubgConfigPatcher {
             "+CVars=r.GyroZeroDelay=1",
             "+CVars=r.GyroSmoothFactor=0",
             "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.Gyro1000HzFilter=1",
             "+CVars=r.GyroAimAssist=1",
+            "+CVars=r.GyroNoRecoil=1",
             "+CVars=r.GyroRecoilCompensation=1.00",
             "+CVars=r.GyroLatencyMode=0",
             "+CVars=r.BulletTrackingOptimization=1",
             "+CVars=r.MobileTouchAssistMode=1",
+            "+CVars=r.AllGunsDamageBoost=1.90",
             "+CVars=r.DamageMultiplier=1.90",
             "+CVars=r.BulletDamageBoost=1.90",
             "+CVars=r.HeadshotDamageMultiplier=2.90",
             "+CVars=r.CriticalDamageRate=95",
             "+CVars=r.DamageBoostRatio=1.90",
+            "+CVars=r.AR_DamageMultiplier=1.90",
+            "+CVars=r.SMG_DamageMultiplier=1.90",
+            "+CVars=r.Sniper_DamageMultiplier=2.90",
+            "+CVars=r.Shotgun_DamageMultiplier=2.00",
             "bEnableAimAssist=True",
             "AimAssistLevel=3",
             "SprintSensitivity=150",
@@ -235,6 +255,9 @@ public class PubgConfigPatcher {
             "+CVars=r.Scope6xRecoilScale=0.00",
             "+CVars=r.Scope8xRecoilScale=0.00",
             "+CVars=r.WeaponSwayMultiplier=0.00",
+            "+CVars=r.GyroNoRecoil=1",
+            "+CVars=r.Gyro1000HzFilter=1",
+            "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroRecoilCompensation=1.00"
         };
         for (String path : paths) {

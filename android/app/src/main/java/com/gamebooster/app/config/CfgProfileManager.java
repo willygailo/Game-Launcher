@@ -270,9 +270,6 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 GenshinConfigPatcher.applyAimAssistConfig(pkg);
             }
-            if (profile.isRecoilControlEnabled()) {
-                GenshinConfigPatcher.applyRecoilControlConfig(pkg);
-            }
         } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
             result = HokConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -281,9 +278,6 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 HokConfigPatcher.applyAimAssistConfig(pkg);
             }
-            if (profile.isRecoilControlEnabled()) {
-                HokConfigPatcher.applyRecoilControlConfig(pkg);
-            }
         } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
             result = RobloxConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -291,9 +285,6 @@ public class CfgProfileManager {
             }
             if (profile.isAimAssistEnabled()) {
                 RobloxConfigPatcher.applyAimAssistConfig(pkg);
-            }
-            if (profile.isRecoilControlEnabled()) {
-                RobloxConfigPatcher.applyRecoilControlConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_VALORANT.equals(key)) {
             result = ValorantConfigPatcher.patchCompetitive(pkg, fps);

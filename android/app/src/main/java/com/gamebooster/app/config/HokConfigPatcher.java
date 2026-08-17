@@ -35,15 +35,20 @@ public class HokConfigPatcher {
 
         String content = "[Graphics]\n" +
                 "HighFPSMode=1\n" +
+                "FPSMode=" + forcedFps + "\n" +
                 "FrameRateLevel=" + frameRateLevel + "\n" +
                 "FPS=" + forcedFps + "\n" +
                 "MaxFrameRate=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
+                "HighFrameRate=1\n" +
                 "GraphicsQuality=4\n" +
                 "HDMode=1\n" +
+                "HDQuality=1\n" +
                 "HDRMode=1\n" +
                 "UltraFrameRate=1\n" +
                 "VulkanEnabled=1\n" +
+                "VulkanEnable=1\n" +
+                "ThreadPacing=1\n" +
                 "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
                 "DroneView=1\n" +
@@ -55,6 +60,15 @@ public class HokConfigPatcher {
                 "PhysicalDamageMultiplier=1.90\n" +
                 "MagicDamageMultiplier=1.90\n" +
                 "CriticalRateBoost=95\n" +
+                "PhysicalPenetrationBoost=95\n" +
+                "MagicPenetrationBoost=95\n" +
+                "ArcanaDamageBoost=1.90\n" +
+                "HeroEmblemDamageBoost=1.90\n" +
+                "AllHeroEmblemMax=1\n" +
+                "EmblemPhysicalAttackBoost=95\n" +
+                "EmblemMagicPowerBoost=95\n" +
+                "EmblemCooldownReduction=45\n" +
+                "EmblemMovementSpeedBoost=25\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
@@ -76,8 +90,8 @@ public class HokConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             String cmd =
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
                 "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
                 "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
@@ -107,6 +121,15 @@ public class HokConfigPatcher {
             "FieldOfView=150",
             "PhysicalDamageMultiplier=1.90",
             "MagicDamageMultiplier=1.90",
+            "PhysicalPenetrationBoost=95",
+            "MagicPenetrationBoost=95",
+            "ArcanaDamageBoost=1.90",
+            "HeroEmblemDamageBoost=1.90",
+            "AllHeroEmblemMax=1",
+            "EmblemPhysicalAttackBoost=95",
+            "EmblemMagicPowerBoost=95",
+            "EmblemCooldownReduction=45",
+            "EmblemMovementSpeedBoost=25",
             "AutoAimLock=1",
             "SkillShotAssist=1",
             "TargetLockPrecision=100",
@@ -119,6 +142,8 @@ public class HokConfigPatcher {
         for (String path : paths) {
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[CombatAssist]' ").append(path).append(" || echo '[CombatAssist]' >> ").append(path).append("; ");
+            sb.append("grep -qF '[HeroEmblemConfig]' ").append(path).append(" || echo '[HeroEmblemConfig]' >> ").append(path).append("; ");
+            sb.append("grep -qF '[ArcanaConfig]' ").append(path).append(" || echo '[ArcanaConfig]' >> ").append(path).append("; ");
             sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
             for (String keyVal : damageAimKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -133,7 +158,7 @@ public class HokConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "HOK Drone View FOV 150, 1000Hz Gyro & 90+ Damage applied for " + packageName);
+        Log.i(TAG, "HOK Drone View FOV 150, Hero Emblem / Arcana Damage applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
