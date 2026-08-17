@@ -5,7 +5,7 @@
 ![Hero Banner](android/app/src/main/res/drawable/hero_banner.gif)
 
 [![Android Platform](https://img.shields.io/badge/Platform-Android%2012--16%20(API%2036)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#)
-[![Version](https://img.shields.io/badge/Release-v2.4.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
+[![Version](https://img.shields.io/badge/Release-v13.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases)
 [![Shizuku Privileged](https://img.shields.io/badge/Privileged-Shizuku%20Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 
