@@ -40,7 +40,8 @@ public class PerformanceChannel {
         int targetHz;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                targetHz = 165;
+                int userHz = GameProfileAutoConfigurator.getTargetFpsHz(context);
+                targetHz = userHz > 0 ? userHz : 185;
                 break;
 
             case PERFORMANCE:
