@@ -30,7 +30,7 @@ public class GpuTweaksChannel {
             "com.dts.freefireth,com.dts.freefiremax," +
             "com.miHoYo.GenshinImpact,com.cognosphere.GenshinImpact,com.HoYoverse.hkrpgoversea,com.HoYoverse.nap,com.miHoYo.bh3oversea," +
             "com.levelinfinite.sgameGlobal,com.levelinfinite.sgameGlobal.gpkg,com.tencent.tmgp.sgame,com.garena.game.kgtw,com.garena.game.kgvn,com.garena.game.kgid,com.riotgames.league.wildrift," +
-            "com.roblox.client";
+            "com.roblox.client,com.proximabeta.mf.uamo,com.kurogame.wutheringwaves.global,com.carxtech.sr,com.ea.gp.apexlegendsmobilecms,com.riotgames.league.teamfighttactics,com.miracle.farlight84,com.tencent.tmgp.projectc";
 
     public static boolean setAngleMode(boolean enabled) {
         if (enabled) {

@@ -53,6 +53,12 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGFrameRateLimit=" + forcedFps + "\n" +
                 "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
                 "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
+                "+CVars=t.MaxFPS=" + forcedFps + "\n" +
+                "+CVars=bSmoothFrameRate=False\n" +
+                "+CVars=bUseVSync=False\n" +
+                "+CVars=r.Vsync=0\n" +
+                "+CVars=r.Vulkan=1\n" +
+                "+CVars=r.Vulkan.EnableRHIThread=1\n" +
                 "+CVars=r.PUBGHDRMode=1\n" +
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.PUBGQualityLevel=4\n" +
@@ -61,14 +67,26 @@ public class PubgConfigPatcher {
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
                 "+CVars=r.MobileContentScaleFactor=1.0\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
+                "+CVars=r.PUBGMSAASampleCount=4\n" +
+                "+CVars=r.ShadowQuality=4\n" +
+                "+CVars=r.Shadow.DistanceScale=1.5\n" +
+                "+CVars=r.Shadow.CSM.MaxCascades=4\n" +
+                "+CVars=r.Streaming.PoolSize=4096\n" +
+                "+CVars=r.Mobile.EnableEarlyZ=1\n" +
+                "+CVars=r.FinishCurrentFrame=0\n" +
+                "+CVars=r.MaxAnisotropy=16\n" +
+                "+CVars=r.DetailMode=2\n" +
                 "+CVars=r.PUBGTPPViewRange=100.00\n" +
                 "+CVars=r.PUBGFPPViewRange=150.00\n" +
                 "+CVars=r.SprintSensitivity=150\n" +
-                "+CVars=r.Vsync=0\n" +
                 "+CVars=r.Unlock185Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
+                "+CVars=r.TouchSampleRate=1000\n" +
+                "+CVars=r.TouchResponseTime=0\n" +
+                "+CVars=r.ZeroTouchDelay=1\n" +
+                "+CVars=r.InputLatencyReduction=1\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
                 "+CVars=r.AimAssistStrength=1.00\n" +
                 "+CVars=r.PUBGRecoilScale=0.00\n" +

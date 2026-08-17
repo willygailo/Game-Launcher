@@ -55,6 +55,13 @@ public class MlbbConfigPatcher {
                 "HDRMode=1\n" +
                 "UltraHDMode=1\n" +
                 "Shadow=1\n" +
+                "VulkanEnabled=1\n" +
+                "VulkanRenderer=1\n" +
+                "OpenGLES3=1\n" +
+                "DynamicResolution=0\n" +
+                "OutlineQuality=2\n" +
+                "AntiAliasing=1\n" +
+                "SuperSampling=1\n" +
                 "FPS=" + forcedFps + "\n" +
                 "MaxFrameRate=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
@@ -63,6 +70,7 @@ public class MlbbConfigPatcher {
                 "SuperHighFPS=1\n" +
                 "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
+                "RefreshRateOverride=" + forcedFps + "\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
                 "CameraHeight=3\n" +
@@ -74,6 +82,8 @@ public class MlbbConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
+                "NetworkSpeedMode=1\n" +
+                "DualEngineAcceleration=1\n" +
                 "PhysicalDamageBoost=1.90\n" +
                 "MagicDamageBoost=1.90\n" +
                 "TrueDamageBoost=1.90\n" +
