@@ -1,120 +1,206 @@
-# Game Launcher Pro
-
 <div align="center">
 
----
+<img src="android/app/src/main/res/drawable/hero_banner.gif" alt="Game Launcher PRO Hero Banner" width="100%" />
 
-## Overview
+# ⚡ GAME LAUNCHER PRO — ULTIMATE GAMING SUITE ⚡
+### *Next-Gen 185 FPS Display Lock • 5-Layer Device Identity Masking • Zero-Root Shizuku Engine*
 
-**Game Launcher Pro** provides low-level performance tuning and per-title optimization for competitive mobile gaming without requiring traditional device root access. Leveraging the **Shizuku API**, it safely manages hardware governors, display refresh rates, and runtime configurations.
+[![Release](https://img.shields.io/badge/Release-v16.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Android Support](https://img.shields.io/badge/Dedicated-Android%2012--16%20(API%2031--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-system-requirements)
+[![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#-privilege-layer)
+[![Build Tool](https://img.shields.io/badge/Java-17%20%7C%20Gradle%208.13-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](#-building-from-source)
+[![License](https://img.shields.io/badge/License-MIT-FFB703?style=for-the-badge)](#-license)
 
-### Key Capabilities
+<br/>
 
-- **Display & Frame Rate Synchronization**: Enforces stable 120Hz, 144Hz, 165Hz, and 185Hz refresh rates using multi-tier SurfaceFlinger, Game Mode API, and display mode overrides.
-- **Low-Latency Input Engine**: Configures 1000Hz touch sampling rate and minimizes touch deadzones.
-- **Privileged File Management Engine**: Full control over protected game configurations (`edit`, `add`, `delete`, `upload`, `backup`, and `restore`) across `/data/data/<pkg>/` and `/sdcard/Android/data/<pkg>/`.
-- **Per-Game Configuration Profiles**: Manages custom graphic, FOV, and performance presets for supported titles.
-- **Network Optimization**: Activates low-latency Wi-Fi mode and optimizes TCP buffer parameters for reduced jitter.
-- **Hardware Profile Emulation**: Emulates high-end gaming hardware signatures to access higher in-game graphic and framerate tiers.
+[📥 **Download Latest APK (v16.0.0-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
 
----
-
-## Supported Titles
-
-| Game                                              | Optimization Capabilities                                                                              |
-| :------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
-| **Mobile Legends: Bang Bang**               | 120/144/165/185 FPS mode, Camera & FOV adjustments, Touch response acceleration                        |
-| **PUBG Mobile / BGMI**                      | 120/144/165/185 FPS UE4 CVars, FOV & Perspective scaling, Gyroscope response tuning                    |
-| **Call of Duty: Mobile**                    | 120/144/165/185 FPS presets, Touch acceleration, Sensitivity curve alignment                           |
-| **Free Fire / Free Fire MAX**               | 120/144/165/185 FPS mode unlocking, Touch polling optimization, Aim response tuning                    |
-| **Genshin Impact**                          | 120/144/165/185 FPS, Vulkan backend preference, Expanded rendering resolution, Camera distance scaling |
-| **Honor of Kings**                          | 120/144/165/185 FPS presets, Response latency reduction, Rendering mode tuning                         |
-| **Roblox**                                  | 120/144/165/185 FPS FastFlags management, Vulkan rendering, Unlocked frame rate scheduler              |
-| **Valorant Mobile (CN Project C / Global)** | 120/144/165/185 FPS UE4 CVars, 1000Hz touch & gyro tuning, Zero-delay aim & crosshair stabilizer       |
-| **Farlight 84**                             | 120/144/165/185 FPS Solarland graphics engine, Low-latency touch boost, Recoil reduction               |
+<br/>
 
 ---
 
-## System Architecture
+</div>
+
+## 🌟 Executive Overview
+
+**Game Launcher PRO** transforms your Android device into a dedicated, low-latency flagship gaming machine. Engineered directly on top of the **Shizuku Privileged IPC Engine (UID 2000)**, it unlocks hardware display overrides, eliminates thermal throttling governors, synchronizes touch polling frequencies, and dynamically injects competitive in-game configurations—**completely non-root and 100% safe for online anti-cheat ecosystems**.
 
 ```
-Game-Launcher-PRO/
-├── android/
+  ⚡ 185Hz Extreme ROG Mode  │  🎭 5-Layer Flagship Spoofer  │  🎯 1000Hz Touch Polling  │  🛡️ 100% Safe & Zero-Root
+```
+
+---
+
+## ✨ Core Capabilities
+
+### ⚡ 1. Extreme Display & Refresh Rate Engine
+* **SurfaceFlinger Binder Synchronization**: Enforces hardware screen refresh rates up to **185Hz, 165Hz, 144Hz, 120Hz, and 90Hz** by overriding system display modes.
+* **Android 14–16 Game Mode API**: Automates `cmd game mode performance` and configures target downscaling & framerate schedulers.
+* **WindowManager Display Lock**: Neutralizes dynamic refresh rate stepping to prevent frame drops in heated team fights.
+
+### 🎭 2. 5-Layer Flagship Hardware Identity Spoofer
+* **Elite Device Signatures**:
+  * 🔴 **ASUS ROG Phone 9 Pro** *(Snapdragon 8 Elite / 24GB RAM / 185Hz)*
+  * 🌌 **Samsung Galaxy S26 Ultra** *(Snapdragon 8 Elite / Adreno 840)*
+  * ⚡ **REDMAGIC 10 Pro+** *(185Hz eSports Edition / Liquid Cooling Profile)*
+  * ⚡ **Vivo iQOO 15 Pro** *(Dimensity 9400 / Immortalis-G925)*
+  * 🐉 **Xiaomi 15 Ultra** *(Vulkan Ultra Gaming Profile)*
+  * 🍏 **Apple A18 Pro / iPad Pro M4** *(High-tier graphics unlocking)*
+* **Storage & ProcFS Virtualization**: Masks `/proc/cpuinfo` and `/proc/meminfo` to seamlessly bypass title-level hardware whitelists.
+
+### 🎯 3. Zero-Delay Touch & Esports Input Engine
+* **1000Hz Fast Touch Polling**: Dramatically minimizes input lag and touch deadzones for millisecond-precision responsiveness.
+* **1000Hz Gyroscope Calibration**: Stabilizes micro-jitter and optimizes sensor sampling curves for competitive shooters.
+* **AOT Speed Pre-compilation**: Eliminates runtime JIT micro-stutter by compiling DEX bytecode ahead-of-time.
+
+### 🗂️ 4. Privileged File Management & In-Memory Patching
+* **Full CRUD Game Storage Access**: Seamlessly read, write, backup, and restore protected configuration files in `/data/data/<package>/` and `/sdcard/Android/data/<package>/`.
+* **Atomic Binary Patching**: Safely injects memory offsets into Unreal Engine `.sav` files (e.g. `Active.sav`), Unity player preferences, and FastFlags.
+
+### 📡 5. Network & Low-Jitter Packet Prioritizer
+* **Wi-Fi Low-Latency Mode**: Locks Wi-Fi chips into low-jitter gaming state.
+* **TCP Buffer Tuning**: Optimizes network buffers for stable ping and reduced packet loss.
+* **Ultra-Fast Gaming DNS**: Resolves connection routes with prioritized routing servers.
+
+### 🛠️ 6. Cyber SetEdit & Terminal Suite
+* **Real-Time Property Injector**: Modify Android `system`, `secure`, and `global` table variables with persistent boot-time locking.
+* **Shell Script Preset Runner**: Execute custom performance scripts directly through the integrated Cyber Terminal.
+* **Customizable Floating HUD**: Real-time FPS, RAM, battery temperature, and profile switching overlay.
+
+---
+
+## 🎮 Supported Esports Titles
+
+| Game Title | Category | Unlocked Capabilities |
+| :--- | :---: | :--- |
+| **PUBG Mobile / BGMI** *(All Versions)* | Battle Royale | 90/120/185 FPS `Active.sav` unlock, Multithreaded Vulkan RHI, Ultra MSAA, 1000Hz Gyro |
+| **Mobile Legends: Bang Bang** | MOBA | 120/165/185 FPS Ultra mode, Drone FOV scaling, Ultra Outline, Super Sampling, Touch Boost |
+| **Call of Duty: Mobile & Warzone** | FPS | 120/144/185 FPS Max, Real-time dynamic shadows, Zero deadzone touch, Sensitivity curve sync |
+| **Free Fire & Free Fire MAX** | Battle Royale | 120/185 FPS Unlock, 1000Hz Touch polling, Aim response acceleration, Jitter reduction |
+| **Genshin Impact & Wuthering Waves** | Action RPG | Max Graphics whitelist override, Uncapped 120 FPS, Vulkan backend routing, Camera distance |
+| **Arena Breakout** | Tactical FPS | 120/144 FPS high-tier unlocked, Thermal throttle bypass, Audio footprint enhancer |
+| **Blood Strike** | FPS | 120/165 FPS high refresh mode, Low latency touch, Memory compaction |
+| **CarX Street** | Racing | Ultra graphic profile, 120/144 FPS uncapped renderer, Shading quality enhancement |
+| **Farlight 84** | Hero Shooter | 120/165/185 FPS Solarland graphics engine, Recoil stabilization, Fast touch response |
+| **Valorant Mobile / Project C** | Tactical FPS | 120/144/185 FPS UE4 CVars, 1000Hz touch & gyro tuning, Zero-delay crosshair stabilizer |
+| **League of Legends: Wild Rift** | MOBA | 120 FPS Extreme preset, Dynamic resolution scaling off, Zero-delay input pipeline |
+| **Standoff 2** | FPS | 120/144/165/185 FPS mode unlock, Fast touch sync, Jitter buffer reduction |
+| **Supercell (Brawl Stars / Clash)** | Competitive | 120/144 FPS unlocked refresh rate, Low-latency touch response, Frame pacing stabilizer |
+| **Roblox** | Sandbox | FastFlags 185 FPS scheduler, Vulkan rendering backend, Uncapped memory allocation |
+| **Honor of Kings** | MOBA | 120/185 FPS Extreme mode, Ultra resolution preset, Input acceleration |
+
+---
+
+## 🏗️ System Architecture
+
+```
+Game-Launcher/
+├── android/                             # Android Application Workspace
 │   ├── app/
-│   │   ├── src/main/assets/shizuku/ # Bundled rish binary & dex runtime assets
+│   │   ├── src/main/aidl/              # Shizuku IUserService IPC definitions
+│   │   ├── src/main/assets/shizuku/    # Bundled rish binary & dex runtime assets
 │   │   ├── src/main/java/com/gamebooster/app/
-│   │   │   ├── booster/          # Refresh rate, GPU driver, and network engines
-│   │   │   ├── config/           # Per-game configuration patchers & managers
-│   │   │   ├── device/           # Hardware and display capability detectors
-│   │   │   ├── engine/           # Command execution & override controllers
-│   │   │   ├── games/            # Installed title scanning and launch helpers
-│   │   │   ├── overlay/          # HUD indicators and assistive overlays
-│   │   │   ├── shizuku/          # Shizuku Binder communication & privileged file manager
-│   │   │   ├── spoofer/          # Hardware device signature emulators
-│   │   │   ├── tweaks/           # System-level performance parameter controllers
-│   │   │   └── ui/               # Interface views, fragments, and tools
-│   │   └── src/main/res/         # UI layouts, vector assets, and design tokens
-│   └── build.gradle              # Android build configuration (API 36 / Java 17)
-├── platform-tools-latest-linux/  # Bundled official Android SDK Platform Tools (ADB/Fastboot)
-├── shizuku/                      # Standalone Shizuku shell toolkit (rish & rish_shizuku.dex)
-├── tools/                        # Automated device setup & Shizuku activation scripts
-│   ├── activate_shizuku.sh       # One-click Shizuku service starter via ADB
-│   ├── grant_permissions.sh      # Privileged permission granter for Game Launcher Pro
-│   └── setup_device.sh           # All-in-one onboarding and installation tool
-└── README.md
+│   │   │   ├── booster/                # Audio, GPU driver, and network latency engines
+│   │   │   ├── config/                 # Per-game configuration patchers (PUBG, MLBB, CODM, etc.)
+│   │   │   ├── core/                   # Threading executors, JS interface & profiles
+│   │   │   ├── device/                 # Hardware & display capability detectors
+│   │   │   ├── engine/                 # MasterOptimizationEnforcer & CommandExecutor
+│   │   │   ├── games/                  # App scanning, registries, and launch helpers
+│   │   │   ├── gamespace/              # Auto game monitoring, DND, and cache cleaner
+│   │   │   ├── overlay/                # Floating HUD indicators & Crosshair overlay
+│   │   │   ├── services/               # Background monitoring & boot receivers
+│   │   │   ├── shizuku/                # Shizuku Binder communication & privileged file manager
+│   │   │   ├── spoofer/                # 5-Layer HardwareMaskEngine & brand profiles
+│   │   │   ├── terminal/               # Cyber Terminal engine & script management
+│   │   │   ├── tweaks/                 # System-level performance parameter controllers
+│   │   │   └── ui/                     # Cyberpunk design system, fragments & adapters
+│   │   └── src/main/res/               # High-contrast cyber drawables, layouts & tokens
+│   └── build.gradle                    # Gradle Build Configuration (API 36 / Java 17)
+├── platform-tools-latest-linux/         # Bundled official Android SDK Platform Tools (ADB/Fastboot)
+├── shizuku/                             # Standalone Shizuku shell toolkit (rish & rish_shizuku.dex)
+├── tools/                               # Automated PC setup & Shizuku activation scripts
+│   ├── activate_shizuku.sh             # One-click Shizuku service starter via ADB
+│   ├── grant_permissions.sh            # Privileged permission granter for Game Launcher Pro
+│   └── setup_device.sh                 # All-in-one onboarding and installation tool
+└── README.md                            # Documentation & Release Guide
 ```
 
 ---
 
-## Installation & Setup
+## 🚀 Installation & Setup
 
-### Prerequisites
+### 📱 Method 1: On-Device Quick Start (No PC Needed)
 
-- Device running **Android 12 (API 31) through Android 16 (API 36)**.
-- **[Shizuku](https://shizuku.rikka.app/)** installed and running via Wireless Debugging or ADB.
+1. **Download APK**:
+   * Grab the latest [**`Game_Space.apk`**](https://github.com/willygailo/Game-Launcher/releases/latest) from Releases.
+2. **Activate Shizuku**:
+   * Install [**Shizuku**](https://shizuku.rikka.app/) from Google Play or GitHub.
+   * Start Shizuku via **Wireless Debugging** in Android Developer Options.
+3. **Launch & Boost**:
+   * Open **Game Launcher PRO**, grant Shizuku privileged access when prompted.
+   * Select your installed game, configure your optimization profile, and launch!
 
-### Quick Start (On Device)
+---
 
-1. Download and install `Game_Space.apk` from the **[Releases](https://github.com/willygailo/Game-Launcher/releases)** page.
-2. Ensure Shizuku is active on your device.
-3. Launch **Game Launcher Pro** and grant Shizuku privileged access when prompted.
-4. Select your installed game from the dashboard to apply performance profiles and launch.
+### 💻 Method 2: PC / ADB Automated Setup (One-Click)
 
-### PC / ADB Automated Setup
-
-Connect your device to your PC via USB with USB Debugging enabled, then run:
+Connect your Android device to your computer with **USB Debugging enabled**, then run:
 
 ```bash
 # 1. Run all-in-one setup (Installs APK, grants permissions, and activates Shizuku)
 ./tools/setup_device.sh
 
-# Or run individual tasks:
-./tools/activate_shizuku.sh    # Starts Shizuku privileged service
-./tools/grant_permissions.sh   # Grants WRITE_SECURE_SETTINGS, DUMP, etc.
+# Or run individual automated tasks:
+./tools/activate_shizuku.sh    # Starts Shizuku privileged service via ADB
+./tools/grant_permissions.sh   # Grants WRITE_SECURE_SETTINGS, DUMP, PACKAGE_USAGE_STATS
 ```
 
 ---
 
-## Building from Source
+## 🛠️ Building from Source
 
-Ensure you have **JDK 17** (or **JDK 21**) configured:
+### Prerequisites:
+- **JDK 17** or **JDK 21** configured (`JAVA_HOME`).
+- **Android SDK Build Tools** (API 36).
 
 ```bash
-cd android
-./gradlew outgoingVariants && ./gradlew clean assembleDebug
+# 1. Clone the repository
+git clone https://github.com/willygailo/Game-Launcher.git
+cd Game-Launcher/android
+
+# 2. Build clean release and debug APKs
+./gradlew clean assembleRelease assembleDebug
 ```
 
-The built debug APK will be generated at:
-`android/app/build/outputs/apk/debug/Game_Space_Debug.apk`
+The compiled binaries will be output to:
+- **Release APK**: `android/app/build/outputs/apk/release/Game_Space.apk`
+- **Debug APK**: `android/app/build/outputs/apk/debug/Game_Space_Debug.apk`
 
 ---
 
-## Connect & Developer
+## 🔒 Security & Anti-Cheat Compatibility
+
+Game Launcher PRO adheres strictly to non-invasive system layer optimizations:
+- 🛡️ **Zero Binary Tampering**: Does not inject code or hook into game processes (No Frida / No Xposed).
+- 🛡️ **100% Account Safe**: Modifications are restricted to official Android Game Mode APIs, display refresh parameters, and standard configuration files (`Active.sav` / FastFlags).
+- 🛡️ **Zero Root Requirement**: All elevated operations run inside Shizuku's standard privileged UID 2000 environment.
+
+---
+
+## 🤝 Connect & Developer
 
 <div align="center">
 
+[![GitHub Profile](https://img.shields.io/badge/GitHub-willygailo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo)
+&nbsp;&nbsp;
+[![Facebook Profile](https://img.shields.io/badge/Facebook-Willy%20Jr%20Carnasa%20Gailo-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://web.facebook.com/https.willy.jr.carnasa.gailo2026.2027)
+
+⭐ **If you find this project helpful, please consider giving it a star on GitHub!** ⭐
+
+</div>
+
 ---
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
