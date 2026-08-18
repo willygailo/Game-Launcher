@@ -18,7 +18,7 @@ public class WildRiftConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class WildRiftConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String jsonContent = "{\n" +
@@ -181,7 +181,7 @@ public class WildRiftConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = "{\n  \"graphics\": {\n    \"target_fps\": " + forcedFps + ",\n    \"max_fps\": " + forcedFps + ",\n    \"fps_level\": " + fpsLevel + ",\n    \"fpsUnlock\": true,\n    \"unlock_120\": true,\n    \"unlock_144\": true,\n    \"unlock_165\": true,\n    \"unlock_185\": true\n  }\n}\n";

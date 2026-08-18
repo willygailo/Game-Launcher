@@ -27,19 +27,15 @@ public class GameProfileAutoConfigurator {
 
     public static void setTargetFpsHz(Context context, int targetFpsHz) {
         if (context == null) return;
-        int validHz = targetFpsHz > 0 ? targetFpsHz : DEFAULT_TARGET_HZ;
         context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .putInt(KEY_TARGET_HZ_FPS, validHz)
+                .putInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ)
                 .apply();
     }
 
     public static int getTargetFpsHz(Context context) {
-        if (context == null) return DEFAULT_TARGET_HZ;
-        return context.getApplicationContext()
-                .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
-                .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
+        return DEFAULT_TARGET_HZ;
     }
 
     public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
@@ -48,13 +44,13 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Auto-configures a game package and display for target FPS/Hz (120 / 144 / 165 / 185).
+     * Auto-configures a game package and display for target FPS/Hz (185).
      * Uses Shizuku direct force channel to ensure zero-fallback execution.
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
 
-        final int forcedFpsHz = targetFpsHz > 0 ? targetFpsHz : DEFAULT_TARGET_HZ;
+        final int forcedFpsHz = DEFAULT_TARGET_HZ; // hard-locked to 185
         Log.d(TAG, "Configuring " + packageName + " for target " + forcedFpsHz + " FPS / Hz...");
 
         // 1. Android Game Mode API Performance tuning
@@ -115,19 +111,19 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Applies target FPS and Hz (120 / 144 / 165 / 185) to all detected games and display.
+     * Applies target FPS and Hz (185) to all detected games and display.
      */
     public static void autoConfigAllGamesAsync(Context context, int targetFpsHz, OnAutoConfigListener listener) {
         if (context == null) return;
 
-        setTargetFpsHz(context, targetFpsHz);
+        setTargetFpsHz(context, DEFAULT_TARGET_HZ);
 
         AppExecutors.getInstance().executeCommand(() -> {
             // 1. Force global display refresh rate
             if (ShizukuExecutor.hasShizukuPermission()) {
-                MaxHzForceChannel.forceApply(targetFpsHz);
+                MaxHzForceChannel.forceApply(DEFAULT_TARGET_HZ);
             } else {
-                HzFpsChannel.setRefreshRate(context, targetFpsHz);
+                HzFpsChannel.setRefreshRate(context, DEFAULT_TARGET_HZ);
             }
 
             // 2. Scan all games (Target + Installed)

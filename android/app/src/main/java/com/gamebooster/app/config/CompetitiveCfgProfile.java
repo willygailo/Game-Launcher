@@ -6,6 +6,8 @@ package com.gamebooster.app.config;
  * Stores per-game settings for FPS target, super-fast touch, Hz force-write,
  * aim assist, damage script, recoil control, gyro tuning, and hardware masking.
  * Profiles are persisted to SharedPreferences via CfgProfileManager.
+ *
+ * All FPS targets are hard-locked to 185 FPS only.
  */
 public class CompetitiveCfgProfile {
 
@@ -27,15 +29,12 @@ public class CompetitiveCfgProfile {
     public static final String GAME_SUPERCELL     = "SUPERCELL";
     public static final String GAME_ALL           = "ALL";
 
-    // ─── FPS Tier Constants (120, 144, 165, 185 only) ──────────────────────
-    public static final int FPS_120 = 120;
-    public static final int FPS_144 = 144;
-    public static final int FPS_165 = 165;
+    // ─── FPS Tier Constant — 185 only ──────────────────────────────────────
     public static final int FPS_185 = 185;
 
     // ─── Fields ──────────────────────────────────────────────────────────────
     private final String gameKey;
-    private int targetFps;
+    private final int targetFps = FPS_185; // always 185, immutable
     private boolean superFastTouchEnabled;
     private boolean forceWriteSystemHz;
     private boolean aimAssistEnabled;
@@ -96,7 +95,7 @@ public class CompetitiveCfgProfile {
                                  boolean hardwareMaskEnabled,
                                  boolean antiLogEnabled) {
         this.gameKey                 = gameKey != null ? gameKey : GAME_ALL;
-        this.targetFps               = targetFps > 0 ? targetFps : FPS_185;
+        // targetFps param ignored — always locked to 185
         this.superFastTouchEnabled   = superFastTouchEnabled;
         this.forceWriteSystemHz      = forceWriteSystemHz;
         this.aimAssistEnabled        = aimAssistEnabled;
@@ -116,8 +115,11 @@ public class CompetitiveCfgProfile {
     // ─── Getters / Setters ───────────────────────────────────────────────────
     public String getGameKey() { return gameKey; }
 
-    public int getTargetFps() { return targetFps > 0 ? targetFps : FPS_185; }
-    public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
+    /** Always returns 185 — hard-locked. */
+    public int getTargetFps() { return FPS_185; }
+
+    /** No-op — FPS is hard-locked to 185. */
+    public void setTargetFps(int targetFps) { /* locked to 185 */ }
 
     public boolean isSuperFastTouchEnabled() { return superFastTouchEnabled; }
     public void setSuperFastTouchEnabled(boolean enabled) { this.superFastTouchEnabled = enabled; }
@@ -156,7 +158,7 @@ public class CompetitiveCfgProfile {
     public String toString() {
         return "CompetitiveCfgProfile{" +
                 "game='" + gameKey + '\'' +
-                ", fps=" + targetFps +
+                ", fps=" + FPS_185 +
                 ", superTouch=" + superFastTouchEnabled +
                 ", forceHz=" + forceWriteSystemHz +
                 ", aimAssist=" + aimAssistEnabled +

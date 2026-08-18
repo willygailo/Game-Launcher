@@ -18,7 +18,7 @@ public class Standoff2ConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class Standoff2ConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String jsonContent = "{\n" +
@@ -177,7 +177,7 @@ public class Standoff2ConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         if (!ShizukuFileManager.fileExists(path)) {
             String content = "{\n  \"graphics\": {\n    \"target_framerate\": " + forcedFps + ",\n    \"max_framerate\": " + forcedFps + ",\n    \"framerate_cap\": " + forcedFps + ",\n    \"fps_unlock\": 1,\n    \"fps_unlock_120\": 1,\n    \"fps_unlock_144\": 1,\n    \"fps_unlock_165\": 1,\n    \"fps_unlock_185\": 1,\n    \"high_fps_mode\": 1\n  }\n}\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;

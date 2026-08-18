@@ -10,7 +10,7 @@ import java.util.List;
  * (INI, JSON, XML, UserCustom) for Mobile Legends, Call of Duty Mobile, Warzone Mobile,
  * PUBG Mobile, BGMI, Free Fire, Wild Rift, Genshin Impact, Star Rail, ZZZ, Blood Strike,
  * Standoff 2, Arena Breakout, Delta Force, CarX Street, Supercell games, Roblox,
- * Valorant Mobile, and Farlight 84 to force legal high FPS modes (90 / 120 / 144 / 165 / 185 FPS).
+ * Valorant Mobile, and Farlight 84 to force 185 FPS / 185Hz only.
  *
  * Uses GameConfigPathResolver to guarantee 100% path accuracy across all Android storage layouts.
  */
@@ -37,7 +37,7 @@ public class GameConfigPatcher {
             return new PatchResult(false, "Invalid package name");
         }
 
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked — caller targetFps is ignored
         String pkg = packageName.toLowerCase().trim();
         List<String> configPaths = GameConfigPathResolver.getPathsForGame(pkg);
         if (configPaths == null || configPaths.isEmpty()) {

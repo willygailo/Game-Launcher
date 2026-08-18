@@ -23,7 +23,7 @@ public class PubgConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -44,7 +44,7 @@ public class PubgConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(forcedFps);
         final int pubgFpsLevel = tier.level;
 
@@ -122,13 +122,13 @@ public class PubgConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch CVar into PUBGM/BGMI config files.
-     * Sets r.MobileTouchBoostRate=165 for 165Hz touch acceleration and 1000Hz polling rate.
+     * Sets r.MobileTouchBoostRate=185 for 185Hz touch acceleration and 1000Hz polling rate.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] touchCvars = {
-            "+CVars=r.MobileTouchBoostRate=165",
+            "+CVars=r.MobileTouchBoostRate=185",
             "+CVars=r.TouchSampleRate=1000",
             "+CVars=r.TouchResponseTime=0",
             "+CVars=r.ZeroTouchDelay=1",
@@ -299,7 +299,7 @@ public class PubgConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
+        final FpsUnlockTier tier = FpsUnlockTier.fromFps(185); // hard-locked
         final int pubgFpsLevel = tier.level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(

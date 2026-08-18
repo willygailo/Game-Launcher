@@ -17,7 +17,7 @@ public class FreeFireConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -29,7 +29,7 @@ public class FreeFireConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String content = "[FFGraphics]\n" +
@@ -100,8 +100,8 @@ public class FreeFireConfigPatcher {
             String cmd =
                 "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
                 "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
@@ -181,7 +181,7 @@ public class FreeFireConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        int forcedFps = 185; // hard-locked
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(

@@ -5,15 +5,13 @@ import android.content.Context;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.booster.PerformanceChannel;
 
-/** Persists a device-safe performance choice for every game package. */
+/** Persists a device-safe performance choice for every game package. Hard-locked to 185Hz. */
 public final class GameProfilePreferences {
 
     private static final String PREF_NAME = "per_game_performance_profiles";
     private static final String KEY_PROFILE_PREFIX = "profile_";
 
     public enum Profile {
-        BALANCED("Ultra 120Hz", 120, false, PerformanceChannel.Profile.BALANCED),
-        COMPETITIVE("Competitive 144Hz", 144, true, PerformanceChannel.Profile.PERFORMANCE),
         MAX_SUPPORTED("Max 185Hz Extreme", 185, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
 
         public final String label;
@@ -30,35 +28,31 @@ public final class GameProfilePreferences {
         }
 
         int resolveTargetHz(DevicePerformanceCapabilities capabilities) {
-            return requestedHz > 0 ? requestedHz : 185;
+            return 185;
         }
     }
 
     private GameProfilePreferences() {}
 
+    /** Always returns MAX_SUPPORTED (185Hz). */
     public static Profile getProfile(Context context, String packageName) {
-        if (context == null || packageName == null) return Profile.MAX_SUPPORTED;
-        String stored = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-                .getString(KEY_PROFILE_PREFIX + packageName, Profile.MAX_SUPPORTED.name());
-        try {
-            return Profile.valueOf(stored);
-        } catch (IllegalArgumentException ignored) {
-            return Profile.MAX_SUPPORTED;
-        }
+        return Profile.MAX_SUPPORTED;
     }
 
     public static void setProfile(Context context, String packageName, Profile profile) {
         if (context == null || packageName == null || packageName.trim().isEmpty() || profile == null) return;
         context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
                 .edit()
-                .putString(KEY_PROFILE_PREFIX + packageName, profile.name())
+                .putString(KEY_PROFILE_PREFIX + packageName, Profile.MAX_SUPPORTED.name())
                 .apply();
     }
 
+    /** Always returns 185. */
     public static int getTargetHz(Context context, String packageName) {
         return 185;
     }
 
+    /** Always returns 185. */
     public static int getTargetHz(Context context, Profile profile) {
         return 185;
     }
@@ -81,9 +75,8 @@ public final class GameProfilePreferences {
                          pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
                          pkg.contains("projectc") || pkg.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
                          pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
-        
+
         CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        int fps = cfg.getTargetFps() > 0 ? cfg.getTargetFps() : 185;
-        return "CFG: " + fps + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? fps + "Hz (0ms)" : "STD") + " • HZ " + fps + " • GYRO 1000Hz" + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
+        return "CFG: 185 FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ 185 • GYRO 1000Hz" + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
     }
 }

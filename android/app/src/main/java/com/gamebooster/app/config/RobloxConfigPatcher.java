@@ -18,7 +18,7 @@ public class RobloxConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class RobloxConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
 
         String clientAppSettings = "{\n" +
                 "  \"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",\n" +
@@ -129,7 +129,7 @@ public class RobloxConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
                     "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FIntDesiredMaxFrameRate\": %d,\n  \"FFlagEnableHighFPS\": \"True\",\n  \"FFlagUnlockFPS\": \"True\",\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",

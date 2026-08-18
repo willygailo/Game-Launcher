@@ -230,7 +230,7 @@ public class CfgProfileManager {
      */
     public static int applyAllGames(Context context, int targetFps, boolean superTouch, boolean forceHz) {
         int total = 0;
-        int effectiveFps = targetFps > 0 ? targetFps : CompetitiveCfgProfile.FPS_185;
+        final int effectiveFps = CompetitiveCfgProfile.FPS_185; // hard-locked
         // Purge system logcat and background log friction
         AntiLogPatcher.applySystemAntiLog();
 
@@ -471,9 +471,9 @@ public class CfgProfileManager {
         return result;
     }
 
-    /** Builds and applies the dynamic Shizuku force command for target Hz (120/144/165/185). */
+    /** Builds and applies the dynamic Shizuku force command for target Hz (185). */
     private static void applyShizukuHzForce(int hz) {
-        final int forcedHz = hz > 0 ? hz : 185;
+        final int forcedHz = 185; // hard-locked
         if (ShizukuExecutor.hasShizukuPermission()) {
             MaxHzForceChannel.forceApply(forcedHz);
         }

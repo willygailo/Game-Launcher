@@ -18,7 +18,7 @@ public class BloodStrikeConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class BloodStrikeConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String iniContent = "[GraphicsSettings]\n" +
@@ -182,15 +182,16 @@ public class BloodStrikeConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
-        final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
+        final int forcedFps = 185; // hard-locked
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[GraphicsSettings]\nFPSLevel=" + fpsLevel + "\nMaxFPS=" + targetFps + "\nTargetFPS=" + targetFps + "\nFrameRateLimit=" + targetFps + "\nMobileFPSLimit=" + targetFps + "\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n";
+            String content = "[GraphicsSettings]\nFPSLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\nFrameRateLimit=" + forcedFps + "\nMobileFPSLimit=" + forcedFps + "\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + targetFps + "/' " + path + "; " +
+            String cmd = "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {

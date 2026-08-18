@@ -23,7 +23,7 @@ public class CodmConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -44,7 +44,7 @@ public class CodmConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -176,7 +176,7 @@ public class CodmConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch settings into CODM config files.
-     * Sets TouchBoostHz=165 and TouchPollingRate=1000 in both JSON and INI formats.
+     * Sets TouchBoostHz=185 and TouchPollingRate=1000 in both JSON and INI formats.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -185,18 +185,18 @@ public class CodmConfigPatcher {
             String cmd;
             if (path.endsWith(".json")) {
                 cmd = "grep -qF 'TouchBoostHz' " + path +
-                      " || sed -i 's/}$/,\\n  \"TouchBoostHz\": 165,\\n  \"TouchPollingRate\": 1000,\\n  \"TouchZeroDelay\": 1,\\n  \"TouchDeadZone\": 0\\n}/' " + path + "; " +
-                      "sed -i 's/\"TouchBoostHz\":.*/\"TouchBoostHz\": 165,/' " + path + "; " +
+                      " || sed -i 's/}$/,\\n  \"TouchBoostHz\": 185,\\n  \"TouchPollingRate\": 1000,\\n  \"TouchZeroDelay\": 1,\\n  \"TouchDeadZone\": 0\\n}/' " + path + "; " +
+                      "sed -i 's/\"TouchBoostHz\":.*/\"TouchBoostHz\": 185,/' " + path + "; " +
                       "sed -i 's/\"TouchPollingRate\":.*/\"TouchPollingRate\": 1000,/' " + path;
             } else if (path.endsWith(".xml")) {
                 cmd = "grep -qF 'TouchBoostHz' " + path +
-                      " || sed -i 's/<\\/map>/  <int name=\"TouchBoostHz\" value=\"165\" \\/>\\n  <int name=\"TouchPollingRate\" value=\"1000\" \\/>\\n  <int name=\"TouchZeroDelay\" value=\"1\" \\/>\\n<\\/map>/' " + path;
+                      " || sed -i 's/<\\/map>/  <int name=\"TouchBoostHz\" value=\"185\" \\/>\\n  <int name=\"TouchPollingRate\" value=\"1000\" \\/>\\n  <int name=\"TouchZeroDelay\" value=\"1\" \\/>\\n<\\/map>/' " + path;
             } else {
-                cmd = "grep -qF 'TouchBoostHz' " + path + " || echo 'TouchBoostHz=165' >> " + path + "; " +
+                cmd = "grep -qF 'TouchBoostHz' " + path + " || echo 'TouchBoostHz=185' >> " + path + "; " +
                       "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                       "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
                       "grep -qF 'TouchDeadZone' " + path + " || echo 'TouchDeadZone=0' >> " + path + "; " +
-                      "sed -i 's/^TouchBoostHz=.*/TouchBoostHz=165/' " + path + "; " +
+                      "sed -i 's/^TouchBoostHz=.*/TouchBoostHz=185/' " + path + "; " +
                       "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path;
             }
             if (ShizukuExecutor.hasShizukuPermission()) {

@@ -23,7 +23,7 @@ public class MlbbConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -44,7 +44,7 @@ public class MlbbConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String content = "[Graphics]\n" +
@@ -111,7 +111,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch response keys into MLBB config files.
-     * Optimized for 165Hz panels — sets HighFreqTouchHz=165, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
+     * Optimized for 185Hz panels — sets HighFreqTouchHz=185, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -122,8 +122,8 @@ public class MlbbConfigPatcher {
                 "sed -i 's/^HighFreqTouch=.*/HighFreqTouch=1/' " + path + "; " +
                 "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
                 "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
@@ -206,7 +206,7 @@ public class MlbbConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int forcedFps = 185; // hard-locked
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
