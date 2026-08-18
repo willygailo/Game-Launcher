@@ -42,6 +42,30 @@ public class GameConfigPathResolverTest {
     }
 
     @Test
+    public void bloodStrikeAndStandoff_familiesResolve() {
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.tencent.bloodstrike")
+                .contains("files/Config/UserSetting.ini"));
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.axlebolt.standoff2")
+                .contains("files/Settings.json"));
+    }
+
+    @Test
+    public void arenaBreakoutAndSupercell_familiesResolve() {
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.morefun.uamo.arena.breakout")
+                .contains("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini"));
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.supercell.brawlstars")
+                .contains("shared_prefs/game_preferences.xml"));
+    }
+
+    @Test
+    public void robloxAndValorant_familiesResolve() {
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.roblox.client")
+                .contains("files/AppSettings.json"));
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.krafton.valorant")
+                .contains("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini"));
+    }
+
+    @Test
     public void genshinFamily_resolvesConfigJson() {
         assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.miHoYo.Yuanshen")
                 .contains("files/Config/GameSettings.json"));
@@ -132,6 +156,23 @@ public class GameConfigPathResolverTest {
                 "com.example.slash", java.util.Collections.singletonList("/files/x.ini"));
         assertEquals(12, paths.size());
         assertTrue(paths.contains("/data/data/com.example.slash/files/x.ini"));
+    }
+
+    @Test
+    public void hokFamily_additionalNeedle_kgtw() {
+        assertTrue(GameConfigPathResolver.getKnownRelativePathsForPackage("com.tencent.kg.tw")
+                .contains("files/DeviceHardware.ini"));
+    }
+
+    @Test
+    public void getPathsForGame_null_returnsEmpty() {
+        assertTrue(GameConfigPathResolver.getPathsForGame(null).isEmpty());
+    }
+
+    @Test
+    public void resolveConfigPaths_emptyRelatives_returnsEmpty() {
+        assertTrue(GameConfigPathResolver.resolveConfigPaths(
+                "com.example.norel", java.util.Collections.emptyList()).isEmpty());
     }
 
     // ─── cache behavior ──────────────────────────────────────────────────────

@@ -157,11 +157,55 @@ public class GameConfigPatcher {
         AntiLogPatcher.applyAntiLog(pkg);
 
         if (patchedFiles > 0) {
-            Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for " + packageName + " -> " + forcedFps + " FPS/Hz");
-            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for " + forcedFps + " FPS/Hz");
+            // Phase 2.3: read the written config files back and assert the forced FPS
+            // value actually landed — report "patch confirmed" vs "written but unverified"
+            PatchVerifyOutcome verify = verifyWrittenPatches(configPaths, forcedFps);
+            Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for "
+                    + packageName + " -> " + forcedFps + " FPS/Hz — " + verify.summary);
+            return new PatchResult(true, "Auto-configured " + packageName + " game setting files for "
+                    + forcedFps + " FPS/Hz — " + verify.summary);
         } else {
             return new PatchResult(false, "Could not update config files for " + packageName);
         }
+    }
+
+    private static final class PatchVerifyOutcome {
+        final int verifiedFiles;
+        final String summary;
+
+        PatchVerifyOutcome(int verifiedFiles, String summary) {
+            this.verifiedFiles = verifiedFiles;
+            this.summary = summary;
+        }
+    }
+
+    private static PatchVerifyOutcome verifyWrittenPatches(List<String> configPaths, int targetFps) {
+        int verified = 0;
+        int checked = 0;
+        if (configPaths != null) {
+            int cap = Math.min(configPaths.size(), 12);
+            for (int i = 0; i < cap; i++) {
+                String path = configPaths.get(i);
+                if (path == null || path.trim().isEmpty()) continue;
+                try {
+                    if (!ShizukuFileManager.fileExists(path)) continue;
+                    checked++;
+                    String content = ShizukuFileManager.readFile(path);
+                    if (GameConfigPatchVerifier.verifyFpsInContent(content, targetFps)) {
+                        verified++;
+                    } else {
+                        Log.d(TAG, "Read-back: no FPS value in " + path);
+                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "Read-back failed for " + path, t);
+                }
+            }
+        }
+        String summary = GameConfigPatchVerifier.buildVerificationSummary(verified, checked);
+        if (checked > 0) {
+            Log.d(TAG, "Read-back verification: " + verified + "/" + checked + " files — " + summary);
+        }
+        return new PatchVerifyOutcome(verified, summary);
     }
 
     private static boolean patchGenericConfig(String path, int targetFps) {

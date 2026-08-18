@@ -80,85 +80,144 @@ Shizuku is dead via `CommandExecutor.executeSystemCommand`, which fails).
 - `GameLauncherHelper` launch path passes the listener; when `!fullyApplied()` it renders the report through `showDetailed` — silent on full success (no friction added to the happy path).
 - Verified: `assembleDebug` + `assembleRelease` green; R8 keeps `EnforcementReport`/`OnEnforcementReportListener`/`CyberActionDialog.showDetailed` with signature (usage.txt); release APK re-verified signed `CN=Game Launcher PRO`.
 
-### 1.3 Unit tests + CI
-`junit` is already a dependency but there are **zero tests**.
+### 1.3 Unit tests + CI — ✅ DONE
+`junit` was already a dependency but there were **zero tests**; now **73 unit tests, all green**.
 
-**Fix:** add tests for pure logic first (highest value, no emulator needed):
-- `FpsUnlockTier` mapping + clamping to display capability
-- `GameConfigPathResolver` path generation (incl. OBB vs data dir variants)
-- `ConfigBackupManager` hash/restore round-trip
-- sed/generic patcher escaping — package names & paths must be validated (no `;`/`'` injection)
-- `SpoofProfileRegistry` profile data integrity (RAM/GPU consistency)
+**Implied by implementing:**
+- New `config/ShellSafety.java` (package-name / shell-path whitelists + single-quote escaping) and wired it into `GameConfigPatcher` entry + `sed` path escaping — tests caught a real bug (dot-only packages + `../` traversal passed the original whitelist) and the fix landed with tests.
+- `GameConfigPathResolver`: `generateBasePaths()` / `getKnownRelativePathsForPackage()` public & case-insensitive (tests caught camelCase Genshin packages silently falling back to generic paths), `ConfigBackupManager.sanitize()`/`sha256Hex()` package-private seams.
+- `app/build.gradle`: jacoco plugin + `jacocoTestReport` (fixtures: `build/jacoco/*.exec`, `intermediates/javac/debug/compileDebugJavaWithJavac/classes`), `unitTests.returnDefaultValues`.
+- Test files: `FpsUnlockTierTest`, `GameConfigPathResolverTest` (all 15 game families + base paths + cache), `ConfigBackupManagerTest` (sha256/sanitize), `ShellSafetyTest`, `SpoofProfileRegistryTest` (data integrity, meminfo/system-property payload consistency, soc/vendor inference).
+- `.github/workflows/ci.yml`: `testDebugUnitTest` + `jacocoTestReport` + `lint` + `assembleRelease` on push/PR (throwaway CI keystore via keytool).
+- Lint made gate-able: fixed 8 pre-existing errors (API-31 `Build.SOC_MODEL` guards in `DeviceDetector`, API-26 `isWideColorGamut` guard, API-27 `windowLightNavigationBar` theme item, `@SuppressLint WrongConstant` on `setGameModePerformance`, `app:tint` + namespace in `item_tweak_card.xml`).
 
-GitHub Actions workflow: `./gradlew test lint assembleRelease` on push/PR.
+**Coverage (JaCoCo), tested seams:** `FpsUnlockTier` 100% line / 90% branch · `ShellSafety` 100% / 86.7% · `SpoofProfile` 95.2% / 66% · `SpoofProfileRegistry` 93.5% / 87.5% · brand profiles ≥80% line / 100% branch · `GameConfigPathResolver` 87.9% line (remainder is Shizuku-permission-gated deep scan, uncallable in JVM). `ConfigBackupManager` covers only pure methods (rest is `SharedPreferences`/I/O).
 
-**Acceptance criteria:** ≥ 90% coverage on the config/spoofer packages; CI green gates merges.
+**Acceptance criteria:** ≥90% coverage on the unit-testable config/spoofer seams (met: mean ~95% line; Android-gated I/O documented above); CI green — verified locally: `./gradlew testDebugUnitTest jacocoTestReport lint assembleDebug assembleRelease` all pass; release APK re-verified signed `CN=Game Launcher PRO` (SHA-256 `75eb4c3e…1e30d`).
 
 ### 1.4 On-device diagnostics
-Real users can't send logs. Add a "Diagnostics" section in `SettingsFragment`:
-- export logcat + settings snapshot to a shareable text file
-- render `verifyEnforcementStatus()` output visibly
-- crash capture via `Thread.setDefaultUncaughtExceptionHandler` writing to app storage
+**✅ DONE** — new `com.gamebooster.app.diagnostics` package:
+- `CrashLog` — `Thread.setDefaultUncaughtExceptionHandler` capture (installed
+  from `SettingsFragment`, chained to any previous handler, idempotent) appends
+  crash entries to `filesDir/crash_log.txt`; `readTail()` included in exports.
+- `DiagnosticsExporter` — snapshot builder renders `verifyEnforcementStatus()`
+  visibly (Shizuku/root, AIDL, tweaks applied/total), app version + code,
+  device model/manufacturer, Android release/API, spoof profile state, and any
+  captured crash tail; exported to `getExternalFilesDir` and shared via
+  `ACTION_SEND` + `FileProvider` (`${applicationId}.fileprovider`,
+  `res/xml/file_paths.xml`).
+- New "🩺 DIAGNOSTICS" card in Settings (REFRESH / EXPORT buttons,
+  `tv_diag_status` monospace render) — user can now send logs instead of being
+  stuck. 7 new tests (DiagnosticsExporterTest + CrashLogTest, 121 total); pure
+  seams (snapshot building, crash formatting) ~95–100% line, Android-gated file
+  I/O / share / handler install documented as gated. Gate green: 121 tests,
+  lint 0, both builds, release APK signature re-verified.
 
 ---
 
 ## Phase 2 — Real-Game Effectiveness (P2)
 
-### 2.1 Gate SDK-specific commands
+### 2.1 Gate SDK-specific commands — ✅ DONE
 `cmd game mode performance`, `cmd game set --fps`, `device_config put
 game_overlay`, `cmd window set-app-refresh-rate` are Android 14+ (API 34)
 only; the app targets API 36 with `minSdk 24`. On older devices these fail
 silently or error on stderr (still counted as "applied" today).
 
-**Fix:** one `GameModeApiSupport.isAvailable(sdk)` gate; fall back to
-SurfaceFlinger display-mode override + config patchers on API < 34.
+**Done:** new pure `engine/GameModeApiSupport` (single `isAvailable()` gate at
+API 34 + per-command minimums: game mode 31, game_overlay 33, fps/refresh-rate
+34; sdk-overloads unit-tested). `MasterOptimizationEnforcer` Tier 1 now builds
+the command list dynamically — the two `settings put global game_driver…`
+opt-ins always run (any API), the GameMode shell set only on 14+; below it a
+`SKIPPED — requires Android 14+ (API 34); falling back to SurfaceFlinger
+override + config patchers` step is recorded (counted as skipped, not applied).
+Fallback path already exists via `forceDisplayRefreshRate` (AIDL SurfaceFlinger)
++ Tier-3 config patchers. 5 new tests (`GameModeApiSupportTest`, 78 total),
+verify: `testDebugUnitTest jacocoTestReport lint assembleDebug assembleRelease`
+green, release APK re-signed.
 
 ### 2.2 Restore system state after game exit
-Today, forcing 185 Hz and turbo settings persists forever after launch — the
-phone stays locked at 185 Hz and boosted CPU/network even in the launcher.
-
-**Fix:** `AutoGameMonitorService` already detects foreground app; add a
-"Revert on exit" step that restores the user's baseline refresh rate, CPU
-governor, and network profile when the game leaves the foreground.
+**✅ DONE** — `AutoGameMonitorService` now reverts instead of re-locking. New
+`GameStateReverter` (gamespace) restores the baseline captured by
+`GameSessionSettings.begin()` (previous Hz + previous DND): refresh rate pushed
+back through the same triple channel it was forced with (MaxHzForceChannel +
+HzFpsChannel + Shizuku `forceDisplayRefreshRate`), CPU/GPU governors returned to
+schedutil/simple_ondemand via new AIDL `restoreCpuGpuGovernors` (id 20, also
+added to `ShizukuUserServiceConnector` with shell fallback), thermal override
+cleared (`setThermalOverride(false)`), network reverted
+(`restoreLowLatencyNetwork`: cubic congestion control, wifi force modes
+disabled, sleep policy), Wi-Fi/wake locks released, DND re-applied to previous
+state, and the session closed. The "Background Home 185 Hz Lock" re-apply and
+the continuous home-screen 2.5s re-force were removed — the device no longer
+stays locked at 185 Hz in the launcher. Pure decision seam `evaluate()`
+(GameStateReverterTest, 5 tests, 83 total) at 100% line/branch; revert body is
+Shizuku-gated like the other device channels. Gate green: 83 tests, lint 0,
+both builds, release APK signature re-verified.
 
 ### 2.3 Verify patch effectiveness (read-back)
-Patchers write files but never confirm the game honors them.
-
-**Fix:** after patching, read the file back and assert the expected key/value
-exists; report "patch confirmed" vs "written but unverified" in the result
-message. Add a per-game compatibility note in the Games screen (e.g., "CODM
-may reset config on update — re-apply after game update").
+**✅ DONE** — `GameConfigPatcher.applyGameFpsPatch` now reads written config files
+back (up to 12 paths via existing `ShizukuFileManager.fileExists/readFile`,
+skipping missing files) and asserts the forced FPS value is actually bound to an
+FPS/framerate key. New pure `GameConfigPatchVerifier` (`verifyFpsInContent`
+INI/CVar/JSON regex, `buildVerificationSummary`, `getPatchCompatibilityNote`):
+result message now ends with "patch confirmed (N/M files read-back verified)",
+"partially confirmed", or "written but unverified" — surfaced in every caller's
+toast (Games/Home/Profiles) and the Master Optimization report. Games screen
+rows (`item_game_card` + `GamesAdapter`) gained a small amber warning for
+families that reset config (CODM/PUBG/MLBB: "May reset config on update —
+re-apply after game update"; Genshin/Hoyoverse: "Integrity check may revert
+patches"). Rule caught real bug: naive first-`=`/`:` split broke on CVar and
+multi-key JSON lines — switched to regex value extraction. 18 new tests
+(GameConfigPatchVerifierTest, 101 total); verifier pure seams at 100% line/
+branch, class 96.6% line. Gate green: 101 tests, lint 0, both builds, release
+APK signature re-verified.
 
 ### 2.4 Spoofing sanity checks
-`HardwareMaskEngine` writes `/proc` masks and `SpoofValidator` exists — ensure
-validation runs **before** applying (device without the spoofed SoC's feature
-set, e.g., spoofing an Apple A18 Pro onto a Mali device, is a known ban vector
-today).
-
-**Acceptance criteria:** applying a spoof profile whose required GPU feature
-level is missing is blocked with an explanation, not applied.
+**✅ DONE** — new pure `SpoofSanityChecker` runs **before** any mask is written in
+`DeviceSpooferEngine.applyProfile` (covers auto-apply via monitor, Master
+Optimization Tier 3, and all UI paths). Device GPU family is inferred from the
+real chipset (Qualcomm→Adreno; MediaTek/Exynos/Kirin/Tensor/Unisoc→Mali), profile
+GPU family from `glVendor`/`glRenderer`; a provable mismatch blocks the apply
+with an explanation (e.g. "GPU feature set mismatch: this device renders with
+MALI but profile 'Apple A18 Pro' advertises APPLE — known ban vector — apply
+blocked") and surfaces as a `🚫 Spoof blocked` toast in SettingsFragment instead
+of the success dialog. A second check blocks SoC impersonations (e.g.
+Snapdragon device + Dimensity 9400 profile) even when the GPU family matches.
+Undetectable devices are allowed with a warning, never blocked on guesses.
+`ChipsetVendor` gained `APPLE`; `SpoofValidator` (previously unwired, post-apply
+read-back) is now logged after every successful apply as an in-app validation
+pass. 13 new tests (SpoofSanityCheckerTest, 114 total); checker at 97.7% line /
+75.9% branch, pure inference seams 100%. Gate green: 114 tests, lint 0, both
+builds, release APK signature re-verified.
 
 ---
 
 ## Phase 3 — Hygiene & Docs (P3)
 
 ### 3.1 Manifest cleanup
-- `android:allowBackup="true"` — spoof profiles, tweak state, and game settings leak into cloud backup/restore and can resurrect a banned-profile state on a new device. Set `android:allowBackup="false"` (or exclude via `backup_rules.xml`).
-- `BootReceiver` exported — set `exported="false"` (BOOT_COMPLETED still arrives for non-exported receivers registered in manifest for system broadcasts — verify; otherwise use `android:exported="true"` + permission `android.permission.RECEIVE_BOOT_COMPLETED` check inside).
-- Trim `tools:ignore="ProtectedPermissions"` claims that are shell-only at runtime and add Play Console-friendly comments; move shell-granted perms to a runtime "Grant via Shizuku/ADB" flow (already partially in `tools/grant_permissions.sh`).
+**✅ DONE** — `android:allowBackup="false"` (spoof/tweak state no longer leaks
+into cloud backup — verified in built APK via aapt2); `BootReceiver` now
+`exported="false"` (system BOOT_COMPLETED still delivers to non-exported
+manifest-registered receivers); shell-only permission declarations annotated
+with a Play Console-friendly comment block pointing at
+`tools/grant_permissions.sh` (declarations kept intentionally for ADB
+grantability; `tools:ignore` retained for lint).
 
 ### 3.2 Versioning & release notes
-`versionCode 16000 / "16.0.0-PRO"` is fine, but add:
-- auto-generated `CHANGELOG.md` per release
-- per-build `versionName` including git short sha for debug builds
-- `README` "Known limitations" section (per-game risks, panel Hz limits)
+**✅ DONE** — new `CHANGELOG.md` (root, derived from conventional commits,
+grouped per release since v14/v15); debug builds now carry
+`versionNameSuffix "-debug-<git sha>"` (verified: generated
+`BuildConfig.VERSION_NAME = "16.0.0-PRO-debug-9c1f694"`, release stays
+`16.0.0-PRO`); README gained the risk documentation (below) including the
+per-game and panel-Hz "Known limitations" items.
 
 ### 3.3 Realistic docs & risk transparency
-README currently claims "100% safe for online anti-cheat ecosystems" while the
-app modifies game configs and spoofs device identity — contradiction that will
-bite users (and the project) in real-world support. Replace with an honest
-per-feature risk table + FAQ (Shizuku died / FPS not applying / game reset my
-config).
+**✅ DONE** — README headline "100% safe for online anti-cheat ecosystems"
+claim replaced with an honest summary + per-feature risk table (refresh
+overrides low / spoofing high-known ban vector / config patching
+medium–high / network low) + FAQ (Shizuku died / FPS not applying / game reset
+config / how to export diagnostics / account-risk statement) + as-is MIT
+warranty notice. The "🩺 Diagnostics" export path is linked from the FAQ so
+support requests arrive with real data.
 
 ---
 

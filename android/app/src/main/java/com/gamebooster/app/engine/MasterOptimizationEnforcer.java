@@ -197,14 +197,22 @@ public class MasterOptimizationEnforcer {
 
                 if (shizukuAvailable) {
                     tier1Ok = true;
-                    String[] tier1Commands = new String[]{
-                            "cmd game mode performance " + pkg,
-                            "cmd window set-app-refresh-rate " + pkg + " " + forcedFps,
-                            "cmd game set --fps " + forcedFps + " " + pkg,
-                            "device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps,
-                            "settings put global game_driver_opt_in_apps " + pkg,
-                            "settings put global updatable_driver_production_opt_in_apps " + pkg
-                    };
+                    List<String> tier1Commands = new ArrayList<>();
+                    // Settings-global driver opt-ins work on every Android version.
+                    tier1Commands.add("settings put global game_driver_opt_in_apps " + pkg);
+                    tier1Commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
+                    // Phase 2.1: the GameMode shell set is Android 14+ (API 34) only;
+                    // below that, skip and rely on the SurfaceFlinger refresh override
+                    // (forceDisplayRefreshRate) + Tier-3 config patchers instead.
+                    if (GameModeApiSupport.isAvailable()) {
+                        tier1Commands.add(0, "cmd game mode performance " + pkg);
+                        tier1Commands.add(1, "cmd window set-app-refresh-rate " + pkg + " " + forcedFps);
+                        tier1Commands.add(2, "cmd game set --fps " + forcedFps + " " + pkg);
+                        tier1Commands.add(3, "device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps);
+                    } else {
+                        report.addStep("Tier 1", "GameMode shell set (cmd game / set-app-refresh-rate / game_overlay)", false,
+                                "SKIPPED — requires Android 14+ (API 34); falling back to SurfaceFlinger override + config patchers");
+                    }
                     for (String cmd : tier1Commands) {
                         report.attemptStep("Tier 1", cmd, () -> {
                             String res = ShizukuUserServiceConnector.getInstance().executeCommand(cmd);

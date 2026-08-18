@@ -167,11 +167,43 @@ public class SpoofProfileRegistryTest {
         SpoofProfile mali = new SpoofProfile("m", "M", "B", "model", "brand", "mfr", "d", "p", "p",
                 "h", "pl", "soc", "b", "c", "f", "d", "Mali-G715 Immortalis");
         assertEquals("ARM", mali.glVendor);
+        SpoofProfile immortalis = new SpoofProfile("i", "I", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "soc", "b", "c", "f", "d", "Immortalis-G925");
+        assertEquals("ARM", immortalis.glVendor);
         SpoofProfile adreno = new SpoofProfile("a", "A", "B", "model", "brand", "mfr", "d", "p", "p",
                 "h", "pl", "soc", "b", "c", "f", "d", "Adreno (TM) 740");
         assertEquals("Qualcomm", adreno.glVendor);
         SpoofProfile powervr = new SpoofProfile("p", "P", "B", "model", "brand", "mfr", "d", "p", "p",
                 "h", "pl", "soc", "b", "c", "f", "d", "PowerVR B-Series");
         assertEquals("Imagination Technologies", powervr.glVendor);
+        SpoofProfile appleGpu = new SpoofProfile("ap", "AP", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "soc", "b", "c", "f", "d", "Apple GPU");
+        assertEquals("Apple", appleGpu.glVendor);
+        SpoofProfile unknownGpu = new SpoofProfile("u", "U", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "soc", "b", "c", "f", "d", null);
+        assertEquals("Qualcomm", unknownGpu.glVendor);
+        SpoofProfile noGpu = new SpoofProfile("n", "N", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "soc", "b", "c", "f", "d", "");
+        assertEquals("Qualcomm", noGpu.glVendor);
+    }
+
+    @Test
+    public void socManufacturerInference_branches() {
+        // MediaTek dimensity
+        SpoofProfile dim = new SpoofProfile("d1", "D1", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "dimensity 9300", "b", "c", "f", "d", "Mali-G720");
+        assertEquals("MediaTek", dim.socManufacturer);
+        // Apple silicon
+        SpoofProfile apl = new SpoofProfile("d2", "D2", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "A18 Pro", "b", "c", "f", "d", "Apple GPU");
+        assertEquals("Apple", apl.socManufacturer);
+        // Brand-only Apple signal
+        SpoofProfile apl2 = new SpoofProfile("d3", "D3", "B", "model", "Apple", "mfr", "d", "p", "p",
+                "h", "pl", "soc", "b", "c", "f", "d", "Apple GPU");
+        assertEquals("Apple", apl2.socManufacturer);
+        // Fallback stays Qualcomm (no dimensity/apple signals)
+        SpoofProfile q = new SpoofProfile("d4", "D4", "B", "model", "brand", "mfr", "d", "p", "p",
+                "h", "pl", "snapdragon 8 gen 3", "b", "c", "f", "d", "Adreno 750");
+        assertEquals("Qualcomm", q.socManufacturer);
     }
 }

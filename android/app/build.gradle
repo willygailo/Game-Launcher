@@ -73,6 +73,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Per-build version identity: 16.0.0-PRO-debug-<git sha>
+            def gitSha = ''
+            try {
+                gitSha = 'git rev-parse --short HEAD'.execute(null, rootProject.projectDir).text.trim()
+            } catch (Exception ignored) {
+            }
+            if (gitSha?.trim()) {
+                versionNameSuffix "-debug-$gitSha"
+            }
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled true

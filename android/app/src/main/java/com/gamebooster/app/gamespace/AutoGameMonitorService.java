@@ -142,27 +142,18 @@ public class AutoGameMonitorService extends Service {
                                 + " active (" + finalTargetHz + " FPS & " + finalTargetHz + "Hz Locked)", android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                if (targetHz <= 0) targetHz = 185;
-                Log.i(TAG, "Game exited — maintaining active performance settings (Background Home " + targetHz + "Hz Lock)");
+                Log.i(TAG, "Game exited — reverting to baseline system state");
                 lastActiveGamePackage = null;
-                GameSessionSettings.restore(getApplicationContext());
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
-                
-                // Enforce Background Home Refresh Rate & Performance state
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
-                com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), targetHz);
-                ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(targetHz);
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                
-                final int finalTargetHz = targetHz;
+                GameStateReverter.RevertReport revertReport =
+                        GameStateReverter.revertToBaseline(getApplicationContext());
+                Log.i(TAG, "Revert report: " + revertReport.message);
+
+                final String revertMessage = revertReport.message;
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "⚡ Background Home Active — " + finalTargetHz + "Hz & Performance Locked", android.widget.Toast.LENGTH_SHORT).show());
-            } else if (!isGameActive && lastActiveGamePackage == null) {
-                // Background Home continuous refresh rate check
-                int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                if (targetHz <= 0) targetHz = 185;
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
+                        android.widget.Toast.makeText(getApplicationContext(),
+                                "↩ System reverted — " + revertMessage,
+                                android.widget.Toast.LENGTH_SHORT).show());
             }
         });
     }

@@ -288,6 +288,19 @@ public class ShizukuUserServiceConnector {
         ShizukuExecutor.executeShizukuCommands("for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > \"$cpu\" 2>/dev/null; done; setprop debug.adreno.turbo 1; setprop debug.mali.sched.priority -20");
     }
 
+    public void restoreCpuGpuGovernors() {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                userServiceInstance.restoreCpuGpuGovernors();
+                return;
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in restoreCpuGpuGovernors", e);
+            }
+        }
+        ShizukuExecutor.executeShizukuCommands("for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > \"$cpu\" 2>/dev/null; done; cmd power set-mode 2 0; cmd power set-mode 0 0; setprop debug.adreno.turbo 0");
+    }
+
     public void optimize5GAndWifi() {
         ensureBound();
         if (userServiceInstance != null) {

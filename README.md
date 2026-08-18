@@ -23,10 +23,10 @@
 
 ## 🌟 Executive Overview
 
-**Game Launcher PRO** transforms your Android device into a dedicated, low-latency flagship gaming machine. Engineered directly on top of the **Shizuku Privileged IPC Engine (UID 2000)**, it unlocks hardware display overrides, eliminates thermal throttling governors, synchronizes touch polling frequencies, and dynamically injects competitive in-game configurations—**completely non-root and 100% safe for online anti-cheat ecosystems**.
+**Game Launcher PRO** transforms your Android device into a dedicated, low-latency flagship gaming machine. Engineered directly on top of the **Shizuku Privileged IPC Engine (UID 2000)**, it unlocks hardware display overrides, eliminates thermal throttling governors, synchronizes touch polling frequencies, and dynamically injects competitive in-game configurations—**completely non-root and zero IAP**. Online anti-cheat compatibility is never guaranteed — see [Security & Risk Transparency](#-security--risk-transparency).
 
 ```
-  ⚡ 185Hz Extreme ROG Mode  │  🎭 5-Layer Flagship Spoofer  │  🎯 1000Hz Touch Polling  │  🛡️ 100% Safe & Zero-Root
+  ⚡ 185Hz Extreme ROG Mode  │  🎭 5-Layer Flagship Spoofer  │  🎯 1000Hz Touch Polling  │  🔒 Zero-Root Shizuku Engine
 ```
 
 ---
@@ -178,12 +178,41 @@ The compiled binaries will be output to:
 
 ---
 
-## 🔒 Security & Anti-Cheat Compatibility
+## 🔒 Security & Risk Transparency
 
-Game Launcher PRO adheres strictly to non-invasive system layer optimizations:
-- 🛡️ **Zero Binary Tampering**: Does not inject code or hook into game processes (No Frida / No Xposed).
-- 🛡️ **100% Account Safe**: Modifications are restricted to official Android Game Mode APIs, display refresh parameters, and standard configuration files (`Active.sav` / FastFlags).
-- 🛡️ **Zero Root Requirement**: All elevated operations run inside Shizuku's standard privileged UID 2000 environment.
+> **Honest summary:** Game Launcher PRO is **non-root** and does **not** inject
+> code, hook game processes, or use Xposed/Frida. However, it *does* rewrite
+> system display parameters, patch game configuration files, and spoof device
+> identity — all of which can be detected by anti-cheat systems. **No tool can
+> honestly promise "100% safe" against online anti-cheat ecosystems.** Use at
+> your own risk on accounts you care about.
+
+| Feature | What it changes | Risk | Why |
+| :-- | :-- | :-- | :-- |
+| Refresh-rate / FPS overrides | Android display & Game Mode parameters | Low | Standard system APIs; may be limited by panel hardware (e.g. a 60Hz panel will not run 185Hz) |
+| Device identity spoofer | `/proc` masks, build props, device fingerprints | **High — known ban vector** | Anti-cheat flags impossible hardware (e.g. Apple SoC on a Snapdragon device). The app now blocks provable mismatches via `SpoofSanityChecker` (Phase 2.4), but this cannot guarantee safety |
+| Game config patching (`Active.sav`, FastFlags, CFG) | Per-game config files | Medium–High | Config modifications are detectable; devs may reset, integrity-check, or flag modified configs |
+| Network prioritizer | Wi-Fi/cellular QoS settings | Low | Standard Android knobs |
+
+### FAQ
+
+- **Shizuku died / permissions revoked — what now?** Open Shizuku again
+  (Settings → Shizuku & System Permissions → Grant) and hit **Master
+  Enforce**. The app never requires root; everything runs via UID 2000.
+- **My FPS override is not applying.** Open **Settings → Diagnostics →
+  REFRESH** and check `Shizuku/root available` and `AIDL service connected`;
+  if either is `false`, Shizuku is not running. If both are `true`, your panel
+  may not support the target Hz (Check `verifyEnforcementStatus()` output).
+- **The game reset my config.** Known behavior: several titles reset or
+  integrity-check configs on update or launch (flagged per-game on the Games
+  screen — e.g. CoD Mobile, PUBG Mobile, Genshin). Re-apply after updates.
+- **I need help / want to report a bug.** Export diagnostics: Settings →
+  Diagnostics → **EXPORT** — the share sheet gives a text snapshot with app
+  version, enforcement status, spoof state, and any captured crash log.
+- **Is my account at risk?** Yes, potentially — see the risk table above.
+  Spoofing or patching files in online games can lead to bans. This project is
+  provided as-is (MIT) with no warranty; the developer is not responsible for
+  loss of access to accounts.
 
 ---
 

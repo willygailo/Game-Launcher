@@ -18,4 +18,14 @@ public class NetworkTweaksChannel {
         CommandExecutor.executeSystemCommand("cmd wifi force-low-latency-mode enabled");
         return ok;
     }
+
+    public static boolean restoreLowLatencyNetwork() {
+        boolean ok = true;
+        ok &= CommandExecutor.setSystemProperty("net.ipv4.tcp_congestion_control", "cubic");
+        ok &= CommandExecutor.setSystemProperty("net.ipv4.tcp_ecn", "1");
+        CommandExecutor.setSystemSetting("global", "wifi_sleep_policy", "1");
+        CommandExecutor.executeSystemCommand("cmd wifi force-low-latency-mode disabled");
+        CommandExecutor.executeSystemCommand("cmd wifi force-hi-perf-mode disabled");
+        return ok;
+    }
 }

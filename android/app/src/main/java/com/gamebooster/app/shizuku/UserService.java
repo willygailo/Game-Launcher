@@ -243,6 +243,18 @@ public class UserService extends IUserService.Stub {
     }
 
     @Override
+    public void restoreCpuGpuGovernors() {
+        String cmd = "for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > \"$cpu\" 2>/dev/null; done; " +
+                     "for gpu in /sys/class/kgsl/kgsl-3d0/devfreq/governor /sys/class/devfreq/*gpu*/governor; do echo simple_ondemand > \"$gpu\" 2>/dev/null; done; " +
+                     "setprop debug.adreno.turbo 0; " +
+                     "setprop debug.mali.sched.priority 0; " +
+                     "setprop debug.hwui.render_thread_priority 0; " +
+                     "cmd power set-mode 2 0; " +
+                     "cmd power set-mode 0 0";
+        execCommand(cmd);
+    }
+
+    @Override
     public void optimize5GAndWifi() {
         String cmd = "setprop net.tcp.buffersize.5g 524288,1048576,8388608,262144,524288,4194304; " +
                      "setprop net.tcp.buffersize.6g 524288,1048576,8388608,262144,524288,4194304; " +

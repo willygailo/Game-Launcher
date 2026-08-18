@@ -46,6 +46,14 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
         holder.tvProfile.setText(GameProfilePreferences.getSummary(context, game.getPackageName()));
         if (game.getIcon() != null) holder.ivIcon.setImageDrawable(game.getIcon());
 
+        String note = com.gamebooster.app.config.GameConfigPatchVerifier.getPatchCompatibilityNote(game.getPackageName());
+        if (note != null) {
+            holder.tvNote.setText("⚠ " + note);
+            holder.tvNote.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvNote.setVisibility(View.GONE);
+        }
+
         holder.btnLaunch.setOnClickListener(v -> GameLauncherHelper.launchGameWithAutoBoost(context, game));
         holder.btnConfig.setOnClickListener(v -> showProfilePicker(holder, game));
     }
@@ -105,6 +113,7 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
         TextView tvTitle;
         TextView tvPkg;
         TextView tvProfile;
+        TextView tvNote;
         Button btnLaunch;
         Button btnConfig;
 
@@ -114,6 +123,7 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
             tvTitle = itemView.findViewById(R.id.tv_game_title);
             tvPkg = itemView.findViewById(R.id.tv_game_pkg);
             tvProfile = itemView.findViewById(R.id.tv_game_profile);
+            tvNote = itemView.findViewById(R.id.tv_game_note);
             btnLaunch = itemView.findViewById(R.id.btn_launch_game);
             btnConfig = itemView.findViewById(R.id.btn_config_game);
         }

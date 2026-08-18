@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Test, lint and assemble release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Unit tests + JaCoCo coverage report
+        run: ./gradlew testDebugUnitTest jacocoTestReport
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            android/app/build/reports/tests/testDebugUnitTest
+            android/app/build/reports/jacoco/jacocoTestReport
+
+      - name: Lint
+        run: ./gradlew lint
+
+      - name: Assemble release (throwaway CI keystore)
+        run: |
+          mkdir -p keystore
+          keytool -genkeypair -v -keystore keystore/ci-release.jks \
+            -alias ci -keyalg RSA -keysize 2048 -validity 10 -storepass ci_store_pass \
+            -keypass ci_store_pass -dname "CN=Game Launcher CI, OU=CI, O=Game Launcher, L=City, S=State, C=US"
+          cat > keystore.properties <<EOF
+          storeFile=keystore/ci-release.jks
+          storePassword=ci_store_pass
+          keyAlias=ci
+          keyPassword=ci_store_pass
+          EOF
+          ./gradlew assembleRelease

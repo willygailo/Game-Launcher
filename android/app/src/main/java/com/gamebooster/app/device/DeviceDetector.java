@@ -17,6 +17,7 @@ public class DeviceDetector {
         UNISOC,
         TENSOR,
         KIRIN,
+        APPLE,
         GENERIC
     }
 
@@ -95,10 +96,15 @@ public class DeviceDetector {
         return ChipsetVendor.QUALCOMM;
     }
 
+    private static String socModelOrEmpty() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL != null
+                ? Build.SOC_MODEL.toLowerCase() : "";
+    }
+
     private static String getChipsetName() {
         String hardware = Build.HARDWARE != null ? Build.HARDWARE.toLowerCase() : "";
         String board = Build.BOARD != null ? Build.BOARD.toLowerCase() : "";
-        String soc = Build.SOC_MODEL != null ? Build.SOC_MODEL.toLowerCase() : "";
+        String soc = socModelOrEmpty();
 
         if (hardware.contains("qcom") || board.contains("sm8") || board.contains("sm7") || board.contains("sm6") || board.contains("sdm") || soc.contains("sm")) {
             if (board.contains("sm8750") || soc.contains("sm8750")) return "Snapdragon 8 Elite (Gen 4)";
@@ -131,7 +137,7 @@ public class DeviceDetector {
     public static ChipsetVendor detectChipsetVendor() {
         String hardware = Build.HARDWARE != null ? Build.HARDWARE.toLowerCase() : "";
         String board = Build.BOARD != null ? Build.BOARD.toLowerCase() : "";
-        String soc = Build.SOC_MODEL != null ? Build.SOC_MODEL.toLowerCase() : "";
+        String soc = socModelOrEmpty();
 
         if (hardware.contains("qcom") || board.contains("sm") || board.contains("sdm") || soc.contains("sm")) {
             return ChipsetVendor.QUALCOMM;

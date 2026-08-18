@@ -23,4 +23,5 @@ interface IUserService {
     void enforceAppOpsAndPermissions(String packageName) = 17;
     void applyThermalAndKernelBoost() = 18;
     boolean isPrivilegedReady() = 19;
+    void restoreCpuGpuGovernors() = 20;
 }

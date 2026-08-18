@@ -64,6 +64,16 @@
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_game_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp" />
         </LinearLayout>
 
         <!-- Compact Action Buttons -->

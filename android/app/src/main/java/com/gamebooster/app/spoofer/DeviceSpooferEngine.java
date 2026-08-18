@@ -29,6 +29,13 @@ public class DeviceSpooferEngine {
     /** Currently active spoof profile ID, null if no spoof is applied. */
     private static String activeProfileId = null;
 
+    /** Reason the last spoof apply was blocked by the pre-apply sanity check, null when allowed. */
+    private static String lastSanityBlockReason = null;
+
+    public static String getLastSanityBlockReason() {
+        return lastSanityBlockReason;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Profile access (delegates to registry)
     // ─────────────────────────────────────────────────────────────────────────
@@ -147,6 +154,24 @@ public class DeviceSpooferEngine {
             return false;
         }
 
+        // Phase 2.4: pre-apply sanity check — never mask a profile whose GPU/SoC
+        // feature set provably differs from the real device (known ban vector)
+        try {
+            com.gamebooster.app.device.DeviceDetector.ChipsetVendor deviceChipset =
+                    com.gamebooster.app.device.DeviceDetector.detectChipsetVendor();
+            SpoofSanityChecker.SanityResult sanity =
+                    SpoofSanityChecker.check(deviceChipset, profile);
+            if (!sanity.allowed) {
+                lastSanityBlockReason = sanity.reason;
+                Log.w(TAG, "Spoof BLOCKED for " + profile.id + ": " + sanity.reason);
+                return false;
+            }
+            lastSanityBlockReason = null;
+            Log.i(TAG, "Pre-apply sanity check passed: " + sanity.reason);
+        } catch (Throwable t) {
+            Log.w(TAG, "Sanity check non-fatal, proceeding: " + t.getMessage());
+        }
+
         try {
             boolean success = HardwareMaskEngine.applyFullHardwareMask(context, profile, packageName);
             if (success) {
@@ -154,6 +179,14 @@ public class DeviceSpooferEngine {
                 if (context != null) {
                     SpoofPreferences.setSpoofEnabled(context, true);
                     SpoofPreferences.setActiveProfileId(context, profile.id);
+                }
+                // Post-apply read-back: log how many spoof layers are live in-app
+                try {
+                    SpoofValidator.SpoofValidationResult validation =
+                            SpoofValidator.validate(context, profile);
+                    Log.i(TAG, "Post-apply validation: " + validation);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Post-apply validation non-fatal: " + t.getMessage());
                 }
             }
             return success;

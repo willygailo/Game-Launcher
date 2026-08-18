@@ -11,6 +11,14 @@
     <uses-feature android:name="android.software.game_service" android:required="false" />
 
     <!-- System and Performance Permissions -->
+    <!-- Shell-only (granted at runtime on-device via Shizuku/ADB, see
+         tools/grant_permissions.sh): WRITE_SECURE_SETTINGS, DUMP,
+         BATTERY_STATS, MANAGE_GAME_MODE, OVERRIDE_WIFI_CONFIG,
+         CHANGE_COMPONENT_ENABLED_STATE, FORCE_STOP_PACKAGES, CLEAR_APP_CACHE,
+         SET_PROCESS_LIMIT, SET_ALWAYS_FINISH, STATUS_BAR,
+         INTERACT_ACROSS_USERS, REQUEST_INSTALL_PACKAGES. The declarations stay
+         for `pm grant`-ability via ADB on pre-24 devices; `tools:ignore`
+         silences the protected-permission lint only. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -125,7 +133,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.GameBooster"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
         android:isGame="true"
@@ -154,6 +162,16 @@
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service
             android:name="com.gamebooster.app.services.GameBoosterService"
@@ -198,7 +216,7 @@
         <receiver
             android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

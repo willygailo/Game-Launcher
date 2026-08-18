@@ -1,0 +1,79 @@
+package com.gamebooster.app.config;
+
+/**
+ * GameConfigPatchVerifier — pure read-back verification helpers (Phase 2.3).
+ *
+ * After a config patch is written, the patcher reads the file back and asserts
+ * the forced FPS value is actually present, bound to an FPS/framerate key.
+ * All methods here are pure so the decision logic is unit-testable on the JVM.
+ */
+public final class GameConfigPatchVerifier {
+
+    public static final String CONFIRMED = "patch confirmed";
+    public static final String UNVERIFIED = "written but unverified";
+
+    private GameConfigPatchVerifier() {}
+
+    private static final java.util.regex.Pattern FPS_ASSIGNMENT =
+            java.util.regex.Pattern.compile("(?i)(fps|framerate|fpslimit)[^=:]{0,40}[=:]\\s*\"?\\s*([0-9]+)\\s*\"?");
+
+    /**
+     * Pure check: does this config file content assert {@code targetFps} bound to
+     * an FPS / framerate key? Supports INI (FPS=185), CVar (+CVars=r.PUBGMaxFPS=185),
+     * and JSON ("MaxFPS":185) line formats. Lines whose value is not exactly the
+     * target FPS (e.g. FrameRateLevel=6, Unlock120Hz=1) are not counted.
+     */
+    public static boolean verifyFpsInContent(String content, int targetFps) {
+        if (content == null || targetFps <= 0) return false;
+        String fps = String.valueOf(targetFps);
+        for (String rawLine : content.split("\\r?\\n")) {
+            String line = rawLine.trim();
+            if (line.isEmpty() || line.startsWith("#") || line.startsWith("//")) continue;
+
+            java.util.regex.Matcher matcher = FPS_ASSIGNMENT.matcher(line);
+            if (matcher.find() && matcher.group(2).equals(fps)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Pure summary of a read-back pass: "patch confirmed", "partially confirmed",
+     * or "written but unverified", with the verified/total counts.
+     */
+    public static String buildVerificationSummary(int verifiedFiles, int totalFiles) {
+        if (totalFiles <= 0) {
+            return UNVERIFIED + " (no config file could be read back)";
+        }
+        if (verifiedFiles <= 0) {
+            return UNVERIFIED + " (read-back found no " + "FPS" + " value in "
+                    + totalFiles + " files)";
+        }
+        if (verifiedFiles >= totalFiles) {
+            return CONFIRMED + " (" + verifiedFiles + "/" + totalFiles + " files read-back verified)";
+        }
+        return "partially confirmed (" + verifiedFiles + "/" + totalFiles + " files read-back verified)";
+    }
+
+    /**
+     * Pure: per-game compatibility note shown on the Games screen, or null when
+     * the game family is not known to reset patched config files.
+     */
+    public static String getPatchCompatibilityNote(String packageName) {
+        if (packageName == null) return null;
+        String pkg = packageName.trim().toLowerCase();
+        if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+            return "May reset config on update — re-apply after game update";
+        }
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            return "May reset config on update — re-apply after game update";
+        }
+        if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile")) {
+            return "May reset config on update — re-apply after game update";
+        }
+        if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("hkrpg")
+                || pkg.contains("nap") || pkg.contains("hoyoverse")) {
+            return "Integrity check may revert patches — re-apply before play";
+        }
+        return null;
+    }
+}

@@ -1,5 +1,6 @@
 package com.gamebooster.app.engine;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -32,6 +33,7 @@ public class NativeFrameworkBridge {
     /**
      * Enforces native Android GameManager Performance Mode (API 31+).
      */
+    @SuppressLint("WrongConstant")
     public static boolean setGameModePerformance(Context context, String packageName) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return false;
 

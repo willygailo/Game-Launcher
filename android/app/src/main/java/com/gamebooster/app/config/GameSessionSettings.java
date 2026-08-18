@@ -31,13 +31,35 @@ public final class GameSessionSettings {
     }
 
     public static boolean restore(Context context) {
-        if (context == null) return false;
-        android.content.SharedPreferences preferences = context.getApplicationContext()
-                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if (!preferences.contains(KEY_ACTIVE_PACKAGE)) return false;
-
-        // Preserve high performance refresh rate state & active tweaks permanently (Zero Auto-Off)
-        preferences.edit().clear().apply();
+        closeSession(context);
         return true;
+    }
+
+    public static boolean hasActiveSession(Context context) {
+        if (context == null) return false;
+        return context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .contains(KEY_ACTIVE_PACKAGE);
+    }
+
+    public static int getStoredPreviousHz(Context context) {
+        if (context == null) return 0;
+        return context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getInt(KEY_PREVIOUS_HZ, 0);
+    }
+
+    public static boolean getStoredPreviousDnd(Context context) {
+        if (context == null) return false;
+        return context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_PREVIOUS_DND, false);
+    }
+
+    public static void closeSession(Context context) {
+        if (context == null) return;
+        context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit().clear().apply();
     }
 }

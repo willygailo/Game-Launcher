@@ -113,6 +113,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private RecyclerView rvSpoofProfiles;
     private SpoofProfileAdapter spoofProfileAdapter;
 
+    // Diagnostics UI
+    private TextView tvDiagStatus;
+
     // Precision Aim Controls
     private Switch switchPrecisionInputTuner;
     private Switch switchCrosshairOverlay;
@@ -193,6 +196,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 } catch (Exception ignored) {}
             });
         }
+
+        // Card 1b: Diagnostics — shareable crash + settings snapshot
+        com.gamebooster.app.diagnostics.CrashLog.install(requireContext());
+        tvDiagStatus = view.findViewById(R.id.tv_diag_status);
+        Button btnDiagRefresh = view.findViewById(R.id.btn_diag_refresh);
+        Button btnDiagExport = view.findViewById(R.id.btn_diag_export);
+        if (btnDiagRefresh != null) {
+            btnDiagRefresh.setOnClickListener(v -> renderDiagnostics());
+        }
+        if (btnDiagExport != null) {
+            btnDiagExport.setOnClickListener(v -> exportDiagnostics());
+        }
+        renderDiagnostics();
 
         // Card 2: Esports Gaming Controls
         switchOverlayHud = view.findViewById(R.id.switch_overlay_hud);
@@ -790,10 +806,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
                 // 2. Perform background real-world hardware & game file injection
                 AppExecutors.getInstance().executeCommand(() -> {
-                    DeviceSpooferEngine.applyProfile(getContext(), profile, null);
+                    boolean applied = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         updateSpoofUiState();
+                        String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
+                        if (!applied && blockReason != null) {
+                            Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
+                            return;
+                        }
                         CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
                                 "Emulated Model: " + profile.displayName,
                                 "Hardware Profile: " + profile.model + " (" + profile.brand + ")",
@@ -835,10 +856,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(activeId);
                             updateSpoofUiState();
                             AppExecutors.getInstance().executeCommand(() -> {
-                                DeviceSpooferEngine.applyProfile(getContext(), prof, null);
+                                boolean applied = DeviceSpooferEngine.applyProfile(getContext(), prof, null);
                                 AppExecutors.getInstance().postToMainThread(() -> {
                                     if (isAdded() && getContext() != null) {
                                         updateSpoofUiState();
+                                        String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
+                                        if (!applied && blockReason != null) {
+                                            Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
+                                            return;
+                                        }
                                         CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
                                                 "Active Profile: " + prof.displayName,
                                                 "ProcFS /proc/cpuinfo & meminfo: VIRTUALIZED",
@@ -1105,6 +1131,40 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 updatePrecisionAimStatus();
             });
         });
+    }
+
+    private void renderDiagnostics() {
+        if (getContext() == null || tvDiagStatus == null) return;
+        java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
+                com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
+                android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
+                android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
+                com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(getContext()),
+                SpoofPreferences.isSpoofEnabled(getContext()),
+                SpoofPreferences.getActiveProfileId(getContext()),
+                com.gamebooster.app.diagnostics.CrashLog.readTail(getContext(), 800));
+        tvDiagStatus.setText(com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+    }
+
+    private void exportDiagnostics() {
+        if (getContext() == null) return;
+        renderDiagnostics();
+        java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
+                com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
+                android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
+                android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
+                com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(getContext()),
+                SpoofPreferences.isSpoofEnabled(getContext()),
+                SpoofPreferences.getActiveProfileId(getContext()),
+                com.gamebooster.app.diagnostics.CrashLog.readTail(getContext(), 800));
+        try {
+            java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(
+                    getContext(), com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+            startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
+            Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void updateSpoofUiState() {
