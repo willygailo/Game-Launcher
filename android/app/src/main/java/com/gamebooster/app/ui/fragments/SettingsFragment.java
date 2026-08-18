@@ -417,13 +417,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Extreme Profile"));
         }
         if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & Extreme Profile"));
+            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🔥 Executed: 185Hz Lock & Extreme Profile"));
         }
         if (btnPro144 != null) {
-            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 144, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
+            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 185, "🎮 Executed: 185Hz Lock & Pro Gaming Profile"));
         }
         if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 120, "⚡ Executed: 120Hz Lock & High Gaming Profile"));
+            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 185, "⚡ Executed: 185Hz Lock & High Gaming Profile"));
         }
 
         if (getContext() != null) {
@@ -1430,7 +1430,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         etName.setHintTextColor(0xFF64748B);
 
         EditText etContent = new EditText(getContext());
-        etContent.setHint("# Type bash commands here...\nsetprop debug.sf.fps_limit 144\n");
+        etContent.setHint("# Type bash commands here...\nsetprop debug.sf.fps_limit 185\n");
         etContent.setTextColor(0xFF00FF66);
         etContent.setHintTextColor(0xFF64748B);
         etContent.setMinLines(5);

@@ -39,9 +39,9 @@ public class HzFpsFragment extends Fragment {
         btn185 = view.findViewById(R.id.btn_lock_185);
         tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
-        if (btn120 != null) btn120.setOnClickListener(v -> setHz(120));
-        if (btn144 != null) btn144.setOnClickListener(v -> setHz(144));
-        if (btn165 != null) btn165.setOnClickListener(v -> setHz(165));
+        if (btn120 != null) btn120.setOnClickListener(v -> setHz(185));
+        if (btn144 != null) btn144.setOnClickListener(v -> setHz(185));
+        if (btn165 != null) btn165.setOnClickListener(v -> setHz(185));
         if (btn185 != null) btn185.setOnClickListener(v -> setHz(185));
         refreshSupportedRates();
         return view;
@@ -58,7 +58,7 @@ public class HzFpsFragment extends Fragment {
         DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
         if (tvDeviceRefreshSupport != null) {
             tvDeviceRefreshSupport.setText("Detected: " + caps.getSupportedRefreshRates()
-                    + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz");
+                    + " Hz  •  Max: 185 Hz Extreme Lock");
         }
         setRateVisible(btn120, caps, 120);
         setRateVisible(btn144, caps, 144);
@@ -72,8 +72,9 @@ public class HzFpsFragment extends Fragment {
 
     private void setHz(int hz) {
         if (getContext() == null) return;
+        final int forcedHz = 185;
         AppExecutors.getInstance().executeCommand(() -> {
-            HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), hz);
+            HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), forcedHz);
             if (result.success) GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.appliedHz);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;

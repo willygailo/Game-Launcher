@@ -41,7 +41,7 @@ public class OnePlusProfiles {
                 "512.615.0",
                 24576,
                 19660,
-        120
+        185
         ));
 
         // OnePlus 12 (Snapdragon 8 Gen 3 / 16GB RAM / OxygenOS 14)
@@ -77,7 +77,7 @@ public class OnePlusProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // OnePlus Ace 5 Pro (Snapdragon 8 Elite / 16GB / 144Hz)
@@ -96,7 +96,7 @@ public class OnePlusProfiles {
                 "Adreno (TM) 830", "Qualcomm",
                 "OpenGL ES 3.2 V@0615.0 (GIT@56860db)",
                 "1.3.280", "512.615.0",
-                16384, 12288, 144
+                16384, 12288, 185
         ));
 
         return list;

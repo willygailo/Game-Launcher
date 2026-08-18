@@ -114,7 +114,7 @@ public class CrosshairOverlayService extends Service {
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
         );
-        params.preferredRefreshRate = 165.0f;
+        params.preferredRefreshRate = 185.0f;
 
         params.gravity = Gravity.CENTER;
 

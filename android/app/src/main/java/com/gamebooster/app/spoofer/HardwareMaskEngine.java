@@ -136,7 +136,7 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
 
             // Determine Target Refresh Rate from profile field (no more string parsing hack)
-            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 120;
+            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
             // Display & SurfaceFlinger Frame Rates
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
@@ -291,7 +291,7 @@ public class HardwareMaskEngine {
         String pkg = packageName.toLowerCase().trim();
 
         // Use profile's maxRefreshRateHz field directly (no more fragile string parsing)
-        int targetFps = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 120;
+        int targetFps = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
         // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight)
         if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||

@@ -159,18 +159,15 @@ public class ProfilesFragment extends Fragment {
         if (getContext() == null || game == null) return;
 
         String[] fpsOptions = new String[]{
-                "⚡ 185 FPS / 185Hz Extreme Gaming Mode",
-                "🔥 165 FPS / Max Hardware Gaming Mode",
-                "⚡ 144 FPS / Cyber Ultra Gaming Mode",
-                "🚀 120 FPS / Pro Esports Gaming Mode"
+                "⚡ 185 FPS / 185Hz Extreme Gaming Mode"
         };
-        int[] fpsValues = new int[]{185, 165, 144, 120};
+        int[] fpsValues = new int[]{185};
 
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("⚡ Target FPS & Override for " + game.getLabel())
                 .setItems(fpsOptions, (dialog, which) -> {
-                    int targetFps = fpsValues[which];
-                    String label = targetFps + " FPS";
+                    int targetFps = 185;
+                    String label = "185 FPS";
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {

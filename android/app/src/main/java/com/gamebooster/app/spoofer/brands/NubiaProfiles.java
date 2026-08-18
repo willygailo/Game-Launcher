@@ -77,7 +77,7 @@ public class NubiaProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        165
+        185
         ));
 
         return list;

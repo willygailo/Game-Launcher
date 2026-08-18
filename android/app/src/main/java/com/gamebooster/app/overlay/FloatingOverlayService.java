@@ -119,7 +119,7 @@ public class FloatingOverlayService extends Service {
     private Button btnHudNet;
 
     // State Variables
-    private static final int[] REFRESH_RATE_TIERS = {185, 165, 144, 120};
+    private static final int[] REFRESH_RATE_TIERS = {185};
     private int currentHzIndex = 0;
     private HudMode currentMode = HudMode.PILL;
     private boolean isDndActive = false;
@@ -336,21 +336,19 @@ public class FloatingOverlayService extends Service {
             });
         }
 
-        // 2. Extreme 185Hz / 165Hz / 144Hz / 120Hz Refresh Rate Cycler
+        // 2. Extreme 185Hz Refresh Rate Enforcer
         if (btnHudExtreme != null) {
             btnHudExtreme.setOnClickListener(v -> {
                 performHaptic();
-                currentHzIndex = (currentHzIndex + 1) % REFRESH_RATE_TIERS.length;
-                final int targetHz = REFRESH_RATE_TIERS[currentHzIndex];
+                currentHzIndex = 0;
+                final int targetHz = 185;
 
                 AppExecutors.getInstance().executeCommand(() -> {
-                    PerformanceChannel.Profile profile = targetHz == 185
-                            ? PerformanceChannel.Profile.EXTREME_PERFORMANCE
-                            : (targetHz >= 144 ? PerformanceChannel.Profile.PERFORMANCE : PerformanceChannel.Profile.BALANCED);
+                    PerformanceChannel.Profile profile = PerformanceChannel.Profile.EXTREME_PERFORMANCE;
                     PerformanceChannel.applyProfileWithResult(getApplicationContext(), profile);
                     MaxHzForceChannel.forceApply(targetHz);
                     PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
-                    isExtremeActive = (targetHz == 185);
+                    isExtremeActive = true;
 
                     AppExecutors.getInstance().postToMainThread(() -> {
                         btnHudExtreme.setText("🔥 " + targetHz + "Hz");
@@ -358,9 +356,7 @@ public class FloatingOverlayService extends Service {
                                 "🔥 Locked @ " + targetHz + "Hz (Max " + targetHz + " FPS)",
                                 Toast.LENGTH_SHORT).show();
                         if (tvHudProfileBadge != null) {
-                            tvHudProfileBadge.setText(targetHz == 185
-                                    ? "🔥 EXTREME 185Hz LOCKED • GAME DRIVER ON"
-                                    : "⚡ ESPORTS " + targetHz + "Hz LOCKED • GAME OPTIMIZED");
+                            tvHudProfileBadge.setText("🔥 EXTREME 185Hz LOCKED • GAME DRIVER ON");
                         }
                         scheduleAutoCollapse();
                     });
@@ -718,7 +714,7 @@ public class FloatingOverlayService extends Service {
     private void updateTelemetryData() {
         DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
         DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(getApplicationContext());
-        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
+        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 185;
         int activeFps = realTimeFps > 0 ? Math.min(185, realTimeFps) : currentHz;
 
         // Dynamic FPS Health Color

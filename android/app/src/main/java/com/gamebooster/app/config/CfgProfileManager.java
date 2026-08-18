@@ -263,7 +263,7 @@ public class CfgProfileManager {
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
         boolean result = false;
         String key = profile.getGameKey();
-        final int fps = profile.getTargetFps() > 0 ? profile.getTargetFps() : 185;
+        final int fps = 185; // hard-locked — CompetitiveCfgProfile.getTargetFps() always returns 185
 
         if (CompetitiveCfgProfile.GAME_MLBB.equals(key)) {
             result = MlbbConfigPatcher.patchCompetitive(pkg, fps);

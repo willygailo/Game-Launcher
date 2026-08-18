@@ -41,7 +41,7 @@ public class VivoProfiles {
                 "512.615.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // Vivo X200 Pro (MediaTek Dimensity 9400 / Immortalis-G925 MC12 / 16GB RAM)
@@ -77,7 +77,7 @@ public class VivoProfiles {
                 "20.0.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         return list;

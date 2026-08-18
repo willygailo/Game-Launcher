@@ -75,7 +75,7 @@ public class GameLauncherHelper {
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
-                int targetFps = cfgProf.getTargetFps() > 0 ? cfgProf.getTargetFps() : 120;
+                int targetFps = 185; // hard-locked to 185 FPS
                 com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(context, pkgName, targetFps);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
             } catch (Throwable ignored) {}

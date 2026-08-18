@@ -38,7 +38,7 @@ public class MlbbConfigPatcher {
     /**
      * Force-overwrites ALL MLBB config paths unconditionally.
      * Uses Shizuku (temporary root) to reach /data/data/ paths.
-     * Locks 120 / 144 / 165 / 185 FPS and Ultra-High FrameRateLevel (10=185fps, 9=165fps, 8=144fps, 7=120fps).
+     * Hard-locked to 185 FPS only. Sets FrameRateLevel=10 (185fps) unconditionally.
      *
      * @return true if at least one path was written
      */

@@ -108,7 +108,7 @@ public class SpoofProfile {
         this.vulkanDriverVersion = vulkanDriverVersion != null ? vulkanDriverVersion : "512.615.0";
         this.ramTotalMb = ramTotalMb > 0 ? ramTotalMb : 16384;
         this.ramAvailableMb = ramAvailableMb > 0 ? ramAvailableMb : (int) (this.ramTotalMb * 0.75);
-        this.maxRefreshRateHz = maxRefreshRateHz > 0 ? maxRefreshRateHz : 120;
+        this.maxRefreshRateHz = maxRefreshRateHz > 0 ? maxRefreshRateHz : 185;
     }
 
     /**
@@ -135,7 +135,7 @@ public class SpoofProfile {
              "OpenGL ES 3.2 V@0615.0",
              "1.3.280", "512.615.0",
              16384, 12288,
-             120);
+             185);
     }
 
     private static String inferSocManufacturer(String socModel, String brand) {
@@ -355,7 +355,7 @@ public class SpoofProfile {
                 "HighFPSMode=1\n" +
                 "UltraFrameRate=1\n" +
                 "SuperFrameRate=1\n" +
-                "FrameRateLevel=9\n" +
+                "FrameRateLevel=10\n" +
                 "TargetFPS=" + targetFps + "\n" +
                 "ShadowQuality=3\n" +
                 "HDMode=1\n" +

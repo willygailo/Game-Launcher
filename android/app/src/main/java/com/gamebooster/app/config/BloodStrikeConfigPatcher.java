@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * BloodStrikeConfigPatcher manages legal configuration files for NetEase Blood Strike.
- * Forces high-frequency 120 FPS / 144 FPS / 165 FPS / 185 FPS and zero-latency touch response.
+ * Hard-locked to 185 FPS only. Forces high-frequency 185 FPS and zero-latency touch response.
  */
 public class BloodStrikeConfigPatcher {
 

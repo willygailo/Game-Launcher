@@ -71,7 +71,7 @@ function bindGameItemListeners(card) {
       logShell(`setprop debug.hwui.renderer ${engine === "3d" ? "vulkan" : "skia"}`);
 
       if (window.AndroidBridge && typeof window.AndroidBridge.setTargetFps === "function") {
-        window.AndroidBridge.setTargetFps(parseInt(fps) || 120);
+        window.AndroidBridge.setTargetFps(parseInt(fps) || 185);
       }
     });
   }

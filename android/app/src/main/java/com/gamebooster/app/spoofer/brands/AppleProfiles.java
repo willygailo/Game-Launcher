@@ -41,7 +41,7 @@ public class AppleProfiles {
                 "Metal 3",
                 8192,
                 6144,
-        120
+        185
         ));
 
         // Apple iPad Pro 13" (Apple M4 10-Core / 16GB LPDDR5X-7500)
@@ -77,7 +77,7 @@ public class AppleProfiles {
                 "Metal 3",
                 16384,
                 12288,
-        120
+        185
         ));
 
         return list;

@@ -114,7 +114,7 @@ public class MasterOptimizationEnforcer {
 
                 // 3D. Execute master root performance script
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);
-                if (targetHz <= 0) targetHz = 120;
+                if (targetHz <= 0) targetHz = 185;
                 PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
                 MaxHzForceChannel.forceApply(targetHz);
 
@@ -146,7 +146,7 @@ public class MasterOptimizationEnforcer {
 
         final Context appContext = context.getApplicationContext();
         final String pkg = packageName.trim();
-        final int forcedFps = targetFps > 0 ? targetFps : 120;
+        final int forcedFps = 185; // hard-locked to 185 FPS/Hz
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {

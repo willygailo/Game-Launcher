@@ -87,16 +87,21 @@ public class TerminalFolderManager {
     private void seedDefaultScripts() {
         if (terminalDir == null || !terminalDir.exists()) return;
 
-        createScriptIfNotExists("1_gaming_120fps_unlock.sh",
+        createScriptIfNotExists("1_gaming_185fps_unlock.sh",
                 "# ==================================================\n" +
-                "# GAME BOOSTER PRO - 120Hz/144Hz FPS UNLOCK SCRIPT\n" +
+                "# GAME BOOSTER PRO - 185Hz / 185 FPS UNLOCK SCRIPT\n" +
                 "# ==================================================\n" +
-                "settings put system peak_refresh_rate 144.0\n" +
-                "settings put system min_refresh_rate 120.0\n" +
-                "settings put system user_refresh_rate 120\n" +
-                "setprop debug.sf.fps_limit 144\n" +
-                "setprop persist.sys.NV_FPSLIMIT 144\n" +
-                "echo '[FPS & 120Hz/144Hz REFRESH RATE UNLOCKED]'\n"
+                "settings put system peak_refresh_rate 185.0\n" +
+                "settings put system min_refresh_rate 185.0\n" +
+                "settings put system user_refresh_rate 185\n" +
+                "settings put global peak_refresh_rate 185.0\n" +
+                "settings put global min_refresh_rate 185.0\n" +
+                "cmd window set-app-refresh-rate global 185\n" +
+                "service call SurfaceFlinger 1035 i32 185\n" +
+                "service call SurfaceFlinger 1036 i32 185\n" +
+                "setprop debug.sf.fps_limit 185\n" +
+                "setprop persist.sys.NV_FPSLIMIT 185\n" +
+                "echo '[FPS & 185Hz REFRESH RATE UNLOCKED]'\n"
         );
 
         createScriptIfNotExists("2_ultra_touch_slop_1000hz.sh",

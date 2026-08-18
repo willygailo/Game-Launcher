@@ -77,7 +77,7 @@ public class AsusRogProfiles {
                 "512.530.0",
                 24576,
                 18432,
-        165
+        185
         ));
 
         return list;

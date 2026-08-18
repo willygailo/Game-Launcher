@@ -41,7 +41,7 @@ public class RealmeProfiles {
                 "512.615.0",
                 24576,
                 19660,
-        120
+        185
         ));
 
         // Realme GT5 Pro (Snapdragon 8 Gen 3 / 16GB RAM / realme UI 5.0)
@@ -77,7 +77,7 @@ public class RealmeProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         return list;

@@ -58,12 +58,9 @@ public final class DevicePerformanceCapabilities {
         return true;
     }
 
-    /** Returns the target refresh rate (120, 144, 165, 185 Hz) directly with zero fallback. */
+    /** Returns the target refresh rate (185 Hz) directly with zero fallback. */
     public int resolveRefreshRate(int requestedHz) {
-        if (requestedHz >= 185) return 185;
-        if (requestedHz >= 165) return 165;
-        if (requestedHz >= 144) return 144;
-        return 120;
+        return 185;
     }
 
     public String getCompatibilitySummary() {
@@ -86,9 +83,7 @@ public final class DevicePerformanceCapabilities {
     }
 
     public String getRecommendedProfileLabel() {
-        if (maxRefreshRate >= 120) return "MAX SUPPORTED";
-        if (maxRefreshRate >= 90) return "COMPETITIVE";
-        return "BALANCED";
+        return "MAX 185HZ EXTREME";
     }
 
     private static OemFamily detectOemFamily() {

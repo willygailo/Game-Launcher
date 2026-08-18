@@ -124,22 +124,12 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
 
         String[] fpsOptions = {
-                "⚡ 185 FPS / 185Hz (Extreme 185Hz Flagship Mode)",
-                "⚡ 165 FPS / 165Hz (Ultra Extreme 165Hz Mode)",
-                "🎮 144 FPS / 144Hz (Ultra High Gaming Mode)",
-                "🔥 120 FPS / 120Hz (Pro Esports Standard Mode)"
+                "⚡ 185 FPS / 185Hz (Extreme 185Hz Flagship Mode)"
         };
-        int[] fpsValues = {185, 165, 144, 120};
+        int[] fpsValues = {185};
 
         int selectedIdx = 0;
-        for (int i = 0; i < fpsValues.length; i++) {
-            if (fpsValues[i] == currentCfg.getTargetFps()) {
-                selectedIdx = i;
-                break;
-            }
-        }
-
-        final int[] chosenFps = {fpsValues[selectedIdx]};
+        final int[] chosenFps = {185};
         final boolean[] superTouch = {currentCfg.isSuperFastTouchEnabled()};
         final boolean[] forceHz = {currentCfg.isForceWriteSystemHz()};
 

@@ -42,7 +42,7 @@ public class SamsungProfiles {
                 "512.700.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // Samsung Galaxy S25+ (Snapdragon 8 Elite / Adreno 830 / 12GB / 120Hz)
@@ -62,7 +62,7 @@ public class SamsungProfiles {
                 "Adreno (TM) 830", "Qualcomm",
                 "OpenGL ES 3.2 V@0615.0 (GIT@56860db, Idd24e5256e) (Date:11/24/24)",
                 "1.3.280", "512.615.0",
-                12288, 9216, 120
+                12288, 9216, 185
         ));
 
 
@@ -100,7 +100,7 @@ public class SamsungProfiles {
                 "512.615.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // Samsung Galaxy S24 Ultra (Snapdragon 8 Gen 3 for Galaxy / Adreno 750 / 12GB RAM)
@@ -136,7 +136,7 @@ public class SamsungProfiles {
                 "512.530.0",
                 12288,
                 9216,
-        120
+        185
         ));
 
         // Samsung Galaxy S23 Ultra (Snapdragon 8 Gen 2 for Galaxy / Adreno 740 / 12GB RAM)
@@ -172,7 +172,7 @@ public class SamsungProfiles {
                 "512.512.0",
                 12288,
                 9216,
-        120
+        185
         ));
 
         return list;

@@ -41,7 +41,7 @@ public class XiaomiProfiles {
                 "512.615.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // Xiaomi 14 Ultra (Snapdragon 8 Gen 3 / 16GB RAM / HyperOS 1.0)
@@ -77,7 +77,7 @@ public class XiaomiProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // Xiaomi 15 Pro (Snapdragon 8 Elite / 12GB RAM / HyperOS 2.0 / 120Hz)
@@ -96,7 +96,7 @@ public class XiaomiProfiles {
                 "Adreno (TM) 830", "Qualcomm",
                 "OpenGL ES 3.2 V@0615.0 (GIT@56860db)",
                 "1.3.280", "512.615.0",
-                12288, 9216, 120
+                12288, 9216, 185
         ));
 
         return list;

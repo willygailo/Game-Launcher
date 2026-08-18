@@ -47,7 +47,7 @@ public class LenovoLegionProfiles {
                 "Adreno (TM) 740", "Qualcomm",
                 "OpenGL ES 3.2 V@0512.0",
                 "1.3.250", "512.512.0",
-                16384, 12288, 165
+                16384, 12288, 185
         ));
 
         return list;

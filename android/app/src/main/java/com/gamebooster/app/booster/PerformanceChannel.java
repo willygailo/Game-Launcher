@@ -14,8 +14,8 @@ public class PerformanceChannel {
 
     public enum Profile {
         EXTREME_PERFORMANCE("Extreme Performance (185 FPS/Hz)"),
-        PERFORMANCE("High Performance (144 FPS/Hz)"),
-        BALANCED("Balanced Gaming (120 FPS/Hz)");
+        PERFORMANCE("High Performance (185 FPS/Hz)"),
+        BALANCED("Balanced Gaming (185 FPS/Hz)");
 
         public final String title;
         Profile(String title) { this.title = title; }
@@ -41,27 +41,7 @@ public class PerformanceChannel {
     public static ProfileResult applyProfileWithResult(Context context, Profile profile) {
         if (context == null) return new ProfileResult(false, 0, "Device context is unavailable");
 
-        DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
-        int targetHz;
-        switch (profile) {
-            case EXTREME_PERFORMANCE:
-                targetHz = 185;
-                break;
-
-            case PERFORMANCE:
-                targetHz = caps != null ? caps.resolveRefreshRate(144) : 144;
-                if (targetHz <= 0) targetHz = 144;
-                break;
-
-            case BALANCED:
-                targetHz = caps != null ? caps.resolveRefreshRate(120) : 120;
-                if (targetHz <= 0) targetHz = 120;
-                break;
-
-            default:
-                targetHz = 185;
-                break;
-        }
+        final int targetHz = 185; // hard-locked to 185 FPS/Hz
 
         HzFpsChannel.RefreshRateResult refreshResult;
         if (profile == Profile.EXTREME_PERFORMANCE) {

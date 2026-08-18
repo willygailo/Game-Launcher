@@ -14,9 +14,6 @@ public class RefreshRateOverrideEngine {
     private static final String TAG = "RefreshRateOverrideEngine";
 
     public enum RefreshRateMode {
-        MODE_120HZ(120.0f, "120 Hz (Ultra Esports)"),
-        MODE_144HZ(144.0f, "144 Hz (Pro Gaming)"),
-        MODE_165HZ(165.0f, "165 Hz (Extreme Pro)"),
         MODE_185HZ(185.0f, "185 Hz / 185 FPS (Extreme Max)");
 
         public final float fps;
@@ -33,7 +30,7 @@ public class RefreshRateOverrideEngine {
      *
      * @param context App context
      * @param packageName Target game package (or null for global setting)
-     * @param mode Selected refresh rate mode (60/90/120/144/165 Hz)
+     * @param mode Selected refresh rate mode (185 Hz)
      * @return true if commands executed via Shizuku
      */
     public static boolean applyRefreshRate(Context context, String packageName, RefreshRateMode mode) {
@@ -43,8 +40,8 @@ public class RefreshRateOverrideEngine {
         }
 
         try {
-            int rateInt = Math.round(mode.fps);
-            Log.d(TAG, "Applying Refresh Rate Override: " + mode.label + " for package: " + packageName);
+            int rateInt = Math.round(mode != null ? mode.fps : 185.0f);
+            Log.d(TAG, "Applying Refresh Rate Override: 185Hz for package: " + packageName);
 
             // Delegate global system forcing to MaxHzForceChannel (17+ commands, 6 layers)
             MaxHzForceChannel.ForceResult forceResult = MaxHzForceChannel.forceApply(rateInt);
@@ -71,12 +68,12 @@ public class RefreshRateOverrideEngine {
     /**
      * Convenience method: force max refresh rate globally without per-package constraints.
      *
-     * @param targetHz Target Hz value (60, 90, 120, 144, or 165)
+     * @param targetHz Target Hz value (hard-locked to 185)
      * @return true if Shizuku commands fired successfully
      */
     public static boolean applyMaxRefreshRateForce(int targetHz) {
         if (!ShizukuExecutor.hasShizukuPermission()) return false;
-        RefreshRateMode mode = RefreshRateMode.MODE_165HZ;
+        RefreshRateMode mode = RefreshRateMode.MODE_185HZ;
         return applyRefreshRate(null, null, mode);
     }
 

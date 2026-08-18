@@ -41,7 +41,7 @@ public class OppoProfiles {
                 "20.0.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         // OPPO Find X7 Ultra (Snapdragon 8 Gen 3 / 16GB RAM / ColorOS 14.0)
@@ -77,7 +77,7 @@ public class OppoProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        120
+        185
         ));
 
         return list;

@@ -3,7 +3,7 @@
     <!-- Application Info -->
     <string name="app_name">GAME SPACE</string>
     <string name="app_full_name">GAME BOOSTER PRO</string>
-    <string name="app_tagline">120 • 144 • 165 • 185 FPS Extreme Gaming Engine</string>
+    <string name="app_tagline">185 FPS / 185Hz Extreme Gaming Engine</string>
 
     <!-- Navigation Tabs -->
     <string name="nav_home">Home</string>
