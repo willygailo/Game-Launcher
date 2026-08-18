@@ -17,4 +17,8 @@ public enum TweakCategory {
     public String getTitle() {
         return title;
     }
+
+    public String getDisplayName() {
+        return title;
+    }
 }
