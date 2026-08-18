@@ -60,28 +60,10 @@
                 android:letterSpacing="0.03" />
 
             <Button
-                android:id="@+id/btn_lock_60"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:text="🔋 Lock to 60Hz (Battery Saver)"
-                android:textColor="#FFFFFF" />
-
-            <Button
-                android:id="@+id/btn_lock_90"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:text="✨ Lock to 90Hz (Smooth Balanced)"
-                android:textColor="#FFFFFF" />
-
-            <Button
                 android:id="@+id/btn_lock_120"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/btn_cyber_cyan"
                 android:text="⚡ Lock to 120Hz Ultra"
                 android:textColor="#000000"
@@ -113,7 +95,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/btn_cyber_cyan"
-                android:text="⚡ Lock to 185Hz ROG Extreme Max"
+                android:text="⚡ Lock to 185Hz / 185 FPS Extreme Max"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>

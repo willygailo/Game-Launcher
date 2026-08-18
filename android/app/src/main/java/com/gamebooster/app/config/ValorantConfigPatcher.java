@@ -204,6 +204,11 @@ public class ValorantConfigPatcher {
         Log.i(TAG, "Valorant recoil & weapon kick reduction applied for " + packageName);
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }

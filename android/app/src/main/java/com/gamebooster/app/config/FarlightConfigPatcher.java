@@ -184,6 +184,11 @@ public class FarlightConfigPatcher {
         Log.i(TAG, "Farlight 84 recoil reduction applied for " + packageName);
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }

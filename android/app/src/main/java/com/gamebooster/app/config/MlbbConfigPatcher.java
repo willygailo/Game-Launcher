@@ -68,6 +68,11 @@ public class MlbbConfigPatcher {
                 "Ultra144FPS=1\n" +
                 "Ultra165FPS=1\n" +
                 "Ultra185FPS=1\n" +
+                "DisableLogging=1\n" +
+                "DisableCrashlytics=1\n" +
+                "DisableTelemetry=1\n" +
+                "AntiLog=1\n" +
+                "LogcatDisable=1\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
                 "CameraHeight=3\n" +
@@ -91,8 +96,17 @@ public class MlbbConfigPatcher {
             forceWrite(path, content);
             written++;
         }
+        AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Applies anti-log, log directory cleaning, and telemetry suppression for MLBB.
+     */
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
     }
 
     /**

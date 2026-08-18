@@ -124,10 +124,10 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
 
         String[] fpsOptions = {
-                "⚡ 185 FPS / Hz (Extreme ROG Mode — ROG 9 Pro / RedMagic 10 Pro / S26 Ultra)",
-                "⚡ 165 FPS / Hz (Ultra Extreme — Black Shark 5 Pro / ROG 8)",
-                "🎮 144 FPS / Hz (Ultra High Gaming — Galaxy S25 / Xiaomi 15 Ultra)",
-                "🔥 120 FPS / Hz (Pro Esports Standard — S24 Ultra / OnePlus 13)"
+                "⚡ 185 FPS / 185Hz (Extreme 185Hz Flagship Mode)",
+                "⚡ 165 FPS / 165Hz (Ultra Extreme 165Hz Mode)",
+                "🎮 144 FPS / 144Hz (Ultra High Gaming Mode)",
+                "🔥 120 FPS / 120Hz (Pro Esports Standard Mode)"
         };
         int[] fpsValues = {185, 165, 144, 120};
 

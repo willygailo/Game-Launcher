@@ -58,6 +58,9 @@ public class SpoofProfile {
     public final int ramTotalMb;
     public final int ramAvailableMb;
 
+    // ── Display ──
+    public final int maxRefreshRateHz;
+
     /**
      * Primary full-spectrum constructor.
      */
@@ -72,7 +75,8 @@ public class SpoofProfile {
                         String androidVersion, int sdkInt, String securityPatch,
                         String glRenderer, String glVendor, String glVersion,
                         String vulkanVersion, String vulkanDriverVersion,
-                        int ramTotalMb, int ramAvailableMb) {
+                        int ramTotalMb, int ramAvailableMb,
+                        int maxRefreshRateHz) {
         this.id = id;
         this.displayName = displayName;
         this.brandLabel = brandLabel;
@@ -104,6 +108,7 @@ public class SpoofProfile {
         this.vulkanDriverVersion = vulkanDriverVersion != null ? vulkanDriverVersion : "512.615.0";
         this.ramTotalMb = ramTotalMb > 0 ? ramTotalMb : 16384;
         this.ramAvailableMb = ramAvailableMb > 0 ? ramAvailableMb : (int) (this.ramTotalMb * 0.75);
+        this.maxRefreshRateHz = maxRefreshRateHz > 0 ? maxRefreshRateHz : 120;
     }
 
     /**
@@ -129,7 +134,8 @@ public class SpoofProfile {
              glRenderer, inferVendor(glRenderer),
              "OpenGL ES 3.2 V@0615.0",
              "1.3.280", "512.615.0",
-             16384, 12288);
+             16384, 12288,
+             120);
     }
 
     private static String inferSocManufacturer(String socModel, String brand) {

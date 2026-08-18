@@ -40,7 +40,8 @@ public class BlackSharkProfiles {
                 "1.1.128",
                 "512.512.0",
                 16384,
-                12288
+                12288,
+        120
         ));
 
         // Xiaomi Black Shark 4 Pro (Snapdragon 888 / 16GB RAM / JOYUI 12.5)
@@ -75,7 +76,8 @@ public class BlackSharkProfiles {
                 "1.1.128",
                 "512.490.0",
                 16384,
-                12288
+                12288,
+        120
         ));
 
         return list;

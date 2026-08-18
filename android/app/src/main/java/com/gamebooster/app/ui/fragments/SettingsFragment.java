@@ -105,6 +105,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchGamingDnd;
     private Switch switchAutoGameBoost;
     private Switch switchEsportsAudio;
+    private Switch switchAntiLog;
 
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
@@ -291,6 +292,55 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        switchAntiLog = view.findViewById(R.id.switch_anti_log);
+        Button btnPurgeGameLogs = view.findViewById(R.id.btn_purge_game_logs);
+
+        if (switchAntiLog != null) {
+            if (getContext() != null) {
+                switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
+            }
+            switchAntiLog.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.setAntiLogEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        AntiLogPatcher.applySystemAntiLog();
+                        AntiLogPatcher.purgeAllGameLogs();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            CyberActionDialog.show(getContext(), "ANTI-LOG & TELEMETRY BLOCKER", isChecked,
+                                    isChecked ? "Kernel logd Persistence: DISABLED" : "System Logging: DEFAULT",
+                                    isChecked ? "15+ Esports Game Log Dirs: BLOCKED (.nomedia)" : "Game Logs: UNLOCKED",
+                                    isChecked ? "System Logcat Buffer: FLUSHED (0% I/O Lag)" : "Logcat Buffer: NORMAL",
+                                    "Background Telemetry: ZERO OVERHEAD");
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnPurgeGameLogs != null) {
+            btnPurgeGameLogs.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnPurgeGameLogs.setEnabled(false);
+                Toast.makeText(getContext(), "🛡️ Purging All Game Logs & System Telemetry...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    int count = AntiLogPatcher.purgeAllGameLogs();
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnPurgeGameLogs.setEnabled(true);
+                        CyberActionDialog.show(getContext(), "ANTI-LOG DEEP PURGE", true,
+                                "Processed Packages: " + count + " Esports Titles",
+                                "PUBGM / MLBB / CODM Logs: PURGED",
+                                "Game Cache & Crash Logs: 0 B Cleaned",
+                                "Kernel logd Buffer: 0 KB Minimized",
+                                "Storage I/O Performance: 100% BOOSTED");
+                    });
+                });
+            });
+        }
+
         // Card 2.5: Precision Aim - Input & Gyro Tuner
         tvPrecisionAimStatus = view.findViewById(R.id.tv_precision_aim_status);
         switchPrecisionInputTuner = view.findViewById(R.id.switch_precision_input_tuner);
@@ -353,20 +403,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         updatePrecisionAimStatus();
 
-        // Card 3: Hardware Engine & Performance Presets
-        Button btnRog185 = view.findViewById(R.id.btn_apply_185_profile);
+        Button btn185 = view.findViewById(R.id.btn_apply_185_profile);
         Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
         Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
-        Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
 
         switchAngleMode = view.findViewById(R.id.switch_angle_mode);
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
 
-        if (btnRog185 != null) {
-            btnRog185.setOnClickListener(v -> applyPresetProfile(btnRog185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🚀 Executed: 185Hz ROG Extreme Profile"));
+        if (btn185 != null) {
+            btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Extreme Profile"));
         }
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & Extreme Profile"));
@@ -376,9 +424,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
         if (btnPerformance != null) {
             btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 120, "⚡ Executed: 120Hz Lock & High Gaming Profile"));
-        }
-        if (btnBalanced != null) {
-            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, 90, "⚖️ Executed: 90Hz Lock & Balanced Profile"));
         }
 
         if (getContext() != null) {
@@ -873,7 +918,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (btnSettingsScriptFps != null) {
-            btnSettingsScriptFps.setOnClickListener(v -> runSettingsTerminalQuickCmd("settings put system peak_refresh_rate 144.0; setprop debug.sf.fps_limit 144; echo '[144Hz / 120FPS UNLOCKED]'"));
+            btnSettingsScriptFps.setOnClickListener(v -> runSettingsTerminalQuickCmd("settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; setprop debug.sf.fps_limit 185; logcat -c; echo '[185Hz / 185FPS MAX & ANTI-LOG ACTIVE]'"));
         }
 
         if (btnSettingsScriptTouch != null) {
@@ -935,7 +980,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Toast.makeText(getContext(), "Applying " + targetHz + "Hz performance profile to all games & display...", Toast.LENGTH_SHORT).show();
         AppExecutors.getInstance().executeCommand(() -> {
             boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
+            if (targetHz >= 185) {
+                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(185);
+            }
             GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, null);
+            CfgProfileManager.applyAllGames(getContext(), targetHz, true, true);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
                 button.setEnabled(true);

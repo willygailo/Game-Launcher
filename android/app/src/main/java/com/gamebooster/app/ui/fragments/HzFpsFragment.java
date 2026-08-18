@@ -22,8 +22,6 @@ import com.gamebooster.app.config.GameProfileAutoConfigurator;
 /** Shows only physical display modes reported by the device. */
 public class HzFpsFragment extends Fragment {
 
-    private Button btn60;
-    private Button btn90;
     private Button btn120;
     private Button btn144;
     private Button btn165;
@@ -35,19 +33,15 @@ public class HzFpsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_hz_fps, container, false);
-        btn60 = view.findViewById(R.id.btn_lock_60);
-        btn90 = view.findViewById(R.id.btn_lock_90);
         btn120 = view.findViewById(R.id.btn_lock_120);
         btn144 = view.findViewById(R.id.btn_lock_144);
         btn165 = view.findViewById(R.id.btn_lock_165);
         btn185 = view.findViewById(R.id.btn_lock_185);
         tvDeviceRefreshSupport = view.findViewById(R.id.tv_device_refresh_support);
 
-        btn60.setOnClickListener(v -> setHz(60));
-        btn90.setOnClickListener(v -> setHz(90));
-        btn120.setOnClickListener(v -> setHz(120));
-        btn144.setOnClickListener(v -> setHz(144));
-        btn165.setOnClickListener(v -> setHz(165));
+        if (btn120 != null) btn120.setOnClickListener(v -> setHz(120));
+        if (btn144 != null) btn144.setOnClickListener(v -> setHz(144));
+        if (btn165 != null) btn165.setOnClickListener(v -> setHz(165));
         if (btn185 != null) btn185.setOnClickListener(v -> setHz(185));
         refreshSupportedRates();
         return view;
@@ -66,8 +60,6 @@ public class HzFpsFragment extends Fragment {
             tvDeviceRefreshSupport.setText("Detected: " + caps.getSupportedRefreshRates()
                     + " Hz  •  Max: " + caps.getMaxRefreshRate() + " Hz");
         }
-        setRateVisible(btn60, caps, 60);
-        setRateVisible(btn90, caps, 90);
         setRateVisible(btn120, caps, 120);
         setRateVisible(btn144, caps, 144);
         setRateVisible(btn165, caps, 165);

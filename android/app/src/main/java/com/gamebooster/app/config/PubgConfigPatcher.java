@@ -70,6 +70,12 @@ public class PubgConfigPatcher {
                 "+CVars=r.Unlock144Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
                 "+CVars=r.Unlock185Hz=1\n" +
+                "+CVars=r.SuppressLogs=1\n" +
+                "+CVars=r.DisableDebugLog=1\n" +
+                "+CVars=r.EnableCrashReporting=0\n" +
+                "+CVars=r.Telemetry=0\n" +
+                "+CVars=a.DisableAnalytics=1\n" +
+                "+CVars=r.LogFilter=0\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
@@ -87,6 +93,8 @@ public class PubgConfigPatcher {
                 "bUseHighQualityBloom=True\n" +
                 "bUseAntiAliasing=True\n" +
                 "bEnableAimAssist=True\n" +
+                "bDisableAnalytics=True\n" +
+                "bDisableBugReporting=True\n" +
                 "AimAssistLevel=3\n" +
                 "SprintSensitivity=150\n" +
                 "TPPFieldOfView=100\n" +
@@ -99,8 +107,17 @@ public class PubgConfigPatcher {
             written++;
         }
         patchActiveSavBinary(packageName, forcedFps);
+        AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Applies anti-log, log directory cleaning, and telemetry suppression for PUBGM/BGMI.
+     */
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
     }
 
     /**

@@ -40,7 +40,8 @@ public class OnePlusProfiles {
                 "1.3.280",
                 "512.615.0",
                 24576,
-                19660
+                19660,
+        120
         ));
 
         // OnePlus 12 (Snapdragon 8 Gen 3 / 16GB RAM / OxygenOS 14)
@@ -75,7 +76,27 @@ public class OnePlusProfiles {
                 "1.3.275",
                 "512.530.0",
                 16384,
-                12288
+                12288,
+        120
+        ));
+
+        // OnePlus Ace 5 Pro (Snapdragon 8 Elite / 16GB / 144Hz)
+        list.add(new SpoofProfile(
+                "oneplus_ace5_pro",
+                "OnePlus Ace 5 Pro (Snapdragon 8 Elite / 144Hz)",
+                "OnePlus",
+                "PHZ110", "OnePlus", "OnePlus",
+                "OP5E2BL1", "PHZ110", "PHZ110",
+                "qcom", "sun", "SM8750-AB", "sun",
+                "Snapdragon 8 Elite",
+                "Qualcomm", 8, 4320000, "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "OnePlus/PHZ110/OP5E2BL1:15/UKQ1.231003.002/OxygenOS15.0.1:user/release-keys",
+                "OxygenOS15.0.1", "15", 35, "2025-03-01",
+                "Adreno (TM) 830", "Qualcomm",
+                "OpenGL ES 3.2 V@0615.0 (GIT@56860db)",
+                "1.3.280", "512.615.0",
+                16384, 12288, 144
         ));
 
         return list;

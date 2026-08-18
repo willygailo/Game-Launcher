@@ -40,7 +40,8 @@ public class NubiaProfiles {
                 "1.3.280",
                 "512.615.0",
                 24576,
-                19660
+                19660,
+        185
         ));
 
         // Nubia REDMAGIC 9 Pro (Snapdragon 8 Gen 3 / 16GB RAM / 165Hz)
@@ -75,7 +76,8 @@ public class NubiaProfiles {
                 "1.3.275",
                 "512.530.0",
                 16384,
-                12288
+                12288,
+        165
         ));
 
         return list;

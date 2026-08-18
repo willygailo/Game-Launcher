@@ -14,12 +14,10 @@ public class RefreshRateOverrideEngine {
     private static final String TAG = "RefreshRateOverrideEngine";
 
     public enum RefreshRateMode {
-        MODE_60HZ(60.0f, "60 Hz (Standard Battery Saver)"),
-        MODE_90HZ(90.0f, "90 Hz (Smooth Performance)"),
         MODE_120HZ(120.0f, "120 Hz (Ultra Esports)"),
         MODE_144HZ(144.0f, "144 Hz (Pro Gaming)"),
         MODE_165HZ(165.0f, "165 Hz (Extreme Pro)"),
-        MODE_185HZ(185.0f, "185 Hz (Extreme ROG/RedMagic)");
+        MODE_185HZ(185.0f, "185 Hz / 185 FPS (Extreme Max)");
 
         public final float fps;
         public final String label;

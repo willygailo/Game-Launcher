@@ -109,6 +109,11 @@ public class ArenaBreakoutConfigPatcher {
         Log.i(TAG, "Arena Breakout damage script 1.9x applied for " + packageName);
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);

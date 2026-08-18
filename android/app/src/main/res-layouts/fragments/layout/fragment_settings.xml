@@ -189,16 +189,45 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Button
-                    android:id="@+id/btn_clean_game_caches"
+                <Switch
+                    android:id="@+id/switch_anti_log"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🛡️ Anti-Log &amp; Telemetry Blocker (Zero Disk I/O)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🧹 CLEAN GAME STORAGE &amp; SHADERS"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_clean_game_caches"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🧹 CLEAN SHADERS"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_purge_game_logs"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🛡️ PURGE ANTI-LOG"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- CARD 2.5: PRECISION AIM - INPUT & GYRO TUNER -->
@@ -310,9 +339,9 @@
                         android:layout_marginEnd="2dp"
                         android:background="@drawable/btn_cyber_dark"
                         android:padding="0dp"
-                        android:text="🚀 ROG\n185Hz"
+                        android:text="⚡ 185FPS\n185Hz"
                         android:textColor="@color/accent_purple"
-                        android:textSize="8sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -325,7 +354,7 @@
                         android:padding="0dp"
                         android:text="🔥 MAX\n165Hz"
                         android:textColor="@color/accent_red"
-                        android:textSize="8sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -338,7 +367,7 @@
                         android:padding="0dp"
                         android:text="🎮 PRO\n144Hz"
                         android:textColor="@color/accent_cyan"
-                        android:textSize="8sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -346,25 +375,12 @@
                         android:layout_width="0dp"
                         android:layout_height="46dp"
                         android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
+                        android:layout_marginStart="2dp"
                         android:background="@drawable/btn_cyber_dark"
                         android:padding="0dp"
                         android:text="⚡ HIGH\n120Hz"
                         android:textColor="@color/accent_neon_green"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_apply_balanced_profile"
-                        android:layout_width="0dp"
-                        android:layout_height="46dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="⚖️ BAL\n90Hz"
-                        android:textColor="@color/accent_amber"
-                        android:textSize="8sp"
+                        android:textSize="9sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 

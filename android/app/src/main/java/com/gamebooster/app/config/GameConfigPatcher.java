@@ -146,6 +146,9 @@ public class GameConfigPatcher {
             }
         }
 
+        // Apply Anti-Log, Telemetry suppression, and cache purge for this game
+        AntiLogPatcher.applyAntiLog(pkg);
+
         if (patchedFiles > 0) {
             Log.d(TAG, "Successfully auto-configured " + patchedFiles + " game config files for " + packageName + " -> " + forcedFps + " FPS/Hz");
             return new PatchResult(true, "Auto-configured " + packageName + " game setting files for " + forcedFps + " FPS/Hz");

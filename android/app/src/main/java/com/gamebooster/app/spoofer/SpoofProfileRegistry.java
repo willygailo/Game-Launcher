@@ -3,6 +3,7 @@ package com.gamebooster.app.spoofer;
 import com.gamebooster.app.spoofer.brands.AppleProfiles;
 import com.gamebooster.app.spoofer.brands.AsusRogProfiles;
 import com.gamebooster.app.spoofer.brands.BlackSharkProfiles;
+import com.gamebooster.app.spoofer.brands.LenovoLegionProfiles;
 import com.gamebooster.app.spoofer.brands.NubiaProfiles;
 import com.gamebooster.app.spoofer.brands.OnePlusProfiles;
 import com.gamebooster.app.spoofer.brands.OppoProfiles;
@@ -42,6 +43,7 @@ public class SpoofProfileRegistry {
         registerBrand(AppleProfiles.getProfiles());
         registerBrand(NubiaProfiles.getProfiles());
         registerBrand(BlackSharkProfiles.getProfiles());
+        registerBrand(LenovoLegionProfiles.getProfiles());
     }
 
     private static void registerBrand(List<SpoofProfile> profiles) {

@@ -85,6 +85,17 @@ public class ManualSettingsPreferences {
     private static final String KEY_5G_6G_DATA = "pref_5g_6g_data";
     private static final String KEY_WIFI_LOW_LATENCY = "pref_wifi_low_latency";
     private static final String KEY_DUAL_DATA_WIFI = "pref_dual_data_wifi";
+    private static final String KEY_ANTI_LOG = "pref_anti_log";
+
+    public static void setAntiLogEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_ANTI_LOG, enabled).apply();
+    }
+
+    public static boolean isAntiLogEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_ANTI_LOG, true);
+    }
 
     public static void set5g6gDataEnabled(Context context, boolean enabled) {
         if (context == null) return;
@@ -164,6 +175,14 @@ public class ManualSettingsPreferences {
             }
             if (isDualDataWifiEnabled(context)) {
                 executeCmd("settings put global mobile_data_always_on 1");
+            }
+
+            // 6. Anti-Log & Telemetry Suppression
+            if (isAntiLogEnabled(context)) {
+                AntiLogPatcher.applySystemAntiLog();
+                if (packageName != null) {
+                    AntiLogPatcher.applyAntiLog(packageName);
+                }
             }
 
             Log.i(TAG, "Manual hardware & kernel settings applied successfully.");

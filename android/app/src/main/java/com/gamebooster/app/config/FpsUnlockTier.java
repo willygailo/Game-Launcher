@@ -3,13 +3,10 @@ package com.gamebooster.app.config;
 /**
  * FpsUnlockTier — Centralized FPS tier definitions for all game config patchers.
  *
- * Maps target FPS values to the internal device level integers used across
- * UE4-based games (PUBGM, CODM, Valorant, Farlight, Arena Breakout) and
- * non-UE4 games (MLBB, Free Fire, Genshin, HOK, Wild Rift, etc.).
+ * Dedicated strictly to Extreme Gaming tiers: 120, 144, 165, and 185 FPS.
+ * (No 60fps or 90fps).
  *
  * FPS Level mapping (PUBGM/UE4 standard):
- *   5  = 60 fps
- *   6  = 90 fps
  *   7  = 120 fps
  *   8  = 144 fps
  *   9  = 165 fps
@@ -17,8 +14,6 @@ package com.gamebooster.app.config;
  */
 public enum FpsUnlockTier {
 
-    FPS_60 (60,  5,  "60fps"),
-    FPS_90 (90,  6,  "90fps"),
     FPS_120(120, 7,  "120fps"),
     FPS_144(144, 8,  "144fps"),
     FPS_165(165, 9,  "165fps"),
@@ -43,33 +38,31 @@ public enum FpsUnlockTier {
 
     /**
      * Returns the FpsUnlockTier whose FPS value is closest to (but not exceeding)
-     * the requested FPS. Falls back to FPS_185 when the value is >= 185.
+     * the requested FPS. Clamped to [120, 185].
      *
      * Examples:
+     *   fromFps(185) → FPS_185
+     *   fromFps(165) → FPS_165
      *   fromFps(144) → FPS_144
-     *   fromFps(150) → FPS_144   (nearest tier ≤ 150)
-     *   fromFps(200) → FPS_185
-     *   fromFps(60)  → FPS_60
-     *   fromFps(30)  → FPS_60    (minimum tier)
+     *   fromFps(120) → FPS_120
+     *   fromFps(60)  → FPS_120 (minimum locked to 120)
      */
     public static FpsUnlockTier fromFps(int targetFps) {
         if (targetFps >= 185) return FPS_185;
         if (targetFps >= 165) return FPS_165;
         if (targetFps >= 144) return FPS_144;
-        if (targetFps >= 120) return FPS_120;
-        if (targetFps >= 90)  return FPS_90;
-        return FPS_60;
+        return FPS_120;
     }
 
     /**
      * Returns the FpsUnlockTier that matches a given device level integer.
-     * Falls back to FPS_60 for unknown levels.
+     * Falls back to FPS_120 for unknown or lower levels.
      */
     public static FpsUnlockTier fromLevel(int level) {
         for (FpsUnlockTier tier : values()) {
             if (tier.level == level) return tier;
         }
-        return FPS_60;
+        return FPS_120;
     }
 
     /**
@@ -106,7 +99,6 @@ public enum FpsUnlockTier {
      */
     public String getUnlockFlags() {
         StringBuilder sb = new StringBuilder();
-        if (fps >= 90)  sb.append("Unlock90Hz=1\n");
         if (fps >= 120) sb.append("Unlock120Hz=1\n");
         if (fps >= 144) sb.append("Unlock144Hz=1\n");
         if (fps >= 165) sb.append("Unlock165Hz=1\n");

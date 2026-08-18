@@ -12,9 +12,9 @@ public final class GameProfilePreferences {
     private static final String KEY_PROFILE_PREFIX = "profile_";
 
     public enum Profile {
-        BALANCED("Balanced", 165, false, PerformanceChannel.Profile.BALANCED),
-        COMPETITIVE("Competitive 165Hz", 165, true, PerformanceChannel.Profile.PERFORMANCE),
-        MAX_SUPPORTED("Max 165Hz Extreme", 165, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+        BALANCED("Ultra 120Hz", 120, false, PerformanceChannel.Profile.BALANCED),
+        COMPETITIVE("Competitive 144Hz", 144, true, PerformanceChannel.Profile.PERFORMANCE),
+        MAX_SUPPORTED("Max 185Hz Extreme", 185, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
 
         public final String label;
         private final int requestedHz;
@@ -24,13 +24,13 @@ public final class GameProfilePreferences {
         Profile(String label, int requestedHz, boolean enableDnd,
                 PerformanceChannel.Profile performanceProfile) {
             this.label = label;
-            this.requestedHz = 165;
+            this.requestedHz = requestedHz;
             this.enableDnd = enableDnd;
             this.performanceProfile = performanceProfile;
         }
 
         int resolveTargetHz(DevicePerformanceCapabilities capabilities) {
-            return 165;
+            return requestedHz > 0 ? requestedHz : 185;
         }
     }
 

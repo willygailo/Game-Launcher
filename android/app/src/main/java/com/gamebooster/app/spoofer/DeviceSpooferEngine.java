@@ -124,9 +124,10 @@ public class DeviceSpooferEngine {
             // User did not enable spoofing -> DO NOT AUTO SET
             return false;
         }
-        String activeId = SpoofPreferences.getActiveProfileId(context);
+        // Check per-package override first, fall back to global active profile
+        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
         if (activeId == null || activeId.trim().isEmpty()) {
-            // User has not picked a profile -> DO NOT AUTO SET
+            // No profile selected for this package or globally -> DO NOT AUTO SET
             return false;
         }
         SpoofProfile profile = getProfileById(activeId);

@@ -80,8 +80,17 @@ public class FreeFireConfigPatcher {
             forceWrite(path, content);
             written++;
         }
+        AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "FreeFire competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Applies anti-log, report cleaner, and telemetry suppression for Free Fire.
+     */
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
     }
 
     public static void applySuperFastTouch(String packageName) {

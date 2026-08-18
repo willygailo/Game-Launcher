@@ -123,6 +123,11 @@ public class Standoff2ConfigPatcher {
         Log.i(TAG, "Standoff 2 damage script 1.9x applied for " + packageName);
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);

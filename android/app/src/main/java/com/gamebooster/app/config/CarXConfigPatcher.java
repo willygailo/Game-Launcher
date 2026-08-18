@@ -119,6 +119,11 @@ public class CarXConfigPatcher {
         Log.i(TAG, "CarX/Racing Nitro & Torque boost applied for " + packageName);
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);

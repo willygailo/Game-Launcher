@@ -40,7 +40,8 @@ public class AsusRogProfiles {
                 "1.3.280",
                 "512.615.0",
                 24576,
-                19660
+                19660,
+        185
         ));
 
         // ASUS ROG Phone 8 Pro (Snapdragon 8 Gen 3 / 24GB RAM / 165Hz)
@@ -75,7 +76,8 @@ public class AsusRogProfiles {
                 "1.3.275",
                 "512.530.0",
                 24576,
-                18432
+                18432,
+        165
         ));
 
         return list;

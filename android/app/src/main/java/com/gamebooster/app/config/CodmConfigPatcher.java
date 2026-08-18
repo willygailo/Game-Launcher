@@ -161,8 +161,17 @@ public class CodmConfigPatcher {
             forceWrite(path, content);
             written++;
         }
+        AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "CODM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Applies anti-log and telemetry suppression for CODM.
+     */
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
     }
 
     /**

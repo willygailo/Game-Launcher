@@ -159,7 +159,7 @@ public class ProfilesFragment extends Fragment {
         if (getContext() == null || game == null) return;
 
         String[] fpsOptions = new String[]{
-                "⚡ 185 FPS / ROG Extreme Gaming Mode",
+                "⚡ 185 FPS / 185Hz Extreme Gaming Mode",
                 "🔥 165 FPS / Max Hardware Gaming Mode",
                 "⚡ 144 FPS / Cyber Ultra Gaming Mode",
                 "🚀 120 FPS / Pro Esports Gaming Mode"

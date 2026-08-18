@@ -135,6 +135,11 @@ public class SupercellConfigPatcher {
         }
     }
 
+    public static void applyAntiLog(String packageName) {
+        if (packageName == null) return;
+        AntiLogPatcher.applyAntiLog(packageName);
+    }
+
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;

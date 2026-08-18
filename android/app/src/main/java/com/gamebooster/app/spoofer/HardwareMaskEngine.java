@@ -135,11 +135,8 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop dalvik.vm.heapminfree 8m");
             batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
 
-            // Determine Target Refresh Rate based on Profile
-            int targetHz = 120;
-            if (profile.displayName.contains("185Hz")) targetHz = 185;
-            else if (profile.displayName.contains("165Hz")) targetHz = 165;
-            else if (profile.displayName.contains("144Hz")) targetHz = 144;
+            // Determine Target Refresh Rate from profile field (no more string parsing hack)
+            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 120;
 
             // Display & SurfaceFlinger Frame Rates
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
@@ -169,6 +166,14 @@ public class HardwareMaskEngine {
                 batchCommands.add("settings put global game_driver_opt_in_apps " + pkg);
                 batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
             }
+
+            // ═══════════════════════════════════════════════════════════════════
+            //  NETWORK / IDENTITY SPOOFING: Wi-Fi Hostname + Bluetooth Name
+            // ═══════════════════════════════════════════════════════════════════
+            batchCommands.add("settings put global device_name \"" + profile.model + "\"");
+            batchCommands.add("settings put secure bluetooth_name \"" + profile.model + "\"");
+            batchCommands.add("settings put secure bluetooth_address \"00:00:00:00:00:00\"");
+            batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
 
             // Execute all elevated commands via Shizuku
             ShizukuExecutor.executeShizukuCommands(batchCommands);
@@ -285,10 +290,8 @@ public class HardwareMaskEngine {
         if (packageName == null || profile == null) return;
         String pkg = packageName.toLowerCase().trim();
 
-        int targetFps = 120;
-        if (profile.displayName.contains("185Hz")) targetFps = 185;
-        else if (profile.displayName.contains("165Hz")) targetFps = 165;
-        else if (profile.displayName.contains("144Hz")) targetFps = 144;
+        // Use profile's maxRefreshRateHz field directly (no more fragile string parsing)
+        int targetFps = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 120;
 
         // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight)
         if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||

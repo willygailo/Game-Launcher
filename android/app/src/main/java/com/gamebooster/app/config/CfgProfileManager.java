@@ -37,6 +37,7 @@ public class CfgProfileManager {
     private static final String KEY_DMG_SUFFIX   = "_damage_script";
     private static final String KEY_RECOIL_SUFFIX = "_recoil_control";
     private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
+    private static final String KEY_ANTILOG_SUFFIX = "_anti_log";
 
     // ─── Supported game packages per game key ────────────────────────────────
 
@@ -159,6 +160,7 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
         ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
+        ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
         ed.apply();
         Log.i(TAG, "Saved profile: " + profile);
     }
@@ -178,7 +180,8 @@ public class CfgProfileManager {
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
         boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, mask);
+        boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, mask, antiLog);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -228,6 +231,9 @@ public class CfgProfileManager {
     public static int applyAllGames(Context context, int targetFps, boolean superTouch, boolean forceHz) {
         int total = 0;
         int effectiveFps = targetFps > 0 ? targetFps : CompetitiveCfgProfile.FPS_185;
+        // Purge system logcat and background log friction
+        AntiLogPatcher.applySystemAntiLog();
+
         for (String gameKey : new String[]{
                 CompetitiveCfgProfile.GAME_MLBB,
                 CompetitiveCfgProfile.GAME_PUBGM,
@@ -244,7 +250,7 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_CARX,
                 CompetitiveCfgProfile.GAME_ARENABREAKOUT,
                 CompetitiveCfgProfile.GAME_SUPERCELL}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -456,6 +462,10 @@ public class CfgProfileManager {
             result |= CarXConfigPatcher.patchCompetitive(pkg, fps);
             result |= ArenaBreakoutConfigPatcher.patchCompetitive(pkg, fps);
             result |= SupercellConfigPatcher.patchCompetitive(pkg, fps);
+        }
+
+        if (profile.isAntiLogEnabled()) {
+            AntiLogPatcher.applyAntiLog(pkg);
         }
 
         return result;

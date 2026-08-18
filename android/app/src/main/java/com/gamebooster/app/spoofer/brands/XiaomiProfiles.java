@@ -40,7 +40,8 @@ public class XiaomiProfiles {
                 "1.3.280",
                 "512.615.0",
                 16384,
-                12288
+                12288,
+        120
         ));
 
         // Xiaomi 14 Ultra (Snapdragon 8 Gen 3 / 16GB RAM / HyperOS 1.0)
@@ -75,9 +76,30 @@ public class XiaomiProfiles {
                 "1.3.275",
                 "512.530.0",
                 16384,
-                12288
+                12288,
+        120
+        ));
+
+        // Xiaomi 15 Pro (Snapdragon 8 Elite / 12GB RAM / HyperOS 2.0 / 120Hz)
+        list.add(new SpoofProfile(
+                "xiaomi_15_pro",
+                "Xiaomi 15 Pro (Snapdragon 8 Elite)",
+                "Xiaomi",
+                "25010PN0DG", "Xiaomi", "Xiaomi",
+                "dada", "dada_global", "dada",
+                "qcom", "sun", "SM8750-AB", "sun",
+                "Snapdragon 8 Elite",
+                "Qualcomm", 8, 4320000, "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "Xiaomi/dada_global/dada:15/UKQ1.231003.002/HyperOS2.1:user/release-keys",
+                "HyperOS2.1", "15", 35, "2025-02-01",
+                "Adreno (TM) 830", "Qualcomm",
+                "OpenGL ES 3.2 V@0615.0 (GIT@56860db)",
+                "1.3.280", "512.615.0",
+                12288, 9216, 120
         ));
 
         return list;
     }
 }
+
