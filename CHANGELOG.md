@@ -2,7 +2,11 @@
 
 All notable changes are derived from conventional commits (`git log --format=%s`).
 
-## v16.0.0-PRO (code 16000)
+## v16.0.1-PRO (code 16001)
+
+Point release cut from current `main` — supersedes the earlier v16.0.0-PRO
+GitHub release (which shipped before the work below landed). Install
+**v16.0.1-PRO** from Releases: it contains all of the following.
 
 ### Diagnostics (1.4)
 - New `com.gamebooster.app.diagnostics` package: `CrashLog` captures uncaught
