@@ -45,7 +45,7 @@ public class MlbbConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
-        final int frameRateLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String content = "[Graphics]\n" +
                 "HighFPSMode=1\n" +
@@ -61,8 +61,13 @@ public class MlbbConfigPatcher {
                 "HighFrameRate=1\n" +
                 "UnlockFPS=1\n" +
                 "SuperHighFPS=1\n" +
-                "Unlock185Hz=1\n" +
+                "Unlock120Hz=1\n" +
+                "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
+                "Unlock185Hz=1\n" +
+                "Ultra144FPS=1\n" +
+                "Ultra165FPS=1\n" +
+                "Ultra185FPS=1\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
                 "CameraHeight=3\n" +
@@ -188,10 +193,10 @@ public class MlbbConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
-        final int frameRateLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nHighFreqTouchHz=%d\n",
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighFreqTouchHz=%d\n",
                     frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;

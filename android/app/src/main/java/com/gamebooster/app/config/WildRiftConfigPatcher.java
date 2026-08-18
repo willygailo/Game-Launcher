@@ -31,13 +31,15 @@ public class WildRiftConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
-        final int fpsLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : 6)));
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String jsonContent = "{\n" +
                 "  \"graphics\": {\n" +
                 "    \"target_fps\": " + forcedFps + ",\n" +
                 "    \"max_fps\": " + forcedFps + ",\n" +
                 "    \"fps_level\": " + fpsLevel + ",\n" +
+                "    \"fpsUnlock\": true,\n" +
+                "    \"fps_unlock\": true,\n" +
                 "    \"unlock_120\": true,\n" +
                 "    \"unlock_144\": true,\n" +
                 "    \"unlock_165\": true,\n" +
@@ -71,6 +73,9 @@ public class WildRiftConfigPatcher {
                 "FPSLevel=" + fpsLevel + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
+                "FPS=" + forcedFps + "\n" +
+                "HighFPSMode=1\n" +
+                "UnlockFPS=1\n" +
                 "Unlock120=1\n" +
                 "Unlock144=1\n" +
                 "Unlock165=1\n" +
@@ -171,12 +176,15 @@ public class WildRiftConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "{\n  \"graphics\": {\n    \"target_fps\": " + targetFps + ",\n    \"max_fps\": " + targetFps + "\n  }\n}\n";
+            String content = "{\n  \"graphics\": {\n    \"target_fps\": " + forcedFps + ",\n    \"max_fps\": " + forcedFps + ",\n    \"fps_level\": " + fpsLevel + ",\n    \"fpsUnlock\": true,\n    \"unlock_120\": true,\n    \"unlock_144\": true,\n    \"unlock_165\": true,\n    \"unlock_185\": true\n  }\n}\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/\"target_fps\":.*/\"target_fps\": " + targetFps + ",/' " + path + "; " +
-                         "sed -i 's/\"max_fps\":.*/\"max_fps\": " + targetFps + ",/' " + path + "; " +
+            String cmd = "sed -i 's/\"target_fps\":.*/\"target_fps\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"max_fps\":.*/\"max_fps\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"fps_level\":.*/\"fps_level\": " + fpsLevel + ",/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

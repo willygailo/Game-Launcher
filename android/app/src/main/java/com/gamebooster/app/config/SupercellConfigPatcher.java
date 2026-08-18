@@ -31,12 +31,16 @@ public class SupercellConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String iniContent = "[SupercellEngine]\n" +
                 "TargetFPS=" + forcedFps + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
-                "FPSLevel=10\n" +
+                "FPSLevel=" + fpsLevel + "\n" +
                 "FPSCap=" + forcedFps + "\n" +
+                "HighFPSMode=1\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
                 "Unlock120Hz=1\n" +
                 "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
@@ -132,12 +136,19 @@ public class SupercellConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[SupercellEngine]\nTargetFPS=" + targetFps + "\nMaxFPS=" + targetFps + "\nHighRefreshRate=1\n";
+            String content = String.format(
+                    "[SupercellEngine]\nTargetFPS=%d\nMaxFPS=%d\nFPSLevel=%d\nFPSCap=%d\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighRefreshRate=1\n",
+                    forcedFps, forcedFps, fpsLevel, forcedFps
+            );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
+            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^FPSCap=.*/FPSCap=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

@@ -31,16 +31,19 @@ public class Standoff2ConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String jsonContent = "{\n" +
                 "  \"graphics\": {\n" +
                 "    \"target_framerate\": " + forcedFps + ",\n" +
                 "    \"max_framerate\": " + forcedFps + ",\n" +
-                "    \"framerate_cap\": " + forcedFps + ",\n" +
+                "    \"framerate_cap\": " + forcedFps + "\n," +
+                "    \"fps_unlock\": 1,\n" +
                 "    \"fps_unlock_120\": 1,\n" +
                 "    \"fps_unlock_144\": 1,\n" +
                 "    \"fps_unlock_165\": 1,\n" +
                 "    \"fps_unlock_185\": 1,\n" +
+                "    \"high_fps_mode\": 1,\n" +
                 "    \"shader_detail\": 3,\n" +
                 "    \"model_detail\": 3,\n" +
                 "    \"texture_detail\": 3,\n" +
@@ -67,7 +70,11 @@ public class Standoff2ConfigPatcher {
         String iniContent = "[StandoffGraphics]\n" +
                 "TargetFPS=" + forcedFps + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
-                "FPSLevel=10\n" +
+                "FrameRateLimit=" + forcedFps + "\n" +
+                "FPSLevel=" + fpsLevel + "\n" +
+                "HighFPSMode=1\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
                 "Unlock120Hz=1\n" +
                 "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
@@ -165,12 +172,14 @@ public class Standoff2ConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "{\n  \"graphics\": {\n    \"target_framerate\": " + targetFps + "\n  }\n}\n";
+            String content = "{\n  \"graphics\": {\n    \"target_framerate\": " + forcedFps + ",\n    \"max_framerate\": " + forcedFps + ",\n    \"framerate_cap\": " + forcedFps + ",\n    \"fps_unlock\": 1,\n    \"fps_unlock_120\": 1,\n    \"fps_unlock_144\": 1,\n    \"fps_unlock_165\": 1,\n    \"fps_unlock_185\": 1,\n    \"high_fps_mode\": 1\n  }\n}\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/\"target_framerate\":.*/\"target_framerate\": " + targetFps + ",/' " + path + "; " +
-                         "sed -i 's/\"max_framerate\":.*/\"max_framerate\": " + targetFps + ",/' " + path + "; " +
+            String cmd = "sed -i 's/\"target_framerate\":.*/\"target_framerate\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"max_framerate\":.*/\"max_framerate\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"framerate_cap\":.*/\"framerate_cap\": " + forcedFps + ",/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

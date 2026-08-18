@@ -53,12 +53,17 @@ public class CodmConfigPatcher {
             if (path.endsWith(".json")) {
                 content = "{\n" +
                         "  \"MaxFrameRate\": " + forcedFps + ",\n" +
+                        "  \"TargetFPS\": " + forcedFps + ",\n" +
                         "  \"GraphicQuality\": 4,\n" +
                         "  \"FPSLimit\": " + forcedFps + ",\n" +
+                        "  \"FrameRateLimit\": " + forcedFps + ",\n" +
+                        "  \"MobileFPSLimit\": " + forcedFps + ",\n" +
                         "  \"HDRMode\": 1,\n" +
                         "  \"HDRColorMode\": 2,\n" +
-                        "  \"Unlock185Hz\": 1,\n" +
+                        "  \"Unlock120Hz\": 1,\n" +
+                        "  \"Unlock144Hz\": 1,\n" +
                         "  \"Unlock165Hz\": 1,\n" +
+                        "  \"Unlock185Hz\": 1,\n" +
                         "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
@@ -89,11 +94,16 @@ public class CodmConfigPatcher {
                 content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
                         "<map>\n" +
                         "  <int name=\"MaxFrameRate\" value=\"" + forcedFps + "\" />\n" +
+                        "  <int name=\"TargetFPS\" value=\"" + forcedFps + "\" />\n" +
                         "  <int name=\"FPSLimit\" value=\"" + forcedFps + "\" />\n" +
+                        "  <int name=\"FrameRateLimit\" value=\"" + forcedFps + "\" />\n" +
+                        "  <int name=\"MobileFPSLimit\" value=\"" + forcedFps + "\" />\n" +
                         "  <int name=\"GraphicQuality\" value=\"4\" />\n" +
                         "  <int name=\"HDRMode\" value=\"1\" />\n" +
-                        "  <int name=\"Unlock185Hz\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock120Hz\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock144Hz\" value=\"1\" />\n" +
                         "  <int name=\"Unlock165Hz\" value=\"1\" />\n" +
+                        "  <int name=\"Unlock185Hz\" value=\"1\" />\n" +
                         "  <int name=\"TouchBoostHz\" value=\"" + forcedFps + "\" />\n" +
                         "  <int name=\"TouchPollingRate\" value=\"1000\" />\n" +
                         "  <int name=\"GyroSampleRate\" value=\"1000\" />\n" +
@@ -114,12 +124,17 @@ public class CodmConfigPatcher {
                 // INI format
                 content = "[Graphics]\n" +
                         "MaxFrameRate=" + forcedFps + "\n" +
+                        "TargetFPS=" + forcedFps + "\n" +
                         "FPSLimit=" + forcedFps + "\n" +
+                        "FrameRateLimit=" + forcedFps + "\n" +
+                        "MobileFPSLimit=" + forcedFps + "\n" +
                         "GraphicQuality=4\n" +
                         "HDRMode=1\n" +
                         "HDRColorMode=2\n" +
-                        "Unlock185Hz=1\n" +
+                        "Unlock120Hz=1\n" +
+                        "Unlock144Hz=1\n" +
                         "Unlock165Hz=1\n" +
+                        "Unlock185Hz=1\n" +
                         "SuperResolution=1\n" +
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchPollingRate=1000\n" +
@@ -278,16 +293,46 @@ public class CodmConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "{\n  \"MaxFrameRate\": %d,\n  \"GraphicQuality\": 4,\n  \"FPSLimit\": %d,\n  \"SuperResolution\": 1,\n  \"FieldOfView\": 90\n}\n",
-                    targetFps, targetFps
-            );
+            String content;
+            if (path.endsWith(".json")) {
+                content = String.format(
+                        "{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d,\n  \"MobileFPSLimit\": %d,\n  \"GraphicQuality\": 4,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"FieldOfView\": 90\n}\n",
+                        targetFps, targetFps, targetFps, targetFps, targetFps
+                );
+            } else if (path.endsWith(".xml")) {
+                content = String.format(
+                        "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n  <int name=\"MaxFrameRate\" value=\"%d\" />\n  <int name=\"TargetFPS\" value=\"%d\" />\n  <int name=\"FPSLimit\" value=\"%d\" />\n  <int name=\"FrameRateLimit\" value=\"%d\" />\n  <int name=\"MobileFPSLimit\" value=\"%d\" />\n  <int name=\"Unlock120Hz\" value=\"1\" />\n  <int name=\"Unlock144Hz\" value=\"1\" />\n  <int name=\"Unlock165Hz\" value=\"1\" />\n  <int name=\"Unlock185Hz\" value=\"1\" />\n  <int name=\"GraphicQuality\" value=\"4\" />\n</map>\n",
+                        targetFps, targetFps, targetFps, targetFps, targetFps
+                );
+            } else {
+                content = String.format(
+                        "[Graphics]\nMaxFrameRate=%d\nTargetFPS=%d\nFPSLimit=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nGraphicQuality=4\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\n",
+                        targetFps, targetFps, targetFps, targetFps, targetFps
+                );
+            }
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path + "; " +
-                         "sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path + "; " +
-                         "sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path + "; " +
-                         "chmod 666 " + path;
+            String cmd;
+            if (path.endsWith(".json")) {
+                cmd = "sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path + "; " +
+                      "sed -i 's/\"TargetFPS\":.*/\"TargetFPS\": " + targetFps + ",/' " + path + "; " +
+                      "sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path + "; " +
+                      "sed -i 's/\"FrameRateLimit\":.*/\"FrameRateLimit\": " + targetFps + ",/' " + path + "; " +
+                      "sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path + "; " +
+                      "chmod 666 " + path;
+            } else if (path.endsWith(".xml")) {
+                cmd = "sed -i 's/<int name=\"MaxFrameRate\" value=\".*\" \\/>/<int name=\"MaxFrameRate\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
+                      "sed -i 's/<int name=\"TargetFPS\" value=\".*\" \\/>/<int name=\"TargetFPS\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
+                      "sed -i 's/<int name=\"FPSLimit\" value=\".*\" \\/>/<int name=\"FPSLimit\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
+                      "chmod 666 " + path;
+            } else {
+                cmd = "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path + "; " +
+                      "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
+                      "sed -i 's/^FPSLimit=.*/FPSLimit=" + targetFps + "/' " + path + "; " +
+                      "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + "/' " + path + "; " +
+                      "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
+                      "chmod 666 " + path;
+            }
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {

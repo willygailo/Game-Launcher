@@ -32,12 +32,16 @@ public class CarXConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String iniContent = "[GraphicSettings]\n" +
                 "TargetFPS=" + forcedFps + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
-                "FPSLevel=10\n" +
+                "FPSLevel=" + fpsLevel + "\n" +
+                "FrameRateLimit=" + forcedFps + "\n" +
                 "FPSLimit=0\n" +
+                "HighFPSMode=1\n" +
+                "UnlockFPS=1\n" +
                 "UnlockHighFPS=1\n" +
                 "Unlock120FPS=1\n" +
                 "Unlock144FPS=1\n" +
@@ -62,7 +66,14 @@ public class CarXConfigPatcher {
                 "  \"graphics\": {\n" +
                 "    \"max_fps\": " + forcedFps + ",\n" +
                 "    \"target_fps\": " + forcedFps + ",\n" +
+                "    \"frame_rate_limit\": " + forcedFps + ",\n" +
+                "    \"fps_level\": " + fpsLevel + ",\n" +
                 "    \"fps_unlocked\": true,\n" +
+                "    \"unlock_fps\": true,\n" +
+                "    \"unlock_120\": true,\n" +
+                "    \"unlock_144\": true,\n" +
+                "    \"unlock_165\": true,\n" +
+                "    \"unlock_185\": true,\n" +
                 "    \"ultra_extreme\": true,\n" +
                 "    \"graphic_quality\": \"ultra\",\n" +
                 "    \"resolution_scale\": 1.2,\n" +
@@ -158,12 +169,19 @@ public class CarXConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[GraphicSettings]\nTargetFPS=" + targetFps + "\nMaxFPS=" + targetFps + "\nUnlockHighFPS=1\n";
+            String content = String.format(
+                    "[GraphicSettings]\nTargetFPS=%d\nMaxFPS=%d\nFrameRateLimit=%d\nFPSLevel=%d\nHighFPSMode=1\nUnlockFPS=1\nUnlockHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n",
+                    forcedFps, forcedFps, forcedFps, fpsLevel
+            );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
-            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
+            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

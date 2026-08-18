@@ -45,11 +45,12 @@ public class PubgConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
-        // PUBGM FPS level: 10=185fps, 9=165fps, 8=144fps, 7=120fps, 6=90fps
-        final int pubgFpsLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : (forcedFps >= 90 ? 6 : 5))));
+        final FpsUnlockTier tier = FpsUnlockTier.fromFps(forcedFps);
+        final int pubgFpsLevel = tier.level;
 
         String content = "[UserCustom DeviceProfile]\n" +
                 "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "\n" +
+                "+CVars=r.PUBGMaxFPS=" + forcedFps + "\n" +
                 "+CVars=r.PUBGFrameRateLimit=" + forcedFps + "\n" +
                 "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
                 "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
@@ -65,8 +66,10 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGFPPViewRange=150.00\n" +
                 "+CVars=r.SprintSensitivity=150\n" +
                 "+CVars=r.Vsync=0\n" +
-                "+CVars=r.Unlock185Hz=1\n" +
+                "+CVars=r.Unlock120Hz=1\n" +
+                "+CVars=r.Unlock144Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
+                "+CVars=r.Unlock185Hz=1\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
@@ -251,7 +254,7 @@ public class PubgConfigPatcher {
      */
     public static void patchActiveSavBinary(String pkg, int targetFps) {
         if (pkg == null) return;
-        final int fpsLevel = targetFps >= 185 ? 10 : (targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : 6)));
+        final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
         String[] savPaths = {
             "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
             "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
@@ -279,16 +282,18 @@ public class PubgConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        int pubgFpsLevel = targetFps >= 185 ? 10 : (targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : (targetFps >= 90 ? 6 : 5))));
+        final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
+        final int pubgFpsLevel = tier.level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.TouchBoostHz=%d\nFrameRateLevel=%d\n",
-                    pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
+                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGMaxFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.TouchBoostHz=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\nFrameRateLevel=%d\n",
+                    pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String[][] cvars = {
                 {"+CVars=r.PUBGDeviceFPS",      "+CVars=r.PUBGDeviceFPS="    + pubgFpsLevel},
+                {"+CVars=r.PUBGMaxFPS",         "+CVars=r.PUBGMaxFPS="       + targetFps},
                 {"+CVars=r.PUBGFrameRateLimit",  "+CVars=r.PUBGFrameRateLimit=" + targetFps},
                 {"+CVars=r.MobileFPSLimit",      "+CVars=r.MobileFPSLimit="   + targetFps}
             };
@@ -301,6 +306,7 @@ public class PubgConfigPatcher {
                 }
             }
             String updateCmd = "sed -i 's/+CVars=r.PUBGDeviceFPS=.*/+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "/' " + path + "; " +
+                              "sed -i 's/+CVars=r.PUBGMaxFPS=.*/+CVars=r.PUBGMaxFPS=" + targetFps + "/' " + path + "; " +
                               "sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path + "; " +
                               "sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path + "; " +
                               "sed -i 's/FrameRateLevel=.*/FrameRateLevel=" + pubgFpsLevel + "/' " + path + "; " +

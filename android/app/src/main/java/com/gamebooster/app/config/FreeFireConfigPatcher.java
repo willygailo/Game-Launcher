@@ -30,18 +30,25 @@ public class FreeFireConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String content = "[FFGraphics]\n" +
                 "HighFPS=1\n" +
+                "HighFPSMode=1\n" +
                 "FPSMode=2\n" +
+                "FrameRateLevel=" + frameRateLevel + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
                 "GraphicLevel=3\n" +
                 "Shadow=1\n" +
                 "HighResolution=1\n" +
                 "VulkanEnabled=1\n" +
-                "Unlock185Hz=1\n" +
+                "Unlock120Hz=1\n" +
+                "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
+                "Unlock185Hz=1\n" +
                 "AimAssist=1\n" +
                 "AutoAimPrecision=1.0\n" +
                 "SprintSensitivity=150\n" +
@@ -166,15 +173,18 @@ public class FreeFireConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[FFGraphics]\nHighFPS=1\nFPSMode=2\nMaxFPS=%d\nTargetFPS=%d\nGraphicLevel=3\nHighFreqTouchHz=%d\n",
-                    forcedFps, forcedFps, forcedFps
+                    "[FFGraphics]\nHighFPS=1\nHighFPSMode=1\nFPSMode=2\nFrameRateLevel=%d\nMaxFPS=%d\nTargetFPS=%d\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nGraphicLevel=3\nHighFreqTouchHz=%d\n",
+                    frameRateLevel, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/^HighFPS=.*/HighFPS=1/' " + path + "; " +
+                         "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
                          "sed -i 's/^FPSMode=.*/FPSMode=2/' " + path + "; " +
+                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
                          "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
                          "chmod 666 " + path;

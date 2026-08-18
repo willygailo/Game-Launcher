@@ -36,6 +36,12 @@ public class GenshinConfigPatcher {
                 "  \"fps\": " + forcedFps + ",\n" +
                 "  \"max_fps\": " + forcedFps + ",\n" +
                 "  \"target_frame_rate\": " + forcedFps + ",\n" +
+                "  \"targetFrameRateForOthers\": " + forcedFps + ",\n" +
+                "  \"fpsUnlock\": true,\n" +
+                "  \"fps_unlock_120\": true,\n" +
+                "  \"fps_unlock_144\": true,\n" +
+                "  \"fps_unlock_165\": true,\n" +
+                "  \"fps_unlock_185\": true,\n" +
                 "  \"graphics_quality\": 5,\n" +
                 "  \"render_resolution\": 1.2,\n" +
                 "  \"shadow_quality\": 4,\n" +
@@ -48,8 +54,10 @@ public class GenshinConfigPatcher {
                 "  \"subsurface_scattering\": 1,\n" +
                 "  \"co_op_teammate_effects\": 1,\n" +
                 "  \"vulkan_enabled\": true,\n" +
-                "  \"unlock_185hz\": true,\n" +
+                "  \"unlock_120hz\": true,\n" +
+                "  \"unlock_144hz\": true,\n" +
                 "  \"unlock_165hz\": true,\n" +
+                "  \"unlock_185hz\": true,\n" +
                 "  \"camera_distance\": 6.0,\n" +
                 "  \"camera_fov\": 150,\n" +
                 "  \"drone_view\": true,\n" +
@@ -162,14 +170,15 @@ public class GenshinConfigPatcher {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"vulkan_enabled\": true\n}\n",
-                    forcedFps, forcedFps, forcedFps
+                    "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"targetFrameRateForOthers\": %d,\n  \"fpsUnlock\": true,\n  \"fps_unlock_120\": true,\n  \"fps_unlock_144\": true,\n  \"unlock_120hz\": true,\n  \"unlock_144hz\": true,\n  \"unlock_165hz\": true,\n  \"unlock_185hz\": true,\n  \"vulkan_enabled\": true\n}\n",
+                    forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/\"fps\":.*/\"fps\": " + forcedFps + ",/' " + path + "; " +
                          "sed -i 's/\"max_fps\":.*/\"max_fps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"target_frame_rate\":.*/\"target_frame_rate\": " + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/\"target_frame_rate\":.*/\"target_frame_rate\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"targetFrameRateForOthers\":.*/\"targetFrameRateForOthers\": " + forcedFps + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

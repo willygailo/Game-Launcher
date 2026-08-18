@@ -51,4 +51,5 @@ dependencies {
     implementation "dev.rikka.shizuku:api:${shizuku_version}"
     implementation "dev.rikka.shizuku:provider:${shizuku_version}"
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+    testImplementation 'junit:junit:4.13.2'
 }

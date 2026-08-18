@@ -43,6 +43,7 @@ public class FarlightConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -52,7 +53,10 @@ public class FarlightConfigPatcher {
                 content = "{\n" +
                         "  \"FrameRateLimit\": " + forcedFps + ",\n" +
                         "  \"MaxFPS\": " + forcedFps + ",\n" +
+                        "  \"TargetFPS\": " + forcedFps + ",\n" +
                         "  \"FPS\": " + forcedFps + ",\n" +
+                        "  \"MobileFPSLimit\": " + forcedFps + ",\n" +
+                        "  \"FPSLevel\": " + fpsLevel + ",\n" +
                         "  \"GraphicQuality\": 3,\n" +
                         "  \"HighFPSMode\": 1,\n" +
                         "  \"Unlock185Hz\": 1,\n" +
@@ -84,10 +88,21 @@ public class FarlightConfigPatcher {
                         "sg.PostProcessQuality=1\n" +
                         "sg.TextureQuality=3\n" +
                         "sg.EffectsQuality=1\n" +
+                        "[UserCustom DeviceProfile]\n" +
+                        "+CVars=r.Solarland.MaxFPS=" + forcedFps + "\n" +
+                        "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
+                        "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
+                        "+CVars=r.Unlock120Hz=1\n" +
+                        "+CVars=r.Unlock144Hz=1\n" +
+                        "+CVars=r.Unlock165Hz=1\n" +
+                        "+CVars=r.Unlock185Hz=1\n" +
                         "[SolarlandGraphics]\n" +
                         "FrameRateLimit=" + forcedFps + "\n" +
                         "MaxFPS=" + forcedFps + "\n" +
+                        "TargetFPS=" + forcedFps + "\n" +
                         "FPS=" + forcedFps + "\n" +
+                        "MobileFPSLimit=" + forcedFps + "\n" +
+                        "FPSLevel=" + fpsLevel + "\n" +
                         "HighFPSMode=1\n" +
                         "Unlock185Hz=1\n" +
                         "Unlock165Hz=1\n" +
@@ -179,14 +194,15 @@ public class FarlightConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content;
             if (path.endsWith(".json")) {
-                content = String.format("{\n  \"FrameRateLimit\": %d,\n  \"MaxFPS\": %d,\n  \"FPS\": %d\n}\n",
-                        forcedFps, forcedFps, forcedFps);
+                content = String.format("{\n  \"FrameRateLimit\": %d,\n  \"MaxFPS\": %d,\n  \"TargetFPS\": %d,\n  \"FPS\": %d,\n  \"MobileFPSLimit\": %d,\n  \"FPSLevel\": %d,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1\n}\n",
+                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             } else {
-                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[SolarlandGraphics]\nMaxFPS=%d\nFPS=%d\n",
-                        forcedFps, forcedFps, forcedFps);
+                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[UserCustom DeviceProfile]\n+CVars=r.Solarland.MaxFPS=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[SolarlandGraphics]\nMaxFPS=%d\nTargetFPS=%d\nFPS=%d\nMobileFPSLimit=%d\nFPSLevel=%d\n",
+                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             }
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
@@ -194,12 +210,16 @@ public class FarlightConfigPatcher {
             if (path.endsWith(".json")) {
                 cmd = "sed -i 's/\"FrameRateLimit\":.*/\"FrameRateLimit\": " + forcedFps + ",/' " + path + "; " +
                       "sed -i 's/\"MaxFPS\":.*/\"MaxFPS\": " + forcedFps + ",/' " + path + "; " +
+                      "sed -i 's/\"TargetFPS\":.*/\"TargetFPS\": " + forcedFps + ",/' " + path + "; " +
                       "sed -i 's/\"FPS\":.*/\"FPS\": " + forcedFps + ",/' " + path + "; " +
+                      "sed -i 's/\"MobileFPSLimit\":.*/\"MobileFPSLimit\": " + forcedFps + ",/' " + path + "; " +
                       "chmod 666 " + path;
             } else {
                 cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + ".000000/' " + path + "; " +
                       "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
+                      "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
                       "sed -i 's/^FPS=.*/FPS=" + forcedFps + "/' " + path + "; " +
+                      "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + forcedFps + "/' " + path + "; " +
                       "chmod 666 " + path;
             }
             if (ShizukuExecutor.hasShizukuPermission()) {

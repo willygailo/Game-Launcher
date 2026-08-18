@@ -35,6 +35,10 @@ public class RobloxConfigPatcher {
         String clientAppSettings = "{\n" +
                 "  \"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",\n" +
                 "  \"FIntTargetFPS\": " + forcedFps + ",\n" +
+                "  \"FIntDesiredMaxFrameRate\": " + forcedFps + ",\n" +
+                "  \"FFlagEnableHighFPS\": \"True\",\n" +
+                "  \"FFlagUnlockFPS\": \"True\",\n" +
+                "  \"FFlagTaskSchedulerLimitTargetFps\": \"False\",\n" +
                 "  \"FFlagDebugGraphicsDisableDirect3D11\": \"False\",\n" +
                 "  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n" +
                 "  \"FFlagFixGraphicsQuality\": \"True\",\n" +
@@ -123,12 +127,14 @@ public class RobloxConfigPatcher {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",
-                    forcedFps, forcedFps
+                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FIntDesiredMaxFrameRate\": %d,\n  \"FFlagEnableHighFPS\": \"True\",\n  \"FFlagUnlockFPS\": \"True\",\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",
+                    forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/\"DFIntTaskSchedulerTargetFps\":.*/\"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"FIntTargetFPS\":.*/\"FIntTargetFPS\": " + forcedFps + ",/' " + path + "; " +
+                         "sed -i 's/\"FIntDesiredMaxFrameRate\":.*/\"FIntDesiredMaxFrameRate\": " + forcedFps + ",/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

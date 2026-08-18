@@ -31,12 +31,18 @@ public class BloodStrikeConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String iniContent = "[GraphicsSettings]\n" +
-                "FPSLevel=10\n" +
+                "FPSLevel=" + fpsLevel + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
+                "FrameRateLimit=" + forcedFps + "\n" +
+                "MobileFPSLimit=" + forcedFps + "\n" +
                 "HighFrameRate=1\n" +
+                "HighFPSMode=1\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
                 "Unlock120FPS=1\n" +
                 "Unlock144FPS=1\n" +
                 "Unlock165FPS=1\n" +
@@ -64,7 +70,12 @@ public class BloodStrikeConfigPatcher {
                 "  \"graphics\": {\n" +
                 "    \"target_fps\": " + forcedFps + ",\n" +
                 "    \"max_fps\": " + forcedFps + ",\n" +
+                "    \"frame_rate_limit\": " + forcedFps + ",\n" +
+                "    \"mobile_fps_limit\": " + forcedFps + ",\n" +
+                "    \"fps_level\": " + fpsLevel + ",\n" +
                 "    \"fps_mode\": \"ultra_extreme\",\n" +
+                "    \"high_fps_mode\": true,\n" +
+                "    \"unlock_fps\": true,\n" +
                 "    \"unlock_high_fps\": true,\n" +
                 "    \"resolution_scale\": 1.2,\n" +
                 "    \"graphic_quality\": \"ultra\",\n" +
@@ -166,12 +177,16 @@ public class BloodStrikeConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[GraphicsSettings]\nFPSLevel=5\nMaxFPS=" + targetFps + "\nUnlock120FPS=1\n";
+            String content = "[GraphicsSettings]\nFPSLevel=" + fpsLevel + "\nMaxFPS=" + targetFps + "\nTargetFPS=" + targetFps + "\nFrameRateLimit=" + targetFps + "\nMobileFPSLimit=" + targetFps + "\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
                          "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
+                         "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + "/' " + path + "; " +
+                         "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + targetFps + "/' " + path + "; " +
+                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

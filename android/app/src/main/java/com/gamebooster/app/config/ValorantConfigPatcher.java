@@ -43,6 +43,7 @@ public class ValorantConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -51,13 +52,17 @@ public class ValorantConfigPatcher {
             if (path.endsWith(".json")) {
                 content = "{\n" +
                         "  \"MaxFrameRate\": " + forcedFps + ",\n" +
+                        "  \"TargetFPS\": " + forcedFps + ",\n" +
                         "  \"GraphicQuality\": 4,\n" +
                         "  \"FPSLimit\": " + forcedFps + ",\n" +
                         "  \"FrameRateLimit\": " + forcedFps + ".000000,\n" +
+                        "  \"MobileFPSLimit\": " + forcedFps + ",\n" +
+                        "  \"FPSLevel\": " + fpsLevel + ",\n" +
                         "  \"Unlock185Hz\": 1,\n" +
                         "  \"Unlock165Hz\": 1,\n" +
                         "  \"Unlock144Hz\": 1,\n" +
                         "  \"Unlock120Hz\": 1,\n" +
+                        "  \"HighFPSMode\": 1,\n" +
                         "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
@@ -97,9 +102,20 @@ public class ValorantConfigPatcher {
                         "sg.EffectsQuality=1\n" +
                         "sg.FoliageQuality=0\n" +
                         "sg.ShadingQuality=2\n" +
+                        "[UserCustom DeviceProfile]\n" +
+                        "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
+                        "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
+                        "+CVars=r.MobileContentScaleFactor=1.0\n" +
+                        "+CVars=r.Unlock120Hz=1\n" +
+                        "+CVars=r.Unlock144Hz=1\n" +
+                        "+CVars=r.Unlock165Hz=1\n" +
+                        "+CVars=r.Unlock185Hz=1\n" +
                         "[ValorantMobileGraphics]\n" +
                         "MaxFPS=" + forcedFps + "\n" +
                         "TargetFPS=" + forcedFps + "\n" +
+                        "FrameRateLimit=" + forcedFps + "\n" +
+                        "MobileFPSLimit=" + forcedFps + "\n" +
+                        "FPSLevel=" + fpsLevel + "\n" +
                         "Unlock185Hz=1\n" +
                         "Unlock165Hz=1\n" +
                         "Unlock144Hz=1\n" +
@@ -198,26 +214,31 @@ public class ValorantConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content;
             if (path.endsWith(".json")) {
-                content = String.format("{\n  \"MaxFrameRate\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d.000000\n}\n",
-                        forcedFps, forcedFps, forcedFps);
+                content = String.format("{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d.000000,\n  \"MobileFPSLimit\": %d,\n  \"FPSLevel\": %d,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1\n}\n",
+                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             } else {
-                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[ValorantMobileGraphics]\nMaxFPS=%d\nTargetFPS=%d\n",
-                        forcedFps, forcedFps, forcedFps);
+                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[ValorantMobileGraphics]\nMaxFPS=%d\nTargetFPS=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nFPSLevel=%d\n",
+                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             }
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd;
             if (path.endsWith(".json")) {
                 cmd = "sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + forcedFps + ",/' " + path + "; " +
+                      "sed -i 's/\"TargetFPS\":.*/\"TargetFPS\": " + forcedFps + ",/' " + path + "; " +
                       "sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + forcedFps + ",/' " + path + "; " +
+                      "sed -i 's/\"FrameRateLimit\":.*/\"FrameRateLimit\": " + forcedFps + ".000000,/' " + path + "; " +
+                      "sed -i 's/\"MobileFPSLimit\":.*/\"MobileFPSLimit\": " + forcedFps + ",/' " + path + "; " +
                       "chmod 666 " + path;
             } else {
                 cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + ".000000/' " + path + "; " +
                       "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
                       "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                      "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + forcedFps + "/' " + path + "; " +
                       "chmod 666 " + path;
             }
             if (ShizukuExecutor.hasShizukuPermission()) {

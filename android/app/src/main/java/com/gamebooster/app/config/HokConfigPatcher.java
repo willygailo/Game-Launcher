@@ -30,8 +30,8 @@ public class HokConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
 
-        final int frameRateLevel = 3;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String content = "[Graphics]\n" +
                 "HighFPSMode=1\n" +
@@ -44,8 +44,12 @@ public class HokConfigPatcher {
                 "HDRMode=1\n" +
                 "UltraFrameRate=1\n" +
                 "VulkanEnabled=1\n" +
-                "Unlock185Hz=1\n" +
+                "UnlockFPS=1\n" +
+                "SuperHighFPS=1\n" +
+                "Unlock120Hz=1\n" +
+                "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
+                "Unlock185Hz=1\n" +
                 "DroneView=1\n" +
                 "DroneViewHeight=3\n" +
                 "CameraHeight=3\n" +
@@ -149,11 +153,11 @@ public class HokConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int frameRateLevel = 3;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nHighFreqTouchHz=%d\n",
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighFreqTouchHz=%d\n",
                     frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;

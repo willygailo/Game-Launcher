@@ -31,7 +31,7 @@ public class ArenaBreakoutConfigPatcher {
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = targetFps > 0 ? targetFps : 185;
-        final int fpsLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : 6)));
+        final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String ueContent = "[/Script/Engine.GameUserSettings]\n" +
                 "bUseDesiredScreenHeight=False\n" +
@@ -55,9 +55,21 @@ public class ArenaBreakoutConfigPatcher {
                 "UltraExtreme=1\n" +
                 "HDRMode=1\n" +
                 "\n" +
+                "[UserCustom DeviceProfile]\n" +
+                "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
+                "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
+                "+CVars=r.PUBGDeviceFPS=" + fpsLevel + "\n" +
+                "+CVars=r.Unlock120Hz=1\n" +
+                "+CVars=r.Unlock144Hz=1\n" +
+                "+CVars=r.Unlock165Hz=1\n" +
+                "+CVars=r.Unlock185Hz=1\n" +
+                "\n" +
                 "[UserCustom]\n" +
                 "FrameRateLevel=" + fpsLevel + "\n" +
                 "MaxFPS=" + forcedFps + "\n" +
+                "TargetFPS=" + forcedFps + "\n" +
+                "FrameRateLimit=" + forcedFps + "\n" +
+                "MobileFPSLimit=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
@@ -146,12 +158,16 @@ public class ArenaBreakoutConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
+        final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + targetFps + ".000000\nFPSLevel=10\n";
+            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + targetFps + ".000000\nFPSLevel=" + fpsLevel + "\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=" + targetFps + "\n+CVars=r.MobileFPSLimit=" + targetFps + "\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[UserCustom]\nFrameRateLevel=" + fpsLevel + "\nMaxFPS=" + targetFps + "\nTargetFPS=" + targetFps + "\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + ".000000/' " + path + "; " +
                          "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
+                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
+                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
+                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + fpsLevel + "/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
