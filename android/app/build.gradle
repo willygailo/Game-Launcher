@@ -29,6 +29,25 @@ android {
             shrinkResources false
         }
     }
+    sourceSets {
+        main {
+            res.srcDirs = [
+                'src/main/res',
+                'src/main/res-layouts/activities',
+                'src/main/res-layouts/fragments',
+                'src/main/res-layouts/dialogs',
+                'src/main/res-layouts/hud',
+                'src/main/res-layouts/items',
+                'src/main/res-drawables/backgrounds',
+                'src/main/res-drawables/badges',
+                'src/main/res-drawables/buttons',
+                'src/main/res-drawables/cards',
+                'src/main/res-drawables/hud',
+                'src/main/res-drawables/nav'
+            ]
+        }
+    }
+
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (variant.buildType.name == 'debug') {
