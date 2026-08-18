@@ -7,6 +7,8 @@ import java.util.List;
 public class OnePlusProfiles {
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
+
+        // OnePlus 13 (Snapdragon 8 Elite / 24GB LPDDR5X / OxygenOS 15)
         list.add(new SpoofProfile(
                 "oneplus_13",
                 "OnePlus 13 (Snapdragon 8 Elite)",
@@ -22,13 +24,29 @@ public class OnePlusProfiles {
                 "SM8750-AB",
                 "sun",
                 "Snapdragon 8 Elite",
+                "Qualcomm",
+                8,
+                4320000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
                 "OnePlus/PJZ110/OP5D1BL1:15/UKQ1.231003.002/OxygenOS15.0:user/release-keys",
                 "OxygenOS15.0",
-                "Adreno (TM) 830"
+                "15",
+                35,
+                "2025-01-01",
+                "Adreno (TM) 830",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0615.0",
+                "1.3.280",
+                "512.615.0",
+                24576,
+                19660
         ));
+
+        // OnePlus 12 (Snapdragon 8 Gen 3 / 16GB RAM / OxygenOS 14)
         list.add(new SpoofProfile(
                 "oneplus_12",
-                "OnePlus 12",
+                "OnePlus 12 (Snapdragon 8 Gen 3)",
                 "OnePlus",
                 "CPH2583",
                 "OnePlus",
@@ -38,13 +56,28 @@ public class OnePlusProfiles {
                 "CPH2583",
                 "qcom",
                 "pineapple",
-                "SM8650",
+                "SM8650-AB",
                 "pineapple",
                 "Snapdragon 8 Gen 3",
+                "Qualcomm",
+                8,
+                3300000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
                 "OnePlus/CPH2583/OP595DL1:14/UKQ1.230917.001/OxygenOS14.0:user/release-keys",
                 "OxygenOS14.0",
-                "Adreno (TM) 750"
+                "14",
+                34,
+                "2024-04-01",
+                "Adreno (TM) 750",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0530.0",
+                "1.3.275",
+                "512.530.0",
+                16384,
+                12288
         ));
+
         return list;
     }
 }

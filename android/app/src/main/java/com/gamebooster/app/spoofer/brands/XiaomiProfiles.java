@@ -7,28 +7,46 @@ import java.util.List;
 public class XiaomiProfiles {
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
+
+        // Xiaomi 15 Ultra (Snapdragon 8 Elite / 16GB LPDDR5X / HyperOS 2.0)
         list.add(new SpoofProfile(
                 "xiaomi_15_ultra",
                 "Xiaomi 15 Ultra (Snapdragon 8 Elite)",
                 "Xiaomi",
-                "24129PN74C",
+                "25010PN30G",
                 "Xiaomi",
                 "Xiaomi",
                 "xuanyuan",
-                "xuanyuan",
+                "xuanyuan_global",
                 "xuanyuan",
                 "qcom",
                 "sun",
                 "SM8750-AB",
                 "sun",
                 "Snapdragon 8 Elite",
-                "Xiaomi/xuanyuan/xuanyuan:15/UKQ1.231003.002/HyperOS2.0:user/release-keys",
+                "Qualcomm",
+                8,
+                4320000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "Xiaomi/xuanyuan_global/xuanyuan:15/UKQ1.231003.002/HyperOS2.0:user/release-keys",
                 "HyperOS2.0",
-                "Adreno (TM) 830"
+                "15",
+                35,
+                "2025-01-01",
+                "Adreno (TM) 830",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0615.0",
+                "1.3.280",
+                "512.615.0",
+                16384,
+                12288
         ));
+
+        // Xiaomi 14 Ultra (Snapdragon 8 Gen 3 / 16GB RAM / HyperOS 1.0)
         list.add(new SpoofProfile(
                 "xiaomi_14_ultra",
-                "Xiaomi 14 Ultra",
+                "Xiaomi 14 Ultra (Snapdragon 8 Gen 3)",
                 "Xiaomi",
                 "24030PN60G",
                 "Xiaomi",
@@ -38,13 +56,28 @@ public class XiaomiProfiles {
                 "aurora",
                 "qcom",
                 "pineapple",
-                "SM8650",
+                "SM8650-AB",
                 "pineapple",
                 "Snapdragon 8 Gen 3",
+                "Qualcomm",
+                8,
+                3300000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
                 "Xiaomi/aurora_global/aurora:14/UKQ1.230917.001/HyperOS1.0:user/release-keys",
                 "HyperOS1.0",
-                "Adreno (TM) 750"
+                "14",
+                34,
+                "2024-03-01",
+                "Adreno (TM) 750",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0530.0",
+                "1.3.275",
+                "512.530.0",
+                16384,
+                12288
         ));
+
         return list;
     }
 }
