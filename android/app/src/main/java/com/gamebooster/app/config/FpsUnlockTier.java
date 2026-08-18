@@ -3,22 +3,26 @@ package com.gamebooster.app.config;
 /**
  * FpsUnlockTier — Centralized FPS tier definitions for all game config patchers.
  *
- * Hard-locked to 185 FPS only. All lookup helpers unconditionally return FPS_185.
+ * Supported tiers: 90 / 120 / 144 / 165 / 185 fps.
  *
  * FPS Level mapping (PUBGM/UE4 standard):
- *   10 = 185 fps (only supported tier)
+ *   6 = 90fps, 7 = 120fps, 8 = 144fps, 9 = 165fps, 10 = 185fps
  */
 public enum FpsUnlockTier {
 
+    FPS_90(90, 6, "90fps"),
+    FPS_120(120, 7, "120fps"),
+    FPS_144(144, 8, "144fps"),
+    FPS_165(165, 9, "165fps"),
     FPS_185(185, 10, "185fps");
 
-    /** The raw target FPS value (185). */
+    /** The raw target FPS value. */
     public final int fps;
 
-    /** The internal device/frame-rate level integer (10 for 185fps). */
+    /** The internal device/frame-rate level integer. */
     public final int level;
 
-    /** Human-readable label for UI display ("185fps"). */
+    /** Human-readable label for UI display. */
     public final String label;
 
     FpsUnlockTier(int fps, int level, String label) {
@@ -30,79 +34,104 @@ public enum FpsUnlockTier {
     // ─── Lookup Helpers ──────────────────────────────────────────────────────
 
     /**
-     * Always returns FPS_185 regardless of input.
-     * All tiers are locked to 185 FPS.
+     * Resolves a requested FPS value to the nearest supported tier at-or-below
+     * the request. Invalid (<= 0) values fall back to the top tier FPS_185.
      */
     public static FpsUnlockTier fromFps(int targetFps) {
+        if (targetFps <= 0) return FPS_185;
+        FpsUnlockTier best = values()[0];
+        for (FpsUnlockTier tier : values()) {
+            if (tier.fps <= targetFps) best = tier;
+        }
+        return best;
+    }
+
+    /**
+     * Returns the tier matching the given level integer, or FPS_185 if unknown.
+     */
+    public static FpsUnlockTier fromLevel(int level) {
+        for (FpsUnlockTier tier : values()) {
+            if (tier.level == level) return tier;
+        }
         return FPS_185;
     }
 
     /**
-     * Always returns FPS_185 regardless of level input.
+     * Returns a valid, tier-aligned FPS value for the requested target.
+     * Use this in patchers instead of hard-coding a fixed FPS.
      */
-    public static FpsUnlockTier fromLevel(int level) {
-        return FPS_185;
+    public static int resolveTargetFps(int targetFps) {
+        return fromFps(targetFps).fps;
     }
 
     /**
      * Returns all available FPS tier values as an int array.
-     * Always returns {185}.
      */
     public static int[] getAllFpsValues() {
-        return new int[]{185};
+        int[] values = new int[values().length];
+        for (int i = 0; i < values().length; i++) values[i] = values()[i].fps;
+        return values;
     }
 
     /**
      * Returns all available FPS tier labels as a String array.
-     * Always returns {"185fps"}.
      */
     public static String[] getAllLabels() {
-        return new String[]{"185fps"};
+        String[] labels = new String[values().length];
+        for (int i = 0; i < values().length; i++) labels[i] = values()[i].label;
+        return labels;
     }
 
     // ─── Unlock Flag Generators ──────────────────────────────────────────────
 
     /**
-     * Returns INI-style unlock flags for all Hz tiers.
-     * All 4 capability flags are always emitted to enable the full 185Hz pipeline.
+     * Returns INI-style unlock flags for all Hz tiers up to and including this tier.
+     * 90fps is the baseline high-FPS tier and emits no Hz unlock flags.
      */
     public String getUnlockFlags() {
-        return "Unlock120Hz=1\n" +
-               "Unlock144Hz=1\n" +
-               "Unlock165Hz=1\n" +
-               "Unlock185Hz=1\n";
+        StringBuilder sb = new StringBuilder();
+        for (int hz : HZ_UNLOCK_FLAGS) {
+            if (hz > fps) break;
+            sb.append("Unlock").append(hz).append("Hz=1\n");
+        }
+        return sb.toString();
     }
 
     /**
-     * Returns UE4 CVar-style unlock flags for all Hz tiers.
-     * All 4 capability CVars are always emitted.
+     * Returns UE4 CVar-style unlock flags for all Hz tiers up to and including this tier.
      */
     public String getUE4UnlockCVars() {
-        return "+CVars=r.Unlock120Hz=1\n" +
-               "+CVars=r.Unlock144Hz=1\n" +
-               "+CVars=r.Unlock165Hz=1\n" +
-               "+CVars=r.Unlock185Hz=1\n";
+        StringBuilder sb = new StringBuilder();
+        for (int hz : HZ_UNLOCK_FLAGS) {
+            if (hz > fps) break;
+            sb.append("+CVars=r.Unlock").append(hz).append("Hz=1\n");
+        }
+        return sb.toString();
     }
 
     /**
-     * Returns JSON-style unlock flags for all Hz tiers.
-     * All 4 capability flags are always emitted.
+     * Returns JSON-style unlock flags for all Hz tiers up to and including this tier.
      */
     public String getJsonUnlockFlags() {
-        return "  \"Unlock120Hz\": 1,\n" +
-               "  \"Unlock144Hz\": 1,\n" +
-               "  \"Unlock165Hz\": 1,\n" +
-               "  \"Unlock185Hz\": 1,\n";
+        StringBuilder sb = new StringBuilder();
+        for (int hz : HZ_UNLOCK_FLAGS) {
+            if (hz > fps) break;
+            sb.append("  \"Unlock").append(hz).append("Hz\": 1,\n");
+        }
+        return sb.toString();
     }
 
     /**
-     * Returns XML PlayerPrefs-style unlock flags for all Hz tiers.
-     * All 4 capability flags are always emitted.
+     * Returns XML PlayerPrefs-style unlock flags for all Hz tiers up to and including this tier.
      */
     public String getXmlUnlockFlags() {
-        return "  <int name=\"Unlock120Hz\" value=\"1\" />\n" +
-               "  <int name=\"Unlock144Hz\" value=\"1\" />\n" +
-               "  <int name=\"Unlock165Hz\" value=\"1\" />\n" +
-               "  <int name=\"Unlock185Hz\" value=\"1\" />\n";
+        StringBuilder sb = new StringBuilder();
+        for (int hz : HZ_UNLOCK_FLAGS) {
+            if (hz > fps) break;
+            sb.append("  <int name=\"Unlock").append(hz).append("Hz\" value=\"1\" />\n");
+        }
+        return sb.toString();
     }
+
+    private static final int[] HZ_UNLOCK_FLAGS = {120, 144, 165, 185};
 }

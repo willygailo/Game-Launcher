@@ -202,6 +202,9 @@ public class CfgProfileManager {
             List<String> resolvedPaths = GameConfigPathResolver.getPathsForGame(pkg);
             GameConfigPathResolver.ensureDirectoriesForPaths(resolvedPaths);
 
+            // Safety net: capture true originals before competitive patching overwrites them
+            ConfigBackupManager.backupPackage(pkg, resolvedPaths);
+
             boolean ok = applyToPackage(pkg, profile);
             if (ok) {
                 patched++;
@@ -230,7 +233,7 @@ public class CfgProfileManager {
      */
     public static int applyAllGames(Context context, int targetFps, boolean superTouch, boolean forceHz) {
         int total = 0;
-        final int effectiveFps = CompetitiveCfgProfile.FPS_185; // hard-locked
+        final int effectiveFps = FpsUnlockTier.resolveTargetFps(targetFps);
         // Purge system logcat and background log friction
         AntiLogPatcher.applySystemAntiLog();
 
@@ -263,7 +266,7 @@ public class CfgProfileManager {
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {
         boolean result = false;
         String key = profile.getGameKey();
-        final int fps = 185; // hard-locked — CompetitiveCfgProfile.getTargetFps() always returns 185
+        final int fps = FpsUnlockTier.resolveTargetFps(profile.getTargetFps());
 
         if (CompetitiveCfgProfile.GAME_MLBB.equals(key)) {
             result = MlbbConfigPatcher.patchCompetitive(pkg, fps);
@@ -471,9 +474,9 @@ public class CfgProfileManager {
         return result;
     }
 
-    /** Builds and applies the dynamic Shizuku force command for target Hz (185). */
+    /** Builds and applies the dynamic Shizuku force command for the target Hz. */
     private static void applyShizukuHzForce(int hz) {
-        final int forcedHz = 185; // hard-locked
+        final int forcedHz = FpsUnlockTier.resolveTargetFps(hz);
         if (ShizukuExecutor.hasShizukuPermission()) {
             MaxHzForceChannel.forceApply(forcedHz);
         }

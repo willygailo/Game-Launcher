@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
 
+        // Phase 0.2: enable the config backup safety net (app-private storage)
+        com.gamebooster.app.config.ConfigBackupManager.setAppContext(getApplicationContext());
+
         // Handle System Insets (Status bar, Camera Notch & Gesture Navigation Bar across all 4 edges)
         View rootLayout = findViewById(R.id.main_root_layout);
         View bottomNavWrapper = findViewById(R.id.bottom_nav_wrapper);

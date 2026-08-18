@@ -75,8 +75,16 @@ public class GameLauncherHelper {
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
-                int targetFps = 185; // hard-locked to 185 FPS
-                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(context, pkgName, targetFps);
+                int targetFps = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(context);
+                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(
+                        context, pkgName, targetFps, report -> {
+                    // Phase 1.2: surface per-step failures/skips instead of a silent Log.w
+                    if (report != null && !report.fullyApplied()) {
+                        com.gamebooster.app.ui.dialogs.CyberActionDialog.showDetailed(
+                                context, "MASTER OPTIMIZATION REPORT", false, 4500,
+                                report.toDialogLines());
+                    }
+                });
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
             } catch (Throwable ignored) {}
         });

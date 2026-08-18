@@ -123,13 +123,14 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
 
         CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
 
-        String[] fpsOptions = {
-                "⚡ 185 FPS / 185Hz (Extreme 185Hz Flagship Mode)"
-        };
-        int[] fpsValues = {185};
+        int[] fpsValues = FpsUnlockTier.getAllFpsValues();
+        String[] fpsOptions = FpsUnlockTier.getAllLabels();
 
         int selectedIdx = 0;
-        final int[] chosenFps = {185};
+        for (int i = 0; i < fpsValues.length; i++) {
+            if (fpsValues[i] == currentCfg.getTargetFps()) selectedIdx = i;
+        }
+        final int[] chosenFps = {currentCfg.getTargetFps()};
         final boolean[] superTouch = {currentCfg.isSuperFastTouchEnabled()};
         final boolean[] forceHz = {currentCfg.isForceWriteSystemHz()};
 
@@ -139,7 +140,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         };
         boolean[] initialChecked = {superTouch[0], forceHz[0]};
 
-        new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("⚙️ " + game.getLabel() + " — Competitive CFG Config")
                 .setMessage("Package: " + pkg + "\nSelect target FPS and touch options to force-write into game config files via Shizuku (temporary root):")
                 .setSingleChoiceItems(fpsOptions, selectedIdx, (dialog, which) -> chosenFps[0] = fpsValues[which])
@@ -163,6 +164,31 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                         AppExecutors.getInstance().postToMainThread(() -> {
                             holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
                             Toast.makeText(context, "✅ FORCED " + chosenFps[0] + " FPS CFG TO " + game.getLabel() + " (" + patchedCount + " files updated via Shizuku)!", Toast.LENGTH_LONG).show();
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null);
+
+        if (ConfigBackupManager.hasBackups(context, pkg)) {
+            builder.setNeutralButton("♻️ Restore originals", (dialog, which) -> confirmRestore(game));
+        }
+        builder.show();
+    }
+
+    private void confirmRestore(GameAppInfo game) {
+        int count = ConfigBackupManager.getBackupCount(context, game.getPackageName());
+        new AlertDialog.Builder(context)
+                .setTitle("♻️ Restore original config files")
+                .setMessage("Restore " + count + " original config file(s) for " + game.getLabel() + "?\n\nOriginal file backups will be restored and removed. Patches can be re-applied afterwards.")
+                .setPositiveButton("Restore", (dialog, which) -> {
+                    Toast.makeText(context, "♻️ Restoring original files for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        int restored = ConfigBackupManager.restorePackage(context, game.getPackageName());
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            String msg = restored > 0
+                                    ? "✅ Restored " + restored + " original config file(s) for " + game.getLabel()
+                                    : "⚠️ Nothing to restore for " + game.getLabel();
+                            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
                         });
                     });
                 })

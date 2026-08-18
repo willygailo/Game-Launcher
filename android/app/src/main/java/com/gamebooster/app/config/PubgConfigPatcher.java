@@ -23,7 +23,7 @@ public class PubgConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -44,7 +44,7 @@ public class PubgConfigPatcher {
      */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(forcedFps);
         final int pubgFpsLevel = tier.level;
 
@@ -299,7 +299,7 @@ public class PubgConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final FpsUnlockTier tier = FpsUnlockTier.fromFps(185); // hard-locked
+        final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
         final int pubgFpsLevel = tier.level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(

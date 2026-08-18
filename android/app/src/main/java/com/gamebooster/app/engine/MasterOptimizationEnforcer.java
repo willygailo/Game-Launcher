@@ -10,6 +10,7 @@ import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.NetworkOptimizer;
 import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.config.CompetitiveCfgProfile;
+import com.gamebooster.app.config.FpsUnlockTier;
 import com.gamebooster.app.config.GameConfigPatcher;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -114,7 +115,7 @@ public class MasterOptimizationEnforcer {
 
                 // 3D. Execute master root performance script
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);
-                if (targetHz <= 0) targetHz = 185;
+                if (targetHz <= 0) targetHz = FpsUnlockTier.resolveTargetFps(targetHz);
                 PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
                 MaxHzForceChannel.forceApply(targetHz);
 
@@ -140,58 +141,232 @@ public class MasterOptimizationEnforcer {
 
     /**
      * Enforces game-launch optimizations across all 3 tiers with zero delay.
+     * Fire-and-forget variant — no report listener (see 4-arg overload).
      */
     public static void enforceGameLaunchOptimizations(Context context, String packageName, int targetFps) {
-        if (context == null || packageName == null || packageName.trim().isEmpty()) return;
+        enforceGameLaunchOptimizations(context, packageName, targetFps, null);
+    }
+
+    /**
+     * Enforces game-launch optimizations across all 3 tiers with zero delay
+     * and per-step reporting (Phase 1.2).
+     *
+     * Each ~18 step is recorded into an {@link EnforcementReport}; a failed
+     * Tier 1 (Shizuku) step marks root-dependent Tier 3 steps as SKIPPED
+     * instead of blindly continuing (e.g. the old behavior of running the
+     * `sed -i` config patch even when Shizuku is dead).
+     */
+    public static void enforceGameLaunchOptimizations(Context context, String packageName, int targetFps,
+                                                      OnEnforcementReportListener listener) {
+        if (context == null || packageName == null || packageName.trim().isEmpty()) {
+            if (listener != null) {
+                listener.onEnforcementReport(new EnforcementReport(null, "Invalid context/package"));
+            }
+            return;
+        }
 
         final Context appContext = context.getApplicationContext();
         final String pkg = packageName.trim();
-        final int forcedFps = 185; // hard-locked to 185 FPS/Hz
+        final int forcedFps = com.gamebooster.app.config.GameProfileAutoConfigurator
+                .clampTargetFpsToDisplay(appContext,
+                        com.gamebooster.app.config.FpsUnlockTier.resolveTargetFps(targetFps));
 
         AppExecutors.getInstance().executeCommand(() -> {
+            EnforcementReport report = new EnforcementReport(pkg, null);
+            boolean tier1Ok = false;
+            boolean shizukuAvailable = false;
+
             try {
                 Log.i(TAG, "Enforcing game launch pipeline for: " + pkg + " @ " + forcedFps + " FPS/Hz");
 
-                // Tier 1: Shizuku Privileged Shell & AIDL
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    List<String> gameCmds = new ArrayList<>();
-                    gameCmds.add("cmd game mode performance " + pkg);
-                    gameCmds.add("cmd window set-app-refresh-rate " + pkg + " " + forcedFps);
-                    gameCmds.add("cmd game set --fps " + forcedFps + " " + pkg);
-                    gameCmds.add("device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps);
-                    gameCmds.add("settings put global game_driver_opt_in_apps " + pkg);
-                    gameCmds.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
-
-                    if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                        ShizukuUserServiceConnector.getInstance().execBatchCommands(gameCmds);
-                        ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(forcedFps);
-                        ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
-                    } else {
-                        ShizukuExecutor.executeShizukuCommands(gameCmds);
+                // ─────────────────────────────────────────────────────────────
+                // TIER 1: SHIZUKU PRIVILEGED SHELL & AIDL
+                // ─────────────────────────────────────────────────────────────
+                shizukuAvailable = ShizukuExecutor.hasShizukuPermission();
+                if (shizukuAvailable) {
+                    // Phase 1.1 gate: wait briefly for the AIDL user service
+                    if (!com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().ensureReady(300)) {
+                        report.addStep("Tier 1", "Shizuku AIDL UserService readiness", false,
+                                "binder dead / service unavailable");
+                        shizukuAvailable = false;
                     }
+                } else {
+                    report.addStep("Tier 1", "Shizuku privileged shell (6 cmd/settings + Hz + governors)", false,
+                            "Shizuku permission is not granted");
                 }
 
-                // Tier 2: Native Android Framework APIs
-                NativeFrameworkBridge.setGameModePerformance(appContext, pkg);
-                NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext);
-                NativeFrameworkBridge.acquireSustainedPerformanceLock(appContext);
-                NativeFrameworkBridge.requestHighPriorityNetwork(appContext);
+                if (shizukuAvailable) {
+                    tier1Ok = true;
+                    String[] tier1Commands = new String[]{
+                            "cmd game mode performance " + pkg,
+                            "cmd window set-app-refresh-rate " + pkg + " " + forcedFps,
+                            "cmd game set --fps " + forcedFps + " " + pkg,
+                            "device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps,
+                            "settings put global game_driver_opt_in_apps " + pkg,
+                            "settings put global updatable_driver_production_opt_in_apps " + pkg
+                    };
+                    for (String cmd : tier1Commands) {
+                        report.attemptStep("Tier 1", cmd, () -> {
+                            String res = ShizukuUserServiceConnector.getInstance().executeCommand(cmd);
+                            if (res != null && res.startsWith("ERROR:")) {
+                                throw new IllegalStateException(res);
+                            }
+                        });
+                    }
 
-                // Tier 3: APK Core Game Config Patching & Hardware Spoofer
-                GameConfigPatcher.applyGameFpsPatch(pkg, forcedFps);
-                MaxHzForceChannel.forceApply(forcedFps);
-                PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(forcedFps);
-                NetworkOptimizer.flushDnsCache();
+                    report.attemptStep("Tier 1", "forceDisplayRefreshRate(" + forcedFps + ")", () ->
+                            ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(forcedFps));
 
-                // Apply device spoofing ONLY IF explicitly chosen and enabled by user
-                DeviceSpooferEngine.applySpoofing(appContext, pkg);
+                    report.attemptStep("Tier 1", "setCpuGpuPerformanceGovernors", () ->
+                            ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors());
 
-                Log.i(TAG, "Game launch optimizations fully enforced for " + pkg);
+                    tier1Ok = report.tierSucceededWithoutFailures("Tier 1");
+                }
+
+                // ─────────────────────────────────────────────────────────────
+                // TIER 2: NATIVE ANDROID OS FRAMEWORK APIS (no root needed)
+                // ─────────────────────────────────────────────────────────────
+                report.attemptStep("Tier 2", "setGameModePerformance", () ->
+                        NativeFrameworkBridge.setGameModePerformance(appContext, pkg));
+                report.attemptStep("Tier 2", "acquireLowLatencyWifiLock", () ->
+                        NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext));
+                report.attemptStep("Tier 2", "acquireSustainedPerformanceLock", () ->
+                        NativeFrameworkBridge.acquireSustainedPerformanceLock(appContext));
+                report.attemptStep("Tier 2", "requestHighPriorityNetwork", () ->
+                        NativeFrameworkBridge.requestHighPriorityNetwork(appContext));
+
+                // ─────────────────────────────────────────────────────────────
+                // TIER 3: APK CORE GAME CONFIG PATCHING & HARDWARE SPOOFER
+                // ─────────────────────────────────────────────────────────────
+
+                // Root-dependent steps — skipped when Tier 1 failed (Phase 1.2)
+                if (tier1Ok) {
+                    report.attemptStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", () ->
+                            GameConfigPatcher.applyGameFpsPatch(pkg, forcedFps));
+                    report.attemptStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", () ->
+                            MaxHzForceChannel.forceApply(forcedFps));
+                    report.attemptStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", () ->
+                            PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE));
+                    report.attemptStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", () ->
+                            PerformanceChannel.writeAndExecuteRootTweaksScript(forcedFps));
+                    report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->
+                            DeviceSpooferEngine.applySpoofing(appContext, pkg));
+                } else {
+                    report.addStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", false,
+                            "SKIPPED — depends on Tier 1 (Shizuku)");
+                    report.addStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", false,
+                            "SKIPPED — depends on Tier 1 (Shizuku)");
+                    report.addStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", false,
+                            "SKIPPED — depends on Tier 1 (Shizuku)");
+                    report.addStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", false,
+                            "SKIPPED — depends on Tier 1 (Shizuku)");
+                    report.addStep("Tier 3", "DeviceSpooferEngine.applySpoofing", false,
+                            "SKIPPED — depends on Tier 1 (Shizuku)");
+                }
+
+                // Root-independent native step — always runs
+                report.attemptStep("Tier 3", "NetworkOptimizer.flushDnsCache", () ->
+                        NetworkOptimizer.flushDnsCache());
+
+                Log.i(TAG, "Game launch optimization report for " + pkg + ": "
+                        + report.succeeded + " ok, " + report.failed + " failed, " + report.skipped + " skipped");
             } catch (Throwable t) {
                 Log.w(TAG, "Failed to apply full game launch optimization for " + pkg + ": " + t.getMessage());
+                report.addStep("All", "Pipeline", false, t.getMessage());
+            }
+
+            if (listener != null) {
+                listener.onEnforcementReport(report);
             }
         });
+    }
+
+    /** Per-step outcome for the Phase 1.2 enforcement report. */
+    public static class StepResult {
+        public final String tier;
+        public final String step;
+        public final boolean ok;
+        public final String detail;
+
+        public StepResult(String tier, String step, boolean ok, String detail) {
+            this.tier = tier;
+            this.step = step;
+            this.ok = ok;
+            this.detail = detail;
+        }
+    }
+
+    /** Aggregated per-step report of an enforcement run. */
+    public static class EnforcementReport {
+        public final String packageName;
+        public final List<StepResult> steps = new ArrayList<>();
+        public int succeeded = 0;
+        public int failed = 0;
+        public int skipped = 0;
+
+        public EnforcementReport(String packageName, String fatalSummary) {
+            this.packageName = packageName;
+            if (fatalSummary != null) {
+                addStep("All", "Pipeline", false, fatalSummary);
+            }
+        }
+
+        public void addStep(String tier, String step, boolean ok, String detail) {
+            steps.add(new StepResult(tier, step, ok, detail));
+            if (ok) {
+                succeeded++;
+            } else if (detail != null && detail.startsWith("SKIPPED")) {
+                skipped++;
+            } else {
+                failed++;
+            }
+        }
+
+        public void attemptStep(String tier, String step, Runnable action) {
+            try {
+                action.run();
+                addStep(tier, step, true, "OK");
+            } catch (Throwable t) {
+                String msg = t.getMessage();
+                if (msg == null || msg.trim().isEmpty()) msg = t.getClass().getSimpleName();
+                addStep(tier, step, false, msg.trim());
+            }
+        }
+
+        /** True when every step succeeded and nothing was skipped. */
+        public boolean fullyApplied() {
+            return failed == 0 && skipped == 0;
+        }
+
+        /** Aggregate of one tier, for skip-decision logic. */
+        public boolean tierSucceededWithoutFailures(String tier) {
+            for (StepResult r : steps) {
+                if (tier.equals(r.tier) && !r.ok && !(r.detail != null && r.detail.startsWith("SKIPPED"))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /** Renders the report as dialog lines: ✓ ok, ✗ failed, ⤳ skipped. */
+        public List<String> toDialogLines() {
+            List<String> lines = new ArrayList<>();
+            for (StepResult r : steps) {
+                String icon = r.ok ? "✓" :
+                        (r.detail != null && r.detail.startsWith("SKIPPED")) ? "⤳" : "✗";
+                String line = icon + " [" + r.tier + "] " + r.step;
+                if (!r.ok && r.detail != null && !r.detail.isEmpty()) {
+                    line += " — " + r.detail.replace("ERROR: ", "");
+                }
+                lines.add(line);
+            }
+            lines.add("Result: " + succeeded + " ok / " + failed + " failed / " + skipped + " skipped");
+            return lines;
+        }
+    }
+
+    public interface OnEnforcementReportListener {
+        void onEnforcementReport(EnforcementReport report);
     }
 
     public static class EnforcementStatus {

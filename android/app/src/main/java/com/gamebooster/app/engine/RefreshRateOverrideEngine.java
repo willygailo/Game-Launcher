@@ -14,6 +14,10 @@ public class RefreshRateOverrideEngine {
     private static final String TAG = "RefreshRateOverrideEngine";
 
     public enum RefreshRateMode {
+        MODE_90HZ(90.0f, "90 Hz / 90 FPS"),
+        MODE_120HZ(120.0f, "120 Hz / 120 FPS"),
+        MODE_144HZ(144.0f, "144 Hz / 144 FPS"),
+        MODE_165HZ(165.0f, "165 Hz / 165 FPS"),
         MODE_185HZ(185.0f, "185 Hz / 185 FPS (Extreme Max)");
 
         public final float fps;
@@ -30,7 +34,7 @@ public class RefreshRateOverrideEngine {
      *
      * @param context App context
      * @param packageName Target game package (or null for global setting)
-     * @param mode Selected refresh rate mode (185 Hz)
+     * @param mode Selected refresh rate mode
      * @return true if commands executed via Shizuku
      */
     public static boolean applyRefreshRate(Context context, String packageName, RefreshRateMode mode) {
@@ -40,8 +44,9 @@ public class RefreshRateOverrideEngine {
         }
 
         try {
-            int rateInt = Math.round(mode != null ? mode.fps : 185.0f);
-            Log.d(TAG, "Applying Refresh Rate Override: 185Hz for package: " + packageName);
+            float targetFps = mode != null ? mode.fps : 185.0f;
+            int rateInt = com.gamebooster.app.config.FpsUnlockTier.resolveTargetFps(Math.round(targetFps));
+            Log.d(TAG, "Applying Refresh Rate Override: " + rateInt + "Hz for package: " + packageName);
 
             // Delegate global system forcing to MaxHzForceChannel (17+ commands, 6 layers)
             MaxHzForceChannel.ForceResult forceResult = MaxHzForceChannel.forceApply(rateInt);
@@ -66,14 +71,20 @@ public class RefreshRateOverrideEngine {
     }
 
     /**
-     * Convenience method: force max refresh rate globally without per-package constraints.
+     * Convenience method: force a specific refresh rate globally without per-package constraints.
      *
-     * @param targetHz Target Hz value (hard-locked to 185)
+     * @param targetHz Target Hz value (aligned to a supported tier)
      * @return true if Shizuku commands fired successfully
      */
     public static boolean applyMaxRefreshRateForce(int targetHz) {
         if (!ShizukuExecutor.hasShizukuPermission()) return false;
         RefreshRateMode mode = RefreshRateMode.MODE_185HZ;
+        for (RefreshRateMode m : RefreshRateMode.values()) {
+            if (Math.round(m.fps) == com.gamebooster.app.config.FpsUnlockTier.resolveTargetFps(targetHz)) {
+                mode = m;
+                break;
+            }
+        }
         return applyRefreshRate(null, null, mode);
     }
 

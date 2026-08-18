@@ -41,6 +41,8 @@ public class GameBoosterService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        // Phase 0.2: enable the config backup safety net (app-private storage)
+        com.gamebooster.app.config.ConfigBackupManager.setAppContext(getApplicationContext());
         createNotificationChannel();
         try {
             ShizukuUserServiceConnector.getInstance().bindService();

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.*;
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.device.DisplayCapabilitiesDetector;
 import com.gamebooster.app.booster.HzFpsChannel;
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -19,23 +20,48 @@ public class GameProfileAutoConfigurator {
 
     private static final String TAG = "GameAutoConfigurator";
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
-    public static final int DEFAULT_TARGET_HZ = 185;
+    public static final int DEFAULT_TARGET_HZ = FpsUnlockTier.FPS_185.fps;
 
     public interface OnAutoConfigListener {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);
     }
 
-    public static void setTargetFpsHz(Context context, int targetFpsHz) {
-        if (context == null) return;
+    /**
+     * Clamps a target FPS/Hz to the display's real capability.
+     * When display detection fails (fallback max of 60), the target is honored
+     * as-is instead of being clamped down on unknown hardware.
+     */
+    public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
+        if (context == null || targetFpsHz <= 0) return targetFpsHz;
+        int maxRate = DisplayCapabilitiesDetector.detect(context).maxRefreshRate;
+        if (maxRate > 60 && targetFpsHz > maxRate) {
+            return maxRate;
+        }
+        return targetFpsHz;
+    }
+
+    /**
+     * Stores the user-selected target FPS/Hz, clamped to display capability.
+     *
+     * @return the clamped value that was persisted
+     */
+    public static int setTargetFpsHz(Context context, int targetFpsHz) {
+        if (context == null) return targetFpsHz;
+        int clamped = clampTargetFpsToDisplay(context, targetFpsHz);
         context.getApplicationContext()
                 .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .putInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ)
+                .putInt(KEY_TARGET_HZ_FPS, clamped)
                 .apply();
+        return clamped;
     }
 
     public static int getTargetFpsHz(Context context) {
-        return DEFAULT_TARGET_HZ;
+        if (context == null) return DEFAULT_TARGET_HZ;
+        int stored = context.getApplicationContext()
+                .getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
+                .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
+        return clampTargetFpsToDisplay(context, stored);
     }
 
     public static List<Integer> getSupportedDisplayRefreshRates(Context context) {
@@ -44,13 +70,15 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Auto-configures a game package and display for target FPS/Hz (185).
+     * Auto-configures a game package and display for the requested target FPS/Hz,
+     * clamped to the display's real refresh capability.
      * Uses Shizuku direct force channel to ensure zero-fallback execution.
      */
     public static boolean autoConfigGamePackage(Context context, String packageName, int targetFpsHz) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
 
-        final int forcedFpsHz = DEFAULT_TARGET_HZ; // hard-locked to 185
+        final int forcedFpsHz = clampTargetFpsToDisplay(context,
+                FpsUnlockTier.resolveTargetFps(targetFpsHz));
         Log.d(TAG, "Configuring " + packageName + " for target " + forcedFpsHz + " FPS / Hz...");
 
         // 1. Android Game Mode API Performance tuning
@@ -111,19 +139,19 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Applies target FPS and Hz (185) to all detected games and display.
+     * Applies the requested target FPS and Hz to all detected games and display.
      */
     public static void autoConfigAllGamesAsync(Context context, int targetFpsHz, OnAutoConfigListener listener) {
         if (context == null) return;
 
-        setTargetFpsHz(context, DEFAULT_TARGET_HZ);
+        final int resolvedHz = setTargetFpsHz(context, targetFpsHz);
 
         AppExecutors.getInstance().executeCommand(() -> {
             // 1. Force global display refresh rate
             if (ShizukuExecutor.hasShizukuPermission()) {
-                MaxHzForceChannel.forceApply(DEFAULT_TARGET_HZ);
+                MaxHzForceChannel.forceApply(resolvedHz);
             } else {
-                HzFpsChannel.setRefreshRate(context, DEFAULT_TARGET_HZ);
+                HzFpsChannel.setRefreshRate(context, resolvedHz);
             }
 
             // 2. Scan all games (Target + Installed)
@@ -137,7 +165,7 @@ public class GameProfileAutoConfigurator {
                 String pkg = game.getPackageName();
                 if (!processedPackages.contains(pkg)) {
                     processedPackages.add(pkg);
-                    if (autoConfigGamePackage(context, pkg, targetFpsHz)) {
+                    if (autoConfigGamePackage(context, pkg, resolvedHz)) {
                         configuredCount++;
                     }
                 }
@@ -147,7 +175,7 @@ public class GameProfileAutoConfigurator {
                 String pkg = game.getPackageName();
                 if (!processedPackages.contains(pkg)) {
                     processedPackages.add(pkg);
-                    if (autoConfigGamePackage(context, pkg, targetFpsHz)) {
+                    if (autoConfigGamePackage(context, pkg, resolvedHz)) {
                         configuredCount++;
                     }
                 }
@@ -156,7 +184,7 @@ public class GameProfileAutoConfigurator {
             final int finalCount = configuredCount;
             if (listener != null) {
                 AppExecutors.getInstance().postToMainThread(() ->
-                        listener.onAutoConfigCompleted(finalCount, targetFpsHz));
+                        listener.onAutoConfigCompleted(finalCount, resolvedHz));
             }
         });
     }

@@ -272,6 +272,30 @@ public final class ShizukuFileManager {
     }
 
     /**
+     * Reads the exact raw bytes of a file at the given path via a Base64 round-trip
+     * (byte-exact for binary config files like .sav / .dat, unlike {@link #readFile(String)}).
+     */
+    public static byte[] readFileBytes(String path) {
+        if (path == null || path.trim().isEmpty()) return new byte[0];
+
+        try {
+            String cmd = "base64 -w0 '" + path + "' 2>/dev/null";
+            String res;
+            if (hasFullAccess()) {
+                res = ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                res = CommandExecutor.executeSystemCommand(cmd);
+            }
+            if (res != null && !res.startsWith("ERROR:") && !res.trim().isEmpty()) {
+                return Base64.decode(res.trim(), Base64.DEFAULT);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "readFileBytes exception for " + path, t);
+        }
+        return new byte[0];
+    }
+
+    /**
      * Edits an existing file in-place by searching for a pattern and replacing it (sed / regex).
      */
     public static FileOpResult editFile(String path, String searchPattern, String replacement) {

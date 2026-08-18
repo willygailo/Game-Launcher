@@ -56,6 +56,7 @@ GoogleService-Info.plist
 *.key
 *.pk8
 *.pem
+keystore.properties
 
 # ====================================================================
 # Android Studio / IntelliJ IDEA / VS Code / Editors

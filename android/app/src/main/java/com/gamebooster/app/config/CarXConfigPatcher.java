@@ -19,7 +19,7 @@ public class CarXConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -31,7 +31,7 @@ public class CarXConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String iniContent = "[GraphicSettings]\n" +
@@ -174,7 +174,7 @@ public class CarXConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(

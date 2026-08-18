@@ -44,26 +44,10 @@ public class GameConfigPathResolver {
         String pkg = packageName.trim().toLowerCase();
         Set<String> resultSet = new LinkedHashSet<>();
 
-        // 1. Generate base paths across all storage roots (including Android 14/15/16 Private Spaces)
-        String[] storageRoots = {
-            "/sdcard/Android/data/" + pkg,
-            "/storage/emulated/0/Android/data/" + pkg,
-            "/storage/emulated/10/Android/data/" + pkg,
-            "/storage/emulated/11/Android/data/" + pkg,
-            "/storage/emulated/999/Android/data/" + pkg,
-            "/data/data/" + pkg,
-            "/data/user/0/" + pkg,
-            "/data/user/10/" + pkg,
-            "/data/user/11/" + pkg,
-            "/data/user/999/" + pkg,
-            "/sdcard/Android/media/" + pkg,
-            "/storage/emulated/0/Android/media/" + pkg
-        };
-
         if (defaultRelativePaths != null) {
             for (String relative : defaultRelativePaths) {
                 String cleanRel = relative.startsWith("/") ? relative.substring(1) : relative;
-                for (String root : storageRoots) {
+                for (String root : generateBasePaths(pkg)) {
                     resultSet.add(root + "/" + cleanRel);
                 }
             }
@@ -121,6 +105,32 @@ public class GameConfigPathResolver {
     }
 
     /**
+     * Generates the base package dirs across all storage roots (incl. Android
+     * 14/15/16 Private Spaces / data-vs-media variants). Pure — no I/O.
+     */
+    public static List<String> generateBasePaths(String pkg) {
+        List<String> roots = new ArrayList<>();
+        String[] storageRoots = {
+            "/sdcard/Android/data/",
+            "/storage/emulated/0/Android/data/",
+            "/storage/emulated/10/Android/data/",
+            "/storage/emulated/11/Android/data/",
+            "/storage/emulated/999/Android/data/",
+            "/data/data/",
+            "/data/user/0/",
+            "/data/user/10/",
+            "/data/user/11/",
+            "/data/user/999/",
+            "/sdcard/Android/media/",
+            "/storage/emulated/0/Android/media/"
+        };
+        for (String root : storageRoots) {
+            roots.add(root + pkg);
+        }
+        return roots;
+    }
+
+    /**
      * Clears the path cache (e.g. when games are uninstalled or updated).
      */
     public static void clearCache() {
@@ -129,8 +139,10 @@ public class GameConfigPathResolver {
 
     /**
      * Returns known relative path signatures for various game engines and titles.
+     * Public: pure package-signature logic (used by unit tests).
      */
-    private static List<String> getKnownRelativePathsForPackage(String pkg) {
+    public static List<String> getKnownRelativePathsForPackage(String pkg) {
+        pkg = pkg.trim().toLowerCase();
         List<String> rel = new ArrayList<>();
 
         // 1. Mobile Legends: Bang Bang (all regional versions)

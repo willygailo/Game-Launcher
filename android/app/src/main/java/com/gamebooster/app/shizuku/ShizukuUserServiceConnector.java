@@ -21,6 +21,9 @@ public class ShizukuUserServiceConnector {
 
     private IUserService userServiceInstance = null;
     private boolean isBinding = false;
+    private long bindingStartedAt = 0L;
+
+    private static final long BIND_STUCK_TIMEOUT_MS = 5000;
 
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
@@ -31,6 +34,7 @@ public class ShizukuUserServiceConnector {
             }
             userServiceInstance = null;
             isBinding = false;
+            ShizukuConnectionManager.getInstance().onBinderDead();
         }
     };
 
@@ -45,6 +49,7 @@ public class ShizukuUserServiceConnector {
                 Log.w(TAG, "Failed to link death recipient to UserService binder", e);
             }
             isBinding = false;
+            ShizukuConnectionManager.getInstance().onBinderReceived();
         }
 
         @Override
@@ -52,6 +57,7 @@ public class ShizukuUserServiceConnector {
             Log.w(TAG, "IUserService disconnected / unbound.");
             userServiceInstance = null;
             isBinding = false;
+            ShizukuConnectionManager.getInstance().onBinderDead();
         }
     };
 
@@ -71,18 +77,28 @@ public class ShizukuUserServiceConnector {
     }
 
     public synchronized void bindService() {
-        if (isServiceConnected() || isBinding) {
+        if (isServiceConnected()) {
             return;
+        }
+        if (isBinding) {
+            // A bind that never resolves would wedge every retry — force rebind after timeout
+            if (System.currentTimeMillis() - bindingStartedAt < BIND_STUCK_TIMEOUT_MS) {
+                return;
+            }
+            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms — forcing rebind");
+            isBinding = false;
         }
         try {
             if (ShizukuManager.isShizukuInstalled(null) || Shizuku.pingBinder()) {
                 Log.d(TAG, "Binding Shizuku UserService via AIDL...");
                 isBinding = true;
+                bindingStartedAt = System.currentTimeMillis();
                 Shizuku.bindUserService(serviceArgs, serviceConnection);
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to bind Shizuku UserService", e);
             isBinding = false;
+            ShizukuConnectionManager.getInstance().onBindFailure();
         }
     }
 
@@ -117,14 +133,26 @@ public class ShizukuUserServiceConnector {
     public String executeCommand(String command) {
         ensureBound();
         if (userServiceInstance != null) {
+            String direct = executeCommandDirect(command);
+            if (direct != null) return direct;
+        }
+        return ShizukuExecutor.executeShizukuCommand(command);
+    }
+
+    /**
+     * Executes on the AIDL user service WITHOUT any fallback — used by
+     * {@link ShizukuExecutor} to avoid infinite mutual fallback recursion.
+     */
+    public String executeCommandDirect(String command) {
+        if (userServiceInstance != null) {
             try {
                 return userServiceInstance.execCommand(command);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in execCommand — fallback to reflection", e);
+                Log.e(TAG, "RemoteException in execCommand", e);
                 userServiceInstance = null;
             }
         }
-        return ShizukuExecutor.executeShizukuCommand(command);
+        return null;
     }
 
     public List<String> executeBatchCommands(List<String> commands) {

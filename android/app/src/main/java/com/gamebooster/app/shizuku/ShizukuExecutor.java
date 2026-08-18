@@ -58,6 +58,12 @@ public class ShizukuExecutor {
             return "SUCCESS";
         }
 
+        // Phase 1.1: wait briefly for the AIDL user service when permission is
+        // granted but the service isn't connected yet (no cost in degraded mode)
+        if (hasShizukuPermission() && !ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            ShizukuConnectionManager.getInstance().ensureReady(150);
+        }
+
         // Tier 1: If Shizuku is granted, execute via Shizuku reflection
         if (hasShizukuPermission()) {
             Process process = null;
@@ -100,7 +106,11 @@ public class ShizukuExecutor {
                 } catch (Throwable ignored) {}
 
                 try {
-                    return ShizukuUserServiceConnector.getInstance().executeCommand(command);
+                    // Direct AIDL only — never call executeCommand() here (mutual recursion)
+                    String directRes = ShizukuUserServiceConnector.getInstance().executeCommandDirect(command);
+                    if (directRes != null) {
+                        return directRes;
+                    }
                 } catch (Throwable t) {
                     Log.e(TAG, "Shizuku UserService failed: " + t.getMessage());
                 }

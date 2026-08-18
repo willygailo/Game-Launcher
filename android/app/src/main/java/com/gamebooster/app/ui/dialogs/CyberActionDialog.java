@@ -17,12 +17,30 @@ import android.widget.TextView;
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class CyberActionDialog {
 
     private static Dialog activeDialog;
     private static CountDownTimer activeTimer;
 
     public static void show(Context context, String featureTitle, boolean isActivated, String... logDetails) {
+        List<String> lines = new ArrayList<>();
+        if (logDetails != null) {
+            for (String log : logDetails) {
+                if (log != null && !log.trim().isEmpty()) lines.add(log.trim());
+            }
+        }
+        showDetailed(context, featureTitle, isActivated, 1800, lines);
+    }
+
+    /**
+     * Duration-controllable variant (Phase 1.2) — used for per-step
+     * enforcement reports that need time to be read (e.g. 4500ms).
+     */
+    public static void showDetailed(Context context, String featureTitle, boolean isActivated,
+                                    long autoDismissMs, List<String> lines) {
         if (context == null) return;
 
         AppExecutors.getInstance().postToMainThread(() -> {
@@ -85,8 +103,8 @@ public class CyberActionDialog {
 
                 // Format logs
                 StringBuilder sb = new StringBuilder();
-                if (logDetails != null && logDetails.length > 0) {
-                    for (String log : logDetails) {
+                if (lines != null && !lines.isEmpty()) {
+                    for (String log : lines) {
                         if (log != null && !log.trim().isEmpty()) {
                             sb.append("> ").append(log.trim()).append("\n");
                         }
@@ -95,11 +113,11 @@ public class CyberActionDialog {
                 sb.append("> Status: 100% Executed & Verified");
                 tvLogDetails.setText(sb.toString().trim());
 
-                // Auto-dismiss in 1800ms with smooth progress bar
-                final int totalDuration = 1800;
+                // Auto-dismiss with smooth progress bar
+                final long totalDuration = Math.max(autoDismissMs, 500);
                 final int interval = 30;
-                pbTimer.setMax(totalDuration);
-                pbTimer.setProgress(totalDuration);
+                pbTimer.setMax((int) totalDuration);
+                pbTimer.setProgress((int) totalDuration);
 
                 activeTimer = new CountDownTimer(totalDuration, interval) {
                     @Override

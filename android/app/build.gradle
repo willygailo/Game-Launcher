@@ -1,4 +1,23 @@
 apply plugin: 'com.android.application'
+apply plugin: 'jacoco'
+
+// Real release signing: keystore.properties is gitignored and lives next to
+// this project (android/keystore.properties). Release builds FAIL without it —
+// a release APK must never be silently debug-signed.
+def keystoreProperties = new Properties()
+def hasReleaseKeystore = false
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    hasReleaseKeystore = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+            .every { keystoreProperties[it] != null && !keystoreProperties[it].toString().isEmpty() }
+    if (!hasReleaseKeystore) {
+        throw new GradleException('keystore.properties is incomplete. Need storeFile, storePassword, keyAlias, keyPassword.')
+    }
+} else {
+    throw new GradleException('keystore.properties not found at ' + keystorePropertiesFile.absolutePath +
+            '. Create it (gitignored) to build a properly signed release APK.')
+}
 
 android {
     namespace 'com.gamebooster.app'
@@ -20,6 +39,15 @@ android {
     buildFeatures {
         aidl true
         buildConfig true
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
     }
 
     sourceSets {
@@ -46,9 +74,18 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
-            minifyEnabled false
-            shrinkResources false
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    testOptions {
+        unitTests {
+            // Android stubs (Log, etc.) return defaults — pure-logic tests only
+            returnDefaultValues = true
+            all { jacoco { includeNoLocationClasses = true; excludes = ['jdk.internal.*'] } }
         }
     }
 
@@ -75,4 +112,21 @@ dependencies {
     implementation "dev.rikka.shizuku:provider:${shizuku_version}"
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     testImplementation 'junit:junit:4.13.2'
+}
+
+// Phase 1.3: JaCoCo unit-test coverage report (config/spoofer packages)
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    def excluded = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/*$*.class', '**/Manifest*']
+    def javaClasses = fileTree(dir: "$buildDir/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: excluded)
+    classDirectories.setFrom(files(javaClasses))
+    sourceDirectories.setFrom(files("$projectDir/src/main/java"))
+    executionData.setFrom(fileTree(dir: "$buildDir/jacoco", includes: ['**/*.exec']))
 }

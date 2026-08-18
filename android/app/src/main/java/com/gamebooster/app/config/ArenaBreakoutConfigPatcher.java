@@ -18,7 +18,7 @@ public class ArenaBreakoutConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class ArenaBreakoutConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
 
         String ueContent = "[/Script/Engine.GameUserSettings]\n" +
@@ -163,7 +163,7 @@ public class ArenaBreakoutConfigPatcher {
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + forcedFps + ".000000\nFPSLevel=" + fpsLevel + "\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=" + forcedFps + "\n+CVars=r.MobileFPSLimit=" + forcedFps + "\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[UserCustom]\nFrameRateLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\n";

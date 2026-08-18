@@ -56,6 +56,8 @@ public class ShizukuManager {
                 try {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 } catch (Throwable ignored) {}
+                // Phase 1.1: drive the connection state machine to READY
+                ShizukuConnectionManager.getInstance().onBinderReceived();
             }
             notifyStateChanged(granted);
         }
@@ -70,11 +72,14 @@ public class ShizukuManager {
                 ShizukuUserServiceConnector.getInstance().bindService();
             }
         } catch (Exception ignored) {}
+        // Phase 1.1: converge the connection state machine
+        ShizukuConnectionManager.getInstance().onBinderReceived();
         notifyStateChanged(true);
     };
 
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {
         Log.w(TAG, "Shizuku binder died / service disconnected.");
+        ShizukuConnectionManager.getInstance().onBinderDead();
         notifyStateChanged(false);
     };
 

@@ -18,7 +18,7 @@ public class GenshinConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
         for (String path : paths) {
@@ -30,7 +30,7 @@ public class GenshinConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
 
         String jsonContent = "{\n" +
                 "  \"fps\": " + forcedFps + ",\n" +
@@ -172,7 +172,7 @@ public class GenshinConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = 185; // hard-locked
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
                     "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"targetFrameRateForOthers\": %d,\n  \"fpsUnlock\": true,\n  \"fps_unlock_120\": true,\n  \"fps_unlock_144\": true,\n  \"unlock_120hz\": true,\n  \"unlock_144hz\": true,\n  \"unlock_165hz\": true,\n  \"unlock_185hz\": true,\n  \"vulkan_enabled\": true\n}\n",

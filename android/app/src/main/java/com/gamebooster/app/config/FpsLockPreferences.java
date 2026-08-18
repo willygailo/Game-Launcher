@@ -6,9 +6,6 @@ import android.content.SharedPreferences;
 /**
  * FpsLockPreferences — Persists per-game FPS lock settings in SharedPreferences.
  *
- * Hard-locked to 185 FPS only. All reads return 185 and all writes store 185
- * regardless of the value provided by the caller.
- *
  * Supported game keys:
  *   "mlbb", "pubgm", "codm", "freefire", "genshin", "hok", "roblox",
  *   "valorant", "farlight", "bloodstrike", "standoff2", "wildrift",
@@ -26,47 +23,44 @@ public class FpsLockPreferences {
 
     /**
      * Saves the FPS lock setting for a given game key.
-     * Always stores 185 regardless of the fps parameter.
      *
      * @param context Application context
      * @param gameKey Identifier for the game (e.g. "pubgm", "mlbb")
-     * @param fps     Ignored — always stored as 185
+     * @param fps     Target FPS; aligned to the nearest supported tier
      */
     public static void saveFpsLock(Context context, String gameKey, int fps) {
         if (context == null || gameKey == null) return;
         getPrefs(context).edit()
-                .putInt(KEY_PREFIX + gameKey.toLowerCase().trim(), DEFAULT_FPS)
+                .putInt(KEY_PREFIX + gameKey.toLowerCase().trim(), FpsUnlockTier.resolveTargetFps(fps))
                 .apply();
     }
 
     /**
      * Saves the FPS tier for a given game key.
-     * Always saves FPS_185 regardless of the tier provided.
      */
     public static void saveFpsTier(Context context, String gameKey, FpsUnlockTier tier) {
-        if (context == null || gameKey == null) return;
-        saveFpsLock(context, gameKey, DEFAULT_FPS);
+        if (context == null || gameKey == null || tier == null) return;
+        saveFpsLock(context, gameKey, tier.fps);
     }
 
     /**
      * Retrieves the saved FPS lock for a given game key.
-     * Always returns 185 — hard-locked.
+     * Falls back to the default (185 FPS) when nothing was saved.
      */
     public static int getFpsLock(Context context, String gameKey) {
-        return DEFAULT_FPS;
+        if (context == null || gameKey == null) return DEFAULT_FPS;
+        return getPrefs(context).getInt(KEY_PREFIX + gameKey.toLowerCase().trim(), DEFAULT_FPS);
     }
 
     /**
      * Retrieves the {@link FpsUnlockTier} for a given game key.
-     * Always returns FPS_185.
      */
     public static FpsUnlockTier getFpsTier(Context context, String gameKey) {
-        return FpsUnlockTier.FPS_185;
+        return FpsUnlockTier.fromFps(getFpsLock(context, gameKey));
     }
 
     /**
      * Returns all available FPS tier values as an array.
-     * Always returns {185}.
      */
     public static int[] getAvailableTiers() {
         return FpsUnlockTier.getAllFpsValues();
@@ -74,7 +68,6 @@ public class FpsLockPreferences {
 
     /**
      * Returns all available FPS tier labels for UI display.
-     * Always returns {"185fps"}.
      */
     public static String[] getAvailableLabels() {
         return FpsUnlockTier.getAllLabels();

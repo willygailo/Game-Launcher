@@ -36,13 +36,20 @@ public class GameConfigPatcher {
         if (packageName == null || packageName.trim().isEmpty()) {
             return new PatchResult(false, "Invalid package name");
         }
+        // Injection guard (Phase 1.3): reject `;` `'` etc. before anything shell-touching runs
+        if (!ShellSafety.isSafePackageName(packageName.trim())) {
+            return new PatchResult(false, "Unsafe package name rejected");
+        }
 
-        final int forcedFps = 185; // hard-locked — caller targetFps is ignored
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         String pkg = packageName.toLowerCase().trim();
         List<String> configPaths = GameConfigPathResolver.getPathsForGame(pkg);
         if (configPaths == null || configPaths.isEmpty()) {
             return new PatchResult(false, "FPS config patching not required for " + packageName);
         }
+
+        // Safety net: capture true originals of every candidate config path before any write
+        ConfigBackupManager.backupPackage(pkg, configPaths);
 
         int patchedFiles = 0;
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
@@ -161,13 +168,24 @@ public class GameConfigPatcher {
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format("[Graphics]\nFPS=%d\nFrameRate=%d\nHighFPSMode=1\nMaxFrameRate=%d\n",
                     targetFps, targetFps, targetFps);
-            return ShizukuFileManager.writeFile(path, content, "666").success;
+            boolean ok = ShizukuFileManager.writeFile(path, content, "666").success;
+            if (!ok) {
+                // Auto-recover the original if a backed-up file fails to be rewritten
+                ConfigBackupManager.restorePath(null, path);
+            }
+            return ok;
         } else {
-            String cmd = "sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^FrameRate=.*/FrameRate=" + targetFps + "/' " + path + "; " +
-                         "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
-                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path + "; " +
-                         "chmod 666 " + path;
+            // Injection guard (Phase 1.3): never build a sed command from an unsafe path
+            if (!ShellSafety.isSafeShellPath(path)) {
+                Log.w(TAG, "Refusing unsafe path in sed: " + path);
+                return false;
+            }
+            String shellPath = ShellSafety.escapeSingleQuoted(path);
+            String cmd = "sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + shellPath + "; " +
+                         "sed -i 's/^FrameRate=.*/FrameRate=" + targetFps + "/' " + shellPath + "; " +
+                         "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + shellPath + "; " +
+                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + shellPath + "; " +
+                         "chmod 666 " + shellPath;
             if (ShizukuFileManager.hasFullAccess()) {
                 com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
             } else {

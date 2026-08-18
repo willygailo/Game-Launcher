@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
@@ -41,7 +42,7 @@ public class PerformanceChannel {
     public static ProfileResult applyProfileWithResult(Context context, Profile profile) {
         if (context == null) return new ProfileResult(false, 0, "Device context is unavailable");
 
-        final int targetHz = 185; // hard-locked to 185 FPS/Hz
+        final int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(context);
 
         HzFpsChannel.RefreshRateResult refreshResult;
         if (profile == Profile.EXTREME_PERFORMANCE) {

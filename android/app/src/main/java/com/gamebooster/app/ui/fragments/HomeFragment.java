@@ -37,6 +37,12 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvGames;
     private HomeGamesAdapter adapter;
     private final List<GameAppInfo> gameList = new ArrayList<>();
+    private final com.gamebooster.app.shizuku.ShizukuConnectionManager.ConnectionListener connListener =
+            state -> {
+                if (isAdded() && getContext() != null) {
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> updateStatusStrip());
+                }
+            };
 
     @Nullable
     @Override
@@ -77,17 +83,35 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         updateStatusStrip();
         loadAndScanGamesZeroDelay();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().removeConnectionListener(connListener);
     }
 
     private void updateStatusStrip() {
         if (getContext() == null) return;
 
-        EngineMode engineMode = CommandExecutor.getActiveEngineMode();
-        if (tvEngineMode != null) {
-            tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
-            tvEngineMode.setTextColor(engineMode.getColorHex());
+        // Phase 1.1: surface Shizuku reconnection states instead of a silent no-op
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.State conn =
+                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
+        if (tvEngineMode != null
+                && (conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.BINDING
+                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.RETRY
+                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.DEAD)) {
+            tvEngineMode.setText("🔄 Shizuku reconnecting… (" + conn + ")");
+            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FCA5A5"));
+        } else {
+            EngineMode engineMode = CommandExecutor.getActiveEngineMode();
+            if (tvEngineMode != null) {
+                tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
+                tvEngineMode.setTextColor(engineMode.getColorHex());
+            }
         }
 
         if (tvRamUsage != null) {
