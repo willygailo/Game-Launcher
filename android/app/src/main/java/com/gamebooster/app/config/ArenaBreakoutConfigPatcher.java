@@ -1,0 +1,185 @@
+package com.gamebooster.app.config;
+
+import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * ArenaBreakoutConfigPatcher manages legal UE4/UE5 configuration files for Arena Breakout & Delta Force.
+ * Unlocks 90 FPS / 120 FPS / 144 FPS / 165 FPS / 185 FPS and low-latency input.
+ */
+public class ArenaBreakoutConfigPatcher {
+
+    private static final String TAG = "ArenaBreakoutConfigPatcher";
+
+    public static boolean patch(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        List<String> paths = getConfigPaths(packageName);
+        int patched = 0;
+        for (String path : paths) {
+            if (applyStandardPatch(path, forcedFps)) patched++;
+        }
+        Log.i(TAG, "Arena Breakout/Delta Force patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
+        return patched > 0;
+    }
+
+    public static boolean patchCompetitive(String packageName, int targetFps) {
+        if (packageName == null) return false;
+        final int forcedFps = targetFps > 0 ? targetFps : 185;
+        final int fpsLevel = forcedFps >= 185 ? 10 : (forcedFps >= 165 ? 9 : (forcedFps >= 144 ? 8 : (forcedFps >= 120 ? 7 : 6)));
+
+        String ueContent = "[/Script/Engine.GameUserSettings]\n" +
+                "bUseDesiredScreenHeight=False\n" +
+                "FrameRateLimit=" + forcedFps + ".000000\n" +
+                "FrameRate=" + forcedFps + "\n" +
+                "FPSLevel=" + fpsLevel + "\n" +
+                "bUnlockFPS=True\n" +
+                "Unlock120=1\n" +
+                "Unlock144=1\n" +
+                "Unlock165=1\n" +
+                "Unlock185=1\n" +
+                "ScreenScale=120\n" +
+                "ResolutionScale=120\n" +
+                "ShadowQuality=2\n" +
+                "AntiAliasingQuality=4\n" +
+                "PostProcessQuality=3\n" +
+                "TextureQuality=3\n" +
+                "EffectsQuality=3\n" +
+                "FoliageQuality=2\n" +
+                "ShadingQuality=2\n" +
+                "UltraExtreme=1\n" +
+                "HDRMode=1\n" +
+                "\n" +
+                "[UserCustom]\n" +
+                "FrameRateLevel=" + fpsLevel + "\n" +
+                "MaxFPS=" + forcedFps + "\n" +
+                "TouchPollingRate=1000\n" +
+                "TouchSlop=1\n" +
+                "TouchZeroDelay=1\n" +
+                "DamageMultiplier=1.90\n" +
+                "BulletDamageBoost=1.90\n" +
+                "HeadshotDamageMultiplier=2.90\n" +
+                "CriticalHitRate=95\n" +
+                "NoRecoil=1\n" +
+                "WeaponKickReduction=1.00\n" +
+                "CrosshairSpread=0.00\n" +
+                "ScopeStability=1.00\n";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            forceWrite(path, ueContent);
+            written++;
+        }
+        Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
+        return written > 0;
+    }
+
+    public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String dmgData = "\n[DamageScript]\nDamageMultiplier=1.90\nBulletDamageBoost=1.90\nHeadshotDamageMultiplier=2.90\nCriticalHitRate=95\nArmorPenetration=1.90\n";
+            if (ShizukuFileManager.fileExists(path)) {
+                String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
+                if (ShizukuFileManager.hasFullAccess()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+            }
+        }
+        Log.i(TAG, "Arena Breakout damage script 1.9x applied for " + packageName);
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String touchAppend = "\n[TouchEngine]\nTouchRate=1000\nTouchResponse=1\nTouchSlopReduction=1\nTouchZeroDelay=1\n";
+            if (ShizukuFileManager.fileExists(path)) {
+                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
+                if (ShizukuFileManager.hasFullAccess()) {
+                    ShizukuExecutor.executeShizukuCommand(appendCmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(appendCmd);
+                }
+            }
+        }
+    }
+
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String aimData = "\n[AimTuning]\nAimSmoothFactor=0.0\nGyroSamplingRate=1000\nADSZoomSpeed=1.0\nAutoAimLock=1\nCrosshairAim=1\n";
+            if (ShizukuFileManager.fileExists(path)) {
+                String cmd = "echo '" + aimData + "' >> " + path + "; chmod 666 " + path;
+                if (ShizukuFileManager.hasFullAccess()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+            }
+        }
+    }
+
+    public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            String recoilData = "\n[RecoilSens]\nVerticalSensitivityRatio=1.0\nHorizontalSensitivityRatio=1.0\nNoRecoil=1\nWeaponKickReduction=1.00\nScopeStability=1.00\n";
+            if (ShizukuFileManager.fileExists(path)) {
+                String cmd = "echo '" + recoilData + "' >> " + path + "; chmod 666 " + path;
+                if (ShizukuFileManager.hasFullAccess()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+            }
+        }
+    }
+
+    private static boolean applyStandardPatch(String path, int targetFps) {
+        if (!ShizukuFileManager.fileExists(path)) {
+            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + targetFps + ".000000\nFPSLevel=10\n";
+            return ShizukuFileManager.writeFile(path, content, "666").success;
+        } else {
+            String cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + ".000000/' " + path + "; " +
+                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + targetFps + "/' " + path + "; " +
+                         "chmod 666 " + path;
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+            return true;
+        }
+    }
+
+    private static void forceWrite(String path, String content) {
+        ShizukuFileManager.writeFile(path, content, "666");
+    }
+
+    private static void ensureParentDirectory(String path) {
+        if (path == null) return;
+        int lastSlash = path.lastIndexOf('/');
+        if (lastSlash > 0) {
+            String parentDir = path.substring(0, lastSlash);
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
+            } else {
+                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
+            }
+        }
+    }
+
+    private static List<String> getConfigPaths(String pkg) {
+        return GameConfigPathResolver.getPathsForGame(pkg);
+    }
+}

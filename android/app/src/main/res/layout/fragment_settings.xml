@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -120,10 +121,21 @@
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_open_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:padding="0dp"
+                    android:text="⚙️ SYSTEM APP SETTINGS"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10sp" />
             </LinearLayout>
 
 
-            <!-- CARD 2: ESPORTS GAMING CONTROLS & JANK PURGE -->
+            <!-- CARD 2: ESPORTS GAMING CONTROLS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -183,7 +195,7 @@
                     android:layout_height="44dp"
                     android:layout_marginTop="12dp"
                     android:background="@drawable/btn_cyber_dark"
-                    android:text="🧹 PURGE JANK &amp; CLEAR ALL CACHES"
+                    android:text="🧹 CLEAN GAME STORAGE &amp; SHADERS"
                     android:textColor="@color/accent_neon_green"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -266,7 +278,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- CARD 3: HARDWARE & DRIVER ENGINES -->
+            <!-- CARD 3: HARDWARE ENGINE & PERFORMANCE PRESETS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -278,11 +290,83 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚡ HARDWARE &amp; DRIVER ENGINES"
+                    android:text="⚡ HARDWARE ENGINE &amp; PERFORMANCE PRESETS"
                     android:textColor="@color/accent_neon_green"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_apply_185_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🚀 ROG\n185Hz"
+                        android:textColor="@color/accent_purple"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_pubg_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🔥 MAX\n165Hz"
+                        android:textColor="@color/accent_red"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_144_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="🎮 PRO\n144Hz"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_2d_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="⚡ HIGH\n120Hz"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_apply_balanced_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="⚖️ BAL\n90Hz"
+                        android:textColor="@color/accent_amber"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <Switch
                     android:id="@+id/switch_angle_mode"
@@ -339,80 +423,12 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
 
-                <!-- Network Mode Title & Status Badge -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Gaming Acceleration Mode:"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <!-- 3-Way Mode Selector: Dual / 5G-6G / Wi-Fi -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_mode_dual"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        android:background="@drawable/btn_cyber_cyan"
-                        android:padding="0dp"
-                        android:text="⚡ DUAL ACCEL\n(DATA + WI-FI)"
-                        android:textColor="#000000"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_mode_5g_6g"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="3dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="📶 5G / 6G\nDATA ONLY"
-                        android:textColor="@color/text_primary"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_mode_wifi"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="3dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🌐 WI-FI\nLOW-LATENCY"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_active_network_mode_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="⚡ Active Mode: DUAL ACCELERATION (DATA + WI-FI)"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <!-- Game Server Ping Tester -->
                 <TextView
                     android:id="@+id/tv_game_ping_ms"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="📡 Game Server Ping: Ready to test"
+                    android:layout_marginTop="8dp"
+                    android:text="📡 Game Server Ping: Not Tested"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -427,7 +443,6 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- 1-Tap Gaming DNS -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -447,12 +462,12 @@
                         android:layout_width="0dp"
                         android:layout_height="42dp"
                         android:layout_weight="1"
-                        android:layout_marginEnd="2dp"
+                        android:layout_marginEnd="4dp"
                         android:background="@drawable/btn_cyber_cyan"
                         android:padding="0dp"
                         android:text="⚡ 1.1.1.1"
                         android:textColor="#000000"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -465,20 +480,7 @@
                         android:padding="0dp"
                         android:text="🌐 8.8.8.8"
                         android:textColor="@color/text_primary"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_dns_adguard"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🛡️ ADGUARD"
-                        android:textColor="@color/accent_neon_green"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <Button
@@ -486,31 +488,32 @@
                         android:layout_width="0dp"
                         android:layout_height="42dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="2dp"
+                        android:layout_marginStart="4dp"
                         android:background="@drawable/btn_cyber_dark"
                         android:padding="0dp"
                         android:text="🔄 DEFAULT"
                         android:textColor="@color/text_secondary"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Network Optimization Toggles -->
-                <Switch
-                    android:id="@+id/switch_dual_data_wifi"
+                <Button
+                    android:id="@+id/btn_optimize_network_all"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Dual Channel Concurrent Acceleration (Data + Wi-Fi)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="🚀 1-TAP 5G / 6G &amp; WI-FI 6/7 TURBO BOOST"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <Switch
-                    android:id="@+id/switch_5g_6g_boost"
+                    android:id="@+id/switch_5g_6g_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="5G / 6G NR SA/NSA Low-Latency Band Prioritization"
+                    android:layout_marginTop="10dp"
+                    android:text="🚀 5G / 6G NR Mobile Data Accelerator (TCP BBR &amp; 8MB Window)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -519,7 +522,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Wi-Fi 6E/7 Low-Latency Chip Mode &amp; 0ms Sleep"
+                    android:text="📶 Wi-Fi 6/6E/7 Ultra-Low Latency &amp; Anti-Lag Lock"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_dual_data_wifi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="⚡ Dual Data + Wi-Fi Multipath Aggregation"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -761,15 +773,16 @@
                     android:visibility="gone" />
             </LinearLayout>
 
-            <!-- CARD 6: SHIZUKU ROOT & ADB TERMINAL EMULATOR -->
+            <!-- CARD 6: PURE CYBER TERMINAL & SCRIPTS FOLDER -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/card_glass_shape"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="14dp">
 
+                <!-- Header with Status Badge -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -781,42 +794,219 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:letterSpacing="0.03"
-                        android:text="💻 CYBER HACKER &amp; ADB TERMINAL"
-                        android:textColor="@color/accent_cyan"
+                        android:text="📟 PURE CYBER TERMINAL"
+                        android:textColor="@color/accent_neon_green"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_settings_terminal_uid"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="#2000FF66"
                         android:fontFamily="monospace"
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="2dp"
-                        android:text="root@matrix:~#"
+                        android:text="UID: 2000 (shell)"
                         android:textColor="@color/accent_neon_green"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tv_settings_terminal_folder_path"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="⚡ Universal Multi-Tier Shell Engine: Runs commands &amp; scripts with or without Shizuku. Executes System/Global/Secure settings, kernel tweaks, SurfaceFlinger pacing &amp; temporary root scripts."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="monospace"
+                    android:text="📁 Scripts Folder: /sdcard/GameBooster/terminal"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp" />
 
-                <!-- Quick Launcher Button -->
-                <Button
-                    android:id="@+id/btn_launch_terminal"
+                <!-- Pure Terminal Screen Display -->
+                <ScrollView
+                    android:id="@+id/scroll_settings_terminal"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="⚡ LAUNCH CYBER HACKER TERMINAL"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:layout_height="140dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/terminal_pure_window_bg"
+                    android:fillViewport="true"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:id="@+id/tv_settings_terminal_output"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:letterSpacing="0.02"
+                        android:lineSpacingMultiplier="1.15"
+                        android:textIsSelectable="true"
+                        android:textColor="#00FF66"
+                        android:textSize="11sp"
+                        tools:text="[00:00:00] shizuku@android:~$ id\nuid=2000(shell) gid=2000(shell)\n[READY FOR COMMANDS]" />
+                </ScrollView>
+
+                <!-- Pure Terminal Command Input Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:paddingEnd="4dp"
+                        android:text="&gt;$"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_settings_terminal_cmd"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/search_bar_cyber_bg"
+                        android:fontFamily="monospace"
+                        android:hint="Type command (e.g. ls, id, run 1, pwd)..."
+                        android:imeOptions="actionSend"
+                        android:inputType="text"
+                        android:paddingHorizontal="8dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        android:textSize="11sp" />
+
+                    <Button
+                        android:id="@+id/btn_settings_terminal_exec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/btn_cyber_green"
+                        android:paddingHorizontal="10dp"
+                        android:text="EXEC ⚡"
+                        android:textColor="#000000"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Quick Terminal Script Chips -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_settings_script_folder"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="📂 Scripts Folder"
+                            android:textColor="@color/accent_neon_green"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_settings_script_whoami"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="⚡ whoami"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_settings_script_ram"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="🧹 Flush RAM"
+                            android:textColor="@color/accent_amber"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_settings_script_storage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="🔓 Unlock /data"
+                            android:textColor="@color/accent_neon_green"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_settings_script_fps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="🎮 120Hz Lock"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_settings_script_touch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="8dp"
+                            android:text="🎯 1000Hz Touch"
+                            android:textColor="@color/accent_ml_blue"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Fullscreen & Clear Buttons Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_launch_terminal"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🖥️ FULL PURE TERMINAL"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_settings_terminal_clear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:paddingHorizontal="10dp"
+                        android:text="🗑️ CLEAR"
+                        android:textColor="@color/accent_red"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- CARD 7: APP INFO & LINKS -->
@@ -837,15 +1027,6 @@
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
-
-                <TextView
-                    android:id="@+id/tv_settings_version"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Version 2.2.3.0 PRO • Compatible with Android 13, 14, 15, 16"
-                    android:textColor="@color/text_muted"
-                    android:textSize="11sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

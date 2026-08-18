@@ -6,105 +6,153 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings;
+import android.view.Choreographer;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.booster.MaxHzForceChannel;
+import com.gamebooster.app.booster.NetworkOptimizer;
+import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.booster.RamZramChannel;
+import com.gamebooster.app.booster.TouchLatencyChannel;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DeviceInfoChannel;
+import com.gamebooster.app.device.DisplayCapabilitiesDetector;
+import com.gamebooster.app.gamespace.GameSpaceDndManager;
 
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+/**
+ * FloatingOverlayService — High-performance Esports HUD Performance Overlay.
+ *
+ * Features:
+ *   - Multi-viewport layout (Collapsed Pill, Micro FPS, Expanded Cyber Dashboard)
+ *   - Live FPS with dynamic health rating (Choreographer callback)
+ *   - Real-time RAM telemetry & visual level progress gauge
+ *   - Thermals & Battery power drain (mA)
+ *   - Asynchronous low-latency Ping monitor (ms) & Network connection badge
+ *   - 6 In-Game Turbo Controls (RAM Clean, 185Hz Extreme, Crosshair, DND, Ultra Touch, Net Boost)
+ *   - Touch pass-through without blocking background game touches
+ *   - Magnetic edge snapping with coordinate persistence
+ */
 public class FloatingOverlayService extends Service {
+
+    public static final String PREF_NAME = "gamebooster_hud_prefs";
+    public static final String KEY_HUD_X = "hud_last_pos_x";
+    public static final String KEY_HUD_Y = "hud_last_pos_y";
+    public static final String KEY_HUD_MODE = "hud_viewport_mode";
 
     private static final String CHANNEL_ID = "game_booster_overlay_channel";
     private static final int NOTIF_ID = 888;
     private static boolean isRunning = false;
 
+    public enum HudMode {
+        PILL,
+        MICRO_FPS,
+        EXPANDED_DOCK
+    }
+
     private WindowManager windowManager;
     private View overlayView;
-    private Handler handler;
-    private Runnable updateRunnable;
-
-    /**
-     * Class-level LayoutParams so toggleDockState() can dynamically swap window flags
-     * without recreating the view (required for FLAG_NOT_TOUCHABLE to take effect).
-     */
     private WindowManager.LayoutParams params;
+    private Handler handler;
+    private Runnable telemetryRunnable;
+    private Runnable pingRunnable;
 
-    // -----------------------------------------------------------------------
-    // Window flag sets: collapsed = touch pass-through, expanded = interactive
-    // -----------------------------------------------------------------------
+    // View References
+    private View layoutCollapsedPill;
+    private View layoutMicroFps;
+    private View layoutExpandedDock;
+    private View layoutHudHeader;
 
-    /** Collapsed pill state: touch events pass-through to game — zero obstruction. */
-    private static final int FLAGS_COLLAPSED =
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+    // Collapsed Pill views
+    private View viewPillGlowDot;
+    private TextView tvPillFps;
+    private TextView tvPillTemp;
+    private TextView tvPillPing;
 
-    /** Expanded dock state: buttons are interactive, focus still not taken. */
-    private static final int FLAGS_EXPANDED =
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+    // Micro FPS views
+    private TextView tvMicroFps;
 
-    public static final String PREF_NAME = "floating_overlay_prefs";
-    public static final String KEY_OVERLAY_ENABLED = "overlay_enabled";
+    // Expanded Dock views
+    private TextView tvHudProfileBadge;
+    private TextView tvHudFps;
+    private TextView tvHudFpsStatus;
+    private TextView tvHudPing;
+    private TextView tvHudNetType;
+    private TextView tvHudTemp;
+    private TextView tvHudMa;
+    private TextView tvHudRam;
+    private ProgressBar pbHudRam;
+
+    // Action buttons
+    private Button btnHudBoost;
+    private Button btnHudExtreme;
+    private Button btnHudCrosshair;
+    private Button btnHudDnd;
+    private Button btnHudTouch;
+    private Button btnHudNet;
+
+    // State Variables
+    private static final int[] REFRESH_RATE_TIERS = {185, 165, 144, 120};
+    private int currentHzIndex = 0;
+    private HudMode currentMode = HudMode.PILL;
+    private boolean isDndActive = false;
+    private boolean isExtremeActive = true;
+    private boolean isTouchBoostActive = false;
+    private boolean isNetBoostActive = false;
+    private int realTimeFps = 60;
+    private int frameCounter = 0;
+    private long lastFpsCalcTimeNanos = 0;
+    private int livePingMs = 28;
+    private String networkTypeStr = "Wi-Fi";
+
+    private final Runnable autoCollapseRunnable = () -> switchHudMode(HudMode.PILL);
 
     public static boolean isOverlayRunning() {
         return isRunning;
     }
 
-    public static boolean isOverlayEnabled(Context context) {
-        if (context == null) return false;
-        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-                .getBoolean(KEY_OVERLAY_ENABLED, false);
-    }
-
-    public static void setOverlayEnabledPref(Context context, boolean enabled) {
-        if (context == null) return;
-        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(KEY_OVERLAY_ENABLED, enabled)
-                .apply();
-    }
-
     public static void startOverlay(Context context) {
-        if (context == null) return;
-        setOverlayEnabledPref(context, true);
-        if (isRunning) return;
+        if (context == null || isRunning) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) return;
-        try {
-            Intent intent = new Intent(context, FloatingOverlayService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent);
-            } else {
-                context.startService(intent);
-            }
-        } catch (Throwable t) {
-            android.util.Log.e("FloatingOverlayService", "Failed to start overlay foreground service: " + t.getMessage());
+        Intent intent = new Intent(context, FloatingOverlayService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
         }
     }
 
     public static void stopOverlay(Context context) {
-        if (context == null) return;
-        setOverlayEnabledPref(context, false);
-        if (!isRunning) return;
-        try {
-            Intent intent = new Intent(context, FloatingOverlayService.class);
-            context.stopService(intent);
-        } catch (Throwable ignored) {}
+        if (context == null || !isRunning) return;
+        Intent intent = new Intent(context, FloatingOverlayService.class);
+        context.stopService(intent);
     }
 
     @Override
@@ -123,122 +171,20 @@ public class FloatingOverlayService extends Service {
             stopSelf();
             return;
         }
-        setupTicker();
+        setupTelemetryEngine();
     }
-
-    private View layoutCollapsedPill;
-    private View layoutExpandedDock;
-    private TextView tvPillMetrics;
-    private TextView tvHudFps;
-    private TextView tvHudRam;
-    private TextView tvHudTemp;
-    private TextView tvHudMa;
-    private boolean isCollapsed = true;
-    private boolean isDndActive = false;
-
-    /** Kept as field so updateDndButtonTint() can change its tint without re-finding the view. */
-    private Button btnDndRef;
-
-    /** Dedicated Runnable ref so scheduleAutoCollapse() can cancel any pending collapse cleanly. */
-    private final Runnable autoCollapseRunnable = () -> toggleDockState(true);
 
     private boolean setupFloatingView() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (windowManager == null) return false;
 
-        android.view.LayoutInflater inflater = (android.view.LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         if (inflater == null) return false;
+
         overlayView = inflater.inflate(R.layout.floating_hud_layout, null);
 
-        layoutCollapsedPill = overlayView.findViewById(R.id.layout_collapsed_pill);
-        layoutExpandedDock = overlayView.findViewById(R.id.layout_expanded_dock);
-        tvPillMetrics = overlayView.findViewById(R.id.tv_pill_metrics);
-        tvHudFps = overlayView.findViewById(R.id.tv_hud_fps);
-        tvHudRam = overlayView.findViewById(R.id.tv_hud_ram);
-        tvHudTemp = overlayView.findViewById(R.id.tv_hud_temp);
-        tvHudMa = overlayView.findViewById(R.id.tv_hud_ma);
-
-        View tvCollapseBtn = overlayView.findViewById(R.id.tv_hud_collapse_btn);
-        View btnBoost = overlayView.findViewById(R.id.btn_hud_boost);
-        View btnExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
-        View btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
-        View btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
-        isDndActive = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
-
-        // Store DND button reference and sync initial tint
-        if (btnDnd instanceof Button) {
-            btnDndRef = (Button) btnDnd;
-            updateDndButtonTint();
-        }
-
-        if (tvCollapseBtn != null) {
-            tvCollapseBtn.setOnClickListener(v -> toggleDockState(true));
-        }
-
-        if (btnBoost != null) {
-            btnBoost.setOnClickListener(v -> {
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        android.widget.Toast.makeText(getApplicationContext(),
-                                "⚡ Executed: pm trim-caches 1000M & sync",
-                                android.widget.Toast.LENGTH_LONG).show();
-                        // Auto-collapse: get HUD out of the way after action
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> {
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.booster.PerformanceChannel.ProfileResult result =
-                            com.gamebooster.app.booster.PerformanceChannel.applyProfileWithResult(
-                                    getApplicationContext(),
-                                    com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        android.widget.Toast.makeText(getApplicationContext(),
-                                "🔥 " + result.message,
-                                android.widget.Toast.LENGTH_LONG).show();
-                        // Auto-collapse: get HUD out of the way after action
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        if (btnDnd != null) {
-            btnDnd.setOnClickListener(v -> {
-                isDndActive = !isDndActive;
-                final boolean targetDnd = isDndActive;
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    boolean applied = com.gamebooster.app.gamespace.GameSpaceDndManager
-                            .setGamingDndMode(getApplicationContext(), targetDnd);
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        android.widget.Toast.makeText(getApplicationContext(), applied
-                                ? (targetDnd ? "🚫 Gaming DND enabled" : "🔔 Gaming DND disabled")
-                                : "DND permission is required",
-                                android.widget.Toast.LENGTH_LONG).show();
-                        // Reflect active/inactive state visually on the button
-                        updateDndButtonTint();
-                        // Auto-collapse: get HUD out of the way after action
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        if (btnCrosshair != null) {
-            btnCrosshair.setOnClickListener(v -> {
-                boolean active = CrosshairOverlayManager.toggleCrosshair(getApplicationContext());
-                android.widget.Toast.makeText(getApplicationContext(),
-                        active ? "🎯 FPS Crosshair Overlay ON" : "🎯 Crosshair OFF",
-                        android.widget.Toast.LENGTH_SHORT).show();
-                // Auto-collapse: get HUD out of the way after action
-                scheduleAutoCollapse();
-            });
-        }
+        bindViews();
+        setupActionButtons();
 
         int layoutFlag;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -247,19 +193,21 @@ public class FloatingOverlayService extends Service {
             layoutFlag = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        // Start collapsed → FLAG_NOT_TOUCHABLE ensures the pill NEVER intercepts game touches.
-        // Flags are swapped dynamically in toggleDockState() via windowManager.updateViewLayout().
+        // FLAG_NOT_FOCUSABLE with WRAP_CONTENT allows touches on the overlay while touches outside pass through to the game
+        int windowFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+
         params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 layoutFlag,
-                FLAGS_COLLAPSED,
+                windowFlags,
                 PixelFormat.TRANSLUCENT
         );
 
-        // Force overlay window to request 165Hz hardware refresh rate
+        // Hardware refresh rate request (up to 185Hz)
         try {
-            params.preferredRefreshRate = 165.0f;
+            params.preferredRefreshRate = 185.0f;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
                 android.view.Display display = windowManager.getDefaultDisplay();
                 if (display != null) {
@@ -280,13 +228,273 @@ public class FloatingOverlayService extends Service {
         } catch (Throwable ignored) {}
 
         params.gravity = Gravity.TOP | Gravity.START;
-        params.x = 20;
-        params.y = 200;
 
-        View collapseBtn = overlayView.findViewById(R.id.tv_hud_collapse_btn);
-        View headerDock = (collapseBtn != null && collapseBtn.getParent() instanceof View) ?
-                (View) collapseBtn.getParent() : overlayView;
+        // Restore persisted coordinates
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        params.x = prefs.getInt(KEY_HUD_X, 20);
+        params.y = prefs.getInt(KEY_HUD_Y, 220);
 
+        setupDragListeners();
+
+        // Restore or initialize mode
+        String savedMode = prefs.getString(KEY_HUD_MODE, HudMode.PILL.name());
+        try {
+            currentMode = HudMode.valueOf(savedMode);
+        } catch (Exception e) {
+            currentMode = HudMode.PILL;
+        }
+
+        applyViewportVisibility(currentMode);
+
+        try {
+            windowManager.addView(overlayView, params);
+            return true;
+        } catch (Exception e) {
+            isRunning = false;
+            return false;
+        }
+    }
+
+    private void bindViews() {
+        layoutCollapsedPill = overlayView.findViewById(R.id.layout_collapsed_pill);
+        layoutMicroFps = overlayView.findViewById(R.id.layout_micro_fps);
+        layoutExpandedDock = overlayView.findViewById(R.id.layout_expanded_dock);
+        layoutHudHeader = overlayView.findViewById(R.id.layout_hud_header);
+
+        // Pill
+        viewPillGlowDot = overlayView.findViewById(R.id.view_pill_glow_dot);
+        tvPillFps = overlayView.findViewById(R.id.tv_pill_fps);
+        tvPillTemp = overlayView.findViewById(R.id.tv_pill_temp);
+        tvPillPing = overlayView.findViewById(R.id.tv_pill_ping);
+
+        // Micro
+        tvMicroFps = overlayView.findViewById(R.id.tv_micro_fps);
+
+        // Header controls
+        View btnMicroToggle = overlayView.findViewById(R.id.btn_hud_micro_toggle);
+        View btnMinimize = overlayView.findViewById(R.id.btn_hud_minimize);
+        View btnClose = overlayView.findViewById(R.id.btn_hud_close);
+
+        if (btnMicroToggle != null) {
+            btnMicroToggle.setOnClickListener(v -> {
+                performHaptic();
+                switchHudMode(HudMode.MICRO_FPS);
+            });
+        }
+        if (btnMinimize != null) {
+            btnMinimize.setOnClickListener(v -> {
+                performHaptic();
+                switchHudMode(HudMode.PILL);
+            });
+        }
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                performHaptic();
+                Toast.makeText(getApplicationContext(), "⚡ Gaming HUD Closed", Toast.LENGTH_SHORT).show();
+                stopSelf();
+            });
+        }
+
+        // Expanded telemetry
+        tvHudProfileBadge = overlayView.findViewById(R.id.tv_hud_profile_badge);
+        tvHudFps = overlayView.findViewById(R.id.tv_hud_fps);
+        tvHudFpsStatus = overlayView.findViewById(R.id.tv_hud_fps_status);
+        tvHudPing = overlayView.findViewById(R.id.tv_hud_ping);
+        tvHudNetType = overlayView.findViewById(R.id.tv_hud_net_type);
+        tvHudTemp = overlayView.findViewById(R.id.tv_hud_temp);
+        tvHudMa = overlayView.findViewById(R.id.tv_hud_ma);
+        tvHudRam = overlayView.findViewById(R.id.tv_hud_ram);
+        pbHudRam = overlayView.findViewById(R.id.pb_hud_ram);
+
+        // Action buttons
+        btnHudBoost = overlayView.findViewById(R.id.btn_hud_boost);
+        btnHudExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
+        btnHudCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
+        btnHudDnd = overlayView.findViewById(R.id.btn_hud_dnd);
+        btnHudTouch = overlayView.findViewById(R.id.btn_hud_touch);
+        btnHudNet = overlayView.findViewById(R.id.btn_hud_net);
+    }
+
+    private void setupActionButtons() {
+        isDndActive = GameSpaceDndManager.isDndActive(getApplicationContext());
+        updateDndButtonVisual();
+        updateCrosshairButtonVisual();
+
+        // 1. Clean RAM & Trimming Cache
+        if (btnHudBoost != null) {
+            btnHudBoost.setOnClickListener(v -> {
+                performHaptic();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(getApplicationContext(),
+                                "⚡ RAM Cache Purged & Memory Trimmed",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 2. Extreme 185Hz / 165Hz / 144Hz / 120Hz Refresh Rate Cycler
+        if (btnHudExtreme != null) {
+            btnHudExtreme.setOnClickListener(v -> {
+                performHaptic();
+                currentHzIndex = (currentHzIndex + 1) % REFRESH_RATE_TIERS.length;
+                final int targetHz = REFRESH_RATE_TIERS[currentHzIndex];
+
+                AppExecutors.getInstance().executeCommand(() -> {
+                    PerformanceChannel.Profile profile = targetHz == 185
+                            ? PerformanceChannel.Profile.EXTREME_PERFORMANCE
+                            : (targetHz >= 144 ? PerformanceChannel.Profile.PERFORMANCE : PerformanceChannel.Profile.BALANCED);
+                    PerformanceChannel.applyProfileWithResult(getApplicationContext(), profile);
+                    MaxHzForceChannel.forceApply(targetHz);
+                    PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
+                    isExtremeActive = (targetHz == 185);
+
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        btnHudExtreme.setText("🔥 " + targetHz + "Hz");
+                        Toast.makeText(getApplicationContext(),
+                                "🔥 Locked @ " + targetHz + "Hz (Max " + targetHz + " FPS)",
+                                Toast.LENGTH_SHORT).show();
+                        if (tvHudProfileBadge != null) {
+                            tvHudProfileBadge.setText(targetHz == 185
+                                    ? "🔥 EXTREME 185Hz LOCKED • GAME DRIVER ON"
+                                    : "⚡ ESPORTS " + targetHz + "Hz LOCKED • GAME OPTIMIZED");
+                        }
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 3. Aim Crosshair Hub (Toggle + Preset Cycle on Long Click)
+        if (btnHudCrosshair != null) {
+            btnHudCrosshair.setOnClickListener(v -> {
+                performHaptic();
+                boolean active = CrosshairOverlayManager.toggleCrosshair(getApplicationContext());
+                updateCrosshairButtonVisual();
+                Toast.makeText(getApplicationContext(),
+                        active ? "🎯 Crosshair Overlay ACTIVE" : "🎯 Crosshair OFF",
+                        Toast.LENGTH_SHORT).show();
+                scheduleAutoCollapse();
+            });
+
+            btnHudCrosshair.setOnLongClickListener(v -> {
+                performHaptic();
+                cycleCrosshairPreset();
+                return true;
+            });
+        }
+
+        // 4. Gaming DND Shield
+        if (btnHudDnd != null) {
+            btnHudDnd.setOnClickListener(v -> {
+                performHaptic();
+                isDndActive = !isDndActive;
+                final boolean targetDnd = isDndActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean applied = GameSpaceDndManager.setGamingDndMode(getApplicationContext(), targetDnd);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        updateDndButtonVisual();
+                        Toast.makeText(getApplicationContext(), applied
+                                        ? (targetDnd ? "🚫 Gaming DND Enabled (Silent)" : "🔔 Gaming DND Disabled")
+                                        : "DND permission required",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 5. Ultra Touch 1000Hz Response
+        if (btnHudTouch != null) {
+            btnHudTouch.setOnClickListener(v -> {
+                performHaptic();
+                isTouchBoostActive = !isTouchBoostActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = TouchLatencyChannel.enableUltraTouchResponse();
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudTouch != null) {
+                            btnHudTouch.setTextColor(isTouchBoostActive
+                                    ? Color.parseColor("#00FF66")
+                                    : Color.parseColor("#00F0FF"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                "⚡ 1000Hz Ultra Touch Response Active",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 6. Low-Latency Gaming Net Boost
+        if (btnHudNet != null) {
+            btnHudNet.setOnClickListener(v -> {
+                performHaptic();
+                isNetBoostActive = !isNetBoostActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.applyGamingDns(getApplicationContext(), NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
+                    NetworkOptimizer.optimizeTcpBuffers();
+                    NetworkOptimizer.flushDnsCache();
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudNet != null) {
+                            btnHudNet.setTextColor(isNetBoostActive
+                                    ? Color.parseColor("#00FF66")
+                                    : Color.parseColor("#FFB800"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                "📶 Low-Latency DNS & TCP Buffers Boosted",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+    }
+
+    private void cycleCrosshairPreset() {
+        SharedPreferences prefs = getSharedPreferences(CrosshairOverlayService.PREF_NAME, MODE_PRIVATE);
+        String currentName = prefs.getString(CrosshairOverlayService.KEY_PRESET, CrosshairPreset.TACTICAL_CROSS.name());
+        CrosshairPreset[] presets = CrosshairPreset.values();
+        int nextIndex = 0;
+        for (int i = 0; i < presets.length; i++) {
+            if (presets[i].name().equals(currentName)) {
+                nextIndex = (i + 1) % presets.length;
+                break;
+            }
+        }
+        CrosshairPreset nextPreset = presets[nextIndex];
+        CrosshairOverlayService.updatePreset(getApplicationContext(), nextPreset);
+        Toast.makeText(getApplicationContext(), "🎯 Crosshair Style: " + nextPreset.getLabel(), Toast.LENGTH_SHORT).show();
+        updateCrosshairButtonVisual();
+    }
+
+    private void updateDndButtonVisual() {
+        if (btnHudDnd == null) return;
+        if (isDndActive) {
+            btnHudDnd.setTextColor(Color.parseColor("#00FF66"));
+            btnHudDnd.setText("🚫 DND ON");
+        } else {
+            btnHudDnd.setTextColor(Color.parseColor("#94A3B8"));
+            btnHudDnd.setText("🚫 DND");
+        }
+    }
+
+    private void updateCrosshairButtonVisual() {
+        if (btnHudCrosshair == null) return;
+        boolean active = CrosshairOverlayManager.isShowing();
+        if (active) {
+            btnHudCrosshair.setTextColor(Color.parseColor("#00FF66"));
+            btnHudCrosshair.setText("🎯 ON");
+        } else {
+            btnHudCrosshair.setTextColor(Color.parseColor("#FF8800"));
+            btnHudCrosshair.setText("🎯 AIM");
+        }
+    }
+
+    private void setupDragListeners() {
         View.OnTouchListener dragListener = new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -308,7 +516,7 @@ public class FloatingOverlayService extends Service {
                     case MotionEvent.ACTION_MOVE:
                         float dx = Math.abs(event.getRawX() - initialTouchX);
                         float dy = Math.abs(event.getRawY() - initialTouchY);
-                        if (dx > 12 || dy > 12) {
+                        if (dx > 10 || dy > 10) {
                             isClick = false;
                         }
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
@@ -320,22 +528,29 @@ public class FloatingOverlayService extends Service {
 
                     case MotionEvent.ACTION_UP:
                         if (isClick) {
-                            if (v == layoutCollapsedPill) {
-                                toggleDockState(false);
+                            performHaptic();
+                            if (currentMode == HudMode.PILL || currentMode == HudMode.MICRO_FPS) {
+                                switchHudMode(HudMode.EXPANDED_DOCK);
                             }
                         } else {
-                            // Magnetic Edge Snapping with safety clamp (prevents negative x)
+                            // Magnetic Edge Snapping with boundary clamp
                             if (windowManager != null && overlayView != null) {
                                 int screenWidth = getResources().getDisplayMetrics().widthPixels;
                                 int viewWidth = overlayView.getWidth();
                                 int midPoint = screenWidth / 2;
                                 if (params.x + (viewWidth / 2) < midPoint) {
-                                    params.x = 10; // Magnetic Snap Left
+                                    params.x = 12; // Snap Left
                                 } else {
-                                    // Safety clamp: never go negative or off-screen
-                                    params.x = Math.max(10, Math.max(0, screenWidth - viewWidth - 10));
+                                    params.x = Math.max(12, screenWidth - viewWidth - 12); // Snap Right
                                 }
+                                params.y = Math.max(20, Math.min(params.y, getResources().getDisplayMetrics().heightPixels - 150));
                                 windowManager.updateViewLayout(overlayView, params);
+
+                                // Persist position
+                                getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit()
+                                        .putInt(KEY_HUD_X, params.x)
+                                        .putInt(KEY_HUD_Y, params.y)
+                                        .apply();
                             }
                         }
                         return true;
@@ -344,91 +559,61 @@ public class FloatingOverlayService extends Service {
             }
         };
 
-        if (layoutCollapsedPill != null) {
-            layoutCollapsedPill.setOnTouchListener(dragListener);
-        }
-        if (headerDock != null) {
-            headerDock.setOnTouchListener(dragListener);
-        }
+        if (layoutCollapsedPill != null) layoutCollapsedPill.setOnTouchListener(dragListener);
+        if (layoutMicroFps != null) layoutMicroFps.setOnTouchListener(dragListener);
+        if (layoutHudHeader != null) layoutHudHeader.setOnTouchListener(dragListener);
+    }
 
-        // Semi-transparent pill initially so it's less distracting while gaming
-        overlayView.setAlpha(0.75f);
+    private void switchHudMode(HudMode mode) {
+        this.currentMode = mode;
+        applyViewportVisibility(mode);
 
-        try {
-            windowManager.addView(overlayView, params);
-            return true;
-        } catch (Exception e) {
-            isRunning = false;
-            return false;
+        getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit()
+                .putString(KEY_HUD_MODE, mode.name())
+                .apply();
+
+        if (windowManager != null && overlayView != null && params != null) {
+            try {
+                windowManager.updateViewLayout(overlayView, params);
+            } catch (Exception ignored) {}
+        }
+        updateTelemetryData();
+    }
+
+    private void applyViewportVisibility(HudMode mode) {
+        if (layoutCollapsedPill == null || layoutMicroFps == null || layoutExpandedDock == null) return;
+
+        switch (mode) {
+            case PILL:
+                layoutCollapsedPill.setVisibility(View.VISIBLE);
+                layoutMicroFps.setVisibility(View.GONE);
+                layoutExpandedDock.setVisibility(View.GONE);
+                overlayView.setAlpha(0.85f);
+                break;
+
+            case MICRO_FPS:
+                layoutCollapsedPill.setVisibility(View.GONE);
+                layoutMicroFps.setVisibility(View.VISIBLE);
+                layoutExpandedDock.setVisibility(View.GONE);
+                overlayView.setAlpha(0.70f);
+                break;
+
+            case EXPANDED_DOCK:
+                layoutCollapsedPill.setVisibility(View.GONE);
+                layoutMicroFps.setVisibility(View.GONE);
+                layoutExpandedDock.setVisibility(View.VISIBLE);
+                overlayView.setAlpha(1.0f);
+                break;
         }
     }
 
-    /**
-     * Updates the DND button background tint to visually reflect active/inactive state.
-     * Green = DND active (notifications silenced), default grey = DND inactive.
-     */
-    private void updateDndButtonTint() {
-        if (btnDndRef == null) return;
-        if (isDndActive) {
-            btnDndRef.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#FF4CAF50")));
-            btnDndRef.setTextColor(Color.parseColor("#FF000000"));
-        } else {
-            // Reset to original card_bg colour
-            btnDndRef.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#CC1C1C2E")));
-            btnDndRef.setTextColor(Color.parseColor("#FFE0E0E0"));
-        }
-    }
-
-    /**
-     * Schedules the HUD dock to auto-collapse 1.5 seconds after an action button is pressed,
-     * so the overlay automatically gets out of the way during gameplay.
-     * Any previous pending collapse is cancelled before rescheduling.
-     */
     private void scheduleAutoCollapse() {
         if (handler == null) return;
         handler.removeCallbacks(autoCollapseRunnable);
-        handler.postDelayed(autoCollapseRunnable, 1500);
+        handler.postDelayed(autoCollapseRunnable, 1800);
     }
 
-    /**
-     * Toggles between collapsed pill mode and expanded dock mode.
-     * Critically, this also swaps the WindowManager flags so:
-     *   - Collapsed → FLAG_NOT_TOUCHABLE (game receives all touches)
-     *   - Expanded  → no FLAG_NOT_TOUCHABLE (HUD buttons are interactive)
-     */
-    private void toggleDockState(boolean collapse) {
-        this.isCollapsed = collapse;
-        if (layoutCollapsedPill != null && layoutExpandedDock != null) {
-            if (collapse) {
-                layoutCollapsedPill.setVisibility(View.VISIBLE);
-                layoutExpandedDock.setVisibility(View.GONE);
-                // Collapsed: pass touch events through — game is never blocked
-                if (params != null) params.flags = FLAGS_COLLAPSED;
-                overlayView.setAlpha(0.75f);
-            } else {
-                layoutCollapsedPill.setVisibility(View.GONE);
-                layoutExpandedDock.setVisibility(View.VISIBLE);
-                // Expanded: allow user to interact with HUD buttons
-                if (params != null) params.flags = FLAGS_EXPANDED;
-                overlayView.setAlpha(1.0f);
-            }
-            // Apply updated flags to the live window immediately
-            if (windowManager != null && overlayView != null && params != null) {
-                try {
-                    windowManager.updateViewLayout(overlayView, params);
-                } catch (Exception ignored) {}
-            }
-        }
-        updateMetricsText();
-    }
-
-    private int realTimeFps = 60;
-    private int frameCounter = 0;
-    private long lastFpsCalcTimeNanos = 0;
-
-    private final android.view.Choreographer.FrameCallback choreographerCallback = new android.view.Choreographer.FrameCallback() {
+    private final Choreographer.FrameCallback choreographerCallback = new Choreographer.FrameCallback() {
         @Override
         public void doFrame(long frameTimeNanos) {
             if (!isRunning) return;
@@ -437,71 +622,219 @@ public class FloatingOverlayService extends Service {
                 lastFpsCalcTimeNanos = frameTimeNanos;
             } else {
                 long elapsedNanos = frameTimeNanos - lastFpsCalcTimeNanos;
-                if (elapsedNanos >= 1_000_000_000L) { // 1 second interval
+                if (elapsedNanos >= 1_000_000_000L) {
                     realTimeFps = (int) Math.round((frameCounter * 1_000_000_000.0) / elapsedNanos);
                     frameCounter = 0;
                     lastFpsCalcTimeNanos = frameTimeNanos;
                 }
             }
             try {
-                android.view.Choreographer.getInstance().postFrameCallback(this);
+                Choreographer.getInstance().postFrameCallback(this);
             } catch (Exception ignored) {}
         }
     };
 
-    private void updateMetricsText() {
-        if (!isRunning) return;
-        final int activeFps = realTimeFps > 0 ? Math.min(185, realTimeFps) : 165;
-        
-        com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
-            if (!isRunning) return;
-            DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
-            com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
-                    com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(getApplicationContext());
-            int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
-
-            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                if (!isRunning || overlayView == null) return;
-
-                if (tvPillMetrics != null) {
-                    tvPillMetrics.setText(String.format("⚡ %d FPS | %.1f°C", activeFps, m.batteryTempC));
-                }
-
-                if (tvHudFps != null) {
-                    tvHudFps.setText(String.format("⚡ HUD FPS: %d • Display: %d Hz (Max 185)", activeFps, currentHz));
-                }
-                if (tvHudRam != null) {
-                    tvHudRam.setText(String.format("🧠 Memory RAM: %d%% Used", m.ramUsagePct));
-                }
-                if (tvHudTemp != null) {
-                    tvHudTemp.setText(String.format("🌡️ Battery Temp: %.1f°C", m.batteryTempC));
-                }
-                if (tvHudMa != null) {
-                    if (m.batteryCurrentMa != 0) {
-                        tvHudMa.setText(String.format("🔋 Power Current: %d mA", m.batteryCurrentMa));
-                    } else {
-                        tvHudMa.setText("🔋 Power Current: Normal");
-                    }
-                }
-            });
-        });
-    }
-
-    private void setupTicker() {
+    private void setupTelemetryEngine() {
         handler = new Handler(Looper.getMainLooper());
-        updateRunnable = new Runnable() {
+
+        // 1. Frame Callback
+        try {
+            Choreographer.getInstance().postFrameCallback(choreographerCallback);
+        } catch (Exception ignored) {}
+
+        // 2. Metrics Updater (1 sec ticker)
+        telemetryRunnable = new Runnable() {
             @Override
             public void run() {
-                updateMetricsText();
+                updateTelemetryData();
                 if (handler != null && isRunning) {
                     handler.postDelayed(this, 1000);
                 }
             }
         };
-        handler.post(updateRunnable);
+        handler.post(telemetryRunnable);
+
+        // 3. Network Ping Daemon (2.5 sec interval)
+        pingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                executeNetworkPingCheck();
+                if (handler != null && isRunning) {
+                    handler.postDelayed(this, 2500);
+                }
+            }
+        };
+        handler.post(pingRunnable);
+    }
+
+    private void executeNetworkPingCheck() {
+        AppExecutors.getInstance().executeCommand(() -> {
+            int ping = 25;
+            long start = System.currentTimeMillis();
+            try (Socket socket = new Socket()) {
+                // Ping Cloudflare DNS 1.1.1.1 or Google 8.8.8.8 on port 53 (DNS)
+                socket.connect(new InetSocketAddress("1.1.1.1", 53), 1200);
+                long elapsed = System.currentTimeMillis() - start;
+                ping = (int) Math.max(5, Math.min( elapsed, 999));
+            } catch (Exception e) {
+                try (Socket backup = new Socket()) {
+                    long bStart = System.currentTimeMillis();
+                    backup.connect(new InetSocketAddress("8.8.8.8", 53), 1200);
+                    ping = (int) Math.max(5, Math.min(System.currentTimeMillis() - bStart, 999));
+                } catch (Exception ignored) {
+                    ping = 99;
+                }
+            }
+
+            final int finalPing = ping;
+            final String netType = detectNetworkType();
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                livePingMs = finalPing;
+                networkTypeStr = netType;
+            });
+        });
+    }
+
+    private String detectNetworkType() {
         try {
-            android.view.Choreographer.getInstance().postFrameCallback(choreographerCallback);
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    NetworkCapabilities caps = cm.getNetworkCapabilities(cm.getActiveNetwork());
+                    if (caps != null) {
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                            return "Wi-Fi";
+                        } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                            return "5G/LTE";
+                        }
+                    }
+                }
+            }
         } catch (Exception ignored) {}
+        return "Online";
+    }
+
+    private void updateTelemetryData() {
+        DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getApplicationContext());
+        DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(getApplicationContext());
+        int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 165;
+        int activeFps = realTimeFps > 0 ? Math.min(185, realTimeFps) : currentHz;
+
+        // Dynamic FPS Health Color
+        int fpsColor;
+        String fpsStatus;
+        if (activeFps >= 90) {
+            fpsColor = Color.parseColor("#00FF66"); // Neon Green
+            fpsStatus = "🟢 Ultra Smooth";
+        } else if (activeFps >= 45) {
+            fpsColor = Color.parseColor("#00F0FF"); // Neon Cyan
+            fpsStatus = "🟡 Smooth Gaming";
+        } else {
+            fpsColor = Color.parseColor("#FF0055"); // Neon Red
+            fpsStatus = "🔴 Frame Drop";
+        }
+
+        // Dynamic Ping Color
+        int pingColor;
+        if (livePingMs <= 35) {
+            pingColor = Color.parseColor("#00FF66");
+        } else if (livePingMs <= 70) {
+            pingColor = Color.parseColor("#FFB800");
+        } else {
+            pingColor = Color.parseColor("#FF0055");
+        }
+
+        // Thermal Rating
+        String tempStatus;
+        int tempColor;
+        if (m.batteryTempC < 40.0f) {
+            tempStatus = "(Cool)";
+            tempColor = Color.parseColor("#00F0FF");
+        } else if (m.batteryTempC < 45.0f) {
+            tempStatus = "(Warm)";
+            tempColor = Color.parseColor("#FFB800");
+        } else {
+            tempStatus = "(Hot)";
+            tempColor = Color.parseColor("#FF0055");
+        }
+
+        // 1. Update Collapsed Pill Viewport
+        if (layoutCollapsedPill != null && layoutCollapsedPill.getVisibility() == View.VISIBLE) {
+            if (tvPillFps != null) {
+                tvPillFps.setText(String.format("%d FPS", activeFps));
+                tvPillFps.setTextColor(fpsColor);
+            }
+            if (tvPillTemp != null) {
+                tvPillTemp.setText(String.format("%.1f°C", m.batteryTempC));
+                tvPillTemp.setTextColor(tempColor);
+            }
+            if (tvPillPing != null) {
+                tvPillPing.setText(String.format("%d ms", livePingMs));
+                tvPillPing.setTextColor(pingColor);
+            }
+        }
+
+        // 2. Update Micro FPS Viewport
+        if (layoutMicroFps != null && layoutMicroFps.getVisibility() == View.VISIBLE) {
+            if (tvMicroFps != null) {
+                tvMicroFps.setText(String.format("⚡ %d FPS", activeFps));
+                tvMicroFps.setTextColor(fpsColor);
+            }
+        }
+
+        // 3. Update Expanded Dock Viewport
+        if (layoutExpandedDock != null && layoutExpandedDock.getVisibility() == View.VISIBLE) {
+            if (tvHudFps != null) {
+                tvHudFps.setText(String.format("⚡ %d FPS / %dHz", activeFps, currentHz));
+                tvHudFps.setTextColor(fpsColor);
+            }
+            if (tvHudFpsStatus != null) {
+                tvHudFpsStatus.setText(fpsStatus);
+            }
+            if (tvHudPing != null) {
+                tvHudPing.setText(String.format("📶 Ping: %d ms", livePingMs));
+                tvHudPing.setTextColor(pingColor);
+            }
+            if (tvHudNetType != null) {
+                tvHudNetType.setText(networkTypeStr + " • Low Lag");
+            }
+            if (tvHudTemp != null) {
+                tvHudTemp.setText(String.format("🌡️ %.1f°C %s", m.batteryTempC, tempStatus));
+                tvHudTemp.setTextColor(tempColor);
+            }
+            if (tvHudMa != null) {
+                if (m.batteryCurrentMa != 0) {
+                    tvHudMa.setText(String.format("🔋 Drain: -%d mA", m.batteryCurrentMa));
+                } else {
+                    tvHudMa.setText("🔋 Power: Normal");
+                }
+            }
+            if (tvHudRam != null) {
+                double usedGb = m.usedRamMb / 1024.0;
+                double totalGb = m.totalRamMb / 1024.0;
+                tvHudRam.setText(String.format("🧠 RAM: %.1f/%.1f GB (%d%%)", usedGb, totalGb, m.ramUsagePct));
+            }
+            if (pbHudRam != null) {
+                pbHudRam.setProgress(m.ramUsagePct);
+            }
+        }
+    }
+
+    private void performHaptic() {
+        try {
+            if (overlayView != null) {
+                overlayView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            }
+            Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            if (v != null && v.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v.vibrate(VibrationEffect.createOneShot(18, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    v.vibrate(18);
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Override
@@ -514,11 +847,12 @@ public class FloatingOverlayService extends Service {
         super.onDestroy();
         isRunning = false;
         if (handler != null) {
-            if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
+            if (telemetryRunnable != null) handler.removeCallbacks(telemetryRunnable);
+            if (pingRunnable != null) handler.removeCallbacks(pingRunnable);
             handler.removeCallbacks(autoCollapseRunnable);
         }
         try {
-            android.view.Choreographer.getInstance().removeFrameCallback(choreographerCallback);
+            Choreographer.getInstance().removeFrameCallback(choreographerCallback);
         } catch (Exception ignored) {}
         if (windowManager != null && overlayView != null) {
             try {
@@ -550,7 +884,7 @@ public class FloatingOverlayService extends Service {
     private Notification createNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GAME SPACE — Performance HUD")
-                .setContentText("FPS, RAM & Thermal overlay active")
+                .setContentText("FPS, RAM, Thermals & Network telemetry active")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)

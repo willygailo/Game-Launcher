@@ -85,9 +85,6 @@
         <package android:name="com.dts.freefireth" />
         <package android:name="com.dts.freefiremax" />
         <package android:name="com.riotgames.league.wildrift" />
-        <package android:name="com.riotgames.league.teamfighttactics" />
-        <package android:name="com.riotgames.valorantmobile" />
-        <package android:name="com.tencent.tmgp.projectc" />
         <package android:name="com.levelinfinite.sgameGlobal" />
         <package android:name="com.tencent.tmgp.sgame" />
         <package android:name="com.garena.game.kgtw" />
@@ -96,19 +93,24 @@
         <package android:name="com.cognosphere.GenshinImpact" />
         <package android:name="com.HoYoverse.hkrpgoversea" />
         <package android:name="com.HoYoverse.nap" />
-        <package android:name="com.kurogame.wutheringwaves.global" />
         <package android:name="com.roblox.client" />
         <package android:name="com.axlebolt.standoff2" />
         <package android:name="com.netease.bloodstrike" />
+        <package android:name="com.netease.newspike" />
         <package android:name="com.miracle.farlight84" />
-        <package android:name="com.farlightgames.farlight84.gp" />
         <package android:name="com.proximabeta.mf.uamo" />
-        <package android:name="com.carxtech.sr" />
+        <package android:name="com.levelinfinite.deltaforce" />
+        <package android:name="com.activision.callofduty.warzone" />
+        <package android:name="com.h20.carxstreet" />
+        <package android:name="com.gameloft.anmp.android.glofta9hm" />
+        <package android:name="com.ea.games.r3_row" />
         <package android:name="com.supercell.brawlstars" />
         <package android:name="com.supercell.clashroyale" />
         <package android:name="com.supercell.clashofclans" />
-        <package android:name="com.ea.gp.fifamobile" />
-        <package android:name="com.ea.gp.apexlegendsmobilecms" />
+        <package android:name="com.supercell.squad" />
+        <package android:name="com.kurogame.wutheringwaves.global" />
+        <package android:name="com.tencent.tmgp.projectc" />
+        <package android:name="com.riotgames.valorantmobile" />
         <!-- Third-Party Gaming Platforms & App Stores -->
         <package android:name="com.taptap.global" />
         <package android:name="com.taptap" />
@@ -119,7 +121,6 @@
     </queries>
 
     <application
-        android:name=".GameBoosterApp"
         android:label="Game Booster"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
@@ -130,52 +131,21 @@
         android:isGame="true"
         android:appCategory="game"
         android:hasFragileUserData="false"
-        android:largeHeap="true"
-        android:resizeableActivity="true"
         android:enableOnBackInvokedCallback="true">
 
-        <!-- Display, Game Mode & Gaming Engine Metadata -->
+        <!-- Display & Gaming Engine Metadata -->
         <meta-data
             android:name="android.max_aspect"
-            android:value="3.0" />
-        <meta-data
-            android:name="android.min_aspect"
-            android:value="1.0" />
+            android:value="2.5" />
         <meta-data
             android:name="android.supports_size_changes"
             android:value="true" />
-        <meta-data
-            android:name="android.notch_support"
-            android:value="true" />
-        <meta-data
-            android:name="notch.config"
-            android:value="portrait,landscape" />
-        <meta-data
-            android:name="android.game_mode_config"
-            android:resource="@xml/game_mode_config" />
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/app_name" />
         <meta-data
             android:name="android.game_service"
             android:value="true" />
-        <meta-data
-            android:name="android.graphics.renderEngine"
-            android:value="vulkan" />
-        <meta-data
-            android:name="android.allow_multiple_res"
-            android:value="true" />
-
-        <!-- Android 14, 15 & 16 (API 34-36) Window & Compatibility Properties -->
-        <property
-            android:name="android.window.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED"
-            android:value="true" />
-        <property
-            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES"
-            android:value="true" />
-        <property
-            android:name="android.window.PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION"
-            android:value="false" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
@@ -238,10 +208,7 @@
             android:name="com.gamebooster.app.ui.screens.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:hardwareAccelerated="true"
-            android:resizeableActivity="true"
-            android:windowLayoutInDisplayCutoutMode="shortEdges"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|keyboard">
+            android:hardwareAccelerated="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -252,9 +219,7 @@
             android:name="com.gamebooster.app.terminal.TerminalActivity"
             android:exported="false"
             android:hardwareAccelerated="true"
-            android:resizeableActivity="true"
             android:windowSoftInputMode="adjustResize"
-            android:windowLayoutInDisplayCutoutMode="shortEdges"
             android:label="Shizuku Core Console" />
 
     </application>

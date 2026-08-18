@@ -151,6 +151,10 @@ public class ShizukuExecutor {
      */
     public static void executeShizukuCommands(java.util.List<String> commands) {
         if (commands == null || commands.isEmpty()) return;
+        if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            ShizukuUserServiceConnector.getInstance().executeBatchCommands(commands);
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         for (String cmd : commands) {
             if (cmd != null && !cmd.trim().isEmpty()) {

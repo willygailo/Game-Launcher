@@ -29,11 +29,12 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.mobilelegends.hw", new GameInfoSpec("Mobile Legends Huawei", "MOBA", 185));
         KNOWN_GAMES.put("com.mobile.legends.moonton", new GameInfoSpec("Mobile Legends Moonton", "MOBA", 185));
 
-        // Call of Duty: Mobile (CODM) & Regional Variants
+        // Call of Duty: Mobile (CODM) & Regional Variants & Warzone Mobile
         KNOWN_GAMES.put("com.activision.callofduty.shooter", new GameInfoSpec("Call of Duty: Mobile (Global)", "FPS", 185));
         KNOWN_GAMES.put("com.garena.game.codm", new GameInfoSpec("Call of Duty: Mobile (Garena)", "FPS", 185));
         KNOWN_GAMES.put("com.tencent.tmgp.kr.codm", new GameInfoSpec("Call of Duty: Mobile (KR)", "FPS", 185));
         KNOWN_GAMES.put("com.tencent.tmgp.cod", new GameInfoSpec("Call of Duty: Mobile (CN)", "FPS", 185));
+        KNOWN_GAMES.put("com.activision.callofduty.warzone", new GameInfoSpec("Call of Duty: Warzone Mobile", "Battle Royale", 185));
 
         // PUBG Mobile & Regional Variants
         KNOWN_GAMES.put("com.tencent.ig", new GameInfoSpec("PUBG Mobile (Global)", "Battle Royale", 185));
@@ -61,17 +62,21 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.garena.game.kgvn", new GameInfoSpec("Arena of Valor (VNG)", "MOBA", 185));
         KNOWN_GAMES.put("com.garena.game.kgid", new GameInfoSpec("Arena of Valor (ID)", "MOBA", 185));
 
-        // Genshin Impact & HoYoverse Titles
+        // Genshin Impact & HoYoverse & Kuro Titles
         KNOWN_GAMES.put("com.miHoYo.GenshinImpact", new GameInfoSpec("Genshin Impact (CN)", "Action RPG", 185));
         KNOWN_GAMES.put("com.cognosphere.GenshinImpact", new GameInfoSpec("Genshin Impact (Global)", "Action RPG", 185));
         KNOWN_GAMES.put("com.HoYoverse.hkrpgoversea", new GameInfoSpec("Honkai: Star Rail", "RPG", 185));
         KNOWN_GAMES.put("com.HoYoverse.nap", new GameInfoSpec("Zenless Zone Zero", "Action RPG", 185));
         KNOWN_GAMES.put("com.miHoYo.bh3oversea", new GameInfoSpec("Honkai Impact 3rd", "Action RPG", 185));
+        KNOWN_GAMES.put("com.kurogame.wutheringwaves.global", new GameInfoSpec("Wuthering Waves", "Action RPG", 185));
 
         // Roblox & FPS Competitors
         KNOWN_GAMES.put("com.roblox.client", new GameInfoSpec("Roblox", "Sandbox", 185));
         KNOWN_GAMES.put("com.axlebolt.standoff2", new GameInfoSpec("Standoff 2", "FPS", 185));
         KNOWN_GAMES.put("com.netease.bloodstrike", new GameInfoSpec("Blood Strike", "FPS", 185));
+        KNOWN_GAMES.put("com.netease.newspike", new GameInfoSpec("Blood Strike (NewSpike)", "FPS", 185));
+        KNOWN_GAMES.put("com.proximabeta.mf.uamo", new GameInfoSpec("Arena Breakout", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.levelinfinite.deltaforce", new GameInfoSpec("Delta Force", "Tactical FPS", 185));
 
         // Valorant Mobile (CN Server Project C & Global)
         KNOWN_GAMES.put("com.tencent.tmgp.projectc", new GameInfoSpec("Valorant Mobile (CN Project C)", "Tactical FPS", 185));
@@ -90,12 +95,14 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.ea.gp.fifamobile", new GameInfoSpec("EA SPORTS FC Mobile", "Sports", 185));
         KNOWN_GAMES.put("com.garena.game.fdtw", new GameInfoSpec("Speed Drifters (Garena)", "Racing", 185));
         KNOWN_GAMES.put("com.gameloft.anmp.android.glofta9hm", new GameInfoSpec("Asphalt 9: Legends", "Racing", 185));
-        // Tactical FPS, Open World & Racing Competitors
-        KNOWN_GAMES.put("com.proximabeta.mf.uamo", new GameInfoSpec("Delta Force: Hawk Ops", "Tactical FPS", 185));
-        KNOWN_GAMES.put("com.kurogame.wutheringwaves.global", new GameInfoSpec("Wuthering Waves", "Action RPG", 185));
-        KNOWN_GAMES.put("com.carxtech.sr", new GameInfoSpec("CarX Street (Global)", "Racing", 185));
-        KNOWN_GAMES.put("com.riotgames.league.teamfighttactics", new GameInfoSpec("TFT: Teamfight Tactics", "Strategy", 185));
-        KNOWN_GAMES.put("com.ea.gp.apexlegendsmobilecms", new GameInfoSpec("Apex Legends Mobile", "Battle Royale", 185));
+        KNOWN_GAMES.put("com.h20.carxstreet", new GameInfoSpec("CarX Street", "Racing", 185));
+        KNOWN_GAMES.put("com.ea.games.r3_row", new GameInfoSpec("Real Racing 3", "Racing", 185));
+
+        // Supercell Hits
+        KNOWN_GAMES.put("com.supercell.brawlstars", new GameInfoSpec("Brawl Stars", "Action", 185));
+        KNOWN_GAMES.put("com.supercell.clashroyale", new GameInfoSpec("Clash Royale", "Strategy", 185));
+        KNOWN_GAMES.put("com.supercell.clashofclans", new GameInfoSpec("Clash of Clans", "Strategy", 185));
+        KNOWN_GAMES.put("com.supercell.squad", new GameInfoSpec("Squad Busters", "Action", 185));
     }
 
     public static boolean isKnownGame(String packageName) {

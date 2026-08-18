@@ -4,11 +4,20 @@ import android.content.Context;
 import android.webkit.JavascriptInterface;
 
 import com.gamebooster.app.booster.PerformanceChannel;
-import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
+import com.gamebooster.app.device.DeviceInfoChannel;
+import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
+import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
+import com.gamebooster.app.spoofer.SpoofProfile;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.Set;
 
 public class GameBoosterJsInterface {
 
@@ -21,7 +30,7 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public String executeShizukuCmd(String command) {
         if (command == null || command.trim().isEmpty()) return "ERROR: Empty command";
-        return ShizukuExecutor.executeShizukuCommand(command.trim());
+        return CommandExecutor.executeSystemCommand(command.trim());
     }
 
     @JavascriptInterface
@@ -58,7 +67,7 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public void grantShizukuPermissions() {
         if (context != null) {
-            ShizukuExecutor.grantAppPermissionsViaShizuku(context);
+            ShizukuPermissionEnforcer.enforceAllPermissions(context);
         }
     }
 
@@ -72,18 +81,17 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public boolean applyDeviceSpoofProfile(String profileId, String packageName) {
         if (context == null || profileId == null) return false;
-        com.gamebooster.app.spoofer.SpoofProfile profile =
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.getAllProfiles().get(profileId);
+        SpoofProfile profile = DeviceSpooferEngine.getAllProfiles().get(profileId);
         if (profile == null) return false;
-        return com.gamebooster.app.spoofer.DeviceSpooferEngine.applyProfile(context, profile, packageName);
+        return DeviceSpooferEngine.applyProfile(context, profile, packageName);
     }
 
     @JavascriptInterface
     public String performDeepSearchJson() {
         if (context == null) return "[]";
         try {
-            java.util.Set<String> discovered = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
-            org.json.JSONArray array = new org.json.JSONArray();
+            Set<String> discovered = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
+            JSONArray array = new JSONArray();
             for (String pkg : discovered) {
                 array.put(pkg);
             }
@@ -96,8 +104,8 @@ public class GameBoosterJsInterface {
     @JavascriptInterface
     public String getAvailableSpoofProfilesJson() {
         try {
-            org.json.JSONArray array = new org.json.JSONArray();
-            for (com.gamebooster.app.spoofer.SpoofProfile p : com.gamebooster.app.spoofer.DeviceSpooferEngine.getAllProfiles().values()) {
+            JSONArray array = new JSONArray();
+            for (SpoofProfile p : DeviceSpooferEngine.getAllProfiles().values()) {
                 JSONObject obj = new JSONObject();
                 obj.put("id", p.id);
                 obj.put("name", p.displayName);
@@ -114,6 +122,11 @@ public class GameBoosterJsInterface {
         } catch (Exception e) {
             return "[]";
         }
+    }
+
+    @JavascriptInterface
+    public boolean isShizukuActive() {
+        return ShizukuManager.isShizukuRunningAndGranted();
     }
 
     @JavascriptInterface

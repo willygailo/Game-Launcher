@@ -119,12 +119,8 @@ public final class DisplayCapabilitiesDetector {
 
         boolean hdr = false, wideColor = false;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
-                hdr = defaultDisplay.getHdrCapabilities() != null;
-            }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                wideColor = defaultDisplay.isWideColorGamut();
-            }
+            hdr = defaultDisplay.getHdrCapabilities() != null;
+            wideColor = defaultDisplay.isWideColorGamut();
         } catch (Exception ignored) {}
 
         String vendor = "";

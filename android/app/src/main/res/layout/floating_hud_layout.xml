@@ -1,47 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
-    <!-- COLLAPSED PILL MODE -->
+    <!-- ================================================================= -->
+    <!-- VIEWPORT 1: COLLAPSED CYBER PILL MODE                             -->
+    <!-- ================================================================= -->
     <LinearLayout
         android:id="@+id/layout_collapsed_pill"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/card_glass_shape"
-        android:paddingStart="14dp"
-        android:paddingTop="9dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="9dp"
+        android:background="@drawable/hud_pill_bg"
+        android:paddingStart="12dp"
+        android:paddingTop="7dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="7dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:elevation="6dp"
+        android:elevation="10dp"
         android:visibility="visible">
 
+        <!-- Glowing Active Indicator -->
+        <View
+            android:id="@+id/view_pill_glow_dot"
+            android:layout_width="7dp"
+            android:layout_height="7dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/badge_neon_green" />
+
         <TextView
-            android:id="@+id/tv_pill_metrics"
+            android:id="@+id/tv_pill_fps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚡ 119 FPS | 38.5°C"
+            android:text="120 FPS"
             android:textColor="@color/accent_neon_green"
             android:textSize="12sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:text="•"
+            android:textColor="@color/text_muted"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tv_pill_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="38.5°C"
+            android:textColor="@color/accent_cyan"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:text="•"
+            android:textColor="@color/text_muted"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tv_pill_ping"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="24 ms"
+            android:textColor="@color/accent_amber"
+            android:textSize="11sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- EXPANDED GAME DOCK DASHBOARD MODE -->
+    <!-- ================================================================= -->
+    <!-- VIEWPORT 2: ULTRA-COMPACT MICRO FPS BADGE MODE                     -->
+    <!-- ================================================================= -->
     <LinearLayout
-        android:id="@+id/layout_expanded_dock"
-        android:layout_width="280dp"
+        android:id="@+id/layout_micro_fps"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/card_glass_shape"
-        android:orientation="vertical"
-        android:padding="14dp"
-        android:elevation="8dp"
+        android:background="@drawable/hud_micro_bg"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:elevation="10dp"
         android:visibility="gone">
 
-        <!-- HEADER -->
+        <TextView
+            android:id="@+id/tv_micro_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚡ 120 FPS"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ================================================================= -->
+    <!-- VIEWPORT 3: EXPANDED CYBER DOCK DASHBOARD MODE                     -->
+    <!-- ================================================================= -->
+    <LinearLayout
+        android:id="@+id/layout_expanded_dock"
+        android:layout_width="310dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/hud_card_bg"
+        android:orientation="vertical"
+        android:padding="14dp"
+        android:elevation="12dp"
+        android:visibility="gone">
+
+        <!-- HEADER BAR -->
         <LinearLayout
+            android:id="@+id/layout_hud_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -51,88 +126,240 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="⚡ GAME HUD TURBO PRO"
+                android:text="⚡ GAME SPACE HUD PRO"
                 android:textColor="@color/accent_cyan"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
+            <!-- Micro Viewport Toggle Button -->
             <TextView
-                android:id="@+id/tv_hud_collapse_btn"
+                android:id="@+id/btn_hud_micro_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔲"
+                android:textSize="13sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+            <!-- Minimize to Pill Button -->
+            <TextView
+                android:id="@+id/btn_hud_minimize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="➖"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+            <!-- Close Overlay Button -->
+            <TextView
+                android:id="@+id/btn_hud_close"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✖️"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:padding="10dp" />
+                android:textColor="@color/accent_red"
+                android:textSize="13sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="2dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
         </LinearLayout>
 
-        <!-- TELEMETRY METRICS GRID -->
+        <!-- PROFILE & REFRESH RATE BADGE -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical">
+            android:layout_marginTop="8dp"
+            android:background="@drawable/hud_chip_bg"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
-                android:id="@+id/tv_hud_fps"
+                android:id="@+id/tv_hud_profile_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚡ HUD FPS: 60 • Display: 60 Hz"
+                android:text="🔥 EXTREME 185Hz • GAME OPTIMIZED"
                 android:textColor="@color/accent_neon_green"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_hud_ram"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="🧠 Memory RAM: 42% Used"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tv_hud_temp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="🌡️ Battery Temp: 38.5°C"
-                android:textColor="@color/accent_orange"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tv_hud_ma"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="🔋 Power Current: -450 mA"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
         </LinearLayout>
 
-        <!-- IN-GAME QUICK ACTIONS ROW -->
+        <!-- TELEMETRY METRICS 2x2 GRID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <!-- Row 1: FPS + Ping -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- FPS Chip -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/hud_chip_bg"
+                    android:padding="7dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_hud_fps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚡ 120 FPS / 185Hz"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_hud_fps_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="🟢 Ultra Smooth"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="9sp" />
+                </LinearLayout>
+
+                <!-- Ping / Latency Chip -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/hud_chip_bg"
+                    android:padding="7dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_hud_ping"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📶 Ping: 24 ms"
+                        android:textColor="@color/accent_amber"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_hud_net_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="Wi-Fi • Low Latency"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="9sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Row 2: Thermals + RAM -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <!-- Thermals Chip -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/hud_chip_bg"
+                    android:padding="7dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_hud_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌡️ 38.5°C (Cool)"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_hud_ma"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="🔋 Power: -450 mA"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="9sp" />
+                </LinearLayout>
+
+                <!-- RAM Gauge Chip -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/hud_chip_bg"
+                    android:padding="7dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_hud_ram"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🧠 RAM: 4.1GB (51%)"
+                        android:textColor="@color/text_primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <ProgressBar
+                        android:id="@+id/pb_hud_ram"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="4dp"
+                        android:layout_marginTop="3dp"
+                        android:max="100"
+                        android:progress="51"
+                        android:progressDrawable="@drawable/hud_progress_ram" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- IN-GAME TURBO CONTROLS SECTION HEADER -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="IN-GAME QUICK TURBO ACTIONS"
+            android:layout_marginTop="10dp"
+            android:text="IN-GAME TURBO CONTROLS"
             android:textColor="@color/accent_cyan"
-            android:textSize="10sp"
-            android:textStyle="bold" />
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
 
+        <!-- 2x3 TACTILE ACTION BUTTONS GRID -->
+        <!-- Row 1: Clean RAM, 185Hz Extreme, Crosshair -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="5dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btn_hud_boost"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="3dp"
-                android:backgroundTint="@color/accent_cyan"
+                android:background="@drawable/hud_btn_cyber_primary"
                 android:padding="0dp"
                 android:text="⚡ CLEAN"
                 android:textColor="#000000"
@@ -142,35 +369,24 @@
             <Button
                 android:id="@+id/btn_hud_extreme"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="3dp"
-                android:backgroundTint="@color/accent_neon_green"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/hud_btn_cyber_accent"
                 android:padding="0dp"
-                android:text="🔥 MAX Hz"
+                android:text="🔥 185Hz"
                 android:textColor="#000000"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_dnd"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="3dp"
-                android:backgroundTint="@color/card_bg"
-                android:padding="0dp"
-                android:text="🚫 DND"
-                android:textColor="@color/text_primary"
                 android:textSize="10sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_hud_crosshair"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/card_bg"
+                android:layout_marginStart="3dp"
+                android:background="@drawable/hud_btn_cyber_dark"
                 android:padding="0dp"
                 android:text="🎯 AIM"
                 android:textColor="@color/accent_orange"
@@ -178,6 +394,54 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Row 2: DND, Ultra Touch 1000Hz, Low-Latency Net Boost -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_hud_dnd"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="🚫 DND"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_touch"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="⚡ TOUCH"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_net"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="📶 NET"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
     </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>

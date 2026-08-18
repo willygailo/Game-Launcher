@@ -35,7 +35,6 @@ public class RobloxConfigPatcher {
         String clientAppSettings = "{\n" +
                 "  \"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",\n" +
                 "  \"FIntTargetFPS\": " + forcedFps + ",\n" +
-                "  \"FFlagDebugDisableVsync\": \"True\",\n" +
                 "  \"FFlagDebugGraphicsDisableDirect3D11\": \"False\",\n" +
                 "  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n" +
                 "  \"FFlagFixGraphicsQuality\": \"True\",\n" +
@@ -52,7 +51,9 @@ public class RobloxConfigPatcher {
                 "  \"FFlagTouchSlopReduction\": \"True\",\n" +
                 "  \"FFlagGyroFastAim\": \"True\",\n" +
                 "  \"FIntGyroPollingRate\": 1000,\n" +
-                "  \"FFlagDisableCameraShake\": \"True\"\n" +
+                "  \"FFlagDisableCameraShake\": \"True\",\n" +
+                "  \"FFlagWeaponRecoilReduction\": \"True\",\n" +
+                "  \"FFlagDamageBoostMode\": \"True\"\n" +
                 "}\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -74,8 +75,6 @@ public class RobloxConfigPatcher {
                 "grep -qF '\"FIntTouchPollingRate\"' " + path + " || echo '  \"FIntTouchPollingRate\": 1000,' >> " + path + "; " +
                 "grep -qF '\"FFlagZeroTouchDelay\"' " + path + " || echo '  \"FFlagZeroTouchDelay\": \"True\",' >> " + path + "; " +
                 "grep -qF '\"FFlagTouchSlopReduction\"' " + path + " || echo '  \"FFlagTouchSlopReduction\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagDebugDisableVsync\"' " + path + " || echo '  \"FFlagDebugDisableVsync\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagDebugGraphicsPreferVulkan\"' " + path + " || echo '  \"FFlagDebugGraphicsPreferVulkan\": \"True\",' >> " + path + "; " +
                 "grep -qF '\"FFlagReduceInputLatency\"' " + path + " || echo '  \"FFlagReduceInputLatency\": \"True\",' >> " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
@@ -98,47 +97,22 @@ public class RobloxConfigPatcher {
                 "grep -qF '\"FFlagGyroFastAim\"' " + path + " || echo '  \"FFlagGyroFastAim\": \"True\",' >> " + path + "; " +
                 "grep -qF '\"FIntGyroPollingRate\"' " + path + " || echo '  \"FIntGyroPollingRate\": 1000,' >> " + path + "; " +
                 "grep -qF '\"FFlagDisableCameraShake\"' " + path + " || echo '  \"FFlagDisableCameraShake\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagDebugDisableVsync\"' " + path + " || echo '  \"FFlagDebugDisableVsync\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagDebugGraphicsPreferVulkan\"' " + path + " || echo '  \"FFlagDebugGraphicsPreferVulkan\": \"True\",' >> " + path;
+                "grep -qF '\"FFlagWeaponRecoilReduction\"' " + path + " || echo '  \"FFlagWeaponRecoilReduction\": \"True\",' >> " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Roblox Drone View Zoom 500 & 1000Hz Gyro applied for " + packageName);
+        Log.i(TAG, "Roblox Drone View Zoom 500, 1000Hz Gyro & Recoil Reduction applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        // Non-BR game: apply graphics/gyro/fov controls
         applyAimAssistConfig(packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
-        paths.add("/data/data/" + pkg + "/files/exe/ClientSettings/ClientAppSettings.json");
-        paths.add("/data/data/" + pkg + "/files/ClientSettings/ClientAppSettings.json");
-        paths.add("/data/data/" + pkg + "/files/AppSettings.json");
-        paths.add("/data/data/" + pkg + "/shared_prefs/AppStorage.xml");
-        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
-
-        // Deep Search discovered paths via Shizuku
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            try {
-                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
-                String output = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (output != null && !output.isEmpty()) {
-                    for (String line : output.split("\n")) {
-                        line = line.trim();
-                        if (!line.isEmpty() && !paths.contains(line)) {
-                            paths.add(line);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        return paths;
+        return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
     private static void forceWrite(String path, String content) {

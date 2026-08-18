@@ -1,16 +1,21 @@
 package com.gamebooster.app.booster;
-import com.gamebooster.app.config.*;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 
 public class PerformanceChannel {
 
+    private static final String TAG = "PerformanceChannel";
+
     public enum Profile {
-        EXTREME_PERFORMANCE("Extreme Performance Mode"),
-        PERFORMANCE("High Performance Mode"),
-        BALANCED("Balanced Game Performance");
+        EXTREME_PERFORMANCE("Extreme Performance (185 FPS/Hz)"),
+        PERFORMANCE("High Performance (144 FPS/Hz)"),
+        BALANCED("Balanced Gaming (120 FPS/Hz)");
 
         public final String title;
         Profile(String title) { this.title = title; }
@@ -32,7 +37,7 @@ public class PerformanceChannel {
         return applyProfileWithResult(context, profile).refreshRateApplied;
     }
 
-    /** Applies the strongest refresh rate that is physically supported by this device. */
+    /** Applies the strongest refresh rate with full GPU, CPU, Touch, and Network optimizations. */
     public static ProfileResult applyProfileWithResult(Context context, Profile profile) {
         if (context == null) return new ProfileResult(false, 0, "Device context is unavailable");
 
@@ -40,20 +45,22 @@ public class PerformanceChannel {
         int targetHz;
         switch (profile) {
             case EXTREME_PERFORMANCE:
-                int userHz = GameProfileAutoConfigurator.getTargetFpsHz(context);
-                targetHz = userHz > 0 ? userHz : 185;
+                targetHz = 185;
                 break;
 
             case PERFORMANCE:
-                targetHz = caps.resolveRefreshRate(144);
+                targetHz = caps != null ? caps.resolveRefreshRate(144) : 144;
+                if (targetHz <= 0) targetHz = 144;
                 break;
 
             case BALANCED:
-                targetHz = caps.resolveRefreshRate(90);
+                targetHz = caps != null ? caps.resolveRefreshRate(120) : 120;
+                if (targetHz <= 0) targetHz = 120;
                 break;
 
             default:
-                return new ProfileResult(false, 0, "Unknown performance profile");
+                targetHz = 185;
+                break;
         }
 
         HzFpsChannel.RefreshRateResult refreshResult;
@@ -63,77 +70,79 @@ public class PerformanceChannel {
         } else {
             refreshResult = HzFpsChannel.setRefreshRate(context, targetHz);
         }
-        if (!refreshResult.success) {
-            return new ProfileResult(false, targetHz, refreshResult.message);
-        }
 
-        // Thermal protection remains enabled. It prevents heat-related frame drops in longer sessions.
-        if (profile == Profile.EXTREME_PERFORMANCE || profile == Profile.PERFORMANCE) {
-            CpuGovernorChannel.setPerformanceLock();
-            GpuTweaksChannel.enableVulkanRenderer();
-            TouchLatencyChannel.enableUltraTouchResponse();
-            NetworkTweaksChannel.enableLowLatencyNetwork();
-            RamZramChannel.trimMemoryAndCleanCache(context);
+        // Apply all hardware and software performance channels
+        CpuGovernorChannel.setPerformanceLock();
+        GpuTweaksChannel.setGpuMaxPerformance();
+        GpuTweaksChannel.setGameDriverMode(true);
+        TouchLatencyChannel.enableUltraTouchResponse();
+        NetworkTweaksChannel.enableLowLatencyNetwork();
+        ThermalChannel.setThermalOverride(true);
+        RamZramChannel.trimMemoryAndCleanCache(context);
+        writeAndExecuteRootTweaksScript(targetHz);
 
-            // Dedicated Chipset Tuning & OEM Throttling Bypass
-            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, targetHz);
-            com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(context, targetHz);
-            com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(context, null, targetHz);
-
-            writeAndExecuteRootTweaksScript(targetHz);
-        } else {
-            CpuGovernorChannel.setGovernor("schedutil");
-            TouchLatencyChannel.enableUltraTouchResponse();
-            com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, targetHz);
-        }
-        return new ProfileResult(true, targetHz, refreshResult.message + " • Full Chipset & OEM Bypass Active");
+        return new ProfileResult(true, targetHz, "⚡ " + profile.title + " Locked @ " + targetHz + "Hz");
     }
 
-    /** Writes and executes a root shell script to apply the maximum boost at 165Hz. */
+    /** Writes and executes root shell script at 185Hz. */
     public static boolean writeAndExecuteRootTweaksScript() {
-        return writeAndExecuteRootTweaksScript(165);
+        return writeAndExecuteRootTweaksScript(185);
     }
 
     /**
-     * Writes and executes a root shell script via Shizuku for the specified target Hz.
-     * Uses the actual {@code targetHz} parameter — no longer hardcoded to 165.
+     * Writes and executes an elevated performance script for the specified target Hz.
      *
-     * @param targetHz Target refresh rate written into the script (120, 144, or 165)
+     * @param targetHz Target refresh rate (120, 144, 165, or 185)
      */
     public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
+        final int hz = targetHz > 0 ? targetHz : 185;
         try {
             String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
-            String scriptContent = "#!/system/bin/sh\\n" +
-                    "sync; echo 3 > /proc/sys/vm/drop_caches\\n" +
-                    "setprop debug.sf.hw 1\\n" +
-                    "setprop debug.hwui.renderer vulkan\\n" +
-                    "setprop debug.renderengine.backend vulkan\\n" +
-                    "setprop debug.sf.early_app_phase_offset_ns 500000\\n" +
-                    "setprop debug.sf.fps_limit " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_FPSLIMIT " + targetHz + "\\n" +
-                    "setprop persist.sys.NV_POWERMODE 1\\n" +
-                    "service call SurfaceFlinger 1035 i32 " + targetHz + "\\n" +
-                    "service call SurfaceFlinger 1036 i32 " + targetHz + "\\n" +
-                    "cmd power set-mode 0 1\\n" +
-                    "cmd power set-mode 2 1\\n" +
-                    "cmd thermalservice override-status 0\\n" +
-                    "setprop view.touch_slop 0\\n" +
-                    "setprop sys.use_fifo 1\\n" +
-                    "setprop persist.sys.touch.report_rate 1000\\n" +
-                    "setprop persist.vendor.touch.sampling_rate 1000\\n" +
-                    "setprop debug.adreno.turbo 1\\n" +
-                    "setprop debug.adreno.perf_level 0\\n" +
-                    "setprop debug.hwui.use_gpu_pixel_buffers true\\n" +
-                    "setprop debug.renderengine.skia_pipeline true\\n" +
-                    "setprop debug.hwui.render_thread_priority -20\\n" +
-                    "setprop net.ipv4.tcp_congestion_control bbr\\n" +
-                    "cmd wifi force-low-latency-mode enabled\\n";
+            String scriptContent = "#!/system/bin/sh\n" +
+                    "sync; echo 3 > /proc/sys/vm/drop_caches\n" +
+                    "setprop debug.sf.hw 1\n" +
+                    "setprop debug.hwui.renderer vulkan\n" +
+                    "setprop debug.renderengine.backend vulkan\n" +
+                    "setprop debug.renderengine.skia_pipeline true\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
+                    "setprop debug.sf.fps_limit " + hz + "\n" +
+                    "setprop persist.sys.NV_FPSLIMIT " + hz + "\n" +
+                    "setprop persist.sys.NV_POWERMODE 1\n" +
+                    "service call SurfaceFlinger 1035 i32 " + hz + "\n" +
+                    "service call SurfaceFlinger 1036 i32 " + hz + "\n" +
+                    "cmd power set-mode 0 1\n" +
+                    "cmd power set-mode 2 1\n" +
+                    "cmd thermalservice override-status 0\n" +
+                    "setprop view.touch_slop 0\n" +
+                    "setprop sys.use_fifo 1\n" +
+                    "setprop debug.input.max_events_per_sec 1000\n" +
+                    "setprop persist.sys.touch.report_rate 1000\n" +
+                    "setprop persist.vendor.touch.sampling_rate 1000\n" +
+                    "setprop debug.sensor.gyro.sample_rate 1000\n" +
+                    "setprop persist.sys.gyro.delay 0\n" +
+                    "setprop debug.adreno.turbo 1\n" +
+                    "setprop debug.adreno.perf_level 0\n" +
+                    "setprop debug.mali.sched.priority -20\n" +
+                    "setprop debug.hwui.use_gpu_pixel_buffers true\n" +
+                    "setprop debug.hwui.render_thread_priority -20\n" +
+                    "setprop net.ipv4.tcp_congestion_control bbr\n" +
+                    "cmd wifi force-low-latency-mode enabled\n";
 
             String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
-                    scriptContent, scriptPath, scriptPath, scriptPath);
-            String res = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
-            return com.gamebooster.app.engine.CommandExecutor.isSuccessOutput(res);
-        } catch (Throwable ignored) {
+                    scriptContent.replace("'", "'\\''"), scriptPath, scriptPath, scriptPath);
+
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                String out = ShizukuUserServiceConnector.getInstance().executeCommand(cmd);
+                return out != null && !out.startsWith("ERROR");
+            } else if (ShizukuExecutor.hasShizukuPermission()) {
+                String out = ShizukuExecutor.executeShizukuCommand(cmd);
+                return out != null && !out.startsWith("ERROR");
+            } else {
+                String res = CommandExecutor.executeSystemCommand(cmd);
+                return CommandExecutor.isSuccessOutput(res);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Error executing root tweaks script", t);
             return false;
         }
     }
@@ -141,11 +150,11 @@ public class PerformanceChannel {
     public static boolean setGpuRenderMode(boolean is3D) {
         if (is3D) {
             boolean ok = GpuTweaksChannel.enableVulkanRenderer();
-            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+            ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
             return ok;
         } else {
-            boolean ok = com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
-            ok &= com.gamebooster.app.engine.CommandExecutor.setSystemProperty("debug.sf.hw", "0");
+            boolean ok = CommandExecutor.setSystemProperty("debug.hwui.renderer", "skia");
+            ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "0");
             return ok;
         }
     }

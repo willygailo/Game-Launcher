@@ -1,5 +1,4 @@
 package com.gamebooster.app.games;
-import com.gamebooster.app.config.*;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +6,19 @@ import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import com.gamebooster.app.booster.PerformanceChannel;
-import com.gamebooster.app.gamespace.GameSpaceDndManager;
+import com.gamebooster.app.config.CfgProfileManager;
+import com.gamebooster.app.config.CompetitiveCfgProfile;
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
+import com.gamebooster.app.config.GameProfilePreferences;
+import com.gamebooster.app.config.GameSessionSettings;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.gamespace.AutoGameMonitorService;
+import com.gamebooster.app.gamespace.GameSpaceDndManager;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
+import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,48 +34,54 @@ public class GameLauncherHelper {
         String pkgName = game.getPackageName();
         if (pkgName == null || pkgName.trim().isEmpty()) return;
 
+        // Strict Shizuku Check: if Shizuku is not active, prompt the user
+        if (!ShizukuManager.isShizukuRunningAndGranted()) {
+            ShizukuManager.showShizukuPermissionDialog(context, "Game Auto-Boost (" + game.getLabel() + ")");
+            return;
+        }
+
         GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(context, pkgName);
         GameSessionSettings.begin(context, pkgName);
         AutoGameMonitorService.start(context);
 
-        // 1. Offload background optimizations to AppExecutors so launch is instant
-        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+        // 1. Offload privileged optimizations to AppExecutors so launch is instant
+        AppExecutors.getInstance().executeCommand(() -> {
             try {
-                com.gamebooster.app.shizuku.ShizukuExecutor.grantAppPermissionsViaShizuku(context);
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkgName);
+                ShizukuUserServiceConnector.getInstance().bindService();
+                ShizukuPermissionEnforcer.enforceAllPermissions(context);
+                ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(pkgName);
+
+                // Apply device spoofing / hardware mask
+                DeviceSpooferEngine.applySpoofing(context, pkgName);
 
                 // Auto-apply saved per-game Competitive CFG Profile (FPS + Super Touch + Shizuku Hz)
-                String gameKey = pkgName.contains("mobile.legends") || pkgName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                                 pkgName.contains("pubg") || pkgName.contains("tencent.ig") || pkgName.contains("imobile") || pkgName.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                                 pkgName.contains("cod") || pkgName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM :
-                                 pkgName.contains("freefire") || pkgName.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                                 pkgName.contains("genshin") || pkgName.contains("mihoyo") || pkgName.contains("cognosphere") || pkgName.contains("hoyoverse") || pkgName.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
-                                 pkgName.contains("sgame") || pkgName.contains("levelinfinite") || pkgName.contains("arenaofvalor") || pkgName.contains("kgtw") || pkgName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                                 pkgName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
-                                 pkgName.contains("projectc") || pkgName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                                 pkgName.contains("farlight") || pkgName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT :
-                                 pkgName.contains("deltaforce") || pkgName.contains("proximabeta.mf.uamo") ? CompetitiveCfgProfile.GAME_DELTAFORCE :
-                                 pkgName.contains("wuthering") || pkgName.contains("kurogame") ? CompetitiveCfgProfile.GAME_WUTHERING :
-                                 pkgName.contains("carx") ? CompetitiveCfgProfile.GAME_CARX :
-                                 pkgName.contains("apex") ? CompetitiveCfgProfile.GAME_APEX : CompetitiveCfgProfile.GAME_ALL;
+                String pkgLower = pkgName.toLowerCase();
+                String gameKey = pkgLower.contains("mobile.legends") || pkgLower.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
+                                 pkgLower.contains("pubg") || pkgLower.contains("tencent.ig") || pkgLower.contains("imobile") || pkgLower.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
+                                 pkgLower.contains("cod") || pkgLower.contains("callofduty") || pkgLower.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
+                                 pkgLower.contains("freefire") || pkgLower.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
+                                 pkgLower.contains("genshin") || pkgLower.contains("mihoyo") || pkgLower.contains("cognosphere") || pkgLower.contains("hoyoverse") || pkgLower.contains("hkrpg") || pkgLower.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
+                                 pkgLower.contains("wildrift") || pkgLower.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
+                                 pkgLower.contains("sgame") || pkgLower.contains("levelinfinite") || pkgLower.contains("arenaofvalor") || pkgLower.contains("kgtw") || pkgLower.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
+                                 pkgLower.contains("bloodstrike") || pkgLower.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
+                                 pkgLower.contains("standoff2") || pkgLower.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
+                                 pkgLower.contains("carx") || pkgLower.contains("glofta9hm") || pkgLower.contains("asphalt") || pkgLower.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
+                                 pkgLower.contains("uamo") || pkgLower.contains("arenabreakout") || pkgLower.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
+                                 pkgLower.contains("supercell") || pkgLower.contains("brawlstars") || pkgLower.contains("clashroyale") || pkgLower.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
+                                 pkgLower.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
+                                 pkgLower.contains("projectc") || pkgLower.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
+                                 pkgLower.contains("farlight") || pkgLower.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
+                
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);
 
-                int targetFps = GameProfileAutoConfigurator.getTargetFpsHz(context);
-                if (targetFps <= 0) targetFps = 185;
-
-                GameProfileAutoConfigurator.autoConfigGamePackage(context, pkgName, targetFps);
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetFps);
-                com.gamebooster.app.engine.RefreshRateOverrideEngine.applyRefreshRate(context, pkgName,
-                        com.gamebooster.app.engine.RefreshRateOverrideEngine.RefreshRateMode.fromFps(targetFps));
-                PerformanceChannel.applyProfile(context, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(targetFps);
+                int targetFps = cfgProf.getTargetFps() > 0 ? cfgProf.getTargetFps() : 120;
+                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(context, pkgName, targetFps);
                 GameSpaceDndManager.setGamingDndMode(context, profile.enableDnd);
-                com.gamebooster.app.booster.NetworkOptimizer.flushDnsCache();
             } catch (Throwable ignored) {}
         });
 
-        // 2. Perform 3-Tier Game Launch Fallback
+        // 2. Perform 3-Tier Game Launch
         boolean launched = false;
 
         // Tier 1: Standard Intent Launch
@@ -93,7 +109,7 @@ public class GameLauncherHelper {
         // Tier 3: Shizuku ADB Direct Launch Fallback (monkey -p <pkg> 1)
         if (!launched) {
             try {
-                String res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("monkey -p " + pkgName + " -c android.intent.category.LAUNCHER 1");
+                String res = ShizukuExecutor.executeShizukuCommand("monkey -p " + pkgName + " -c android.intent.category.LAUNCHER 1");
                 if (res != null && !res.startsWith("ERROR")) {
                     launched = true;
                 }
@@ -119,7 +135,7 @@ public class GameLauncherHelper {
 
         if (launched) {
             Toast.makeText(context, "⚡ LAUNCHED: " + game.getLabel() + " • "
-                    + profile.label + " up to " + targetFpsForToast(context, pkgName) + "Hz", Toast.LENGTH_SHORT).show();
+                    + profile.label + " up to " + targetFpsForToast(context, pkgName) + "Hz [SHIZUKU PRIVILEGED]", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(context, "Unable to launch " + game.getLabel(), Toast.LENGTH_SHORT).show();
         }

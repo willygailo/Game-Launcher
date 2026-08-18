@@ -6,13 +6,8 @@ pluginManagement {
     }
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
-    repositories {
-        google()
-        mavenCentral()
-    }
+plugins {
+    id "com.android.application" version "8.12.3" apply false
 }
 
-rootProject.name = "Game-Launcher-PRO"
-include ':app'
+include ":app"

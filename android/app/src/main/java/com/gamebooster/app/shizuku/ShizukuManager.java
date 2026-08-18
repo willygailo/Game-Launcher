@@ -52,6 +52,11 @@ public class ShizukuManager {
         if (requestCode == REQUEST_CODE_SHIZUKU) {
             boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
             Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
+            if (granted) {
+                try {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                } catch (Throwable ignored) {}
+            }
             notifyStateChanged(granted);
         }
     };
@@ -61,6 +66,8 @@ public class ShizukuManager {
         try {
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+            } else {
+                ShizukuUserServiceConnector.getInstance().bindService();
             }
         } catch (Exception ignored) {}
         notifyStateChanged(true);
@@ -91,6 +98,39 @@ public class ShizukuManager {
         } catch (Exception e) {
             Log.e(TAG, "Failed to unregister Shizuku binder listeners", e);
         }
+    }
+
+    /**
+     * Checks if Shizuku is currently running, binder is alive, and permission is granted.
+     * This is the master gatekeeper for all APK features.
+     */
+    public static boolean isShizukuRunningAndGranted() {
+        try {
+            if (!Shizuku.pingBinder()) return false;
+            return Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if Shizuku is fully operational, including the privileged AIDL UserService.
+     */
+    public static boolean isFullyOperational() {
+        return isShizukuRunningAndGranted() && (ShizukuUserServiceConnector.getInstance().isServiceConnected() || Shizuku.pingBinder());
+    }
+
+    /**
+     * Strict requirement check: returns true if Shizuku is available, or shows prompt dialog and returns false.
+     */
+    public static boolean requireShizuku(Context context, String featureTitle) {
+        if (isShizukuRunningAndGranted()) {
+            return true;
+        }
+        if (context != null) {
+            showShizukuPermissionDialog(context, featureTitle);
+        }
+        return false;
     }
 
     public static void requestShizukuPermission() {
@@ -141,11 +181,11 @@ public class ShizukuManager {
 
         boolean installed = isShizukuInstalled(context);
         String actionBtnText = installed ? "OPEN SHIZUKU MANAGER" : "INSTALL SHIZUKU";
-        String message = "'" + featureTitle + "' requires 1-Tap Shizuku ADB access for system-level acceleration.\n\n" +
-                (installed ? "Please authorize GAME BOOSTER inside the Shizuku app." : "Shizuku Manager is not installed on this device.");
+        String message = "'" + featureTitle + "' requires active Shizuku ADB access for privileged system control.\n\n" +
+                (installed ? "Please start and authorize GAME BOOSTER in Shizuku." : "Shizuku Manager is not installed on this device. Please install and start Shizuku.");
 
         new AlertDialog.Builder(context)
-                .setTitle("⚡ SHIZUKU ADB PERMISSION REQUIRED")
+                .setTitle("⚡ SHIZUKU ADB PRIVILEGE REQUIRED")
                 .setMessage(message)
                 .setPositiveButton(actionBtnText, (dialog, which) -> openOrInstallShizukuManager(context))
                 .setNegativeButton("CANCEL", null)

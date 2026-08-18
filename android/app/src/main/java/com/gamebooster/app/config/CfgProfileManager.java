@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,21 +18,25 @@ import java.util.List;
  * and applied via Shizuku (temporary full root) using the per-game patchers + Hz commands.
  *
  * Apply pipeline per profile:
- *   1. Force-write game config files via patcher.patchCompetitive()
- *   2. Inject super-fast touch into game config via patcher.applySuperFastTouch()
- *   3. Apply Shizuku system-level Hz force commands (if forceWriteSystemHz is enabled)
- *   4. Persist profile to SharedPreferences
+ *   1. Resolve dynamic config paths and ensure directory scaffolding via GameConfigPathResolver
+ *   2. Force-write game config files via patcher.patchCompetitive()
+ *   3. Inject super-fast zero-delay touch into game config via patcher.applySuperFastTouch()
+ *   4. Apply Aim Assist, Recoil Control, and Damage Scripts
+ *   5. Inject active hardware spoof profile if enabled
+ *   6. Apply Shizuku system-level Hz force commands (if forceWriteSystemHz is enabled)
+ *   7. Persist profile to SharedPreferences
  */
 public class CfgProfileManager {
 
-    private static final String TAG            = "CfgProfileManager";
-    private static final String PREFS_NAME     = "game_booster_cfg_profiles";
+    private static final String TAG              = "CfgProfileManager";
+    private static final String PREFS_NAME       = "game_booster_cfg_profiles";
     private static final String KEY_FPS_SUFFIX   = "_fps";
     private static final String KEY_TOUCH_SUFFIX = "_super_touch";
     private static final String KEY_HZ_SUFFIX    = "_force_hz";
     private static final String KEY_AIM_SUFFIX   = "_aim_assist";
     private static final String KEY_DMG_SUFFIX   = "_damage_script";
     private static final String KEY_RECOIL_SUFFIX = "_recoil_control";
+    private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
 
     // ─── Supported game packages per game key ────────────────────────────────
 
@@ -84,8 +89,7 @@ public class CfgProfileManager {
             "com.tencent.tmgp.sgame",
             "com.garena.game.kgtw",
             "com.garena.game.kgvn",
-            "com.garena.game.kgid",
-            "com.riotgames.league.wildrift"
+            "com.garena.game.kgid"
     );
 
     private static final List<String> ROBLOX_PACKAGES = Arrays.asList(
@@ -106,21 +110,38 @@ public class CfgProfileManager {
             "com.farlightgames.farlight84.global"
     );
 
-    private static final List<String> DELTAFORCE_PACKAGES = Arrays.asList(
-            "com.proximabeta.mf.uamo"
+    private static final List<String> BLOODSTRIKE_PACKAGES = Arrays.asList(
+            "com.netease.bloodstrike",
+            "com.netease.newspike"
     );
 
-    private static final List<String> WUTHERING_PACKAGES = Arrays.asList(
-            "com.kurogame.wutheringwaves.global"
+    private static final List<String> STANDOFF2_PACKAGES = Arrays.asList(
+            "com.axlebolt.standoff2"
+    );
+
+    private static final List<String> WILDRIFT_PACKAGES = Arrays.asList(
+            "com.riotgames.league.wildrift",
+            "com.riotgames.league.wildrifttw",
+            "com.riotgames.league.wildriftvn"
     );
 
     private static final List<String> CARX_PACKAGES = Arrays.asList(
-            "com.carxtech.sr",
-            "com.h20.carxstreet"
+            "com.h20.carxstreet",
+            "com.gameloft.anmp.android.glofta9hm",
+            "com.ea.games.r3_row",
+            "com.garena.game.fdtw"
     );
 
-    private static final List<String> APEX_PACKAGES = Arrays.asList(
-            "com.ea.gp.apexlegendsmobilecms"
+    private static final List<String> ARENABREAKOUT_PACKAGES = Arrays.asList(
+            "com.proximabeta.mf.uamo",
+            "com.levelinfinite.deltaforce"
+    );
+
+    private static final List<String> SUPERCELL_PACKAGES = Arrays.asList(
+            "com.supercell.brawlstars",
+            "com.supercell.clashroyale",
+            "com.supercell.clashofclans",
+            "com.supercell.squad"
     );
 
     // ─── Save / Load ─────────────────────────────────────────────────────────
@@ -137,6 +158,7 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_AIM_SUFFIX,    profile.isAimAssistEnabled());
         ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
         ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
+        ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.apply();
         Log.i(TAG, "Saved profile: " + profile);
     }
@@ -155,7 +177,8 @@ public class CfgProfileManager {
         boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
         boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil);
+        boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, mask);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -172,8 +195,17 @@ public class CfgProfileManager {
 
         List<String> packages = getPackagesForKey(gameKey);
         for (String pkg : packages) {
+            // Ensure parent directory scaffolding via GameConfigPathResolver
+            List<String> resolvedPaths = GameConfigPathResolver.getPathsForGame(pkg);
+            GameConfigPathResolver.ensureDirectoriesForPaths(resolvedPaths);
+
             boolean ok = applyToPackage(pkg, profile);
-            if (ok) patched++;
+            if (ok) {
+                patched++;
+                if (profile.isHardwareMaskEnabled()) {
+                    DeviceSpooferEngine.applySpoofing(context, pkg);
+                }
+            }
         }
 
         // System-level refresh rate force via Shizuku (applies globally, not per-package)
@@ -205,8 +237,14 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_HOK,
                 CompetitiveCfgProfile.GAME_ROBLOX,
                 CompetitiveCfgProfile.GAME_VALORANT,
-                CompetitiveCfgProfile.GAME_FARLIGHT}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true);
+                CompetitiveCfgProfile.GAME_FARLIGHT,
+                CompetitiveCfgProfile.GAME_BLOODSTRIKE,
+                CompetitiveCfgProfile.GAME_STANDOFF2,
+                CompetitiveCfgProfile.GAME_WILDRIFT,
+                CompetitiveCfgProfile.GAME_CARX,
+                CompetitiveCfgProfile.GAME_ARENABREAKOUT,
+                CompetitiveCfgProfile.GAME_SUPERCELL}) {
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -270,6 +308,9 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 GenshinConfigPatcher.applyAimAssistConfig(pkg);
             }
+            if (profile.isRecoilControlEnabled()) {
+                GenshinConfigPatcher.applyRecoilControlConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
             result = HokConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -278,6 +319,9 @@ public class CfgProfileManager {
             if (profile.isAimAssistEnabled()) {
                 HokConfigPatcher.applyAimAssistConfig(pkg);
             }
+            if (profile.isRecoilControlEnabled()) {
+                HokConfigPatcher.applyRecoilControlConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
             result = RobloxConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -285,6 +329,9 @@ public class CfgProfileManager {
             }
             if (profile.isAimAssistEnabled()) {
                 RobloxConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                RobloxConfigPatcher.applyRecoilControlConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_VALORANT.equals(key)) {
             result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
@@ -308,37 +355,89 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 FarlightConfigPatcher.applyRecoilControlConfig(pkg);
             }
-        } else if (CompetitiveCfgProfile.GAME_DELTAFORCE.equals(key)) {
-            result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
+        } else if (CompetitiveCfgProfile.GAME_BLOODSTRIKE.equals(key)) {
+            result = BloodStrikeConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
-                ValorantConfigPatcher.applySuperFastTouch(pkg);
+                BloodStrikeConfigPatcher.applySuperFastTouch(pkg);
             }
             if (profile.isAimAssistEnabled()) {
-                ValorantConfigPatcher.applyAimAssistConfig(pkg);
+                BloodStrikeConfigPatcher.applyAimAssistConfig(pkg);
             }
             if (profile.isRecoilControlEnabled()) {
-                ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+                BloodStrikeConfigPatcher.applyRecoilControlConfig(pkg);
             }
-        } else if (CompetitiveCfgProfile.GAME_WUTHERING.equals(key)) {
-            result = GenshinConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isMlbbDamageScriptEnabled()) {
+                BloodStrikeConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_STANDOFF2.equals(key)) {
+            result = Standoff2ConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
-                GenshinConfigPatcher.applySuperFastTouch(pkg);
+                Standoff2ConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                Standoff2ConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                Standoff2ConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                Standoff2ConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_WILDRIFT.equals(key)) {
+            result = WildRiftConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                WildRiftConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                WildRiftConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                WildRiftConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                WildRiftConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_CARX.equals(key)) {
-            result = FarlightConfigPatcher.patchCompetitive(pkg, fps);
+            result = CarXConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
-                FarlightConfigPatcher.applySuperFastTouch(pkg);
-            }
-        } else if (CompetitiveCfgProfile.GAME_APEX.equals(key)) {
-            result = PubgConfigPatcher.patchCompetitive(pkg, fps);
-            if (profile.isSuperFastTouchEnabled()) {
-                PubgConfigPatcher.applySuperFastTouch(pkg);
+                CarXConfigPatcher.applySuperFastTouch(pkg);
             }
             if (profile.isAimAssistEnabled()) {
-                PubgConfigPatcher.applyAimAssistConfig(pkg);
+                CarXConfigPatcher.applyAimAssistConfig(pkg);
             }
             if (profile.isRecoilControlEnabled()) {
-                PubgConfigPatcher.applyRecoilControlConfig(pkg);
+                CarXConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                CarXConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_ARENABREAKOUT.equals(key)) {
+            result = ArenaBreakoutConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                ArenaBreakoutConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                ArenaBreakoutConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+        } else if (CompetitiveCfgProfile.GAME_SUPERCELL.equals(key)) {
+            result = SupercellConfigPatcher.patchCompetitive(pkg, fps);
+            if (profile.isSuperFastTouchEnabled()) {
+                SupercellConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                SupercellConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                SupercellConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                SupercellConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else {
             // GAME_ALL: patch all target games with this profile
@@ -351,6 +450,12 @@ public class CfgProfileManager {
             result |= RobloxConfigPatcher.patchCompetitive(pkg, fps);
             result |= ValorantConfigPatcher.patchCompetitive(pkg, fps);
             result |= FarlightConfigPatcher.patchCompetitive(pkg, fps);
+            result |= BloodStrikeConfigPatcher.patchCompetitive(pkg, fps);
+            result |= Standoff2ConfigPatcher.patchCompetitive(pkg, fps);
+            result |= WildRiftConfigPatcher.patchCompetitive(pkg, fps);
+            result |= CarXConfigPatcher.patchCompetitive(pkg, fps);
+            result |= ArenaBreakoutConfigPatcher.patchCompetitive(pkg, fps);
+            result |= SupercellConfigPatcher.patchCompetitive(pkg, fps);
         }
 
         return result;
@@ -367,20 +472,23 @@ public class CfgProfileManager {
 
     private static List<String> getPackagesForKey(String gameKey) {
         switch (gameKey) {
-            case CompetitiveCfgProfile.GAME_MLBB:       return MLBB_PACKAGES;
-            case CompetitiveCfgProfile.GAME_PUBGM:      return PUBGM_PACKAGES;
-            case CompetitiveCfgProfile.GAME_CODM:       return CODM_PACKAGES;
-            case CompetitiveCfgProfile.GAME_FREEFIRE:   return FREEFIRE_PACKAGES;
-            case CompetitiveCfgProfile.GAME_GENSHIN:    return GENSHIN_PACKAGES;
-            case CompetitiveCfgProfile.GAME_HOK:        return HOK_PACKAGES;
-            case CompetitiveCfgProfile.GAME_ROBLOX:     return ROBLOX_PACKAGES;
-            case CompetitiveCfgProfile.GAME_VALORANT:   return VALORANT_PACKAGES;
-            case CompetitiveCfgProfile.GAME_FARLIGHT:   return FARLIGHT_PACKAGES;
-            case CompetitiveCfgProfile.GAME_DELTAFORCE: return DELTAFORCE_PACKAGES;
-            case CompetitiveCfgProfile.GAME_WUTHERING:  return WUTHERING_PACKAGES;
-            case CompetitiveCfgProfile.GAME_CARX:       return CARX_PACKAGES;
-            case CompetitiveCfgProfile.GAME_APEX:       return APEX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_MLBB:          return MLBB_PACKAGES;
+            case CompetitiveCfgProfile.GAME_PUBGM:         return PUBGM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_CODM:          return CODM_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FREEFIRE:      return FREEFIRE_PACKAGES;
+            case CompetitiveCfgProfile.GAME_GENSHIN:       return GENSHIN_PACKAGES;
+            case CompetitiveCfgProfile.GAME_HOK:           return HOK_PACKAGES;
+            case CompetitiveCfgProfile.GAME_ROBLOX:        return ROBLOX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_VALORANT:      return VALORANT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_FARLIGHT:      return FARLIGHT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_BLOODSTRIKE:   return BLOODSTRIKE_PACKAGES;
+            case CompetitiveCfgProfile.GAME_STANDOFF2:     return STANDOFF2_PACKAGES;
+            case CompetitiveCfgProfile.GAME_WILDRIFT:      return WILDRIFT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_CARX:          return CARX_PACKAGES;
+            case CompetitiveCfgProfile.GAME_ARENABREAKOUT: return ARENABREAKOUT_PACKAGES;
+            case CompetitiveCfgProfile.GAME_SUPERCELL:     return SUPERCELL_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
+            default:
                 List<String> all = new java.util.ArrayList<>();
                 all.addAll(MLBB_PACKAGES);
                 all.addAll(PUBGM_PACKAGES);
@@ -391,12 +499,13 @@ public class CfgProfileManager {
                 all.addAll(ROBLOX_PACKAGES);
                 all.addAll(VALORANT_PACKAGES);
                 all.addAll(FARLIGHT_PACKAGES);
-                all.addAll(DELTAFORCE_PACKAGES);
-                all.addAll(WUTHERING_PACKAGES);
+                all.addAll(BLOODSTRIKE_PACKAGES);
+                all.addAll(STANDOFF2_PACKAGES);
+                all.addAll(WILDRIFT_PACKAGES);
                 all.addAll(CARX_PACKAGES);
-                all.addAll(APEX_PACKAGES);
+                all.addAll(ARENABREAKOUT_PACKAGES);
+                all.addAll(SUPERCELL_PACKAGES);
                 return all;
-            default: return new java.util.ArrayList<>();
         }
     }
 }

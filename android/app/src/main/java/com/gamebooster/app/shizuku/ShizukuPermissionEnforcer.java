@@ -8,16 +8,15 @@ import com.gamebooster.app.core.AppExecutors;
 
 /**
  * ShizukuPermissionEnforcer — Unlocks all Android storage, data, obb,
- * restricted settings, overlay, and system permissions via elevated Shizuku shell in high-speed batches.
+ * restricted settings, overlay, and system permissions via elevated Shizuku shell.
  * Fully compatible with Android 11, 12, 13, 14, 15, and 16.
  */
 public class ShizukuPermissionEnforcer {
 
     private static final String TAG = "ShizukuPermEnforcer";
-    private static volatile boolean isEnforcing = false;
 
     /**
-     * Unlocks full file system access, legacy storage, appops, and system permissions in a single fast batch.
+     * Unlocks full file system access, legacy storage, appops, and system permissions.
      */
     public static void enforceAllPermissions(Context context) {
         if (context == null) return;
@@ -26,63 +25,55 @@ public class ShizukuPermissionEnforcer {
             return;
         }
 
-        if (isEnforcing) return;
-
         AppExecutors.getInstance().executeCommand(() -> {
-            isEnforcing = true;
             try {
                 String pkg = context.getPackageName();
-                Log.i(TAG, "Enforcing batch system & storage permissions for: " + pkg);
+                Log.i(TAG, "Enforcing full system & storage permissions for: " + pkg);
 
-                StringBuilder script = new StringBuilder();
+                // 1. Core Storage & File System Permissions
+                grantPermission(pkg, "android.permission.MANAGE_EXTERNAL_STORAGE");
+                grantPermission(pkg, "android.permission.READ_EXTERNAL_STORAGE");
+                grantPermission(pkg, "android.permission.WRITE_EXTERNAL_STORAGE");
 
-                // 1. Core Storage & Media Permissions
-                String[] permissions = new String[]{
-                        "android.permission.MANAGE_EXTERNAL_STORAGE",
-                        "android.permission.READ_EXTERNAL_STORAGE",
-                        "android.permission.WRITE_EXTERNAL_STORAGE",
-                        "android.permission.READ_MEDIA_IMAGES",
-                        "android.permission.READ_MEDIA_VIDEO",
-                        "android.permission.READ_MEDIA_AUDIO",
-                        "android.permission.WRITE_SECURE_SETTINGS",
-                        "android.permission.WRITE_SETTINGS",
-                        "android.permission.PACKAGE_USAGE_STATS",
-                        "android.permission.DUMP",
-                        "android.permission.BATTERY_STATS",
-                        "android.permission.MANAGE_GAME_MODE",
-                        "android.permission.OVERRIDE_WIFI_CONFIG",
-                        "android.permission.CHANGE_COMPONENT_ENABLED_STATE",
-                        "android.permission.CHANGE_NETWORK_STATE",
-                        "android.permission.FORCE_STOP_PACKAGES",
-                        "android.permission.CLEAR_APP_CACHE",
-                        "android.permission.REAL_GET_TASKS",
-                        "android.permission.SET_PROCESS_LIMIT",
-                        "android.permission.ACCESS_NOTIFICATION_POLICY",
-                        "android.permission.SCHEDULE_EXACT_ALARM",
-                        "android.permission.USE_EXACT_ALARM",
-                        "android.permission.SYSTEM_ALERT_WINDOW",
-                        "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
-                        "android.permission.REQUEST_INSTALL_PACKAGES",
-                        "android.permission.REQUEST_DELETE_PACKAGES",
-                        "android.permission.WAKE_LOCK",
-                        "android.permission.VIBRATE",
-                        "android.permission.DISABLE_KEYGUARD",
-                        "android.permission.REORDER_TASKS",
-                        "android.permission.EXPAND_STATUS_BAR",
-                        "android.permission.HIGH_SAMPLING_RATE_SENSORS",
-                        "android.permission.STATUS_BAR",
-                        "android.permission.INTERACT_ACROSS_USERS"
-                };
-
-                for (String perm : permissions) {
-                    script.append("pm grant ").append(pkg).append(" ").append(perm).append(" 2>/dev/null; ");
-                }
-
+                // 2. Android 13+ Granular Media Permissions
+                grantPermission(pkg, "android.permission.READ_MEDIA_IMAGES");
+                grantPermission(pkg, "android.permission.READ_MEDIA_VIDEO");
+                grantPermission(pkg, "android.permission.READ_MEDIA_AUDIO");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    script.append("pm grant ").append(pkg).append(" android.permission.POST_NOTIFICATIONS 2>/dev/null; ");
+                    grantPermission(pkg, "android.permission.POST_NOTIFICATIONS");
                 }
 
-                // 2. Complete AppOps Overrides
+                // 3. System Tuning, Secure Settings & UI Control
+                grantPermission(pkg, "android.permission.WRITE_SECURE_SETTINGS");
+                grantPermission(pkg, "android.permission.WRITE_SETTINGS");
+                grantPermission(pkg, "android.permission.PACKAGE_USAGE_STATS");
+                grantPermission(pkg, "android.permission.DUMP");
+                grantPermission(pkg, "android.permission.BATTERY_STATS");
+                grantPermission(pkg, "android.permission.MANAGE_GAME_MODE");
+                grantPermission(pkg, "android.permission.OVERRIDE_WIFI_CONFIG");
+                grantPermission(pkg, "android.permission.CHANGE_COMPONENT_ENABLED_STATE");
+                grantPermission(pkg, "android.permission.CHANGE_NETWORK_STATE");
+                grantPermission(pkg, "android.permission.FORCE_STOP_PACKAGES");
+                grantPermission(pkg, "android.permission.CLEAR_APP_CACHE");
+                grantPermission(pkg, "android.permission.REAL_GET_TASKS");
+                grantPermission(pkg, "android.permission.SET_PROCESS_LIMIT");
+                grantPermission(pkg, "android.permission.ACCESS_NOTIFICATION_POLICY");
+                grantPermission(pkg, "android.permission.SCHEDULE_EXACT_ALARM");
+                grantPermission(pkg, "android.permission.USE_EXACT_ALARM");
+                grantPermission(pkg, "android.permission.SYSTEM_ALERT_WINDOW");
+                grantPermission(pkg, "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS");
+                grantPermission(pkg, "android.permission.REQUEST_INSTALL_PACKAGES");
+                grantPermission(pkg, "android.permission.REQUEST_DELETE_PACKAGES");
+                grantPermission(pkg, "android.permission.WAKE_LOCK");
+                grantPermission(pkg, "android.permission.VIBRATE");
+                grantPermission(pkg, "android.permission.DISABLE_KEYGUARD");
+                grantPermission(pkg, "android.permission.REORDER_TASKS");
+                grantPermission(pkg, "android.permission.EXPAND_STATUS_BAR");
+                grantPermission(pkg, "android.permission.HIGH_SAMPLING_RATE_SENSORS");
+                grantPermission(pkg, "android.permission.STATUS_BAR");
+                grantPermission(pkg, "android.permission.INTERACT_ACROSS_USERS");
+
+                // 4. Complete AppOps Overrides (Scoped Storage Bypass & Unrestricted Background Execution)
                 String[] allAppOps = new String[]{
                         "MANAGE_EXTERNAL_STORAGE",
                         "READ_EXTERNAL_STORAGE",
@@ -112,45 +103,63 @@ public class ShizukuPermissionEnforcer {
                 };
 
                 for (String op : allAppOps) {
-                    script.append("cmd appops set ").append(pkg).append(" ").append(op).append(" allow 2>/dev/null; ");
+                    setAppOp(pkg, op, "allow");
                 }
 
-                // 3. Battery Optimization / Doze Mode Bypass
-                script.append("dumpsys deviceidle whitelist +").append(pkg).append(" 2>/dev/null; ");
-                script.append("cmd deviceidle whitelist +").append(pkg).append(" 2>/dev/null; ");
+                // 5. Battery Optimization / Doze Mode Bypass
+                ShizukuExecutor.executeShizukuCommand("dumpsys deviceidle whitelist +" + pkg);
+                ShizukuExecutor.executeShizukuCommand("cmd deviceidle whitelist +" + pkg);
 
-                // Execute entire batch in a single subshell invocation
-                ShizukuExecutor.executeShizukuCommand(script.toString());
+                // 6. Enforce permissions across all registered game packages
+                for (String gamePkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
+                    enforceGamePermissions(gamePkg);
+                }
 
-                Log.i(TAG, "⚡ All Shizuku system & storage privileges batch-enforced successfully!");
+                Log.i(TAG, "All Shizuku system & storage privileges enforced successfully!");
 
             } catch (Throwable t) {
                 Log.e(TAG, "Error enforcing Shizuku permissions", t);
-            } finally {
-                isEnforcing = false;
             }
         });
     }
 
     /**
-     * Unlocks storage permissions and AppOps for a specific target game package.
+     * Unlocks storage permissions and AppOps for target game packages to allow config file manipulation and 185 FPS unlock.
      */
     public static void enforceGamePermissions(String gamePackageName) {
         if (gamePackageName == null || gamePackageName.trim().isEmpty()) return;
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                String cmd = "pm grant " + gamePackageName + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null; " +
-                        "pm grant " + gamePackageName + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null; " +
-                        "pm grant " + gamePackageName + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null; " +
-                        "cmd appops set " + gamePackageName + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null; " +
-                        "cmd appops set " + gamePackageName + " LEGACY_STORAGE allow 2>/dev/null; " +
-                        "cmd appops set " + gamePackageName + " NO_ISOLATED_STORAGE allow 2>/dev/null; " +
-                        "cmd usage-stats set-app-standby-bucket " + gamePackageName + " active 2>/dev/null; " +
-                        "cmd deviceidle whitelist +" + gamePackageName + " 2>/dev/null; " +
-                        "cmd game mode performance " + gamePackageName + " 2>/dev/null; ";
-                ShizukuExecutor.executeShizukuCommand(cmd);
+                grantPermission(gamePackageName, "android.permission.READ_EXTERNAL_STORAGE");
+                grantPermission(gamePackageName, "android.permission.WRITE_EXTERNAL_STORAGE");
+                grantPermission(gamePackageName, "android.permission.MANAGE_EXTERNAL_STORAGE");
+                grantPermission(gamePackageName, "android.permission.WRITE_SETTINGS");
+                grantPermission(gamePackageName, "android.permission.SYSTEM_ALERT_WINDOW");
+
+                setAppOp(gamePackageName, "MANAGE_EXTERNAL_STORAGE", "allow");
+                setAppOp(gamePackageName, "READ_EXTERNAL_STORAGE", "allow");
+                setAppOp(gamePackageName, "WRITE_EXTERNAL_STORAGE", "allow");
+                setAppOp(gamePackageName, "LEGACY_STORAGE", "allow");
+                setAppOp(gamePackageName, "NO_ISOLATED_STORAGE", "allow");
+                setAppOp(gamePackageName, "RUN_IN_BACKGROUND", "allow");
+                setAppOp(gamePackageName, "RUN_ANY_IN_BACKGROUND", "allow");
+                setAppOp(gamePackageName, "AUTO_START", "allow");
+                setAppOp(gamePackageName, "SYSTEM_ALERT_WINDOW", "allow");
+
+                // Enable Game Mode performance intervention
+                ShizukuExecutor.executeShizukuCommand("cmd game mode performance " + gamePackageName);
+                ShizukuExecutor.executeShizukuCommand("cmd game set --fps 185 " + gamePackageName);
+                ShizukuExecutor.executeShizukuCommand("cmd window set-app-refresh-rate " + gamePackageName + " 185");
             } catch (Throwable ignored) {}
         });
+    }
+
+    private static void grantPermission(String pkg, String permission) {
+        ShizukuExecutor.executeShizukuCommand("pm grant " + pkg + " " + permission);
+    }
+
+    private static void setAppOp(String pkg, String op, String mode) {
+        ShizukuExecutor.executeShizukuCommand("cmd appops set " + pkg + " " + op + " " + mode);
     }
 }

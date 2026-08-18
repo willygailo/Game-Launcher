@@ -1,5 +1,4 @@
 package com.gamebooster.app.ui.screens;
-import com.gamebooster.app.config.*;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -16,15 +15,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.config.TweakPreferences;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.tweaks.TweakCategory;
 import com.gamebooster.app.tweaks.TweakItem;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
-import com.gamebooster.app.config.TweakPreferences;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.engine.EngineMode;
-import com.gamebooster.app.shizuku.ShizukuManager;
-
-import com.gamebooster.app.tweaks.TweakCategory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,9 +129,9 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         holder.tvTitle.setText(targetItem.getTitle());
         holder.tvDescription.setText(targetItem.getDescription());
 
-        boolean needsShizuku = targetItem.isRequiresShizuku();
-        holder.tvBadge.setText(isShizukuAlive ? "[SHIZUKU/ADB]" : "[ADVANCED ENGINE]");
-        holder.tvBadge.setTextColor(isShizukuAlive ? Color.parseColor("#00FF66") : Color.parseColor("#00F0FF"));
+        boolean hasShizuku = ShizukuManager.isShizukuRunningAndGranted();
+        holder.tvBadge.setText(hasShizuku ? "[SHIZUKU/PRIVILEGED]" : "[SHIZUKU REQUIRED]");
+        holder.tvBadge.setTextColor(hasShizuku ? Color.parseColor("#00FF66") : Color.parseColor("#FF4444"));
         holder.ivLock.setVisibility(View.GONE);
         holder.switchToggle.setAlpha(1.0f);
         holder.switchToggle.setEnabled(true);
@@ -153,11 +149,15 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (holder.isUpdatingProgrammatically) return;
 
-                // If Shizuku is available but not yet granted, request permission
-                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission() && com.gamebooster.app.shizuku.ShizukuExecutor.isShizukuAvailable()) {
-                    try {
-                        rikka.shizuku.Shizuku.requestPermission(1001);
-                    } catch (Throwable ignored) {}
+                // Strict Shizuku Gate: if Shizuku is not running or granted, prevent turning on
+                if (isChecked && !ShizukuManager.isShizukuRunningAndGranted()) {
+                    holder.isUpdatingProgrammatically = true;
+                    buttonView.setChecked(false);
+                    targetItem.setApplied(false);
+                    TweakPreferences.saveTweakState(context, targetItem.getId(), false);
+                    holder.isUpdatingProgrammatically = false;
+                    ShizukuManager.showShizukuPermissionDialog(context, targetItem.getTitle());
+                    return;
                 }
 
                 // 1. Immediately persist & animate state

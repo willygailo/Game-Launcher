@@ -10,6 +10,7 @@ import com.gamebooster.app.booster.HzFpsChannel;
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,32 +76,27 @@ public class GameProfileAutoConfigurator {
         // 5. Auto-patch and create game configuration files for target FPS/Hz
         GameConfigPatcher.applyGameFpsPatch(packageName, forcedFpsHz);
 
-        // 6. Apply Chipset Turbo, OEM Bypass, and Version-Specific optimizers
-        com.gamebooster.app.chipset.ChipsetOptimizerEngine.applyChipsetOptimization(context, forcedFpsHz);
-        com.gamebooster.app.oem.OemBypassEngine.applyOemBypass(context, forcedFpsHz);
-        com.gamebooster.app.version.AndroidVersionOptimizer.applyVersionOptimizations(context, packageName, forcedFpsHz);
-
-        // 7. Background Ahead-Of-Time (AOT) Speed Compilation to eradicate JIT micro-stutter
-        com.gamebooster.app.dexopt.DexoptCompilationEngine.compileGameSpeedAsync(packageName, null);
-
-        // 8. Apply Competitive CFG Profile
+        // 6. Apply Competitive CFG Profile
         String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
                          packageName.contains("pubg") || packageName.contains("tencent.ig") || pkgContains(packageName, "imobile", "vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         packageName.contains("cod") || packageName.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM :
+                         packageName.contains("cod") || packageName.contains("callofduty") || packageName.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
                          packageName.contains("freefire") || packageName.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                         packageName.contains("genshin") || packageName.contains("mihoyo") || packageName.contains("cognosphere") || packageName.contains("hoyoverse") || packageName.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
+                         packageName.contains("genshin") || packageName.contains("mihoyo") || packageName.contains("cognosphere") || packageName.contains("hoyoverse") || packageName.contains("hkrpg") || packageName.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
+                         packageName.contains("wildrift") || packageName.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
                          packageName.contains("sgame") || packageName.contains("levelinfinite") || packageName.contains("arenaofvalor") || packageName.contains("kgtw") || packageName.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
+                         packageName.contains("bloodstrike") || packageName.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
+                         packageName.contains("standoff2") || packageName.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
+                         packageName.contains("carx") || packageName.contains("glofta9hm") || packageName.contains("asphalt") || packageName.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
+                         packageName.contains("uamo") || packageName.contains("arenabreakout") || packageName.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
+                         packageName.contains("supercell") || packageName.contains("brawlstars") || packageName.contains("clashroyale") || packageName.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
                          packageName.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
                          packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT :
-                         packageName.contains("deltaforce") || packageName.contains("proximabeta.mf.uamo") ? CompetitiveCfgProfile.GAME_DELTAFORCE :
-                         packageName.contains("wuthering") || packageName.contains("kurogame") ? CompetitiveCfgProfile.GAME_WUTHERING :
-                         packageName.contains("carx") ? CompetitiveCfgProfile.GAME_CARX :
-                         packageName.contains("apex") ? CompetitiveCfgProfile.GAME_APEX : CompetitiveCfgProfile.GAME_ALL;
+                         packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
         
-        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true);
+        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true, true, true, true, true, true, true);
         if (context != null) {
             CfgProfileManager.applyProfile(context, gameKey, profile);
+            DeviceSpooferEngine.applySpoofing(context, packageName);
         }
 
         return true;
@@ -119,7 +115,7 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Applies target FPS and Hz (120 / 144 / 165) to all detected games and display.
+     * Applies target FPS and Hz (120 / 144 / 165 / 185) to all detected games and display.
      */
     public static void autoConfigAllGamesAsync(Context context, int targetFpsHz, OnAutoConfigListener listener) {
         if (context == null) return;

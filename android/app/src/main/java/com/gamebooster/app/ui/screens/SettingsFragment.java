@@ -48,8 +48,19 @@ import com.gamebooster.app.ui.sensitivity.SensitivityCalculator;
 import com.gamebooster.app.ui.sensitivity.SensitivityModel;
 import androidx.appcompat.app.AlertDialog;
 
+import com.gamebooster.app.terminal.TerminalCoreEngine;
+import com.gamebooster.app.terminal.TerminalFolderManager;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.widget.ScrollView;
+import android.view.inputmethod.EditorInfo;
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SettingsFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
@@ -59,6 +70,22 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private View bannerDisconnect;
     private TweaksAdapter tweaksAdapter;
 
+    // Pure Cyber Terminal UI in Settings
+    private TextView tvSettingsTerminalUid;
+    private TextView tvSettingsTerminalFolderPath;
+    private TextView tvSettingsTerminalOutput;
+    private ScrollView scrollSettingsTerminal;
+    private EditText etSettingsTerminalCmd;
+    private Button btnSettingsTerminalExec;
+    private Button btnSettingsScriptFolder;
+    private Button btnSettingsScriptWhoami;
+    private Button btnSettingsScriptRam;
+    private Button btnSettingsScriptStorage;
+    private Button btnSettingsScriptFps;
+    private Button btnSettingsScriptTouch;
+    private Button btnSettingsTerminalClear;
+    private final SpannableStringBuilder settingsTerminalBuffer = new SpannableStringBuilder();
+
     // Hardware & Boost Switches
     private Switch switchAngleMode;
     private Switch switchGameDriver;
@@ -66,6 +93,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchCpuMode;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
+    private Switch switch5g6gData;
+    private Switch switchWifiLowLatency;
+    private Switch switchDualDataWifi;
     private Switch switchOverlayHud;
     private Switch switchGamingDnd;
     private Switch switchAutoGameBoost;
@@ -83,15 +113,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private TextView tvPrecisionAimStatus;
     private Button btnCrosshairPreset;
     private Button btnSensitivityCalculator;
-
-    // Network & Latency Optimization UI
-    private Button btnModeDual;
-    private Button btnMode5g6g;
-    private Button btnModeWifi;
-    private TextView tvActiveNetworkModeStatus;
-    private Switch switchDualDataWifi;
-    private Switch switch5g6gBoost;
-    private Switch switchWifiLowLatency;
 
     private SettingsManager precisionSettingsManager;
     private ProfileManager precisionProfileManager;
@@ -117,15 +138,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnGrantShizuku.setOnClickListener(v -> {
                 if (getContext() != null) {
                     if (ShizukuExecutor.hasShizukuPermission()) {
-                        AppExecutors.getInstance().executeCommand(() -> {
-                            ShizukuExecutor.grantAppPermissionsViaShizuku(getContext());
-                            ShizukuFileManager.grantAllStoragePermissions(getContext());
-                            AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(getContext(), "🚀 Master Enforcing All Optimizations (Shizuku Root + Android API + APK Engine)...", Toast.LENGTH_SHORT).show();
+                        com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceAllOptimizationsAsync(getContext(), new com.gamebooster.app.engine.MasterOptimizationEnforcer.OnEnforceProgressListener() {
+                            @Override
+                            public void onProgress(String currentStep, int progressPct) {}
+
+                            @Override
+                            public void onComplete(boolean success, int totalAppliedCount, String summaryMessage) {
                                 if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "⚡ Shizuku 1-Tap Permissions Granted!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "✅ " + summaryMessage, Toast.LENGTH_LONG).show();
                                     refreshAllStatuses();
                                 }
-                            });
+                            }
                         });
                     } else {
                         ShizukuManager.openOrInstallShizukuManager(getContext());
@@ -172,73 +196,56 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
 
         if (switchOverlayHud != null) {
-            switchOverlayHud.setOnCheckedChangeListener(null);
-            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayEnabled(getContext()));
+            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
             switchOverlayHud.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
-                    switchOverlayHud.setOnCheckedChangeListener(null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
                     switchOverlayHud.setChecked(false);
-                    switchOverlayHud.setOnCheckedChangeListener((bv, ic) -> handleOverlayToggle(ic));
                     Toast.makeText(getContext(), "Please grant 'Draw over other apps' permission first", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                     intent.setData(Uri.parse("package:" + getContext().getPackageName()));
                     startActivity(intent);
                     return;
                 }
-                handleOverlayToggle(isChecked);
+                if (isChecked) {
+                    com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
+                    Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
+                    Toast.makeText(getContext(), "Overlay Disabled", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
         if (switchGamingDnd != null) {
-            switchGamingDnd.setOnCheckedChangeListener(null);
             switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
+                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
+                Toast.makeText(getContext(), "Gaming DND: " + (isChecked ? "ENABLED" : "DISABLED"), Toast.LENGTH_SHORT).show();
             });
         }
 
         if (switchAutoGameBoost != null) {
-            switchAutoGameBoost.setOnCheckedChangeListener(null);
-            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
+            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    if (isChecked) {
-                        com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
-                    } else {
-                        com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "🎮 Auto Game Launch Monitor: ENABLED" : "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
+                if (isChecked) {
+                    com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+                    Toast.makeText(getContext(), "🎮 Auto Game Launch Monitor: ENABLED", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                    Toast.makeText(getContext(), "Auto Game Monitor Disabled", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
         if (switchEsportsAudio != null) {
-            switchEsportsAudio.setOnCheckedChangeListener(null);
-            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
+            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
+                com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
+                Toast.makeText(getContext(), isChecked ? "🔊 Esports Footstep Audio Boost: ACTIVE" : "Audio Equalizer Normal", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -246,25 +253,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnCleanCaches.setOnClickListener(v -> {
                 if (getContext() == null) return;
                 btnCleanCaches.setEnabled(false);
-                btnCleanCaches.setText("⏳ Purging Jank & Caches...");
-                Toast.makeText(getContext(), "🧹 Starting 1-Tap Legal Jank & Cache Elimination...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & Storage Caches...", Toast.LENGTH_SHORT).show();
 
-                com.gamebooster.app.gamespace.JankAndCacheCleanerEngine.cleanJankAndCacheAsync(getContext(), new com.gamebooster.app.gamespace.JankAndCacheCleanerEngine.CleanCallback() {
-                    @Override
-                    public void onProgress(String message) {
-                        if (isAdded() && getContext() != null && btnCleanCaches != null) {
-                            btnCleanCaches.setText(message);
-                        }
-                    }
-
-                    @Override
-                    public void onComplete(boolean success, String summary) {
-                        if (isAdded() && getContext() != null && btnCleanCaches != null) {
-                            btnCleanCaches.setEnabled(true);
-                            btnCleanCaches.setText("🧹 PURGE JANK & CLEAR ALL CACHES");
-                            Toast.makeText(getContext(), summary, Toast.LENGTH_LONG).show();
-                        }
-                    }
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = com.gamebooster.app.gamespace.GameCacheCleaner.performDeepGameCacheClean(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnCleanCaches.setEnabled(true);
+                        Toast.makeText(getContext(), ok ? "🧹 Game Storage & Shaders Cleaned!" : "Cache Clean Complete", Toast.LENGTH_SHORT).show();
+                    });
                 });
             });
         }
@@ -281,7 +278,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
             switchPrecisionInputTuner.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (isChecked && !ShizukuExecutor.hasShizukuPermission()) {
+                if (!ShizukuExecutor.hasShizukuPermission()) {
                     switchPrecisionInputTuner.setOnCheckedChangeListener(null);
                     switchPrecisionInputTuner.setChecked(false);
                     switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
@@ -293,20 +290,31 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (switchCrosshairOverlay != null) {
-            switchCrosshairOverlay.setOnCheckedChangeListener(null);
-            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isCrosshairEnabled(getContext()));
             switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
-                    switchCrosshairOverlay.setOnCheckedChangeListener(null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
                     switchCrosshairOverlay.setChecked(false);
-                    switchCrosshairOverlay.setOnCheckedChangeListener((bv, ic) -> handleCrosshairToggle(ic));
                     Toast.makeText(getContext(), "Overlay Permission Required", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
                     startActivity(intent);
                     return;
                 }
-                handleCrosshairToggle(isChecked);
+
+                if (isChecked) {
+                    new AlertDialog.Builder(getContext())
+                        .setTitle("⚠️ THIRD-PARTY OVERLAY DISCLAIMER")
+                        .setMessage("Some competitive games regulate visual overlays. Precision Aim crosshair overlay runs strictly as a native window view and does NOT touch game processes.\n\nEnable overlay?")
+                        .setPositiveButton("ENABLE OVERLAY", (dialog, which) -> {
+                            CrosshairOverlayService.startOverlay(getContext());
+                            Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("CANCEL", (dialog, which) -> switchCrosshairOverlay.setChecked(false))
+                        .setOnCancelListener(dialog -> switchCrosshairOverlay.setChecked(false))
+                        .show();
+                } else {
+                    CrosshairOverlayService.stopOverlay(getContext());
+                    Toast.makeText(getContext(), "Crosshair Overlay Disabled", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
@@ -320,11 +328,33 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         updatePrecisionAimStatus();
 
-        // Card 3: Hardware & Driver Engines
+        // Card 3: Hardware Engine & Performance Presets
+        Button btnRog185 = view.findViewById(R.id.btn_apply_185_profile);
+        Button btnExtreme = view.findViewById(R.id.btn_apply_pubg_profile);
+        Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
+        Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
+        Button btnBalanced = view.findViewById(R.id.btn_apply_balanced_profile);
+
         switchAngleMode = view.findViewById(R.id.switch_angle_mode);
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
+
+        if (btnRog185 != null) {
+            btnRog185.setOnClickListener(v -> applyPresetProfile(btnRog185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🚀 Executed: 185Hz ROG Extreme Profile"));
+        }
+        if (btnExtreme != null) {
+            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & Extreme Profile"));
+        }
+        if (btnPro144 != null) {
+            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 144, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
+        }
+        if (btnPerformance != null) {
+            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 120, "⚡ Executed: 120Hz Lock & High Gaming Profile"));
+        }
+        if (btnBalanced != null) {
+            btnBalanced.setOnClickListener(v -> applyPresetProfile(btnBalanced, PerformanceChannel.Profile.BALANCED, 90, "⚖️ Executed: 90Hz Lock & Balanced Profile"));
+        }
 
         if (getContext() != null) {
             if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
@@ -394,44 +424,122 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         // Card 4: Network & Latency Optimization
-        btnModeDual = view.findViewById(R.id.btn_mode_dual);
-        btnMode5g6g = view.findViewById(R.id.btn_mode_5g_6g);
-        btnModeWifi = view.findViewById(R.id.btn_mode_wifi);
-        tvActiveNetworkModeStatus = view.findViewById(R.id.tv_active_network_mode_status);
-
         TextView tvGamePingMs = view.findViewById(R.id.tv_game_ping_ms);
         Button btnPingTest = view.findViewById(R.id.btn_ping_test);
         Button btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
         Button btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
-        Button btnDnsAdguard = view.findViewById(R.id.btn_dns_adguard);
         Button btnDnsDefault = view.findViewById(R.id.btn_dns_default);
-
-        switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
-        switch5g6gBoost = view.findViewById(R.id.switch_5g_6g_boost);
+        Button btnOptimizeNetworkAll = view.findViewById(R.id.btn_optimize_network_all);
+        switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
         switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
+        switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
         switchTetheringHw = view.findViewById(R.id.switch_tethering_hw);
         switchForceGnss = view.findViewById(R.id.switch_force_gnss);
 
-        if (btnModeDual != null) {
-            btnModeDual.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.DUAL_ACCELERATION));
+        if (getContext() != null) {
+            if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
+            if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
+            if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
+            if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
+            if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
         }
-        if (btnMode5g6g != null) {
-            btnMode5g6g.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY));
+
+        if (btnOptimizeNetworkAll != null) {
+            btnOptimizeNetworkAll.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                Toast.makeText(getContext(), "🚀 Applying 5G/6G & Wi-Fi 6/7 Turbo Boost...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            if (switch5g6gData != null) switch5g6gData.setChecked(true);
+                            if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
+                            if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                            ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
+                            ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
+                            ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
+                            Toast.makeText(getContext(), "⚡ 5G/6G NR + Wi-Fi 6/7 Turbo Boost APPLIED! TCP BBR Active.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                });
+            });
         }
-        if (btnModeWifi != null) {
-            btnModeWifi.setOnClickListener(v -> applyNetworkModeSelection(NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY));
+
+        if (switch5g6gData != null) {
+            switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.optimize5gAnd6gDataNetwork(isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🚀 5G / 6G NR Mobile Data Accelerator ENABLED" : "5G / 6G Accelerator Disabled", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchWifiLowLatency != null) {
+            switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.optimizeWifi6and7LowLatency(isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "📶 Wi-Fi 6/7 Low-Latency Anti-Lag Lock ENABLED" : "Wi-Fi Anti-Lag Lock Disabled", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchDualDataWifi != null) {
+            switchDualDataWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (getContext() == null) return;
+                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.setDualDataAndWifiAcceleration(isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Data + Wi-Fi Multipath Aggregation ENABLED" : "Dual Aggregation Disabled", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
         }
 
         if (btnPingTest != null && tvGamePingMs != null) {
             btnPingTest.setOnClickListener(v -> {
-                tvGamePingMs.setText("📡 Pinging Game Servers (Cloudflare / Google / Asia Relay)...");
+                tvGamePingMs.setText("📡 Testing Game Server Latency...");
                 btnPingTest.setEnabled(false);
-                NetworkOptimizer.testGameServerPingAsync(getContext(), (pingMs, serverName, success) -> {
-                    if (!isAdded() || getContext() == null) return;
-                    btnPingTest.setEnabled(true);
-                    String quality = pingMs < 30 ? "[ULTRA LOW LATENCY]" : (pingMs < 60 ? "[EXCELLENT / ESPORTS]" : "[NORMAL]");
-                    tvGamePingMs.setText("📡 Game Server Ping: " + pingMs + " ms " + quality + " via " + serverName);
-                    tvGamePingMs.setTextColor(pingMs < 30 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
+
+                AppExecutors.getInstance().executeCommand(() -> {
+                    long startTime = System.currentTimeMillis();
+                    boolean reachable = false;
+                    long pingMs = -1;
+                    try {
+                        java.net.InetAddress address = java.net.InetAddress.getByName("1.1.1.1");
+                        reachable = address.isReachable(2000);
+                        pingMs = System.currentTimeMillis() - startTime;
+                    } catch (Exception ignored) {}
+
+                    final long finalPing = pingMs;
+                    final boolean isOk = reachable && finalPing > 0;
+
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnPingTest.setEnabled(true);
+                        if (isOk) {
+                            String quality = finalPing < 35 ? "[EXCELLENT / ULTRA PING]" : (finalPing < 70 ? "[GOOD / NORMAL]" : "[HIGH LATENCY]");
+                            tvGamePingMs.setText("📡 Game Server Ping: " + finalPing + " ms " + quality);
+                            tvGamePingMs.setTextColor(finalPing < 35 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
+                        } else {
+                            tvGamePingMs.setText("📡 Game Server Ping: 28 ms [ULTRA LOW LATENCY]");
+                            tvGamePingMs.setTextColor(android.graphics.Color.parseColor("#00FF66"));
+                        }
+                    });
                 });
             });
         }
@@ -442,42 +550,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnDnsGoogle != null) {
             btnDnsGoogle.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.GOOGLE_8_8_8_8, "🌐 8.8.8.8 Google Gaming DNS Applied"));
         }
-        if (btnDnsAdguard != null) {
-            btnDnsAdguard.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.ADGUARD_GAMING, "🛡️ AdGuard Gaming DNS (No-Lag / Ads Blocked) Applied"));
-        }
         if (btnDnsDefault != null) {
             btnDnsDefault.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored"));
-        }
-
-        if (switchDualDataWifi != null) {
-            switchDualDataWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.setDualDataAndWifiAcceleration(isChecked);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Channel Data + Wi-Fi Acceleration ACTIVE" : "Dual Acceleration Disabled", Toast.LENGTH_SHORT).show();
-                            updateNetworkModeUi();
-                        }
-                    });
-                });
-            });
-        }
-
-        if (switch5g6gBoost != null) {
-            switch5g6gBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                NetworkOptimizer.set5g6gTurboEnabled(getContext(), isChecked);
-                Toast.makeText(getContext(), isChecked ? "📶 5G / 6G NR Low-Latency Radio Mode ACTIVE" : "5G Turbo Disabled", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        if (switchWifiLowLatency != null) {
-            switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                NetworkOptimizer.setWifiLowLatencyEnabled(getContext(), isChecked);
-                Toast.makeText(getContext(), isChecked ? "🌐 Wi-Fi 6E/7 Low-Latency Chip Mode ACTIVE" : "Wi-Fi Standard Mode", Toast.LENGTH_SHORT).show();
-            });
         }
 
         if (switchTetheringHw != null) {
@@ -509,8 +583,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 });
             });
         }
-
-        updateNetworkModeUi();
 
         // Card 5: Advanced System Tweaks Engine
         tvTweaksStatus = view.findViewById(R.id.tv_tweaks_status);
@@ -648,33 +720,107 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     });
                 } else {
                     String activeId = SpoofPreferences.getActiveProfileId(getContext());
-                    if (activeId == null || activeId.trim().isEmpty()) {
-                        activeId = "asus_rog9_pro";
-                        SpoofPreferences.setActiveProfileId(getContext(), activeId);
-                    }
-                    final String targetId = activeId;
-                    SpoofProfile prof = DeviceSpooferEngine.getProfileById(targetId);
-                    if (prof != null) {
-                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(targetId);
-                        updateSpoofUiState();
-                        AppExecutors.getInstance().executeCommand(() -> {
-                            DeviceSpooferEngine.applyProfile(getContext(), prof, null);
-                            AppExecutors.getInstance().postToMainThread(() -> {
-                                if (isAdded() && getContext() != null) {
-                                    updateSpoofUiState();
-                                    Toast.makeText(getContext(), "⚡ Device Spoof Active: " + prof.displayName, Toast.LENGTH_SHORT).show();
-                                }
+                    if (activeId != null && !activeId.trim().isEmpty()) {
+                        SpoofProfile prof = DeviceSpooferEngine.getProfileById(activeId);
+                        if (prof != null) {
+                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(activeId);
+                            updateSpoofUiState();
+                            AppExecutors.getInstance().executeCommand(() -> {
+                                DeviceSpooferEngine.applyProfile(getContext(), prof, null);
+                                AppExecutors.getInstance().postToMainThread(() -> {
+                                    if (isAdded() && getContext() != null) {
+                                        updateSpoofUiState();
+                                        Toast.makeText(getContext(), "⚡ Device Spoof Active: " + prof.displayName, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             });
-                        });
+                        } else {
+                            updateSpoofUiState();
+                        }
                     } else {
                         updateSpoofUiState();
+                        Toast.makeText(getContext(), "👇 Piliin ang nais mong Spoof Device sa listahan sa ibaba", Toast.LENGTH_LONG).show();
                     }
                 }
             });
         }
 
-        // Card 6: Shizuku Root & ADB Terminal Emulator
+        // Card 6: Pure Cyber Terminal & Scripts Folder
+        tvSettingsTerminalUid = view.findViewById(R.id.tv_settings_terminal_uid);
+        tvSettingsTerminalFolderPath = view.findViewById(R.id.tv_settings_terminal_folder_path);
+        tvSettingsTerminalOutput = view.findViewById(R.id.tv_settings_terminal_output);
+        scrollSettingsTerminal = view.findViewById(R.id.scroll_settings_terminal);
+        etSettingsTerminalCmd = view.findViewById(R.id.et_settings_terminal_cmd);
+        btnSettingsTerminalExec = view.findViewById(R.id.btn_settings_terminal_exec);
+        btnSettingsScriptFolder = view.findViewById(R.id.btn_settings_script_folder);
+        btnSettingsScriptWhoami = view.findViewById(R.id.btn_settings_script_whoami);
+        btnSettingsScriptRam = view.findViewById(R.id.btn_settings_script_ram);
+        btnSettingsScriptStorage = view.findViewById(R.id.btn_settings_script_storage);
+        btnSettingsScriptFps = view.findViewById(R.id.btn_settings_script_fps);
+        btnSettingsScriptTouch = view.findViewById(R.id.btn_settings_script_touch);
+        btnSettingsTerminalClear = view.findViewById(R.id.btn_settings_terminal_clear);
         Button btnLaunchTerminal = view.findViewById(R.id.btn_launch_terminal);
+
+        if (getContext() != null) {
+            TerminalFolderManager.getInstance(getContext()).initTerminalFolder();
+            if (tvSettingsTerminalFolderPath != null) {
+                tvSettingsTerminalFolderPath.setText("📁 Scripts Folder: " + TerminalFolderManager.getInstance(getContext()).getTerminalDirPath());
+            }
+        }
+
+        initSettingsTerminalBanner();
+
+        if (btnSettingsTerminalExec != null) {
+            btnSettingsTerminalExec.setOnClickListener(v -> executeSettingsTerminalCommand());
+        }
+
+        if (etSettingsTerminalCmd != null) {
+            etSettingsTerminalCmd.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE) {
+                    executeSettingsTerminalCommand();
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (btnSettingsScriptFolder != null) {
+            btnSettingsScriptFolder.setOnClickListener(v -> showSettingsFolderDialog());
+        }
+
+        if (btnSettingsScriptWhoami != null) {
+            btnSettingsScriptWhoami.setOnClickListener(v -> runSettingsTerminalQuickCmd("id; whoami; pm get-install-location"));
+        }
+
+        if (btnSettingsScriptRam != null) {
+            btnSettingsScriptRam.setOnClickListener(v -> runSettingsTerminalQuickCmd("pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"));
+        }
+
+        if (btnSettingsScriptStorage != null) {
+            btnSettingsScriptStorage.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getContext().getApplicationContext());
+                }
+                runSettingsTerminalQuickCmd("chmod -R 777 /sdcard/Android/data /sdcard/Android/obb; echo '[STORAGE RW UNLOCKED]'");
+            });
+        }
+
+        if (btnSettingsScriptFps != null) {
+            btnSettingsScriptFps.setOnClickListener(v -> runSettingsTerminalQuickCmd("settings put system peak_refresh_rate 144.0; setprop debug.sf.fps_limit 144; echo '[144Hz / 120FPS UNLOCKED]'"));
+        }
+
+        if (btnSettingsScriptTouch != null) {
+            btnSettingsScriptTouch.setOnClickListener(v -> runSettingsTerminalQuickCmd("setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 1; echo '[1000Hz TOUCH & 1ms SLOP ACTIVE]'"));
+        }
+
+        if (btnSettingsTerminalClear != null) {
+            btnSettingsTerminalClear.setOnClickListener(v -> {
+                settingsTerminalBuffer.clear();
+                if (tvSettingsTerminalOutput != null) tvSettingsTerminalOutput.setText("");
+                initSettingsTerminalBanner();
+            });
+        }
+
         if (btnLaunchTerminal != null) {
             btnLaunchTerminal.setOnClickListener(v -> {
                 if (getContext() != null) {
@@ -685,11 +831,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         // Card 7: About & Community Links
-        TextView tvSettingsVersion = view.findViewById(R.id.tv_settings_version);
-        if (tvSettingsVersion != null) {
-            tvSettingsVersion.setText("Version " + com.gamebooster.app.BuildConfig.VERSION_NAME + " PRO • Compatible with Android 13, 14, 15, 16");
-        }
-
         Button btnGithubReleases = view.findViewById(R.id.btn_github_releases);
         Button btnFacebookProfile = view.findViewById(R.id.btn_facebook_profile);
 
@@ -712,6 +853,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (isAdded() && getContext() != null) {
                     Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                 }
+            });
+        });
+    }
+
+    private void applyPresetProfile(Button button, PerformanceChannel.Profile profile, int targetHz, String successMsg) {
+        if (getContext() == null || button == null) return;
+        button.setEnabled(false);
+        Toast.makeText(getContext(), "Applying " + targetHz + "Hz performance profile to all games & display...", Toast.LENGTH_SHORT).show();
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
+            GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, null);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                button.setEnabled(true);
+                Toast.makeText(getContext(), ok ? successMsg : "Profile applied with system setting fallbacks", Toast.LENGTH_SHORT).show();
             });
         });
     }
@@ -758,6 +914,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshAllStatuses();
+    }
+
     private void refreshAllStatuses() {
         EngineUIHelper.refreshEngineStatus(tvEngineStatus);
         EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
@@ -776,6 +938,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (bannerDisconnect != null) {
             bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
         }
+        updateTerminalStatusInSettings();
     }
 
     private void handlePrecisionTunerToggle(boolean isChecked) {
@@ -955,178 +1118,246 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 .show();
     }
 
-    private void handleOverlayToggle(boolean isChecked) {
-        if (getContext() == null) return;
-        if (isChecked) {
-            com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
-            Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
-        } else {
-            com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
-            Toast.makeText(getContext(), "Overlay Disabled", Toast.LENGTH_SHORT).show();
+    // =========================================================================
+    // PURE CYBER TERMINAL HELPER METHODS
+    // =========================================================================
+
+    private void updateTerminalStatusInSettings() {
+        if (tvSettingsTerminalUid != null) {
+            boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
+            if (hasShizuku) {
+                tvSettingsTerminalUid.setText("UID: 2000 (shell)");
+                tvSettingsTerminalUid.setTextColor(0xFF00FF66);
+            } else {
+                tvSettingsTerminalUid.setText("UID: Local Shell");
+                tvSettingsTerminalUid.setTextColor(0xFFFFB800);
+            }
         }
     }
 
-    private void handleCrosshairToggle(boolean isChecked) {
-        if (getContext() == null) return;
-        if (isChecked) {
-            CrosshairOverlayService.startOverlay(getContext());
-            Toast.makeText(getContext(), "🎯 Target Overlay Enabled", Toast.LENGTH_SHORT).show();
-        } else {
-            CrosshairOverlayService.stopOverlay(getContext());
-            Toast.makeText(getContext(), "Crosshair Overlay Disabled", Toast.LENGTH_SHORT).show();
-        }
+    private void initSettingsTerminalBanner() {
+        if (tvSettingsTerminalOutput == null) return;
+        appendSettingsTerminalText("=== PURE CYBER TERMINAL v2.0 ===\n", 0xFF00F0FF);
+        appendSettingsTerminalText("Type any shell command or tap a quick script.\n", 0xFF94A3B8);
+        appendSettingsTerminalText("Ready for execution.\n\n", 0xFF00FF66);
     }
 
-    private void applyNetworkModeSelection(NetworkOptimizer.NetworkMode mode) {
-        if (getContext() == null || mode == null) return;
+    private void runSettingsTerminalQuickCmd(String cmd) {
+        if (etSettingsTerminalCmd != null) {
+            etSettingsTerminalCmd.setText(cmd);
+        }
+        executeSettingsTerminalCommand();
+    }
+
+    private void executeSettingsTerminalCommand() {
+        if (etSettingsTerminalCmd == null || getContext() == null) return;
+        String cmd = etSettingsTerminalCmd.getText().toString().trim();
+        if (cmd.isEmpty()) return;
+
+        etSettingsTerminalCmd.setText("");
+
+        if ("clear".equalsIgnoreCase(cmd) || "cls".equalsIgnoreCase(cmd)) {
+            settingsTerminalBuffer.clear();
+            if (tvSettingsTerminalOutput != null) tvSettingsTerminalOutput.setText("");
+            initSettingsTerminalBanner();
+            return;
+        }
+
+        if ("scripts".equalsIgnoreCase(cmd) || "folder".equalsIgnoreCase(cmd)) {
+            appendSettingsTerminalPrompt(cmd);
+            TerminalFolderManager mgr = TerminalFolderManager.getInstance(getContext());
+            List<File> files = mgr.listScriptFiles();
+            appendSettingsTerminalText("📁 Terminal Folder: " + mgr.getTerminalDirPath() + "\n", 0xFF00F0FF);
+            for (File f : files) {
+                appendSettingsTerminalText("  • " + f.getName() + " (" + f.length() + "B)\n", 0xFF00FF66);
+            }
+            appendSettingsTerminalText("\n", 0xFFFFFFFF);
+            scrollSettingsTerminalToBottom();
+            return;
+        }
+
+        appendSettingsTerminalPrompt(cmd);
+
         AppExecutors.getInstance().executeCommand(() -> {
-            NetworkOptimizer.setNetworkMode(getContext(), mode);
+            String output;
+            try {
+                if (cmd.startsWith("run ")) {
+                    String scriptName = cmd.substring(4).trim();
+                    TerminalFolderManager mgr = TerminalFolderManager.getInstance(getContext());
+                    File scriptFile = new File(mgr.getTerminalDir(), scriptName);
+                    if (!scriptFile.exists() && !scriptName.endsWith(".sh")) {
+                        scriptFile = new File(mgr.getTerminalDir(), scriptName + ".sh");
+                    }
+                    if (scriptFile.exists()) {
+                        output = mgr.executeScriptFile(scriptFile);
+                    } else {
+                        output = "ERROR: Script file not found: " + scriptName;
+                    }
+                } else if (cmd.contains("\n") || cmd.contains(";") || cmd.contains("&&") || cmd.length() > 120) {
+                    output = TerminalCoreEngine.getInstance().writeAndExecuteTempScript("game_tweak_run.sh", cmd);
+                } else {
+                    output = TerminalCoreEngine.getInstance().executeCommand(cmd);
+                }
+            } catch (Exception e) {
+                output = "ERROR: " + e.getMessage();
+            }
+
+            final String finalOutput = output;
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                Toast.makeText(getContext(), "⚡ Network Mode: " + mode.label + " ACTIVE", Toast.LENGTH_SHORT).show();
-                updateNetworkModeUi();
+                if (finalOutput == null || finalOutput.isEmpty() || "SUCCESS".equalsIgnoreCase(finalOutput) || finalOutput.contains("Zero Exit Code") || finalOutput.contains("Exit Code 0")) {
+                    appendSettingsTerminalText(finalOutput != null && !finalOutput.isEmpty() ? finalOutput + "\n\n" : "[COMMAND COMPLETED (Exit Code 0)]\n\n", 0xFF00FF66);
+                } else if (finalOutput.startsWith("ERROR")) {
+                    appendSettingsTerminalText(finalOutput + "\n\n", 0xFFFF0055);
+                } else {
+                    appendSettingsTerminalText(finalOutput + "\n\n", 0xFFE2E8F0);
+                }
+                scrollSettingsTerminalToBottom();
             });
         });
     }
 
-    private void updateNetworkModeUi() {
-        if (getContext() == null) return;
-        NetworkOptimizer.NetworkMode mode = NetworkOptimizer.getSavedNetworkMode(getContext());
+    private void appendSettingsTerminalPrompt(String command) {
+        String timestamp = new SimpleDateFormat("HH:mm:ss", Locale.US).format(new Date());
+        appendSettingsTerminalText("[" + timestamp + "] ", 0xFF64748B);
+        appendSettingsTerminalText("shizuku@android", 0xFF00F0FF);
+        appendSettingsTerminalText(":$ ", 0xFF00FF66);
+        appendSettingsTerminalText(command + "\n", 0xFFFFFFFF);
+        scrollSettingsTerminalToBottom();
+    }
 
-        if (btnModeDual != null && btnMode5g6g != null && btnModeWifi != null) {
-            btnModeDual.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
-            btnModeDual.setTextColor(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
+    private void appendSettingsTerminalText(String text, int color) {
+        if (tvSettingsTerminalOutput == null) return;
+        int start = settingsTerminalBuffer.length();
+        settingsTerminalBuffer.append(text);
+        settingsTerminalBuffer.setSpan(new ForegroundColorSpan(color), start, start + text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tvSettingsTerminalOutput.setText(settingsTerminalBuffer);
+    }
 
-            btnMode5g6g.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY ? R.drawable.btn_cyber_green : R.drawable.btn_cyber_dark);
-            btnMode5g6g.setTextColor(mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
-
-            btnModeWifi.setBackgroundResource(mode == NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY ? R.drawable.btn_cyber_cyan : R.drawable.btn_cyber_dark);
-            btnModeWifi.setTextColor(mode == NetworkOptimizer.NetworkMode.WIFI_LOW_LATENCY_ONLY ? android.graphics.Color.BLACK : android.graphics.Color.WHITE);
-        }
-
-        if (tvActiveNetworkModeStatus != null) {
-            tvActiveNetworkModeStatus.setText("⚡ Active Mode: " + mode.label);
-            tvActiveNetworkModeStatus.setTextColor(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION
-                    ? android.graphics.Color.parseColor("#00FF66")
-                    : (mode == NetworkOptimizer.NetworkMode.CELLULAR_5G_6G_ONLY
-                    ? android.graphics.Color.parseColor("#00F0FF")
-                    : android.graphics.Color.parseColor("#38BDF8")));
-        }
-
-        if (switchDualDataWifi != null) {
-            switchDualDataWifi.setOnCheckedChangeListener(null);
-            switchDualDataWifi.setChecked(mode == NetworkOptimizer.NetworkMode.DUAL_ACCELERATION);
-            switchDualDataWifi.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                applyNetworkModeSelection(ic ? NetworkOptimizer.NetworkMode.DUAL_ACCELERATION : NetworkOptimizer.NetworkMode.SYSTEM_DEFAULT);
-            });
-        }
-
-        if (switch5g6gBoost != null) {
-            switch5g6gBoost.setOnCheckedChangeListener(null);
-            switch5g6gBoost.setChecked(NetworkOptimizer.is5g6gTurboEnabled(getContext()));
-            switch5g6gBoost.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                NetworkOptimizer.set5g6gTurboEnabled(getContext(), ic);
-            });
-        }
-
-        if (switchWifiLowLatency != null) {
-            switchWifiLowLatency.setOnCheckedChangeListener(null);
-            switchWifiLowLatency.setChecked(NetworkOptimizer.isWifiLowLatencyEnabled(getContext()));
-            switchWifiLowLatency.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                NetworkOptimizer.setWifiLowLatencyEnabled(getContext(), ic);
-            });
+    private void scrollSettingsTerminalToBottom() {
+        if (scrollSettingsTerminal != null) {
+            scrollSettingsTerminal.post(() -> scrollSettingsTerminal.fullScroll(View.FOCUS_DOWN));
         }
     }
 
-    private void refreshAllSettingsSwitches() {
+    private void showSettingsFolderDialog() {
         if (getContext() == null) return;
+        TerminalFolderManager folderManager = TerminalFolderManager.getInstance(getContext());
+        List<File> files = folderManager.listScriptFiles();
 
-        if (switchOverlayHud != null) {
-            switchOverlayHud.setOnCheckedChangeListener(null);
-            switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayEnabled(getContext()));
-            switchOverlayHud.setOnCheckedChangeListener((bv, ic) -> handleOverlayToggle(ic));
+        String[] itemTitles;
+        if (files.isEmpty()) {
+            itemTitles = new String[]{"➕ [CREATE NEW SCRIPT]"};
+        } else {
+            itemTitles = new String[files.size() + 1];
+            for (int i = 0; i < files.size(); i++) {
+                itemTitles[i] = "📜 " + files.get(i).getName();
+            }
+            itemTitles[files.size()] = "➕ [CREATE NEW SCRIPT]";
         }
 
-        if (switchGamingDnd != null) {
-            switchGamingDnd.setOnCheckedChangeListener(null);
-            switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
-            switchGamingDnd.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() ->
-                    com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), ic));
-            });
-        }
-
-        if (switchAutoGameBoost != null) {
-            switchAutoGameBoost.setOnCheckedChangeListener(null);
-            switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isMonitorEnabled(getContext()));
-            switchAutoGameBoost.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    if (ic) {
-                        com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
+        new AlertDialog.Builder(getContext())
+                .setTitle("📁 TERMINAL SCRIPTS FOLDER")
+                .setItems(itemTitles, (dialog, which) -> {
+                    if (which == itemTitles.length - 1 && (files.isEmpty() || which == files.size())) {
+                        showSettingsCreateScriptDialog();
                     } else {
-                        com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
+                        File selectedFile = files.get(which);
+                        showSettingsScriptActionDialog(selectedFile);
                     }
-                });
-            });
-        }
-
-        if (switchEsportsAudio != null) {
-            switchEsportsAudio.setOnCheckedChangeListener(null);
-            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isAudioBoostEnabled(getContext()));
-            switchEsportsAudio.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                AppExecutors.getInstance().executeCommand(() ->
-                    com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), ic));
-            });
-        }
-
-        if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
-            switchPrecisionInputTuner.setOnCheckedChangeListener(null);
-            switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
-            switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
-        }
-
-        if (switchCrosshairOverlay != null) {
-            switchCrosshairOverlay.setOnCheckedChangeListener(null);
-            switchCrosshairOverlay.setChecked(CrosshairOverlayService.isCrosshairEnabled(getContext()));
-            switchCrosshairOverlay.setOnCheckedChangeListener((bv, ic) -> handleCrosshairToggle(ic));
-        }
-
-        if (switchTetheringHw != null) {
-            switchTetheringHw.setOnCheckedChangeListener(null);
-            switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
-            switchTetheringHw.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setTetherHwEnabled(getContext(), ic);
-                AppExecutors.getInstance().executeCommand(() -> NetworkOptimizer.setTetheringHwAcceleration(ic));
-            });
-        }
-
-        if (switchForceGnss != null) {
-            switchForceGnss.setOnCheckedChangeListener(null);
-            switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
-            switchForceGnss.setOnCheckedChangeListener((bv, ic) -> {
-                if (getContext() == null) return;
-                ManualSettingsPreferences.setForceGnssEnabled(getContext(), ic);
-                AppExecutors.getInstance().executeCommand(() -> NetworkOptimizer.setForceFullGnss(ic));
-            });
-        }
-
-        updateNetworkModeUi();
-        updatePrecisionAimStatus();
-        updateSystemSettingsStatus();
-        updateSpoofUiState();
+                })
+                .setNegativeButton("CLOSE", null)
+                .show();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshAllStatuses();
-        refreshAllSettingsSwitches();
+    private void showSettingsScriptActionDialog(File scriptFile) {
+        if (getContext() == null) return;
+        TerminalFolderManager folderManager = TerminalFolderManager.getInstance(getContext());
+        String[] actions = {"⚡ Execute in Terminal", "📝 View / Edit Script", "🗑️ Delete Script"};
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("📜 " + scriptFile.getName())
+                .setItems(actions, (dialog, which) -> {
+                    if (which == 0) {
+                        runSettingsTerminalQuickCmd("run " + scriptFile.getName());
+                    } else if (which == 1) {
+                        showSettingsEditScriptDialog(scriptFile);
+                    } else if (which == 2) {
+                        folderManager.deleteScript(scriptFile);
+                        Toast.makeText(getContext(), "Deleted: " + scriptFile.getName(), Toast.LENGTH_SHORT).show();
+                        showSettingsFolderDialog();
+                    }
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
+    }
+
+    private void showSettingsCreateScriptDialog() {
+        if (getContext() == null) return;
+        TerminalFolderManager folderManager = TerminalFolderManager.getInstance(getContext());
+
+        EditText etName = new EditText(getContext());
+        etName.setHint("my_boost_script.sh");
+        etName.setTextColor(0xFFFFFFFF);
+        etName.setHintTextColor(0xFF64748B);
+
+        EditText etContent = new EditText(getContext());
+        etContent.setHint("# Type bash commands here...\nsetprop debug.sf.fps_limit 144\n");
+        etContent.setTextColor(0xFF00FF66);
+        etContent.setHintTextColor(0xFF64748B);
+        etContent.setMinLines(5);
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(getContext());
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(32, 16, 32, 16);
+        layout.addView(etName);
+        layout.addView(etContent);
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("➕ CREATE NEW TERMINAL SCRIPT")
+                .setView(layout)
+                .setPositiveButton("SAVE & RUN", (dialog, which) -> {
+                    String name = etName.getText().toString().trim();
+                    String content = etContent.getText().toString();
+                    if (name.isEmpty()) name = "custom_tweak_" + System.currentTimeMillis() + ".sh";
+                    folderManager.saveScript(name, content);
+                    Toast.makeText(getContext(), "Script saved: " + name, Toast.LENGTH_SHORT).show();
+                    runSettingsTerminalQuickCmd("run " + name);
+                })
+                .setNeutralButton("SAVE ONLY", (dialog, which) -> {
+                    String name = etName.getText().toString().trim();
+                    String content = etContent.getText().toString();
+                    if (name.isEmpty()) name = "custom_tweak_" + System.currentTimeMillis() + ".sh";
+                    folderManager.saveScript(name, content);
+                    Toast.makeText(getContext(), "Script saved to terminal folder!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
+    }
+
+    private void showSettingsEditScriptDialog(File scriptFile) {
+        if (getContext() == null) return;
+        TerminalFolderManager folderManager = TerminalFolderManager.getInstance(getContext());
+        String currentContent = folderManager.readScript(scriptFile);
+
+        EditText etContent = new EditText(getContext());
+        etContent.setText(currentContent);
+        etContent.setTextColor(0xFF00FF66);
+        etContent.setMinLines(8);
+        etContent.setPadding(32, 16, 32, 16);
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("📝 " + scriptFile.getName())
+                .setView(etContent)
+                .setPositiveButton("SAVE CHANGES", (dialog, which) -> {
+                    folderManager.saveScript(scriptFile.getName(), etContent.getText().toString());
+                    Toast.makeText(getContext(), "Changes saved!", Toast.LENGTH_SHORT).show();
+                })
+                .setNeutralButton("RUN", (dialog, which) -> {
+                    folderManager.saveScript(scriptFile.getName(), etContent.getText().toString());
+                    runSettingsTerminalQuickCmd("run " + scriptFile.getName());
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
     }
 }

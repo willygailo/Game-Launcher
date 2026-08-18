@@ -53,63 +53,32 @@ public class PubgConfigPatcher {
                 "+CVars=r.PUBGFrameRateLimit=" + forcedFps + "\n" +
                 "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
                 "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
-                "+CVars=t.MaxFPS=" + forcedFps + "\n" +
-                "+CVars=bSmoothFrameRate=False\n" +
-                "+CVars=bUseVSync=False\n" +
-                "+CVars=r.Vsync=0\n" +
-                "+CVars=r.Vulkan=1\n" +
-                "+CVars=r.Vulkan.EnableRHIThread=1\n" +
                 "+CVars=r.PUBGHDRMode=1\n" +
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.PUBGQualityLevel=4\n" +
                 "+CVars=r.PUBGSDKQualityLevel=4\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
-                "+CVars=r.MobileContentScaleFactor=1.5\n" +
+                "+CVars=r.MobileContentScaleFactor=1.0\n" +
                 "+CVars=r.MobileTonemapperFilm=1\n" +
-                "+CVars=r.PUBGMSAASampleCount=4\n" +
-                "+CVars=r.ShadowQuality=4\n" +
-                "+CVars=r.Shadow.DistanceScale=1.5\n" +
-                "+CVars=r.Shadow.CSM.MaxCascades=4\n" +
-                "+CVars=r.Streaming.PoolSize=4096\n" +
-                "+CVars=r.Mobile.EnableEarlyZ=1\n" +
-                "+CVars=r.FinishCurrentFrame=0\n" +
-                "+CVars=r.MaxAnisotropy=16\n" +
-                "+CVars=r.DetailMode=2\n" +
                 "+CVars=r.PUBGTPPViewRange=100.00\n" +
                 "+CVars=r.PUBGFPPViewRange=150.00\n" +
                 "+CVars=r.SprintSensitivity=150\n" +
+                "+CVars=r.Vsync=0\n" +
                 "+CVars=r.Unlock185Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
-                "+CVars=r.TouchSampleRate=1000\n" +
-                "+CVars=r.TouchResponseTime=0\n" +
-                "+CVars=r.ZeroTouchDelay=1\n" +
-                "+CVars=r.InputLatencyReduction=1\n" +
                 "+CVars=r.PUBGAimAssist=1\n" +
                 "+CVars=r.AimAssistStrength=1.00\n" +
-                "+CVars=r.GyroAimAssist=1\n" +
-                "+CVars=r.Gyro1000HzFilter=1\n" +
-                "+CVars=r.GyroSampleRate=1000\n" +
-                "+CVars=r.GyroZeroDelay=1\n" +
-                "+CVars=r.GyroSensitivityRatio=2.0\n" +
-                "+CVars=r.GyroNoRecoil=1\n" +
-                "+CVars=r.GyroRecoilCompensation=1.00\n" +
                 "+CVars=r.PUBGRecoilScale=0.00\n" +
                 "+CVars=r.WeaponKickReduction=1.00\n" +
                 "+CVars=r.AllGunsRecoilReduction=1.00\n" +
                 "+CVars=r.NoRecoilAllScopes=1\n" +
-                "+CVars=r.BulletSpread=0.00\n" +
-                "+CVars=r.AllGunsDamageBoost=1.90\n" +
                 "+CVars=r.BulletDamageBoost=1.90\n" +
                 "+CVars=r.DamageMultiplier=1.90\n" +
                 "+CVars=r.HeadshotDamageMultiplier=2.90\n" +
                 "+CVars=r.CriticalDamageRate=95\n" +
-                "+CVars=r.AR_DamageMultiplier=1.90\n" +
-                "+CVars=r.SMG_DamageMultiplier=1.90\n" +
-                "+CVars=r.Sniper_DamageMultiplier=2.90\n" +
-                "+CVars=r.Shotgun_DamageMultiplier=2.00\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
@@ -133,13 +102,13 @@ public class PubgConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch CVar into PUBGM/BGMI config files.
-     * Sets r.MobileTouchBoostRate=185 for 185Hz touch acceleration and 1000Hz polling rate.
+     * Sets r.MobileTouchBoostRate=165 for 165Hz touch acceleration and 1000Hz polling rate.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] touchCvars = {
-            "+CVars=r.MobileTouchBoostRate=185",
+            "+CVars=r.MobileTouchBoostRate=165",
             "+CVars=r.TouchSampleRate=1000",
             "+CVars=r.TouchResponseTime=0",
             "+CVars=r.ZeroTouchDelay=1",
@@ -187,23 +156,16 @@ public class PubgConfigPatcher {
             "+CVars=r.GyroZeroDelay=1",
             "+CVars=r.GyroSmoothFactor=0",
             "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.Gyro1000HzFilter=1",
             "+CVars=r.GyroAimAssist=1",
-            "+CVars=r.GyroNoRecoil=1",
             "+CVars=r.GyroRecoilCompensation=1.00",
             "+CVars=r.GyroLatencyMode=0",
             "+CVars=r.BulletTrackingOptimization=1",
             "+CVars=r.MobileTouchAssistMode=1",
-            "+CVars=r.AllGunsDamageBoost=1.90",
             "+CVars=r.DamageMultiplier=1.90",
             "+CVars=r.BulletDamageBoost=1.90",
             "+CVars=r.HeadshotDamageMultiplier=2.90",
             "+CVars=r.CriticalDamageRate=95",
             "+CVars=r.DamageBoostRatio=1.90",
-            "+CVars=r.AR_DamageMultiplier=1.90",
-            "+CVars=r.SMG_DamageMultiplier=1.90",
-            "+CVars=r.Sniper_DamageMultiplier=2.90",
-            "+CVars=r.Shotgun_DamageMultiplier=2.00",
             "bEnableAimAssist=True",
             "AimAssistLevel=3",
             "SprintSensitivity=150",
@@ -255,9 +217,6 @@ public class PubgConfigPatcher {
             "+CVars=r.Scope6xRecoilScale=0.00",
             "+CVars=r.Scope8xRecoilScale=0.00",
             "+CVars=r.WeaponSwayMultiplier=0.00",
-            "+CVars=r.GyroNoRecoil=1",
-            "+CVars=r.Gyro1000HzFilter=1",
-            "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroRecoilCompensation=1.00"
         };
         for (String path : paths) {
@@ -283,38 +242,11 @@ public class PubgConfigPatcher {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
-
-        // Deep Search discovered paths via Shizuku
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            try {
-                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ -type f \\( -name \"*UserCustom*.ini\" -o -name \"*GameUserSettings*.ini\" -o -name \"*EnjoyCJ*.ini\" \\) 2>/dev/null";
-                String output = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (output != null && !output.isEmpty()) {
-                    for (String line : output.split("\n")) {
-                        line = line.trim();
-                        if (!line.isEmpty() && !paths.contains(line)) {
-                            paths.add(line);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        return paths;
+        return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
     /**
-     * Patches Active.sav binary savegame file directly using in-memory byte manipulation in Shizuku temporary root.
+     * Patches Active.sav binary savegame file directly using byte manipulation in Shizuku temporary root.
      * Enforces FPSLevel, BattleFPS, and LobbyFPS to target levels (10=185fps, 9=165fps, 8=144fps, 7=120fps).
      */
     public static void patchActiveSavBinary(String pkg, int targetFps) {
@@ -322,39 +254,10 @@ public class PubgConfigPatcher {
         final int fpsLevel = targetFps >= 185 ? 10 : (targetFps >= 165 ? 9 : (targetFps >= 144 ? 8 : (targetFps >= 120 ? 7 : 6)));
         String[] savPaths = {
             "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
-            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/SrcActive.sav",
-            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/UserSettings.sav",
-            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
-            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/SrcActive.sav",
-            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/UserSettings.sav"
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
         };
         for (String sav : savPaths) {
             ensureDirectory(sav);
-            byte[] data = ShizukuFileManager.readBytes(sav);
-            if (data != null && data.length > 32) {
-                boolean modified = false;
-                String[] keys = {"FPSLevel", "BattleFPS", "LobbyFPS", "ShadowQuality", "HDRMode", "AimAssist", "FrameRateLevel", "GraphicQuality"};
-                for (String key : keys) {
-                    byte[] keyBytes = key.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
-                    int idx = indexOfBytes(data, keyBytes, 0);
-                    while (idx != -1) {
-                        int valOffset = idx + keyBytes.length;
-                        for (int o = valOffset; o < Math.min(valOffset + 32, data.length); o++) {
-                            if (data[o] >= 1 && data[o] <= 10) {
-                                data[o] = (byte) fpsLevel;
-                                modified = true;
-                                break;
-                            }
-                        }
-                        idx = indexOfBytes(data, keyBytes, idx + keyBytes.length);
-                    }
-                }
-                if (modified) {
-                    ShizukuFileManager.uploadBytes(sav, data, "666");
-                }
-            }
-
-            // Shell fallback stream
             String hexByte = String.format("%02x", fpsLevel);
             String cmd = "if [ -f " + sav + " ]; then " +
                          "sed -i 's/FPSLevel.*/FPSLevel\\x00\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\" + hexByte + "/g' " + sav + " 2>/dev/null; " +
@@ -369,21 +272,6 @@ public class PubgConfigPatcher {
             }
         }
         Log.i(TAG, "PUBGM Active.sav binary enforced level " + fpsLevel + " (" + targetFps + " FPS) for " + pkg);
-    }
-
-    private static int indexOfBytes(byte[] source, byte[] target, int fromIndex) {
-        if (source == null || target == null || target.length == 0 || fromIndex < 0) return -1;
-        for (int i = fromIndex; i <= source.length - target.length; i++) {
-            boolean match = true;
-            for (int j = 0; j < target.length; j++) {
-                if (source[i + j] != target[j]) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) return i;
-        }
-        return -1;
     }
 
     private static void forceWrite(String path, String content) {

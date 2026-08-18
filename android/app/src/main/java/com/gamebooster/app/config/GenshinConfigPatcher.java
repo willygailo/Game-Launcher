@@ -34,16 +34,10 @@ public class GenshinConfigPatcher {
 
         String jsonContent = "{\n" +
                 "  \"fps\": " + forcedFps + ",\n" +
-                "  \"target_fps\": " + forcedFps + ",\n" +
-                "  \"targetFps\": " + forcedFps + ",\n" +
                 "  \"max_fps\": " + forcedFps + ",\n" +
                 "  \"target_frame_rate\": " + forcedFps + ",\n" +
                 "  \"graphics_quality\": 5,\n" +
-                "  \"render_resolution\": 1.4,\n" +
-                "  \"renderResolution\": 1.4,\n" +
-                "  \"volumetric_fog\": 1,\n" +
-                "  \"volumetricFog\": 1,\n" +
-                "  \"aot_speed_compile\": 1,\n" +
+                "  \"render_resolution\": 1.2,\n" +
                 "  \"shadow_quality\": 4,\n" +
                 "  \"visual_effects\": 4,\n" +
                 "  \"sfx_quality\": 4,\n" +
@@ -68,6 +62,7 @@ public class GenshinConfigPatcher {
                 "  \"damage_multiplier\": 1.90,\n" +
                 "  \"attack_speed_multiplier\": 1.5,\n" +
                 "  \"crit_rate_boost\": 0.95,\n" +
+                "  \"recoil_compensation\": 1.0,\n" +
                 "  \"camera_shake\": 0.0\n" +
                 "}\n";
 
@@ -76,10 +71,7 @@ public class GenshinConfigPatcher {
                 "  \"gpu_renderer\": \"Adreno (TM) 840\",\n" +
                 "  \"vulkan_support\": true,\n" +
                 "  \"max_refresh_rate\": " + forcedFps + ",\n" +
-                "  \"frame_rate_cap\": " + forcedFps + ",\n" +
-                "  \"render_resolution\": 1.4,\n" +
-                "  \"volumetric_fog\": 1,\n" +
-                "  \"aot_speed_compile\": 1\n" +
+                "  \"frame_rate_cap\": " + forcedFps + "\n" +
                 "}\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -135,18 +127,14 @@ public class GenshinConfigPatcher {
                 "sed -i 's/\"gyro_zero_delay\":.*/\"gyro_zero_delay\": true,/' " + path + "; " +
                 "grep -qF '\"gyro_sample_rate\"' " + path + " || echo '\"gyro_sample_rate\": 1000,' >> " + path + "; " +
                 "sed -i 's/\"gyro_sample_rate\":.*/\"gyro_sample_rate\": 1000,/' " + path + "; " +
-                "grep -qF '\"render_resolution\"' " + path + " || echo '\"render_resolution\": 1.4,' >> " + path + "; " +
-                "sed -i 's/\"render_resolution\":.*/\"render_resolution\": 1.4,/' " + path + "; " +
-                "grep -qF '\"volumetric_fog\"' " + path + " || echo '\"volumetric_fog\": 1,' >> " + path + "; " +
-                "sed -i 's/\"volumetric_fog\":.*/\"volumetric_fog\": 1,/' " + path + "; " +
-                "grep -qF '\"aot_speed_compile\"' " + path + " || echo '\"aot_speed_compile\": 1,' >> " + path + "; " +
-                "sed -i 's/\"aot_speed_compile\":.*/\"aot_speed_compile\": 1,/' " + path + "; " +
                 "grep -qF '\"damage_multiplier\"' " + path + " || echo '\"damage_multiplier\": 1.90,' >> " + path + "; " +
                 "sed -i 's/\"damage_multiplier\":.*/\"damage_multiplier\": 1.90,/' " + path + "; " +
                 "grep -qF '\"attack_speed_multiplier\"' " + path + " || echo '\"attack_speed_multiplier\": 1.5,' >> " + path + "; " +
                 "sed -i 's/\"attack_speed_multiplier\":.*/\"attack_speed_multiplier\": 1.5,/' " + path + "; " +
                 "grep -qF '\"crit_rate_boost\"' " + path + " || echo '\"crit_rate_boost\": 0.95,' >> " + path + "; " +
                 "sed -i 's/\"crit_rate_boost\":.*/\"crit_rate_boost\": 0.95,/' " + path + "; " +
+                "grep -qF '\"recoil_compensation\"' " + path + " || echo '\"recoil_compensation\": 1.0,' >> " + path + "; " +
+                "sed -i 's/\"recoil_compensation\":.*/\"recoil_compensation\": 1.0,/' " + path + "; " +
                 "grep -qF '\"camera_shake\"' " + path + " || echo '\"camera_shake\": 0.0,' >> " + path + "; " +
                 "sed -i 's/\"camera_shake\":.*/\"camera_shake\": 0.0,/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -155,42 +143,15 @@ public class GenshinConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Genshin Drone View FOV 150, 1.4 Res, Volumetric Fog, AOT Speed Compile & Damage Boost applied for " + packageName);
+        Log.i(TAG, "Genshin Drone View FOV 150, 1000Hz Gyro, 90+ Damage & No-Recoil applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        // Non-BR RPG game — apply combat assist and render settings
         applyAimAssistConfig(packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GameSettings.json");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/hardware_model_config.json");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.json");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UserSettings.json");
-        paths.add("/data/data/" + pkg + "/files/Config/GameSettings.json");
-        paths.add("/data/data/" + pkg + "/files/hardware_model_config.json");
-        paths.add("/data/data/" + pkg + "/files/GraphicSettings.json");
-        paths.add("/data/data/" + pkg + "/files/UserSettings.json");
-        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
-
-        // Deep Search discovered paths via Shizuku
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            try {
-                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
-                String output = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (output != null && !output.isEmpty()) {
-                    for (String line : output.split("\n")) {
-                        line = line.trim();
-                        if (!line.isEmpty() && !paths.contains(line)) {
-                            paths.add(line);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        return paths;
+        return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
     private static void forceWrite(String path, String content) {

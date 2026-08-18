@@ -1,37 +1,81 @@
-# Built Android binaries, APKs & AAB outputs
+# ====================================================================
+# Android & Gradle Build Artifacts
+# ====================================================================
 *.apk
 *.ap_
 *.aab
 *.dex
 *.class
 
+# Shizuku / Rish assets exception
+!**/shizuku/*.dex
+!**/assets/shizuku/*.dex
+!*rish_shizuku.dex
+
 # Gradle build cache & output directories
 .gradle/
-build/
-app/build/
 **/build/
-.externalNativeBuild/
-.cxx/
-/android/.gradle/
-/android/app/build/
-/android/build/
+build/
+android/.gradle/
+android/build/
+android/app/build/
 
-# Local configuration & environment files
+# Native / NDK / C++ build outputs
+.cxx/
+**/build/.cxx/
+.externalNativeBuild/
+android/app/.cxx/
+android/app/.externalNativeBuild/
+obj/
+
+# Kotlin & Java caches
+.kotlin/
+.incremental/
+*.bundle
+*.aar
+*.klib
+
+# ====================================================================
+# Local Configuration & Secrets
+# ====================================================================
 local.properties
 *.local.properties
+secrets.properties
+gradle.properties.private
 
-# Android Studio & IntelliJ IDE configuration
+# Google Services & Firebase Private Configs
+google-services.json
+GoogleService-Info.plist
+
+# Signing & Keystores
+*.jks
+*.keystore
+*.pepk
+*.p8
+*.p12
+*.key
+*.pk8
+*.pem
+
+# ====================================================================
+# Android Studio / IntelliJ IDEA / VS Code / Editors
+# ====================================================================
 .idea/
 *.iml
 .navigation/
 captures/
 .shelf/
 *.hprof
+*.iws
+*.ids
+*.ipr
 
-# Eclipse & VS Code configuration
+# Eclipse
 .project
 .classpath
 .settings/
+
+# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -39,29 +83,39 @@ captures/
 !.vscode/extensions.json
 *.code-workspace
 
-# OS generated files & caches
+# NetBeans
+nbproject/private/
+
+# ====================================================================
+# Operating System & Environment Caches
+# ====================================================================
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Windows
 Thumbs.db
 ehthumbs.db
+desktop.ini
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux & Text Editors
 *~
 *.swp
+*.swo
 *.bak
+*.tmp
 
-# Signing & Keystores
-*.jks
-*.keystore
-*.pepk
-
-# Private & Google services configuration
-google-services.json
-GoogleService-Info.plist
-
-# Logs, scratch scripts & agent workspace data
+# ====================================================================
+# Logs, Diagnostic Dumps & AI Assistant Data
+# ====================================================================
 *.log
+hs_err_pid*
+replay_pid*
 scratch/
 .antigravity/
 .gemini/
+.agents/

@@ -58,6 +58,10 @@ public final class ShizukuFileManager {
             File localFile = new File(path);
             if (localFile.exists()) return true;
 
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                return ShizukuUserServiceConnector.getInstance().fileExists(path);
+            }
+
             if (hasFullAccess()) {
                 String res = ShizukuExecutor.executeShizukuCommand("test -e '" + path + "' && echo EXISTS");
                 return res != null && res.contains("EXISTS");
@@ -114,6 +118,12 @@ public final class ShizukuFileManager {
             File dir = new File(dirPath);
             if (dir.exists() && dir.isDirectory()) return true;
 
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                if (ShizukuUserServiceConnector.getInstance().makeDirectories(dirPath)) {
+                    return true;
+                }
+            }
+
             String cmd = "mkdir -p '" + dirPath + "' && chmod 777 '" + dirPath + "'";
             if (hasFullAccess()) {
                 String res = ShizukuExecutor.executeShizukuCommand(cmd);
@@ -131,7 +141,7 @@ public final class ShizukuFileManager {
 
     /**
      * Writes content to a file at the given path.
-     * Uses Base64 stream decoding to guarantee zero shell-escaping errors and safe character handling.
+     * Uses direct AIDL I/O or Base64 stream decoding to guarantee zero shell-escaping errors.
      * Automatically sets permissions (default 666 / 777).
      */
     public static FileOpResult writeFile(String path, String content, String chmodMode) {
@@ -142,8 +152,18 @@ public final class ShizukuFileManager {
 
         try {
             ensureParentDirectory(path);
-
             String mode = (chmodMode != null && !chmodMode.isEmpty()) ? chmodMode : "666";
+
+            // 1. Direct AIDL Native I/O (High Speed, zero subshell)
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                boolean written = ShizukuUserServiceConnector.getInstance().writeDirectFile(path, content, mode);
+                if (written) {
+                    Log.d(TAG, "writeFile via AIDL Native I/O SUCCESS: " + path);
+                    return FileOpResult.ok(path, "Written directly via Shizuku AIDL");
+                }
+            }
+
+            // 2. Base64 Shell Pipeline Fallback
             byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
             String b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
@@ -249,33 +269,6 @@ public final class ShizukuFileManager {
             Log.w(TAG, "readFile exception for " + path, t);
         }
         return "";
-    }
-
-    /**
-     * Reads the entire binary contents of a file as a raw byte array via Base64 stream.
-     */
-    public static byte[] readBytes(String path) {
-        if (path == null || path.trim().isEmpty()) return null;
-        try {
-            File local = new File(path);
-            if (local.exists() && local.canRead()) {
-                return java.nio.file.Files.readAllBytes(local.toPath());
-            }
-            if (hasFullAccess()) {
-                String b64 = ShizukuExecutor.executeShizukuCommand("base64 -w 0 '" + path + "' 2>/dev/null");
-                if (b64 != null && !b64.startsWith("ERROR") && !b64.trim().isEmpty()) {
-                    return Base64.decode(b64.trim(), Base64.NO_WRAP);
-                }
-            } else {
-                String b64 = CommandExecutor.executeSystemCommand("base64 -w 0 '" + path + "' 2>/dev/null");
-                if (b64 != null && !b64.startsWith("ERROR") && !b64.trim().isEmpty()) {
-                    return Base64.decode(b64.trim(), Base64.NO_WRAP);
-                }
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "readBytes exception for " + path, t);
-        }
-        return null;
     }
 
     /**

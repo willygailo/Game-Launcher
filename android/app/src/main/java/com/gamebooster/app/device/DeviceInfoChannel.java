@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import com.gamebooster.app.device.DeviceSpecModel;
 import com.gamebooster.app.device.DeviceDetector;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
+import com.gamebooster.app.spoofer.SpoofProfile;
 
 public class DeviceInfoChannel {
 
@@ -35,14 +37,27 @@ public class DeviceInfoChannel {
         int ramPct = 0;
         long used = 0, total = 0;
 
+        SpoofProfile activeSpoof = DeviceSpooferEngine.getActiveProfile();
+
         if (context != null) {
             ActivityManager actMgr = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             if (actMgr != null) {
                 ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
                 actMgr.getMemoryInfo(memInfo);
-                total = memInfo.totalMem / (1024 * 1024);
-                used = total - (memInfo.availMem / (1024 * 1024));
-                ramPct = total > 0 ? (int) ((used * 100) / total) : 0;
+                long realTotal = memInfo.totalMem / (1024 * 1024);
+                long realAvail = memInfo.availMem / (1024 * 1024);
+                long realUsed = realTotal - realAvail;
+
+                if (activeSpoof != null && activeSpoof.ramTotalMb > 0) {
+                    total = activeSpoof.ramTotalMb;
+                    float usageRatio = realTotal > 0 ? ((float) realUsed / realTotal) : 0.45f;
+                    used = (long) (total * usageRatio);
+                    ramPct = total > 0 ? (int) ((used * 100) / total) : 0;
+                } else {
+                    total = realTotal;
+                    used = realUsed;
+                    ramPct = total > 0 ? (int) ((used * 100) / total) : 0;
+                }
             }
         }
 

@@ -52,31 +52,19 @@ public class FarlightConfigPatcher {
                 content = "{\n" +
                         "  \"FrameRateLimit\": " + forcedFps + ",\n" +
                         "  \"MaxFPS\": " + forcedFps + ",\n" +
-                        "  \"MaxFramerate\": " + forcedFps + ",\n" +
                         "  \"FPS\": " + forcedFps + ",\n" +
-                        "  \"GraphicQuality\": \"Ultra\",\n" +
+                        "  \"GraphicQuality\": 3,\n" +
                         "  \"HighFPSMode\": 1,\n" +
                         "  \"Unlock185Hz\": 1,\n" +
                         "  \"Unlock165Hz\": 1,\n" +
                         "  \"Unlock144Hz\": 1,\n" +
                         "  \"Unlock120Hz\": 1,\n" +
                         "  \"TouchPollingRate\": 1000,\n" +
-                        "  \"TouchBoostHz\": " + forcedFps + "\n," +
+                        "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroPollingRate\": 1000,\n" +
-                        "  \"Gyro1000HzFilter\": 1,\n" +
-                        "  \"GyroNoRecoil\": 1,\n" +
-                        "  \"GyroRecoilCompensation\": 1.00,\n" +
-                        "  \"GyroZeroDelay\": 1,\n" +
                         "  \"AimAssistStrength\": 100,\n" +
                         "  \"RecoilReduction\": 1.00,\n" +
-                        "  \"WeaponKickReduction\": 1.00,\n" +
-                        "  \"AllGunsRecoilReduction\": 1.00,\n" +
-                        "  \"AllGunsDamageBoost\": 1.90,\n" +
-                        "  \"DamageMultiplier\": 1.90,\n" +
-                        "  \"BulletDamageBoost\": 1.90,\n" +
-                        "  \"HeadshotDamageMultiplier\": 2.90,\n" +
-                        "  \"CriticalDamageRate\": 95,\n" +
                         "  \"LowLatencyMode\": 1,\n" +
                         "  \"AntiAliasing\": 1\n" +
                         "}\n";
@@ -99,9 +87,7 @@ public class FarlightConfigPatcher {
                         "[SolarlandGraphics]\n" +
                         "FrameRateLimit=" + forcedFps + "\n" +
                         "MaxFPS=" + forcedFps + "\n" +
-                        "MaxFramerate=" + forcedFps + "\n" +
                         "FPS=" + forcedFps + "\n" +
-                        "GraphicQuality=Ultra\n" +
                         "HighFPSMode=1\n" +
                         "Unlock185Hz=1\n" +
                         "Unlock165Hz=1\n" +
@@ -111,21 +97,9 @@ public class FarlightConfigPatcher {
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
-                        "Gyro1000HzFilter=1\n" +
-                        "GyroNoRecoil=1\n" +
-                        "GyroRecoilCompensation=1.00\n" +
-                        "GyroZeroDelay=1\n" +
                         "AimAssistStrength=100\n" +
                         "RecoilReduction=1.00\n" +
                         "WeaponKickScale=0.00\n" +
-                        "WeaponKickReduction=1.00\n" +
-                        "AllGunsRecoilReduction=1.00\n" +
-                        "GunShakeReduction=1.00\n" +
-                        "AllGunsDamageBoost=1.90\n" +
-                        "DamageMultiplier=1.90\n" +
-                        "BulletDamageBoost=1.90\n" +
-                        "HeadshotDamageMultiplier=2.90\n" +
-                        "CriticalDamageRate=95\n" +
                         "ZeroInputLag=1\n";
             }
             forceWrite(path, content);
@@ -167,20 +141,14 @@ public class FarlightConfigPatcher {
                 "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=100' >> " + path + "; " +
                 "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=100/' " + path + "; " +
                 "grep -qF 'GyroPollingRate' " + path + " || echo 'GyroPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path + "; " +
-                "grep -qF 'Gyro1000HzFilter' " + path + " || echo 'Gyro1000HzFilter=1' >> " + path + "; " +
-                "sed -i 's/^Gyro1000HzFilter=.*/Gyro1000HzFilter=1/' " + path + "; " +
-                "grep -qF 'GyroNoRecoil' " + path + " || echo 'GyroNoRecoil=1' >> " + path + "; " +
-                "sed -i 's/^GyroNoRecoil=.*/GyroNoRecoil=1/' " + path + "; " +
-                "grep -qF 'AllGunsDamageBoost' " + path + " || echo 'AllGunsDamageBoost=1.90' >> " + path + "; " +
-                "sed -i 's/^AllGunsDamageBoost=.*/AllGunsDamageBoost=1.90/' " + path;
+                "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Farlight 84 aim assist & 1000Hz gyro filter applied for " + packageName);
+        Log.i(TAG, "Farlight 84 aim assist & 1000Hz gyro applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -191,54 +159,18 @@ public class FarlightConfigPatcher {
                 "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.00' >> " + path + "; " +
                 "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.00/' " + path + "; " +
                 "grep -qF 'WeaponKickScale' " + path + " || echo 'WeaponKickScale=0.00' >> " + path + "; " +
-                "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path + "; " +
-                "grep -qF 'AllGunsRecoilReduction' " + path + " || echo 'AllGunsRecoilReduction=1.00' >> " + path + "; " +
-                "sed -i 's/^AllGunsRecoilReduction=.*/AllGunsRecoilReduction=1.00/' " + path + "; " +
-                "grep -qF 'Gyro1000HzFilter' " + path + " || echo 'Gyro1000HzFilter=1' >> " + path + "; " +
-                "sed -i 's/^Gyro1000HzFilter=.*/Gyro1000HzFilter=1/' " + path + "; " +
-                "grep -qF 'GyroNoRecoil' " + path + " || echo 'GyroNoRecoil=1' >> " + path + "; " +
-                "sed -i 's/^GyroNoRecoil=.*/GyroNoRecoil=1/' " + path;
+                "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Farlight 84 recoil reduction & 1000Hz gyro filter applied for " + packageName);
+        Log.i(TAG, "Farlight 84 recoil reduction applied for " + packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/GameSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/GraphicSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
-        paths.add("/data/data/" + pkg + "/files/GameSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/GraphicSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/GraphicsSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/Config/GraphicsSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Config/UserSetting.json");
-        paths.add("/data/data/" + pkg + "/files/Config/UserSetting.json");
-        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml");
-
-        // Deep Search discovered paths via Shizuku
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            try {
-                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
-                String output = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (output != null && !output.isEmpty()) {
-                    for (String line : output.split("\n")) {
-                        line = line.trim();
-                        if (!line.isEmpty() && !paths.contains(line)) {
-                            paths.add(line);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        return paths;
+        return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
     private static void forceWrite(String path, String content) {

@@ -33,14 +33,10 @@ public class FreeFireConfigPatcher {
 
         String content = "[FFGraphics]\n" +
                 "HighFPS=1\n" +
-                "HIGH_FPS=1\n" +
-                "HIGH_RES=1\n" +
-                "FPS_LEVEL=10\n" +
                 "FPSMode=2\n" +
                 "MaxFPS=" + forcedFps + "\n" +
                 "TargetFPS=" + forcedFps + "\n" +
-                "GraphicLevel=4\n" +
-                "GRAPHIC_LEVEL=4\n" +
+                "GraphicLevel=3\n" +
                 "Shadow=1\n" +
                 "HighResolution=1\n" +
                 "VulkanEnabled=1\n" +
@@ -48,17 +44,11 @@ public class FreeFireConfigPatcher {
                 "Unlock165Hz=1\n" +
                 "AimAssist=1\n" +
                 "AutoAimPrecision=1.0\n" +
-                "UltraFastDrag=1\n" +
-                "AutoHeadshotSensitivity=100\n" +
                 "SprintSensitivity=150\n" +
                 "GeneralSensitivity=100\n" +
                 "RedDotSensitivity=100\n" +
                 "TPPFov=100\n" +
                 "FPPFov=150\n" +
-                "GyroNoRecoil=1\n" +
-                "Gyro1000HzFilter=1\n" +
-                "GyroSampleRate=1000\n" +
-                "GyroRecoilCompensation=1.00\n" +
                 "NoRecoil=1\n" +
                 "RecoilReduction=1.00\n" +
                 "AllWeaponRecoilFix=1\n" +
@@ -67,16 +57,10 @@ public class FreeFireConfigPatcher {
                 "Scope4xRecoil=0.00\n" +
                 "SniperScopeRecoil=0.00\n" +
                 "GunShakeReduction=1.00\n" +
-                "AllGunsDamageBoost=1.90\n" +
                 "DamageBoostRatio=1.90\n" +
                 "HeadshotDamageMultiplier=2.90\n" +
                 "BulletDamageBoost=1.90\n" +
                 "CriticalHitRate=95\n" +
-                "GunDamageMultiplier=1.90\n" +
-                "AR_DamageMultiplier=1.90\n" +
-                "SMG_DamageMultiplier=1.90\n" +
-                "Sniper_DamageMultiplier=2.90\n" +
-                "Shotgun_DamageMultiplier=2.00\n" +
                 "TouchResponseLevel=3\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
@@ -100,8 +84,8 @@ public class FreeFireConfigPatcher {
             String cmd =
                 "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
                 "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
+                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=165' >> " + path + "; " +
+                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=165/' " + path + "; " +
                 "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
                 "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
@@ -173,33 +157,7 @@ public class FreeFireConfigPatcher {
     }
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = new ArrayList<>();
-        paths.add("/sdcard/Android/data/" + pkg + "/files/FFGraphicsSettings.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/content/ff_graphics.ini");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/ff_graphics.json");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/client_settings.json");
-        paths.add("/data/data/" + pkg + "/files/FFGraphicsSettings.ini");
-        paths.add("/data/data/" + pkg + "/files/ff_graphics.json");
-        paths.add("/data/data/" + pkg + "/shared_prefs/" + pkg + "_preferences.xml");
-        paths.add("/data/data/" + pkg + "/shared_prefs/com.dts.freefireth.v2.playerprefs.xml");
-        paths.add("/data/data/" + pkg + "/shared_prefs/com.dts.freefiremax.v2.playerprefs.xml");
-
-        // Deep Search discovered paths via Shizuku
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            try {
-                String cmd = "find /sdcard/Android/data/" + pkg + "/files/ /data/data/" + pkg + "/files/ /data/data/" + pkg + "/shared_prefs/ -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" \\) 2>/dev/null";
-                String output = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (output != null && !output.isEmpty()) {
-                    for (String line : output.split("\n")) {
-                        line = line.trim();
-                        if (!line.isEmpty() && !paths.contains(line)) {
-                            paths.add(line);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        return paths;
+        return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
     private static void forceWrite(String path, String content) {

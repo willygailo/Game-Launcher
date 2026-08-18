@@ -28,37 +28,90 @@ public class ProfileManager {
     }
 
     private void initDefaults() {
-        // PUBG Mobile Preset
+        // PUBG Mobile & BGMI
         InputProfile pubgProfile = new InputProfile(
-                "pubg_mobile",
-                "PUBG Mobile Precision Aim",
-                "com.tencent.ig",
-                1000,   // debug.input.max_events_per_sec
-                0,      // view.touch_slop
-                1,      // touch_slop_reduction
-                1000,   // debug.sensor.gyro.rate
-                7,      // pointer_speed
-                0.0001  // persist.sys.touch.pressure.scale
+                "pubg_mobile", "PUBG Mobile Precision Aim", "com.tencent.ig",
+                1000, 0, 1, 1000, 7, 0.0001
         );
         defaultProfiles.put("com.tencent.ig", pubgProfile);
         defaultProfiles.put("com.pubg.imobile", pubgProfile);
         defaultProfiles.put("com.pubg.krmobile", pubgProfile);
         defaultProfiles.put("com.vng.pubgmobile", pubgProfile);
+        defaultProfiles.put("com.rekoo.pubgm", pubgProfile);
+        defaultProfiles.put("com.pubg.newstate", pubgProfile);
 
-        // COD Mobile Preset
+        // COD Mobile
         InputProfile codmProfile = new InputProfile(
-                "cod_mobile",
-                "COD Mobile Instant Response",
-                "com.activision.callofduty.shooter",
-                1000,   // max events per sec
-                0,      // zero touch slop
-                1,      // touch slop reduction
-                1000,   // 1000Hz gyro rate
-                7,      // 1:1 linear pointer
-                0.0001  // pressure scale
+                "cod_mobile", "COD Mobile Instant Response", "com.activision.callofduty.shooter",
+                1000, 0, 1, 1000, 7, 0.0001
         );
         defaultProfiles.put("com.activision.callofduty.shooter", codmProfile);
         defaultProfiles.put("com.garena.game.codm", codmProfile);
+        defaultProfiles.put("com.vng.codmvn", codmProfile);
+
+        // Free Fire
+        InputProfile ffProfile = new InputProfile(
+                "free_fire", "Free Fire Headshot Zero Latency", "com.dts.freefireth",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.dts.freefireth", ffProfile);
+        defaultProfiles.put("com.dts.freefiremax", ffProfile);
+
+        // Mobile Legends (MLBB)
+        InputProfile mlbbProfile = new InputProfile(
+                "mlbb", "MLBB Fast Skill Cast & Micro-Touch", "com.mobile.legends",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.mobile.legends", mlbbProfile);
+        defaultProfiles.put("com.mobilelegends.mi", mlbbProfile);
+        defaultProfiles.put("com.vng.mlbbvn", mlbbProfile);
+
+        // Blood Strike
+        InputProfile bloodStrikeProfile = new InputProfile(
+                "blood_strike", "Blood Strike 1000Hz Gyro & Aim", "com.netease.bloodstrike",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.netease.bloodstrike", bloodStrikeProfile);
+        defaultProfiles.put("com.netease.newspike", bloodStrikeProfile);
+
+        // Standoff 2
+        InputProfile standoffProfile = new InputProfile(
+                "standoff2", "Standoff 2 CS Pro Aim", "com.axlebolt.standoff2",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.axlebolt.standoff2", standoffProfile);
+
+        // Genshin Impact
+        InputProfile genshinProfile = new InputProfile(
+                "genshin", "Genshin Impact Ultra Smooth Touch", "com.miHoYo.GenshinImpact",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.miHoYo.GenshinImpact", genshinProfile);
+        defaultProfiles.put("com.cognosphere.GenshinImpact", genshinProfile);
+
+        // Honor of Kings
+        InputProfile hokProfile = new InputProfile(
+                "hok", "HOK eSports Fast Cast", "com.levelinfinite.sgameGlobal",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.levelinfinite.sgameGlobal", hokProfile);
+        defaultProfiles.put("com.tencent.tmgp.sgame", hokProfile);
+
+        // Valorant Mobile
+        InputProfile valProfile = new InputProfile(
+                "valorant", "Valorant Mobile Tactical Precision", "com.tencent.tmgp.projectc",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.tencent.tmgp.projectc", valProfile);
+        defaultProfiles.put("com.riotgames.valorantmobile", valProfile);
+
+        // Farlight 84
+        InputProfile farlightProfile = new InputProfile(
+                "farlight", "Farlight 84 Fast Tracking", "com.miracle.farlight84",
+                1000, 0, 1, 1000, 7, 0.0001
+        );
+        defaultProfiles.put("com.miracle.farlight84", farlightProfile);
+        defaultProfiles.put("com.farlightgames.farlight84.global", farlightProfile);
     }
 
     public InputProfile getProfileForPackage(String packageName) {
