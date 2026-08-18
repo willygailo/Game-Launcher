@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_dark"
     android:fillViewport="true"
     android:overScrollMode="never"
     android:clipToPadding="false"
@@ -17,18 +18,19 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gaming Preset Profiles"
-            android:textColor="#00F0FF"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:text="🎮 Gaming Preset Profiles"
+            android:textColor="@color/accent_cyan"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Profiles automatically match your device's supported refresh rates"
-            android:textColor="#8F9CAE"
-            android:textSize="14sp" />
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tv_engine_status"
@@ -36,15 +38,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Active Engine: Checking..."
-            android:textColor="#8F9CAE"
-            android:textSize="13sp" />
+            android:textColor="@color/accent_neon_green"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <!-- GPU GRAPHICS RENDER ENGINE SELECTOR CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="#161F33"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -52,17 +55,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🎨 GPU GRAPHICS RENDER ENGINE"
-                android:textColor="#00F0FF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/accent_cyan"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Select 3D Vulkan HWUI for modern 3D games or 2D Skia Engine for retro/pixel games."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -73,23 +77,25 @@
                 <Button
                     android:id="@+id/btn_engine_3d_vulkan"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
-                    android:backgroundTint="#00F0FF"
+                    android:background="@drawable/btn_cyber_cyan"
                     android:text="⚡ 3D Vulkan HWUI"
-                    android:textColor="#0A0E1A"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/btn_engine_2d_skia"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="44dp"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
-                    android:backgroundTint="#243354"
+                    android:background="@drawable/btn_cyber_dark"
                     android:text="🎮 2D Skia Engine"
                     android:textColor="#FFFFFF"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -99,7 +105,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#161F33"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -107,26 +113,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🔥 EXTREME PERFORMANCE"
-                android:textColor="#00F0FF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/accent_cyan"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Uses the highest display refresh rate supported by your Android device."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:text="Uses the highest display refresh rate (120/144/165/185 FPS) supported by your Android device."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_apply_pubg_profile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#00F0FF"
-                android:text="Apply Extreme Performance Profile"
-                android:textColor="#0A0E1A"
+                android:background="@drawable/btn_cyber_cyan"
+                android:text="⚡ Apply Extreme Performance Profile"
+                android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -135,7 +142,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#161F33"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -143,26 +150,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⚡ HIGH PERFORMANCE"
-                android:textColor="#00FF88"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/accent_neon_green"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Uses up to 120Hz when supported, with device-compatible gaming settings."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_apply_2d_profile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#00FF88"
-                android:text="Apply Performance Profile"
-                android:textColor="#0A0E1A"
+                android:background="@drawable/btn_cyber_green"
+                android:text="🚀 Apply High Performance Profile"
+                android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -171,7 +179,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#161F33"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -179,26 +187,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⚖️ BALANCED GAME PERFORMANCE"
-                android:textColor="#FFB800"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/accent_amber"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Uses up to 90Hz when supported for smoother gameplay and lower heat."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:text="Uses up to 90Hz when supported for smoother gameplay and lower battery drain."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_apply_balanced_profile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#FFB800"
-                android:text="Apply Balanced Profile"
-                android:textColor="#0A0E1A"
+                android:background="@drawable/btn_cyber_accent"
+                android:text="✨ Apply Balanced Profile"
+                android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -207,7 +216,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#161F33"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -215,26 +224,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🛠️ MANUAL GAME CONFIG PATCHER"
-                android:textColor="#00F0FF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textColor="@color/accent_cyan"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Patches graphics/FPS config files inside /sdcard/Android/data/&lt;package_name&gt;/ for MLBB, PUBG, CODM, Free Fire, Wild Rift, HOK, Genshin, etc."
-                android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:text="Patches graphics/FPS config files inside game storage for MLBB, PUBG, CODM, Free Fire, Wild Rift, HOK, Genshin, etc."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btn_open_manual_config_picker"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#00F0FF"
+                android:background="@drawable/btn_cyber_cyan"
                 android:text="🎮 SELECT GAME &amp; APPLY MANUAL CONFIG"
-                android:textColor="#0A0E1A"
+                android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 

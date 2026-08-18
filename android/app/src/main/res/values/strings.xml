@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Application Info -->
     <string name="app_name">GAME SPACE</string>
+    <string name="app_full_name">GAME BOOSTER PRO</string>
+    <string name="app_tagline">120 • 144 • 165 • 185 FPS Extreme Gaming Engine</string>
+
+    <!-- Navigation Tabs -->
     <string name="nav_home">Home</string>
     <string name="nav_games">Games</string>
     <string name="nav_tweaks">Tweaks</string>
     <string name="nav_hz_fps">Hz &amp; FPS</string>
     <string name="nav_profiles">Profiles</string>
     <string name="nav_permissions">Permissions</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- FPS / Hz Labels -->
+    <string name="fps_tier_60">60 FPS (Battery Saver)</string>
+    <string name="fps_tier_90">90 FPS (Smooth Balanced)</string>
+    <string name="fps_tier_120">120 FPS (Ultra)</string>
+    <string name="fps_tier_144">144 FPS (Extreme)</string>
+    <string name="fps_tier_165">165 FPS (Hyper)</string>
+    <string name="fps_tier_185">185 FPS (Max Pro)</string>
+
+    <!-- Engine & Status -->
+    <string name="engine_shizuku_active">⚡ SHIZUKU ACTIVE</string>
+    <string name="engine_root_active">⚡ ROOT ACTIVE</string>
+    <string name="engine_system_active">⚡ SYSTEM ACTIVE</string>
+    <string name="engine_checking">Active Engine: Checking...</string>
+
+    <!-- Common Actions -->
+    <string name="action_boost_ram">🚀 BOOST RAM &amp; CLEAN CACHE</string>
+    <string name="action_auto_config">⚡ AUTO-CONFIG ALL GAMES (SUPPORTED HZ)</string>
+    <string name="action_apply">APPLY</string>
+    <string name="action_dismiss">DISMISS</string>
+    <string name="action_cancel">CANCEL</string>
+    <string name="action_save">SAVE</string>
+    <string name="action_launch">LAUNCH</string>
 </resources>

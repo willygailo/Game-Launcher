@@ -49,6 +49,7 @@ public class GamesFragment extends Fragment {
         Button btnTarget120 = view.findViewById(R.id.btn_target_120);
         Button btnTarget144 = view.findViewById(R.id.btn_target_144);
         Button btnTarget165 = view.findViewById(R.id.btn_target_165);
+        Button btnTarget185 = view.findViewById(R.id.btn_target_185);
         Button btnAutoConfig = view.findViewById(R.id.btn_auto_config_games);
 
         if (getContext() != null && tvTargetLabel != null) {
@@ -60,6 +61,7 @@ public class GamesFragment extends Fragment {
             setTargetRateVisible(btnTarget120, caps, 120);
             setTargetRateVisible(btnTarget144, caps, 144);
             setTargetRateVisible(btnTarget165, caps, 165);
+            setTargetRateVisible(btnTarget185, caps, 185);
         }
 
         View.OnClickListener hzClickListener = v -> {
@@ -71,6 +73,7 @@ public class GamesFragment extends Fragment {
             else if (id == R.id.btn_target_120) targetHz = 120;
             else if (id == R.id.btn_target_144) targetHz = 144;
             else if (id == R.id.btn_target_165) targetHz = 165;
+            else if (id == R.id.btn_target_185) targetHz = 185;
 
             com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
             int appliedTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
@@ -85,6 +88,7 @@ public class GamesFragment extends Fragment {
         if (btnTarget120 != null) btnTarget120.setOnClickListener(hzClickListener);
         if (btnTarget144 != null) btnTarget144.setOnClickListener(hzClickListener);
         if (btnTarget165 != null) btnTarget165.setOnClickListener(hzClickListener);
+        if (btnTarget185 != null) btnTarget185.setOnClickListener(hzClickListener);
 
         if (btnAutoConfig != null) {
             btnAutoConfig.setOnClickListener(v -> {

@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Standard Phone Dimensions (Android 13, 14, 15, 16) -->
+    <!-- Screen Spacing & Padding -->
+    <dimen name="screen_padding_horizontal">16dp</dimen>
+    <dimen name="screen_padding_top">16dp</dimen>
+    <dimen name="screen_padding_bottom">80dp</dimen>
+    <dimen name="section_margin_bottom">16dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_padding_compact">12dp</dimen>
+
+    <!-- Card Radii & Elevation -->
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="card_corner_radius_large">20dp</dimen>
+    <dimen name="card_corner_radius_small">10dp</dimen>
+    <dimen name="card_elevation">0dp</dimen>
+    <dimen name="nav_bar_elevation">12dp</dimen>
+
+    <!-- Buttons -->
+    <dimen name="btn_height_large">48dp</dimen>
+    <dimen name="btn_height_normal">44dp</dimen>
+    <dimen name="btn_height_small">36dp</dimen>
+    <dimen name="btn_height_compact">28dp</dimen>
+    <dimen name="btn_corner_radius">10dp</dimen>
+    <dimen name="btn_corner_radius_pill">24dp</dimen>
+
+    <!-- Typography -->
+    <dimen name="text_title_large">22sp</dimen>
+    <dimen name="text_title_medium">18sp</dimen>
+    <dimen name="text_section_header">15sp</dimen>
+    <dimen name="text_body">13sp</dimen>
+    <dimen name="text_caption">11sp</dimen>
+    <dimen name="text_micro">10sp</dimen>
+
+    <!-- Terminal Dimensions -->
     <dimen name="terminal_header_height">48dp</dimen>
     <dimen name="terminal_header_title_size">13sp</dimen>
     <dimen name="terminal_status_size">10sp</dimen>
@@ -10,4 +41,9 @@
     <dimen name="terminal_input_min_height">38dp</dimen>
     <dimen name="terminal_input_text_size">11.5sp</dimen>
     <dimen name="terminal_side_margin">0dp</dimen>
+
+    <!-- Game Icons & Badges -->
+    <dimen name="game_icon_size">56dp</dimen>
+    <dimen name="game_icon_size_home">60dp</dimen>
+    <dimen name="badge_corner_radius">6dp</dimen>
 </resources>

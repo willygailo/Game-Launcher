@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Cyber Gaming Application Theme -->
+    <style name="Theme.GameBooster" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Brand / Accent Colors -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlHighlight">@color/colorControlHighlight</item>
+
+        <!-- Window System Backgrounds -->
+        <item name="android:windowBackground">@color/bg_dark</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- Typography / Text Colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Component Styles -->
+        <item name="materialButtonStyle">@style/Widget.GameBooster.Button</item>
+        <item name="switchStyle">@style/Widget.GameBooster.Switch</item>
+    </style>
+
+    <!-- Legacy / Compatibility Alias -->
+    <style name="Theme.GameLauncher" parent="Theme.GameBooster" />
+
+    <!-- Cyber Button Style -->
+    <style name="Widget.GameBooster.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/btn_corner_radius</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Cyber Switch Style -->
+    <style name="Widget.GameBooster.Switch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:thumbTint">@color/accent_cyan</item>
+        <item name="trackTint">@color/switch_track_on</item>
+    </style>
+
+    <!-- Cyber Dialog Theme -->
+    <style name="Theme.GameBooster.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.65</item>
+    </style>
+</resources>

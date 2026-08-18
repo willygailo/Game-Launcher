@@ -21,13 +21,14 @@
             android:text="⚡ DEVICE-SUPPORTED HZ &amp; FPS"
             android:textColor="@color/accent_cyan"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Only display modes reported by your Android device are available"
+            android:text="Hardware refresh rates and display modes reported by your Android device"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
@@ -37,32 +38,34 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:textColor="@color/accent_neon_green"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <!-- Refresh Rate Controls -->
+        <!-- Refresh Rate Controls Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LOCK DISPLAY REFRESH RATE"
+                android:text="🎯 LOCK DISPLAY REFRESH RATE"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <Button
                 android:id="@+id/btn_lock_60"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#243354"
-                android:text="Lock to 60Hz (Battery Saver)"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🔋 Lock to 60Hz (Battery Saver)"
                 android:textColor="#FFFFFF" />
 
             <Button
@@ -70,8 +73,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="#243354"
-                android:text="Lock to 90Hz (Smooth Balanced)"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="✨ Lock to 90Hz (Smooth Balanced)"
                 android:textColor="#FFFFFF" />
 
             <Button
@@ -79,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_cyan"
+                android:background="@drawable/btn_cyber_cyan"
                 android:text="⚡ Lock to 120Hz Ultra"
                 android:textColor="#000000"
                 android:textStyle="bold" />
@@ -89,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_neon_green"
+                android:background="@drawable/btn_cyber_green"
                 android:text="🔥 Lock to 144Hz Extreme"
                 android:textColor="#000000"
                 android:textStyle="bold" />
@@ -99,8 +102,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_purple"
-                android:text="🚀 Lock to 165Hz / Max Hardware Mode"
+                android:background="@drawable/btn_cyber_purple"
+                android:text="🚀 Lock to 165Hz Hyper Mode"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
@@ -109,18 +112,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/accent_cyan"
-                android:text="⚡ Lock to 185Hz ROG Extreme Mode"
+                android:background="@drawable/btn_cyber_cyan"
+                android:text="⚡ Lock to 185Hz ROG Extreme Max"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Thermal protection status -->
+        <!-- Thermal Protection Status Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="16dp">
@@ -134,7 +137,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thermal Protection"
+                    android:text="🛡️ Thermal Protection"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -143,7 +146,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Stays active to prevent overheating and performance drops during long sessions"
+                    android:text="Active thermal guard prevents overheating and throttling during high-refresh gameplay"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -151,8 +154,12 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/badge_neon_green"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
                 android:text="ACTIVE"
                 android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
 

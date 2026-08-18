@@ -21,7 +21,8 @@
             android:text="⚡ EXECUTION &amp; PERMISSIONS"
             android:textColor="@color/accent_cyan"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:letterSpacing="0.04" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -37,15 +38,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Active Engine: Checking..."
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:textColor="@color/accent_neon_green"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <!-- Shizuku Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -55,7 +57,8 @@
                 android:text="⚡ 1-TAP SHIZUKU ADB CONNECTION"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -70,8 +73,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="@color/accent_neon_green"
-                android:text="CONNECT VIA SHIZUKU"
+                android:background="@drawable/btn_cyber_green"
+                android:text="⚡ CONNECT VIA SHIZUKU"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -81,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/card_bg"
+            android:background="@drawable/card_glass_shape"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -91,7 +94,8 @@
                 android:text="⚙️ SYSTEM SETTINGS PERMISSION"
                 android:textColor="@color/accent_cyan"
                 android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.03" />
 
             <TextView
                 android:id="@+id/tv_root_status"
@@ -107,8 +111,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="@color/accent_cyan"
-                android:text="OPEN WRITE SETTINGS PERMISSION"
+                android:background="@drawable/btn_cyber_cyan"
+                android:text="⚙️ OPEN WRITE SETTINGS PERMISSION"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>

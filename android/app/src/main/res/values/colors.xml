@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Backgrounds & Surfaces -->
+    <!-- Primary Brand & Theme Colors -->
+    <color name="colorPrimary">#00F0FF</color>
+    <color name="colorPrimaryDark">#080B11</color>
+    <color name="colorAccent">#00FF66</color>
+    <color name="colorControlHighlight">#2600F0FF</color>
+
+    <!-- Backgrounds & Surfaces (OLED & Dark Cyber) -->
     <color name="bg_dark">#080B11</color>
-    <color name="glass_scrim">#00000000</color>
+    <color name="bg_dark_pure">#04060A</color>
+    <color name="bg_dark_surface">#0F172A</color>
+    <color name="glass_scrim">#50080B11</color>
     <color name="card_bg">#200F172A</color>
     <color name="card_bg_elevated">#330F1A30</color>
     <color name="card_bg_glass">#1A111E38</color>
+    <color name="card_bg_solid">#131D33</color>
     <color name="card_stroke">#4000F0FF</color>
     <color name="card_stroke_strong">#8000F0FF</color>
     <color name="card_stroke_green">#8000FF66</color>
+    <color name="card_stroke_purple">#808A2BE2</color>
+    <color name="card_stroke_amber">#80FFB800</color>
     <color name="card_stroke_subtle">#22334D6E</color>
 
     <!-- Neon Accents -->
@@ -19,6 +30,7 @@
     <color name="accent_purple">#8A2BE2</color>
     <color name="accent_purple_glow">#338A2BE2</color>
     <color name="accent_amber">#FFB800</color>
+    <color name="accent_amber_glow">#33FFB800</color>
     <color name="accent_lock_amber">#FFB800</color>
     <color name="accent_orange">#FF8800</color>
     <color name="accent_red">#FF0055</color>
@@ -43,4 +55,16 @@
     <color name="accent_pubg_orange">#FB923C</color>
     <color name="accent_codm_red">#F43F5E</color>
     <color name="accent_ff_gold">#FACC15</color>
+    <color name="accent_genshin_teal">#2DD4BF</color>
+    <color name="accent_hok_gold">#EAB308</color>
+    <color name="accent_wildrift_blue">#60A5FA</color>
+    <color name="accent_carx_red">#EF4444</color>
+
+    <!-- Interactive & State Lists -->
+    <color name="btn_dark_bg">#1E293B</color>
+    <color name="btn_dark_stroke">#334155</color>
+    <color name="switch_thumb_on">#00F0FF</color>
+    <color name="switch_thumb_off">#64748B</color>
+    <color name="switch_track_on">#4000F0FF</color>
+    <color name="switch_track_off">#2064748B</color>
 </resources>
