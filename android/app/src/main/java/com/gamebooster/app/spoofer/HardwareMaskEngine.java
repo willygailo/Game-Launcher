@@ -126,41 +126,46 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 4: ANDROID MODEL & OS IDENTITY MASKING
             // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop ro.product.model \"" + profile.model + "\"");
-            batchCommands.add("setprop ro.product.brand \"" + profile.brand + "\"");
-            batchCommands.add("setprop ro.product.name \"" + profile.productName + "\"");
-            batchCommands.add("setprop ro.product.device \"" + profile.device + "\"");
-            batchCommands.add("setprop ro.product.manufacturer \"" + profile.manufacturer + "\"");
-            batchCommands.add("setprop ro.build.product \"" + profile.buildProduct + "\"");
-            batchCommands.add("setprop ro.build.fingerprint \"" + profile.fingerprint + "\"");
-            batchCommands.add("setprop ro.build.display.id \"" + profile.displayId + "\"");
-            batchCommands.add("setprop ro.build.version.release \"" + profile.androidVersion + "\"");
-            batchCommands.add("setprop ro.build.version.sdk \"" + profile.sdkInt + "\"");
-            batchCommands.add("setprop ro.build.version.security_patch \"" + profile.securityPatch + "\"");
-            batchCommands.add("setprop persist.sys.device_name \"" + profile.displayName + "\"");
-            batchCommands.add("settings put global device_name \"" + profile.displayName + "\"");
-            batchCommands.add("settings put system custom_device_name \"" + profile.displayName + "\"");
+            for (Map.Entry<String, String> entry : profile.generateSystemProperties().entrySet()) {
+                batchCommands.add("setprop " + entry.getKey() + " \"" + entry.getValue() + "\"");
+            }
+            batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");
+            batchCommands.add("setprop dalvik.vm.heapsize 1024m");
+            batchCommands.add("setprop dalvik.vm.heaptargetutilization 0.75");
+            batchCommands.add("setprop dalvik.vm.heapminfree 8m");
+            batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
+
+            // Determine Target Refresh Rate based on Profile
+            int targetHz = 120;
+            if (profile.displayName.contains("185Hz")) targetHz = 185;
+            else if (profile.displayName.contains("165Hz")) targetHz = 165;
+            else if (profile.displayName.contains("144Hz")) targetHz = 144;
 
             // Display & SurfaceFlinger Frame Rates
-            batchCommands.add("settings put system peak_refresh_rate 120.0");
-            batchCommands.add("settings put system min_refresh_rate 120.0");
-            batchCommands.add("settings put system user_refresh_rate 120");
-            batchCommands.add("settings put global peak_refresh_rate 120.0");
-            batchCommands.add("settings put global min_refresh_rate 120.0");
-            batchCommands.add("service call SurfaceFlinger 1035 i32 120");
-            batchCommands.add("service call SurfaceFlinger 1036 i32 120");
-            batchCommands.add("setprop debug.sf.fps_limit 120");
-            batchCommands.add("setprop persist.sys.NV_FPSLIMIT 120");
+            batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put system min_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put system user_refresh_rate " + targetHz);
+            batchCommands.add("settings put global peak_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put global min_refresh_rate " + targetHz + ".0");
+            batchCommands.add("service call SurfaceFlinger 1035 i32 " + targetHz);
+            batchCommands.add("service call SurfaceFlinger 1036 i32 " + targetHz);
+            batchCommands.add("setprop debug.sf.fps_limit " + targetHz);
+            batchCommands.add("setprop persist.sys.NV_FPSLIMIT " + targetHz);
             batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
             batchCommands.add("setprop debug.gr.swapinterval 0");
+
+            // Thermal Throttling Bypass for Maximum Performance
+            batchCommands.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+            batchCommands.add("dumpsys battery set temp 280 2>/dev/null");
+            batchCommands.add("dumpsys battery set level 100 2>/dev/null");
 
             // Per-Package Android Game Mode & Overlay
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
                 batchCommands.add("cmd game mode performance " + pkg);
-                batchCommands.add("cmd game set --fps 120 " + pkg);
-                batchCommands.add("cmd window set-app-refresh-rate " + pkg + " 120");
-                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,fps=120:mode=3,fps=120");
+                batchCommands.add("cmd game set --fps " + targetHz + " " + pkg);
+                batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz);
+                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);
                 batchCommands.add("settings put global game_driver_opt_in_apps " + pkg);
                 batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
             }
@@ -241,13 +246,14 @@ public class HardwareMaskEngine {
     }
 
     /**
-     * Staging mock /proc/cpuinfo and /proc/meminfo files.
+     * Staging mock /proc/cpuinfo, /proc/meminfo, /proc/version, and system_spoof.prop files.
      */
     public static void exportMockProcfsPayloads(SpoofProfile profile) {
         if (profile == null) return;
         try {
             String cpuInfo = profile.generateCpuInfo();
             String memInfo = profile.generateMemInfo();
+            String procVer = profile.generateProcVersion();
 
             StringBuilder props = new StringBuilder();
             for (Map.Entry<String, String> e : profile.generateSystemProperties().entrySet()) {
@@ -263,7 +269,9 @@ public class HardwareMaskEngine {
                 ShizukuFileManager.ensureParentDirectory(dir + "fake_cpuinfo");
                 ShizukuFileManager.writeFile(dir + "fake_cpuinfo", cpuInfo, "666");
                 ShizukuFileManager.writeFile(dir + "fake_meminfo", memInfo, "666");
+                ShizukuFileManager.writeFile(dir + "fake_version", procVer, "666");
                 ShizukuFileManager.writeFile(dir + "system_spoof.prop", props.toString(), "666");
+                ShizukuFileManager.writeFile(dir + "build.prop", props.toString(), "666");
             }
         } catch (Throwable t) {
             Log.w(TAG, "exportMockProcfsPayloads error: " + t.getMessage());
@@ -277,12 +285,17 @@ public class HardwareMaskEngine {
         if (packageName == null || profile == null) return;
         String pkg = packageName.toLowerCase().trim();
 
+        int targetFps = 120;
+        if (profile.displayName.contains("185Hz")) targetFps = 185;
+        else if (profile.displayName.contains("165Hz")) targetFps = 165;
+        else if (profile.displayName.contains("144Hz")) targetFps = 144;
+
         // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight)
         if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
             pkg.contains("vng.pubgmobile") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ||
             pkg.contains("farlight") || pkg.contains("solarland") || pkg.contains("projectc") || pkg.contains("valorant")) {
 
-            String ue4Profile = profile.generateUe4DeviceProfile(165);
+            String ue4Profile = profile.generateUe4DeviceProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.endsWith("DeviceProfile.ini") || p.contains("Saved/Config/Android")) {
@@ -295,7 +308,7 @@ public class HardwareMaskEngine {
 
         // 2. Call of Duty Mobile / Warzone / Blood Strike
         else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("bloodstrike") || pkg.contains("warzone")) {
-            String jsonProfile = profile.generateJsonHardwareProfile(165);
+            String jsonProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("HardwareProfile.json") || p.endsWith(".json")) {
@@ -308,20 +321,10 @@ public class HardwareMaskEngine {
         // 3. Genshin Impact / Star Rail / ZZZ / Wuthering Waves
         else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") ||
                  pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") || pkg.contains("wutheringwaves")) {
-            String genshinProfile = "{\n" +
-                    "  \"device_model\": \"" + profile.model + "\",\n" +
-                    "  \"device_brand\": \"" + profile.brand + "\",\n" +
-                    "  \"gpu_renderer\": \"" + profile.glRenderer + "\",\n" +
-                    "  \"gpu_vendor\": \"" + profile.glVendor + "\",\n" +
-                    "  \"soc_model\": \"" + profile.socModel + "\",\n" +
-                    "  \"ram_total_mb\": " + profile.ramTotalMb + ",\n" +
-                    "  \"vulkan_support\": true,\n" +
-                    "  \"max_refresh_rate\": 165,\n" +
-                    "  \"frame_rate_cap\": 165\n" +
-                    "}\n";
+            String genshinProfile = profile.generateGenshinDeviceConfig(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("hardware_model_config.json") || p.contains("device_config.json")) {
+                if (p.contains("hardware_model_config.json") || p.contains("device_config.json") || p.endsWith(".json")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, genshinProfile, "666");
                 }
@@ -329,32 +332,44 @@ public class HardwareMaskEngine {
         }
 
         // 4. Mobile Legends / Honor of Kings / Free Fire
-        else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ||
-                 pkg.contains("freefire") || pkg.contains("dts.freefire") ||
-                 pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor")) {
-            String iniProfile = "[Hardware]\n" +
-                    "DeviceModel=" + profile.model + "\n" +
-                    "DeviceBrand=" + profile.brand + "\n" +
-                    "GPU=" + profile.glRenderer + "\n" +
-                    "GPUVendor=" + profile.glVendor + "\n" +
-                    "SoC=" + profile.socModel + "\n" +
-                    "RAM=" + profile.ramTotalMb + "\n" +
-                    "HighFPSMode=1\n" +
-                    "FrameRateLevel=9\n" +
-                    "FPS=165\n" +
-                    "Unlock165Hz=1\n";
+        else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            String mlbbProfile = profile.generateMlbbDeviceConfig(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("DeviceHardware.ini") || p.endsWith("HighFPSConfig.ini")) {
+                if (p.contains("device_cfg.ini") || p.contains("DeviceHardware.ini") || p.endsWith("HighFPSConfig.ini")) {
                     ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, iniProfile, "666");
+                    ShizukuFileManager.writeFile(p, mlbbProfile, "666");
                 }
             }
         }
 
-        // 5. Roblox
+        // 5. Free Fire / Free Fire MAX
+        else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
+            String ffProfile = profile.generateFreeFireDeviceConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("device_info.json") || p.contains("DeviceHardware.ini") || p.endsWith(".json")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, ffProfile, "666");
+                }
+            }
+        }
+
+        // 6. Honor of Kings / Arena of Valor / Wild Rift
+        else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("wildrift")) {
+            String hokProfile = profile.generateHokDeviceConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("DeviceHardware.ini") || p.contains("device.ini") || p.endsWith(".ini")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, hokProfile, "666");
+                }
+            }
+        }
+
+        // 7. Roblox & Other Unity / Native Games
         else if (pkg.contains("roblox")) {
-            String robloxProfile = profile.generateJsonHardwareProfile(165);
+            String robloxProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("DeviceHardware.json") || p.endsWith(".json")) {

@@ -202,33 +202,93 @@ public class SpoofProfile {
     /**
      * Generates a full system properties map for all Android system namespaces.
      */
+    /**
+     * Generates a full system properties map covering all Android system, vendor, odm, and product namespaces.
+     */
     public Map<String, String> generateSystemProperties() {
         Map<String, String> props = new LinkedHashMap<>();
+        
+        // Base / Main
         props.put("ro.product.model", model);
         props.put("ro.product.brand", brand);
         props.put("ro.product.name", productName);
         props.put("ro.product.device", device);
         props.put("ro.product.manufacturer", manufacturer);
+        props.put("ro.product.board", board);
         props.put("ro.build.product", buildProduct);
+
+        // System Partition Namespace
+        props.put("ro.product.system.model", model);
+        props.put("ro.product.system.brand", brand);
+        props.put("ro.product.system.manufacturer", manufacturer);
+        props.put("ro.product.system.name", productName);
+        props.put("ro.product.system.device", device);
+
+        // Vendor Partition Namespace
+        props.put("ro.product.vendor.model", model);
+        props.put("ro.product.vendor.brand", brand);
+        props.put("ro.product.vendor.manufacturer", manufacturer);
+        props.put("ro.product.vendor.name", productName);
+        props.put("ro.product.vendor.device", device);
+
+        // ODM Partition Namespace
+        props.put("ro.product.odm.model", model);
+        props.put("ro.product.odm.brand", brand);
+        props.put("ro.product.odm.manufacturer", manufacturer);
+        props.put("ro.product.odm.name", productName);
+        props.put("ro.product.odm.device", device);
+
+        // Product Partition Namespace
+        props.put("ro.product.product.model", model);
+        props.put("ro.product.product.brand", brand);
+        props.put("ro.product.product.manufacturer", manufacturer);
+        props.put("ro.product.product.name", productName);
+        props.put("ro.product.product.device", device);
+
+        // Hardware / SoC
         props.put("ro.hardware", hardware);
         props.put("ro.board.platform", platform);
         props.put("ro.soc.model", socModel);
         props.put("ro.soc.manufacturer", socManufacturer);
         props.put("ro.chipname", chipname);
+        props.put("ro.hardware.chipname", chipname);
+
+        // Build / Fingerprint / OS
         props.put("ro.build.fingerprint", fingerprint);
         props.put("ro.build.display.id", displayId);
         props.put("ro.build.version.release", androidVersion);
         props.put("ro.build.version.sdk", String.valueOf(sdkInt));
         props.put("ro.build.version.security_patch", securityPatch);
+        props.put("ro.build.flavor", productName + "-user");
+        props.put("ro.build.description", productName + "-user " + androidVersion + " " + displayId + " release-keys");
+
+        // Graphics / EGL / Vulkan
         props.put("ro.hardware.egl", glVendor.toLowerCase().contains("arm") ? "mali" : "adreno");
+        props.put("ro.opengles.version", "196610"); // OpenGL ES 3.2
         props.put("debug.hwui.renderer", "vulkan");
         props.put("debug.renderengine.backend", "vulkan");
+
+        // RAM & Device Names
+        props.put("debug.game.spoofed_ram", String.valueOf(ramTotalMb));
+        props.put("debug.game.spoofed_ram_avail", String.valueOf(ramAvailableMb));
         props.put("persist.sys.device_name", displayName);
+        props.put("net.hostname", model.replace(" ", "_"));
+        props.put("bluetooth.device.default_name", displayName);
+
         return Collections.unmodifiableMap(props);
     }
 
+    /**
+     * Generates a mock /proc/version payload.
+     */
+    public String generateProcVersion() {
+        return "Linux version 6.6.56-android15-11-g" + Long.toHexString(System.currentTimeMillis()).substring(0, 7) +
+               " (android-build@google.com) (Android (11679469, based on r522817) clang version 18.0.1) #1 SMP PREEMPT " +
+               "Mon Jan 20 04:12:35 UTC 2025\n";
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
-    //  In-Game Engine Profile Generators
+    //  In-Game Engine Profile Generators (For 40+ Top Titles)
     // ─────────────────────────────────────────────────────────────────────────
 
     public String generateUe4DeviceProfile(int targetFps) {
@@ -247,7 +307,13 @@ public class SpoofProfile {
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.Vulkan.Enable=1\n" +
                 "+CVars=r.ShadowQuality=4\n" +
-                "FrameRateLevel=9\n";
+                "+CVars=r.MaxAnisotropy=16\n" +
+                "+CVars=r.Tonemapper.Quality=4\n" +
+                "FrameRateLevel=9\n" +
+                "Unlock185Hz=1\n" +
+                "Unlock165Hz=1\n" +
+                "Unlock120FPS=1\n" +
+                "Unlock90FPS=1\n";
     }
 
     public String generateJsonHardwareProfile(int targetFps) {
@@ -264,9 +330,74 @@ public class SpoofProfile {
                 "  \"MaxFrameRate\": " + targetFps + ",\n" +
                 "  \"FPSLimit\": " + targetFps + ",\n" +
                 "  \"GraphicQuality\": 4,\n" +
-                "  \"Unlock165Hz\": 1,\n" +
+                "  \"UnlockUltraHighFPS\": true,\n" +
+                "  \"Unlock185Hz\": true,\n" +
+                "  \"Unlock165Hz\": true,\n" +
+                "  \"Unlock120Hz\": true,\n" +
                 "  \"VulkanSupport\": true\n" +
                 "}\n";
+    }
+
+    public String generateMlbbDeviceConfig(int targetFps) {
+        return "[Hardware]\n" +
+                "DeviceModel=" + model + "\n" +
+                "DeviceBrand=" + brand + "\n" +
+                "GPU=" + glRenderer + "\n" +
+                "GPUVendor=" + glVendor + "\n" +
+                "SoC=" + socModel + "\n" +
+                "RAM=" + ramTotalMb + "\n" +
+                "HighFPSMode=1\n" +
+                "UltraFrameRate=1\n" +
+                "SuperFrameRate=1\n" +
+                "FrameRateLevel=9\n" +
+                "TargetFPS=" + targetFps + "\n" +
+                "ShadowQuality=3\n" +
+                "HDMode=1\n" +
+                "CreepOutline=1\n";
+    }
+
+    public String generateFreeFireDeviceConfig(int targetFps) {
+        return "{\n" +
+                "  \"device_model\": \"" + model + "\",\n" +
+                "  \"device_brand\": \"" + brand + "\",\n" +
+                "  \"gpu\": \"" + glRenderer + "\",\n" +
+                "  \"soc\": \"" + socModel + "\",\n" +
+                "  \"ram_mb\": " + ramTotalMb + ",\n" +
+                "  \"high_fps\": 1,\n" +
+                "  \"max_fps\": " + targetFps + ",\n" +
+                "  \"shadow\": 1,\n" +
+                "  \"high_res\": 1,\n" +
+                "  \"vivid\": 1\n" +
+                "}\n";
+    }
+
+    public String generateGenshinDeviceConfig(int targetFps) {
+        return "{\n" +
+                "  \"device_model\": \"" + model + "\",\n" +
+                "  \"device_brand\": \"" + brand + "\",\n" +
+                "  \"gpu_renderer\": \"" + glRenderer + "\",\n" +
+                "  \"gpu_vendor\": \"" + glVendor + "\",\n" +
+                "  \"soc_model\": \"" + socModel + "\",\n" +
+                "  \"ram_total_mb\": " + ramTotalMb + ",\n" +
+                "  \"vulkan_support\": true,\n" +
+                "  \"max_refresh_rate\": " + targetFps + ",\n" +
+                "  \"frame_rate_cap\": " + targetFps + ",\n" +
+                "  \"quality_tier\": 5,\n" +
+                "  \"render_resolution_scale\": 1.0\n" +
+                "}\n";
+    }
+
+    public String generateHokDeviceConfig(int targetFps) {
+        return "[DeviceConfig]\n" +
+                "Model=" + model + "\n" +
+                "Brand=" + brand + "\n" +
+                "GPU=" + glRenderer + "\n" +
+                "SoC=" + socModel + "\n" +
+                "RAM=" + ramTotalMb + "\n" +
+                "HighFrameRate=1\n" +
+                "UltraFrameRate=1\n" +
+                "ExtemeFrameRate=1\n" +
+                "FPS=" + targetFps + "\n";
     }
 
     @Override
