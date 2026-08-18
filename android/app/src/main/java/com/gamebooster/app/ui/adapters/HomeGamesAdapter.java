@@ -1,4 +1,4 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;

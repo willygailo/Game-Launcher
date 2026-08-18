@@ -22,22 +22,18 @@ android {
         buildConfig true
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug
-            minifyEnabled false
-            shrinkResources false
-        }
-    }
     sourceSets {
         main {
             res.srcDirs = [
+                // Default resources (values, mipmap, etc.)
                 'src/main/res',
+                // Layouts — grouped by screen type
                 'src/main/res-layouts/activities',
-                'src/main/res-layouts/fragments',
                 'src/main/res-layouts/dialogs',
+                'src/main/res-layouts/fragments',
                 'src/main/res-layouts/hud',
                 'src/main/res-layouts/items',
+                // Drawables — grouped by component type
                 'src/main/res-drawables/backgrounds',
                 'src/main/res-drawables/badges',
                 'src/main/res-drawables/buttons',
@@ -45,6 +41,14 @@ android {
                 'src/main/res-drawables/hud',
                 'src/main/res-drawables/nav'
             ]
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
     }
 

@@ -1,4 +1,5 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.fragments;
+import com.gamebooster.app.ui.adapters.GamesAdapter;
 import com.gamebooster.app.config.*;
 
 import android.os.Bundle;

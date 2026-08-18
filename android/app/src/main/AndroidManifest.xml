@@ -205,7 +205,7 @@
         </receiver>
 
         <activity
-            android:name="com.gamebooster.app.ui.screens.MainActivity"
+            android:name="com.gamebooster.app.ui.activities.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:hardwareAccelerated="true">

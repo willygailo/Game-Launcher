@@ -1,4 +1,4 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.activities;
 import com.gamebooster.app.config.*;
 
 import android.graphics.Color;
@@ -17,6 +17,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import com.gamebooster.app.ui.fragments.HomeFragment;
+import com.gamebooster.app.ui.fragments.SettingsFragment;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;

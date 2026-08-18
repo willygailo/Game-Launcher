@@ -1,4 +1,6 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.fragments;
+import com.gamebooster.app.ui.adapters.HomeGamesAdapter;
+import com.gamebooster.app.ui.activities.MainActivity;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

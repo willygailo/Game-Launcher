@@ -1,4 +1,4 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;

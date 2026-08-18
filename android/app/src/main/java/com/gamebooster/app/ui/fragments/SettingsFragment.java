@@ -1,4 +1,8 @@
-package com.gamebooster.app.ui.screens;
+package com.gamebooster.app.ui.fragments;
+
+import com.gamebooster.app.ui.adapters.SpoofProfileAdapter;
+
+import com.gamebooster.app.ui.adapters.TweaksAdapter;
 import com.gamebooster.app.config.*;
 
 import android.content.Context;
