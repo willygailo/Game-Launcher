@@ -33,9 +33,19 @@ public class TerminalFolderManager {
     private final Context appContext;
     private File terminalDir;
 
+    private static volatile boolean isSeeded = false;
+
     private TerminalFolderManager(Context context) {
         this.appContext = context.getApplicationContext();
-        initTerminalFolder();
+        File extDir = appContext.getExternalFilesDir("terminal");
+        if (extDir != null && (extDir.exists() || extDir.mkdirs())) {
+            terminalDir = extDir;
+        } else {
+            terminalDir = new File(appContext.getFilesDir(), "terminal");
+            if (!terminalDir.exists()) {
+                terminalDir.mkdirs();
+            }
+        }
     }
 
     public static TerminalFolderManager getInstance(Context context) {
@@ -57,8 +67,8 @@ public class TerminalFolderManager {
         try {
             if (ShizukuExecutor.hasShizukuPermission()) {
                 // Primary target: /data/local/tmp (shell-writable via Shizuku)
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + TMP_DIR);
                 terminalDir = new File(TMP_DIR);
+                ShizukuExecutor.executeShizukuCommand("mkdir -p " + TMP_DIR);
             } else {
                 // Fallback to external files dir or internal files dir
                 File extDir = appContext.getExternalFilesDir("terminal");
@@ -72,7 +82,10 @@ public class TerminalFolderManager {
                 }
             }
 
-            seedDefaultScripts();
+            if (!isSeeded) {
+                seedDefaultScripts();
+                isSeeded = true;
+            }
         } catch (Throwable t) {
             Log.e(TAG, "Failed to initialize terminal folder", t);
             terminalDir = new File(appContext.getFilesDir(), "terminal");
@@ -196,8 +209,17 @@ public class TerminalFolderManager {
     }
 
     public File getTerminalDir() {
-        if (terminalDir == null || (ShizukuExecutor.hasShizukuPermission() && !TMP_DIR.equals(terminalDir.getAbsolutePath()))) {
-            initTerminalFolder();
+        if (terminalDir == null) {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                terminalDir = new File(TMP_DIR);
+            } else {
+                File extDir = appContext.getExternalFilesDir("terminal");
+                if (extDir != null && (extDir.exists() || extDir.mkdirs())) {
+                    terminalDir = extDir;
+                } else {
+                    terminalDir = new File(appContext.getFilesDir(), "terminal");
+                }
+            }
         }
         return terminalDir;
     }

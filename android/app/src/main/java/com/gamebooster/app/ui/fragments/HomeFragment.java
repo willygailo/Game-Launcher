@@ -89,6 +89,15 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            updateStatusStrip();
+            loadAndScanGamesZeroDelay();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().removeConnectionListener(connListener);

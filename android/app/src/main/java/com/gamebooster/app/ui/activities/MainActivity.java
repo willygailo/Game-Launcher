@@ -218,12 +218,38 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         });
     }
 
-    private void showFragmentForTab(int position) {
-        Fragment selectedFragment = (position == 1) ? new SettingsFragment() : new HomeFragment();
+    private static final String TAG_HOME = "tab_home";
+    private static final String TAG_SETTINGS = "tab_settings";
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, selectedFragment)
-                .commit();
+    private void showFragmentForTab(int position) {
+        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+        androidx.fragment.app.FragmentTransaction transaction = fm.beginTransaction();
+
+        Fragment homeFrag = fm.findFragmentByTag(TAG_HOME);
+        Fragment settingsFrag = fm.findFragmentByTag(TAG_SETTINGS);
+
+        if (position == 0) {
+            if (settingsFrag != null && settingsFrag.isAdded()) {
+                transaction.hide(settingsFrag);
+            }
+            if (homeFrag == null) {
+                homeFrag = new HomeFragment();
+                transaction.add(R.id.fragment_container, homeFrag, TAG_HOME);
+            } else {
+                transaction.show(homeFrag);
+            }
+        } else if (position == 1) {
+            if (homeFrag != null && homeFrag.isAdded()) {
+                transaction.hide(homeFrag);
+            }
+            if (settingsFrag == null) {
+                settingsFrag = new SettingsFragment();
+                transaction.add(R.id.fragment_container, settingsFrag, TAG_SETTINGS);
+            } else {
+                transaction.show(settingsFrag);
+            }
+        }
+        transaction.commitAllowingStateLoss();
     }
 
     @Override

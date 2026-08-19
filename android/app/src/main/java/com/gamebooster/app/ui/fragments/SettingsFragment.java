@@ -719,6 +719,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (rvTweaks != null) {
             rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvTweaks.setHasFixedSize(true);
+            rvTweaks.setNestedScrollingEnabled(false);
             tweaksAdapter = new TweaksAdapter(getContext(), TweakManagerRepository.getAllTweaks());
             rvTweaks.setAdapter(tweaksAdapter);
         }
@@ -783,6 +785,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
         if (rvSpoofProfiles != null) {
             rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvSpoofProfiles.setHasFixedSize(true);
+            rvSpoofProfiles.setNestedScrollingEnabled(false);
             rvSpoofProfiles.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
@@ -923,10 +927,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnLaunchTerminal = view.findViewById(R.id.btn_launch_terminal);
 
         if (getContext() != null) {
-            TerminalFolderManager.getInstance(getContext()).initTerminalFolder();
-            if (tvSettingsTerminalFolderPath != null) {
-                tvSettingsTerminalFolderPath.setText("📁 Scripts Folder: " + TerminalFolderManager.getInstance(getContext()).getTerminalDirPath());
-            }
+            final Context appCtx = getContext().getApplicationContext();
+            AppExecutors.getInstance().executeCommand(() -> {
+                TerminalFolderManager.getInstance(appCtx).initTerminalFolder();
+                String folderPath = TerminalFolderManager.getInstance(appCtx).getTerminalDirPath();
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (isAdded() && tvSettingsTerminalFolderPath != null) {
+                        tvSettingsTerminalFolderPath.setText("📁 Scripts Folder: " + folderPath);
+                    }
+                });
+            });
         }
 
         initSettingsTerminalBanner();
@@ -1094,6 +1104,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         refreshAllStatuses();
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            refreshAllStatuses();
+            renderDiagnostics();
+        }
+    }
+
     private void refreshAllStatuses() {
         EngineUIHelper.refreshEngineStatus(tvEngineStatus);
         EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
@@ -1158,15 +1177,23 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void renderDiagnostics() {
         if (getContext() == null || tvDiagStatus == null) return;
-        java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
-                com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
-                android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
-                android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
-                com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(getContext()),
-                SpoofPreferences.isSpoofEnabled(getContext()),
-                SpoofPreferences.getActiveProfileId(getContext()),
-                com.gamebooster.app.diagnostics.CrashLog.readTail(getContext(), 800));
-        tvDiagStatus.setText(com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+        final Context ctx = getContext().getApplicationContext();
+        AppExecutors.getInstance().executeCommand(() -> {
+            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
+                    com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
+                    android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
+                    android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
+                    com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(ctx),
+                    SpoofPreferences.isSpoofEnabled(ctx),
+                    SpoofPreferences.getActiveProfileId(ctx),
+                    com.gamebooster.app.diagnostics.CrashLog.readTail(ctx, 800));
+            final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (isAdded() && tvDiagStatus != null) {
+                    tvDiagStatus.setText(text);
+                }
+            });
+        });
     }
 
     private void exportDiagnostics() {
