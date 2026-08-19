@@ -63,24 +63,28 @@ public class GameConfigPatcher {
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
+            CodmConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);
+            PubgConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
             if (FreeFireConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FreeFireConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             FreeFireConfigPatcher.applySuperFastTouch(pkg);
             FreeFireConfigPatcher.applyAimAssistConfig(pkg);
             FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
+            FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             GenshinConfigPatcher.applySuperFastTouch(pkg);
             GenshinConfigPatcher.applyAimAssistConfig(pkg);
             GenshinConfigPatcher.applyRecoilControlConfig(pkg);
+            GenshinConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("wildrift") || pkg.contains("riotgames.league")) {
             if (WildRiftConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (WildRiftConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -94,6 +98,7 @@ public class GameConfigPatcher {
             HokConfigPatcher.applySuperFastTouch(pkg);
             HokConfigPatcher.applyAimAssistConfig(pkg);
             HokConfigPatcher.applyRecoilControlConfig(pkg);
+            HokConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
             if (BloodStrikeConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (BloodStrikeConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -135,18 +140,21 @@ public class GameConfigPatcher {
             RobloxConfigPatcher.applySuperFastTouch(pkg);
             RobloxConfigPatcher.applyAimAssistConfig(pkg);
             RobloxConfigPatcher.applyRecoilControlConfig(pkg);
+            RobloxConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
             if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             ValorantConfigPatcher.applySuperFastTouch(pkg);
             ValorantConfigPatcher.applyAimAssistConfig(pkg);
             ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+            ValorantConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
             if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             FarlightConfigPatcher.applySuperFastTouch(pkg);
             FarlightConfigPatcher.applyAimAssistConfig(pkg);
             FarlightConfigPatcher.applyRecoilControlConfig(pkg);
+            FarlightConfigPatcher.applyDamageScriptConfig(pkg);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;

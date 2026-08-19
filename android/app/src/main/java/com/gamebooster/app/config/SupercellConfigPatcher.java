@@ -102,22 +102,62 @@ public class SupercellConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AutoAimAssist=1",
+            "AimSnap=1",
+            "SmartTargeting=1",
+            "AimAssistStrength=150",
+            "TouchSensitivity=150"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Supercell Auto-Aim Assist applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilKeys = {
+            "InputZeroDelay=1",
+            "MovementStabilization=1",
+            "TouchSmoothing=1",
+            "ZeroInputLag=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : recoilKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Supercell Movement Stabilization applied for " + packageName);
     }
+
 
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;

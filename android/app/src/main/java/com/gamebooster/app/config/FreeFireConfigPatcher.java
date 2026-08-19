@@ -125,21 +125,97 @@ public class FreeFireConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssist=1",
+            "AimPrecision=3",
+            "AimAssistStrength=150",
+            "AutoAim=1",
+            "AimAssistRadius=200",
+            "ScopeAimAssist=1",
+            "RedDotAimAssist=1",
+            "GyroSampleRate=1000",
+            "GyroSensitivity=150",
+            "GyroStabilization=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Aim Assist 150% & Precision applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilKeys = {
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "RecoilReduction=1",
+            "WeaponStability=150",
+            "ScreenShake=0",
+            "GunKick=0",
+            "BulletSpread=0"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : recoilKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Zero Recoil & Weapon Stability applied for " + packageName);
+    }
 
-        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
+    public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "DamageMultiplier=2.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalDamage=99",
+            "DamageBoost=2.50",
+            "PenetrationBoost=99"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : damageKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Damage Boost & Headshot Multiplier applied for " + packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {
@@ -174,5 +250,9 @@ public class FreeFireConfigPatcher {
             }
             return true;
         }
+    }
+
+    private static void ensureDirectory(String path) {
+        ShizukuFileManager.ensureParentDirectory(path);
     }
 }

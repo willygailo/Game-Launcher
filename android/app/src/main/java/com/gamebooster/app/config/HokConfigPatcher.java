@@ -100,21 +100,91 @@ public class HokConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssist=1",
+            "SmartTargeting=1",
+            "TargetLock=1",
+            "SkillTargetAssist=1",
+            "AutoAim=1",
+            "TouchSensitivity=150"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Smart Target Assist applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilKeys = {
+            "InputSmoothing=1",
+            "TouchStabilization=1",
+            "ZeroInputDelay=1",
+            "SkillResponseFast=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : recoilKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Input Smoothing & Stabilization applied for " + packageName);
+    }
 
-        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
+    public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "TrueDamageBoost=2.50",
+            "DamageMultiplier=2.50",
+            "CriticalDamageRate=99",
+            "FOV=150"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : damageKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Damage Boost & FOV applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -154,5 +224,9 @@ public class HokConfigPatcher {
             }
             return true;
         }
+    }
+
+    private static void ensureDirectory(String path) {
+        ShizukuFileManager.ensureParentDirectory(path);
     }
 }

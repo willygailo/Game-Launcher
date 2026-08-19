@@ -143,22 +143,63 @@ public class WildRiftConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssist=1",
+            "SmartTargeting=1",
+            "TargetLock=1",
+            "SkillTargetAssist=1",
+            "AutoSkillAim=1",
+            "TouchSensitivity=150"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : aimKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "WildRift Smart Target Assist applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilKeys = {
+            "InputSmoothing=1",
+            "SkillResponseZeroDelay=1",
+            "TouchStabilization=1",
+            "ZeroInputLag=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : recoilKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "WildRift Input Smoothing & Stabilization applied for " + packageName);
     }
+
 
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;

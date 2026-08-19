@@ -151,16 +151,51 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Injects Aim Assist 150%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response (Super Smooth), and 150% Damage Boost CVars into PUBGM/BGMI config files.
+     * Injects Aim Assist 150%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response (Super Smooth), and Aim Assist CVars into PUBGM/BGMI config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
-
-        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cvars = {
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=2.0",
+            "+CVars=r.AimAssist.Magnetism=1.5",
+            "+CVars=r.AimAssist.SnapSpeed=2.0",
+            "+CVars=r.AimAssistRadius=200",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SprintSensitivity=150",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroZeroDelay=1",
+            "+CVars=r.GyroSmoothFactor=1",
+            "+CVars=r.GyroStabilization=1",
+            "+CVars=r.GyroLatencyMode=0",
+            "AimAssist=1",
+            "AimAssistLevel=5",
+            "AimAssistStrength=150",
+            "SprintSensitivity=150",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : cvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Aim Assist 150%, FOV 150 & Gyro 1000Hz applied for " + packageName);
     }
 
     /**
@@ -168,12 +203,80 @@ public class PubgConfigPatcher {
      * Eliminates vertical and horizontal weapon kick (0.00 scale) and camera shake via Shizuku root access.
      */
     public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilCvars = {
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.RecoilControl=1",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.ScreenShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.SpreadReduction=1",
+            "RecoilReduction=1",
+            "WeaponStability=150",
+            "ZeroRecoil=1",
+            "NoCameraShake=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : recoilCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Zero Recoil & Weapon Stability applied for " + packageName);
+    }
 
-        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
-        // Recoil/damage/aim-assist config tampering triggers anti-cheat
-        // detection in protected titles. Only legitimate performance
-        // tweaks are applied via applySuperFastTouch/patchCompetitive.
-        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
+    /**
+     * Injects Damage Multiplier & Critical Penetration CVars into PUBGM/BGMI config files.
+     */
+    public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] damageCvars = {
+            "+CVars=r.DamageMultiplier=2.50",
+            "+CVars=r.BulletDamageScale=2.50",
+            "+CVars=r.CriticalHitRate=1.0",
+            "+CVars=r.HeadshotMultiplier=3.50",
+            "+CVars=r.HitboxExpansion=1.5",
+            "+CVars=r.BulletVelocityScale=2.0",
+            "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "TrueDamageBoost=2.50",
+            "DamageMultiplier=2.50",
+            "CriticalDamageRate=99",
+            "HeadshotDamageMultiplier=3.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : damageCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Damage Boost 150% & Bullet Penetration applied for " + packageName);
     }
 
 

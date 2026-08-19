@@ -312,6 +312,9 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 PubgConfigPatcher.applyRecoilControlConfig(pkg);
             }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                PubgConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_CODM.equals(key)) {
             result = CodmConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -322,6 +325,9 @@ public class CfgProfileManager {
             }
             if (profile.isRecoilControlEnabled()) {
                 CodmConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                CodmConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_FREEFIRE.equals(key)) {
             result = FreeFireConfigPatcher.patchCompetitive(pkg, fps);
@@ -334,6 +340,9 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
             }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_GENSHIN.equals(key)) {
             result = GenshinConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -344,6 +353,9 @@ public class CfgProfileManager {
             }
             if (profile.isRecoilControlEnabled()) {
                 GenshinConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                GenshinConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
             result = HokConfigPatcher.patchCompetitive(pkg, fps);
@@ -356,6 +368,9 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 HokConfigPatcher.applyRecoilControlConfig(pkg);
             }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                HokConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
             result = RobloxConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -366,6 +381,9 @@ public class CfgProfileManager {
             }
             if (profile.isRecoilControlEnabled()) {
                 RobloxConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                RobloxConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_VALORANT.equals(key)) {
             result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
@@ -378,6 +396,9 @@ public class CfgProfileManager {
             if (profile.isRecoilControlEnabled()) {
                 ValorantConfigPatcher.applyRecoilControlConfig(pkg);
             }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                ValorantConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_FARLIGHT.equals(key)) {
             result = FarlightConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -388,6 +409,9 @@ public class CfgProfileManager {
             }
             if (profile.isRecoilControlEnabled()) {
                 FarlightConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                FarlightConfigPatcher.applyDamageScriptConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_BLOODSTRIKE.equals(key)) {
             result = BloodStrikeConfigPatcher.patchCompetitive(pkg, fps);
@@ -490,6 +514,28 @@ public class CfgProfileManager {
             result |= CarXConfigPatcher.patchCompetitive(pkg, fps);
             result |= ArenaBreakoutConfigPatcher.patchCompetitive(pkg, fps);
             result |= SupercellConfigPatcher.patchCompetitive(pkg, fps);
+
+            if (profile.isSuperFastTouchEnabled()) {
+                MlbbConfigPatcher.applySuperFastTouch(pkg);
+                PubgConfigPatcher.applySuperFastTouch(pkg);
+                CodmConfigPatcher.applySuperFastTouch(pkg);
+                FreeFireConfigPatcher.applySuperFastTouch(pkg);
+            }
+            if (profile.isAimAssistEnabled()) {
+                PubgConfigPatcher.applyAimAssistConfig(pkg);
+                CodmConfigPatcher.applyAimAssistConfig(pkg);
+                FreeFireConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                PubgConfigPatcher.applyRecoilControlConfig(pkg);
+                CodmConfigPatcher.applyRecoilControlConfig(pkg);
+                FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
+            }
+            if (profile.isMlbbDamageScriptEnabled()) {
+                MlbbConfigPatcher.applyDamageScriptConfig(pkg);
+                PubgConfigPatcher.applyDamageScriptConfig(pkg);
+                CodmConfigPatcher.applyDamageScriptConfig(pkg);
+            }
         }
 
         if (profile.isAntiLogEnabled()) {
