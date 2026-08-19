@@ -3,9 +3,9 @@
 <img src="android/app/src/main/res/drawable/hero_banner.gif" alt="Game Launcher PRO Hero Banner" width="100%" />
 
 # ⚡ GAME LAUNCHER PRO — ULTIMATE GAMING SUITE ⚡
-### *Next-Gen 185 FPS Display Lock • 5-Layer Device Identity Masking • Zero-Root Shizuku Engine*
+### *Next-Gen 185 FPS Display Lock • In-Game ART-Level Hardware Spoofing • Zero-Root Shizuku Engine*
 
-[![Release](https://img.shields.io/badge/Release-v16.0.1--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Release](https://img.shields.io/badge/Release-v16.0.3--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Dedicated-Android%2012--16%20(API%2031--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-system-requirements)
 [![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#-privilege-layer)
 [![Build Tool](https://img.shields.io/badge/Java-17%20%7C%20Gradle%208.13-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](#-building-from-source)
@@ -13,7 +13,7 @@
 
 <br/>
 
-[📥 **Download Latest APK (v16.0.1-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
+[📥 **Download Latest APK (v16.0.3-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
 
 <br/>
 
@@ -47,6 +47,12 @@
   * 🐉 **Xiaomi 15 Ultra** *(Vulkan Ultra Gaming Profile)*
   * 🍏 **Apple A18 Pro / iPad Pro M4** *(High-tier graphics unlocking)*
 * **Storage & ProcFS Virtualization**: Masks `/proc/cpuinfo` and `/proc/meminfo` to seamlessly bypass title-level hardware whitelists.
+
+### 🧬 2b. In-Game ART-Level Spoofer — LSPosed Module (Root)
+* **True in-process spoofing**: The same APK doubles as an LSPosed module that hooks the game's **own process** at ART level — `Build.*` fields, `SystemProperties.get()`, `Runtime.totalMemory()`, `ActivityManager.getMemoryInfo()`, `glGetString(GL_RENDERER/VENDOR/VERSION)`, `/proc/cpuinfo`, `/proc/meminfo`, `/proc/version`, IMEI/MEID/IMSI/SIM serial, ANDROID_ID, and WebView User-Agent are all masked **inside the game**, where anti-cheat actually checks.
+* **Zero file tampering**: No game config files are touched when the module is active — the LSPosed path replaces the file-injection layers, removing the config-file ban vector.
+* **Auto-scoped to supported titles**: Hooks apply only to the supported games in the registry (or every app via the `spoof_all_apps` toggle) — system processes are never hooked.
+* **Live config sync**: The profile selected in the launcher is read in-game via LSPosed `XSharedPreferences` (world-readable safe-zone), so switching profiles in the app applies on the next game launch — no file drops needed.
 
 ### 🎯 3. Zero-Delay Touch & Esports Input Engine
 * **1000Hz Fast Touch Polling**: Dramatically minimizes input lag and touch deadzones for millisecond-precision responsiveness.
@@ -111,10 +117,13 @@ Game-Launcher/
 │   │   │   ├── services/               # Background monitoring & boot receivers
 │   │   │   ├── shizuku/                # Shizuku Binder communication & privileged file manager
 │   │   │   ├── spoofer/                # 5-Layer HardwareMaskEngine & brand profiles
+│   │   │   │   └── lsposed/             # LSPosed module: in-game ART-level hooks (Build, props, RAM, GPU, /proc, identity)
 │   │   │   ├── terminal/               # Cyber Terminal engine & script management
 │   │   │   ├── tweaks/                 # System-level performance parameter controllers
 │   │   │   └── ui/                     # Cyberpunk design system, fragments & adapters
-│   │   └── src/main/res/               # High-contrast cyber drawables, layouts & tokens
+│   │   ├── src/main/assets/xposed_init # LSPosed module entry point (legacy API 82)
+│   │   ├── src/main/res/               # High-contrast cyber drawables, layouts & tokens
+│   │   └── libs/XposedBridgeApi-82.jar # Vendored official Xposed API (compileOnly, not on Maven Central)
 │   └── build.gradle                    # Gradle Build Configuration (API 36 / Java 17)
 ├── platform-tools-latest-linux/         # Bundled official Android SDK Platform Tools (ADB/Fastboot)
 ├── shizuku/                             # Standalone Shizuku shell toolkit (rish & rish_shizuku.dex)
@@ -157,6 +166,24 @@ Connect your Android device to your computer with **USB Debugging enabled**, the
 
 ---
 
+### 🧬 Method 3: In-Game Hardware Spoofing (LSPosed Module — Root)
+
+The built-in **LSPosed module** masks the device identity **inside the game process itself** (ART-level hooks — the same APK doubles as the module):
+
+1. **Requirements**: A rooted device (Magisk/KernelSU) with **LSPosed** (Zygisk/Riru) installed and enabled.
+2. **Install & activate**:
+   * Install the APK, open it once (writes the spoof profile bridge), then reboot.
+   * Open **LSPosed Manager → Modules → Game Booster** → enable it.
+   * Set **Scope**: check the games you want spoofed (or rely on the `spoof_all_apps` toggle in the launcher).
+3. **Select your profile** in the launcher (e.g. ROG Phone 9 Pro, Galaxy S26 Ultra) — it applies automatically in-game on the next launch.
+4. **Verify**: LSPosed Manager → Logs shows `SpoofModule active for <game> -> <profile>`.
+   * The launcher's SYSTEM ENGINE chip turns **🧬 LSPOSED MODULE ACTIVE** when the module is detected.
+   * When the module is active, the file-injection layers are automatically bypassed — no game files are touched.
+
+> 💡 **Note**: Shizuku (Methods 1–2) covers display, settings, permissions, and system tweaks on **any** device. The LSPosed module is **root-only** and covers the *in-process* identity checks that Shizuku cannot reach.
+
+---
+
 ## 🛠️ Building from Source
 
 ### Prerequisites:
@@ -180,17 +207,22 @@ The compiled binaries will be output to:
 
 ## 🔒 Security & Risk Transparency
 
-> **Honest summary:** Game Launcher PRO is **non-root** and does **not** inject
-> code, hook game processes, or use Xposed/Frida. However, it *does* rewrite
-> system display parameters, patch game configuration files, and spoof device
-> identity — all of which can be detected by anti-cheat systems. **No tool can
-> honestly promise "100% safe" against online anti-cheat ecosystems.** Use at
-> your own risk on accounts you care about.
+> **Honest summary:** Game Launcher PRO runs **zero-root via Shizuku** for
+> system-level control and — on rooted devices — ships an **optional LSPosed
+> module** that hooks supported game processes at ART level to mask device
+> identity *in-process*. Both paths rewrite system display parameters, patch
+> game configuration files, and spoof device identity — all of which can be
+> detected by anti-cheat systems. **Xposed/LSPosed presence itself is a
+> well-known detection signal for kernel-level anti-cheat (e.g. Tencent ACE,
+> used by PUBG Mobile / CoD Mobile / Honor of Kings).** No tool can honestly
+> promise "100% safe" against online anti-cheat ecosystems. Use at your own
+> risk on accounts you care about.
 
 | Feature | What it changes | Risk | Why |
 | :-- | :-- | :-- | :-- |
 | Refresh-rate / FPS overrides | Android display & Game Mode parameters | Low | Standard system APIs; may be limited by panel hardware (e.g. a 60Hz panel will not run 185Hz) |
 | Device identity spoofer | `/proc` masks, build props, device fingerprints | **High — known ban vector** | Anti-cheat flags impossible hardware (e.g. Apple SoC on a Snapdragon device). The app now blocks provable mismatches via `SpoofSanityChecker` (Phase 2.4), but this cannot guarantee safety |
+| LSPosed module (in-game hooks) | ART-level hooks inside game process: Build, SystemProperties, RAM, GL, `/proc`, IMEI, ANDROID_ID | **Very High — framework presence detectable** | Requires root. Xposed/LSPosed framework presence is detected by kernel-level anti-cheat (Tencent ACE, etc.) and can trigger immediate flags. Only enable for games you accept losing access to |
 | Game config patching (`Active.sav`, FastFlags, CFG) | Per-game config files | Medium–High | Config modifications are detectable; devs may reset, integrity-check, or flag modified configs |
 | Network prioritizer | Wi-Fi/cellular QoS settings | Low | Standard Android knobs |
 
@@ -206,6 +238,10 @@ The compiled binaries will be output to:
 - **The game reset my config.** Known behavior: several titles reset or
   integrity-check configs on update or launch (flagged per-game on the Games
   screen — e.g. CoD Mobile, PUBG Mobile, Genshin). Re-apply after updates.
+- **The LSPosed module is not applying.** Enable **Game Booster** in LSPosed
+  Manager → Modules, set its scope to the games, then force-stop the games and
+  relaunch. Check LSPosed Manager → Logs for `SpoofModule active for <game>`.
+  The module is root-only — it will never activate on a Shizuku-only device.
 - **I need help / want to report a bug.** Export diagnostics: Settings →
   Diagnostics → **EXPORT** — the share sheet gives a text snapshot with app
   version, enforcement status, spoof state, and any captured crash log.
