@@ -272,10 +272,10 @@ public class ValorantConfigPatcher {
         if (!ShizukuFileManager.fileExists(path)) {
             String content;
             if (path.endsWith(".json")) {
-                content = String.format("{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d.000000,\n  \"MobileFPSLimit\": %d,\n  \"FPSLevel\": %d,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1\n}\n",
+                content = String.format("{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d.000000,\n  \"MobileFPSLimit\": %d,\n  \"FPSLevel\": %d,\n  \"GraphicQuality\": 4,\n  \"HighFPSMode\": 1,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"AntiAliasing\": 1,\n  \"VulkanEnabled\": 1,\n  \"LowLatencyMode\": 1\n}\n",
                         forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             } else {
-                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[ValorantMobileGraphics]\nMaxFPS=%d\nTargetFPS=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nFPSLevel=%d\n",
+                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[ScalabilityGroups]\nsg.ResolutionQuality=100.000000\nsg.ViewDistanceQuality=3\nsg.AntiAliasingQuality=1\nsg.ShadowQuality=0\nsg.PostProcessQuality=1\nsg.TextureQuality=3\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[ValorantMobileGraphics]\nMaxFPS=%d\nTargetFPS=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nFPSLevel=%d\nGraphicQuality=4\nHighFPSMode=1\n",
                         forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
             }
             return ShizukuFileManager.writeFile(path, content, "666").success;

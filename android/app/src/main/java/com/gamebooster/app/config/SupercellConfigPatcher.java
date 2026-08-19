@@ -169,7 +169,7 @@ public class SupercellConfigPatcher {
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[SupercellEngine]\nTargetFPS=%d\nMaxFPS=%d\nFPSLevel=%d\nFPSCap=%d\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighRefreshRate=1\n",
+                    "[SupercellEngine]\nTargetFPS=%d\nMaxFPS=%d\nFPSLevel=%d\nFPSCap=%d\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighRefreshRate=1\nGraphicQuality=4\nUltraExtreme=1\nHDRMode=1\nResolutionScale=1.2\n",
                     forcedFps, forcedFps, fpsLevel, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
@@ -178,6 +178,8 @@ public class SupercellConfigPatcher {
                          "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FPSCap=.*/FPSCap=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
+                         "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
+                         "sed -i 's/^UltraExtreme=.*/UltraExtreme=1/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

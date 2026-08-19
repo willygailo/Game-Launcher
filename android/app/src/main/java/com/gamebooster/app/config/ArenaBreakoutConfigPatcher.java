@@ -200,7 +200,7 @@ public class ArenaBreakoutConfigPatcher {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + forcedFps + ".000000\nFPSLevel=" + fpsLevel + "\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=" + forcedFps + "\n+CVars=r.MobileFPSLimit=" + forcedFps + "\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[UserCustom]\nFrameRateLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\n";
+            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + forcedFps + ".000000\nFPSLevel=" + fpsLevel + "\nScreenScale=120\nResolutionScale=120\nShadowQuality=2\nAntiAliasingQuality=4\nPostProcessQuality=3\nTextureQuality=3\nEffectsQuality=3\nUltraExtreme=1\nHDRMode=1\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=" + forcedFps + "\n+CVars=r.MobileFPSLimit=" + forcedFps + "\n+CVars=r.PUBGDeviceFPS=" + fpsLevel + "\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[UserCustom]\nFrameRateLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + ".000000/' " + path + "; " +

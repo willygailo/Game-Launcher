@@ -224,7 +224,7 @@ public class GenshinConfigPatcher {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"targetFrameRateForOthers\": %d,\n  \"fpsUnlock\": true,\n  \"fps_unlock_120\": true,\n  \"fps_unlock_144\": true,\n  \"unlock_120hz\": true,\n  \"unlock_144hz\": true,\n  \"unlock_165hz\": true,\n  \"unlock_185hz\": true,\n  \"vulkan_enabled\": true\n}\n",
+                    "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"targetFrameRateForOthers\": %d,\n  \"fpsUnlock\": true,\n  \"fps_unlock_120\": true,\n  \"fps_unlock_144\": true,\n  \"fps_unlock_165\": true,\n  \"fps_unlock_185\": true,\n  \"graphics_quality\": 5,\n  \"render_resolution\": 1.2,\n  \"shadow_quality\": 4,\n  \"visual_effects\": 4,\n  \"sfx_quality\": 4,\n  \"environment_detail\": 4,\n  \"vulkan_enabled\": true,\n  \"unlock_120hz\": true,\n  \"unlock_144hz\": true,\n  \"unlock_165hz\": true,\n  \"unlock_185hz\": true\n}\n",
                     forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;

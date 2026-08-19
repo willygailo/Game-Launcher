@@ -207,7 +207,7 @@ public class CarXConfigPatcher {
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[GraphicSettings]\nTargetFPS=%d\nMaxFPS=%d\nFrameRateLimit=%d\nFPSLevel=%d\nHighFPSMode=1\nUnlockFPS=1\nUnlockHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n",
+                    "[GraphicSettings]\nTargetFPS=%d\nMaxFPS=%d\nFrameRateLimit=%d\nFPSLevel=%d\nHighFPSMode=1\nUnlockFPS=1\nUnlockHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\nGraphicQuality=4\nUltraExtreme=1\nHDRMode=1\nVsync=0\nResolutionScale=1.2\nMotionBlur=0\nShadowQuality=2\nDynamicResolution=0\n",
                     forcedFps, forcedFps, forcedFps, fpsLevel
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
@@ -216,6 +216,8 @@ public class CarXConfigPatcher {
                          "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
+                         "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
+                         "sed -i 's/^UltraExtreme=.*/UltraExtreme=1/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

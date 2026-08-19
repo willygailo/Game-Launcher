@@ -231,7 +231,7 @@ public class FreeFireConfigPatcher {
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[FFGraphics]\nHighFPS=1\nHighFPSMode=1\nFPSMode=2\nFrameRateLevel=%d\nMaxFPS=%d\nTargetFPS=%d\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nGraphicLevel=3\nHighFreqTouchHz=%d\n",
+                    "[FFGraphics]\nHighFPS=1\nHighFPSMode=1\nFPSMode=2\nFrameRateLevel=%d\nMaxFPS=%d\nTargetFPS=%d\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nGraphicLevel=3\nShadow=1\nHighResolution=1\nVulkanEnabled=1\nHighFreqTouchHz=%d\n",
                     frameRateLevel, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
@@ -242,6 +242,8 @@ public class FreeFireConfigPatcher {
                          "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
                          "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^GraphicLevel=.*/GraphicLevel=3/' " + path + "; " +
+                         "sed -i 's/^HighResolution=.*/HighResolution=1/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

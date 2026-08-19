@@ -205,7 +205,7 @@ public class HokConfigPatcher {
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHDMode=1\nUltraFrameRate=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighFreqTouchHz=%d\n",
+                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nGraphicsQuality=4\nHDMode=1\nHDRMode=1\nUltraFrameRate=1\nVulkanEnabled=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nShadow=1\nResolutionScale=1.2\nHighFreqTouchHz=%d\n",
                     frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
@@ -215,7 +215,11 @@ public class HokConfigPatcher {
                          "sed -i 's/^FPS=.*/FPS=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
+                         "sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path + "; " +
+                         "sed -i 's/^HDMode=.*/HDMode=1/' " + path + "; " +
+                         "sed -i 's/^HDRMode=.*/HDRMode=1/' " + path + "; " +
                          "sed -i 's/^UltraFrameRate=.*/UltraFrameRate=1/' " + path + "; " +
+                         "sed -i 's/^UnlockFPS=.*/UnlockFPS=1/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

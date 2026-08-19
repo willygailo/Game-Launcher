@@ -324,7 +324,7 @@ public class PubgConfigPatcher {
         final int pubgFpsLevel = tier.level;
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGMaxFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.TouchBoostHz=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\nFrameRateLevel=%d\n",
+                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGMaxFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.PUBGHDRMode=1\n+CVars=r.MobileHDR=1\n+CVars=r.PUBGQualityLevel=4\n+CVars=r.PUBGSDKQualityLevel=4\n+CVars=r.Tonemapper.Quality=4\n+CVars=r.HDR.Display.OutputDevice=1\n+CVars=r.MobileContentScaleFactor=1.0\n+CVars=r.MobileTonemapperFilm=1\n+CVars=r.Vsync=0\n+CVars=r.TouchBoostHz=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\nFrameRateLevel=%d\nbUseHDRMode=True\nbUseHighQualityBloom=True\nbUseAntiAliasing=True\n",
                     pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;
@@ -333,7 +333,17 @@ public class PubgConfigPatcher {
                 {"+CVars=r.PUBGDeviceFPS",      "+CVars=r.PUBGDeviceFPS="    + pubgFpsLevel},
                 {"+CVars=r.PUBGMaxFPS",         "+CVars=r.PUBGMaxFPS="       + targetFps},
                 {"+CVars=r.PUBGFrameRateLimit",  "+CVars=r.PUBGFrameRateLimit=" + targetFps},
-                {"+CVars=r.MobileFPSLimit",      "+CVars=r.MobileFPSLimit="   + targetFps}
+                {"+CVars=r.MobileFPSLimit",      "+CVars=r.MobileFPSLimit="   + targetFps},
+                {"+CVars=r.FrameRateLimit",      "+CVars=r.FrameRateLimit="   + targetFps},
+                {"+CVars=r.PUBGHDRMode",         "+CVars=r.PUBGHDRMode=1"},
+                {"+CVars=r.MobileHDR",           "+CVars=r.MobileHDR=1"},
+                {"+CVars=r.PUBGQualityLevel",    "+CVars=r.PUBGQualityLevel=4"},
+                {"+CVars=r.PUBGSDKQualityLevel", "+CVars=r.PUBGSDKQualityLevel=4"},
+                {"+CVars=r.Unlock120Hz",         "+CVars=r.Unlock120Hz=1"},
+                {"+CVars=r.Unlock144Hz",         "+CVars=r.Unlock144Hz=1"},
+                {"+CVars=r.Unlock165Hz",         "+CVars=r.Unlock165Hz=1"},
+                {"+CVars=r.Unlock185Hz",         "+CVars=r.Unlock185Hz=1"},
+                {"+CVars=r.Vsync",               "+CVars=r.Vsync=0"}
             };
             for (String[] cvar : cvars) {
                 String cmd = "grep -qF '" + cvar[0] + "' " + path + " || echo '" + cvar[1] + "' >> " + path;
@@ -348,6 +358,8 @@ public class PubgConfigPatcher {
                               "sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path + "; " +
                               "sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path + "; " +
                               "sed -i 's/FrameRateLevel=.*/FrameRateLevel=" + pubgFpsLevel + "/' " + path + "; " +
+                              "sed -i 's/bUseHDRMode=.*/bUseHDRMode=True/' " + path + "; " +
+                              "sed -i 's/bUseAntiAliasing=.*/bUseAntiAliasing=True/' " + path + "; " +
                               "chmod 666 " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(updateCmd);

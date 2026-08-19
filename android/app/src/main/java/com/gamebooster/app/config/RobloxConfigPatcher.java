@@ -193,7 +193,7 @@ public class RobloxConfigPatcher {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         if (!ShizukuFileManager.fileExists(path)) {
             String content = String.format(
-                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FIntDesiredMaxFrameRate\": %d,\n  \"FFlagEnableHighFPS\": \"True\",\n  \"FFlagUnlockFPS\": \"True\",\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\"\n}\n",
+                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FIntDesiredMaxFrameRate\": %d,\n  \"FFlagEnableHighFPS\": \"True\",\n  \"FFlagUnlockFPS\": \"True\",\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n  \"FFlagFixGraphicsQuality\": \"True\",\n  \"DFFlagDisableDPIScale\": \"True\",\n  \"FFlagCommitToFastPhysics\": \"True\",\n  \"FFlagEnableVulkan\": \"True\"\n}\n",
                     forcedFps, forcedFps, forcedFps
             );
             return ShizukuFileManager.writeFile(path, content, "666").success;

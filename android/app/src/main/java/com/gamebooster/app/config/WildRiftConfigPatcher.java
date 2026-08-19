@@ -210,7 +210,7 @@ public class WildRiftConfigPatcher {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "{\n  \"graphics\": {\n    \"target_fps\": " + forcedFps + ",\n    \"max_fps\": " + forcedFps + ",\n    \"fps_level\": " + fpsLevel + ",\n    \"fpsUnlock\": true,\n    \"unlock_120\": true,\n    \"unlock_144\": true,\n    \"unlock_165\": true,\n    \"unlock_185\": true\n  }\n}\n";
+            String content = "{\n  \"graphics\": {\n    \"target_fps\": " + forcedFps + ",\n    \"max_fps\": " + forcedFps + ",\n    \"fps_level\": " + fpsLevel + ",\n    \"fpsUnlock\": true,\n    \"unlock_120\": true,\n    \"unlock_144\": true,\n    \"unlock_165\": true,\n    \"unlock_185\": true,\n    \"resolution\": 4,\n    \"quality\": 4,\n    \"character_quality\": 4,\n    \"effects_quality\": 4,\n    \"shadow_quality\": 4,\n    \"ultra_extreme\": true,\n    \"resolution_scale\": 1.2,\n    \"post_processing\": true,\n    \"vsync\": false\n  }\n}\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/\"target_fps\":.*/\"target_fps\": " + forcedFps + ",/' " + path + "; " +

@@ -218,7 +218,7 @@ public class BloodStrikeConfigPatcher {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[GraphicsSettings]\nFPSLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\nFrameRateLimit=" + forcedFps + "\nMobileFPSLimit=" + forcedFps + "\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\n";
+            String content = "[GraphicsSettings]\nFPSLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\nFrameRateLimit=" + forcedFps + "\nMobileFPSLimit=" + forcedFps + "\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\nGraphicQuality=4\nUltraExtreme=1\nHDRMode=1\nShadowQuality=2\nAntiAliasing=1\nVsync=0\nDynamicResolution=0\nResolutionScale=1.2\n";
             return ShizukuFileManager.writeFile(path, content, "666").success;
         } else {
             String cmd = "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
@@ -226,6 +226,8 @@ public class BloodStrikeConfigPatcher {
                          "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + forcedFps + "/' " + path + "; " +
                          "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
+                         "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
+                         "sed -i 's/^UltraExtreme=.*/UltraExtreme=1/' " + path + "; " +
                          "chmod 666 " + path;
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);

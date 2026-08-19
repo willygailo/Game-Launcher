@@ -370,17 +370,17 @@ public class CodmConfigPatcher {
             String content;
             if (path.endsWith(".json")) {
                 content = String.format(
-                        "{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d,\n  \"MobileFPSLimit\": %d,\n  \"GraphicQuality\": 4,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"FieldOfView\": 90\n}\n",
+                        "{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d,\n  \"MobileFPSLimit\": %d,\n  \"GraphicQuality\": 4,\n  \"HDRMode\": 1,\n  \"HDRColorMode\": 2,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"AntiAliasing\": 1,\n  \"FieldOfView\": 100\n}\n",
                         targetFps, targetFps, targetFps, targetFps, targetFps
                 );
             } else if (path.endsWith(".xml")) {
                 content = String.format(
-                        "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n  <int name=\"MaxFrameRate\" value=\"%d\" />\n  <int name=\"TargetFPS\" value=\"%d\" />\n  <int name=\"FPSLimit\" value=\"%d\" />\n  <int name=\"FrameRateLimit\" value=\"%d\" />\n  <int name=\"MobileFPSLimit\" value=\"%d\" />\n  <int name=\"Unlock120Hz\" value=\"1\" />\n  <int name=\"Unlock144Hz\" value=\"1\" />\n  <int name=\"Unlock165Hz\" value=\"1\" />\n  <int name=\"Unlock185Hz\" value=\"1\" />\n  <int name=\"GraphicQuality\" value=\"4\" />\n</map>\n",
+                        "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n  <int name=\"MaxFrameRate\" value=\"%d\" />\n  <int name=\"TargetFPS\" value=\"%d\" />\n  <int name=\"FPSLimit\" value=\"%d\" />\n  <int name=\"FrameRateLimit\" value=\"%d\" />\n  <int name=\"MobileFPSLimit\" value=\"%d\" />\n  <int name=\"Unlock120Hz\" value=\"1\" />\n  <int name=\"Unlock144Hz\" value=\"1\" />\n  <int name=\"Unlock165Hz\" value=\"1\" />\n  <int name=\"Unlock185Hz\" value=\"1\" />\n  <int name=\"GraphicQuality\" value=\"4\" />\n  <int name=\"HDRMode\" value=\"1\" />\n</map>\n",
                         targetFps, targetFps, targetFps, targetFps, targetFps
                 );
             } else {
                 content = String.format(
-                        "[Graphics]\nMaxFrameRate=%d\nTargetFPS=%d\nFPSLimit=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nGraphicQuality=4\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\n",
+                        "[Graphics]\nMaxFrameRate=%d\nTargetFPS=%d\nFPSLimit=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nGraphicQuality=4\nHDRMode=1\nHDRColorMode=2\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nAntiAliasing=1\n",
                         targetFps, targetFps, targetFps, targetFps, targetFps
                 );
             }
