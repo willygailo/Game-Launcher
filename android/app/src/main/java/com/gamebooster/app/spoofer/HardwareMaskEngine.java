@@ -48,6 +48,12 @@ public class HardwareMaskEngine {
      * Applies full hardware masking across all 6 layers for a target profile and game package.
      */
     public static boolean applyFullHardwareMask(Context context, SpoofProfile profile, String packageName) {
+        return applyFullHardwareMask(context, profile, packageName,
+                GameSpoofSafetyRegistry.riskTierFor(packageName));
+    }
+
+    public static boolean applyFullHardwareMask(Context context, SpoofProfile profile, String packageName,
+                                                GameSpoofSafetyRegistry.RiskTier riskTier) {
         if (profile == null) {
             Log.e(TAG, "Cannot apply null hardware mask profile.");
             return false;
@@ -183,8 +189,14 @@ public class HardwareMaskEngine {
             //  game receives its spoof IN-MEMORY via ART hooks (SpoofModule).
             //  File-based layers are skipped entirely to avoid config-file
             //  tampering detection — the in-game hooks are the real spoof.
-            // ═══════════════════════════════════════════════════════════════════
+            //  ═══════════════════════════════════════════════════════════════════
             boolean lsposedActive = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled();
+
+            // Kernel-anti-cheat titles (Tencent ACE): never touch game files even
+            // without LSPosed — file tampering is what kernel AC flags. In-app
+            // reflection + system props are the safe, fully working layers here.
+            boolean highRiskGame = riskTier == GameSpoofSafetyRegistry.RiskTier.HIGH_RISK;
+            boolean fileLayersSafe = !lsposedActive && !highRiskGame;
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 5: IN-APP REFLECTION OVERRIDE
@@ -196,7 +208,7 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 6: MOCK PROCFS PAYLOAD GENERATION & GAME ENGINE INJECTION
             // ═══════════════════════════════════════════════════════════════════
-            if (!lsposedActive) {
+            if (fileLayersSafe) {
                 exportMockProcfsPayloads(profile);
 
                 // Inject hardware profile for targeted package + all registered games
@@ -204,8 +216,10 @@ public class HardwareMaskEngine {
                     injectTailoredGameHardwareConfigs(packageName.trim(), profile);
                 }
                 injectAllInstalledGamesHardwareProfile(profile);
-            } else {
+            } else if (lsposedActive) {
                 Log.i(TAG, "▶ LSPosed module active — in-memory ART hooks applied in target game; game files untouched.");
+            } else {
+                Log.i(TAG, "▶ Kernel-AC title (" + riskTier + ") — game-file injection skipped; system props + in-app reflection only.");
             }
 
             Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);

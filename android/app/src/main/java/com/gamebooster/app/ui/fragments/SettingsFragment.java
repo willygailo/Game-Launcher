@@ -795,7 +795,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     } catch (Throwable ignored) {}
                 }
 
-                // 1. Immediately activate in preferences & UI
+                // Capture prior state so a blocked apply can be cleanly reverted
+                boolean wasEnabled = SpoofPreferences.isSpoofEnabled(getContext());
+                String previousProfileId = SpoofPreferences.getActiveProfileId(getContext());
+
+                // 1. Immediately activate in preferences & UI (optimistic)
                 SpoofPreferences.setSpoofEnabled(getContext(), true);
                 SpoofPreferences.setActiveProfileId(getContext(), profile.id);
                 if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
@@ -809,17 +813,27 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     boolean applied = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
-                        updateSpoofUiState();
                         String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
                         if (!applied && blockReason != null) {
+                            // Revert the optimistic prefs/UI so we never show an
+                            // "active" profile that did not actually apply
+                            SpoofPreferences.setSpoofEnabled(getContext(), wasEnabled);
+                            SpoofPreferences.setActiveProfileId(getContext(), previousProfileId);
+                            if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(wasEnabled);
+                            if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
+                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(previousProfileId);
+                            updateSpoofUiState();
                             Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
                             return;
                         }
+                        updateSpoofUiState();
+                        String warning = DeviceSpooferEngine.getLastSanityWarning();
                         CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
                                 "Emulated Model: " + profile.displayName,
                                 "Hardware Profile: " + profile.model + " (" + profile.brand + ")",
                                 "ProcFS /proc/cpuinfo & meminfo: VIRTUALIZED",
-                                "In-Game High FPS & Graphics: UNLOCKED");
+                                "In-Game High FPS & Graphics: UNLOCKED",
+                                warning != null ? "⚠ " + warning : "Safety Check: PASSED");
                     });
                 });
             });
@@ -859,16 +873,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                                 boolean applied = DeviceSpooferEngine.applyProfile(getContext(), prof, null);
                                 AppExecutors.getInstance().postToMainThread(() -> {
                                     if (isAdded() && getContext() != null) {
-                                        updateSpoofUiState();
                                         String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
                                         if (!applied && blockReason != null) {
+                                            // Revert: a profile that failed to apply must not stay active
+                                            SpoofPreferences.setSpoofEnabled(getContext(), false);
+                                            SpoofPreferences.clearActiveProfile(getContext());
+                                            if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(false);
+                                            if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.GONE);
+                                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
+                                            updateSpoofUiState();
                                             Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
                                             return;
                                         }
+                                        updateSpoofUiState();
+                                        String warning = DeviceSpooferEngine.getLastSanityWarning();
                                         CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
                                                 "Active Profile: " + prof.displayName,
                                                 "ProcFS /proc/cpuinfo & meminfo: VIRTUALIZED",
-                                                "High FPS & Graphics Options: UNLOCKED");
+                                                "High FPS & Graphics Options: UNLOCKED",
+                                                warning != null ? "⚠ " + warning : "Safety Check: PASSED");
                                     }
                                 });
                             });

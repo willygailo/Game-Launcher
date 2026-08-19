@@ -172,6 +172,14 @@
             android:name="xposedsharedprefs"
             android:value="true" />
 
+        <!-- Non-root (LSPatch) config bridge: lets the module inside a patched
+             game process read device_spoofer_prefs via ContentResolver. -->
+        <provider
+            android:name="com.gamebooster.app.spoofer.SpoofPrefsProvider"
+            android:authorities="com.gamebooster.app.spoofprefs"
+            android:exported="true"
+            android:enabled="true" />
+
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

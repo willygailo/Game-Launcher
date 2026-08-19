@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.gamebooster.app.spoofer'
+    compileSdk 36
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        applicationId "com.gamebooster.spoofer.module"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.0-lspatch"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "GameBooster_Spoof_Module.apk"
+        }
+    }
+}
+
+dependencies {
+    // Xposed API — compileOnly: provided at runtime by LSPosed (root) or
+    // LSPatch (non-root) inside the target process.
+    compileOnly files('libs/XposedBridgeApi-82.jar')
+}

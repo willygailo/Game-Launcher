@@ -18,10 +18,17 @@ public final class SpoofSanityChecker {
     public static final class SanityResult {
         public final boolean allowed;
         public final String reason;
+        /** Non-null when the apply is allowed but carries a caveat (e.g. GPU mismatch on a soft-AC game). */
+        public final String warning;
 
         private SanityResult(boolean allowed, String reason) {
+            this(allowed, reason, null);
+        }
+
+        private SanityResult(boolean allowed, String reason, String warning) {
             this.allowed = allowed;
             this.reason = reason;
+            this.warning = warning;
         }
     }
 
@@ -99,29 +106,62 @@ public final class SpoofSanityChecker {
      * @param profile       the spoof profile about to be applied
      */
     public static SanityResult check(DeviceDetector.ChipsetVendor deviceChipset, SpoofProfile profile) {
+        return checkForGame(deviceChipset, profile, GameSpoofSafetyRegistry.RiskTier.HIGH_RISK);
+    }
+
+    /**
+     * Per-game aware pre-apply check. The blocking threshold follows the
+     * anti-cheat risk tier of the target game (see GameSpoofSafetyRegistry):
+     *
+     * - HIGH_RISK (kernel-level AC, e.g. Tencent ACE): GPU/SoC family mismatch
+     *   blocks the apply — cross-vendor GL spoofing is a provable ban vector.
+     * - MEDIUM_RISK / LOW_RISK (soft AC or none): mismatch is allowed with a
+     *   warning so the spoof stays "fully working" on non-Snapdragon devices.
+     *
+     * @param deviceChipset the real chipset vendor detected on this device
+     * @param profile       the spoof profile about to be applied
+     * @param riskTier      anti-cheat risk tier of the target game
+     */
+    public static SanityResult checkForGame(DeviceDetector.ChipsetVendor deviceChipset, SpoofProfile profile,
+                                            GameSpoofSafetyRegistry.RiskTier riskTier) {
         if (profile == null) {
             return new SanityResult(false, "No spoof profile selected — nothing to validate");
+        }
+        if (riskTier == null) {
+            riskTier = GameSpoofSafetyRegistry.RiskTier.LOW_RISK;
         }
         String profileName = profile.displayName != null ? profile.displayName : profile.id;
 
         GpuFamily deviceGpu = inferDeviceGpuFamily(deviceChipset);
         GpuFamily profileGpu = inferGpuFamily(profile.glVendor, profile.glRenderer);
-        if (deviceGpu != GpuFamily.UNKNOWN && profileGpu != GpuFamily.UNKNOWN
-                && deviceGpu != profileGpu) {
-            return new SanityResult(false, "GPU feature set mismatch: this device renders with "
-                    + deviceGpu + " but profile \"" + profileName + "\" advertises " + profileGpu
-                    + " (GL vendor swap across GPU families is a " + BLOCK_TAG + ". "
-                    + "Choose a profile matching your device GPU or disable spoofing.");
+
+        boolean gpuMismatch = deviceGpu != GpuFamily.UNKNOWN && profileGpu != GpuFamily.UNKNOWN
+                && deviceGpu != profileGpu;
+        boolean socMismatch = deviceChipset != null && deviceChipset != DeviceDetector.ChipsetVendor.GENERIC
+                && inferProfileSoCVendor(profile) != null
+                && inferProfileSoCVendor(profile) != DeviceDetector.ChipsetVendor.GENERIC
+                && deviceChipset != inferProfileSoCVendor(profile);
+
+        boolean mismatch = gpuMismatch || socMismatch;
+        if (mismatch && riskTier == GameSpoofSafetyRegistry.RiskTier.HIGH_RISK) {
+            String mismatchDesc = gpuMismatch && socMismatch
+                    ? "GPU and SoC feature sets differ"
+                    : gpuMismatch
+                            ? "GPU feature set mismatch"
+                            : "SoC feature set mismatch";
+            String detail = gpuMismatch
+                    ? "this device renders with " + deviceGpu + " but profile \"" + profileName + "\" advertises " + profileGpu
+                    : "this device runs " + deviceChipset + " but profile \"" + profileName + "\" impersonates " + inferProfileSoCVendor(profile);
+            return new SanityResult(false, mismatchDesc + ": " + detail + " (GL vendor swap across GPU families is a "
+                    + BLOCK_TAG + ". Choose a profile matching your device GPU or disable spoofing.)");
         }
 
-        DeviceDetector.ChipsetVendor profileSoc = inferProfileSoCVendor(profile);
-        if (deviceChipset != null && deviceChipset != DeviceDetector.ChipsetVendor.GENERIC
-                && profileSoc != null && profileSoc != DeviceDetector.ChipsetVendor.GENERIC
-                && deviceChipset != profileSoc) {
-            return new SanityResult(false, "SoC feature set mismatch: this device runs "
-                    + deviceChipset + " but profile \"" + profileName + "\" impersonates "
-                    + profileSoc + " — " + BLOCK_TAG + ". "
-                    + "Choose a profile matching your device chipset or disable spoofing.");
+        if (mismatch) {
+            String warning = "Applied with warning — " + (gpuMismatch
+                    ? "device GPU " + deviceGpu + " differs from profile " + profileGpu
+                    : "device chipset " + deviceChipset + " differs from profile " + inferProfileSoCVendor(profile))
+                    + ". Not recommended for kernel-anti-cheat titles.";
+            return new SanityResult(true, "Spoof allowed — " + GameSpoofSafetyRegistry.describe(riskTier), warning);
         }
 
         String gpuNote = deviceGpu == GpuFamily.UNKNOWN

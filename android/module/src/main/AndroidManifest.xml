@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="GameBooster Spoof Module"
+        android:allowBackup="false">
+
+        <!-- LSPosed / LSPatch module metadata: makes this APK loadable as a
+             module into target game processes. -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="In-memory device &amp; hardware spoofing for Game Booster (non-root via LSPatch)" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="93" />
+        <meta-data
+            android:name="xposedsharedprefs"
+            android:value="true" />
+        <meta-data
+            android:name="xposedscope"
+            android:value="*" />
+
+    </application>
+
+</manifest>

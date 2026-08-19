@@ -3,6 +3,9 @@ package com.gamebooster.app.spoofer;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * SpoofPreferences handles persistence of the master Device Spoof toggle,
  * active global SpoofProfile selection, and per-package profile overrides.
@@ -100,5 +103,22 @@ public class SpoofPreferences {
         String pkgProfile = getProfileIdForPackage(context, packageName);
         if (pkgProfile != null && !pkgProfile.isEmpty()) return pkgProfile;
         return getActiveProfileId(context);
+    }
+
+    /**
+     * Exposes all persisted spoof preferences as a key→value map.
+     * Used by SpoofPrefsProvider so the LSPatch module (running inside a game
+     * process, non-root) can read the launcher's spoof config via ContentResolver.
+     */
+    public static Map<String, String> readAllPrefs(Context context) {
+        Map<String, String> out = new HashMap<>();
+        try {
+            Map<String, ?> all = getPrefs(context).getAll();
+            for (Map.Entry<String, ?> e : all.entrySet()) {
+                Object v = e.getValue();
+                if (v != null) out.put(e.getKey(), String.valueOf(v));
+            }
+        } catch (Throwable ignored) {}
+        return out;
     }
 }

@@ -32,8 +32,15 @@ public class DeviceSpooferEngine {
     /** Reason the last spoof apply was blocked by the pre-apply sanity check, null when allowed. */
     private static String lastSanityBlockReason = null;
 
+    /** Warning attached to the last successful apply (e.g. GPU mismatch on a soft-AC game), null when clean. */
+    private static String lastSanityWarning = null;
+
     public static String getLastSanityBlockReason() {
         return lastSanityBlockReason;
+    }
+
+    public static String getLastSanityWarning() {
+        return lastSanityWarning;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -154,19 +161,24 @@ public class DeviceSpooferEngine {
             return false;
         }
 
-        // Phase 2.4: pre-apply sanity check — never mask a profile whose GPU/SoC
-        // feature set provably differs from the real device (known ban vector)
+        // Phase 2.5: per-game aware pre-apply sanity check. The strict block is
+        // reserved for kernel-anti-cheat titles (Tencent ACE etc.); soft-AC and
+        // AC-free games apply with a warning so the spoof works on any device.
         try {
             com.gamebooster.app.device.DeviceDetector.ChipsetVendor deviceChipset =
                     com.gamebooster.app.device.DeviceDetector.detectChipsetVendor();
+            GameSpoofSafetyRegistry.RiskTier riskTier =
+                    GameSpoofSafetyRegistry.riskTierFor(packageName);
             SpoofSanityChecker.SanityResult sanity =
-                    SpoofSanityChecker.check(deviceChipset, profile);
+                    SpoofSanityChecker.checkForGame(deviceChipset, profile, riskTier);
             if (!sanity.allowed) {
                 lastSanityBlockReason = sanity.reason;
-                Log.w(TAG, "Spoof BLOCKED for " + profile.id + ": " + sanity.reason);
+                lastSanityWarning = null;
+                Log.w(TAG, "Spoof BLOCKED for " + profile.id + " (" + riskTier + "): " + sanity.reason);
                 return false;
             }
             lastSanityBlockReason = null;
+            lastSanityWarning = sanity.warning;
             Log.i(TAG, "Pre-apply sanity check passed: " + sanity.reason);
         } catch (Throwable t) {
             Log.w(TAG, "Sanity check non-fatal, proceeding: " + t.getMessage());
