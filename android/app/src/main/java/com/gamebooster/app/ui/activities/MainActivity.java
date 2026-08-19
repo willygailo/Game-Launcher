@@ -115,13 +115,22 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         try {
             com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
             if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
+                // Auto-Active: request Shizuku permission immediately on app start
                 ShizukuManager.requestShizukuPermission();
             } else if (ShizukuExecutor.hasShizukuPermission()) {
                 AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
                 });
+            } else {
+                // Auto-Active: Shizuku not running — auto-prompt activation once per install
+                android.content.SharedPreferences prefs =
+                        getSharedPreferences("game_booster_prefs", MODE_PRIVATE);
+                if (!prefs.getBoolean("shizuku_auto_prompt_shown", false)) {
+                    ShizukuManager.showShizukuPermissionDialog(this, "Auto-Active Engine");
+                    prefs.edit().putBoolean("shizuku_auto_prompt_shown", true).apply();
+                }
             }
         } catch (Throwable ignored) {}
 
@@ -199,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             } else {
                 Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System & Storage Privileges...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                     AppExecutors.getInstance().postToMainThread(() ->

@@ -124,6 +124,48 @@ public class ShizukuPermissionEnforcer {
     }
 
     /**
+     * Enforces ALL permissions for the launcher app, every known game,
+     * AND every installed application on the device (full system-wide unlock).
+     */
+    public static void enforceAllPermissionsForAllApps(Context context) {
+        if (context == null) return;
+        if (!ShizukuExecutor.hasShizukuPermission() && !RishManager.isAvailable(context)) {
+            Log.w(TAG, "Cannot enforce permissions for all apps: Shizuku is not available or granted.");
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                // 1. Launcher app + all known games
+                enforceAllPermissions(context);
+
+                // 2. Every installed application on the device
+                java.util.List<android.content.pm.PackageInfo> installed =
+                        context.getPackageManager().getInstalledPackages(0);
+                int granted = 0;
+                for (android.content.pm.PackageInfo info : installed) {
+                    if (info == null || info.packageName == null) continue;
+                    if (info.packageName.equals(context.getPackageName())) continue;
+                    enforceGamePermissions(info.packageName);
+                    grantPermission(info.packageName, "android.permission.READ_EXTERNAL_STORAGE");
+                    grantPermission(info.packageName, "android.permission.WRITE_EXTERNAL_STORAGE");
+                    grantPermission(info.packageName, "android.permission.MANAGE_EXTERNAL_STORAGE");
+                    setAppOp(info.packageName, "LEGACY_STORAGE", "allow");
+                    setAppOp(info.packageName, "NO_ISOLATED_STORAGE", "allow");
+                    setAppOp(info.packageName, "RUN_IN_BACKGROUND", "allow");
+                    setAppOp(info.packageName, "RUN_ANY_IN_BACKGROUND", "allow");
+                    setAppOp(info.packageName, "AUTO_START", "allow");
+                    granted++;
+                }
+
+                Log.i(TAG, "Permissions enforced for ALL installed applications (" + granted + " packages).");
+            } catch (Throwable t) {
+                Log.e(TAG, "Error enforcing permissions for all apps", t);
+            }
+        });
+    }
+
+    /**
      * Unlocks storage permissions and AppOps for target game packages to allow config file manipulation and 185 FPS unlock.
      */
     public static void enforceGamePermissions(String gamePackageName) {

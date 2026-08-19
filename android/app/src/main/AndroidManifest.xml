@@ -155,6 +155,23 @@
             android:name="android.game_service"
             android:value="true" />
 
+        <!-- LSPosed module metadata: required for LSPosed Manager to list this
+             APK as a module. xposedminversion >= 93 + xposedsharedprefs enable
+             the world-readable prefs bridge (safe-zone) so SpoofConfigBridge can
+             read device_spoofer_prefs from inside game processes. -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="Game Booster device &amp; hardware spoofing engine" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="93" />
+        <meta-data
+            android:name="xposedsharedprefs"
+            android:value="true" />
+
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

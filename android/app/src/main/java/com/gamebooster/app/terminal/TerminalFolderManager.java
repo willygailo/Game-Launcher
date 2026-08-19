@@ -1,8 +1,10 @@
 package com.gamebooster.app.terminal;
 
 import android.content.Context;
-import android.os.Environment;
+import android.util.Base64;
 import android.util.Log;
+
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,12 +20,14 @@ import java.util.List;
 
 /**
  * TerminalFolderManager manages the dedicated scripts/terminal folder on device storage.
+ * All script files target Android's temporary root directory `/data/local/tmp` via Shizuku
+ * (shell UID) when available, with a Java app-storage fallback when Shizuku is not granted.
  * Supports reading, writing, creating, listing, and executing shell script files (.sh).
  */
 public class TerminalFolderManager {
 
     private static final String TAG = "TerminalFolderManager";
-    private static final String SDCARD_DIR = "/sdcard/GameBooster/terminal";
+    private static final String TMP_DIR = "/data/local/tmp";
     private static volatile TerminalFolderManager instance;
 
     private final Context appContext;
@@ -46,18 +50,15 @@ public class TerminalFolderManager {
     }
 
     /**
-     * Initializes the terminal scripts folder and seeds default gaming tweak scripts.
+     * Initializes the terminal scripts folder in `/data/local/tmp` (root temp directory)
+     * and seeds default gaming tweak scripts. Falls back to app storage without Shizuku.
      */
     public synchronized void initTerminalFolder() {
         try {
-            // Attempt primary directory in /sdcard/GameBooster/terminal
-            File primaryDir = new File(SDCARD_DIR);
-            if (!primaryDir.exists()) {
-                primaryDir.mkdirs();
-            }
-
-            if (primaryDir.exists() && primaryDir.canWrite()) {
-                terminalDir = primaryDir;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                // Primary target: /data/local/tmp (shell-writable via Shizuku)
+                ShizukuExecutor.executeShizukuCommand("mkdir -p " + TMP_DIR);
+                terminalDir = new File(TMP_DIR);
             } else {
                 // Fallback to external files dir or internal files dir
                 File extDir = appContext.getExternalFilesDir("terminal");
@@ -85,7 +86,7 @@ public class TerminalFolderManager {
      * Seeds default shell scripts (.sh) if they don't already exist.
      */
     private void seedDefaultScripts() {
-        if (terminalDir == null || !terminalDir.exists()) return;
+        if (terminalDir == null) return;
 
         createScriptIfNotExists("1_gaming_185fps_unlock.sh",
                 "# ==================================================\n" +
@@ -184,26 +185,47 @@ public class TerminalFolderManager {
     private void createScriptIfNotExists(String fileName, String content) {
         if (terminalDir == null) return;
         File file = new File(terminalDir, fileName);
-        if (!file.exists()) {
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            String check = ShizukuExecutor.executeShizukuCommand("test -f " + TMP_DIR + "/" + fileName + " && echo EXISTS || echo MISSING");
+            if (check == null || check.contains("MISSING")) {
+                saveScript(fileName, content);
+            }
+        } else if (!file.exists()) {
             saveScript(fileName, content);
         }
     }
 
     public File getTerminalDir() {
-        if (terminalDir == null || !terminalDir.exists()) {
+        if (terminalDir == null || (ShizukuExecutor.hasShizukuPermission() && !TMP_DIR.equals(terminalDir.getAbsolutePath()))) {
             initTerminalFolder();
         }
         return terminalDir;
     }
 
     public String getTerminalDirPath() {
-        return getTerminalDir() != null ? getTerminalDir().getAbsolutePath() : SDCARD_DIR;
+        return getTerminalDir() != null ? getTerminalDir().getAbsolutePath() : TMP_DIR;
     }
 
     /**
-     * Lists all script files (.sh) in the terminal folder.
+     * Lists all script files (.sh / .txt) in the terminal folder (/data/local/tmp via Shizuku).
      */
     public List<File> listScriptFiles() {
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            String out = ShizukuExecutor.executeShizukuCommand(
+                    "ls -1 " + TMP_DIR + " 2>/dev/null | grep -E '\\.(sh|txt)$'");
+            if (out != null && !out.isEmpty() && !out.startsWith("ERROR")) {
+                List<File> list = new ArrayList<>();
+                for (String line : out.split("\n")) {
+                    String name = line.trim();
+                    if (name.isEmpty() || name.contains(" ")) continue;
+                    list.add(new File(TMP_DIR, name));
+                }
+                Collections.sort(list, Comparator.comparing(File::getName));
+                return list;
+            }
+            return new ArrayList<>();
+        }
+
         File dir = getTerminalDir();
         if (dir == null || !dir.exists()) {
             return Collections.emptyList();
@@ -218,10 +240,17 @@ public class TerminalFolderManager {
     }
 
     /**
-     * Reads contents of a script file.
+     * Reads contents of a script file (cat via Shizuku for /data/local/tmp).
      */
     public String readScript(File file) {
-        if (file == null || !file.exists()) {
+        if (file == null) return "";
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            String out = ShizukuExecutor.executeShizukuCommand("cat \"" + file.getAbsolutePath() + "\"");
+            if (out != null && !out.isEmpty() && !out.startsWith("ERROR")) {
+                return out;
+            }
+        }
+        if (!file.exists()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
@@ -238,16 +267,26 @@ public class TerminalFolderManager {
 
     /**
      * Saves or overwrites a script in the terminal folder.
+     * Writes directly into /data/local/tmp via Shizuku (base64, chmod 777).
      */
     public boolean saveScript(String fileName, String content) {
         try {
+            if (!fileName.endsWith(".sh") && !fileName.endsWith(".txt")) {
+                fileName += ".sh";
+            }
+
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                String targetPath = TMP_DIR + "/" + fileName;
+                String base64Content = Base64.encodeToString(content.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                String res = ShizukuExecutor.executeShizukuCommand(
+                        "echo \"" + base64Content + "\" | base64 -d > " + targetPath + " && chmod 777 " + targetPath);
+                return res != null && !res.startsWith("ERROR");
+            }
+
             File dir = getTerminalDir();
             if (dir == null) return false;
             if (!dir.exists()) dir.mkdirs();
 
-            if (!fileName.endsWith(".sh") && !fileName.endsWith(".txt")) {
-                fileName += ".sh";
-            }
             File targetFile = new File(dir, fileName);
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                 fos.write(content.getBytes(StandardCharsets.UTF_8));
@@ -264,20 +303,22 @@ public class TerminalFolderManager {
     }
 
     /**
-     * Deletes a script file from the terminal folder.
+     * Deletes a script file (rm via Shizuku for /data/local/tmp).
      */
     public boolean deleteScript(File file) {
-        if (file != null && file.exists()) {
-            return file.delete();
+        if (file == null) return false;
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            String res = ShizukuExecutor.executeShizukuCommand("rm -f \"" + file.getAbsolutePath() + "\"");
+            return res == null || !res.startsWith("ERROR");
         }
-        return false;
+        return file.exists() && file.delete();
     }
 
     /**
      * Executes a script file via TerminalCoreEngine.
      */
     public String executeScriptFile(File file) {
-        if (file == null || !file.exists()) {
+        if (file == null || (!ShizukuExecutor.hasShizukuPermission() && !file.exists())) {
             return "ERROR: File does not exist: " + (file != null ? file.getAbsolutePath() : "null");
         }
         String content = readScript(file);

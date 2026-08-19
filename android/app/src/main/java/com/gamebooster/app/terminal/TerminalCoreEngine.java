@@ -27,7 +27,7 @@ public class TerminalCoreEngine {
     private static volatile TerminalCoreEngine instance;
 
     private final List<TerminalScriptPreset> presetScripts = new ArrayList<>();
-    private String currentWorkingDir = "/sdcard/GameBooster/terminal";
+    private String currentWorkingDir = "/data/local/tmp";
 
     private TerminalCoreEngine() {
         initDefaultPresets();
@@ -108,7 +108,7 @@ public class TerminalCoreEngine {
                 scriptName = scriptName.substring(2);
             }
             File localScript = new File(currentWorkingDir, scriptName);
-            File defaultFolderScript = new File("/sdcard/GameBooster/terminal", scriptName);
+            File defaultFolderScript = new File("/data/local/tmp", scriptName);
             if (localScript.exists()) {
                 execCommandStr = "sh \"" + localScript.getAbsolutePath() + "\"";
             } else if (defaultFolderScript.exists()) {
@@ -136,7 +136,7 @@ public class TerminalCoreEngine {
 
     private String handleCdCommand(String cmd) {
         if (cmd.equals("cd") || cmd.equals("cd ~")) {
-            currentWorkingDir = "/sdcard/GameBooster/terminal";
+            currentWorkingDir = "/data/local/tmp";
             return currentWorkingDir;
         }
         String targetPath = cmd.substring(2).trim();

@@ -179,20 +179,34 @@ public class HardwareMaskEngine {
             ShizukuExecutor.executeShizukuCommands(batchCommands);
 
             // ═══════════════════════════════════════════════════════════════════
+            //  NO-FALLBACK POLICY: when the LSPosed module is enabled, the target
+            //  game receives its spoof IN-MEMORY via ART hooks (SpoofModule).
+            //  File-based layers are skipped entirely to avoid config-file
+            //  tampering detection — the in-game hooks are the real spoof.
+            // ═══════════════════════════════════════════════════════════════════
+            boolean lsposedActive = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled();
+
+            // ═══════════════════════════════════════════════════════════════════
             //  LAYER 5: IN-APP REFLECTION OVERRIDE
             // ═══════════════════════════════════════════════════════════════════
-            applyInAppReflectionMask(profile);
+            if (!lsposedActive) {
+                applyInAppReflectionMask(profile);
+            }
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 6: MOCK PROCFS PAYLOAD GENERATION & GAME ENGINE INJECTION
             // ═══════════════════════════════════════════════════════════════════
-            exportMockProcfsPayloads(profile);
+            if (!lsposedActive) {
+                exportMockProcfsPayloads(profile);
 
-            // Inject hardware profile for targeted package + all registered games
-            if (packageName != null && !packageName.trim().isEmpty()) {
-                injectTailoredGameHardwareConfigs(packageName.trim(), profile);
+                // Inject hardware profile for targeted package + all registered games
+                if (packageName != null && !packageName.trim().isEmpty()) {
+                    injectTailoredGameHardwareConfigs(packageName.trim(), profile);
+                }
+                injectAllInstalledGamesHardwareProfile(profile);
+            } else {
+                Log.i(TAG, "▶ LSPosed module active — in-memory ART hooks applied in target game; game files untouched.");
             }
-            injectAllInstalledGamesHardwareProfile(profile);
 
             Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);
             return true;

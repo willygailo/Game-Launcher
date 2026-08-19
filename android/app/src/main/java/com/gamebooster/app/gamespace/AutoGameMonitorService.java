@@ -117,7 +117,23 @@ public class AutoGameMonitorService extends Service {
 
                 // 1. Hardware Identity Spoofing (Shizuku)
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
-                
+
+                // 1.5. Auto-apply saved per-game Competitive CFG Profile
+                // (competitive force-write via per-game patcher — e.g. PubgConfigPatcher
+                // injected immediately for PUBGM when it is launched)
+                try {
+                    String gameKey = CfgProfileManager.resolveGameKey(currentPackage);
+                    CompetitiveCfgProfile cfgProfile = CfgProfileManager.loadProfile(
+                            getApplicationContext(), gameKey);
+                    int patched = CfgProfileManager.applyProfile(
+                            getApplicationContext(), gameKey, cfgProfile);
+                    Log.i(TAG, "Competitive CFG auto-injected for " + currentPackage
+                            + " [" + gameKey + "] -> " + patched + " package(s)");
+                } catch (Throwable t) {
+                    Log.w(TAG, "Competitive CFG auto-inject failed for "
+                            + currentPackage + ": " + t.getMessage());
+                }
+
                 // 2. Direct Game Config Patching (120-185 FPS, Damage Multiplier, Zero Recoil, 1000Hz Touch)
                 com.gamebooster.app.config.GameConfigPatcher.patchGame(currentPackage, targetHz);
                 

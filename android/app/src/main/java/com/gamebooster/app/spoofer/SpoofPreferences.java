@@ -15,10 +15,19 @@ public class SpoofPreferences {
     private static final String PREF_NAME = "device_spoofer_prefs";
     private static final String KEY_SPOOF_ENABLED = "spoof_enabled";
     private static final String KEY_ACTIVE_PROFILE_ID = "active_profile_id";
+    private static final String KEY_SPOOF_ALL_APPS = "spoof_all_apps";
     private static final String PREFIX_PKG_PROFILE = "pkg_profile_";
 
     private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // MODE_WORLD_READABLE lets the LSPosed module (running inside game
+        // processes) read this file via XSharedPreferences. On devices without
+        // LSPosed (or with the module disabled) this throws SecurityException,
+        // so fall back to MODE_PRIVATE — the module is not active there anyway.
+        try {
+            return context.getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);
+        } catch (SecurityException e) {
+            return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        }
     }
 
     // ── Global Spoof Toggle ──
@@ -29,6 +38,16 @@ public class SpoofPreferences {
 
     public static void setSpoofEnabled(Context context, boolean enabled) {
         getPrefs(context).edit().putBoolean(KEY_SPOOF_ENABLED, enabled).apply();
+    }
+
+    // ── Spoof All Apps Toggle (LSPosed module applies to every app, not just games) ──
+
+    public static boolean isSpoofAllApps(Context context) {
+        return getPrefs(context).getBoolean(KEY_SPOOF_ALL_APPS, false);
+    }
+
+    public static void setSpoofAllApps(Context context, boolean enabled) {
+        getPrefs(context).edit().putBoolean(KEY_SPOOF_ALL_APPS, enabled).apply();
     }
 
     // ── Global Active Profile ──

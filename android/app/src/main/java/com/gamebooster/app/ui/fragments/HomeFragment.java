@@ -109,8 +109,16 @@ public class HomeFragment extends Fragment {
         } else {
             EngineMode engineMode = CommandExecutor.getActiveEngineMode();
             if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
-                tvEngineMode.setTextColor(engineMode.getColorHex());
+                // LSPosed module active -> in-game ART spoofing is the real path
+                if (com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled()) {
+                    tvEngineMode.setText("🧬 LSPOSED MODULE ACTIVE");
+                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00F0FF"));
+                } else {
+                    tvEngineMode.setText("⚡ " + (engineMode == EngineMode.SHIZUKU
+                            ? "ACTIVE FORCING"
+                            : engineMode.getDisplayName()));
+                    tvEngineMode.setTextColor(engineMode.getColorHex());
+                }
             }
         }
 
