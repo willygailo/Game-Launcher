@@ -84,11 +84,20 @@ public class MlbbConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
-                "PhysicalDamageBoost=1.90\n" +
-                "MagicDamageBoost=1.90\n" +
-                "TrueDamageBoost=1.90\n" +
-                "DamageMultiplier=1.90\n" +
-                "CriticalDamageRate=95\n";
+                "PhysicalDamageBoost=2.50\n" +
+                "MagicDamageBoost=2.50\n" +
+                "TrueDamageBoost=2.50\n" +
+                "DamageMultiplier=2.50\n" +
+                "CriticalDamageRate=99\n" +
+                "HeadshotDamageMultiplier=3.50\n" +
+                "GyroSampleRate=1000\n" +
+                "GyroSensitivityRatio=2.5\n" +
+                "GyroZeroDelay=1\n" +
+                "GyroSmoothFactor=1\n" +
+                "GyroStabilization=1\n" +
+                "GyroLatencyMode=0\n" +
+                "AimAssistStrength=150\n" +
+                "AimAssistLevel=5\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -157,14 +166,25 @@ public class MlbbConfigPatcher {
             "FieldOfView=150",
             "WideScreenMode=1",
             "UltraWideCamera=1",
-            "PhysicalDamageBoost=1.90",
-            "MagicDamageBoost=1.90",
-            "TrueDamageBoost=1.90",
-            "PhysicalPenetrationBoost=95",
-            "MagicPenetrationBoost=95",
-            "DamageMultiplier=1.90",
-            "CriticalDamageRate=95",
-            "CriticalDamageMultiplier=2.90",
+            // Damage 150%
+            "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "TrueDamageBoost=2.50",
+            "PhysicalPenetrationBoost=99",
+            "MagicPenetrationBoost=99",
+            "DamageMultiplier=2.50",
+            "CriticalDamageRate=99",
+            "CriticalDamageMultiplier=3.50",
+            // Gyro Super Smooth
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=2.5",
+            "GyroZeroDelay=1",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "GyroLatencyMode=0",
+            // Aim Assist 150%
+            "AimAssistStrength=150",
+            "AimAssistLevel=5",
             "SkillCoolDownReduceMode=1",
             "HighDamageRateMode=1",
             "DamageAssetOverride=1",

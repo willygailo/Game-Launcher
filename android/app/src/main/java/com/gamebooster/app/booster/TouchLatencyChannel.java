@@ -14,6 +14,9 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("debug.input.max_events_per_sec", "1000");
         ok &= CommandExecutor.setSystemProperty("debug.sensor.gyro.sample_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("debug.sensor.motion.rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("debug.sensor.gyro.smooth", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sensor.gyro.stabilization", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.gyro.filter", "1");
         ok &= CommandExecutor.setSystemProperty("persist.sys.gyro.delay", "0");
         ok &= CommandExecutor.setSystemProperty("sys.use_fifo", "1");
         ok &= CommandExecutor.setSystemProperty("persist.sys.scrollingcache", "3");

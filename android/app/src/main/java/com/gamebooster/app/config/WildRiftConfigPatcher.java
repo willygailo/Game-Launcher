@@ -89,8 +89,8 @@ public class WildRiftConfigPatcher {
                 "PhysicalDamageBoost=1.90\n" +
                 "MagicDamageBoost=1.90\n" +
                 "TrueDamageBoost=1.90\n" +
-                "DamageMultiplier=1.90\n" +
-                "CriticalDamageRate=95\n" +
+                "DamageMultiplier=2.50\n" +
+                "CriticalDamageRate=99\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n";
@@ -113,7 +113,7 @@ public class WildRiftConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
-            String dmgData = "\n[DamageBoost]\nPhysicalDamageBoost=1.90\nMagicDamageBoost=1.90\nTrueDamageBoost=1.90\nDamageMultiplier=1.90\nCriticalDamageRate=95\n";
+            String dmgData = "\n[DamageBoost]\nPhysicalDamageBoost=1.90\nMagicDamageBoost=1.90\nTrueDamageBoost=1.90\nDamageMultiplier=2.50\nCriticalDamageRate=99\n";
             if (ShizukuFileManager.fileExists(path)) {
                 String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
                 if (ShizukuFileManager.hasFullAccess()) {

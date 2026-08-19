@@ -72,9 +72,9 @@ public class ValorantConfigPatcher {
                         "  \"FPP_FOV\": 120,\n" +
                         "  \"CrosshairBloom\": 0,\n" +
                         "  \"AimAssist\": 1,\n" +
-                        "  \"AimAssistStrength\": 100,\n" +
+                        "  \"AimAssistStrength\": 150,\n" +
                         "  \"RecoilScale\": 0.00,\n" +
-                        "  \"WeaponKickReduction\": 1.00,\n" +
+                        "  \"WeaponKickReduction\": 1.50,\n" +
                         "  \"BulletSpreadReduction\": 1.00,\n" +
                         "  \"HeadshotDamageMultiplier\": 2.50,\n" +
                         "  \"AntiAliasing\": 1,\n" +
@@ -125,8 +125,8 @@ public class ValorantConfigPatcher {
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
-                        "AimAssistStrength=100\n" +
-                        "RecoilReduction=1.00\n" +
+                        "AimAssistStrength=150\n" +
+                        "RecoilReduction=1.50\n" +
                         "WeaponKickScale=0.00\n" +
                         "ZeroInputLag=1\n" +
                         "VulkanPipeline=1\n";
@@ -169,8 +169,8 @@ public class ValorantConfigPatcher {
             String cmd =
                 "grep -qF 'AimAssist' " + path + " || echo 'AimAssist=1' >> " + path + "; " +
                 "sed -i 's/^AimAssist=.*/AimAssist=1/' " + path + "; " +
-                "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=100' >> " + path + "; " +
-                "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=100/' " + path + "; " +
+                "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=150' >> " + path + "; " +
+                "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=150/' " + path + "; " +
                 "grep -qF 'GyroPollingRate' " + path + " || echo 'GyroPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -189,12 +189,12 @@ public class ValorantConfigPatcher {
             String cmd =
                 "grep -qF 'RecoilScale' " + path + " || echo 'RecoilScale=0.00' >> " + path + "; " +
                 "sed -i 's/^RecoilScale=.*/RecoilScale=0.00/' " + path + "; " +
-                "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.00' >> " + path + "; " +
-                "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.00/' " + path + "; " +
+                "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.50' >> " + path + "; " +
+                "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.50/' " + path + "; " +
                 "grep -qF 'WeaponKickScale' " + path + " || echo 'WeaponKickScale=0.00' >> " + path + "; " +
                 "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path + "; " +
-                "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=1.00' >> " + path + "; " +
-                "sed -i 's/^WeaponKickReduction=.*/WeaponKickReduction=1.00/' " + path;
+                "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=1.50' >> " + path + "; " +
+                "sed -i 's/^WeaponKickReduction=.*/WeaponKickReduction=1.50/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             } else {

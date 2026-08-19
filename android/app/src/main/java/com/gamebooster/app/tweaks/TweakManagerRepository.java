@@ -94,9 +94,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "gyro_1000hz_response",
                 "1000Hz Ultra Gyroscope & Motion Latency Bypass",
-                "Unlocks 1000Hz gyro sensor polling and sets motion sensor delay to 0ms for flawless recoil control",
-                "setprop debug.sensor.gyro.sample_rate 1000; setprop persist.sys.gyro.delay 0; setprop debug.sensor.motion.rate 1000",
-                "setprop debug.sensor.gyro.sample_rate 0; setprop persist.sys.gyro.delay 1",
+                "Unlocks 1000Hz gyro sensor polling, hardware smoothing/stabilization, and 0ms delay for flawless recoil control",
+                "setprop debug.sensor.gyro.sample_rate 1000; setprop debug.sensor.gyro.smooth 1; setprop debug.sensor.gyro.stabilization 1; setprop persist.sys.gyro.filter 1; setprop persist.sys.gyro.delay 0; setprop debug.sensor.motion.rate 1000",
+                "setprop debug.sensor.gyro.sample_rate 0; setprop debug.sensor.gyro.smooth 0; setprop debug.sensor.gyro.stabilization 0; setprop persist.sys.gyro.delay 1",
                 TweakCategory.TOUCH_DISPLAY,
                 true
         ));
@@ -257,9 +257,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "thermalservice_override",
                 "Thermal Throttling Bypass Override",
-                "Overrides thermal service status to cool (0) to eliminate thermal clock throttling",
-                "cmd thermalservice override-status 0",
-                "cmd thermalservice override-status -1",
+                "Overrides thermal service status to cool (0) and suppresses kernel throttling to eliminate clock drops",
+                "cmd thermalservice override-status 0; cmd thermal override-status 0; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
+                "cmd thermalservice override-status -1; cmd thermal override-status -1; setprop debug.thermal.throttle.disable 0; setprop vendor.thermal.mode normal",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));

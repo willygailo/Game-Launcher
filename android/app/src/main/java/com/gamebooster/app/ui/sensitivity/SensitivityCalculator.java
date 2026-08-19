@@ -51,7 +51,7 @@ public class SensitivityCalculator {
                 break;
             case PRO_GYRO_MAX:
                 recoilMultiplier = 1.0;
-                gyroRecoilMultiplier = 1.60;
+                gyroRecoilMultiplier = 2.50; // Super Smooth 150% gyro recoil compensation
                 break;
             default:
                 recoilMultiplier = 1.0;
@@ -65,11 +65,11 @@ public class SensitivityCalculator {
         model.noScope3rdPerson = clamp((int) (baseCoeff * 1.0)); // TPP sensitivity
         model.noScope1stPerson = clamp((int) (baseCoeff * 1.2)); // FPP sensitivity
 
-        // Presets requested: TPP 100, FPP 150, Sprint 150, Aim Assist 100%
+        // Presets requested: TPP 100, FPP 150, Sprint 150, Aim Assist 150%
         model.tppFov = 100;
         model.fppFov = 150;
         model.sprintSensitivity = 150;
-        model.aimAssistStrength = 100;
+        model.aimAssistStrength = 150;
 
         // Focal length reduction scope ratios
         model.redDotHolo = clamp((int) (baseCoeff * 0.68));

@@ -85,10 +85,10 @@ public class Standoff2ConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
-                "DamageMultiplier=1.90\n" +
-                "BulletDamageBoost=1.90\n" +
-                "HeadshotDamageMultiplier=2.90\n" +
-                "CriticalHitRate=95\n" +
+                "DamageMultiplier=2.50\n" +
+                "BulletDamageBoost=2.50\n" +
+                "HeadshotDamageMultiplier=3.50\n" +
+                "CriticalHitRate=99\n" +
                 "NoRecoil=1\n" +
                 "CrosshairSpread=0.00\n";
 
@@ -110,7 +110,7 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=1.90\nBulletDamageBoost=1.90\nHeadshotDamageMultiplier=2.90\nCriticalHitRate=95\n";
+            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nBulletDamageBoost=2.50\nHeadshotDamageMultiplier=3.50\nCriticalHitRate=99\n";
             if (ShizukuFileManager.fileExists(path)) {
                 String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
                 if (ShizukuFileManager.hasFullAccess()) {
@@ -148,7 +148,7 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
-            String aimData = "\n[CrosshairAim]\nCrosshairStatic=1\nAimSmoothing=0\nGyroSampleRate=1000\nAimAssistLevel=3\nAutoLockTarget=1\n";
+            String aimData = "\n[CrosshairAim]\nCrosshairStatic=1\nAimSmoothing=0\nGyroSampleRate=1000\nAimAssistLevel=5\nAutoLockTarget=1\n";
             if (ShizukuFileManager.fileExists(path)) {
                 String cmd = "echo '" + aimData + "' >> " + path + "; chmod 666 " + path;
                 if (ShizukuFileManager.hasFullAccess()) {

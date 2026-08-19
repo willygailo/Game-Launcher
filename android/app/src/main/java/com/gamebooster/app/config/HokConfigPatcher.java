@@ -56,8 +56,8 @@ public class HokConfigPatcher {
                 "CameraDistance=150\n" +
                 "CameraFOV=150\n" +
                 "FieldOfView=150\n" +
-                "PhysicalDamageMultiplier=1.90\n" +
-                "MagicDamageMultiplier=1.90\n" +
+                "PhysicalDamageMultiplier=2.50\n" +
+                "MagicDamageMultiplier=2.50\n" +
                 "CriticalRateBoost=95\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
@@ -109,8 +109,8 @@ public class HokConfigPatcher {
             "CameraDistance=150",
             "CameraFOV=150",
             "FieldOfView=150",
-            "PhysicalDamageMultiplier=1.90",
-            "MagicDamageMultiplier=1.90",
+            "PhysicalDamageMultiplier=2.50",
+            "MagicDamageMultiplier=2.50",
             "AutoAimLock=1",
             "SkillShotAssist=1",
             "TargetLockPrecision=100",

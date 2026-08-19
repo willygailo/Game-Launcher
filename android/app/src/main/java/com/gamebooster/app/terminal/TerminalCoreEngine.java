@@ -298,12 +298,12 @@ public class TerminalCoreEngine {
                 "pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"
         ));
 
-        // 4. Touch & Gyro Zero-Delay Input
+        // 4. Touch & Gyro Zero-Delay Input (Super Smooth)
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_touch",
-                "🎯 Zero Touch Slop & 1000Hz Input",
-                "Configures touch slop reduction and 1000Hz polling rate",
-                "setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 1; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.001"
+                "🎯 Zero Touch Slop & 1000Hz Gyro (Super Smooth)",
+                "Configures touch slop reduction, 1000Hz polling rate, hardware smoothing & gyro stabilization",
+                "setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 0; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.0001; setprop debug.sensor.gyro.sample_rate 1000; setprop debug.sensor.gyro.smooth 1; setprop debug.sensor.gyro.stabilization 1; setprop persist.sys.gyro.filter 1; setprop persist.sys.gyro.delay 0"
         ));
 
         // 5. GPU Game Driver & ANGLE Renderer
@@ -314,15 +314,23 @@ public class TerminalCoreEngine {
                 "settings get global game_driver_all_apps; settings get global angle_gl_driver_all_angle; getprop debug.hwui.renderer"
         ));
 
-        // 6. Thermal Service & Battery Engine
+        // 6. Thermal Service Override & Temperature Check
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_thermal",
-                "🛡️ Thermal Throttle Inspection",
-                "Checks device thermal status, temperature sensor zones, and power governor",
-                "dumpsys thermalservice; dumpsys battery; cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null"
+                "❄️ Thermal Throttle Bypass & Cool Engine",
+                "Overrides device thermal status to cool (0), disables kernel throttling, and checks sensor zones",
+                "cmd thermalservice override-status 0; cmd thermal override-status 0; setprop debug.thermal.throttle.disable 1; dumpsys thermalservice; cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null"
         ));
 
-        // 7. Network / DNS Ping Check
+        // 7. 185Hz Extreme Refresh Rate Lock
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_hz185",
+                "⚡ 185Hz Extreme Unlock & Pacing",
+                "Forces 185Hz refresh rate via SurfaceFlinger and system display settings",
+                "settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; service call SurfaceFlinger 1035 i32 185; service call SurfaceFlinger 1036 i32 185; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185"
+        ));
+
+        // 8. Network / DNS Ping Check
         presetScripts.add(new TerminalScriptPreset(
                 "diag_net",
                 "🌐 Ultra-Low Ping DNS Diagnostic",

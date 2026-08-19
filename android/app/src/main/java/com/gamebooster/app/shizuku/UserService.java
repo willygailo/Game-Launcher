@@ -344,11 +344,23 @@ public class UserService extends IUserService.Stub {
 
     @Override
     public void applyThermalAndKernelBoost() {
-        String cmd = "setprop debug.thermal.throttle.disable 1; " +
+        String cmd = "cmd thermalservice override-status 0; " +
+                     "cmd thermal override-status 0; " +
+                     "setprop debug.thermal.throttle.disable 1; " +
                      "setprop debug.performance.tuning 1; " +
                      "setprop debug.sf.disable_backpressure 1; " +
                      "setprop debug.sf.latch_unsignaled 1; " +
                      "setprop debug.hwui.renderer vulkan; " +
+                     "setprop debug.sensor.gyro.sample_rate 1000; " +
+                     "setprop debug.sensor.gyro.smooth 1; " +
+                     "setprop debug.sensor.gyro.stabilization 1; " +
+                     "setprop persist.sys.gyro.filter 1; " +
+                     "setprop persist.sys.gyro.delay 0; " +
+                     "setprop debug.input.max_events_per_sec 1000; " +
+                     "setprop persist.sys.touch.report_rate 1000; " +
+                     "setprop persist.vendor.touch.sampling_rate 1000; " +
+                     "setprop view.touch_slop 0; " +
+                     "setprop sys.use_fifo 1; " +
                      "for c in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo performance > $c 2>/dev/null; done; " +
                      "for g in /sys/class/kgsl/kgsl-3d0/force_bus_on /sys/class/kgsl/kgsl-3d0/force_clk_on; do echo 1 > $g 2>/dev/null; done";
         execCommand(cmd);

@@ -58,13 +58,13 @@ public class BloodStrikeConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
-                "BulletDamageBoost=1.90\n" +
-                "DamageMultiplier=1.90\n" +
-                "HeadshotDamageMultiplier=2.90\n" +
-                "CriticalHitRate=95\n" +
+                "BulletDamageBoost=2.50\n" +
+                "DamageMultiplier=2.50\n" +
+                "HeadshotDamageMultiplier=3.50\n" +
+                "CriticalHitRate=99\n" +
                 "NoRecoil=1\n" +
                 "CrosshairSpread=0.00\n" +
-                "ScopeStability=1.00\n";
+                "ScopeStability=1.50\n";
 
         String jsonContent = "{\n" +
                 "  \"graphics\": {\n" +
@@ -115,7 +115,7 @@ public class BloodStrikeConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=1.90\nBulletDamageBoost=1.90\nHeadshotDamageMultiplier=2.90\nCriticalHitRate=95\nArmorPenetration=1.90\n";
+            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nBulletDamageBoost=2.50\nHeadshotDamageMultiplier=3.50\nCriticalHitRate=99\nArmorPenetration=1.90\n";
             if (ShizukuFileManager.fileExists(path)) {
                 String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
                 if (ShizukuFileManager.hasFullAccess()) {

@@ -94,12 +94,17 @@ public class PerformanceChannel {
                     "cmd power set-mode 0 1\n" +
                     "cmd power set-mode 2 1\n" +
                     "cmd thermalservice override-status 0\n" +
+                    "cmd thermal override-status 0\n" +
+                    "setprop debug.thermal.throttle.disable 1\n" +
                     "setprop view.touch_slop 0\n" +
                     "setprop sys.use_fifo 1\n" +
                     "setprop debug.input.max_events_per_sec 1000\n" +
                     "setprop persist.sys.touch.report_rate 1000\n" +
                     "setprop persist.vendor.touch.sampling_rate 1000\n" +
                     "setprop debug.sensor.gyro.sample_rate 1000\n" +
+                    "setprop debug.sensor.gyro.smooth 1\n" +
+                    "setprop debug.sensor.gyro.stabilization 1\n" +
+                    "setprop persist.sys.gyro.filter 1\n" +
                     "setprop persist.sys.gyro.delay 0\n" +
                     "setprop debug.adreno.turbo 1\n" +
                     "setprop debug.adreno.perf_level 0\n" +

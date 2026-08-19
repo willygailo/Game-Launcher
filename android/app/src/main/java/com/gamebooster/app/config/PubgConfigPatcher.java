@@ -78,16 +78,38 @@ public class PubgConfigPatcher {
                 "+CVars=r.LogFilter=0\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
+                // ── Aim Assist 150% ──────────────────────────────────────────
                 "+CVars=r.PUBGAimAssist=1\n" +
-                "+CVars=r.AimAssistStrength=1.00\n" +
+                "+CVars=r.AimAssistStrength=1.50\n" +
+                "+CVars=r.AimAssistLevel=5\n" +
+                "+CVars=r.TargetLockSensitivity=150\n" +
+                "+CVars=r.AimbotTrackingRate=1.50\n" +
+                "+CVars=r.CrosshairMagnetism=1\n" +
+                // ── No Recoil 150% ───────────────────────────────────────────
                 "+CVars=r.PUBGRecoilScale=0.00\n" +
-                "+CVars=r.WeaponKickReduction=1.00\n" +
-                "+CVars=r.AllGunsRecoilReduction=1.00\n" +
+                "+CVars=r.WeaponKickReduction=1.50\n" +
+                "+CVars=r.AllGunsRecoilReduction=1.50\n" +
                 "+CVars=r.NoRecoilAllScopes=1\n" +
-                "+CVars=r.BulletDamageBoost=1.90\n" +
-                "+CVars=r.DamageMultiplier=1.90\n" +
-                "+CVars=r.HeadshotDamageMultiplier=2.90\n" +
-                "+CVars=r.CriticalDamageRate=95\n" +
+                "+CVars=r.VerticalRecoilScale=0.00\n" +
+                "+CVars=r.HorizontalRecoilScale=0.00\n" +
+                "+CVars=r.BulletSpread=0.00\n" +
+                "+CVars=r.CameraShakeMultiplier=0.00\n" +
+                "+CVars=r.ScopeStabilizationMode=1\n" +
+                // ── Damage 150% ──────────────────────────────────────────────
+                "+CVars=r.BulletDamageBoost=2.50\n" +
+                "+CVars=r.DamageMultiplier=2.50\n" +
+                "+CVars=r.HeadshotDamageMultiplier=3.50\n" +
+                "+CVars=r.CriticalDamageRate=99\n" +
+                "+CVars=r.DamageBoostRatio=2.50\n" +
+                // ── Gyro Super Smooth ────────────────────────────────────────
+                "+CVars=r.GyroSampleRate=1000\n" +
+                "+CVars=r.GyroSensitivityRatio=2.5\n" +
+                "+CVars=r.GyroZeroDelay=1\n" +
+                "+CVars=r.GyroLatencyMode=0\n" +
+                "+CVars=r.GyroSmoothFactor=1\n" +
+                "+CVars=r.GyroStabilization=1\n" +
+                "+CVars=r.GyroAimAssist=1\n" +
+                "+CVars=r.GyroRecoilCompensation=1.50\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
@@ -95,7 +117,7 @@ public class PubgConfigPatcher {
                 "bEnableAimAssist=True\n" +
                 "bDisableAnalytics=True\n" +
                 "bDisableBugReporting=True\n" +
-                "AimAssistLevel=3\n" +
+                "AimAssistLevel=5\n" +
                 "SprintSensitivity=150\n" +
                 "TPPFieldOfView=100\n" +
                 "FPPFieldOfView=150\n";
@@ -156,38 +178,44 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Injects Aim Assist 100%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response, and 90+ Damage Boost CVars into PUBGM/BGMI config files.
+     * Injects Aim Assist 150%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response (Super Smooth), and 150% Damage Boost CVars into PUBGM/BGMI config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        // ── Aim Assist 150% · Damage 150% · Gyro Super Smooth ────────────────
         String[] aimCvars = {
             "+CVars=r.PUBGAimAssist=1",
-            "+CVars=r.PUBGAimLockSensitivity=100",
-            "+CVars=r.AimAssistStrength=1.00",
+            "+CVars=r.PUBGAimLockSensitivity=150",
+            "+CVars=r.AimAssistStrength=1.50",
+            "+CVars=r.AimAssistLevel=5",
             "+CVars=r.PUBGAimbotLock=1",
-            "+CVars=r.AimbotTrackingRate=1.00",
+            "+CVars=r.AimbotTrackingRate=1.50",
+            "+CVars=r.TargetLockSensitivity=150",
             "+CVars=r.PUBGTPPViewRange=100.00",
             "+CVars=r.PUBGFPPViewRange=150.00",
             "+CVars=r.SprintSensitivity=150",
             "+CVars=r.CrosshairMagnetism=1",
-            "+CVars=r.GyroSensitivityRatio=2.0",
+            // Gyro Super Smooth
+            "+CVars=r.GyroSensitivityRatio=2.5",
             "+CVars=r.GyroZeroDelay=1",
-            "+CVars=r.GyroSmoothFactor=0",
+            "+CVars=r.GyroSmoothFactor=1",
+            "+CVars=r.GyroStabilization=1",
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroAimAssist=1",
-            "+CVars=r.GyroRecoilCompensation=1.00",
+            "+CVars=r.GyroRecoilCompensation=1.50",
             "+CVars=r.GyroLatencyMode=0",
             "+CVars=r.BulletTrackingOptimization=1",
             "+CVars=r.MobileTouchAssistMode=1",
-            "+CVars=r.DamageMultiplier=1.90",
-            "+CVars=r.BulletDamageBoost=1.90",
-            "+CVars=r.HeadshotDamageMultiplier=2.90",
-            "+CVars=r.CriticalDamageRate=95",
-            "+CVars=r.DamageBoostRatio=1.90",
+            // Damage 150%
+            "+CVars=r.DamageMultiplier=2.50",
+            "+CVars=r.BulletDamageBoost=2.50",
+            "+CVars=r.HeadshotDamageMultiplier=3.50",
+            "+CVars=r.CriticalDamageRate=99",
+            "+CVars=r.DamageBoostRatio=2.50",
             "bEnableAimAssist=True",
-            "AimAssistLevel=3",
+            "AimAssistLevel=5",
             "SprintSensitivity=150",
             "TPPFieldOfView=100",
             "FPPFieldOfView=150"
@@ -208,7 +236,7 @@ public class PubgConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "PUBGM Aim Assist 100%, TPP 100, FPP 150, Sprint 150, Gyro 1000Hz & 90+ Damage CVars applied via Shizuku for " + packageName);
+        Log.i(TAG, "PUBGM Aim Assist 150%, TPP 100, FPP 150, Sprint 150, Gyro 1000Hz & 150% Damage CVars applied via Shizuku for " + packageName);
     }
 
     /**
@@ -218,9 +246,10 @@ public class PubgConfigPatcher {
     public static void applyRecoilControlConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        // ── No Recoil 150% — zero scale all guns/scopes + boosted compensation ─
         String[] recoilCvars = {
             "+CVars=r.PUBGRecoilScale=0.00",
-            "+CVars=r.WeaponKickReduction=1.00",
+            "+CVars=r.WeaponKickReduction=1.50",
             "+CVars=r.VerticalRecoilScale=0.00",
             "+CVars=r.HorizontalRecoilScale=0.00",
             "+CVars=r.BulletSpread=0.00",
@@ -228,7 +257,7 @@ public class PubgConfigPatcher {
             "+CVars=r.GunBobbing=0",
             "+CVars=r.CameraShakeMultiplier=0.00",
             "+CVars=r.ScopeStabilizationMode=1",
-            "+CVars=r.AllGunsRecoilReduction=1.00",
+            "+CVars=r.AllGunsRecoilReduction=1.50",
             "+CVars=r.NoRecoilAllScopes=1",
             "+CVars=r.RedDotRecoilScale=0.00",
             "+CVars=r.Scope2xRecoilScale=0.00",
@@ -237,7 +266,9 @@ public class PubgConfigPatcher {
             "+CVars=r.Scope6xRecoilScale=0.00",
             "+CVars=r.Scope8xRecoilScale=0.00",
             "+CVars=r.WeaponSwayMultiplier=0.00",
-            "+CVars=r.GyroRecoilCompensation=1.00"
+            "+CVars=r.GyroRecoilCompensation=1.50",
+            "+CVars=r.GyroStabilization=1",
+            "+CVars=r.GyroSmoothFactor=1"
         };
         for (String path : paths) {
             ensureDirectory(path);

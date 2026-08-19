@@ -50,29 +50,36 @@ public class FreeFireConfigPatcher {
                 "Unlock165Hz=1\n" +
                 "Unlock185Hz=1\n" +
                 "AimAssist=1\n" +
-                "AutoAimPrecision=1.0\n" +
+                "AutoAimPrecision=1.5\n" +
+                "AimAssistStrength=150\n" +
+                "AimAssistLevel=5\n" +
                 "SprintSensitivity=150\n" +
-                "GeneralSensitivity=100\n" +
-                "RedDotSensitivity=100\n" +
+                "GeneralSensitivity=150\n" +
+                "RedDotSensitivity=150\n" +
                 "TPPFov=100\n" +
                 "FPPFov=150\n" +
                 "NoRecoil=1\n" +
-                "RecoilReduction=1.00\n" +
+                "RecoilReduction=1.50\n" +
                 "AllWeaponRecoilFix=1\n" +
                 "ScopeStabilization=1\n" +
                 "Scope2xRecoil=0.00\n" +
                 "Scope4xRecoil=0.00\n" +
                 "SniperScopeRecoil=0.00\n" +
-                "GunShakeReduction=1.00\n" +
-                "DamageBoostRatio=1.90\n" +
-                "HeadshotDamageMultiplier=2.90\n" +
-                "BulletDamageBoost=1.90\n" +
-                "CriticalHitRate=95\n" +
+                "GunShakeReduction=1.50\n" +
+                "DamageBoostRatio=2.50\n" +
+                "HeadshotDamageMultiplier=3.50\n" +
+                "BulletDamageBoost=2.50\n" +
+                "CriticalHitRate=99\n" +
                 "TouchResponseLevel=3\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
-                "GyroSampleRate=1000\n";
+                "GyroSampleRate=1000\n" +
+                "GyroSensitivityRatio=2.5\n" +
+                "GyroZeroDelay=1\n" +
+                "GyroSmoothFactor=1\n" +
+                "GyroStabilization=1\n" +
+                "GyroLatencyMode=0\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -121,32 +128,41 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
+            // Aim Assist 150%
             "AimAssist=1",
-            "AutoAimPrecision=1.0",
-            "HeadshotSensitivityBoost=2.0",
+            "AutoAimPrecision=1.5",
+            "AimAssistStrength=150",
+            "AimAssistLevel=5",
+            "HeadshotSensitivityBoost=2.5",
             "DragShotAssist=1",
             "SprintSensitivity=150",
-            "GeneralSensitivity=100",
-            "RedDotSensitivity=100",
+            "GeneralSensitivity=150",
+            "RedDotSensitivity=150",
             "TPPFov=100",
             "FPPFov=150",
             "TouchSlopReduction=1",
-            "DamageBoostRatio=1.90",
-            "HeadshotDamageMultiplier=2.90",
-            "BulletDamageBoost=1.90",
-            "CriticalHitRate=95",
-            "GyroSensitivityBoost=2.0",
+            // Damage 150%
+            "DamageBoostRatio=2.50",
+            "HeadshotDamageMultiplier=3.50",
+            "BulletDamageBoost=2.50",
+            "CriticalHitRate=99",
+            // Gyro Super Smooth
+            "GyroSensitivityBoost=2.5",
             "GyroZeroDelay=1",
             "GyroResponseRate=1000",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "GyroLatencyMode=0",
             "GyroAimAssist=1",
+            // No Recoil 150%
             "NoRecoil=1",
-            "RecoilReduction=1.00",
+            "RecoilReduction=1.50",
             "AllWeaponRecoilFix=1",
             "ScopeStabilization=1",
             "Scope2xRecoil=0.00",
             "Scope4xRecoil=0.00",
             "SniperScopeRecoil=0.00",
-            "GunShakeReduction=1.00",
+            "GunShakeReduction=1.50",
             "CrosshairSpread=0.00"
         };
         for (String path : paths) {
@@ -165,7 +181,7 @@ public class FreeFireConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "FreeFire Aim Assist 100%, TPP 100, FPP 150, Sprint 150, 1000Hz Gyro, 90+ Damage & Zero Recoil applied for " + packageName);
+        Log.i(TAG, "FreeFire Aim Assist 150%, TPP 100, FPP 150, Sprint 150, 1000Hz Gyro (Super Smooth), 150% Damage & Zero Recoil applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {

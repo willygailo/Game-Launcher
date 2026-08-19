@@ -67,7 +67,7 @@ public class FarlightConfigPatcher {
                         "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroPollingRate\": 1000,\n" +
-                        "  \"AimAssistStrength\": 100,\n" +
+                        "  \"AimAssistStrength\": 150,\n" +
                         "  \"RecoilReduction\": 1.00,\n" +
                         "  \"LowLatencyMode\": 1,\n" +
                         "  \"AntiAliasing\": 1\n" +
@@ -112,8 +112,8 @@ public class FarlightConfigPatcher {
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
-                        "AimAssistStrength=100\n" +
-                        "RecoilReduction=1.00\n" +
+                        "AimAssistStrength=150\n" +
+                        "RecoilReduction=1.50\n" +
                         "WeaponKickScale=0.00\n" +
                         "ZeroInputLag=1\n";
             }
@@ -153,8 +153,8 @@ public class FarlightConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             String cmd =
-                "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=100' >> " + path + "; " +
-                "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=100/' " + path + "; " +
+                "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=150' >> " + path + "; " +
+                "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=150/' " + path + "; " +
                 "grep -qF 'GyroPollingRate' " + path + " || echo 'GyroPollingRate=1000' >> " + path + "; " +
                 "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -171,8 +171,8 @@ public class FarlightConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             String cmd =
-                "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.00' >> " + path + "; " +
-                "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.00/' " + path + "; " +
+                "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.50' >> " + path + "; " +
+                "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.50/' " + path + "; " +
                 "grep -qF 'WeaponKickScale' " + path + " || echo 'WeaponKickScale=0.00' >> " + path + "; " +
                 "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path;
             if (ShizukuExecutor.hasShizukuPermission()) {

@@ -58,7 +58,7 @@ public final class GameProfilePreferences {
     }
 
     public static String getSummary(Context context, String packageName) {
-        if (context == null || packageName == null) return "CFG: 185 FPS • ZERO-DELAY TOUCH 185Hz • 1000Hz GYRO";
+        if (context == null || packageName == null) return "CFG: 185 FPS • ZERO-DELAY TOUCH 185Hz • 1000Hz GYRO • AIM 150% • DMG 150%";
         String pkg = packageName.toLowerCase();
         String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
                          pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
@@ -77,6 +77,6 @@ public final class GameProfilePreferences {
                          pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
 
         CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: 185 FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ 185 • GYRO 1000Hz" + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
+        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ " + cfg.getTargetFps() + " • GYRO 1000Hz (SMOOTH)" + (cfg.isAimAssistEnabled() ? " • AIM 150%" : "") + (cfg.isRecoilControlEnabled() ? " • NO RECOIL" : "") + (cfg.isMlbbDamageScriptEnabled() ? " • DMG 150%" : "") + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
     }
 }

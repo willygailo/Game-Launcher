@@ -53,7 +53,7 @@ public class SupercellConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
-                "DamageMultiplier=1.90\n" +
+                "DamageMultiplier=2.50\n" +
                 "SuperAttackMultiplier=1.90\n" +
                 "CriticalStrikeRate=95\n" +
                 "AutoAimGuide=1\n";
@@ -72,7 +72,7 @@ public class SupercellConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=1.90\nSuperAttackMultiplier=1.90\nCriticalStrikeRate=95\n";
+            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nSuperAttackMultiplier=1.90\nCriticalStrikeRate=95\n";
             if (ShizukuFileManager.fileExists(path)) {
                 String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
                 if (ShizukuFileManager.hasFullAccess()) {

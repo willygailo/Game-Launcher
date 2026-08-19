@@ -3,9 +3,9 @@ package com.gamebooster.app.config;
 /**
  * CompetitiveCfgProfile — Data model for a saved competitive configuration profile.
  *
- * Stores per-game settings for FPS target, super-fast touch, Hz force-write,
- * aim assist, damage script, recoil control, gyro tuning, and hardware masking.
- * Profiles are persisted to SharedPreferences via CfgProfileManager.
+ * Stores per-game settings for FPS target (144/165/185Hz), super-fast touch (185Hz/1000Hz polling),
+ * Hz force-write, 150% Aim Assist, 150% Damage script, 150% Recoil control, Gyro Super Smooth tuning,
+ * and hardware masking. Profiles are persisted to SharedPreferences via CfgProfileManager.
  *
  * FPS targets are aligned to the supported tier set (90/120/144/165/185).
  */
