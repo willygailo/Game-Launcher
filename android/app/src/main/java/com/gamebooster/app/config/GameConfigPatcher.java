@@ -56,6 +56,8 @@ public class GameConfigPatcher {
             if (MlbbConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (MlbbConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             MlbbConfigPatcher.applySuperFastTouch(pkg);
+            MlbbConfigPatcher.applyAimAssistConfig(pkg);
+            MlbbConfigPatcher.applyRecoilControlConfig(pkg);
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;

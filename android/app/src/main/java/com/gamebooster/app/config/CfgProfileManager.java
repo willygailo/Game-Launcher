@@ -298,6 +298,12 @@ public class CfgProfileManager {
             if (profile.isSuperFastTouchEnabled()) {
                 MlbbConfigPatcher.applySuperFastTouch(pkg);
             }
+            if (profile.isAimAssistEnabled()) {
+                MlbbConfigPatcher.applyAimAssistConfig(pkg);
+            }
+            if (profile.isRecoilControlEnabled()) {
+                MlbbConfigPatcher.applyRecoilControlConfig(pkg);
+            }
             if (profile.isMlbbDamageScriptEnabled()) {
                 MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             }
@@ -522,11 +528,13 @@ public class CfgProfileManager {
                 FreeFireConfigPatcher.applySuperFastTouch(pkg);
             }
             if (profile.isAimAssistEnabled()) {
+                MlbbConfigPatcher.applyAimAssistConfig(pkg);
                 PubgConfigPatcher.applyAimAssistConfig(pkg);
                 CodmConfigPatcher.applyAimAssistConfig(pkg);
                 FreeFireConfigPatcher.applyAimAssistConfig(pkg);
             }
             if (profile.isRecoilControlEnabled()) {
+                MlbbConfigPatcher.applyRecoilControlConfig(pkg);
                 PubgConfigPatcher.applyRecoilControlConfig(pkg);
                 CodmConfigPatcher.applyRecoilControlConfig(pkg);
                 FreeFireConfigPatcher.applyRecoilControlConfig(pkg);

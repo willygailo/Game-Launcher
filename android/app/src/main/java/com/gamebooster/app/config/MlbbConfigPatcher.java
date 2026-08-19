@@ -151,7 +151,7 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, and Penetration keys into MLBB config files.
+     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, Critical and Penetration keys into MLBB config files.
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyDamageScriptConfig(String packageName) {
@@ -166,43 +166,59 @@ public class MlbbConfigPatcher {
             "FieldOfView=150",
             "WideScreenMode=1",
             "UltraWideCamera=1",
-            // Damage 150%
+            // Damage 250% & Penetration
             "PhysicalDamageBoost=2.50",
             "MagicDamageBoost=2.50",
             "TrueDamageBoost=2.50",
             "PhysicalPenetrationBoost=99",
             "MagicPenetrationBoost=99",
+            "ArmorPenetration=99",
+            "MagicResistPenetration=99",
             "DamageMultiplier=2.50",
+            "SkillDamageMultiplier=2.50",
             "CriticalDamageRate=99",
             "CriticalDamageMultiplier=3.50",
+            "CriticalHitRate=1.00",
+            "AttackSpeedMultiplier=2.00",
+            "AttackDelayReduction=1",
+            "SkillAnimationCancelZeroDelay=1",
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.40",
+            "HighDamageRateMode=1",
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1",
+            "AutoSmiteExecution=1",
+            "RetributionDamageThreshold=2500",
+            "TurretDamageReduction=0.50",
+            "MinionDamageBoost=2.00",
+            "MonsterDamageBoost=2.50",
             // Gyro Super Smooth
             "GyroSampleRate=1000",
             "GyroSensitivityRatio=2.5",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
             "GyroStabilization=1",
-            "GyroLatencyMode=0",
-            // Aim Assist 150%
-            "AimAssistStrength=150",
-            "AimAssistLevel=5",
-            "SkillCoolDownReduceMode=1",
-            "HighDamageRateMode=1",
-            "DamageAssetOverride=1",
-            "AutoDamageExecutionMode=1",
-            "AutoSkillLock=1",
-            "SkillTargetAssist=1",
-            "SmartTargetingMode=1"
+            "GyroLatencyMode=0"
         };
         for (String path : paths) {
             ensureDirectory(path);
             StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
-            sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
-            for (String keyVal : damageDroneKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            if (path.endsWith(".xml")) {
+                for (String keyVal : damageDroneKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
+                sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
+                for (String keyVal : damageDroneKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
             }
             String cmd = sb.toString();
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -211,7 +227,104 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB Drone View FOV 150 & 90+ damage script config applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 2.5x applied via Shizuku for " + packageName);
+    }
+
+    /**
+     * Injects Smart Aim Assist, Hero Priority Lock, and Skill Target Assistance for MLBB.
+     */
+    public static void applyAimAssistConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] aimKeys = {
+            "AimAssistStrength=150",
+            "AimAssistLevel=5",
+            "AutoSkillLock=1",
+            "SkillTargetAssist=1",
+            "SmartTargetingMode=1",
+            "HeroPriorityLock=1",
+            "LowestHPTargetLock=1",
+            "NearestTargetLock=0",
+            "SkillAimAssist=1",
+            "SmartAimCast=1",
+            "SkillPredictPath=1",
+            "AutoAimAssist=1",
+            "TargetTracker=1",
+            "HeroLockMode=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".xml")) {
+                for (String keyVal : aimKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[AimAssist]' ").append(path).append(" || echo '[AimAssist]' >> ").append(path).append("; ");
+                for (String keyVal : aimKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB Smart Aim Assist & Hero Priority Lock applied for " + packageName);
+    }
+
+    /**
+     * Injects joystick and movement stabilization, zero input delay, and skill cancel zero-delay for MLBB.
+     */
+    public static void applyRecoilControlConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] recoilKeys = {
+            "MovementStabilization=1",
+            "JoystickZeroDeadzone=1",
+            "JoystickResponseLevel=3",
+            "SkillCancellationZeroDelay=1",
+            "InputSmoothing=1",
+            "TouchStabilization=1",
+            "ZeroInputDelay=1",
+            "SkillResponseZeroDelay=1",
+            "TouchJitterFilter=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".xml")) {
+                for (String keyVal : recoilKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[InputStabilization]' ").append(path).append(" || echo '[InputStabilization]' >> ").append(path).append("; ");
+                for (String keyVal : recoilKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB Movement Stabilization & Joystick Zero-Deadzone applied for " + packageName);
     }
 
 
