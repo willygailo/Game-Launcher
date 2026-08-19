@@ -182,7 +182,20 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
 
             // Execute all elevated commands via Shizuku
-            ShizukuExecutor.executeShizukuCommands(batchCommands);
+            java.util.List<String> execResults =
+                    ShizukuExecutor.executeShizukuCommandsWithResults(batchCommands);
+            boolean commandsExecuted = execResults != null && !execResults.isEmpty();
+            if (!commandsExecuted) {
+                Log.w(TAG, "No elevated channel available — system-level masking layers did NOT run. "
+                        + "Grant Shizuku permission (or use the LSPosed/LSPatch module for in-game spoofing).");
+            } else {
+                int failures = 0;
+                for (String r : execResults) {
+                    if (r == null || r.startsWith("ERROR:") || r.startsWith("Permission denial")) failures++;
+                }
+                Log.i(TAG, "Elevated batch executed: " + execResults.size() + " command(s), "
+                        + failures + " reported failure(s). Note: setprop ro.*/resetprop require root and may fail on Shizuku-only devices by design.");
+            }
 
             // ═══════════════════════════════════════════════════════════════════
             //  NO-FALLBACK POLICY: when the LSPosed module is enabled, the target
@@ -223,7 +236,12 @@ public class HardwareMaskEngine {
             }
 
             Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);
-            return true;
+
+            // Honest success reporting: system-wide masking only really applies
+            // when an elevated channel ran the batch. With the LSPosed module the
+            // real spoof is in-memory inside the game, so that path is also a success.
+            if (lsposedActive) return true;
+            return commandsExecuted;
 
         } catch (Throwable t) {
             Log.e(TAG, "Failed to apply full hardware mask: " + profile.id, t);

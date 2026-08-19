@@ -119,43 +119,21 @@ public class GenshinConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String cmd =
-                "grep -qF '\"camera_distance\"' " + path + " || echo '\"camera_distance\": 6.0,' >> " + path + "; " +
-                "sed -i 's/\"camera_distance\":.*/\"camera_distance\": 6.0,/' " + path + "; " +
-                "grep -qF '\"camera_fov\"' " + path + " || echo '\"camera_fov\": 150,' >> " + path + "; " +
-                "sed -i 's/\"camera_fov\":.*/\"camera_fov\": 150,/' " + path + "; " +
-                "grep -qF '\"drone_view\"' " + path + " || echo '\"drone_view\": true,' >> " + path + "; " +
-                "sed -i 's/\"drone_view\":.*/\"drone_view\": true,/' " + path + "; " +
-                "grep -qF '\"gyro_aim_sensitivity\"' " + path + " || echo '\"gyro_aim_sensitivity\": 2.0,' >> " + path + "; " +
-                "sed -i 's/\"gyro_aim_sensitivity\":.*/\"gyro_aim_sensitivity\": 2.0,/' " + path + "; " +
-                "grep -qF '\"gyro_zero_delay\"' " + path + " || echo '\"gyro_zero_delay\": true,' >> " + path + "; " +
-                "sed -i 's/\"gyro_zero_delay\":.*/\"gyro_zero_delay\": true,/' " + path + "; " +
-                "grep -qF '\"gyro_sample_rate\"' " + path + " || echo '\"gyro_sample_rate\": 1000,' >> " + path + "; " +
-                "sed -i 's/\"gyro_sample_rate\":.*/\"gyro_sample_rate\": 1000,/' " + path + "; " +
-                "grep -qF '\"damage_multiplier\"' " + path + " || echo '\"damage_multiplier\": 1.90,' >> " + path + "; " +
-                "sed -i 's/\"damage_multiplier\":.*/\"damage_multiplier\": 1.90,/' " + path + "; " +
-                "grep -qF '\"attack_speed_multiplier\"' " + path + " || echo '\"attack_speed_multiplier\": 1.5,' >> " + path + "; " +
-                "sed -i 's/\"attack_speed_multiplier\":.*/\"attack_speed_multiplier\": 1.5,/' " + path + "; " +
-                "grep -qF '\"crit_rate_boost\"' " + path + " || echo '\"crit_rate_boost\": 0.95,' >> " + path + "; " +
-                "sed -i 's/\"crit_rate_boost\":.*/\"crit_rate_boost\": 0.95,/' " + path + "; " +
-                "grep -qF '\"recoil_compensation\"' " + path + " || echo '\"recoil_compensation\": 1.0,' >> " + path + "; " +
-                "sed -i 's/\"recoil_compensation\":.*/\"recoil_compensation\": 1.0,/' " + path + "; " +
-                "grep -qF '\"camera_shake\"' " + path + " || echo '\"camera_shake\": 0.0,' >> " + path + "; " +
-                "sed -i 's/\"camera_shake\":.*/\"camera_shake\": 0.0,/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "Genshin Drone View FOV 150, 1000Hz Gyro, 90+ Damage & No-Recoil applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        applyAimAssistConfig(packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

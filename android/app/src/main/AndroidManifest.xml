@@ -19,6 +19,11 @@
          INTERACT_ACROSS_USERS, REQUEST_INSTALL_PACKAGES. The declarations stay
          for `pm grant`-ability via ADB on pre-24 devices; `tools:ignore`
          silences the protected-permission lint only. -->
+    <!-- Shizuku: required for the rikka Shizuku API + provider to operate. Without
+         this, Shizuku.checkSelfPermission() can never return GRANTED and the entire
+         elevated command engine silently degrades to unprivileged sh. -->
+    <uses-permission android:name="moe.shizuku.privileged.api.permission.USE_SHIZUKU" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

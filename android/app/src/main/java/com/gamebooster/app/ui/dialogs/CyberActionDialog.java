@@ -46,15 +46,17 @@ public class CyberActionDialog {
         AppExecutors.getInstance().postToMainThread(() -> {
             try {
                 Context targetContext = context;
-                if (targetContext instanceof Activity) {
-                    Activity act = (Activity) targetContext;
-                    if (act.isFinishing() || act.isDestroyed()) return;
+                if (!(targetContext instanceof Activity)) {
+                    // Non-activity contexts cannot attach dialog windows
+                    return;
                 }
+                Activity act = (Activity) targetContext;
+                if (act.isFinishing() || act.isDestroyed()) return;
 
                 // Dismiss any currently open dialog safely
                 dismissCurrent();
 
-                Dialog dialog = new Dialog(targetContext);
+                Dialog dialog = new Dialog(act);
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
                 View view = LayoutInflater.from(targetContext).inflate(R.layout.dialog_cyber_action, null);

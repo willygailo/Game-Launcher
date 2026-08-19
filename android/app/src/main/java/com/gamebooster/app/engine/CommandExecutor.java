@@ -56,8 +56,11 @@ public class CommandExecutor {
             return ShizukuUserServiceConnector.getInstance().execBatchCommands(commands);
         } else if (ShizukuExecutor.hasShizukuPermission()) {
             String combined = String.join("; ", commands);
-            ShizukuExecutor.executeShizukuCommands(combined);
-            return Collections.singletonList("SUCCESS");
+            String result = ShizukuExecutor.executeShizukuCommand(combined);
+            if (result == null) {
+                return Collections.singletonList("ERROR: no output");
+            }
+            return Collections.singletonList(result);
         }
 
         return Collections.emptyList();

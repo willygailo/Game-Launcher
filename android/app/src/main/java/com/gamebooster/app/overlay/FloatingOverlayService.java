@@ -127,6 +127,8 @@ public class FloatingOverlayService extends Service {
     private boolean isTouchBoostActive = false;
     private boolean isNetBoostActive = false;
     private int realTimeFps = 60;
+    private int onePercentLowFps = 55;
+    private boolean isRealGameSurface = false;
     private int frameCounter = 0;
     private long lastFpsCalcTimeNanos = 0;
     private int livePingMs = 28;
@@ -613,17 +615,7 @@ public class FloatingOverlayService extends Service {
         @Override
         public void doFrame(long frameTimeNanos) {
             if (!isRunning) return;
-            frameCounter++;
-            if (lastFpsCalcTimeNanos == 0) {
-                lastFpsCalcTimeNanos = frameTimeNanos;
-            } else {
-                long elapsedNanos = frameTimeNanos - lastFpsCalcTimeNanos;
-                if (elapsedNanos >= 1_000_000_000L) {
-                    realTimeFps = (int) Math.round((frameCounter * 1_000_000_000.0) / elapsedNanos);
-                    frameCounter = 0;
-                    lastFpsCalcTimeNanos = frameTimeNanos;
-                }
-            }
+            RealGameFpsMonitor.getInstance().onChoreographerFrame(frameTimeNanos);
             try {
                 Choreographer.getInstance().postFrameCallback(this);
             } catch (Exception ignored) {}
@@ -633,12 +625,19 @@ public class FloatingOverlayService extends Service {
     private void setupTelemetryEngine() {
         handler = new Handler(Looper.getMainLooper());
 
-        // 1. Frame Callback
+        // 1. Frame Callback (VSYNC baseline)
         try {
             Choreographer.getInstance().postFrameCallback(choreographerCallback);
         } catch (Exception ignored) {}
 
-        // 2. Metrics Updater (1 sec ticker)
+        // 2. Real Game FPS Telemetry Engine
+        RealGameFpsMonitor.getInstance().start(getApplicationContext(), (currentFps, lowFps, isReal) -> {
+            realTimeFps = currentFps;
+            onePercentLowFps = lowFps;
+            isRealGameSurface = isReal;
+        });
+
+        // 3. Metrics Updater (1 sec ticker)
         telemetryRunnable = new Runnable() {
             @Override
             public void run() {
@@ -782,11 +781,16 @@ public class FloatingOverlayService extends Service {
         // 3. Update Expanded Dock Viewport
         if (layoutExpandedDock != null && layoutExpandedDock.getVisibility() == View.VISIBLE) {
             if (tvHudFps != null) {
-                tvHudFps.setText(String.format("⚡ %d FPS / %dHz", activeFps, currentHz));
+                String sourceTag = isRealGameSurface ? "🎮" : "⚡";
+                tvHudFps.setText(String.format("%s %d FPS / %dHz", sourceTag, activeFps, currentHz));
                 tvHudFps.setTextColor(fpsColor);
             }
             if (tvHudFpsStatus != null) {
-                tvHudFpsStatus.setText(fpsStatus);
+                if (isRealGameSurface && onePercentLowFps > 0) {
+                    tvHudFpsStatus.setText(fpsStatus + " • 1% Low: " + onePercentLowFps + " FPS");
+                } else {
+                    tvHudFpsStatus.setText(fpsStatus);
+                }
             }
             if (tvHudPing != null) {
                 tvHudPing.setText(String.format("📶 Ping: %d ms", livePingMs));
@@ -842,6 +846,7 @@ public class FloatingOverlayService extends Service {
     public void onDestroy() {
         super.onDestroy();
         isRunning = false;
+        RealGameFpsMonitor.getInstance().stop();
         if (handler != null) {
             if (telemetryRunnable != null) handler.removeCallbacks(telemetryRunnable);
             if (pingRunnable != null) handler.removeCallbacks(pingRunnable);

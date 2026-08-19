@@ -177,6 +177,36 @@ public class ShizukuExecutor {
     }
 
     /**
+     * Executes a list of shell commands and returns the per-command results.
+     *
+     * Unlike the void {@link #executeShizukuCommands(List)} fire-and-forget
+     * variant, this lets callers distinguish "commands really ran" from
+     * "no elevated channel existed". Returns one entry per non-empty command;
+     * an empty list means no command was executed at all (no Shizuku, no rish,
+     * no shell fallback), and each entry is the raw stdout/SUCCESS/ERROR string.
+     */
+    public static java.util.List<String> executeShizukuCommandsWithResults(java.util.List<String> commands) {
+        java.util.List<String> results = new java.util.ArrayList<>();
+        if (commands == null || commands.isEmpty()) return results;
+
+        if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            return ShizukuUserServiceConnector.getInstance().executeBatchCommands(commands);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String cmd : commands) {
+            if (cmd != null && !cmd.trim().isEmpty()) {
+                sb.append(cmd.trim()).append("; ");
+            }
+        }
+        if (sb.length() > 0) {
+            String res = executeShizukuCommand(sb.toString());
+            results.add(res != null ? res : "ERROR: no output");
+        }
+        return results;
+    }
+
+    /**
      * Executes an entire multiline shell script via base64 pipeline.
      */
     public static String executeShizukuScript(String scriptContent) {

@@ -1,6 +1,7 @@
 package com.gamebooster.app.games;
 import com.gamebooster.app.config.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,15 +107,59 @@ public class GamePackageRegistry {
     }
 
     public static boolean isKnownGame(String packageName) {
-        return packageName != null && KNOWN_GAMES.containsKey(packageName.toLowerCase());
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.toLowerCase().trim();
+        if (KNOWN_GAMES.containsKey(pkg)) return true;
+
+        // Heuristic fallback for regional or modded package variants
+        return pkg.contains("tencent.ig")
+                || pkg.contains("pubg")
+                || pkg.contains("activision.callofduty")
+                || pkg.contains("codm")
+                || pkg.contains("warzone")
+                || pkg.contains("bloodstrike")
+                || pkg.contains("newspike")
+                || pkg.contains("standoff2")
+                || pkg.contains("carxstreet")
+                || pkg.contains("uamo")
+                || pkg.contains("deltaforce")
+                || pkg.contains("supercell")
+                || pkg.contains("brawlstars")
+                || pkg.contains("clashofclans")
+                || pkg.contains("clashroyale")
+                || pkg.contains("freefire")
+                || pkg.contains("mobile.legends")
+                || pkg.contains("mobilelegends")
+                || pkg.contains("genshin")
+                || pkg.contains("hkrpg")
+                || pkg.contains("honkai")
+                || pkg.contains("cognosphere")
+                || pkg.contains("mihoyo")
+                || pkg.contains("hoyoverse")
+                || pkg.contains("wutheringwaves")
+                || pkg.contains("sgame")
+                || pkg.contains("levelinfinite")
+                || pkg.contains("arenaofvalor")
+                || pkg.contains("roblox")
+                || pkg.contains("wildrift")
+                || pkg.contains("projectc")
+                || pkg.contains("valorant")
+                || pkg.contains("farlight")
+                || pkg.contains("solarland");
     }
 
     public static GameInfoSpec getSpec(String packageName) {
         if (packageName == null) return null;
-        return KNOWN_GAMES.get(packageName.toLowerCase());
+        String pkg = packageName.toLowerCase().trim();
+        GameInfoSpec spec = KNOWN_GAMES.get(pkg);
+        if (spec != null) return spec;
+        if (isKnownGame(pkg)) {
+            return new GameInfoSpec("High-Performance Game (" + pkg + ")", "Gaming", 185);
+        }
+        return null;
     }
 
     public static Map<String, GameInfoSpec> getAllKnownGames() {
-        return KNOWN_GAMES;
+        return Collections.unmodifiableMap(KNOWN_GAMES);
     }
 }

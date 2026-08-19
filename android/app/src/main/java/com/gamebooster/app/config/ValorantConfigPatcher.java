@@ -163,45 +163,21 @@ public class ValorantConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String cmd =
-                "grep -qF 'AimAssist' " + path + " || echo 'AimAssist=1' >> " + path + "; " +
-                "sed -i 's/^AimAssist=.*/AimAssist=1/' " + path + "; " +
-                "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=150' >> " + path + "; " +
-                "sed -i 's/^AimAssistStrength=.*/AimAssistStrength=150/' " + path + "; " +
-                "grep -qF 'GyroPollingRate' " + path + " || echo 'GyroPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^GyroPollingRate=.*/GyroPollingRate=1000/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "Valorant aim assist & 1000Hz gyro applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String cmd =
-                "grep -qF 'RecoilScale' " + path + " || echo 'RecoilScale=0.00' >> " + path + "; " +
-                "sed -i 's/^RecoilScale=.*/RecoilScale=0.00/' " + path + "; " +
-                "grep -qF 'RecoilReduction' " + path + " || echo 'RecoilReduction=1.50' >> " + path + "; " +
-                "sed -i 's/^RecoilReduction=.*/RecoilReduction=1.50/' " + path + "; " +
-                "grep -qF 'WeaponKickScale' " + path + " || echo 'WeaponKickScale=0.00' >> " + path + "; " +
-                "sed -i 's/^WeaponKickScale=.*/WeaponKickScale=0.00/' " + path + "; " +
-                "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=1.50' >> " + path + "; " +
-                "sed -i 's/^WeaponKickReduction=.*/WeaponKickReduction=1.50/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "Valorant recoil & weapon kick reduction applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

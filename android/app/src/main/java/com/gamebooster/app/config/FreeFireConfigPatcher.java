@@ -125,67 +125,21 @@ public class FreeFireConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimKeys = {
-            // Aim Assist 150%
-            "AimAssist=1",
-            "AutoAimPrecision=1.5",
-            "AimAssistStrength=150",
-            "AimAssistLevel=5",
-            "HeadshotSensitivityBoost=2.5",
-            "DragShotAssist=1",
-            "SprintSensitivity=150",
-            "GeneralSensitivity=150",
-            "RedDotSensitivity=150",
-            "TPPFov=100",
-            "FPPFov=150",
-            "TouchSlopReduction=1",
-            // Damage 150%
-            "DamageBoostRatio=2.50",
-            "HeadshotDamageMultiplier=3.50",
-            "BulletDamageBoost=2.50",
-            "CriticalHitRate=99",
-            // Gyro Super Smooth
-            "GyroSensitivityBoost=2.5",
-            "GyroZeroDelay=1",
-            "GyroResponseRate=1000",
-            "GyroSmoothFactor=1",
-            "GyroStabilization=1",
-            "GyroLatencyMode=0",
-            "GyroAimAssist=1",
-            // No Recoil 150%
-            "NoRecoil=1",
-            "RecoilReduction=1.50",
-            "AllWeaponRecoilFix=1",
-            "ScopeStabilization=1",
-            "Scope2xRecoil=0.00",
-            "Scope4xRecoil=0.00",
-            "SniperScopeRecoil=0.00",
-            "GunShakeReduction=1.50",
-            "CrosshairSpread=0.00"
-        };
-        for (String path : paths) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[AimControl]' ").append(path).append(" || echo '[AimControl]' >> ").append(path).append("; ");
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "FreeFire Aim Assist 150%, TPP 100, FPP 150, Sprint 150, 1000Hz Gyro (Super Smooth), 150% Damage & Zero Recoil applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        applyAimAssistConfig(packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     private static List<String> getConfigPaths(String pkg) {

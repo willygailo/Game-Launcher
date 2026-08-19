@@ -248,47 +248,12 @@ public class CodmConfigPatcher {
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            ensureDirectory(path);
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/}$/,\\n  \"AimAssist\": 1,\\n  \"AimAssistStrength\": 150,\\n  \"AimAssistLevel\": 5,\\n  \"FPP_FOV\": 150,\\n  \"FieldOfView\": 150,\\n  \"TPP_FOV\": 100,\\n  \"SprintSensitivity\": 150,\\n  \"AlwaysSprint\": 1,\\n  \"AimbotLockRate\": 1.50,\\n  \"RotationalAimAssist\": 1,\\n  \"TargetLockSensitivity\": 150,\\n  \"AimMagnetism\": 1,\\n  \"GyroSensitivityRatio\": 2.5,\\n  \"GyroZeroDelay\": 1,\\n  \"GyroSmoothFactor\": 1,\\n  \"GyroStabilization\": 1,\\n  \"GyroLatencyMode\": 0,\\n  \"GyroSampleRate\": 1000,\\n  \"DamageBoostRatio\": 2.50,\\n  \"BulletDamageBoost\": 2.50,\\n  \"HeadshotDamageMultiplier\": 3.50,\\n  \"CriticalHitRate\": 99\\n}/' " + path;
-            } else if (path.endsWith(".xml")) {
-                cmd = "grep -qF 'AimAssist' " + path +
-                      " || sed -i 's/<\\/map>/  <int name=\"AimAssist\" value=\"1\" \\/>\\n  <int name=\"AimAssistStrength\" value=\"150\" \\/>\\n  <int name=\"AimAssistLevel\" value=\"5\" \\/>\\n  <int name=\"FPP_FOV\" value=\"150\" \\/>\\n  <int name=\"FieldOfView\" value=\"150\" \\/>\\n  <int name=\"TPP_FOV\" value=\"100\" \\/>\\n  <int name=\"SprintSensitivity\" value=\"150\" \\/>\\n  <float name=\"AimbotLockRate\" value=\"1.50\" \\/>\\n  <float name=\"GyroSensitivityRatio\" value=\"2.5\" \\/>\\n  <int name=\"GyroSampleRate\" value=\"1000\" \\/>\\n  <int name=\"GyroSmoothFactor\" value=\"1\" \\/>\\n  <int name=\"GyroStabilization\" value=\"1\" \\/>\\n  <float name=\"DamageBoostRatio\" value=\"2.50\" \\/>\\n  <float name=\"BulletDamageBoost\" value=\"2.50\" \\/>\\n  <float name=\"HeadshotDamageMultiplier\" value=\"3.50\" \\/>\\n  <int name=\"CriticalHitRate\" value=\"99\" \\/>\\n<\\/map>/' " + path;
-            } else {
-                cmd = "grep -qF 'AimAssist' " + path + " || echo 'AimAssist=1' >> " + path + "; " +
-                      "grep -qF 'AimAssistStrength' " + path + " || echo 'AimAssistStrength=150' >> " + path + "; " +
-                      "grep -qF 'AimAssistLevel' " + path + " || echo 'AimAssistLevel=5' >> " + path + "; " +
-                      "grep -qF 'FPP_FOV' " + path + " || echo 'FPP_FOV=150' >> " + path + "; " +
-                      "grep -qF 'FieldOfView' " + path + " || echo 'FieldOfView=150' >> " + path + "; " +
-                      "grep -qF 'TPP_FOV' " + path + " || echo 'TPP_FOV=100' >> " + path + "; " +
-                      "grep -qF 'SprintSensitivity' " + path + " || echo 'SprintSensitivity=150' >> " + path + "; " +
-                      "grep -qF 'AimbotLockRate' " + path + " || echo 'AimbotLockRate=1.50' >> " + path + "; " +
-                      "grep -qF 'RotationalAimAssist' " + path + " || echo 'RotationalAimAssist=1' >> " + path + "; " +
-                      "grep -qF 'TargetLockSensitivity' " + path + " || echo 'TargetLockSensitivity=150' >> " + path + "; " +
-                      "grep -qF 'DamageBoostRatio' " + path + " || echo 'DamageBoostRatio=2.50' >> " + path + "; " +
-                      "grep -qF 'BulletDamageBoost' " + path + " || echo 'BulletDamageBoost=2.50' >> " + path + "; " +
-                      "grep -qF 'HeadshotDamageMultiplier' " + path + " || echo 'HeadshotDamageMultiplier=3.50' >> " + path + "; " +
-                      "grep -qF 'CriticalHitRate' " + path + " || echo 'CriticalHitRate=99' >> " + path + "; " +
-                      "grep -qF 'GyroSensitivityRatio' " + path + " || echo 'GyroSensitivityRatio=2.5' >> " + path + "; " +
-                      "grep -qF 'GyroZeroDelay' " + path + " || echo 'GyroZeroDelay=1' >> " + path + "; " +
-                      "grep -qF 'GyroSampleRate' " + path + " || echo 'GyroSampleRate=1000' >> " + path + "; " +
-                      "grep -qF 'GyroSmoothFactor' " + path + " || echo 'GyroSmoothFactor=1' >> " + path + "; " +
-                      "grep -qF 'GyroStabilization' " + path + " || echo 'GyroStabilization=1' >> " + path + "; " +
-                      "grep -qF 'GyroLatencyMode' " + path + " || echo 'GyroLatencyMode=0' >> " + path + "; " +
-                      "grep -qF 'AimMagnetism' " + path + " || echo 'AimMagnetism=1' >> " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "CODM Aim Assist 150%, TPP 100, FPP 150, Sprint 150, Gyro 1000Hz & 150% Damage config applied via Shizuku for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     /**
@@ -296,36 +261,12 @@ public class CodmConfigPatcher {
      * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            ensureDirectory(path);
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "grep -qF 'RecoilScale' " + path +
-                      " || sed -i 's/}$/,\\n  \"RecoilScale\": 0.00,\\n  \"WeaponKickReduction\": 1.00,\\n  \"AllGunsRecoilReduction\": 1.00,\\n  \"ScopeShakeReduction\": 1.00,\\n  \"ScopeRecoilMultiplier\": 0.00,\\n  \"ScopeStability\": 1.00,\\n  \"VerticalRecoilScale\": 0.00,\\n  \"HorizontalRecoilScale\": 0.00,\\n  \"BulletSpread\": 0.00,\\n  \"GunShakeMode\": 0\\n}/' " + path;
-            } else if (path.endsWith(".xml")) {
-                cmd = "grep -qF 'RecoilScale' " + path +
-                      " || sed -i 's/<\\/map>/  <float name=\"RecoilScale\" value=\"0.00\" \\/>\\n  <float name=\"WeaponKickReduction\" value=\"1.00\" \\/>\\n  <float name=\"AllGunsRecoilReduction\" value=\"1.00\" \\/>\\n  <float name=\"ScopeShakeReduction\" value=\"1.00\" \\/>\\n  <float name=\"ScopeRecoilMultiplier\" value=\"0.00\" \\/>\\n  <float name=\"VerticalRecoilScale\" value=\"0.00\" \\/>\\n  <float name=\"HorizontalRecoilScale\" value=\"0.00\" \\/>\\n<\\/map>/' " + path;
-            } else {
-                cmd = "grep -qF 'RecoilScale' " + path + " || echo 'RecoilScale=0.00' >> " + path + "; " +
-                      "grep -qF 'WeaponKickReduction' " + path + " || echo 'WeaponKickReduction=1.00' >> " + path + "; " +
-                      "grep -qF 'AllGunsRecoilReduction' " + path + " || echo 'AllGunsRecoilReduction=1.00' >> " + path + "; " +
-                      "grep -qF 'ScopeShakeReduction' " + path + " || echo 'ScopeShakeReduction=1.00' >> " + path + "; " +
-                      "grep -qF 'ScopeRecoilMultiplier' " + path + " || echo 'ScopeRecoilMultiplier=0.00' >> " + path + "; " +
-                      "grep -qF 'ScopeStability' " + path + " || echo 'ScopeStability=1.00' >> " + path + "; " +
-                      "grep -qF 'VerticalRecoilScale' " + path + " || echo 'VerticalRecoilScale=0.00' >> " + path + "; " +
-                      "grep -qF 'HorizontalRecoilScale' " + path + " || echo 'HorizontalRecoilScale=0.00' >> " + path + "; " +
-                      "grep -qF 'BulletSpread' " + path + " || echo 'BulletSpread=0.00' >> " + path + "; " +
-                      "grep -qF 'GunShakeMode' " + path + " || echo 'GunShakeMode=0' >> " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "CODM Zero Recoil All Guns & All Scopes (0.00 Scale) applied via Shizuku for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
 

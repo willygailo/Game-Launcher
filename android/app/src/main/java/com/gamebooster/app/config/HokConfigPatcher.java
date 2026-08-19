@@ -100,48 +100,21 @@ public class HokConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageAimKeys = {
-            "DroneView=1",
-            "DroneViewHeight=3",
-            "CameraHeight=3",
-            "CameraDistance=150",
-            "CameraFOV=150",
-            "FieldOfView=150",
-            "PhysicalDamageMultiplier=2.50",
-            "MagicDamageMultiplier=2.50",
-            "AutoAimLock=1",
-            "SkillShotAssist=1",
-            "TargetLockPrecision=100",
-            "CriticalRateBoost=95",
-            "SkillDelayZero=1",
-            "GyroAimAssist=1",
-            "GyroZeroDelay=1",
-            "GyroResponseRate=1000"
-        };
-        for (String path : paths) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[CombatAssist]' ").append(path).append(" || echo '[CombatAssist]' >> ").append(path).append("; ");
-            sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
-            for (String keyVal : damageAimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "HOK Drone View FOV 150, 1000Hz Gyro & 90+ Damage applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        applyAimAssistConfig(packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

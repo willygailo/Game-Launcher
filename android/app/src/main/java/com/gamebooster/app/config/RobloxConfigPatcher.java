@@ -90,29 +90,21 @@ public class RobloxConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String cmd =
-                "grep -qF '\"FIntCameraMaxZoomDistance\"' " + path + " || echo '  \"FIntCameraMaxZoomDistance\": 500,' >> " + path + "; " +
-                "sed -i 's/\"FIntCameraMaxZoomDistance\":.*/\"FIntCameraMaxZoomDistance\": 500,/' " + path + "; " +
-                "grep -qF '\"FIntFieldOfView\"' " + path + " || echo '  \"FIntFieldOfView\": 150,' >> " + path + "; " +
-                "sed -i 's/\"FIntFieldOfView\":.*/\"FIntFieldOfView\": 150,/' " + path + "; " +
-                "grep -qF '\"FFlagGyroFastAim\"' " + path + " || echo '  \"FFlagGyroFastAim\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FIntGyroPollingRate\"' " + path + " || echo '  \"FIntGyroPollingRate\": 1000,' >> " + path + "; " +
-                "grep -qF '\"FFlagDisableCameraShake\"' " + path + " || echo '  \"FFlagDisableCameraShake\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagWeaponRecoilReduction\"' " + path + " || echo '  \"FFlagWeaponRecoilReduction\": \"True\",' >> " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-        }
-        Log.i(TAG, "Roblox Drone View Zoom 500, 1000Hz Gyro & Recoil Reduction applied for " + packageName);
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        applyAimAssistConfig(packageName);
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

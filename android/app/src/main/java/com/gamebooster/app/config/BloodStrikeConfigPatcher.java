@@ -150,35 +150,21 @@ public class BloodStrikeConfigPatcher {
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String aimData = "\n[AimConfig]\nAimAssistStrength=1.0\nAimSmoothSpeed=1.0\nGyroResponseHz=1000\nAutoTargetLock=1\nCrosshairLock=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + aimData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
-            }
-        }
+
+        // SAFETY: cheat-like config injection (applyAimAssistConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyAimAssistConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        for (String path : paths) {
-            String recoilData = "\n[SensControl]\nVerticalSensRatio=1.0\nHorizontalSensRatio=1.0\nScopeDriftCorrection=1\nNoRecoil=1\nWeaponKickReduction=1.0\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + recoilData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
-            }
-        }
+
+        // SAFETY: cheat-like config injection (applyRecoilControlConfig) removed.
+        // Recoil/damage/aim-assist config tampering triggers anti-cheat
+        // detection in protected titles. Only legitimate performance
+        // tweaks are applied via applySuperFastTouch/patchCompetitive.
+        Log.i(TAG, "Skipped applyRecoilControlConfig (cheat-like injection disabled for safety) for " + packageName);
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {

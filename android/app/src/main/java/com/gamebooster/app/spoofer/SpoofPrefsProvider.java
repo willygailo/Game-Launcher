@@ -6,6 +6,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Binder;
+import android.os.Process;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,8 +25,15 @@ import java.util.Map;
  * "device_spoofer_prefs" as (key, value) rows.
  *
  * URI: content://com.gamebooster.app.spoofprefs/spoof[?key=<prefKey>]
+ *
+ * The provider is caller-gated: only the launcher process, known game titles
+ * (the module runs inside them), and any app when spoof_all_apps is enabled
+ * may read the config. Arbitrary third-party apps (e.g. device fingerprinting /
+ * anti-cheat scanners) receive an empty result instead of the spoof config.
  */
 public class SpoofPrefsProvider extends ContentProvider {
+
+    private static final String TAG = "SpoofPrefsProvider";
 
     public static final String AUTHORITY = "com.gamebooster.app.spoofprefs";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/spoof");
@@ -35,6 +45,34 @@ public class SpoofPrefsProvider extends ContentProvider {
         return true;
     }
 
+    /**
+     * Checks the calling UID belongs to a trusted reader: the launcher itself,
+     * a known game title (the module runs inside them), or any app when the
+     * user opted into spoof_all_apps.
+     */
+    private boolean isTrustedCaller() {
+        try {
+            int uid = Binder.getCallingUid();
+            if (uid == Process.myUid()) return true; // launcher process
+
+            Context context = getContext();
+            if (context == null) return false;
+            String[] packages = context.getPackageManager().getPackagesForUid(uid);
+            if (packages != null) {
+                for (String pkg : packages) {
+                    if (GameSpoofSafetyRegistry.isTrustedConfigReader(pkg)) return true;
+                }
+            }
+
+            // spoof_all_apps opt-in: the user chose to spoof every app, so any
+            // app process running the module is a legitimate reader.
+            return SpoofPreferences.isSpoofAllApps(context);
+        } catch (Throwable t) {
+            Log.w(TAG, "Caller verification failed, denying access: " + t.getMessage());
+            return false;
+        }
+    }
+
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection,
@@ -42,6 +80,10 @@ public class SpoofPrefsProvider extends ContentProvider {
                         @Nullable String sortOrder) {
         Context context = getContext();
         if (context == null) return null;
+        if (!isTrustedCaller()) {
+            Log.w(TAG, "Denied spoof config read to untrusted caller uid=" + Binder.getCallingUid());
+            return new MatrixCursor(COLUMNS);
+        }
         String keyFilter = uri.getQueryParameter("key");
         MatrixCursor cursor = new MatrixCursor(COLUMNS);
         Map<String, String> all = SpoofPreferences.readAllPrefs(context);

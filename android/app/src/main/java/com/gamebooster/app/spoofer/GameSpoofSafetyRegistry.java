@@ -73,6 +73,26 @@ public final class GameSpoofSafetyRegistry {
         return RiskTier.LOW_RISK;
     }
 
+    /**
+     * True when the package matches a known game title (any tier) or is the
+     * launcher itself. Used to gate the spoof ContentProvider so arbitrary
+     * third-party apps (e.g. device fingerprinting / anti-cheat scanners)
+     * cannot read the spoof configuration.
+     */
+    public static boolean isTrustedConfigReader(String packageName) {
+        if (packageName == null) return false;
+        String pkg = packageName.toLowerCase();
+        if (pkg.equals("com.gamebooster.app")) return true;
+        if (riskTierFor(pkg) != RiskTier.LOW_RISK) return true;
+        for (String pattern : MEDIUM_RISK_PATTERNS) {
+            if (pkg.contains(pattern)) return true;
+        }
+        for (String pattern : HIGH_RISK_PATTERNS) {
+            if (pkg.contains(pattern)) return true;
+        }
+        return false;
+    }
+
     public static String describe(RiskTier tier) {
         if (tier == null) return "unknown";
         switch (tier) {

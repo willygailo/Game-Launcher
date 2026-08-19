@@ -110,9 +110,15 @@ public final class SpoofConfigBridge {
     private static Context appContext() {
         try {
             Class<?> at = XposedHelpers.findClass("android.app.ActivityThread", null);
-            return (Context) XposedHelpers.callStaticMethod(at, "currentApplication");
-        } catch (Throwable t) {
-            return null;
-        }
+            if (at != null) {
+                Context ctx = (Context) XposedHelpers.callStaticMethod(at, "currentApplication");
+                if (ctx != null) return ctx;
+                Object thread = XposedHelpers.callStaticMethod(at, "currentActivityThread");
+                if (thread != null) {
+                    return (Context) XposedHelpers.callMethod(thread, "getSystemContext");
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 }

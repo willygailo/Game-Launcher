@@ -111,42 +111,7 @@ public class ForegroundAppDetector {
     }
 
     private boolean isKnownGamePackage(String packageName) {
-        if (packageName == null) return false;
-        String pkg = packageName.toLowerCase();
-        return pkg.contains("tencent.ig")
-                || pkg.contains("pubg")
-                || pkg.contains("activision.callofduty")
-                || pkg.contains("codm")
-                || pkg.contains("warzone")
-                || pkg.contains("bloodstrike")
-                || pkg.contains("newspike")
-                || pkg.contains("standoff2")
-                || pkg.contains("carxstreet")
-                || pkg.contains("uamo")
-                || pkg.contains("deltaforce")
-                || pkg.contains("supercell")
-                || pkg.contains("brawlstars")
-                || pkg.contains("clashofclans")
-                || pkg.contains("clashroyale")
-                || pkg.contains("freefire")
-                || pkg.contains("mobile.legends")
-                || pkg.contains("mobilelegends")
-                || pkg.contains("genshin")
-                || pkg.contains("hkrpg")
-                || pkg.contains("honkai")
-                || pkg.contains("cognosphere")
-                || pkg.contains("mihoyo")
-                || pkg.contains("hoyoverse")
-                || pkg.contains("wutheringwaves")
-                || pkg.contains("sgame")
-                || pkg.contains("levelinfinite")
-                || pkg.contains("arenaofvalor")
-                || pkg.contains("roblox")
-                || pkg.contains("wildrift")
-                || pkg.contains("projectc")
-                || pkg.contains("valorant")
-                || pkg.contains("farlight")
-                || pkg.contains("solarland");
+        return com.gamebooster.app.games.GamePackageRegistry.isKnownGame(packageName);
     }
 
     public String getForegroundPackageName() {

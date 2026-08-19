@@ -59,6 +59,7 @@ public class MasterOptimizationEnforcer {
 
         AppExecutors.getInstance().executeCommand(() -> {
             int totalApplied = 0;
+            final boolean[] shizukuTierRan = {false};
 
             try {
                 // ─────────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ public class MasterOptimizationEnforcer {
                 }
 
                 if (ShizukuExecutor.hasShizukuPermission()) {
+                    shizukuTierRan[0] = true;
                     ShizukuPermissionEnforcer.enforceAllPermissions(appContext);
                     ShizukuUserServiceConnector.getInstance().bindService();
                     ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
@@ -120,10 +122,14 @@ public class MasterOptimizationEnforcer {
                 MaxHzForceChannel.forceApply(targetHz);
 
                 final int finalCount = totalApplied;
+                final boolean tier1Ran = shizukuTierRan[0];
                 if (listener != null) {
                     AppExecutors.getInstance().postToMainThread(() -> {
                         listener.onProgress("✅ Master Optimization 100% Enforced!", 100);
-                        listener.onComplete(true, finalCount, "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED!");
+                        String summary = tier1Ran
+                                ? "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED!"
+                                : "Optimizations applied WITHOUT Shizuku — system-level tiers skipped (grant Shizuku permission for full effect).";
+                        listener.onComplete(true, finalCount, summary);
                     });
                 }
                 Log.i(TAG, "Master optimization enforcement completed. Total tweaks/layers applied: " + totalApplied);
