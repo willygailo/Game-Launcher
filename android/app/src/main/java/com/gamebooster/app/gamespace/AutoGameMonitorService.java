@@ -103,7 +103,8 @@ public class AutoGameMonitorService extends Service {
                 gamePackages.add(info.getPackageName());
             }
 
-            boolean isGameActive = gamePackages.contains(currentPackage);
+            boolean isGameActive = gamePackages.contains(currentPackage)
+                    || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
                 lastActiveGamePackage = currentPackage;
