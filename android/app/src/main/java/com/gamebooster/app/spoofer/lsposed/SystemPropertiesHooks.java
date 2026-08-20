@@ -137,9 +137,16 @@ public final class SystemPropertiesHooks {
         map.put("ro.vendor.product.model", profile.model);
         map.put("ro.vendor.product.brand", profile.brand);
         map.put("ro.vendor.product.manufacturer", profile.manufacturer);
-        map.put("ro.odm.product.model", profile.model);
-        map.put("ro.odm.product.brand", profile.brand);
-        map.put("ro.odm.product.manufacturer", profile.manufacturer);
+        map.put("ro.boot.mode", "normal");
+        map.put("ro.boot.warranty_bit", "0");
+        map.put("ro.warranty_bit", "0");
+        map.put("ro.boot.flash.locked", "1");
+        map.put("ro.boot.verifiedbootstate", "green");
+        map.put("ro.boot.vbmeta.device_state", "locked");
+        map.put("ro.crypto.state", "encrypted");
+        map.put("ro.crypto.type", "file");
+        map.put("ro.build.selinux", "1");
+        map.put("net.hostname", profile.model.replace(" ", "_"));
 
         return map;
     }

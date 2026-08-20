@@ -106,6 +106,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchEsportsAudio;
     private Switch switchAntiLog;
 
+    // Network Mode UI
+    private TextView tvNetworkActiveMode;
+    private Button btnNetDataOnly;
+    private Button btnNetWifiOnly;
+    private Button btnNetDual;
+
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
@@ -479,7 +485,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     GpuTweaksChannel.setAngleMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan 3D Driver Enabled" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan Driver Applied for Supported Games" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -495,7 +501,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     GpuTweaksChannel.setGameDriverMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Graphics Driver Enabled" : "Game Graphics Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Driver Applied for Supported Games" : "Game Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -511,7 +517,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Vulkan 3D Render Engine Enabled" : "Default OpenGL Engine Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Vulkan 3D HWUI & Overlays Applied for Supported Games" : "Default OpenGL Engine Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -527,7 +533,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isChecked ? "extreme" : "schedutil");
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ CPU Performance Extreme Governor Locked" : "CPU Schedutil Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Per-Game CPU Extreme Governor & ADPF Boost Locked" : "CPU Schedutil Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -557,6 +563,85 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             isProgrammaticToggle = false;
         }
 
+        tvNetworkActiveMode = view.findViewById(R.id.tv_network_active_mode);
+        btnNetDataOnly = view.findViewById(R.id.btn_net_data_only);
+        btnNetWifiOnly = view.findViewById(R.id.btn_net_wifi_only);
+        btnNetDual = view.findViewById(R.id.btn_net_dual);
+
+        if (getContext() != null) {
+            String currentNetMode = ManualSettingsPreferences.getNetworkMode(getContext());
+            updateNetworkModeUi(currentNetMode);
+        }
+
+        if (btnNetDataOnly != null) {
+            btnNetDataOnly.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("Mobile Data Only Mode")) return;
+                ManualSettingsPreferences.setNetworkMode(getContext(), "data_only");
+                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
+                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), false);
+                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), false);
+
+                isProgrammaticToggle = true;
+                if (switch5g6gData != null) switch5g6gData.setChecked(true);
+                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(false);
+                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(false);
+                isProgrammaticToggle = false;
+
+                updateNetworkModeUi("data_only");
+                Toast.makeText(getContext(), "📱 5G / 4G Data Only Mode Enabled", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.DATA_ONLY);
+                });
+            });
+        }
+
+        if (btnNetWifiOnly != null) {
+            btnNetWifiOnly.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("Wi-Fi Only Mode")) return;
+                ManualSettingsPreferences.setNetworkMode(getContext(), "wifi_only");
+                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), false);
+                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
+                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), false);
+
+                isProgrammaticToggle = true;
+                if (switch5g6gData != null) switch5g6gData.setChecked(false);
+                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
+                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(false);
+                isProgrammaticToggle = false;
+
+                updateNetworkModeUi("wifi_only");
+                Toast.makeText(getContext(), "📶 Wi-Fi Only Low-Latency Lock Enabled", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.WIFI_ONLY);
+                });
+            });
+        }
+
+        if (btnNetDual != null) {
+            btnNetDual.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("Dual Data + Wi-Fi Mode")) return;
+                ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
+                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
+                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
+                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
+
+                isProgrammaticToggle = true;
+                if (switch5g6gData != null) switch5g6gData.setChecked(true);
+                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
+                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                isProgrammaticToggle = false;
+
+                updateNetworkModeUi("dual");
+                Toast.makeText(getContext(), "⚡ Dual Data + Wi-Fi Multipath Aggregation Enabled", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.DUAL_DATA_WIFI);
+                });
+            });
+        }
+
         if (btnOptimizeNetworkAll != null) {
             btnOptimizeNetworkAll.setOnClickListener(v -> {
                 if (getContext() == null) return;
@@ -571,9 +656,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
                             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
                             isProgrammaticToggle = false;
+                            ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
                             ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
                             ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
                             ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
+                            updateNetworkModeUi("dual");
                             Toast.makeText(getContext(), "🚀 5G/6G & Wi-Fi Turbo Boost Applied", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -1266,6 +1353,38 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: Shizuku Direct (LSPatch Non-Root Available)");
                 tvSpoofFrameworkStatus.setTextColor(0xFF94A3B8);
             }
+        }
+    }
+
+    private void updateNetworkModeUi(String mode) {
+        if (tvNetworkActiveMode == null || getContext() == null) return;
+        if ("data_only".equalsIgnoreCase(mode)) {
+            tvNetworkActiveMode.setText("Active Network Mode: 📱 MOBILE DATA ONLY (5G/4G)");
+            tvNetworkActiveMode.setTextColor(0xFF00F0FF);
+            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF000000);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF00FF66);
+            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetDual != null) btnNetDual.setTextColor(0xFFFFFFFF);
+        } else if ("wifi_only".equalsIgnoreCase(mode)) {
+            tvNetworkActiveMode.setText("Active Network Mode: 📶 WI-FI ONLY (Low-Latency Lock)");
+            tvNetworkActiveMode.setTextColor(0xFF00FF66);
+            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF00F0FF);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF000000);
+            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetDual != null) btnNetDual.setTextColor(0xFFFFFFFF);
+        } else {
+            tvNetworkActiveMode.setText("Active Network Mode: ⚡ DUAL DATA + WI-FI (Multipath)");
+            tvNetworkActiveMode.setTextColor(0xFF00FF66);
+            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF00F0FF);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
+            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF00FF66);
+            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            if (btnNetDual != null) btnNetDual.setTextColor(0xFF000000);
         }
     }
 

@@ -30,7 +30,16 @@ public final class BuildHooks {
         XposedHelpers.setStaticObjectField(build, "HARDWARE", profile.hardware);
         XposedHelpers.setStaticObjectField(build, "FINGERPRINT", profile.fingerprint);
         XposedHelpers.setStaticObjectField(build, "DISPLAY", profile.displayId);
+        XposedHelpers.setStaticObjectField(build, "BOOTLOADER", profile.board);
+        XposedHelpers.setStaticObjectField(build, "RADIO", "unknown");
+        XposedHelpers.setStaticObjectField(build, "TAGS", "release-keys");
+        XposedHelpers.setStaticObjectField(build, "TYPE", "user");
+        XposedHelpers.setStaticObjectField(build, "USER", "android-build");
         XposedHelpers.setStaticObjectField(build, "HOST", "android-build");
+        XposedHelpers.setStaticObjectField(build, "SERIAL", generateSerial(profile));
+        try {
+            XposedHelpers.setStaticLongField(build, "TIME", 1737331955000L);
+        } catch (Throwable ignored) {}
 
         try {
             XposedHelpers.setStaticObjectField(build, "SOC_MODEL", profile.socModel);

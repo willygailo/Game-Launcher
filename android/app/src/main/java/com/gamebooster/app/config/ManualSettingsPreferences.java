@@ -85,7 +85,18 @@ public class ManualSettingsPreferences {
     private static final String KEY_5G_6G_DATA = "pref_5g_6g_data";
     private static final String KEY_WIFI_LOW_LATENCY = "pref_wifi_low_latency";
     private static final String KEY_DUAL_DATA_WIFI = "pref_dual_data_wifi";
+    private static final String KEY_NETWORK_MODE = "pref_network_mode"; // "data_only", "wifi_only", "dual", "default"
     private static final String KEY_ANTI_LOG = "pref_anti_log";
+
+    public static void setNetworkMode(Context context, String mode) {
+        if (context == null) return;
+        getPrefs(context).edit().putString(KEY_NETWORK_MODE, mode).apply();
+    }
+
+    public static String getNetworkMode(Context context) {
+        if (context == null) return "dual";
+        return getPrefs(context).getString(KEY_NETWORK_MODE, "dual");
+    }
 
     public static void setAntiLogEnabled(Context context, boolean enabled) {
         if (context == null) return;

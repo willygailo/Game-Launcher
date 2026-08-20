@@ -11,6 +11,16 @@ public class NetworkOptimizer {
 
     private static final String TAG = "NetworkOptimizer";
 
+    public enum NetworkMode {
+        DATA_ONLY("Mobile Data Only (5G/4G)"),
+        WIFI_ONLY("Wi-Fi Only (Wi-Fi 6/7)"),
+        DUAL_DATA_WIFI("Dual Data + Wi-Fi Multipath"),
+        SYSTEM_DEFAULT("System Default");
+
+        public final String title;
+        NetworkMode(String title) { this.title = title; }
+    }
+
     public enum DnsMode {
         CLOUDFLARE_1_1_1_1("1.1.1.1", "1.0.0.1", "one.one.one.one"),
         GOOGLE_8_8_8_8("8.8.8.8", "8.8.4.4", "dns.google"),
@@ -25,6 +35,28 @@ public class NetworkOptimizer {
             this.secondary = secondary;
             this.privateDnsHost = privateDnsHost;
         }
+    }
+
+    public static boolean setNetworkMode(Context context, NetworkMode mode) {
+        if (mode == null) return false;
+        switch (mode) {
+            case DATA_ONLY:
+                optimize5gAnd6gDataNetwork(true);
+                optimizeWifi6and7LowLatency(false);
+                break;
+            case WIFI_ONLY:
+                optimizeWifi6and7LowLatency(true);
+                optimize5gAnd6gDataNetwork(false);
+                break;
+            case DUAL_DATA_WIFI:
+                setDualDataAndWifiAcceleration(true);
+                break;
+            case SYSTEM_DEFAULT:
+                optimize5gAnd6gDataNetwork(false);
+                optimizeWifi6and7LowLatency(false);
+                break;
+        }
+        return true;
     }
 
     public static boolean applyGamingDns(Context context, DnsMode mode) {

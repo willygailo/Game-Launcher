@@ -45,6 +45,7 @@ public class SpoofModule implements IXposedHookLoadPackage {
             GlesHooks.apply(lpparam, profile);
             ProcFileHooks.apply(lpparam, profile);
             IdentityHooks.apply(lpparam, profile);
+            AntiDetectionHooks.apply(lpparam);
 
             XposedBridge.log("[GameBooster] SpoofModule hooks installed for " + lpparam.packageName);
         } catch (Throwable t) {

@@ -174,12 +174,23 @@ public class HardwareMaskEngine {
             }
 
             // ═══════════════════════════════════════════════════════════════════
-            //  NETWORK / IDENTITY SPOOFING: Wi-Fi Hostname + Bluetooth Name
+            //  NETWORK / IDENTITY SPOOFING: Wi-Fi Hostname + Bluetooth + Privacy
             // ═══════════════════════════════════════════════════════════════════
+            String spoofedAndroidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
+            batchCommands.add("settings put secure android_id " + spoofedAndroidId);
             batchCommands.add("settings put global device_name \"" + profile.model + "\"");
+            batchCommands.add("settings put system device_name \"" + profile.model + "\"");
+            batchCommands.add("settings put system lock_screen_owner_info \"" + profile.model + "\"");
             batchCommands.add("settings put secure bluetooth_name \"" + profile.model + "\"");
             batchCommands.add("settings put secure bluetooth_address \"00:00:00:00:00:00\"");
+            batchCommands.add("settings put global randomized_mac_support 1");
+            batchCommands.add("settings put global randomized_mac_connected_mac_randomization 1");
             batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                String pkg = packageName.trim();
+                batchCommands.add("cmd appops set " + pkg + " READ_DEVICE_IDENTIFIERS ignore 2>/dev/null");
+                batchCommands.add("cmd appops set " + pkg + " GET_USAGE_STATS ignore 2>/dev/null");
+            }
 
             // Execute all elevated commands via Shizuku
             java.util.List<String> execResults =

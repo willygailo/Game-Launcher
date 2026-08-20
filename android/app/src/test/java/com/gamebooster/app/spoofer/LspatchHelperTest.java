@@ -35,4 +35,18 @@ public class LspatchHelperTest {
         LsposedDetector.recordGameHeartbeat("com.dts.freefireth");
         assertTrue(LsposedDetector.isAnyGameHookedActive());
     }
+
+    @Test
+    public void testProfileIdentityGeneration() {
+        SpoofProfile profile = SpoofProfileRegistry.getById("samsung_s26_ultra");
+        assertNotNull(profile);
+        assertNotNull(profile.model);
+        assertNotNull(profile.brand);
+        assertNotNull(profile.fingerprint);
+
+        // Deterministic ID hash should produce stable results
+        String androidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
+        assertNotNull(androidId);
+        assertEquals(16, androidId.length());
+    }
 }

@@ -325,6 +325,15 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="🎯 Target: Supported Games (PUBGM, MLBB, CODM, Free Fire, Genshin, Wild Rift, HOK, Standoff 2, Roblox &amp; more)"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -389,7 +398,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="Google ANGLE Vulkan Driver (OpenGL ES to Vulkan)"
+                    android:text="Google ANGLE Vulkan Driver (OpenGL ES ➔ Vulkan for Games)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -398,7 +407,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="System Game Driver for All Games"
+                    android:text="System Updatable Game Driver (Production Driver for Games)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -407,7 +416,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="GPU Vulkan 3D HWUI Renderer"
+                    android:text="GPU Vulkan 3D HWUI Renderer &amp; Game Overlays"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -416,7 +425,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="CPU Extreme Performance Governor"
+                    android:text="Per-Game CPU Performance Governor &amp; ADPF Boost"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -510,6 +519,63 @@
                         android:text="🔄 DEFAULT"
                         android:textColor="@color/text_secondary"
                         android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_network_active_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Active Network Mode: ⚡ Dual Data + Wi-Fi Multipath"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Network Mode Selection Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_net_data_only"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="3dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="📱 DATA ONLY\n5G / 4G LTE"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_net_wifi_only"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:padding="0dp"
+                        android:text="📶 WI-FI ONLY\nWi-Fi 6/7 Lock"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_net_dual"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="3dp"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:padding="0dp"
+                        android:text="⚡ DUAL\nData + Wi-Fi"
+                        android:textColor="#000000"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
