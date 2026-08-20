@@ -778,6 +778,27 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/tv_spoof_framework_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="🧬 Hooking Engine: Shizuku + LSPatch Non-Root"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_lspatch_guide"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="🧬 LSPATCH NON-ROOT GUIDE &amp; DOWNLOAD"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_spoof_profiles"
                     android:layout_width="match_parent"

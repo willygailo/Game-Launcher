@@ -109,6 +109,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
+    private TextView tvSpoofFrameworkStatus;
+    private Button btnLspatchGuide;
     private RecyclerView rvSpoofProfiles;
     private SpoofProfileAdapter spoofProfileAdapter;
 
@@ -779,7 +781,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Card Spoof: Hardware Device Spoofing
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
         tvSpoofActiveProfile = view.findViewById(R.id.tv_spoof_active_profile);
+        tvSpoofFrameworkStatus = view.findViewById(R.id.tv_spoof_framework_status);
+        btnLspatchGuide = view.findViewById(R.id.btn_lspatch_guide);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
+
+        if (btnLspatchGuide != null) {
+            btnLspatchGuide.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.spoofer.lsposed.LspatchHelper.showLspatchGuideDialog(getContext());
+                }
+            });
+        }
 
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
@@ -1234,6 +1246,26 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (spoofProfileAdapter != null) {
             spoofProfileAdapter.setActiveProfileId(enabled ? activeId : null);
+        }
+
+        if (tvSpoofFrameworkStatus != null) {
+            com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType type =
+                    com.gamebooster.app.spoofer.lsposed.LsposedDetector.getFrameworkType(getContext());
+            boolean lspatchInstalled = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isLspatchInstalled(getContext());
+            boolean anyGameHooked = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isAnyGameHookedActive();
+            if (type == com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType.LSPOSED_ROOT) {
+                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPosed (Root Active)");
+                tvSpoofFrameworkStatus.setTextColor(0xFF00F0FF);
+            } else if (anyGameHooked) {
+                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPatch Non-Root (Game Hook Active)");
+                tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
+            } else if (lspatchInstalled) {
+                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPatch Ready (Non-Root Available)");
+                tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
+            } else {
+                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: Shizuku Direct (LSPatch Non-Root Available)");
+                tvSpoofFrameworkStatus.setTextColor(0xFF94A3B8);
+            }
         }
     }
 

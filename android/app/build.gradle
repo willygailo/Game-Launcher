@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId "com.gamebooster.app"
-        minSdk 24
+        minSdk 31
         targetSdk 36
         versionCode 16003
         versionName "16.0.3-PRO"

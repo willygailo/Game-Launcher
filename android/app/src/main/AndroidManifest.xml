@@ -131,6 +131,10 @@
         <package android:name="com.sec.android.app.samsungapps" />
         <package android:name="com.apkpure.aether" />
         <package android:name="com.qooapp.qoohelper" />
+        <!-- LSPatch & LSPosed Framework Managers -->
+        <package android:name="org.lsposed.lspatch" />
+        <package android:name="org.lsposed.lspatch.metamod" />
+        <package android:name="org.lsposed.manager" />
     </queries>
 
     <application

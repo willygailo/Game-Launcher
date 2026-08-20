@@ -7,19 +7,12 @@ import android.util.Log;
 
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * LsposedDetector — launcher-side utilities to detect whether LSPosed is
- * installed and whether THIS app is enabled as a module (via Shizuku shell
- * probing /data/adb/lspd), plus a shortcut to open the LSPosed Manager.
- *
- * LSPosed v1.7+ stores module enablement in SQLite
- * (/data/adb/lspd/config/modules_config.db, tables modules/scope/configs);
- * older versions used file-based modules.list. The detection probes both,
- * preferring the SQLite enabled=1 flag when sqlite3 is available.
- *
- * Results are cached for a short TTL (10s), NOT for the process lifetime —
- * probing before Shizuku permission is granted, or before the user enables
- * the module, must not poison the result forever.
+ * LsposedDetector — Unified detection engine for both LSPosed (Root)
+ * and LSPatch (Non-Root) ART-level hooking frameworks on Android 12–16.
  */
 public final class LsposedDetector {
 
@@ -29,16 +22,64 @@ public final class LsposedDetector {
     private static final String CONFIG_DB = "/data/adb/lspd/config/modules_config.db";
     private static final String LEGACY_MODULES_LIST = "/data/adb/lspd/config/modules.list";
 
+    public enum FrameworkType {
+        NONE("Standard Engine", "#94A3B8"),
+        LSPOSED_ROOT("LSPosed Module (Root)", "#00F0FF"),
+        LSPATCH_NON_ROOT("LSPatch Module (Non-Root)", "#00FF66");
+
+        public final String displayName;
+        public final String colorHex;
+
+        FrameworkType(String displayName, String colorHex) {
+            this.displayName = displayName;
+            this.colorHex = colorHex;
+        }
+    }
+
     private static final long CACHE_TTL_MS = 10_000L;
+    private static final long HEARTBEAT_TIMEOUT_MS = 120_000L; // 2 minutes
 
     private static volatile boolean cachedInstalled = false;
     private static volatile long cachedInstalledAt = 0L;
     private static volatile boolean cachedEnabled = false;
     private static volatile long cachedEnabledAt = 0L;
 
+    // Package-to-last-seen timestamp map populated by SpoofPrefsProvider
+    private static final Map<String, Long> HOOKED_GAMES_HEARTBEATS = new ConcurrentHashMap<>();
+
     private LsposedDetector() {}
 
-    /** True when the LSPosed framework directory exists on this device. */
+    /**
+     * Records an active query heartbeat from a game running our hooked SpoofModule.
+     */
+    public static void recordGameHeartbeat(String packageName) {
+        if (packageName != null && !packageName.isEmpty()) {
+            HOOKED_GAMES_HEARTBEATS.put(packageName, System.currentTimeMillis());
+            Log.d(TAG, "Recorded active hook heartbeat from: " + packageName);
+        }
+    }
+
+    /**
+     * Returns true if any game process recently queried the spoof config (within 2 mins).
+     */
+    public static boolean isAnyGameHookedActive() {
+        long now = System.currentTimeMillis();
+        for (Map.Entry<String, Long> entry : HOOKED_GAMES_HEARTBEATS.entrySet()) {
+            if (now - entry.getValue() < HEARTBEAT_TIMEOUT_MS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if LSPatch is installed on this device.
+     */
+    public static boolean isLspatchInstalled(Context context) {
+        return LspatchHelper.isLspatchInstalled(context);
+    }
+
+    /** True when the LSPosed framework directory exists on this device (Root). */
     public static boolean isLsposedInstalled() {
         long now = System.currentTimeMillis();
         if (now - cachedInstalledAt < CACHE_TTL_MS) return cachedInstalled;
@@ -47,13 +88,37 @@ public final class LsposedDetector {
         return cachedInstalled;
     }
 
-    /** True when this app is enabled as a module in LSPosed (any user profile). */
+    /** True when this app is enabled as a module in LSPosed (Root). */
     public static boolean isModuleEnabled() {
         long now = System.currentTimeMillis();
         if (now - cachedEnabledAt < CACHE_TTL_MS) return cachedEnabled;
         cachedEnabled = probeModuleEnabled();
         cachedEnabledAt = now;
         return cachedEnabled;
+    }
+
+    /**
+     * True when either LSPosed (Root) is enabled or an LSPatch (Non-Root) hooked game is active.
+     */
+    public static boolean isHookingActive(Context context) {
+        return isModuleEnabled() || isAnyGameHookedActive() || (context != null && isLspatchInstalled(context) && isSpoofPrefsConfigured(context));
+    }
+
+    private static boolean isSpoofPrefsConfigured(Context context) {
+        return com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context);
+    }
+
+    /**
+     * Returns the detected active framework type.
+     */
+    public static FrameworkType getFrameworkType(Context context) {
+        if (isModuleEnabled()) {
+            return FrameworkType.LSPOSED_ROOT;
+        }
+        if (isAnyGameHookedActive() || isLspatchInstalled(context)) {
+            return FrameworkType.LSPATCH_NON_ROOT;
+        }
+        return FrameworkType.NONE;
     }
 
     /**

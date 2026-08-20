@@ -84,6 +84,20 @@ public class SpoofPrefsProvider extends ContentProvider {
             Log.w(TAG, "Denied spoof config read to untrusted caller uid=" + Binder.getCallingUid());
             return new MatrixCursor(COLUMNS);
         }
+
+        // Record heartbeat for LSPatch active status
+        try {
+            int uid = Binder.getCallingUid();
+            String[] packages = context.getPackageManager().getPackagesForUid(uid);
+            if (packages != null && packages.length > 0) {
+                for (String p : packages) {
+                    if (!p.equals(context.getPackageName())) {
+                        com.gamebooster.app.spoofer.lsposed.LsposedDetector.recordGameHeartbeat(p);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
         String keyFilter = uri.getQueryParameter("key");
         MatrixCursor cursor = new MatrixCursor(COLUMNS);
         Map<String, String> all = SpoofPreferences.readAllPrefs(context);
