@@ -36,6 +36,7 @@ public class CfgProfileManager {
     private static final String KEY_AIM_SUFFIX   = "_aim_assist";
     private static final String KEY_DMG_SUFFIX   = "_damage_script";
     private static final String KEY_RECOIL_SUFFIX = "_recoil_control";
+    private static final String KEY_ARMOR_SUFFIX = "_armor_def";
     private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
     private static final String KEY_ANTILOG_SUFFIX = "_anti_log";
 
@@ -184,6 +185,7 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_AIM_SUFFIX,    profile.isAimAssistEnabled());
         ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
         ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
+        ed.putBoolean(key + KEY_ARMOR_SUFFIX,  profile.isArmorDefEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
         ed.apply();
@@ -204,9 +206,10 @@ public class CfgProfileManager {
         boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
         boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
+        boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, mask, antiLog);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, armor, mask, antiLog);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -230,17 +233,12 @@ public class CfgProfileManager {
             // Safety net: capture true originals before competitive patching overwrites them
             ConfigBackupManager.backupPackage(pkg, resolvedPaths);
 
-            // Anti-Cheat Auto-Bypass & Telemetry Neutralization
-            com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
-
             boolean ok = applyToPackage(pkg, profile);
             if (ok) {
                 patched++;
-                if (profile.isHardwareMaskEnabled() && context != null && com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
+                if (profile.isHardwareMaskEnabled()) {
                     DeviceSpooferEngine.applySpoofing(context, pkg);
                 }
-                // Stealth permission normalization
-                com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
             }
         }
 
@@ -283,7 +281,7 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_CARX,
                 CompetitiveCfgProfile.GAME_ARENABREAKOUT,
                 CompetitiveCfgProfile.GAME_SUPERCELL}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -312,6 +310,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                MlbbConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_PUBGM.equals(key)) {
             result = PubgConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -325,6 +326,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 PubgConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                PubgConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_CODM.equals(key)) {
             result = CodmConfigPatcher.patchCompetitive(pkg, fps);
@@ -340,6 +344,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 CodmConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                CodmConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_FREEFIRE.equals(key)) {
             result = FreeFireConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -353,6 +360,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                FreeFireConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_GENSHIN.equals(key)) {
             result = GenshinConfigPatcher.patchCompetitive(pkg, fps);
@@ -368,6 +378,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 GenshinConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                GenshinConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_HOK.equals(key)) {
             result = HokConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -381,6 +394,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 HokConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                HokConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_ROBLOX.equals(key)) {
             result = RobloxConfigPatcher.patchCompetitive(pkg, fps);
@@ -396,6 +412,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 RobloxConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                RobloxConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_VALORANT.equals(key)) {
             result = ValorantConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -409,6 +428,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 ValorantConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                ValorantConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_FARLIGHT.equals(key)) {
             result = FarlightConfigPatcher.patchCompetitive(pkg, fps);
@@ -424,6 +446,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 FarlightConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                FarlightConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_BLOODSTRIKE.equals(key)) {
             result = BloodStrikeConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -437,6 +462,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 BloodStrikeConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_STANDOFF2.equals(key)) {
             result = Standoff2ConfigPatcher.patchCompetitive(pkg, fps);
@@ -452,6 +480,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 Standoff2ConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_WILDRIFT.equals(key)) {
             result = WildRiftConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -465,6 +496,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 WildRiftConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                WildRiftConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else if (CompetitiveCfgProfile.GAME_CARX.equals(key)) {
             result = CarXConfigPatcher.patchCompetitive(pkg, fps);
@@ -480,6 +514,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 CarXConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                CarXConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_ARENABREAKOUT.equals(key)) {
             result = ArenaBreakoutConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -494,6 +531,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isArmorDefEnabled()) {
+                ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
+            }
         } else if (CompetitiveCfgProfile.GAME_SUPERCELL.equals(key)) {
             result = SupercellConfigPatcher.patchCompetitive(pkg, fps);
             if (profile.isSuperFastTouchEnabled()) {
@@ -507,6 +547,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 SupercellConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                SupercellConfigPatcher.applyArmorDefConfig(pkg);
             }
         } else {
             // GAME_ALL: patch all target games with this profile
@@ -531,23 +574,85 @@ public class CfgProfileManager {
                 PubgConfigPatcher.applySuperFastTouch(pkg);
                 CodmConfigPatcher.applySuperFastTouch(pkg);
                 FreeFireConfigPatcher.applySuperFastTouch(pkg);
+                GenshinConfigPatcher.applySuperFastTouch(pkg);
+                HokConfigPatcher.applySuperFastTouch(pkg);
+                RobloxConfigPatcher.applySuperFastTouch(pkg);
+                ValorantConfigPatcher.applySuperFastTouch(pkg);
+                FarlightConfigPatcher.applySuperFastTouch(pkg);
+                BloodStrikeConfigPatcher.applySuperFastTouch(pkg);
+                Standoff2ConfigPatcher.applySuperFastTouch(pkg);
+                WildRiftConfigPatcher.applySuperFastTouch(pkg);
+                CarXConfigPatcher.applySuperFastTouch(pkg);
+                ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
+                SupercellConfigPatcher.applySuperFastTouch(pkg);
             }
             if (profile.isAimAssistEnabled()) {
                 MlbbConfigPatcher.applyAimAssistConfig(pkg);
                 PubgConfigPatcher.applyAimAssistConfig(pkg);
                 CodmConfigPatcher.applyAimAssistConfig(pkg);
                 FreeFireConfigPatcher.applyAimAssistConfig(pkg);
+                GenshinConfigPatcher.applyAimAssistConfig(pkg);
+                HokConfigPatcher.applyAimAssistConfig(pkg);
+                RobloxConfigPatcher.applyAimAssistConfig(pkg);
+                ValorantConfigPatcher.applyAimAssistConfig(pkg);
+                FarlightConfigPatcher.applyAimAssistConfig(pkg);
+                BloodStrikeConfigPatcher.applyAimAssistConfig(pkg);
+                Standoff2ConfigPatcher.applyAimAssistConfig(pkg);
+                WildRiftConfigPatcher.applyAimAssistConfig(pkg);
+                CarXConfigPatcher.applyAimAssistConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyAimAssistConfig(pkg);
+                SupercellConfigPatcher.applyAimAssistConfig(pkg);
             }
             if (profile.isRecoilControlEnabled()) {
                 MlbbConfigPatcher.applyRecoilControlConfig(pkg);
                 PubgConfigPatcher.applyRecoilControlConfig(pkg);
                 CodmConfigPatcher.applyRecoilControlConfig(pkg);
                 FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
+                GenshinConfigPatcher.applyRecoilControlConfig(pkg);
+                HokConfigPatcher.applyRecoilControlConfig(pkg);
+                RobloxConfigPatcher.applyRecoilControlConfig(pkg);
+                ValorantConfigPatcher.applyRecoilControlConfig(pkg);
+                FarlightConfigPatcher.applyRecoilControlConfig(pkg);
+                BloodStrikeConfigPatcher.applyRecoilControlConfig(pkg);
+                Standoff2ConfigPatcher.applyRecoilControlConfig(pkg);
+                WildRiftConfigPatcher.applyRecoilControlConfig(pkg);
+                CarXConfigPatcher.applyRecoilControlConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyRecoilControlConfig(pkg);
+                SupercellConfigPatcher.applyRecoilControlConfig(pkg);
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 MlbbConfigPatcher.applyDamageScriptConfig(pkg);
                 PubgConfigPatcher.applyDamageScriptConfig(pkg);
                 CodmConfigPatcher.applyDamageScriptConfig(pkg);
+                FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
+                GenshinConfigPatcher.applyDamageScriptConfig(pkg);
+                HokConfigPatcher.applyDamageScriptConfig(pkg);
+                RobloxConfigPatcher.applyDamageScriptConfig(pkg);
+                ValorantConfigPatcher.applyDamageScriptConfig(pkg);
+                FarlightConfigPatcher.applyDamageScriptConfig(pkg);
+                BloodStrikeConfigPatcher.applyDamageScriptConfig(pkg);
+                Standoff2ConfigPatcher.applyDamageScriptConfig(pkg);
+                WildRiftConfigPatcher.applyDamageScriptConfig(pkg);
+                CarXConfigPatcher.applyDamageScriptConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
+                SupercellConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isArmorDefEnabled()) {
+                MlbbConfigPatcher.applyArmorDefConfig(pkg);
+                PubgConfigPatcher.applyArmorDefConfig(pkg);
+                CodmConfigPatcher.applyArmorDefConfig(pkg);
+                FreeFireConfigPatcher.applyArmorDefConfig(pkg);
+                GenshinConfigPatcher.applyArmorDefConfig(pkg);
+                HokConfigPatcher.applyArmorDefConfig(pkg);
+                RobloxConfigPatcher.applyArmorDefConfig(pkg);
+                ValorantConfigPatcher.applyArmorDefConfig(pkg);
+                FarlightConfigPatcher.applyArmorDefConfig(pkg);
+                BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
+                Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
+                WildRiftConfigPatcher.applyArmorDefConfig(pkg);
+                CarXConfigPatcher.applyArmorDefConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
+                SupercellConfigPatcher.applyArmorDefConfig(pkg);
             }
         }
 

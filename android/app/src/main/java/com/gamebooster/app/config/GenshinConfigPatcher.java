@@ -207,6 +207,42 @@ public class GenshinConfigPatcher {
         Log.i(TAG, "Genshin Elemental & Physical Damage Boost applied for " + packageName);
     }
 
+    /**
+     * Injects Defense Multiplier, Shield Strength, Elemental Resistance, and Poise Resistance into Genshin/Star Rail/ZZZ.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "DefenseMultiplier=2.50",
+            "ShieldStrength=2.50",
+            "DamageReductionRatio=0.50",
+            "ElementalResistanceBoost=1.50",
+            "HPMultiplier=1.50",
+            "PoiseResistance=2.00",
+            "ArmorBoost=150",
+            "DamageAbsorbRatio=1.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Genshin Defense Multiplier & Shield Boost applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

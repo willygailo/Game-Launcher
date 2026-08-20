@@ -218,6 +218,43 @@ public class FreeFireConfigPatcher {
         Log.i(TAG, "FreeFire Damage Boost & Headshot Multiplier applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Defense, Vest Durability, Helmet Protection, and Shield Capacity for Free Fire.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "VestDurability=2.00",
+            "HelmetDamageReduction=0.60",
+            "ArmorDamageAbsorb=0.50",
+            "ShieldCapacity=2.00",
+            "ArmorBoostRatio=2.00",
+            "HPBoostRatio=1.50",
+            "DamageReductionRatio=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "ArmorBoost=150"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Armor Defense Boost & Vest Durability applied for " + packageName);
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }

@@ -279,6 +279,46 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM Damage Boost 150% & Bullet Penetration applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction CVars into PUBGM/BGMI.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorCvars = {
+            "+CVars=r.ArmorDamageReduction=0.50",
+            "+CVars=r.VestDurabilityBoost=2.00",
+            "+CVars=r.HelmetDamageReduction=0.60",
+            "+CVars=r.IncomingDamageScale=0.50",
+            "+CVars=r.ShieldEfficiency=2.00",
+            "+CVars=r.HealthRegenBoost=1.50",
+            "+CVars=r.DamageResistance=0.50",
+            "ArmorLevel=3",
+            "VestDurability=100",
+            "DamageResistance=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "ArmorBoost=150",
+            "DamageReductionRatio=0.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : armorCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Armor Defense Boost & Vest Durability applied for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

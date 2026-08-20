@@ -117,7 +117,7 @@ public class GameProfileAutoConfigurator {
                          packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
                          packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
         
-        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true, true, true, true, true, true, true);
+        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true, true, true, true, true, true, true, true, true);
         if (context != null) {
             CfgProfileManager.applyProfile(context, gameKey, profile);
             DeviceSpooferEngine.applySpoofing(context, packageName);

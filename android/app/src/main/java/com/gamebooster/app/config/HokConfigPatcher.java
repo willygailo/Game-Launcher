@@ -187,6 +187,44 @@ public class HokConfigPatcher {
         Log.i(TAG, "HOK Damage Boost & FOV applied for " + packageName);
     }
 
+    /**
+     * Injects Physical Armor, Magic Resistance, Damage Reduction, and Shield Boost for Honor of Kings / Arena of Valor.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "PhysicalArmor=2.50",
+            "MagicResistance=2.50",
+            "DamageReduction=0.50",
+            "ShieldBoost=2.00",
+            "MaxHPBoost=1.50",
+            "Tenacity=0.50",
+            "ArmorBoost=150",
+            "PhysicalDefenseBoost=2.50",
+            "MagicDefenseBoost=2.50",
+            "DamageReductionRatio=0.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Armor Defense & Damage Reduction applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

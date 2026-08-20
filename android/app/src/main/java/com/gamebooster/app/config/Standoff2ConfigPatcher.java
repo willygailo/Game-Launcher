@@ -208,6 +208,40 @@ public class Standoff2ConfigPatcher {
         Log.i(TAG, "Standoff2 Zero Recoil & Weapon Stability applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Efficiency, Vest Durability, Helmet Protection, and Damage Reduction into Standoff 2.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "ArmorEfficiency=2.00",
+            "VestDurability=2.00",
+            "DamageReduction=0.50",
+            "HelmetProtection=0.60",
+            "ArmorBoost=150",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Standoff2 Armor Defense & Vest Durability applied for " + packageName);
+    }
+
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

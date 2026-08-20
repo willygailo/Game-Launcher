@@ -158,6 +158,41 @@ public class SupercellConfigPatcher {
         Log.i(TAG, "Supercell Movement Stabilization applied for " + packageName);
     }
 
+    /**
+     * Injects Shield Multiplier, Defense Ratio, Damage Reduction, and HP Boost for Supercell games.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "ShieldMultiplier=2.00",
+            "DefenseRatio=2.50",
+            "DamageReduction=0.50",
+            "HPBoost=1.50",
+            "DamageAbsorbRatio=1.50",
+            "ArmorBoost=150",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[CombatDefense]' ").append(path).append(" || echo '[CombatDefense]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Supercell Shield & Defense Boost applied for " + packageName);
+    }
+
 
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;

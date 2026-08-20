@@ -195,6 +195,42 @@ public class ArenaBreakoutConfigPatcher {
         Log.i(TAG, "ArenaBreakout Zero Recoil & Weapon Stability applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction for Arena Breakout / Delta Force.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "+CVars=r.ArmorDamageReduction=0.50",
+            "+CVars=r.VestDurabilityBoost=2.00",
+            "+CVars=r.HelmetDamageReduction=0.60",
+            "+CVars=r.DamageResistance=0.50",
+            "+CVars=r.ShieldEfficiency=2.00",
+            "ArmorLevel=6",
+            "VestDurability=100",
+            "DamageReductionRatio=0.50",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : armorKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "ArenaBreakout Armor Defense & Vest Durability applied for " + packageName);
+    }
+
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

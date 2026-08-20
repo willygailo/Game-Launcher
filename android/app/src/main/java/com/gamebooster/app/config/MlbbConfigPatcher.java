@@ -327,6 +327,52 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB Movement Stabilization & Joystick Zero-Deadzone applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Defense Boost, Damage Reduction, Shield Multiplier, and Resilience for MLBB.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "PhysicalDefenseBoost=2.50",
+            "MagicDefenseBoost=2.50",
+            "DamageReductionRatio=0.50",
+            "ShieldMultiplier=2.00",
+            "MaxHPMultiplier=1.50",
+            "DamageAbsorbRatio=1.50",
+            "ArmorBoost=150",
+            "MagicResistBoost=150",
+            "TenacityRatio=0.50",
+            "ResilienceLevel=3"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".xml")) {
+                for (String keyVal : armorKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[ArmorDef]' ").append(path).append(" || echo '[ArmorDef]' >> ").append(path).append("; ");
+                for (String keyVal : armorKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB Armor Defense Boost & Damage Reduction applied for " + packageName);
+    }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

@@ -354,6 +354,43 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM Damage Boost 150% & Bullet Penetration applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Plate Efficiency, Kinetic Armor Boost, and Damage Reduction keys into CODM config files.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "ArmorPlateEfficiency=2.00",
+            "ArmorDamageReduction=0.50",
+            "KineticArmorBoost=2.00",
+            "IncomingDamageReduction=0.50",
+            "FlakJacketRatio=0.60",
+            "HealthRegenDelay=0.00",
+            "ShieldPointsMultiplier=2.00",
+            "PhysicalDefenseBoost=2.50",
+            "ArmorBoost=150",
+            "DamageReductionRatio=0.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CODM Armor Plate Boost & Kinetic Defense applied for " + packageName);
+    }
+
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

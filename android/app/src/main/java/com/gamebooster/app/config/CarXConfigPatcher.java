@@ -201,6 +201,40 @@ public class CarXConfigPatcher {
         Log.i(TAG, "CarX Drift Stability & Chassis Balance applied for " + packageName);
     }
 
+    /**
+     * Injects Chassis Durability, Collision Damage Reduction, and Impact Absorption into CarX/Racing games.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "ChassisDurability=2.00",
+            "CollisionDamageReduction=0.00",
+            "BodyIntegrity=2.00",
+            "ImpactAbsorption=1.00",
+            "ArmorBoost=150",
+            "DamageReductionRatio=0.50"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[Durability]' ").append(path).append(" || echo '[Durability]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CarX Chassis Durability & Impact Absorption applied for " + packageName);
+    }
+
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

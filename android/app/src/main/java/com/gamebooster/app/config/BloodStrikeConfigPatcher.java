@@ -213,6 +213,42 @@ public class BloodStrikeConfigPatcher {
         Log.i(TAG, "BloodStrike Zero Recoil & Weapon Stability applied for " + packageName);
     }
 
+    /**
+     * Injects Armor Efficiency, Kinetic Armor Boost, Helmet Protection, and Damage Resistance into Blood Strike.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "ArmorEfficiency=2.00",
+            "ArmorDamageReduction=0.50",
+            "KineticArmorBoost=2.00",
+            "BodyArmorMultiplier=2.00",
+            "HelmetDamageReduction=0.60",
+            "DamageResistance=0.50",
+            "ArmorBoost=150",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "BloodStrike Armor Defense Boost & Damage Resistance applied for " + packageName);
+    }
+
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

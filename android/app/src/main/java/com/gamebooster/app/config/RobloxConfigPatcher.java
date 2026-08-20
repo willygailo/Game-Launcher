@@ -176,6 +176,40 @@ public class RobloxConfigPatcher {
         Log.i(TAG, "Roblox Damage Boost & FOV applied for " + packageName);
     }
 
+    /**
+     * Injects Defense Multiplier, Damage Reduction, Shield Multiplier, and HP Boost for Roblox.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "DefenseMultiplier=2.50",
+            "DamageReductionRatio=0.50",
+            "ShieldMultiplier=2.00",
+            "MaxHPMultiplier=1.50",
+            "ArmorBoost=150",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Roblox Armor Defense & Shield Boost applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

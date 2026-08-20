@@ -253,6 +253,44 @@ public class ValorantConfigPatcher {
         Log.i(TAG, "Valorant Damage Boost & Headshot Multiplier applied for " + packageName);
     }
 
+    /**
+     * Injects Heavy/Light Shield Efficiency, Shield Points Boost, and Damage Reduction for Valorant Mobile.
+     */
+    public static void applyArmorDefConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] armorKeys = {
+            "+CVars=r.ArmorDamageReduction=0.50",
+            "+CVars=r.HeavyShieldEfficiency=2.00",
+            "+CVars=r.LightShieldEfficiency=2.00",
+            "+CVars=r.ShieldPointsMultiplier=2.00",
+            "+CVars=r.DamageResistance=0.50",
+            "ShieldEfficiency=2.00",
+            "ShieldPoints=100",
+            "ArmorBoost=150",
+            "DamageReductionRatio=0.50",
+            "PhysicalDefenseBoost=2.50"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
+            for (String keyVal : armorKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Valorant Shield & Armor Defense applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

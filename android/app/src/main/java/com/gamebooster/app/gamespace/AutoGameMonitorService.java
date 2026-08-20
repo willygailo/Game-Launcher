@@ -116,10 +116,7 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
                         + profile.label + " @ " + targetHz + "Hz (Zero Fallback)");
 
-                // 1. Anti-Cheat Auto-Bypass & Telemetry Neutralization
-                com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(getApplicationContext(), currentPackage);
-
-                // 1.2. Apply device spoofing / hardware mask (Phase 2.5 safe)
+                // 1. Hardware Identity Spoofing (Shizuku)
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
 
                 // 1.5. Auto-apply saved per-game Competitive CFG Profile
