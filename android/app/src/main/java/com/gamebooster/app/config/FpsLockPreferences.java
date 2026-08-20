@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * FpsLockPreferences — Persists per-game FPS lock settings in SharedPreferences.
+ * FpsLockPreferences — Persists per-game FPS lock and Ultra Extreme Graphics settings in SharedPreferences.
  *
  * Supported game keys:
  *   "mlbb", "pubgm", "codm", "freefire", "genshin", "hok", "roblox",
@@ -15,6 +15,9 @@ public class FpsLockPreferences {
 
     private static final String PREFS_NAME = "game_booster_fps_locks";
     private static final String KEY_PREFIX = "fps_lock_";
+    private static final String KEY_GRAPHICS_PREFIX = "graphics_mode_";
+    public static final String GRAPHICS_ULTRA_EXTREME = "ultra_extreme";
+
     public static final int DEFAULT_FPS = FpsUnlockTier.FPS_185.fps;
 
     private static SharedPreferences getPrefs(Context context) {
@@ -26,7 +29,7 @@ public class FpsLockPreferences {
      *
      * @param context Application context
      * @param gameKey Identifier for the game (e.g. "pubgm", "mlbb")
-     * @param fps     Target FPS; aligned to the nearest supported tier
+     * @param fps     Target FPS; aligned to the nearest supported tier (120, 144, 165, 185)
      */
     public static void saveFpsLock(Context context, String gameKey, int fps) {
         if (context == null || gameKey == null) return;
@@ -57,6 +60,31 @@ public class FpsLockPreferences {
      */
     public static FpsUnlockTier getFpsTier(Context context, String gameKey) {
         return FpsUnlockTier.fromFps(getFpsLock(context, gameKey));
+    }
+
+    /**
+     * Saves the Graphics Mode for a given game key (e.g. "ultra_extreme").
+     */
+    public static void saveGraphicsMode(Context context, String gameKey, String mode) {
+        if (context == null || gameKey == null) return;
+        getPrefs(context).edit()
+                .putString(KEY_GRAPHICS_PREFIX + gameKey.toLowerCase().trim(), mode != null ? mode : GRAPHICS_ULTRA_EXTREME)
+                .apply();
+    }
+
+    /**
+     * Retrieves the Graphics Mode for a given game key. Defaults to "ultra_extreme".
+     */
+    public static String getGraphicsMode(Context context, String gameKey) {
+        if (context == null || gameKey == null) return GRAPHICS_ULTRA_EXTREME;
+        return getPrefs(context).getString(KEY_GRAPHICS_PREFIX + gameKey.toLowerCase().trim(), GRAPHICS_ULTRA_EXTREME);
+    }
+
+    /**
+     * Returns true if Ultra Extreme Graphics is active for the given game key.
+     */
+    public static boolean isUltraExtreme(Context context, String gameKey) {
+        return GRAPHICS_ULTRA_EXTREME.equalsIgnoreCase(getGraphicsMode(context, gameKey));
     }
 
     /**

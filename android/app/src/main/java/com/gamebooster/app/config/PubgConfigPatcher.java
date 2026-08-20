@@ -86,6 +86,24 @@ public class PubgConfigPatcher {
                 "+CVars=r.GyroSmoothFactor=1\n" +
                 "+CVars=r.GyroStabilization=1\n" +
                 "FrameRateLevel=" + pubgFpsLevel + "\n" +
+                "FPS=" + forcedFps + "\n" +
+                "TargetFPS=" + forcedFps + "\n" +
+                "MaxFPS=" + forcedFps + "\n" +
+                "UnlockFPS=1\n" +
+                "Unlock120FPS=1\n" +
+                "Unlock144FPS=1\n" +
+                "Unlock165FPS=1\n" +
+                "Unlock185FPS=1\n" +
+                "Ultra144FPS=1\n" +
+                "Ultra165FPS=1\n" +
+                "Ultra185FPS=1\n" +
+                "UltraExtreme=1\n" +
+                "bUseUltraExtreme=True\n" +
+                "GraphicsQuality=5\n" +
+                "GraphicQuality=4\n" +
+                "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
+                "SuperResolution=1\n" +
                 "bUseHDRMode=True\n" +
                 "bUseHighQualityBloom=True\n" +
                 "bUseAntiAliasing=True\n" +
@@ -319,6 +337,46 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM Armor Defense Boost & Vest Durability applied for " + packageName);
     }
 
+    /**
+     * Injects Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion CVars into PUBGM/BGMI.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingCvars = {
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.MagicBullet=1",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BulletMagnetism=1.50",
+            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.BulletCurveFactor=1.20",
+            "+CVars=r.TargetLockTracking=1",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1",
+            "HitboxExpansion=1.50",
+            "BulletMagnetism=1.50",
+            "BulletVelocityMultiplier=2.00"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String cvar : trackingCvars) {
+                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
+                sb.append("grep -qF '").append(key).append("' ").append(path)
+                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "PUBGM Tracking Bullet & Magic Bullet applied for " + packageName);
+    }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

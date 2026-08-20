@@ -291,6 +291,48 @@ public class ValorantConfigPatcher {
         Log.i(TAG, "Valorant Shield & Armor Defense applied for " + packageName);
     }
 
+    /**
+     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Crosshair Magnetism for Valorant Mobile / Project C.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.MagicBullet=1",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BulletMagnetism=1.50",
+            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.TargetLockTracking=1",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1",
+            "HitboxExpansion=1.50",
+            "BulletMagnetism=1.50",
+            "CrosshairMagnetism=1.50",
+            "FirstBulletAccuracy=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Valorant Bullet Tracking & Hitbox Expansion applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

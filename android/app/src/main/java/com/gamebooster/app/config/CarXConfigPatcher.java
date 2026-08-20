@@ -235,6 +235,42 @@ public class CarXConfigPatcher {
         Log.i(TAG, "CarX Chassis Durability & Impact Absorption applied for " + packageName);
     }
 
+    /**
+     * Injects Racing Line Tracking, Apex Assist, Auto Counter-Steer, and Drift Tracking for CarX/Racing games.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "RacingLineTracking=1",
+            "ApexAssist=1",
+            "AutoCounterSteer=1",
+            "DriftTrackingAssist=1",
+            "SteeringMagnetism=1.50",
+            "TireGripTracking=1",
+            "TargetLockTracking=1",
+            "TrackingBullet=1",
+            "BulletTracking=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CarX Racing Line Tracking & Apex Assist applied for " + packageName);
+    }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

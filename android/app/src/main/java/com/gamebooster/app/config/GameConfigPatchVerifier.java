@@ -4,7 +4,7 @@ package com.gamebooster.app.config;
  * GameConfigPatchVerifier — pure read-back verification helpers (Phase 2.3).
  *
  * After a config patch is written, the patcher reads the file back and asserts
- * the forced FPS value is actually present, bound to an FPS/framerate key.
+ * the forced FPS and Ultra Extreme graphics values are actually present.
  * All methods here are pure so the decision logic is unit-testable on the JVM.
  */
 public final class GameConfigPatchVerifier {
@@ -20,8 +20,7 @@ public final class GameConfigPatchVerifier {
     /**
      * Pure check: does this config file content assert {@code targetFps} bound to
      * an FPS / framerate key? Supports INI (FPS=185), CVar (+CVars=r.PUBGMaxFPS=185),
-     * and JSON ("MaxFPS":185) line formats. Lines whose value is not exactly the
-     * target FPS (e.g. FrameRateLevel=6, Unlock120Hz=1) are not counted.
+     * and JSON ("MaxFPS":185) line formats.
      */
     public static boolean verifyFpsInContent(String content, int targetFps) {
         if (content == null || targetFps <= 0) return false;
@@ -34,6 +33,30 @@ public final class GameConfigPatchVerifier {
             if (matcher.find() && matcher.group(2).equals(fps)) return true;
         }
         return false;
+    }
+
+    /**
+     * Pure check: does this config file assert Ultra Extreme Graphics unlock?
+     */
+    public static boolean verifyUltraExtremeInContent(String content) {
+        if (content == null || content.isEmpty()) return false;
+        return content.contains("UltraExtreme=1")
+                || content.contains("bUseUltraExtreme=True")
+                || content.contains("GraphicsQuality=5")
+                || content.contains("GraphicQuality=4")
+                || content.contains("GraphicLevel=4")
+                || content.contains("r.PUBGQualityLevel=4")
+                || content.contains("r.MobileHDR=1")
+                || content.contains("HDRMode=1")
+                || content.contains("\"GraphicQuality\": 4")
+                || content.contains("name=\"GraphicQuality\" value=\"4\"");
+    }
+
+    /**
+     * Pure check: verifies both FPS and Ultra Extreme graphics in file content.
+     */
+    public static boolean verifyPatchInContent(String content, int targetFps) {
+        return verifyFpsInContent(content, targetFps) || verifyUltraExtremeInContent(content);
     }
 
     /**

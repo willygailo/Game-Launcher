@@ -236,6 +236,43 @@ public class WildRiftConfigPatcher {
         Log.i(TAG, "WildRift Armor Defense & Damage Reduction applied for " + packageName);
     }
 
+    /**
+     * Injects Skill Auto-Tracking, Target Lock, Smite Execution, and Skill Magnetism for Wild Rift.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "SkillTracking=1",
+            "AutoTargetLock=1",
+            "TargetLockTracking=1",
+            "AutoSmiteExecution=1",
+            "SkillMagnetism=1.50",
+            "PredictPath=1",
+            "HitboxExpansion=1.50",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "WildRift Skill Auto-Tracking & Smite Execution applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

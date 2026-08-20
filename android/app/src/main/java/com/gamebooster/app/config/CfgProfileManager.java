@@ -21,7 +21,7 @@ import java.util.List;
  *   1. Resolve dynamic config paths and ensure directory scaffolding via GameConfigPathResolver
  *   2. Force-write game config files via patcher.patchCompetitive()
  *   3. Inject super-fast zero-delay touch into game config via patcher.applySuperFastTouch()
- *   4. Apply Aim Assist, Recoil Control, and Damage Scripts
+ *   4. Apply Aim Assist, Recoil Control, Damage Scripts, and Tracking Bullet
  *   5. Inject active hardware spoof profile if enabled
  *   6. Apply Shizuku system-level Hz force commands (if forceWriteSystemHz is enabled)
  *   7. Persist profile to SharedPreferences
@@ -36,6 +36,7 @@ public class CfgProfileManager {
     private static final String KEY_AIM_SUFFIX   = "_aim_assist";
     private static final String KEY_DMG_SUFFIX   = "_damage_script";
     private static final String KEY_RECOIL_SUFFIX = "_recoil_control";
+    private static final String KEY_TRACKING_SUFFIX = "_tracking_bullet";
     private static final String KEY_ARMOR_SUFFIX = "_armor_def";
     private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
     private static final String KEY_ANTILOG_SUFFIX = "_anti_log";
@@ -185,6 +186,7 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_AIM_SUFFIX,    profile.isAimAssistEnabled());
         ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
         ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
+        ed.putBoolean(key + KEY_TRACKING_SUFFIX, profile.isTrackingBulletEnabled());
         ed.putBoolean(key + KEY_ARMOR_SUFFIX,  profile.isArmorDefEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
@@ -206,10 +208,11 @@ public class CfgProfileManager {
         boolean aim      = prefs.getBoolean(key + KEY_AIM_SUFFIX, true);
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
         boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
+        boolean tracking = prefs.getBoolean(key + KEY_TRACKING_SUFFIX, true);
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, true, true, armor, mask, antiLog);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, true, true, armor, mask, antiLog);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -281,7 +284,7 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_CARX,
                 CompetitiveCfgProfile.GAME_ARENABREAKOUT,
                 CompetitiveCfgProfile.GAME_SUPERCELL}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -310,6 +313,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                MlbbConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 MlbbConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -326,6 +332,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 PubgConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                PubgConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 PubgConfigPatcher.applyArmorDefConfig(pkg);
@@ -344,6 +353,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 CodmConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                CodmConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 CodmConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -360,6 +372,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                FreeFireConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 FreeFireConfigPatcher.applyArmorDefConfig(pkg);
@@ -378,6 +393,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 GenshinConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                GenshinConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 GenshinConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -394,6 +412,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 HokConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                HokConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 HokConfigPatcher.applyArmorDefConfig(pkg);
@@ -412,6 +433,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 RobloxConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                RobloxConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 RobloxConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -428,6 +452,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 ValorantConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                ValorantConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 ValorantConfigPatcher.applyArmorDefConfig(pkg);
@@ -446,6 +473,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 FarlightConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 FarlightConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -462,6 +492,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 BloodStrikeConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                BloodStrikeConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
@@ -480,6 +513,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 Standoff2ConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                Standoff2ConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -496,6 +532,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 WildRiftConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 WildRiftConfigPatcher.applyArmorDefConfig(pkg);
@@ -514,6 +553,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 CarXConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                CarXConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 CarXConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -531,6 +573,9 @@ public class CfgProfileManager {
             if (profile.isMlbbDamageScriptEnabled()) {
                 ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
             }
+            if (profile.isTrackingBulletEnabled()) {
+                ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -547,6 +592,9 @@ public class CfgProfileManager {
             }
             if (profile.isMlbbDamageScriptEnabled()) {
                 SupercellConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 SupercellConfigPatcher.applyArmorDefConfig(pkg);
@@ -636,6 +684,23 @@ public class CfgProfileManager {
                 CarXConfigPatcher.applyDamageScriptConfig(pkg);
                 ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
                 SupercellConfigPatcher.applyDamageScriptConfig(pkg);
+            }
+            if (profile.isTrackingBulletEnabled()) {
+                MlbbConfigPatcher.applyTrackingBulletConfig(pkg);
+                PubgConfigPatcher.applyTrackingBulletConfig(pkg);
+                CodmConfigPatcher.applyTrackingBulletConfig(pkg);
+                FreeFireConfigPatcher.applyTrackingBulletConfig(pkg);
+                GenshinConfigPatcher.applyTrackingBulletConfig(pkg);
+                HokConfigPatcher.applyTrackingBulletConfig(pkg);
+                RobloxConfigPatcher.applyTrackingBulletConfig(pkg);
+                ValorantConfigPatcher.applyTrackingBulletConfig(pkg);
+                FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
+                BloodStrikeConfigPatcher.applyTrackingBulletConfig(pkg);
+                Standoff2ConfigPatcher.applyTrackingBulletConfig(pkg);
+                WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
+                CarXConfigPatcher.applyTrackingBulletConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
+                SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 MlbbConfigPatcher.applyArmorDefConfig(pkg);

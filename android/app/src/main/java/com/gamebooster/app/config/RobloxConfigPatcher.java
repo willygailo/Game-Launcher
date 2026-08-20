@@ -210,6 +210,52 @@ public class RobloxConfigPatcher {
         Log.i(TAG, "Roblox Armor Defense & Shield Boost applied for " + packageName);
     }
 
+    /**
+     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Target Lock for Roblox.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "FFlagBulletTracking=True",
+            "FFlagHitboxExpansion=True",
+            "FFlagMagicBullet=True",
+            "FFlagTargetLockTracking=True",
+            "BulletTracking=1",
+            "TrackingBullet=1",
+            "HitboxExpansion=1.50",
+            "BulletMagnetism=1.50",
+            "TargetLockTracking=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".json")) {
+                for (String keyVal : trackingKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF '\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '2i \\  \"").append(k).append("\": \"").append(v).append("\",' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+                for (String keyVal : trackingKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Roblox Bullet Tracking & Hitbox Expansion applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

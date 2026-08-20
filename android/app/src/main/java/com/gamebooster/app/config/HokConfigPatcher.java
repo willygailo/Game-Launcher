@@ -225,6 +225,45 @@ public class HokConfigPatcher {
         Log.i(TAG, "HOK Armor Defense & Damage Reduction applied for " + packageName);
     }
 
+    /**
+     * Injects Skill Auto-Tracking, Target Lock, and Skill Magnetism for Honor of Kings.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "SkillTracking=1",
+            "AutoTargetLock=1",
+            "TargetLockTracking=1",
+            "PredictPath=1",
+            "SkillMagnetism=1.50",
+            "HeroPriorityLock=1",
+            "LowestHPTargetLock=1",
+            "HitboxExpansion=1.50",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK Skill Auto-Tracking & Target Lock applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

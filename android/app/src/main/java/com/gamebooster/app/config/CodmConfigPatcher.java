@@ -391,6 +391,44 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM Armor Plate Boost & Kinetic Defense applied for " + packageName);
     }
 
+    /**
+     * Injects Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion keys into CODM config files.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
+            "BulletMagnetism=1.50",
+            "HitboxExpansion=1.50",
+            "TargetLockTracking=1",
+            "BulletCurveFactor=1.20",
+            "BulletVelocityMultiplier=2.00",
+            "BulletSpread=0.00",
+            "CrosshairMagnetism=1.50",
+            "FirstBulletAccuracy=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CODM Tracking Bullet & Hitbox Expansion applied for " + packageName);
+    }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 

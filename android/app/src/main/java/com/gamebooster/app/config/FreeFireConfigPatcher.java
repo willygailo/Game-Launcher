@@ -255,6 +255,46 @@ public class FreeFireConfigPatcher {
         Log.i(TAG, "FreeFire Armor Defense Boost & Vest Durability applied for " + packageName);
     }
 
+    /**
+     * Injects Auto Aim Track, Bullet Tracking, Headshot Tracking, and Hitbox Expansion for Free Fire.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "AutoAimTrack=1",
+            "BulletTracking=1",
+            "HeadshotTracking=1",
+            "HitboxExpansion=1.50",
+            "MagicBullet=1",
+            "BulletMagnetism=1.50",
+            "AutoTrackingBullet=1",
+            "TargetLockTracking=1",
+            "TrackingBullet=1",
+            "CrosshairMagnetism=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "FirstBulletAccuracy=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire Auto Aim Track & Bullet Tracking applied for " + packageName);
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }

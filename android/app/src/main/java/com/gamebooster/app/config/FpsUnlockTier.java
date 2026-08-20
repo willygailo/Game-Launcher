@@ -133,5 +133,46 @@ public enum FpsUnlockTier {
         return sb.toString();
     }
 
+    /**
+     * Returns INI-style Ultra Extreme graphics flags combined with FPS uncap.
+     */
+    public String getUltraExtremeFlags() {
+        return getUnlockFlags() +
+                "UltraExtreme=1\n" +
+                "bUseUltraExtreme=True\n" +
+                "GraphicsQuality=5\n" +
+                "GraphicQuality=4\n" +
+                "GraphicLevel=4\n" +
+                "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
+                "SuperResolution=1\n" +
+                "ShadowQuality=2\n" +
+                "AntiAliasingQuality=4\n" +
+                "ResolutionScale=120\n" +
+                "ScreenScale=120\n" +
+                "FPS=" + fps + "\n" +
+                "MaxFPS=" + fps + "\n" +
+                "TargetFPS=" + fps + "\n" +
+                "UnlockFPS=1\n" +
+                "Unlock" + fps + "FPS=1\n";
+    }
+
+    /**
+     * Returns UE4 CVar-style Ultra Extreme graphics flags combined with FPS uncap.
+     */
+    public String getUE4UltraExtremeCVars() {
+        return getUE4UnlockCVars() +
+                "+CVars=r.PUBGDeviceFPS=" + level + "\n" +
+                "+CVars=r.PUBGMaxFPS=" + fps + "\n" +
+                "+CVars=r.PUBGFrameRateLimit=" + fps + "\n" +
+                "+CVars=r.FrameRateLimit=" + fps + "\n" +
+                "+CVars=r.MobileFPSLimit=" + fps + "\n" +
+                "+CVars=r.PUBGQualityLevel=4\n" +
+                "+CVars=r.PUBGSDKQualityLevel=4\n" +
+                "+CVars=r.MobileHDR=1\n" +
+                "+CVars=r.Tonemapper.Quality=4\n" +
+                "+CVars=r.HDR.Display.OutputDevice=1\n";
+    }
+
     private static final int[] HZ_UNLOCK_FLAGS = {120, 144, 165, 185};
 }

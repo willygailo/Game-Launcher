@@ -193,6 +193,40 @@ public class SupercellConfigPatcher {
         Log.i(TAG, "Supercell Shield & Defense Boost applied for " + packageName);
     }
 
+    /**
+     * Injects Auto Attack Tracking, Super Attack Lock, Projectile Homing, and Skill Magnetism for Supercell games.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "AutoAttackTracking=1",
+            "SuperAttackLock=1",
+            "ProjectileHoming=1",
+            "AutoTargetLock=1",
+            "SkillMagnetism=1.50",
+            "HitboxExpansion=1.50",
+            "TrackingBullet=1",
+            "BulletTracking=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Supercell Auto Attack Tracking & Super Lock applied for " + packageName);
+    }
 
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;

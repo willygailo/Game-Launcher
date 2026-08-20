@@ -243,6 +243,42 @@ public class GenshinConfigPatcher {
         Log.i(TAG, "Genshin Defense Multiplier & Shield Boost applied for " + packageName);
     }
 
+    /**
+     * Injects Bow Auto-Tracking, Homing Projectiles, and Target Lock for Genshin/Hoyoverse.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "BowAutoTracking=1",
+            "HomingArrows=1",
+            "TargetLockTracking=1",
+            "AutoTargetLock=1",
+            "SkillProjectileTracking=1",
+            "HitboxExpansion=1.50",
+            "BulletMagnetism=1.50",
+            "TrackingBullet=1",
+            "BulletTracking=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Genshin Bow Auto-Tracking & Homing Projectiles applied for " + packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
         AntiLogPatcher.applyAntiLog(packageName);

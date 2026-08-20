@@ -188,7 +188,20 @@ public class ManualSettingsPreferences {
                 executeCmd("settings put global mobile_data_always_on 1");
             }
 
-            // 6. Anti-Log & Telemetry Suppression
+            // 6. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
+            executeCmd("setprop debug.egl.force_msaa 1");
+            executeCmd("setprop debug.egl.swapinterval 0");
+            executeCmd("setprop debug.hwui.fps_divisor 1");
+            executeCmd("setprop debug.graphics.game_default_frame_rate.disabled 1");
+            executeCmd("setprop ro.vendor.dfps.enable 0");
+            executeCmd("setprop vendor.display.enable_default_fps_switch 0");
+            executeCmd("setprop persist.sys.game.fps 185");
+            executeCmd("setprop persist.sys.game.rate 185");
+            executeCmd("setprop persist.sys.power.game_mode 1");
+            executeCmd("setprop debug.sf.disable_backpressure 1");
+            executeCmd("setprop debug.sf.latch_unsignaled 1");
+
+            // 7. Anti-Log & Telemetry Suppression
             if (isAntiLogEnabled(context)) {
                 AntiLogPatcher.applySystemAntiLog();
                 if (packageName != null) {
@@ -196,7 +209,7 @@ public class ManualSettingsPreferences {
                 }
             }
 
-            Log.i(TAG, "Manual hardware & kernel settings applied successfully.");
+            Log.i(TAG, "Manual hardware, kernel, Ultra Extreme & Max FPS settings applied successfully.");
         } catch (Throwable e) {
             Log.w(TAG, "Failed to apply manual settings: " + e.getMessage());
         }

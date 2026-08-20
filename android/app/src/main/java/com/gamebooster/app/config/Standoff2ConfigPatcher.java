@@ -242,6 +242,44 @@ public class Standoff2ConfigPatcher {
         Log.i(TAG, "Standoff2 Armor Defense & Vest Durability applied for " + packageName);
     }
 
+    /**
+     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Crosshair Magnetism for Standoff 2.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1",
+            "BulletMagnetism=1.50",
+            "HitboxExpansion=1.50",
+            "TargetLockTracking=1",
+            "BulletCurveFactor=1.20",
+            "BulletVelocityMultiplier=2.00",
+            "CrosshairMagnetism=1.50",
+            "FirstBulletAccuracy=1",
+            "AutoAimTrack=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Standoff2 Bullet Tracking & Magic Bullet applied for " + packageName);
+    }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

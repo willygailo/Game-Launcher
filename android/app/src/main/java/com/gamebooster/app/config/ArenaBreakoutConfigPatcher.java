@@ -43,6 +43,13 @@ public class ArenaBreakoutConfigPatcher {
                 "Unlock144=1\n" +
                 "Unlock165=1\n" +
                 "Unlock185=1\n" +
+                "Unlock120FPS=1\n" +
+                "Unlock144FPS=1\n" +
+                "Unlock165FPS=1\n" +
+                "Unlock185FPS=1\n" +
+                "Ultra144FPS=1\n" +
+                "Ultra165FPS=1\n" +
+                "Ultra185FPS=1\n" +
                 "ScreenScale=120\n" +
                 "ResolutionScale=120\n" +
                 "ShadowQuality=2\n" +
@@ -53,7 +60,13 @@ public class ArenaBreakoutConfigPatcher {
                 "FoliageQuality=2\n" +
                 "ShadingQuality=2\n" +
                 "UltraExtreme=1\n" +
+                "bUseUltraExtreme=True\n" +
+                "GraphicsQuality=5\n" +
+                "GraphicQuality=4\n" +
                 "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
+                "SuperResolution=1\n" +
+                "VulkanEnabled=1\n" +
                 "\n" +
                 "[UserCustom DeviceProfile]\n" +
                 "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
@@ -63,6 +76,11 @@ public class ArenaBreakoutConfigPatcher {
                 "+CVars=r.Unlock144Hz=1\n" +
                 "+CVars=r.Unlock165Hz=1\n" +
                 "+CVars=r.Unlock185Hz=1\n" +
+                "+CVars=r.PUBGQualityLevel=4\n" +
+                "+CVars=r.PUBGSDKQualityLevel=4\n" +
+                "+CVars=r.MobileHDR=1\n" +
+                "+CVars=r.Tonemapper.Quality=4\n" +
+                "+CVars=r.HDR.Display.OutputDevice=1\n" +
                 "\n" +
                 "[UserCustom]\n" +
                 "FrameRateLevel=" + fpsLevel + "\n" +
@@ -70,6 +88,11 @@ public class ArenaBreakoutConfigPatcher {
                 "TargetFPS=" + forcedFps + "\n" +
                 "FrameRateLimit=" + forcedFps + "\n" +
                 "MobileFPSLimit=" + forcedFps + "\n" +
+                "HighFPSMode=1\n" +
+                "UltraExtreme=1\n" +
+                "GraphicQuality=4\n" +
+                "HDRMode=1\n" +
+                "UltraHDMode=1\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
@@ -231,6 +254,45 @@ public class ArenaBreakoutConfigPatcher {
         Log.i(TAG, "ArenaBreakout Armor Defense & Vest Durability applied for " + packageName);
     }
 
+    /**
+     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Bullet Magnetism for Arena Breakout / Delta Force.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.MagicBullet=1",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BulletMagnetism=1.50",
+            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.TargetLockTracking=1",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1",
+            "HitboxExpansion=1.50",
+            "BulletMagnetism=1.50",
+            "BulletVelocityMultiplier=2.00"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : trackingKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "ArenaBreakout Bullet Tracking & Hitbox Expansion applied for " + packageName);
+    }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

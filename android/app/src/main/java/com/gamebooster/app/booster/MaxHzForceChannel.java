@@ -103,20 +103,25 @@ public final class MaxHzForceChannel {
         ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
         ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
 
-        // ── Layer 5: setprop Runtime Overrides & Latency Eliminators ────────────────
+        // ── Layer 5: setprop Runtime Overrides, Ultra Extreme Graphics & Latency Eliminators ────────────────
         ok += run("setprop debug.sf.fps_limit "                + hz);                total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT "           + hz);                total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
         ok += run("setprop debug.gr.swapinterval 0");                                total++;
         ok += run("setprop debug.egl.swapinterval 0");                               total++;
+        ok += run("setprop debug.egl.force_msaa 1");                                 total++;
         ok += run("setprop debug.sf.disable_backpressure 1");                        total++;
         ok += run("setprop debug.sf.early_phase_offset_ns 0");                       total++;
         ok += run("setprop debug.sf.early_app_phase_offset_ns 0");                   total++;
         ok += run("setprop persist.sys.game.fps "              + hz);                total++;
+        ok += run("setprop persist.sys.game.rate "             + hz);                total++;
         ok += run("setprop persist.vendor.power.dfps.level "   + hz);                total++;
         ok += run("setprop ro.vendor.display.default_fps "     + hz);                total++;
         ok += run("setprop vendor.display.fps "                + hz);                total++;
         ok += run("setprop debug.hwui.fps_divisor 1");                               total++;
+        ok += run("setprop debug.graphics.game_default_frame_rate.disabled 1");       total++;
+        ok += run("setprop ro.vendor.dfps.enable 0");                                total++;
+        ok += run("setprop vendor.display.enable_default_fps_switch 0");             total++;
 
         // ── Layer 6: OEM / Vendor-Specific Keys (auto-detected) ──────────────────────
         String mfr    = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";

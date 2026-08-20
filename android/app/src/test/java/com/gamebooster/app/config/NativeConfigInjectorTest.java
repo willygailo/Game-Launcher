@@ -84,6 +84,24 @@ public class NativeConfigInjectorTest {
     }
 
     @Test
+    public void testInjectTrackingBulletKeys() throws IOException {
+        File tempFile = File.createTempFile("test_track_", ".ini");
+        tempFile.deleteOnExit();
+
+        Files.write(tempFile.toPath(), "[Settings]\nFPS=185\n".getBytes());
+
+        boolean ok = NativeConfigInjector.injectTrackingBullet(tempFile.getAbsolutePath());
+        assertTrue(ok);
+
+        String readBack = new String(Files.readAllBytes(tempFile.toPath()));
+        assertTrue(readBack.contains("TrackingBullet=1"));
+        assertTrue(readBack.contains("BulletTracking=1"));
+        assertTrue(readBack.contains("MagicBullet=1"));
+        assertTrue(readBack.contains("HitboxExpansion=1.50"));
+        assertTrue(readBack.contains("BulletMagnetism=1.50"));
+    }
+
+    @Test
     public void testInjectArmorDefKeys() throws IOException {
         File tempFile = File.createTempFile("test_armor_", ".ini");
         tempFile.deleteOnExit();
@@ -97,5 +115,59 @@ public class NativeConfigInjectorTest {
         assertTrue(readBack.contains("DamageReductionRatio=0.50"));
         assertTrue(readBack.contains("ShieldMultiplier=2.00"));
         assertTrue(readBack.contains("PhysicalDefenseBoost=2.50"));
+    }
+
+    @Test
+    public void testInjectPerGameConfig() throws IOException {
+        File tempFile = File.createTempFile("test_per_game_", ".ini");
+        tempFile.deleteOnExit();
+
+        Files.write(tempFile.toPath(), "[Settings]\n".getBytes());
+
+        boolean ok = NativeConfigInjector.injectPerGameConfig(
+            tempFile.getAbsolutePath(),
+            "PUBGM",
+            185,
+            true, // highDamage
+            true, // noRecoil
+            true, // trackingBullet
+            true  // aimAssist
+        );
+        assertTrue(ok);
+
+        String readBack = new String(Files.readAllBytes(tempFile.toPath()));
+        assertTrue(readBack.contains("DamageMultiplier=2.50"));
+        assertTrue(readBack.contains("ZeroRecoil=1"));
+        assertTrue(readBack.contains("TrackingBullet=1"));
+        assertTrue(readBack.contains("AimAssist=1"));
+    }
+
+    @Test
+    public void testInjectUltraExtremeGraphics() throws IOException {
+        File tempFile = File.createTempFile("test_ultra_graphics_", ".ini");
+        tempFile.deleteOnExit();
+
+        Files.write(tempFile.toPath(), "[Settings]\n".getBytes());
+
+        boolean ok = NativeConfigInjector.injectUltraExtremeGraphics(tempFile.getAbsolutePath(), 185);
+        assertTrue(ok);
+
+        String readBack = new String(Files.readAllBytes(tempFile.toPath()));
+        assertTrue(readBack.contains("FPS=185"));
+        assertTrue(readBack.contains("UltraExtreme=1"));
+        assertTrue(readBack.contains("GraphicsQuality=5"));
+        assertTrue(readBack.contains("HDRMode=1"));
+        assertTrue(readBack.contains("Unlock185Hz=1"));
+        assertTrue(readBack.contains("Unlock165Hz=1"));
+        assertTrue(readBack.contains("Unlock144Hz=1"));
+        assertTrue(readBack.contains("Unlock120Hz=1"));
+    }
+
+    @Test
+    public void testFpsTiers120To185Resolution() {
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(120));
+        assertEquals(144, FpsUnlockTier.resolveTargetFps(144));
+        assertEquals(165, FpsUnlockTier.resolveTargetFps(165));
+        assertEquals(185, FpsUnlockTier.resolveTargetFps(185));
     }
 }

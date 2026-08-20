@@ -374,6 +374,55 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB Armor Defense Boost & Damage Reduction applied for " + packageName);
     }
 
+    /**
+     * Injects Skill Auto-Tracking, Projectile Magnetism, Retribution/Smite Lock, and Hitbox Tracking for MLBB.
+     */
+    public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] trackingKeys = {
+            "AutoTrackingSkill=1",
+            "AutoTargetLock=1",
+            "SkillPathPrediction=1",
+            "AutoRetributionSmiteLock=1",
+            "SkillMagnetism=1.50",
+            "BasicAttackTracking=1",
+            "ProjectileTracking=1",
+            "HitboxExpansion=1.50",
+            "TargetLockTracking=1",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "MagicBullet=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".xml")) {
+                for (String keyVal : trackingKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
+                for (String keyVal : trackingKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB Skill Auto-Tracking & Projectile Magnetism applied for " + packageName);
+    }
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
