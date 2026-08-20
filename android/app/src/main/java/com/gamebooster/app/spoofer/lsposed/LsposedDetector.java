@@ -83,6 +83,13 @@ public final class LsposedDetector {
     public static boolean isLsposedInstalled() {
         long now = System.currentTimeMillis();
         if (now - cachedInstalledAt < CACHE_TTL_MS) return cachedInstalled;
+        
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            // Never block the main UI thread with shell commands
+            refreshAsync(null, null);
+            return cachedInstalled;
+        }
+
         cachedInstalled = probe("ls -d /data/adb/lspd 2>/dev/null");
         cachedInstalledAt = now;
         return cachedInstalled;
@@ -92,9 +99,39 @@ public final class LsposedDetector {
     public static boolean isModuleEnabled() {
         long now = System.currentTimeMillis();
         if (now - cachedEnabledAt < CACHE_TTL_MS) return cachedEnabled;
+
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            // Never block the main UI thread with shell commands
+            refreshAsync(null, null);
+            return cachedEnabled;
+        }
+
         cachedEnabled = probeModuleEnabled();
         cachedEnabledAt = now;
         return cachedEnabled;
+    }
+
+    /**
+     * Explicitly refreshes LSPosed detection status asynchronously on a background worker thread.
+     */
+    public static void refreshAsync(Context context, Runnable onComplete) {
+        com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
+            try {
+                boolean installed = probe("ls -d /data/adb/lspd 2>/dev/null");
+                boolean enabled = probeModuleEnabled();
+                long now = System.currentTimeMillis();
+                cachedInstalled = installed;
+                cachedInstalledAt = now;
+                cachedEnabled = enabled;
+                cachedEnabledAt = now;
+            } catch (Throwable t) {
+                Log.w(TAG, "refreshAsync error: " + t.getMessage());
+            } finally {
+                if (onComplete != null) {
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(onComplete);
+                }
+            }
+        });
     }
 
     /**

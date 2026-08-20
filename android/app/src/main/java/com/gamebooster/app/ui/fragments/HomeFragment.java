@@ -2,6 +2,7 @@ package com.gamebooster.app.ui.fragments;
 import com.gamebooster.app.ui.adapters.HomeGamesAdapter;
 import com.gamebooster.app.ui.activities.MainActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -202,35 +203,41 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     }
 
     /**
-     * Zero-Delay Architecture:
-     * 1. Synchronously perform fast ML/PUBG/CODM target scan (~10ms)
-     * 2. Update UI instantly with zero flicker
+     * Non-Blocking Architecture:
+     * 1. Perform target game scan asynchronously on background scan thread
+     * 2. Update UI on the main thread with zero freeze / flicker
      */
     private void loadAndScanGamesZeroDelay() {
         if (getContext() == null || rvGames == null) return;
+        final Context ctx = getContext().getApplicationContext();
 
-        // Fast target scan (scans ONLY MLBB, PUBG, CODM packages directly)
-        List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(getContext());
+        com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
+            List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(ctx);
 
-        gameList.clear();
-        gameList.addAll(scannedGames);
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
 
-        if (adapter != null) {
-            adapter.updateList(scannedGames);
-        }
+                gameList.clear();
+                gameList.addAll(scannedGames);
 
-        // Update header count
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
-        }
+                if (adapter != null) {
+                    adapter.updateList(scannedGames);
+                }
 
-        // Toggle empty state vs games list
-        if (scannedGames.isEmpty()) {
-            rvGames.setVisibility(View.GONE);
-            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
-        } else {
-            rvGames.setVisibility(View.VISIBLE);
-            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
-        }
+                // Update header count
+                if (tvGamesHeader != null) {
+                    tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
+                }
+
+                // Toggle empty state vs games list
+                if (scannedGames.isEmpty()) {
+                    if (rvGames != null) rvGames.setVisibility(View.GONE);
+                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
+                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+                }
+            });
+        });
     }
 }

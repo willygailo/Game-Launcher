@@ -120,12 +120,14 @@ public class ShizukuUserServiceConnector {
     private void ensureBound() {
         if (!isServiceConnected()) {
             bindService();
-            int retries = 3;
-            while (!isServiceConnected() && retries > 0) {
-                try {
-                    Thread.sleep(40);
-                } catch (InterruptedException ignored) {}
-                retries--;
+            if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+                int retries = 3;
+                while (!isServiceConnected() && retries > 0) {
+                    try {
+                        Thread.sleep(40);
+                    } catch (InterruptedException ignored) {}
+                    retries--;
+                }
             }
         }
     }

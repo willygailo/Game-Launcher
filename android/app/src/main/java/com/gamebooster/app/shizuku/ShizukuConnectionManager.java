@@ -186,7 +186,7 @@ public class ShizukuConnectionManager {
 
         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
             ShizukuUserServiceConnector.getInstance().bindService();
-            if (timeoutMs > 0) {
+            if (timeoutMs > 0 && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
                 waitForConnected(Math.min(timeoutMs, 300));
             }
         }

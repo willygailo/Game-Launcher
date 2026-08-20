@@ -107,10 +107,11 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         }
 
-        // Initialize RishManager 13.5 Shell Engine in background
+        // Initialize RishManager 13.5 Shell Engine & Pre-warm LSPosed detector in background
         AppExecutors.getInstance().executeCommand(() -> {
             com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
         });
+        com.gamebooster.app.spoofer.lsposed.LsposedDetector.refreshAsync(getApplicationContext(), null);
 
         // Bind Shizuku AIDL UserService & Auto-Grant Privileges
         try {
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 ShizukuManager.requestShizukuPermission();
             } else if (ShizukuExecutor.hasShizukuPermission()) {
                 AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
+                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
                 });
@@ -216,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             } else {
                 Toast.makeText(getApplicationContext(), "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
+                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                 });
