@@ -109,6 +109,10 @@ public class NativeConfigInjector {
      * Injects High Damage Script keys (2.50x - 3.50x damage multiplier, 99% crit, penetration).
      */
     public static boolean injectHighDamage(String path) {
+        return injectHighDamage(path, 185);
+    }
+
+    public static boolean injectHighDamage(String path, int targetFps) {
         if (path == null) return false;
         ensureParentDirectory(path);
 
@@ -140,10 +144,30 @@ public class NativeConfigInjector {
         return batchInjectKeys(path, damageKeys, "[DamageScript]");
     }
 
+    public static boolean injectDamageScript(String path) {
+        return injectHighDamage(path, 185);
+    }
+
+    public static boolean injectDamageScript(String path, int targetFps) {
+        return injectHighDamage(path, targetFps);
+    }
+
+    public static boolean injectDamageBoost(String path) {
+        return injectHighDamage(path, 185);
+    }
+
+    public static boolean injectDamageBoost(String path, int targetFps) {
+        return injectHighDamage(path, targetFps);
+    }
+
     /**
      * Injects Zero Recoil & Weapon Stability keys (RecoilScale=0.00, ZeroRecoil=1, NoRecoil=1).
      */
     public static boolean injectNoRecoil(String path) {
+        return injectNoRecoil(path, 185);
+    }
+
+    public static boolean injectNoRecoil(String path, int targetFps) {
         if (path == null) return false;
         ensureParentDirectory(path);
 
@@ -184,6 +208,10 @@ public class NativeConfigInjector {
      * Injects High Aim Assist & Smart Target Lock keys (AimAssist=1, Strength=150, Precision=3.0, 1000Hz Gyro).
      */
     public static boolean injectAimAssist(String path) {
+        return injectAimAssist(path, 185);
+    }
+
+    public static boolean injectAimAssist(String path, int targetFps) {
         if (path == null) return false;
         ensureParentDirectory(path);
 
@@ -225,6 +253,10 @@ public class NativeConfigInjector {
      * Injects Tracking Bullet, Bullet Magnetism & Hitbox Expansion keys.
      */
     public static boolean injectTrackingBullet(String path) {
+        return injectTrackingBullet(path, 185);
+    }
+
+    public static boolean injectTrackingBullet(String path, int targetFps) {
         if (path == null) return false;
         ensureParentDirectory(path);
 
@@ -263,6 +295,10 @@ public class NativeConfigInjector {
      * Injects Armor Defense & Damage Reduction keys (DamageReduction=0.50, ArmorBoost=150, ShieldMultiplier=2.00).
      */
     public static boolean injectArmorDef(String path) {
+        return injectArmorDef(path, 185);
+    }
+
+    public static boolean injectArmorDef(String path, int targetFps) {
         if (path == null) return false;
         ensureParentDirectory(path);
 
@@ -494,7 +530,7 @@ public class NativeConfigInjector {
         }
     }
 
-    private static String extractKey(String kv) {
+    public static String extractKey(String kv) {
         if (kv == null) return "";
         if (kv.startsWith("+CVars=") || kv.startsWith("-CVars=")) {
             int eq2 = kv.indexOf('=', 7);
