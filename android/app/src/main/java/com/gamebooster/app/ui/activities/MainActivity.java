@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
 
         // Initialize saved tweak states and restore active tweaks
         TweakManagerRepository.initializeStates(this);
@@ -206,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (!alive) {
                 Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "⚡ Shizuku Connected — Auto-Granting All System & Storage Privileges...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());

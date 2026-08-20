@@ -89,14 +89,21 @@ public class ShizukuConnectionManager {
     /** Reads the actual binder state and converges the state machine. */
     public void start() {
         enabled = true;
-        if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            setState(State.IDLE);
-            return;
-        }
-        // Shizuku binder is alive and permission is granted -> Mark READY immediately
-        setState(State.READY);
-        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            ShizukuUserServiceConnector.getInstance().bindService();
+        try {
+            boolean alive = Shizuku.pingBinder();
+            boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (granted) {
+                setState(State.READY);
+                if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                }
+            } else if (alive) {
+                setState(State.IDLE);
+            } else {
+                setState(State.DEAD);
+            }
+        } catch (Throwable t) {
+            setState(State.DEAD);
         }
     }
 
@@ -112,13 +119,17 @@ public class ShizukuConnectionManager {
     /** Binder received and permission is granted — bind the AIDL user service and mark READY. */
     public void onBinderReceived() {
         try {
-            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            boolean alive = Shizuku.pingBinder();
+            boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (granted) {
                 setState(State.READY);
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
-            } else {
+            } else if (alive) {
                 setState(State.IDLE);
+            } else {
+                setState(State.DEAD);
             }
         } catch (Throwable t) {
             Log.w(TAG, "onBinderReceived error", t);
@@ -222,27 +233,28 @@ public class ShizukuConnectionManager {
                     boolean granted;
                     try {
                         alive = Shizuku.pingBinder();
-                        granted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+                        granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
                     } catch (Throwable t) {
                         alive = false;
                         granted = false;
                     }
 
-                    if (!alive || !granted) {
-                        Log.w(TAG, "Reconnect attempt " + attempt + ": Shizuku not available, backing off");
-                        setState(alive ? State.IDLE : State.DEAD);
-                        sleepQuietly(backoffMs(attempt++));
-                        continue;
+                    if (alive && granted) {
+                        // Shizuku binder and permission are active!
+                        setState(State.READY);
+                        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                            ShizukuUserServiceConnector.getInstance().bindService();
+                        }
+                        return;
                     }
 
-                    // Shizuku binder and permission are active!
-                    setState(State.READY);
-                    if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                        ShizukuUserServiceConnector.getInstance().bindService();
+                    if (attempt == 0 || attempt % 10 == 0) {
+                        Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet");
                     }
-                    return;
+                    setState(alive ? State.IDLE : State.DEAD);
+                    sleepQuietly(backoffMs(attempt++));
                 }
-                Log.w(TAG, "Reconnect loop exhausted after " + MAX_RETRY_ATTEMPTS + " attempts");
+                Log.d(TAG, "Reconnect loop finished after " + MAX_RETRY_ATTEMPTS + " attempts");
             } catch (Throwable t) {
                 Log.e(TAG, "Reconnect loop error", t);
             } finally {

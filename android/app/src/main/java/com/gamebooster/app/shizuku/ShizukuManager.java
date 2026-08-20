@@ -74,7 +74,7 @@ public class ShizukuManager {
         } catch (Exception ignored) {}
         // Phase 1.1: converge the connection state machine
         ShizukuConnectionManager.getInstance().onBinderReceived();
-        notifyStateChanged(true);
+        notifyStateChanged(isShizukuRunningAndGranted());
     };
 
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {

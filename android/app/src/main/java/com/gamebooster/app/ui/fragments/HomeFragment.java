@@ -29,7 +29,13 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+import android.widget.Toast;
+
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
+
+public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
     private TextView tvEngineMode;
     private TextView tvRamUsage;
@@ -41,7 +47,7 @@ public class HomeFragment extends Fragment {
     private final com.gamebooster.app.shizuku.ShizukuConnectionManager.ConnectionListener connListener =
             state -> {
                 if (isAdded() && getContext() != null) {
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> updateStatusStrip());
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::updateStatusStrip);
                 }
             };
 
@@ -55,6 +61,27 @@ public class HomeFragment extends Fragment {
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
+
+        View chipEngineMode = view.findViewById(R.id.chip_engine_mode);
+        if (chipEngineMode != null) {
+            chipEngineMode.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (ShizukuExecutor.hasShizukuPermission() || ShizukuManager.isShizukuRunningAndGranted()) {
+                    Toast.makeText(getContext(), "⚡ Shizuku API Full Access is Active & Privileged!", Toast.LENGTH_SHORT).show();
+                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                        ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getContext().getApplicationContext());
+                        ShizukuExecutor.grantAppPermissionsViaShizuku(getContext().getApplicationContext());
+                        ShizukuFileManager.grantAllStoragePermissions(getContext().getApplicationContext());
+                    });
+                } else if (ShizukuExecutor.isShizukuAvailable()) {
+                    Toast.makeText(getContext(), "⚡ Requesting Shizuku Permission...", Toast.LENGTH_SHORT).show();
+                    ShizukuManager.requestShizukuPermission();
+                } else {
+                    ShizukuManager.showShizukuPermissionDialog(getContext(), "Full Shizuku API Engine");
+                }
+                updateStatusStrip();
+            });
+        }
 
         ImageView ivHeroBanner = view.findViewById(R.id.iv_hero_banner);
         if (ivHeroBanner != null && getContext() != null) {
@@ -85,6 +112,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
+        ShizukuManager.addStateListener(this);
         updateStatusStrip();
         loadAndScanGamesZeroDelay();
     }
@@ -102,6 +130,14 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().removeConnectionListener(connListener);
+        ShizukuManager.removeStateListener(this);
+    }
+
+    @Override
+    public void onBinderStateChanged(boolean alive) {
+        if (isAdded() && getContext() != null) {
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::updateStatusStrip);
+        }
     }
 
     private void updateStatusStrip() {
@@ -111,21 +147,24 @@ public class HomeFragment extends Fragment {
                 com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
         boolean isShizukuActive = ShizukuExecutor.hasShizukuPermission()
                 || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
+                || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
                 || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
 
         if (isShizukuActive) {
-            EngineMode engineMode = CommandExecutor.getActiveEngineMode();
             if (tvEngineMode != null) {
                 // LSPosed module active -> in-game ART spoofing is the real path
                 if (com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled()) {
-                    tvEngineMode.setText("🧬 LSPOSED MODULE ACTIVE");
+                    tvEngineMode.setText("🧬 LSPOSED + SHIZUKU FULL ACCESS");
                     tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00F0FF"));
                 } else {
-                    tvEngineMode.setText("⚡ " + (engineMode == EngineMode.SHIZUKU
-                            ? "ACTIVE FORCING"
-                            : engineMode.getDisplayName()));
-                    tvEngineMode.setTextColor(engineMode.getColorHex());
+                    tvEngineMode.setText("⚡ FULL ACCESS: SHIZUKU API ACTIVE");
+                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
                 }
+            }
+        } else if (ShizukuExecutor.isShizukuAvailable()) {
+            if (tvEngineMode != null) {
+                tvEngineMode.setText("⚡ SHIZUKU API: GRANT PERMISSION");
+                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FFCC00"));
             }
         } else if (tvEngineMode != null
                 && (conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.BINDING
