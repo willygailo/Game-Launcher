@@ -89,14 +89,14 @@ public class ShizukuUserServiceConnector {
             isBinding = false;
         }
         try {
-            if (ShizukuManager.isShizukuInstalled(null) || Shizuku.pingBinder()) {
+            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Binding Shizuku UserService via AIDL...");
                 isBinding = true;
                 bindingStartedAt = System.currentTimeMillis();
                 Shizuku.bindUserService(serviceArgs, serviceConnection);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to bind Shizuku UserService", e);
+        } catch (Throwable e) {
+            Log.e(TAG, "Failed to bind Shizuku UserService: " + e.getMessage());
             isBinding = false;
             ShizukuConnectionManager.getInstance().onBindFailure();
         }

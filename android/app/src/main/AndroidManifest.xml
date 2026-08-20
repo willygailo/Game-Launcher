@@ -138,6 +138,7 @@
     </queries>
 
     <application
+        android:name="com.gamebooster.app.GameBoosterApp"
         android:label="Game Booster"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"

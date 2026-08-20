@@ -53,16 +53,21 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
 
             @Override
             public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                return games.get(oldItemPosition).getPackageName()
-                        .equalsIgnoreCase(newList.get(newItemPosition).getPackageName());
+                GameAppInfo oldItem = games.get(oldItemPosition);
+                GameAppInfo newItem = newList.get(newItemPosition);
+                if (oldItem == null || newItem == null) return false;
+                String oldPkg = oldItem.getPackageName();
+                String newPkg = newItem.getPackageName();
+                return oldPkg != null && oldPkg.equalsIgnoreCase(newPkg);
             }
 
             @Override
             public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
                 GameAppInfo oldItem = games.get(oldItemPosition);
                 GameAppInfo newItem = newList.get(newItemPosition);
-                return oldItem.getLabel().equals(newItem.getLabel())
-                        && oldItem.getPackageName().equals(newItem.getPackageName());
+                if (oldItem == null || newItem == null) return false;
+                return java.util.Objects.equals(oldItem.getLabel(), newItem.getLabel())
+                        && java.util.Objects.equals(oldItem.getPackageName(), newItem.getPackageName());
             }
         });
 

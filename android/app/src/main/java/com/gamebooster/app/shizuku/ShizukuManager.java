@@ -183,17 +183,25 @@ public class ShizukuManager {
 
     public static void showShizukuPermissionDialog(Context context, String featureTitle) {
         if (context == null) return;
+        if (context instanceof android.app.Activity) {
+            android.app.Activity a = (android.app.Activity) context;
+            if (a.isFinishing() || a.isDestroyed()) return;
+        }
 
-        boolean installed = isShizukuInstalled(context);
-        String actionBtnText = installed ? "OPEN SHIZUKU MANAGER" : "INSTALL SHIZUKU";
-        String message = "'" + featureTitle + "' requires active Shizuku ADB access for privileged system control.\n\n" +
-                (installed ? "Please start and authorize GAME BOOSTER in Shizuku." : "Shizuku Manager is not installed on this device. Please install and start Shizuku.");
+        try {
+            boolean installed = isShizukuInstalled(context);
+            String actionBtnText = installed ? "OPEN SHIZUKU MANAGER" : "INSTALL SHIZUKU";
+            String message = "'" + featureTitle + "' requires active Shizuku ADB access for privileged system control.\n\n" +
+                    (installed ? "Please start and authorize GAME BOOSTER in Shizuku." : "Shizuku Manager is not installed on this device. Please install and start Shizuku.");
 
-        new AlertDialog.Builder(context)
-                .setTitle("⚡ SHIZUKU ADB PRIVILEGE REQUIRED")
-                .setMessage(message)
-                .setPositiveButton(actionBtnText, (dialog, which) -> openOrInstallShizukuManager(context))
-                .setNegativeButton("CANCEL", null)
-                .show();
+            new AlertDialog.Builder(context)
+                    .setTitle("⚡ SHIZUKU ADB PRIVILEGE REQUIRED")
+                    .setMessage(message)
+                    .setPositiveButton(actionBtnText, (dialog, which) -> openOrInstallShizukuManager(context))
+                    .setNegativeButton("CANCEL", null)
+                    .show();
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to show Shizuku permission dialog: " + t.getMessage());
+        }
     }
 }

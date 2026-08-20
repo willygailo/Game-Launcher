@@ -84,8 +84,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         }
 
         ImageView ivHeroBanner = view.findViewById(R.id.iv_hero_banner);
-        if (ivHeroBanner != null && getContext() != null) {
-            Glide.with(this).load(R.drawable.hero_banner).into(ivHeroBanner);
+        if (ivHeroBanner != null && getContext() != null && isAdded()) {
+            try {
+                Glide.with(this)
+                        .load(R.drawable.hero_banner)
+                        .error(R.drawable.home_bg_new)
+                        .into(ivHeroBanner);
+            } catch (Throwable t) {
+                ivHeroBanner.setImageResource(R.drawable.home_bg_new);
+            }
         }
 
         Button btnSettings = view.findViewById(R.id.btn_open_settings);

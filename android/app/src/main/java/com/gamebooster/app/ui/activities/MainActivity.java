@@ -125,11 +125,17 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
                 });
             } else {
-                // Auto-Active: Shizuku not running — auto-prompt activation once per install
+                // Auto-Active: Shizuku not running — auto-prompt activation once per install (post after window attach)
                 android.content.SharedPreferences prefs =
                         getSharedPreferences("game_booster_prefs", MODE_PRIVATE);
                 if (!prefs.getBoolean("shizuku_auto_prompt_shown", false)) {
-                    ShizukuManager.showShizukuPermissionDialog(this, "Auto-Active Engine");
+                    if (rootLayout != null) {
+                        rootLayout.post(() -> {
+                            if (!isFinishing() && !isDestroyed()) {
+                                ShizukuManager.showShizukuPermissionDialog(MainActivity.this, "Auto-Active Engine");
+                            }
+                        });
+                    }
                     prefs.edit().putBoolean("shizuku_auto_prompt_shown", true).apply();
                 }
             }
@@ -204,16 +210,15 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     @Override
     public void onBinderStateChanged(boolean alive) {
         runOnUiThread(() -> {
+            if (isFinishing() || isDestroyed()) return;
             if (!alive) {
-                Toast.makeText(this, "⚠️ Shizuku disconnected — reconnect to continue privileged tweaks", Toast.LENGTH_LONG).show();
+                Log.d("MainActivity", "Shizuku disconnected");
             } else {
-                Toast.makeText(this, "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
-                    AppExecutors.getInstance().postToMainThread(() ->
-                            Toast.makeText(getApplicationContext(), "⚡ All Storage & System Permissions Active!", Toast.LENGTH_SHORT).show());
                 });
             }
         });
@@ -223,34 +228,39 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     private static final String TAG_SETTINGS = "tab_settings";
 
     private void showFragmentForTab(int position) {
-        androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
-        androidx.fragment.app.FragmentTransaction transaction = fm.beginTransaction();
+        if (isFinishing() || isDestroyed()) return;
+        try {
+            androidx.fragment.app.FragmentManager fm = getSupportFragmentManager();
+            androidx.fragment.app.FragmentTransaction transaction = fm.beginTransaction();
 
-        Fragment homeFrag = fm.findFragmentByTag(TAG_HOME);
-        Fragment settingsFrag = fm.findFragmentByTag(TAG_SETTINGS);
+            Fragment homeFrag = fm.findFragmentByTag(TAG_HOME);
+            Fragment settingsFrag = fm.findFragmentByTag(TAG_SETTINGS);
 
-        if (position == 0) {
-            if (settingsFrag != null && settingsFrag.isAdded()) {
-                transaction.hide(settingsFrag);
+            if (position == 0) {
+                if (settingsFrag != null && settingsFrag.isAdded()) {
+                    transaction.hide(settingsFrag);
+                }
+                if (homeFrag == null) {
+                    homeFrag = new HomeFragment();
+                    transaction.add(R.id.fragment_container, homeFrag, TAG_HOME);
+                } else {
+                    transaction.show(homeFrag);
+                }
+            } else if (position == 1) {
+                if (homeFrag != null && homeFrag.isAdded()) {
+                    transaction.hide(homeFrag);
+                }
+                if (settingsFrag == null) {
+                    settingsFrag = new SettingsFragment();
+                    transaction.add(R.id.fragment_container, settingsFrag, TAG_SETTINGS);
+                } else {
+                    transaction.show(settingsFrag);
+                }
             }
-            if (homeFrag == null) {
-                homeFrag = new HomeFragment();
-                transaction.add(R.id.fragment_container, homeFrag, TAG_HOME);
-            } else {
-                transaction.show(homeFrag);
-            }
-        } else if (position == 1) {
-            if (homeFrag != null && homeFrag.isAdded()) {
-                transaction.hide(homeFrag);
-            }
-            if (settingsFrag == null) {
-                settingsFrag = new SettingsFragment();
-                transaction.add(R.id.fragment_container, settingsFrag, TAG_SETTINGS);
-            } else {
-                transaction.show(settingsFrag);
-            }
+            transaction.commitAllowingStateLoss();
+        } catch (Throwable t) {
+            Log.e("MainActivity", "Error switching tab fragment", t);
         }
-        transaction.commitAllowingStateLoss();
     }
 
     @Override
