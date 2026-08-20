@@ -25,8 +25,8 @@ android {
         applicationId "com.gamebooster.app"
         minSdk 31
         targetSdk 36
-        versionCode 16006
-        versionName "16.0.6-PRO"
+        versionCode 16007
+        versionName "16.0.7-PRO"
     }
 
     buildFeatures {
