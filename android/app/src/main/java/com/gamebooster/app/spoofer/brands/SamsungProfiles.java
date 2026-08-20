@@ -8,11 +8,11 @@ public class SamsungProfiles {
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
 
-        // Samsung Galaxy S26 Ultra (Snapdragon 8 Elite Gen 2 / Adreno 840 / 16GB / 120Hz)
+        // 1. Samsung Galaxy S26 Ultra (Snapdragon 8 Elite Gen 5 for Galaxy / Adreno 840 / 16GB / 185Hz)
         // DEFAULT profile referenced by all game recommendations
         list.add(new SpoofProfile(
                 "samsung_s26_ultra",
-                "Samsung Galaxy S26 Ultra (Snapdragon 8 Elite Gen 2)",
+                "Samsung Galaxy S26 Ultra (Snapdragon 8 Elite Gen 5)",
                 "Samsung",
                 "SM-S938B",
                 "samsung",
@@ -24,7 +24,7 @@ public class SamsungProfiles {
                 "niobe",
                 "SM8850-AB",
                 "niobe",
-                "Snapdragon 8 Elite Gen 2 for Galaxy",
+                "Snapdragon 8 Elite Gen 5 for Galaxy",
                 "Qualcomm",
                 8,
                 4860000,
@@ -34,35 +34,87 @@ public class SamsungProfiles {
                 "AP4A.250405.001.S938BXXU1AZD1",
                 "16",
                 36,
-                "2025-04-01",
+                "2026-03-11",
                 "Adreno (TM) 840",
                 "Qualcomm",
-                "OpenGL ES 3.2 V@0700.0 (GIT@a1b2c3d, Iee4f5a6b7) (Date:03/20/25)",
+                "OpenGL ES 3.2 V@0700.0 (GIT@a1b2c3d, Iee4f5a6b7) (Date:03/20/26)",
+                "1.4.298",
+                "512.700.0",
+                16384,
+                13107,
+                185
+        ));
+
+        // 2. Samsung Galaxy S26 (Snapdragon 8 Elite Gen 5 for Galaxy / 12GB / 120Hz)
+        list.add(new SpoofProfile(
+                "samsung_s26",
+                "Samsung Galaxy S26 (Snapdragon 8 Elite Gen 5)",
+                "Samsung",
+                "SM-S931B",
+                "samsung",
+                "samsung",
+                "e3s",
+                "e3sxxx",
+                "e3s",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Elite Gen 5 for Galaxy",
+                "Qualcomm",
+                8,
+                4860000,
+                "ARM64-v9.4-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "samsung/e3sxxx/e3s:16/AP4A.250405.001/S931BXXU1AZD1:user/release-keys",
+                "AP4A.250405.001.S931BXXU1AZD1",
+                "16",
+                36,
+                "2026-03-11",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
+                "1.4.298",
+                "512.700.0",
+                12288,
+                9216,
+                120
+        ));
+
+        // 3. Samsung Galaxy Z Fold8 (Snapdragon 8 Elite Gen 5 / 16GB / 120Hz)
+        list.add(new SpoofProfile(
+                "samsung_z_fold8",
+                "Samsung Galaxy Z Fold8 (Snapdragon 8 Elite Gen 5)",
+                "Samsung",
+                "SM-F966B",
+                "samsung",
+                "samsung",
+                "q8q",
+                "q8qxxx",
+                "q8q",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Elite Gen 5",
+                "Qualcomm",
+                8,
+                4860000,
+                "ARM64-v9.4-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "samsung/q8qxxx/q8q:16/AP4A.250405.001/F966BXXU1AZD1:user/release-keys",
+                "AP4A.250405.001.F966BXXU1AZD1",
+                "16",
+                36,
+                "2026-04-01",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
                 "1.4.298",
                 "512.700.0",
                 16384,
                 12288,
-        185
-        ));
-
-        // Samsung Galaxy S25+ (Snapdragon 8 Elite / Adreno 830 / 12GB / 120Hz)
-        list.add(new SpoofProfile(
-                "samsung_s25_plus",
-                "Samsung Galaxy S25+ (Snapdragon 8 Elite)",
-                "Samsung",
-                "SM-S936B", "samsung", "samsung",
-                "e2qplus", "e2qplusxxx", "e2qplus",
-                "qcom", "sun", "SM8750-AC", "sun",
-                "Snapdragon 8 Elite for Galaxy",
-                "Qualcomm", 8, 4470000, "ARM64-v9.2-A",
-                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
-                "samsung/e2qplusxxx/e2qplus:15/AP3A.240905.015/S936BXXU1AYB1:user/release-keys",
-                "AP3A.240905.015.S936BXXU1AYB1",
-                "15", 35, "2025-01-01",
-                "Adreno (TM) 830", "Qualcomm",
-                "OpenGL ES 3.2 V@0615.0 (GIT@56860db, Idd24e5256e) (Date:11/24/24)",
-                "1.3.280", "512.615.0",
-                12288, 9216, 185
+                120
         ));
 
 

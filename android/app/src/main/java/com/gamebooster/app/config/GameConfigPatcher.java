@@ -191,6 +191,7 @@ public class GameConfigPatcher {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;
             }
+            NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
         }
 
         // Apply Anti-Log, Telemetry suppression, and cache purge for this game

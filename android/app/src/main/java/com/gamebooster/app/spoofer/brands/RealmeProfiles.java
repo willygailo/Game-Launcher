@@ -8,10 +8,82 @@ public class RealmeProfiles {
     public static List<SpoofProfile> getProfiles() {
         List<SpoofProfile> list = new ArrayList<>();
 
-        // Realme GT7 Pro (Snapdragon 8 Elite / 24GB LPDDR5X / realme UI 6.0)
+        // 1. Realme GT 8 Pro (Snapdragon 8 Elite Gen 5 + Custom R1 Graphics Chip / 16GB / 144Hz 2K)
+        list.add(new SpoofProfile(
+                "realme_gt8_pro",
+                "Realme GT 8 Pro (Snapdragon 8 Elite Gen 5 + R1)",
+                "Realme",
+                "RMX6010",
+                "realme",
+                "realme",
+                "RE6D1BL1",
+                "RMX6010",
+                "RMX6010",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Elite Gen 5",
+                "Qualcomm",
+                8,
+                4860000,
+                "ARM64-v9.4-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop sha3 asimddp sha512 sve asimdfhm",
+                "realme/RMX6010/RE6D1BL1:16/AP4A.250405.001/realmeUI7.0:user/release-keys",
+                "realmeUI7.0",
+                "16",
+                36,
+                "2025-10-21",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
+                "1.4.298",
+                "512.700.0",
+                16384,
+                13107,
+                144
+        ));
+
+        // 2. Realme GT 8 (Snapdragon 8 Elite Gen 5 / 16GB / 144Hz)
+        list.add(new SpoofProfile(
+                "realme_gt8",
+                "Realme GT 8 (Snapdragon 8 Elite Gen 5)",
+                "Realme",
+                "RMX6000",
+                "realme",
+                "realme",
+                "RE6D0BL1",
+                "RMX6000",
+                "RMX6000",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Elite Gen 5",
+                "Qualcomm",
+                8,
+                4860000,
+                "ARM64-v9.4-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "realme/RMX6000/RE6D0BL1:16/AP4A.250405.001/realmeUI7.0:user/release-keys",
+                "realmeUI7.0",
+                "16",
+                36,
+                "2025-10-21",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
+                "1.4.298",
+                "512.700.0",
+                16384,
+                12288,
+                144
+        ));
+
+        // 3. Realme GT 7 Pro (Snapdragon 8 Elite / 24GB LPDDR5X / 144Hz)
         list.add(new SpoofProfile(
                 "realme_gt7_pro",
-                "Realme GT7 Pro (Snapdragon 8 Elite)",
+                "Realme GT 7 Pro (Snapdragon 8 Elite)",
                 "Realme",
                 "RMX5010",
                 "realme",
@@ -41,13 +113,121 @@ public class RealmeProfiles {
                 "512.615.0",
                 24576,
                 19660,
-        185
+                144
         ));
 
-        // Realme GT5 Pro (Snapdragon 8 Gen 3 / 16GB RAM / realme UI 5.0)
+        // 4. Realme GT 7T (MediaTek Dimensity 8400 Max / 12GB RAM / 144Hz)
+        list.add(new SpoofProfile(
+                "realme_gt7t",
+                "Realme GT 7T (Dimensity 8400 Max)",
+                "Realme",
+                "RMX5008",
+                "realme",
+                "realme",
+                "RE5D0BL1",
+                "RMX5008",
+                "RMX5008",
+                "mt6899",
+                "mt6899",
+                "MT6899",
+                "k6899v1_64",
+                "Dimensity 8400 Max",
+                "MediaTek",
+                8,
+                3250000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "realme/RMX5008/RE5D0BL1:15/UKQ1.231003.002/realmeUI6.0:user/release-keys",
+                "realmeUI6.0",
+                "15",
+                35,
+                "2025-05-15",
+                "Mali-G720 MC12",
+                "ARM",
+                "OpenGL ES 3.2 v1.r48p0",
+                "1.3.275",
+                "19.0.0",
+                12288,
+                9216,
+                144
+        ));
+
+        // 5. Realme GT 5 Ultra (Snapdragon 8 Gen 5 / 16GB / 144Hz)
+        list.add(new SpoofProfile(
+                "realme_gt5_ultra",
+                "Realme GT 5 Ultra (Snapdragon 8 Gen 5)",
+                "Realme",
+                "RMX3900",
+                "realme",
+                "realme",
+                "RE59A0L1",
+                "RMX3900",
+                "RMX3900",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Gen 5",
+                "Qualcomm",
+                8,
+                4500000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "realme/RMX3900/RE59A0L1:16/AP4A.250405.001/realmeUI7.0:user/release-keys",
+                "realmeUI7.0",
+                "16",
+                36,
+                "2026-03-01",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
+                "1.4.298",
+                "512.700.0",
+                16384,
+                12288,
+                144
+        ));
+
+        // 6. Realme GT Neo 8 (Snapdragon 8 Gen 5 / 16GB / 144Hz)
+        list.add(new SpoofProfile(
+                "realme_gt_neo8",
+                "Realme GT Neo 8 (144Hz Esports)",
+                "Realme",
+                "RMX3950",
+                "realme",
+                "realme",
+                "RE59A5L1",
+                "RMX3950",
+                "RMX3950",
+                "qcom",
+                "niobe",
+                "SM8850-AB",
+                "niobe",
+                "Snapdragon 8 Gen 5",
+                "Qualcomm",
+                8,
+                4500000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+                "realme/RMX3950/RE59A5L1:16/AP4A.250405.001/realmeUI7.0:user/release-keys",
+                "realmeUI7.0",
+                "16",
+                36,
+                "2026-06-01",
+                "Adreno (TM) 840",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0700.0",
+                "1.4.298",
+                "512.700.0",
+                16384,
+                12288,
+                144
+        ));
+
+        // 7. Realme GT 5 Pro (Snapdragon 8 Gen 3 / 16GB RAM / realme UI 5.0)
         list.add(new SpoofProfile(
                 "realme_gt5_pro",
-                "Realme GT5 Pro (Snapdragon 8 Gen 3)",
+                "Realme GT 5 Pro (Snapdragon 8 Gen 3)",
                 "Realme",
                 "RMX3888",
                 "realme",
@@ -77,7 +257,7 @@ public class RealmeProfiles {
                 "512.530.0",
                 16384,
                 12288,
-        185
+                144
         ));
 
         return list;
