@@ -1,8 +1,13 @@
 package com.gamebooster.app.config;
 
+import android.content.Context;
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
+import com.gamebooster.app.spoofer.HardwareMaskEngine;
+import com.gamebooster.app.spoofer.SpoofPreferences;
+import com.gamebooster.app.spoofer.SpoofProfile;
 import java.util.List;
 
 /**
@@ -13,6 +18,8 @@ import java.util.List;
  * Valorant Mobile, and Farlight 84 to force 185 FPS / 185Hz only.
  *
  * Uses GameConfigPathResolver to guarantee 100% path accuracy across all Android storage layouts.
+ * Seamlessly integrates with DeviceSpooferEngine to inject spoofed hardware identity (Model,
+ * CPU, GPU, RAM) when explicitly enabled and selected by the user.
  */
 public class GameConfigPatcher {
 
@@ -29,10 +36,18 @@ public class GameConfigPatcher {
     }
 
     public static boolean patchGame(String packageName, int targetFps) {
-        return applyGameFpsPatch(packageName, targetFps).success;
+        return applyGameFpsPatch(null, packageName, targetFps).success;
+    }
+
+    public static boolean patchGame(Context context, String packageName, int targetFps) {
+        return applyGameFpsPatch(context, packageName, targetFps).success;
     }
 
     public static PatchResult applyGameFpsPatch(String packageName, int targetFps) {
+        return applyGameFpsPatch(null, packageName, targetFps);
+    }
+
+    public static PatchResult applyGameFpsPatch(Context context, String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) {
             return new PatchResult(false, "Invalid package name");
         }
@@ -50,6 +65,9 @@ public class GameConfigPatcher {
 
         // Safety net: capture true originals of every candidate config path before any write
         ConfigBackupManager.backupPackage(pkg, configPaths);
+
+        // Anti-Cheat Auto-Bypass & Pre-Patch Neutralization (kills telemetry & crash reports)
+        com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
 
         int patchedFiles = 0;
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
@@ -165,6 +183,22 @@ public class GameConfigPatcher {
 
         // Apply Anti-Log, Telemetry suppression, and cache purge for this game
         AntiLogPatcher.applyAntiLog(pkg);
+
+        // Seamlessly inject spoofed hardware identity IF enabled & selected by user
+        if (context != null && SpoofPreferences.isSpoofEnabled(context)) {
+            String profileId = SpoofPreferences.resolveProfileId(context, pkg);
+            if (profileId != null && !profileId.trim().isEmpty()) {
+                SpoofProfile spoofProf = DeviceSpooferEngine.getProfileById(profileId);
+                if (spoofProf != null) {
+                    DeviceSpooferEngine.applySpoofing(context, pkg);
+                    HardwareMaskEngine.injectTailoredGameHardwareConfigs(pkg, spoofProf);
+                    Log.i(TAG, "Injected hardware spoof identity (" + spoofProf.displayName + ") into " + pkg);
+                }
+            }
+        }
+
+        // Final Anti-Cheat Stealth Normalization (locks permissions to 664 & verifies integrity)
+        com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
 
         if (patchedFiles > 0) {
             // Phase 2.3: read the written config files back and assert the forced FPS

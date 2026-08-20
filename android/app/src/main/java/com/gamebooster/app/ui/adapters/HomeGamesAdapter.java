@@ -155,7 +155,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
 
                     AppExecutors.getInstance().executeCommand(() -> {
                         int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);
-                        GameConfigPatcher.applyGameFpsPatch(pkg, chosenFps[0]);
+                        GameConfigPatcher.applyGameFpsPatch(context, pkg, chosenFps[0]);
                         GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, chosenFps[0]);
 
                         ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + pkg);

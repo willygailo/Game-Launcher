@@ -406,6 +406,69 @@ public class SpoofProfile {
                 "FPS=" + targetFps + "\n";
     }
 
+    public String generateStandoff2DeviceConfig(int targetFps) {
+        return "{\n" +
+                "  \"device_model\": \"" + model + "\",\n" +
+                "  \"device_brand\": \"" + brand + "\",\n" +
+                "  \"gpu_renderer\": \"" + glRenderer + "\",\n" +
+                "  \"gpu_vendor\": \"" + glVendor + "\",\n" +
+                "  \"soc_model\": \"" + socModel + "\",\n" +
+                "  \"ram_total_mb\": " + ramTotalMb + ",\n" +
+                "  \"target_fps\": " + targetFps + ",\n" +
+                "  \"max_fps\": " + targetFps + ",\n" +
+                "  \"graphic_quality\": \"very_high\",\n" +
+                "  \"shader_quality\": \"high\",\n" +
+                "  \"texture_quality\": \"high\",\n" +
+                "  \"anisotropic_filtering\": \"16x\",\n" +
+                "  \"anti_aliasing\": \"8x\"\n" +
+                "}\n";
+    }
+
+    public String generateCarXDeviceConfig(int targetFps) {
+        return "[GraphicsSettings]\n" +
+                "DeviceModel=" + model + "\n" +
+                "DeviceBrand=" + brand + "\n" +
+                "GPU=" + glRenderer + "\n" +
+                "GPUVendor=" + glVendor + "\n" +
+                "SoC=" + socModel + "\n" +
+                "RAM=" + ramTotalMb + "\n" +
+                "TargetFPS=" + targetFps + "\n" +
+                "MaxFPS=" + targetFps + "\n" +
+                "FPSLimit=" + targetFps + "\n" +
+                "GraphicQuality=5\n" +
+                "VulkanEnabled=1\n" +
+                "MotionBlur=0\n" +
+                "SmokeQuality=2\n";
+    }
+
+    public String generateSupercellDeviceConfig(int targetFps) {
+        return "[DeviceProfile]\n" +
+                "model=" + model + "\n" +
+                "brand=" + brand + "\n" +
+                "gpu=" + glRenderer + "\n" +
+                "soc=" + socModel + "\n" +
+                "ram=" + ramTotalMb + "\n" +
+                "high_fps=1\n" +
+                "fps_cap=" + targetFps + "\n" +
+                "target_hz=" + targetFps + "\n";
+    }
+
+    public String generateGenericHardwareConfig(int targetFps) {
+        return "[DeviceHardware]\n" +
+                "DeviceModel=" + model + "\n" +
+                "DeviceBrand=" + brand + "\n" +
+                "Manufacturer=" + manufacturer + "\n" +
+                "GPURenderer=" + glRenderer + "\n" +
+                "GPUVendor=" + glVendor + "\n" +
+                "SoCModel=" + socModel + "\n" +
+                "SoCManufacturer=" + socManufacturer + "\n" +
+                "CPUCores=" + cpuCores + "\n" +
+                "RAMTotalMB=" + ramTotalMb + "\n" +
+                "MaxFrameRate=" + targetFps + "\n" +
+                "HighFPSMode=1\n" +
+                "VulkanSupport=1\n";
+    }
+
     @Override
     public String toString() {
         return displayName + " [" + model + " / " + brand + " / " + socModel + " / " + ramTotalMb + "MB]";

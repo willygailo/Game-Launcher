@@ -90,7 +90,7 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
 
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                         // 1. Force patch internal & external game INI config files
-                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
+                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(context, game.getPackageName(), targetFps);
 
                         // 2. Configure Game Mode API & refresh rate overrides
                         GameProfileAutoConfigurator.autoConfigGamePackage(context, game.getPackageName(), targetFps);

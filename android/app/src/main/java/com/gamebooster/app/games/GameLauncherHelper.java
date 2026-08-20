@@ -51,6 +51,9 @@ public class GameLauncherHelper {
                 ShizukuPermissionEnforcer.enforceAllPermissions(context);
                 ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(pkgName);
 
+                // Anti-Cheat Auto-Bypass & Telemetry Neutralization (ACE, Moonton, Garena, HoYo, Ricochet)
+                com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkgName);
+
                 // Apply device spoofing / hardware mask
                 DeviceSpooferEngine.applySpoofing(context, pkgName);
 

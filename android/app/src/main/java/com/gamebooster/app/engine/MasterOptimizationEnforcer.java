@@ -255,8 +255,10 @@ public class MasterOptimizationEnforcer {
 
                 // Root-dependent steps — skipped when Tier 1 failed (Phase 1.2)
                 if (tier1Ok) {
+                    report.attemptStep("Tier 3", "AntiCheatBypass.applyBypassAndNeutralize(" + pkg + ")", () ->
+                            com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(appContext, pkg));
                     report.attemptStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", () ->
-                            GameConfigPatcher.applyGameFpsPatch(pkg, forcedFps));
+                            GameConfigPatcher.applyGameFpsPatch(appContext, pkg, forcedFps));
                     report.attemptStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", () ->
                             MaxHzForceChannel.forceApply(forcedFps));
                     report.attemptStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", () ->

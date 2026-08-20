@@ -230,12 +230,17 @@ public class CfgProfileManager {
             // Safety net: capture true originals before competitive patching overwrites them
             ConfigBackupManager.backupPackage(pkg, resolvedPaths);
 
+            // Anti-Cheat Auto-Bypass & Telemetry Neutralization
+            com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
+
             boolean ok = applyToPackage(pkg, profile);
             if (ok) {
                 patched++;
-                if (profile.isHardwareMaskEnabled()) {
+                if (profile.isHardwareMaskEnabled() && context != null && com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(context)) {
                     DeviceSpooferEngine.applySpoofing(context, pkg);
                 }
+                // Stealth permission normalization
+                com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(context, pkg);
             }
         }
 

@@ -116,7 +116,10 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
                         + profile.label + " @ " + targetHz + "Hz (Zero Fallback)");
 
-                // 1. Hardware Identity Spoofing (Shizuku)
+                // 1. Anti-Cheat Auto-Bypass & Telemetry Neutralization
+                com.gamebooster.app.anticheat.GameAntiCheatBypassEngine.applyBypassAndNeutralize(getApplicationContext(), currentPackage);
+
+                // 1.2. Apply device spoofing / hardware mask (Phase 2.5 safe)
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
 
                 // 1.5. Auto-apply saved per-game Competitive CFG Profile
@@ -136,7 +139,7 @@ public class AutoGameMonitorService extends Service {
                 }
 
                 // 2. Direct Game Config Patching (120-185 FPS, Damage Multiplier, Zero Recoil, 1000Hz Touch)
-                com.gamebooster.app.config.GameConfigPatcher.patchGame(currentPackage, targetHz);
+                com.gamebooster.app.config.GameConfigPatcher.patchGame(getApplicationContext(), currentPackage, targetHz);
                 
                 // 3. Multi-layer display refresh rate force
                 com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);

@@ -339,10 +339,11 @@ public class HardwareMaskEngine {
         // Use profile's maxRefreshRateHz field directly (no more fragile string parsing)
         int targetFps = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
-        // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight)
+        // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight, Valorant, Project C)
         if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
             pkg.contains("vng.pubgmobile") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ||
-            pkg.contains("farlight") || pkg.contains("solarland") || pkg.contains("projectc") || pkg.contains("valorant")) {
+            pkg.contains("uamo") || pkg.contains("farlight") || pkg.contains("solarland") ||
+            pkg.contains("projectc") || pkg.contains("valorant")) {
 
             String ue4Profile = profile.generateUe4DeviceProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
@@ -356,7 +357,8 @@ public class HardwareMaskEngine {
         }
 
         // 2. Call of Duty Mobile / Warzone / Blood Strike
-        else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("bloodstrike") || pkg.contains("warzone")) {
+        else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("bloodstrike") ||
+                 pkg.contains("newspike") || pkg.contains("warzone")) {
             String jsonProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
@@ -380,7 +382,7 @@ public class HardwareMaskEngine {
             }
         }
 
-        // 4. Mobile Legends / Honor of Kings / Free Fire
+        // 4. Mobile Legends
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             String mlbbProfile = profile.generateMlbbDeviceConfig(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
@@ -405,18 +407,56 @@ public class HardwareMaskEngine {
         }
 
         // 6. Honor of Kings / Arena of Valor / Wild Rift
-        else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("wildrift")) {
+        else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") ||
+                 pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid") ||
+                 pkg.contains("wildrift") || pkg.contains("riotgames.league")) {
             String hokProfile = profile.generateHokDeviceConfig(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("DeviceHardware.ini") || p.contains("device.ini") || p.endsWith(".ini")) {
+                if (p.contains("DeviceHardware.ini") || p.contains("device.ini") || p.endsWith(".ini") || p.contains("DeviceProfile.json")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, hokProfile, "666");
                 }
             }
         }
 
-        // 7. Roblox & Other Unity / Native Games
+        // 7. Standoff 2
+        else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
+            String so2Profile = profile.generateStandoff2DeviceConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("DeviceHardware.json") || p.contains("Settings.json") || p.endsWith(".json")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, so2Profile, "666");
+                }
+            }
+        }
+
+        // 8. CarX Street / Asphalt / Speed Drifters
+        else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row")) {
+            String carxProfile = profile.generateCarXDeviceConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("DeviceHardware.ini") || p.contains("GraphicSettings.ini") || p.endsWith(".ini")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, carxProfile, "666");
+                }
+            }
+        }
+
+        // 9. Supercell Games (Brawl Stars, Clash Royale, Clash of Clans)
+        else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
+            String supercellProfile = profile.generateSupercellDeviceConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("DeviceHardware.ini") || p.contains("GameSettings.ini") || p.endsWith(".ini")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, supercellProfile, "666");
+                }
+            }
+        }
+
+        // 10. Roblox
         else if (pkg.contains("roblox")) {
             String robloxProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
@@ -424,6 +464,18 @@ public class HardwareMaskEngine {
                 if (p.contains("DeviceHardware.json") || p.endsWith(".json")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, robloxProfile, "666");
+                }
+            }
+        }
+
+        // 11. Generic Android Game Fallback
+        else {
+            String genericProfile = profile.generateGenericHardwareConfig(targetFps);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+            for (String p : paths) {
+                if (p.contains("DeviceHardware.ini") || p.endsWith(".ini")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, genericProfile, "666");
                 }
             }
         }

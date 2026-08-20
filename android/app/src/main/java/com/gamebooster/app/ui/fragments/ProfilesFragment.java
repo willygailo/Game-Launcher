@@ -171,7 +171,7 @@ public class ProfilesFragment extends Fragment {
                     Toast.makeText(getContext(), "Applying " + label + " for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
-                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(game.getPackageName(), targetFps);
+                        GameConfigPatcher.PatchResult result = GameConfigPatcher.applyGameFpsPatch(getContext(), game.getPackageName(), targetFps);
                         com.gamebooster.app.booster.HzFpsChannel.forceGameFps(getContext(), game.getPackageName(), targetFps);
                         com.gamebooster.app.booster.HzFpsChannel.setRefreshRate(getContext(), targetFps);
 

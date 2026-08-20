@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -172,14 +171,6 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                     } else {
                         TweakManagerRepository.revertTweak(context, targetItem);
                     }
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        CyberActionDialog.show(context, targetItem.getTitle(), isChecked,
-                                targetItem.getDescription() != null ? targetItem.getDescription() : "System Optimization Tweak",
-                                "Category: " + (targetItem.getCategory() != null ? targetItem.getCategory().getDisplayName() : "SYSTEM"),
-                                "Engine: Shizuku UID 2000 (Privileged Shell)",
-                                "Verification: 100% EXECUTED");
-                    });
                 });
             }
         });

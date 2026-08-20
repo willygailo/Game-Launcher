@@ -98,7 +98,7 @@ public class GameProfileAutoConfigurator {
         }
 
         // 5. Auto-patch and create game configuration files for target FPS/Hz
-        GameConfigPatcher.applyGameFpsPatch(packageName, forcedFpsHz);
+        GameConfigPatcher.applyGameFpsPatch(context, packageName, forcedFpsHz);
 
         // 6. Apply Competitive CFG Profile
         String gameKey = packageName.contains("mobile.legends") || packageName.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :

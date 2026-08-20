@@ -7,7 +7,6 @@ import com.gamebooster.app.config.*;
 
 import android.content.Context;
 import android.content.Intent;
-import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -126,6 +125,34 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private SettingsManager precisionSettingsManager;
     private ProfileManager precisionProfileManager;
 
+    private boolean isProgrammaticToggle = false;
+
+    private boolean requireShizukuForToggle(android.widget.CompoundButton button, String featureName) {
+        if (isProgrammaticToggle) return false;
+        if (!ShizukuManager.isShizukuRunningAndGranted()) {
+            if (button != null) {
+                isProgrammaticToggle = true;
+                button.setChecked(false);
+                isProgrammaticToggle = false;
+            }
+            if (getContext() != null) {
+                ShizukuManager.showShizukuPermissionDialog(getContext(), featureName);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private boolean requireShizukuForAction(String featureName) {
+        if (!ShizukuManager.isShizukuRunningAndGranted()) {
+            if (getContext() != null) {
+                ShizukuManager.showShizukuPermissionDialog(getContext(), featureName);
+            }
+            return false;
+        }
+        return true;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -218,11 +245,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
 
         if (switchOverlayHud != null) {
+            isProgrammaticToggle = true;
             switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
+            isProgrammaticToggle = false;
             switchOverlayHud.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                    isProgrammaticToggle = true;
                     switchOverlayHud.setChecked(false);
+                    isProgrammaticToggle = false;
                     Toast.makeText(getContext(), "Please grant 'Draw over other apps' permission first", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                     intent.setData(Uri.parse("package:" + getContext().getPackageName()));
@@ -230,66 +261,61 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     return;
                 }
                 if (isChecked) {
+                    if (!requireShizukuForToggle(buttonView, "Performance HUD Overlay")) return;
                     com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
-                    CyberActionDialog.show(getContext(), "PERFORMANCE HUD OVERLAY", true,
-                            "SurfaceFlinger Realtime FPS: ACTIVE",
-                            "RAM & Thermal Watcher: DISPLAYED",
-                            "HUD Overlay WindowManager: 185Hz/165Hz Sync");
+                    Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
                 } else {
                     com.gamebooster.app.overlay.FloatingOverlayService.stopOverlay(getContext());
-                    CyberActionDialog.show(getContext(), "PERFORMANCE HUD OVERLAY", false,
-                            "Overlay Window Removed",
-                            "HUD Floating Service Stopped");
+                    Toast.makeText(getContext(), "Performance HUD Overlay Disabled", Toast.LENGTH_SHORT).show();
                 }
             });
         }
 
         if (switchGamingDnd != null) {
+            isProgrammaticToggle = true;
             switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
+            isProgrammaticToggle = false;
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Gaming DND & Call Suppressor")) return;
                 com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
-                CyberActionDialog.show(getContext(), "GAMING DND & CALL SUPPRESSOR", isChecked,
-                        isChecked ? "ZenMode Gaming Interception: ON" : "ZenMode Restored to System Default",
-                        isChecked ? "Banner Notifications Suppressed: ACTIVE" : "Notification Banners: NORMAL",
-                        "Interruption Prevention: 100% Guaranteed");
+                Toast.makeText(getContext(), isChecked ? "🔕 Gaming DND Enabled" : "Gaming DND Disabled", Toast.LENGTH_SHORT).show();
             });
         }
 
         if (switchAutoGameBoost != null) {
+            isProgrammaticToggle = true;
             switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
+            isProgrammaticToggle = false;
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
                 if (isChecked) {
+                    if (!requireShizukuForToggle(buttonView, "Auto Game Launch Monitor")) return;
                     com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
-                    CyberActionDialog.show(getContext(), "AUTO GAME LAUNCH MONITOR", true,
-                            "Foreground App Detection: 24/7 ACTIVE",
-                            "Target Games Whitelist: 40+ Esports Titles",
-                            "Auto Optimization Pipeline: ARMED");
+                    Toast.makeText(getContext(), "🚀 Auto Game Launch Monitor Enabled", Toast.LENGTH_SHORT).show();
                 } else {
                     com.gamebooster.app.gamespace.AutoGameMonitorService.stop(getContext());
-                    CyberActionDialog.show(getContext(), "AUTO GAME LAUNCH MONITOR", false,
-                            "Background App Polling: STOPPED",
-                            "Auto Game Boost: DISABLED");
+                    Toast.makeText(getContext(), "Auto Game Launch Monitor Disabled", Toast.LENGTH_SHORT).show();
                 }
             });
         }
 
         if (switchEsportsAudio != null) {
+            isProgrammaticToggle = true;
             switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
+            isProgrammaticToggle = false;
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Esports Footstep Audio Boost")) return;
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
-                CyberActionDialog.show(getContext(), "ESPORTS FOOTSTEP AUDIO BOOST", isChecked,
-                        isChecked ? "Equalizer: Footstep High-Frequency Boost" : "Equalizer: System Default",
-                        isChecked ? "Spatial Stereo Soundstage: EXPANDED" : "Spatial Routing: STANDARD",
-                        "Gunshot & Step Clarity: OPTIMIZED");
+                Toast.makeText(getContext(), isChecked ? "🎧 Esports Footstep Audio Boost Enabled" : "Esports Audio Disabled", Toast.LENGTH_SHORT).show();
             });
         }
 
         if (btnCleanCaches != null) {
             btnCleanCaches.setOnClickListener(v -> {
                 if (getContext() == null) return;
+                if (!requireShizukuForAction("Game Caches & Shaders Cleaner")) return;
                 btnCleanCaches.setEnabled(false);
                 Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & Storage Caches...", Toast.LENGTH_SHORT).show();
 
@@ -298,11 +324,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         btnCleanCaches.setEnabled(true);
-                        CyberActionDialog.show(getContext(), "GAME CACHES & SHADERS CLEANER", true,
-                                "Game /data/data Cache: PURGED",
-                                "Game /Android/data Cache: PURGED",
-                                "Vulkan Shader Cache: REFRESHED",
-                                "RAM Usage: COMPACTED");
+                        Toast.makeText(getContext(), "✅ Game Caches & Shaders Cleaned", Toast.LENGTH_SHORT).show();
                     });
                 });
             });
@@ -313,10 +335,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchAntiLog != null) {
             if (getContext() != null) {
+                isProgrammaticToggle = true;
                 switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
+                isProgrammaticToggle = false;
             }
             switchAntiLog.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Anti-Log & Telemetry Blocker")) return;
                 ManualSettingsPreferences.setAntiLogEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     if (isChecked) {
@@ -325,11 +350,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     }
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "ANTI-LOG & TELEMETRY BLOCKER", isChecked,
-                                    isChecked ? "Kernel logd Persistence: DISABLED" : "System Logging: DEFAULT",
-                                    isChecked ? "15+ Esports Game Log Dirs: BLOCKED (.nomedia)" : "Game Logs: UNLOCKED",
-                                    isChecked ? "System Logcat Buffer: FLUSHED (0% I/O Lag)" : "Logcat Buffer: NORMAL",
-                                    "Background Telemetry: ZERO OVERHEAD");
+                            Toast.makeText(getContext(), isChecked ? "🛡️ Anti-Log & Telemetry Blocker Enabled" : "Anti-Log Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -339,6 +360,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnPurgeGameLogs != null) {
             btnPurgeGameLogs.setOnClickListener(v -> {
                 if (getContext() == null) return;
+                if (!requireShizukuForAction("Anti-Log Deep Purge")) return;
                 btnPurgeGameLogs.setEnabled(false);
                 Toast.makeText(getContext(), "🛡️ Purging All Game Logs & System Telemetry...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
@@ -346,12 +368,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         btnPurgeGameLogs.setEnabled(true);
-                        CyberActionDialog.show(getContext(), "ANTI-LOG DEEP PURGE", true,
-                                "Processed Packages: " + count + " Esports Titles",
-                                "PUBGM / MLBB / CODM Logs: PURGED",
-                                "Game Cache & Crash Logs: 0 B Cleaned",
-                                "Kernel logd Buffer: 0 KB Minimized",
-                                "Storage I/O Performance: 100% BOOSTED");
+                        Toast.makeText(getContext(), "✅ Purged logs for " + count + " game packages", Toast.LENGTH_SHORT).show();
                     });
                 });
             });
@@ -443,24 +460,24 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (getContext() != null) {
+            isProgrammaticToggle = true;
             if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
             if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
+            isProgrammaticToggle = false;
         }
 
         if (switchAngleMode != null) {
             switchAngleMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Google ANGLE Vulkan 3D Driver")) return;
                 ManualSettingsPreferences.setAngleMode(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     GpuTweaksChannel.setAngleMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "GOOGLE ANGLE VULKAN 3D DRIVER", isChecked,
-                                    isChecked ? "debug.angle.backend: 2 (Vulkan Layer 2)" : "debug.angle.backend: 0 (Default GL)",
-                                    isChecked ? "Opt-in: MLBB, PUBGM, CODM, FF, Genshin, Wild Rift" : "ANGLE Opt-in Packages: Cleared",
-                                    "GPU Execution Pipeline: ANGLE HARDWARE ACCELERATED");
+                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan 3D Driver Enabled" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -469,16 +486,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchGameDriver != null) {
             switchGameDriver.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "System Game Graphics Driver")) return;
                 ManualSettingsPreferences.setGameDriverEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     GpuTweaksChannel.setGameDriverMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "SYSTEM GAME GRAPHICS DRIVER", isChecked,
-                                    isChecked ? "Updatable Driver Production: OPT-IN" : "Game Driver Opt-in: Cleared",
-                                    isChecked ? "Target Packages: All Installed Titles" : "Graphics Driver: Standard System Default",
-                                    "GPU Scheduling Priority: MAXIMUM REALTIME");
+                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Graphics Driver Enabled" : "Game Graphics Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -487,16 +502,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchGpuMode != null) {
             switchGpuMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "GPU Render Engine: Vulkan 3D")) return;
                 ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "vulkan" : "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "GPU RENDER ENGINE: VULKAN 3D", isChecked,
-                                    isChecked ? "debug.hwui.renderer: vulkan" : "debug.hwui.renderer: opengl",
-                                    isChecked ? "debug.renderengine.backend: vulkan" : "debug.renderengine.backend: gl",
-                                    isChecked ? "Skia Vulkan Pipeline: ACTIVE" : "Skia 2D Canvas: ACTIVE");
+                            Toast.makeText(getContext(), isChecked ? "⚡ Vulkan 3D Render Engine Enabled" : "Default OpenGL Engine Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -505,16 +518,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchCpuMode != null) {
             switchCpuMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "CPU Governor: Performance Extreme")) return;
                 ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "performance" : "schedutil");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isChecked ? "extreme" : "schedutil");
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "CPU GOVERNOR: PERFORMANCE EXTREME", isChecked,
-                                    isChecked ? "CPU Frequency Scaling: Maximum Clock Speed" : "CPU Scaling: Schedutil (Dynamic)",
-                                    isChecked ? "CFS Task Scheduler Latency: 0ms Boosted" : "CFS Task Scheduler: Normal",
-                                    "Power HAL Sustained Performance: LOCKED");
+                            Toast.makeText(getContext(), isChecked ? "⚡ CPU Performance Extreme Governor Locked" : "CPU Schedutil Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -535,32 +546,33 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchForceGnss = view.findViewById(R.id.switch_force_gnss);
 
         if (getContext() != null) {
+            isProgrammaticToggle = true;
             if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
             if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
             if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
+            isProgrammaticToggle = false;
         }
 
         if (btnOptimizeNetworkAll != null) {
             btnOptimizeNetworkAll.setOnClickListener(v -> {
                 if (getContext() == null) return;
+                if (!requireShizukuForAction("5G/6G & Wi-Fi Turbo Boost")) return;
                 Toast.makeText(getContext(), "🚀 Applying 5G/6G & Wi-Fi 6/7 Turbo Boost...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
+                            isProgrammaticToggle = true;
                             if (switch5g6gData != null) switch5g6gData.setChecked(true);
                             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
                             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                            isProgrammaticToggle = false;
                             ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
                             ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
                             ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
-                            CyberActionDialog.show(getContext(), "5G/6G & WI-FI TURBO BOOST", true,
-                                    "TCP BBR Congestion Control: ACTIVE",
-                                    "Wi-Fi Low-Latency Mode: LOCKED",
-                                    "5G Mobile Cellular: ALWAYS ON",
-                                    "Multipath Aggregation: ENABLED");
+                            Toast.makeText(getContext(), "🚀 5G/6G & Wi-Fi Turbo Boost Applied", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -569,16 +581,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "5G / 6G NR Data Accelerator")) return;
                 ManualSettingsPreferences.set5g6gDataEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimize5gAnd6gDataNetwork(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "5G / 6G NR DATA ACCELERATOR", isChecked,
-                                    isChecked ? "mobile_data_always_on: 1" : "mobile_data_always_on: 0",
-                                    isChecked ? "tcp_congestion_control: bbr" : "tcp_congestion_control: cubic",
-                                    "5G SA/NSA Dual-Stack: PRIORITIZED");
+                            Toast.makeText(getContext(), isChecked ? "⚡ 5G/6G Data Accelerator Enabled" : "5G/6G Data Accelerator Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -587,16 +597,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchWifiLowLatency != null) {
             switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Wi-Fi 6/7 Low-Latency Anti-Lag")) return;
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimizeWifi6and7LowLatency(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "WI-FI 6/7 LOW-LATENCY ANTI-LAG", isChecked,
-                                    isChecked ? "Wi-Fi Mode: Low Latency Gaming Lock" : "Wi-Fi Mode: Standard Power Normal",
-                                    isChecked ? "TCP Buffer Max: 8388608 (8MB)" : "TCP Buffer: Default Dynamic Size",
-                                    "Wi-Fi Packet Jitter Suppression: 100%");
+                            Toast.makeText(getContext(), isChecked ? "⚡ Wi-Fi Low-Latency Anti-Lag Enabled" : "Wi-Fi Normal Mode Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -605,16 +613,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchDualDataWifi != null) {
             switchDualDataWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Dual Data + Wi-Fi Aggregation")) return;
                 ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setDualDataAndWifiAcceleration(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "DUAL DATA + WI-FI AGGREGATION", isChecked,
-                                    isChecked ? "Multipath TCP Link Handover: ACTIVE" : "Multipath Handover: DISABLED",
-                                    isChecked ? "Zero Packet Loss Failover: ARMED" : "Single Network Interface: ACTIVE",
-                                    "Dual Interface: Cellular LTE/5G + WLAN0");
+                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Data + Wi-Fi Aggregation Enabled" : "Dual Data Aggregation Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -667,16 +673,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchTetheringHw != null) {
             switchTetheringHw.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Tethering Hardware Offload")) return;
                 ManualSettingsPreferences.setTetherHwEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setTetheringHwAcceleration(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "TETHERING HARDWARE OFFLOAD", isChecked,
-                                    isChecked ? "Tethering HW Offload: ENABLED" : "Tethering HW Offload: DISABLED",
-                                    isChecked ? "Bypass Kernel IP Overhead: ACTIVE" : "Kernel IP Forwarding: Standard",
-                                    "Hardware Direct Acceleration: ON");
+                            Toast.makeText(getContext(), isChecked ? "⚡ Tethering Hardware Offload Enabled" : "Tethering Offload Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -685,16 +689,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchForceGnss != null) {
             switchForceGnss.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Force Full GNSS Raw Measurements")) return;
                 ManualSettingsPreferences.setForceGnssEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setForceFullGnss(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            CyberActionDialog.show(getContext(), "FORCE FULL GNSS RAW MEASUREMENTS", isChecked,
-                                    isChecked ? "gnss_measurement_full_tracking: 1" : "gnss_measurement_full_tracking: 0",
-                                    isChecked ? "Raw Satellite Duty Cycling: UNRESTRICTED" : "Satellite Duty Cycling: Dynamic Save",
-                                    "Constellations: GPS, GLONASS, Galileo, BeiDou");
+                            Toast.makeText(getContext(), isChecked ? "🛰️ Force Full GNSS Measurements Enabled" : "GNSS Raw Measurements Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -781,7 +783,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
+            isProgrammaticToggle = true;
             switchDeviceSpoof.setChecked(spoofEnabled);
+            isProgrammaticToggle = false;
         }
         if (rvSpoofProfiles != null) {
             rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -791,13 +795,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
                 if (getContext() == null || profile == null) return;
-
-                // Request Shizuku permission if available but not granted
-                if (!ShizukuExecutor.hasShizukuPermission() && ShizukuExecutor.isShizukuAvailable()) {
-                    try {
-                        rikka.shizuku.Shizuku.requestPermission(1001);
-                    } catch (Throwable ignored) {}
-                }
+                if (!requireShizukuForAction("Device Identity Spoofer")) return;
 
                 // Capture prior state so a blocked apply can be cleanly reverted
                 boolean wasEnabled = SpoofPreferences.isSpoofEnabled(getContext());
@@ -806,7 +804,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 // 1. Immediately activate in preferences & UI (optimistic)
                 SpoofPreferences.setSpoofEnabled(getContext(), true);
                 SpoofPreferences.setActiveProfileId(getContext(), profile.id);
+                isProgrammaticToggle = true;
                 if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
+                isProgrammaticToggle = false;
                 if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
                 if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(profile.id);
                 updateSpoofUiState();
@@ -823,7 +823,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             // "active" profile that did not actually apply
                             SpoofPreferences.setSpoofEnabled(getContext(), wasEnabled);
                             SpoofPreferences.setActiveProfileId(getContext(), previousProfileId);
+                            isProgrammaticToggle = true;
                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(wasEnabled);
+                            isProgrammaticToggle = false;
                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(previousProfileId);
                             updateSpoofUiState();
@@ -832,12 +834,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         }
                         updateSpoofUiState();
                         String warning = DeviceSpooferEngine.getLastSanityWarning();
-                        CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
-                                "Emulated Model: " + profile.displayName,
-                                "Hardware Profile: " + profile.model + " (" + profile.brand + ")",
-                                "ProcFS /proc/cpuinfo & meminfo: VIRTUALIZED",
-                                "In-Game High FPS & Graphics: UNLOCKED",
-                                warning != null ? "⚠ " + warning : "Safety Check: PASSED");
+                        if (warning != null) {
+                            Toast.makeText(getContext(), "⚠️ " + warning, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), "✅ Spoof Profile Applied: " + profile.displayName, Toast.LENGTH_SHORT).show();
+                        }
                     });
                 });
             });
@@ -846,7 +847,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchDeviceSpoof != null) {
             switchDeviceSpoof.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !requireShizukuForToggle(buttonView, "Device Identity Spoofer")) return;
+
                 SpoofPreferences.setSpoofEnabled(getContext(), isChecked);
                 if (rvSpoofProfiles != null) {
                     rvSpoofProfiles.setVisibility(isChecked ? View.VISIBLE : View.GONE);
@@ -859,10 +862,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (isAdded() && getContext() != null) {
                                 if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
                                 updateSpoofUiState();
-                                CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", false,
-                                        "Device Identity: Restored Native Hardware",
-                                        "ProcFS Emulation: CLEARED",
-                                        "System Properties: RESET TO DEFAULT");
+                                Toast.makeText(getContext(), "🔄 Device Identity Reset to Native Hardware", Toast.LENGTH_SHORT).show();
                             }
                         });
                     });
@@ -882,7 +882,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                                             // Revert: a profile that failed to apply must not stay active
                                             SpoofPreferences.setSpoofEnabled(getContext(), false);
                                             SpoofPreferences.clearActiveProfile(getContext());
+                                            isProgrammaticToggle = true;
                                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(false);
+                                            isProgrammaticToggle = false;
                                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.GONE);
                                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
                                             updateSpoofUiState();
@@ -891,11 +893,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                                         }
                                         updateSpoofUiState();
                                         String warning = DeviceSpooferEngine.getLastSanityWarning();
-                                        CyberActionDialog.show(getContext(), "DEVICE IDENTITY SPOOFER", true,
-                                                "Active Profile: " + prof.displayName,
-                                                "ProcFS /proc/cpuinfo & meminfo: VIRTUALIZED",
-                                                "High FPS & Graphics Options: UNLOCKED",
-                                                warning != null ? "⚠ " + warning : "Safety Check: PASSED");
+                                        if (warning != null) {
+                                            Toast.makeText(getContext(), "⚠️ " + warning, Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(getContext(), "✅ Spoof Active: " + prof.displayName, Toast.LENGTH_SHORT).show();
+                                        }
                                     }
                                 });
                             });
@@ -1018,16 +1020,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void applyGamingDns(NetworkOptimizer.DnsMode mode, String msg) {
         if (getContext() == null) return;
+        if (!requireShizukuForAction("Gaming DNS Packet Router")) return;
         AppExecutors.getInstance().executeCommand(() -> {
             NetworkOptimizer.applyGamingDns(getContext(), mode);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (isAdded() && getContext() != null) {
-                    boolean isCustom = mode != NetworkOptimizer.DnsMode.SYSTEM_DEFAULT;
-                    CyberActionDialog.show(getContext(), "GAMING DNS PACKET ROUTER", isCustom,
-                            "DNS Provider: " + mode.name(),
-                            "DoT Private DNS Host: " + mode.privateDnsHost,
-                            "Primary / Secondary IP: " + mode.primary + " / " + mode.secondary,
-                            "DNS Cache: Flushed & Cleared");
+                    Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -1035,6 +1033,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void applyPresetProfile(Button button, PerformanceChannel.Profile profile, int targetHz, String successMsg) {
         if (getContext() == null || button == null) return;
+        if (!requireShizukuForAction("Extreme Display Refresh Preset")) return;
         button.setEnabled(false);
         Toast.makeText(getContext(), "Applying " + targetHz + "Hz performance profile to all games & display...", Toast.LENGTH_SHORT).show();
         AppExecutors.getInstance().executeCommand(() -> {
@@ -1047,11 +1046,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
                 button.setEnabled(true);
-                CyberActionDialog.show(getContext(), "EXTREME DISPLAY REFRESH PRESET", true,
-                        "Target Refresh Rate: " + targetHz + "Hz Enforced",
-                        "SurfaceFlinger Binder Mode: " + targetHz + "Hz Sync",
-                        "Game Mode API: Performance (Mode 2)",
-                        "Master Optimization: 100% SYNCHRONIZED");
+                Toast.makeText(getContext(), successMsg, Toast.LENGTH_SHORT).show();
             });
         });
     }
@@ -1138,8 +1133,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() == null) return;
         if (!ShizukuExecutor.hasShizukuPermission()) {
             if (switchPrecisionInputTuner != null) {
-                switchPrecisionInputTuner.setOnCheckedChangeListener(null);
+                isProgrammaticToggle = true;
                 switchPrecisionInputTuner.setChecked(false);
+                isProgrammaticToggle = false;
                 switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
             }
             ShizukuManager.showShizukuPermissionDialog(getContext(), "Precision Input Tuner");
@@ -1157,17 +1153,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
                 if (switchPrecisionInputTuner != null) {
-                    switchPrecisionInputTuner.setOnCheckedChangeListener(null);
+                    isProgrammaticToggle = true;
                     if (success) {
                         switchPrecisionInputTuner.setChecked(isChecked);
-                        CyberActionDialog.show(getContext(), "PRECISION INPUT & 1000Hz TOUCH", isChecked,
-                                isChecked ? "Touch Sampling Frequency: 1000Hz Ultra" : "Touch Sampling: Standard OS Filter",
-                                isChecked ? "Touch Deadzone: 0.0px Minimized" : "Touch Deadzone: Restored to Default",
-                                isChecked ? "Gyroscope Micro-Jitter Filter: ACTIVE" : "Gyroscope Filter: Default");
+                        Toast.makeText(getContext(), isChecked ? "🎯 Precision 1000Hz Touch Input Tuned" : "Precision Input Reset", Toast.LENGTH_SHORT).show();
                     } else {
                         switchPrecisionInputTuner.setChecked(!isChecked);
                         Toast.makeText(getContext(), "Failed to modify system properties via Shizuku", Toast.LENGTH_SHORT).show();
                     }
+                    isProgrammaticToggle = false;
                     switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
                 }
                 updatePrecisionAimStatus();
