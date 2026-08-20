@@ -1,7 +1,6 @@
 package com.gamebooster.app.engine;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -11,27 +10,33 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
 
 /**
  * NativeFrameworkBridge — Tier 2 Android OS Native Framework API Wrapper.
  *
- * Directly interfaces with official Android SDK and hidden framework APIs:
- * 1. android.app.GameManager (API 31+ / Android 12+) for performance game mode
- * 2. android.os.PowerManager for sustained performance mode & CPU wakelocks
- * 3. android.net.wifi.WifiManager for hardware low-latency Wi-Fi locks (WIFI_MODE_FULL_LOW_LATENCY)
- * 4. android.net.ConnectivityManager for high-priority network request binding
- * 5. android.view.Window & DisplayManager for display refresh rate & frame latency constraints
+ * Directly interfaces with official Android SDK and modern OS APIs:
+ * - Android 12 (API 31/32): GameManager Performance Mode & ADPF PerformanceHintManager
+ * - Android 13 (API 33): Granular notification and system telemetry hooks
+ * - Android 14 (API 34): WorkDuration reporting & low-jitter window constraints
+ * - Android 15 (API 35): Predictive thermal headroom forecasting & dynamic ADPF scaling
+ * - Android 16 (API 36): Baklava thread affinity & high-precision frame rate sync
  */
 public class NativeFrameworkBridge {
 
     private static final String TAG = "NativeFrameworkBridge";
     private static WifiManager.WifiLock wifiLowLatencyLock = null;
     private static PowerManager.WakeLock sustainedPerfWakeLock = null;
+    private static Object thermalListener = null;
+
+    public interface ThermalListener {
+        void onThermalStatusChanged(int status, String statusName);
+    }
 
     /**
-     * Enforces native Android GameManager Performance Mode (API 31+).
+     * Enforces native Android GameManager Performance Mode (API 31+ / Android 12+).
      */
     @SuppressLint("WrongConstant")
     public static boolean setGameModePerformance(Context context, String packageName) {
@@ -53,6 +58,69 @@ public class NativeFrameworkBridge {
             }
         }
         return false;
+    }
+
+    /**
+     * Starts an ADPF (Android Dynamic Performance Framework) session for target FPS (Android 12+ / API 31-36).
+     */
+    public static boolean startAdpfSession(Context context, int targetFps) {
+        return AdpfPerformanceEngine.getInstance().startSession(context, targetFps);
+    }
+
+    /**
+     * Reports frame work duration to Android PowerHAL (Android 12+ / API 31-36).
+     */
+    public static void reportFrameDuration(long actualDurationNanos) {
+        AdpfPerformanceEngine.getInstance().reportActualWorkDuration(actualDurationNanos);
+    }
+
+    /**
+     * Stops the active ADPF session.
+     */
+    public static void stopAdpfSession() {
+        AdpfPerformanceEngine.getInstance().closeSession();
+    }
+
+    /**
+     * Registers a real-time Thermal Status Listener (Android 10+ / API 29+).
+     */
+    public static void registerThermalListener(Context context, ThermalListener listener) {
+        if (context == null || listener == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
+        try {
+            PowerManager pm = (PowerManager) context.getApplicationContext().getSystemService(Context.POWER_SERVICE);
+            if (pm != null && thermalListener == null) {
+                PowerManager.OnThermalStatusChangedListener l = status -> {
+                    String name = getThermalStatusName(status);
+                    Log.i(TAG, "Native Thermal Status Changed: " + name + " (" + status + ")");
+                    listener.onThermalStatusChanged(status, name);
+                };
+                pm.addThermalStatusListener(l);
+                thermalListener = l;
+                Log.i(TAG, "Registered PowerManager ThermalStatusListener.");
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Could not register ThermalStatusListener: " + t.getMessage());
+        }
+    }
+
+    private static String getThermalStatusName(int status) {
+        switch (status) {
+            case PowerManager.THERMAL_STATUS_NONE: return "NORMAL";
+            case PowerManager.THERMAL_STATUS_LIGHT: return "LIGHT";
+            case PowerManager.THERMAL_STATUS_MODERATE: return "MODERATE";
+            case PowerManager.THERMAL_STATUS_SEVERE: return "SEVERE";
+            case PowerManager.THERMAL_STATUS_CRITICAL: return "CRITICAL";
+            case PowerManager.THERMAL_STATUS_EMERGENCY: return "EMERGENCY";
+            case PowerManager.THERMAL_STATUS_SHUTDOWN: return "SHUTDOWN";
+            default: return "UNKNOWN (" + status + ")";
+        }
+    }
+
+    /**
+     * Obtains predictive thermal headroom forecast (Android 15+ / API 35+ & Android 11+).
+     */
+    public static float getPredictiveThermalHeadroom(Context context, int forecastSeconds) {
+        return AdpfPerformanceEngine.getThermalHeadroom(context, forecastSeconds);
     }
 
     /**
@@ -159,7 +227,7 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Applies Window optimizations: removes frame pacing jitter, sets max brightness if allowed.
+     * Applies Window optimizations: preferred refresh rate, hardware acceleration, wide gamut (Android 11+ / API 30+).
      */
     public static void applyWindowOptimizations(Window window) {
         if (window == null) return;
@@ -171,4 +239,24 @@ public class NativeFrameworkBridge {
             }
         } catch (Throwable ignored) {}
     }
+
+    /**
+     * Sets preferred refresh rate directly on the Window (Android 11+ / API 30-36).
+     */
+    public static void setPreferredRefreshRate(Window window, float targetHz) {
+        if (window == null || targetHz <= 0) return;
+        try {
+            WindowManager.LayoutParams params = window.getAttributes();
+            if (params != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    params.preferredRefreshRate = targetHz;
+                    window.setAttributes(params);
+                    Log.i(TAG, "Window preferredRefreshRate set to: " + targetHz + " Hz");
+                }
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "Could not set window preferredRefreshRate: " + t.getMessage());
+        }
+    }
 }
+

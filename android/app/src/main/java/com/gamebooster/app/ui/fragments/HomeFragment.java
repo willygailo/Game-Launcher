@@ -24,6 +24,7 @@ import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.HomeGameScanner;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,16 +107,13 @@ public class HomeFragment extends Fragment {
     private void updateStatusStrip() {
         if (getContext() == null) return;
 
-        // Phase 1.1: surface Shizuku reconnection states instead of a silent no-op
         com.gamebooster.app.shizuku.ShizukuConnectionManager.State conn =
                 com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
-        if (tvEngineMode != null
-                && (conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.BINDING
-                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.RETRY
-                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.DEAD)) {
-            tvEngineMode.setText("🔄 Shizuku reconnecting… (" + conn + ")");
-            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FCA5A5"));
-        } else {
+        boolean isShizukuActive = ShizukuExecutor.hasShizukuPermission()
+                || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
+                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
+
+        if (isShizukuActive) {
             EngineMode engineMode = CommandExecutor.getActiveEngineMode();
             if (tvEngineMode != null) {
                 // LSPosed module active -> in-game ART spoofing is the real path
@@ -128,6 +126,20 @@ public class HomeFragment extends Fragment {
                             : engineMode.getDisplayName()));
                     tvEngineMode.setTextColor(engineMode.getColorHex());
                 }
+            }
+        } else if (tvEngineMode != null
+                && (conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.BINDING
+                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.RETRY)) {
+            tvEngineMode.setText("🔄 Shizuku connecting…");
+            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FCA5A5"));
+        } else if (tvEngineMode != null && conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.DEAD) {
+            tvEngineMode.setText("⚠️ Shizuku Disconnected");
+            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#EF4444"));
+        } else {
+            EngineMode engineMode = CommandExecutor.getActiveEngineMode();
+            if (tvEngineMode != null) {
+                tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
+                tvEngineMode.setTextColor(engineMode.getColorHex());
             }
         }
 

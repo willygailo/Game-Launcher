@@ -242,6 +242,8 @@ public class MasterOptimizationEnforcer {
                 // ─────────────────────────────────────────────────────────────
                 report.attemptStep("Tier 2", "setGameModePerformance", () ->
                         NativeFrameworkBridge.setGameModePerformance(appContext, pkg));
+                report.attemptStep("Tier 2", "startAdpfSession(" + forcedFps + " FPS)", () ->
+                        NativeFrameworkBridge.startAdpfSession(appContext, forcedFps));
                 report.attemptStep("Tier 2", "acquireLowLatencyWifiLock", () ->
                         NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext));
                 report.attemptStep("Tier 2", "acquireSustainedPerformanceLock", () ->

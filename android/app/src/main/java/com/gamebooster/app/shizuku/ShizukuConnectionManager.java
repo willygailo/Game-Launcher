@@ -93,10 +93,10 @@ public class ShizukuConnectionManager {
             setState(State.IDLE);
             return;
         }
-        if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            setState(State.READY);
-        } else {
-            ensureReady(2000);
+        // Shizuku binder is alive and permission is granted -> Mark READY immediately
+        setState(State.READY);
+        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            ShizukuUserServiceConnector.getInstance().bindService();
         }
     }
 
@@ -109,14 +109,13 @@ public class ShizukuConnectionManager {
 
     // ─── Event sources (driven by ShizukuManager binder listeners) ───────────
 
-    /** Binder received and permission is granted — bind the AIDL user service. */
+    /** Binder received and permission is granted — bind the AIDL user service and mark READY. */
     public void onBinderReceived() {
         try {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                    setState(State.READY);
-                } else {
-                    ensureReady(2000);
+                setState(State.READY);
+                if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    ShizukuUserServiceConnector.getInstance().bindService();
                 }
             } else {
                 setState(State.IDLE);
@@ -132,21 +131,23 @@ public class ShizukuConnectionManager {
         scheduleReconnect();
     }
 
-    /** A bind attempt failed after waiting — keep retrying with backoff. */
+    /** A bind attempt failed after waiting — log and keep state consistent. */
     public void onBindFailure() {
-        if (state == State.READY) return;
+        if (isReady()) {
+            setState(State.READY);
+            return;
+        }
         scheduleReconnect();
     }
 
     // ─── The gate ───────────────────────────────────────────────────────────
 
     /**
-     * Best-effort wait until the AIDL user service is connected (or timeout).
+     * Best-effort wait until the AIDL user service is connected or Shizuku core is available.
      *
-     * @return true when READY (permission granted + user service alive)
+     * @return true when READY (permission granted + binder alive)
      */
     public boolean ensureReady(long timeoutMs) {
-        if (isReady()) return true;
         if (!enabled) return false;
 
         boolean binderAlive;
@@ -169,16 +170,15 @@ public class ShizukuConnectionManager {
             return false;
         }
 
+        // Shizuku is fully granted & alive
+        setState(State.READY);
+
         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            setState(State.BINDING);
             ShizukuUserServiceConnector.getInstance().bindService();
-            if (!waitForConnected(timeoutMs)) {
-                setState(State.RETRY);
-                scheduleReconnect();
-                return false;
+            if (timeoutMs > 0) {
+                waitForConnected(Math.min(timeoutMs, 300));
             }
         }
-        setState(State.READY);
         return true;
     }
 
@@ -187,8 +187,7 @@ public class ShizukuConnectionManager {
     public boolean isReady() {
         try {
             return Shizuku.pingBinder()
-                    && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-                    && ShizukuUserServiceConnector.getInstance().isServiceConnected();
+                    && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
         } catch (Throwable t) {
             return false;
         }
@@ -219,20 +218,29 @@ public class ShizukuConnectionManager {
             try {
                 int attempt = 0;
                 while (enabled && attempt < MAX_RETRY_ATTEMPTS) {
-                    if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                    boolean alive;
+                    boolean granted;
+                    try {
+                        alive = Shizuku.pingBinder();
+                        granted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+                    } catch (Throwable t) {
+                        alive = false;
+                        granted = false;
+                    }
+
+                    if (!alive || !granted) {
                         Log.w(TAG, "Reconnect attempt " + attempt + ": Shizuku not available, backing off");
+                        setState(alive ? State.IDLE : State.DEAD);
                         sleepQuietly(backoffMs(attempt++));
                         continue;
                     }
 
-                    setState(State.BINDING);
-                    ShizukuUserServiceConnector.getInstance().bindService();
-                    if (waitForConnected(1500)) {
-                        setState(State.READY);
-                        return;
+                    // Shizuku binder and permission are active!
+                    setState(State.READY);
+                    if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                        ShizukuUserServiceConnector.getInstance().bindService();
                     }
-                    setState(State.RETRY);
-                    sleepQuietly(backoffMs(attempt++));
+                    return;
                 }
                 Log.w(TAG, "Reconnect loop exhausted after " + MAX_RETRY_ATTEMPTS + " attempts");
             } catch (Throwable t) {

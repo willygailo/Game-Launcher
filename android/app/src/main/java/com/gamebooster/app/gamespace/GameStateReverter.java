@@ -105,6 +105,7 @@ public final class GameStateReverter {
         try { NetworkTweaksChannel.restoreLowLatencyNetwork(); } catch (Throwable t) { Log.w(TAG, "Network revert failed", t); }
         try { NativeFrameworkBridge.releaseLowLatencyWifiLock(); } catch (Throwable t) { Log.w(TAG, "Wifi lock release failed", t); }
         try { NativeFrameworkBridge.releaseSustainedPerformanceLock(); } catch (Throwable t) { Log.w(TAG, "Wake lock release failed", t); }
+        try { NativeFrameworkBridge.stopAdpfSession(); } catch (Throwable t) { Log.w(TAG, "ADPF session stop failed", t); }
         try { GameSpaceDndManager.setGamingDndMode(context, previousDnd); } catch (Throwable t) { Log.w(TAG, "DND restore failed", t); }
 
         GameSessionSettings.closeSession(context);
