@@ -107,6 +107,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
 /*
  * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectSpeedBoost
+ * Signature: (Ljava/lang/String;FF)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
  * Method:    nativeFastMemorySync
  * Signature: (Ljava/lang/String;)Z
  */

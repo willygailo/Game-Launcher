@@ -247,35 +247,52 @@ public class ValorantConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=2.50",
-            "PhysicalDamageBoost=2.50",
-            "BulletDamageBoost=2.50",
-            "DamageBoost=2.50",
-            "HeadshotMultiplier=3.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalDamage=99",
-            "CriticalDamageRate=99",
-            "CriticalHitRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "PenetrationBoost=99",
-            "ArmorPenetration=99",
-            "HighDamageRateMode=1",
-            "HitboxExpansion=1.50",
-            "BulletVelocity=2.00",
-            "BulletVelocityMultiplier=2.00",
-            "BodyDamageMultiplier=2.00",
-            "LimbDamageMultiplier=1.50",
-            "ExplosiveDamageMultiplier=2.00"
+            "+CVars=r.DamageMultiplier=5.00",
+            "+CVars=r.BulletDamageScale=5.00",
+            "+CVars=r.HeadshotMultiplier=5.00",
+            "+CVars=r.HeadshotDamageMultiplier=5.00",
+            "+CVars=r.WeaponDamageScale=5.00",
+            "+CVars=r.CriticalDamage=100",
+            "+CVars=r.CriticalDamageRate=100",
+            "+CVars=r.CriticalHitRate=100",
+            "+CVars=r.CriticalDamageMultiplier=5.00",
+            "+CVars=r.PenetrationBoost=100",
+            "+CVars=r.ArmorPenetration=100",
+            "+CVars=r.HighDamageRateMode=1",
+            "+CVars=r.HitboxExpansion=2.50",
+            "+CVars=r.BulletVelocity=5.00",
+            "+CVars=r.BulletVelocityMultiplier=5.00",
+            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.BodyDamageMultiplier=3.50",
+            "+CVars=r.LimbDamageMultiplier=3.00",
+            "+CVars=r.ExplosiveDamageMultiplier=3.50",
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00",
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "HeadshotMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalDamage=100",
+            "CriticalHitRate=100",
+            "ArmorPenetration=100",
+            "PenetrationBoost=100",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AttackSpeedMultiplier=3.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
                 sb.append("grep -qF '").append(k).append("' ").append(path)
                   .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
             }
             String cmd = sb.toString();
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -284,7 +301,7 @@ public class ValorantConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Valorant Damage Boost & Headshot Multiplier applied for " + packageName);
+        Log.i(TAG, "Valorant 5.0x Damage Boost & Headshot Multiplier applied for " + packageName);
     }
 
     /**
@@ -294,26 +311,29 @@ public class ValorantConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "+CVars=r.ArmorDamageReduction=0.50",
-            "+CVars=r.HeavyShieldEfficiency=2.00",
-            "+CVars=r.LightShieldEfficiency=2.00",
-            "+CVars=r.ShieldPointsMultiplier=2.00",
-            "+CVars=r.DamageResistance=0.50",
-            "+CVars=r.MaxHPMultiplier=1.50",
+            "+CVars=r.ArmorDamageReduction=0.85",
+            "+CVars=r.HeavyShieldEfficiency=5.00",
+            "+CVars=r.LightShieldEfficiency=5.00",
+            "+CVars=r.ShieldPointsMultiplier=5.00",
+            "+CVars=r.DamageResistance=0.85",
+            "+CVars=r.MaxHPMultiplier=3.00",
             "+CVars=r.HealthRegenDelay=0.00",
-            "+CVars=r.HealthRegenBoost=1.50",
-            "+CVars=r.IncomingDamageReduction=0.50",
-            "+CVars=r.ExplosionResistance=0.50",
-            "+CVars=r.FallDamageReduction=0.00",
-            "ShieldEfficiency=2.00",
-            "ShieldPoints=100",
-            "ShieldMultiplier=2.00",
-            "ArmorBoost=150",
-            "VestDurabilityBoost=2.00",
-            "DamageReductionRatio=0.50",
-            "IncomingDamageReduction=0.50",
-            "PhysicalDefenseBoost=2.50",
-            "HealthRegenDelay=0.00"
+            "+CVars=r.HealthRegenBoost=5.00",
+            "+CVars=r.IncomingDamageReduction=0.85",
+            "+CVars=r.ExplosionResistance=0.90",
+            "+CVars=r.FallDamageReduction=1.00",
+            "ShieldEfficiency=5.00",
+            "ShieldPoints=500",
+            "ShieldMultiplier=5.00",
+            "ShieldCapacity=5.00",
+            "ShieldStrength=5.00",
+            "ArmorBoost=500",
+            "VestDurabilityBoost=5.00",
+            "DamageReductionRatio=0.85",
+            "IncomingDamageReduction=0.85",
+            "PhysicalDefenseBoost=5.00",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=5.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -333,7 +353,57 @@ public class ValorantConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Valorant Shield & Armor Defense applied for " + packageName);
+        Log.i(TAG, "Valorant Shield 5.0x & Armor Defense 85% applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Valorant Mobile.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00",
+            "+CVars=r.AttackSpeedMultiplier=3.00",
+            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.ZeroInputLag=1",
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Valorant 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

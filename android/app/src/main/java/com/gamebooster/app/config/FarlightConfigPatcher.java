@@ -233,27 +233,34 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "+CVars=r.DamageMultiplier=2.50",
-            "+CVars=r.BulletDamageScale=2.50",
-            "+CVars=r.PhysicalDamageBoost=2.50",
-            "+CVars=r.DamageBoost=2.50",
-            "+CVars=r.HeadshotMultiplier=3.50",
-            "+CVars=r.HeadshotDamageMultiplier=3.50",
-            "+CVars=r.CriticalDamage=99",
-            "+CVars=r.CriticalHitRate=99",
-            "+CVars=r.CriticalDamageMultiplier=3.50",
-            "+CVars=r.PenetrationBoost=99",
-            "+CVars=r.ArmorPenetration=99",
-            "+CVars=r.BulletVelocityMultiplier=2.00",
-            "+CVars=r.HitboxExpansion=1.50",
-            "+CVars=r.BodyDamageMultiplier=2.00",
-            "+CVars=r.LimbDamageMultiplier=1.50",
-            "+CVars=r.ExplosiveDamageMultiplier=2.00",
-            "DamageMultiplier=2.50",
-            "DamageBoost=2.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalHitRate=99",
-            "ArmorPenetration=99"
+            "+CVars=r.DamageMultiplier=5.00",
+            "+CVars=r.BulletDamageScale=5.00",
+            "+CVars=r.PhysicalDamageBoost=5.00",
+            "+CVars=r.DamageBoost=5.00",
+            "+CVars=r.HeadshotMultiplier=5.00",
+            "+CVars=r.HeadshotDamageMultiplier=5.00",
+            "+CVars=r.CriticalDamage=100",
+            "+CVars=r.CriticalHitRate=100",
+            "+CVars=r.CriticalDamageMultiplier=5.00",
+            "+CVars=r.PenetrationBoost=100",
+            "+CVars=r.ArmorPenetration=100",
+            "+CVars=r.BulletVelocityMultiplier=5.00",
+            "+CVars=r.HitboxExpansion=2.50",
+            "+CVars=r.BodyDamageMultiplier=3.50",
+            "+CVars=r.LimbDamageMultiplier=3.00",
+            "+CVars=r.ExplosiveDamageMultiplier=3.50",
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00",
+            "DamageMultiplier=5.00",
+            "DamageBoost=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalHitRate=100",
+            "CriticalDamage=100",
+            "ArmorPenetration=100",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AttackSpeedMultiplier=3.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -272,7 +279,7 @@ public class FarlightConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Farlight 84 Damage Boost & Headshot Multiplier applied for " + packageName);
+        Log.i(TAG, "Farlight 84 5.0x Damage Boost & Headshot Multiplier applied for " + packageName);
     }
 
     /**
@@ -282,28 +289,30 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "+CVars=r.ArmorDamageReduction=0.50",
-            "+CVars=r.ShieldRechargeRate=2.00",
-            "+CVars=r.ShieldEfficiency=2.00",
-            "+CVars=r.ShieldCapacityBoost=2.00",
-            "+CVars=r.DamageResistance=0.50",
-            "+CVars=r.VestDurabilityBoost=2.00",
-            "+CVars=r.HelmetDamageReduction=0.60",
-            "+CVars=r.MaxHPMultiplier=1.50",
+            "+CVars=r.ArmorDamageReduction=0.85",
+            "+CVars=r.ShieldRechargeRate=5.00",
+            "+CVars=r.ShieldEfficiency=5.00",
+            "+CVars=r.ShieldCapacityBoost=5.00",
+            "+CVars=r.DamageResistance=0.85",
+            "+CVars=r.VestDurabilityBoost=5.00",
+            "+CVars=r.HelmetDamageReduction=0.90",
+            "+CVars=r.MaxHPMultiplier=3.00",
             "+CVars=r.HealthRegenDelay=0.00",
-            "+CVars=r.HealthRegenBoost=1.50",
-            "+CVars=r.IncomingDamageReduction=0.50",
-            "+CVars=r.ExplosionResistance=0.50",
-            "+CVars=r.FallDamageReduction=0.00",
-            "ShieldEfficiency=2.00",
-            "ShieldCapacity=200",
-            "ShieldMultiplier=2.00",
-            "ArmorBoost=150",
-            "VestDurabilityBoost=2.00",
-            "DamageReductionRatio=0.50",
-            "IncomingDamageReduction=0.50",
-            "PhysicalDefenseBoost=2.50",
-            "HealthRegenDelay=0.00"
+            "+CVars=r.HealthRegenBoost=5.00",
+            "+CVars=r.IncomingDamageReduction=0.85",
+            "+CVars=r.ExplosionResistance=0.90",
+            "+CVars=r.FallDamageReduction=1.00",
+            "ShieldEfficiency=5.00",
+            "ShieldCapacity=5.00",
+            "ShieldMultiplier=5.00",
+            "ShieldStrength=5.00",
+            "ArmorBoost=500",
+            "VestDurabilityBoost=5.00",
+            "DamageReductionRatio=0.85",
+            "IncomingDamageReduction=0.85",
+            "PhysicalDefenseBoost=5.00",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=5.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -323,7 +332,57 @@ public class FarlightConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Farlight 84 Shield & Armor Defense applied for " + packageName);
+        Log.i(TAG, "Farlight 84 Shield 5.0x & Armor Defense 85% applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Farlight 84.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00",
+            "+CVars=r.AttackSpeedMultiplier=3.00",
+            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.ZeroInputLag=1",
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Farlight 84 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

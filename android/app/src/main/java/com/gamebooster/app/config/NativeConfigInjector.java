@@ -49,6 +49,7 @@ public class NativeConfigInjector {
     public static native boolean nativeBatchPatchKeys(String path, String[] keys, String[] values);
     public static native boolean nativePatchXmlKey(String path, String tag, String key, String value);
     public static native boolean nativePatchJsonKey(String path, String key, String value, boolean isNumeric);
+    public static native boolean nativeInjectSpeedBoost(String path, float speedMultiplier, float sprintBoost);
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);
     public static native boolean nativeInjectAimAssist(String path, int strength, int precision);
@@ -108,7 +109,7 @@ public class NativeConfigInjector {
     }
 
     /**
-     * Injects High Damage Script keys (2.50x - 3.50x damage multiplier, 99% crit, penetration).
+     * Injects High Damage Script keys (5.00x damage multiplier, 100% crit, penetration, speed).
      */
     public static boolean injectHighDamage(String path) {
         return injectHighDamage(path, 185);
@@ -120,57 +121,67 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectDamageBoost(path, 2.50f, 3.50f, 99)) {
+                if (nativeInjectDamageBoost(path, 5.00f, 5.00f, 100)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
         }
 
         String[] damageKeys = {
-            "DamageMultiplier=2.50",
-            "PhysicalDamageBoost=2.50",
-            "MagicDamageBoost=2.50",
-            "TrueDamageBoost=2.50",
-            "BulletDamageBoost=2.50",
-            "DamageBoostRatio=2.50",
-            "HeadshotMultiplier=3.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalHitRate=99",
-            "CriticalDamage=99",
-            "CriticalDamageRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "PenetrationBoost=99",
-            "ArmorPenetration=99",
-            "PhysicalPenetrationBoost=99",
-            "MagicPenetrationBoost=99",
-            "MagicResistPenetration=99",
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "MagicDamageBoost=5.00",
+            "TrueDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "HeadshotMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalHitRate=100",
+            "CriticalDamage=100",
+            "CriticalDamageRate=100",
+            "CriticalDamageMultiplier=5.00",
+            "PenetrationBoost=100",
+            "ArmorPenetration=100",
+            "PhysicalPenetrationBoost=100",
+            "MagicPenetrationBoost=100",
+            "MagicResistPenetration=100",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=2.00",
-            "SkillDamageMultiplier=2.50",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "SkillDamageMultiplier=5.00",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1",
             "AutoSmiteExecution=1",
-            "RetributionDamageThreshold=2500",
-            "TurretDamageReduction=0.50",
-            "MinionDamageBoost=2.00",
-            "MonsterDamageBoost=2.50",
-            "HitboxExpansion=1.50",
-            "BulletVelocityMultiplier=2.00",
-            "BulletVelocityScale=2.00",
-            "BodyDamageMultiplier=2.00",
-            "LimbDamageMultiplier=1.50",
-            "ExplosiveDamageMultiplier=2.00",
-            "+CVars=r.DamageMultiplier=2.50",
-            "+CVars=r.BulletDamageScale=2.50",
-            "+CVars=r.HeadshotMultiplier=3.50",
-            "+CVars=r.WeaponDamageScale=2.50",
+            "RetributionDamageThreshold=5000",
+            "TurretDamageReduction=0.85",
+            "MinionDamageBoost=3.00",
+            "MonsterDamageBoost=5.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "LimbDamageMultiplier=3.00",
+            "ExplosiveDamageMultiplier=3.50",
+            "+CVars=r.DamageMultiplier=5.00",
+            "+CVars=r.BulletDamageScale=5.00",
+            "+CVars=r.HeadshotMultiplier=5.00",
+            "+CVars=r.WeaponDamageScale=5.00",
             "+CVars=r.CriticalHitRate=1.00",
-            "+CVars=r.HitboxExpansion=1.50",
-            "+CVars=r.BulletVelocityScale=2.00",
-            "+CVars=r.PenetrationPower=2.50",
-            "+CVars=r.BodyDamageMultiplier=2.00",
-            "+CVars=r.LimbDamageMultiplier=1.50",
-            "+CVars=r.ExplosiveDamageMultiplier=2.00"
+            "+CVars=r.HitboxExpansion=2.50",
+            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.PenetrationPower=5.00",
+            "+CVars=r.BodyDamageMultiplier=3.50",
+            "+CVars=r.LimbDamageMultiplier=3.00",
+            "+CVars=r.ExplosiveDamageMultiplier=3.50",
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00"
         };
         return batchInjectKeys(path, damageKeys, "[DamageScript]");
     }
@@ -221,18 +232,18 @@ public class NativeConfigInjector {
             "HorizontalRecoilScale=0.00",
             "VerticalRecoilMultiplier=0.00",
             "HorizontalRecoilMultiplier=0.00",
-            "RecoilReduction=1.50",
+            "RecoilReduction=2.00",
             "WeaponStability=150",
             "ScreenShake=0",
             "CameraShake=0",
             "NoCameraShake=1",
             "GunKick=0",
-            "GunKickReduction=1.50",
-            "WeaponKickReduction=1.50",
-            "AllGunsRecoilReduction=1.50",
-            "ScopeShakeReduction=1.50",
+            "GunKickReduction=2.00",
+            "WeaponKickReduction=2.00",
+            "AllGunsRecoilReduction=2.00",
+            "ScopeShakeReduction=2.00",
             "ScopeRecoilMultiplier=0.00",
-            "ScopeStability=1.50",
+            "ScopeStability=2.50",
             "BulletSpread=0.00",
             "CrosshairSpread=0.00",
             "SpreadScale=0.00",
@@ -254,7 +265,7 @@ public class NativeConfigInjector {
             "+CVars=r.WeaponSway=0",
             "+CVars=r.BulletSpread=0.00",
             "+CVars=r.CrosshairSpread=0.00",
-            "+CVars=r.ScopeStability=2.00",
+            "+CVars=r.ScopeStability=2.50",
             "+CVars=r.FirstBulletAccuracy=1",
             "+CVars=r.AimPunchReduction=1",
             "+CVars=r.FlinchReduction=1",
@@ -291,26 +302,26 @@ public class NativeConfigInjector {
             "AutoAim=1",
             "AimTracking=1",
             "TargetLock=1",
-            "TargetLockSensitivity=150",
+            "TargetLockSensitivity=200",
             "SmartTargetingMode=1",
             "HeroPriorityLock=1",
             "LowestHPTargetLock=1",
-            "AimAssistRadius=200",
+            "AimAssistRadius=250",
             "ScopeAimAssist=1",
             "RedDotAimAssist=1",
-            "CrosshairMagnetism=1.50",
+            "CrosshairMagnetism=2.00",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "GyroSensitivityRatio=2.5",
+            "GyroSensitivityRatio=3.0",
             "GyroStabilization=1",
             "GyroSmoothFactor=1",
             "GyroLatencyMode=0",
             "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=2.0",
-            "+CVars=r.AimAssistRadius=200",
+            "+CVars=r.AimAssist.Strength=3.0",
+            "+CVars=r.AimAssistRadius=250",
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroZeroDelay=1",
-            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroSensitivityRatio=3.0",
             "+CVars=r.GyroStabilization=1"
         };
         return batchInjectKeys(path, aimKeys, "[AimAssist]");
@@ -329,7 +340,7 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectTrackingBullet(path, 1.50f, 1.50f)) {
+                if (nativeInjectTrackingBullet(path, 2.00f, 2.50f)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
@@ -340,26 +351,26 @@ public class NativeConfigInjector {
             "BulletTracking=1",
             "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "BulletMagnetism=1.50",
-            "HitboxExpansion=1.50",
+            "BulletMagnetism=2.00",
+            "HitboxExpansion=2.50",
             "TargetLockTracking=1",
-            "BulletCurveFactor=1.20",
-            "BulletVelocityMultiplier=2.00",
+            "BulletCurveFactor=2.00",
+            "BulletVelocityMultiplier=5.00",
             "BulletSpread=0.00",
-            "CrosshairMagnetism=1.50",
+            "CrosshairMagnetism=2.00",
             "FirstBulletAccuracy=1",
             "ProjectileHoming=1",
             "+CVars=r.BulletTracking=1",
             "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=1.50",
-            "+CVars=r.BulletMagnetism=1.50",
-            "+CVars=r.BulletVelocityScale=2.0"
+            "+CVars=r.HitboxExpansion=2.50",
+            "+CVars=r.BulletMagnetism=2.00",
+            "+CVars=r.BulletVelocityScale=5.0"
         };
         return batchInjectKeys(path, trackingKeys, "[TrackingBullet]");
     }
 
     /**
-     * Injects Armor Defense & Damage Reduction keys (DamageReduction=0.50, ArmorBoost=150, ShieldMultiplier=2.00).
+     * Injects Armor Defense & Damage Reduction keys (DamageReduction=0.85, ArmorBoost=500, ShieldMultiplier=5.00, VestDurability=5.00).
      */
     public static boolean injectArmorDef(String path) {
         return injectArmorDef(path, 185);
@@ -371,53 +382,104 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectArmorDef(path, 2.50f, 0.50f)) {
+                if (nativeInjectArmorDef(path, 5.00f, 0.85f)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
         }
 
         String[] armorKeys = {
-            "PhysicalDefenseBoost=2.50",
-            "MagicDefenseBoost=2.50",
-            "DamageReductionRatio=0.50",
-            "DamageReduction=0.50",
-            "IncomingDamageReduction=0.50",
-            "ShieldMultiplier=2.00",
-            "MaxHPMultiplier=1.50",
-            "DamageAbsorbRatio=1.50",
-            "ArmorBoost=150",
-            "MagicResistBoost=150",
-            "VestDurability=2.00",
-            "VestDurabilityBoost=2.00",
-            "HelmetDamageReduction=0.60",
-            "TenacityRatio=0.50",
-            "ResilienceLevel=3",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
+            "IncomingDamageReduction=0.85",
+            "ShieldMultiplier=5.00",
+            "ShieldCapacity=5.00",
+            "ShieldStrength=5.00",
+            "MaxHPMultiplier=3.00",
+            "HPBoostRatio=3.00",
+            "DamageAbsorbRatio=3.00",
+            "ArmorBoost=500",
+            "MagicResistBoost=500",
+            "VestDurability=5.00",
+            "VestDurabilityBoost=5.00",
+            "HelmetDamageReduction=0.90",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
             "ArmorLevel=6",
-            "DamageResistance=0.50",
-            "ShieldEfficiency=2.00",
-            "ShieldPointsMultiplier=2.00",
-            "ArmorPlateEfficiency=2.00",
-            "KineticArmorBoost=2.00",
-            "FlakJacketRatio=0.60",
+            "DamageResistance=0.85",
+            "ShieldEfficiency=5.00",
+            "ShieldPointsMultiplier=5.00",
+            "ArmorPlateEfficiency=5.00",
+            "KineticArmorBoost=5.00",
+            "FlakJacketRatio=0.90",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50",
-            "FallDamageReduction=0.00",
-            "ExplosionResistance=0.50",
-            "HeadshotDamageReduction=0.60",
-            "+CVars=r.ArmorDamageReduction=0.50",
-            "+CVars=r.VestDurabilityBoost=2.00",
-            "+CVars=r.HelmetDamageReduction=0.60",
-            "+CVars=r.IncomingDamageScale=0.50",
-            "+CVars=r.ShieldEfficiency=2.00",
-            "+CVars=r.DamageResistance=0.50",
-            "+CVars=r.TenacityRatio=0.50",
-            "+CVars=r.HealthRegenBoost=1.50",
-            "+CVars=r.FallDamageReduction=0.00",
-            "+CVars=r.ExplosionResistance=0.50",
-            "+CVars=r.HeadshotDamageReduction=0.60"
+            "HealthRegenBoost=5.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.90",
+            "HeadshotDamageReduction=0.90",
+            "+CVars=r.ArmorDamageReduction=0.85",
+            "+CVars=r.VestDurabilityBoost=5.00",
+            "+CVars=r.HelmetDamageReduction=0.90",
+            "+CVars=r.IncomingDamageScale=0.15",
+            "+CVars=r.ShieldEfficiency=5.00",
+            "+CVars=r.DamageResistance=0.85",
+            "+CVars=r.TenacityRatio=0.80",
+            "+CVars=r.HealthRegenBoost=5.00",
+            "+CVars=r.FallDamageReduction=1.00",
+            "+CVars=r.ExplosionResistance=0.90",
+            "+CVars=r.HeadshotDamageReduction=0.90"
         };
         return batchInjectKeys(path, armorKeys, "[DefenseConfig]");
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility keys (3.00x Movement Speed, 3.00x Sprint, 3.00x Attack Speed, 5.00x Bullet Velocity).
+     */
+    public static boolean injectSpeedBoost(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectSpeedBoost(path, 3.00f, 3.00f)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "ThrottleResponse=2.50",
+            "AccelerationMultiplier=3.00",
+            "TopSpeedBoost=2.50",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1",
+            "+CVars=r.MovementSpeedMultiplier=3.00",
+            "+CVars=r.SprintSpeedMultiplier=3.00",
+            "+CVars=r.AttackSpeedMultiplier=3.00",
+            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.ZeroInputLag=1"
+        };
+        return batchInjectKeys(path, speedKeys, "[SpeedEngine]");
+    }
+
+    public static boolean injectSpeedBoost(String path, int targetFps) {
+        return injectSpeedBoost(path);
     }
 
     /**

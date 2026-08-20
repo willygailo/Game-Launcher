@@ -215,28 +215,36 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=2.50",
-            "PhysicalDamageBoost=2.50",
-            "MagicDamageBoost=2.50",
-            "TrueDamageBoost=2.50",
-            "BulletDamageBoost=2.50",
-            "DamageBoost=2.50",
-            "DamageBoostRatio=2.50",
-            "HeadshotMultiplier=3.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalDamage=99",
-            "CriticalHitRate=99",
-            "CriticalDamageRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "PenetrationBoost=99",
-            "ArmorPenetration=99",
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "MagicDamageBoost=5.00",
+            "TrueDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "HeadshotMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalDamage=100",
+            "CriticalHitRate=100",
+            "CriticalDamageRate=100",
+            "CriticalDamageMultiplier=5.00",
+            "PenetrationBoost=100",
+            "ArmorPenetration=100",
             "HighDamageRateMode=1",
-            "HitboxExpansion=1.50",
-            "BulletVelocityMultiplier=2.00",
-            "BulletVelocityScale=2.00",
-            "BodyDamageMultiplier=2.00",
-            "LimbDamageMultiplier=1.50",
-            "ExplosiveDamageMultiplier=2.00"
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "LimbDamageMultiplier=3.00",
+            "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -255,7 +263,7 @@ public class FreeFireConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "FreeFire Damage Boost & Headshot Multiplier applied for " + packageName);
+        Log.i(TAG, "FreeFire Damage Boost 500% & Headshot Multiplier applied for " + packageName);
     }
 
     /**
@@ -265,33 +273,34 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "VestDurability=2.00",
-            "VestDurabilityBoost=2.00",
-            "HelmetDamageReduction=0.60",
-            "ArmorDamageAbsorb=0.50",
-            "ShieldCapacity=2.00",
-            "ShieldMultiplier=2.00",
-            "ArmorBoostRatio=2.00",
-            "HPBoostRatio=1.50",
-            "MaxHPMultiplier=1.50",
-            "DamageAbsorbRatio=1.50",
-            "DamageReductionRatio=0.50",
-            "DamageReduction=0.50",
-            "IncomingDamageReduction=0.50",
-            "PhysicalDefenseBoost=2.50",
-            "MagicDefenseBoost=2.50",
-            "ArmorBoost=150",
-            "MagicResistBoost=150",
-            "TenacityRatio=0.50",
-            "ResilienceLevel=3",
+            "VestDurability=5.00",
+            "VestDurabilityBoost=5.00",
+            "HelmetDamageReduction=0.90",
+            "ArmorDamageAbsorb=0.90",
+            "ShieldCapacity=5.00",
+            "ShieldMultiplier=5.00",
+            "ShieldStrength=5.00",
+            "ArmorBoostRatio=5.00",
+            "HPBoostRatio=3.00",
+            "MaxHPMultiplier=3.00",
+            "DamageAbsorbRatio=3.00",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
+            "IncomingDamageReduction=0.85",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "ArmorBoost=500",
+            "MagicResistBoost=500",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
             "ArmorLevel=6",
-            "DamageResistance=0.50",
-            "ShieldEfficiency=2.00",
+            "DamageResistance=0.85",
+            "ShieldEfficiency=5.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50",
-            "FallDamageReduction=0.00",
-            "ExplosionResistance=0.50",
-            "HeadshotDamageReduction=0.60"
+            "HealthRegenBoost=5.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.90",
+            "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -311,7 +320,52 @@ public class FreeFireConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "FreeFire Armor Defense Boost & Vest Durability applied for " + packageName);
+        Log.i(TAG, "FreeFire Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Free Fire.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "FreeFire 3.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
 
     /**

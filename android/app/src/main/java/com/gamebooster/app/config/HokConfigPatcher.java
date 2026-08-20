@@ -175,21 +175,31 @@ public class HokConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "PhysicalDamageBoost=2.50",
-            "MagicDamageBoost=2.50",
-            "TrueDamageBoost=2.50",
-            "DamageMultiplier=2.50",
-            "DamageBoost=2.50",
-            "CritRate=99",
-            "CritDamage=3.50",
-            "CriticalDamageRate=99",
-            "CriticalHitRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "HeadshotMultiplier=3.50",
-            "AttackSpeedBoost=1.5",
-            "HitboxExpansion=1.50",
-            "BodyDamageMultiplier=2.00",
-            "ExplosiveDamageMultiplier=2.00",
+            "PhysicalDamageBoost=5.00",
+            "MagicDamageBoost=5.00",
+            "TrueDamageBoost=5.00",
+            "DamageMultiplier=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "CritRate=100",
+            "CritDamage=5.00",
+            "CriticalDamage=100",
+            "CriticalDamageRate=100",
+            "CriticalHitRate=100",
+            "CriticalDamageMultiplier=5.00",
+            "HeadshotMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "AttackSpeedBoost=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "ExplosiveDamageMultiplier=3.50",
             "FOV=150"
         };
         for (String path : paths) {
@@ -209,7 +219,7 @@ public class HokConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "HOK Damage Boost & FOV applied for " + packageName);
+        Log.i(TAG, "HOK 5.0x Damage Boost & FOV applied for " + packageName);
     }
 
     /**
@@ -219,24 +229,30 @@ public class HokConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalArmor=2.50",
-            "MagicResistance=2.50",
-            "DamageReduction=0.50",
-            "DamageReductionRatio=0.50",
-            "IncomingDamageReduction=0.50",
-            "ShieldBoost=2.00",
-            "ShieldStrength=2.50",
-            "ShieldEfficiency=2.00",
-            "MaxHPBoost=1.50",
-            "MaxHPMultiplier=1.50",
-            "Tenacity=0.50",
-            "TenacityRatio=0.50",
-            "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50",
-            "MagicDefenseBoost=2.50",
-            "DamageAbsorbRatio=1.50",
+            "PhysicalArmor=5.00",
+            "MagicResistance=5.00",
+            "DamageReduction=0.85",
+            "DamageReductionRatio=0.85",
+            "IncomingDamageReduction=0.85",
+            "ShieldBoost=5.00",
+            "ShieldStrength=5.00",
+            "ShieldEfficiency=5.00",
+            "ShieldCapacity=5.00",
+            "ShieldMultiplier=5.00",
+            "MaxHPBoost=3.00",
+            "MaxHPMultiplier=3.00",
+            "HPBoostRatio=3.00",
+            "Tenacity=0.80",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
+            "ArmorBoost=500",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "DamageAbsorbRatio=3.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50"
+            "HealthRegenBoost=5.00",
+            "ExplosionResistance=0.90",
+            "FallDamageReduction=1.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -256,7 +272,52 @@ public class HokConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "HOK Armor Defense & Damage Reduction applied for " + packageName);
+        Log.i(TAG, "HOK Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Honor of Kings.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "HOK 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

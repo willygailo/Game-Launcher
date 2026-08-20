@@ -306,27 +306,34 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"CriticalDamage", ssCrit.str()},
         {"CriticalDamageRate", ssCrit.str()},
         {"CriticalDamageMultiplier", ssHead.str()},
-        {"PenetrationBoost", "99"},
-        {"ArmorPenetration", "99"},
-        {"PhysicalPenetrationBoost", "99"},
-        {"MagicPenetrationBoost", "99"},
-        {"MagicResistPenetration", "99"},
+        {"PenetrationBoost", "100"},
+        {"ArmorPenetration", "100"},
+        {"PhysicalPenetrationBoost", "100"},
+        {"MagicPenetrationBoost", "100"},
+        {"MagicResistPenetration", "100"},
         {"HighDamageRateMode", "1"},
-        {"AttackSpeedMultiplier", "2.00"},
+        {"AttackSpeedMultiplier", "3.00"},
+        {"AttackSpeedBoost", "3.00"},
+        {"ReloadSpeedMultiplier", "3.00"},
+        {"FireRateMultiplier", "2.50"},
+        {"MovementSpeedMultiplier", "3.00"},
+        {"SprintSpeedMultiplier", "3.00"},
+        {"SprintSensitivity", "200"},
+        {"AgilityMultiplier", "3.00"},
         {"SkillDamageMultiplier", ssMult.str()},
         {"DamageAssetOverride", "1"},
         {"AutoDamageExecutionMode", "1"},
         {"AutoSmiteExecution", "1"},
-        {"RetributionDamageThreshold", "2500"},
-        {"TurretDamageReduction", "0.50"},
-        {"MinionDamageBoost", "2.00"},
+        {"RetributionDamageThreshold", "5000"},
+        {"TurretDamageReduction", "0.85"},
+        {"MinionDamageBoost", "3.00"},
         {"MonsterDamageBoost", ssMult.str()},
-        {"HitboxExpansion", "1.50"},
-        {"BulletVelocityMultiplier", "2.00"},
-        {"BulletVelocityScale", "2.00"},
-        {"BodyDamageMultiplier", "2.00"},
-        {"LimbDamageMultiplier", "1.50"},
-        {"ExplosiveDamageMultiplier", "2.00"}
+        {"HitboxExpansion", "2.50"},
+        {"BulletVelocityMultiplier", "5.00"},
+        {"BulletVelocityScale", "5.00"},
+        {"BodyDamageMultiplier", "3.50"},
+        {"LimbDamageMultiplier", "3.00"},
+        {"ExplosiveDamageMultiplier", "3.50"}
     };
 
     if (isXml) {
@@ -351,12 +358,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
         patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
         patch_cvar(content, "r.CriticalHitRate", "1.00");
-        patch_cvar(content, "r.HitboxExpansion", "1.50");
-        patch_cvar(content, "r.BulletVelocityScale", "2.00");
-        patch_cvar(content, "r.PenetrationPower", "2.50");
-        patch_cvar(content, "r.BodyDamageMultiplier", "2.00");
-        patch_cvar(content, "r.LimbDamageMultiplier", "1.50");
-        patch_cvar(content, "r.ExplosiveDamageMultiplier", "2.00");
+        patch_cvar(content, "r.HitboxExpansion", "2.50");
+        patch_cvar(content, "r.BulletVelocityScale", "5.00");
+        patch_cvar(content, "r.PenetrationPower", "5.00");
+        patch_cvar(content, "r.BodyDamageMultiplier", "3.50");
+        patch_cvar(content, "r.LimbDamageMultiplier", "3.00");
+        patch_cvar(content, "r.ExplosiveDamageMultiplier", "3.50");
+        patch_cvar(content, "r.MovementSpeedMultiplier", "3.00");
+        patch_cvar(content, "r.SprintSpeedMultiplier", "3.00");
     }
 
     bool success = write_file_posix(pathStr, content);
@@ -389,18 +398,18 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HorizontalRecoilScale", ssRecoil.str()},
         {"VerticalRecoilMultiplier", ssRecoil.str()},
         {"HorizontalRecoilMultiplier", ssRecoil.str()},
-        {"RecoilReduction", "1.50"},
+        {"RecoilReduction", "2.00"},
         {"WeaponStability", ssStab.str()},
         {"ScreenShake", "0"},
         {"CameraShake", "0"},
         {"NoCameraShake", "1"},
         {"GunKick", "0"},
-        {"GunKickReduction", "1.50"},
-        {"WeaponKickReduction", "1.50"},
-        {"AllGunsRecoilReduction", "1.50"},
-        {"ScopeShakeReduction", "1.50"},
+        {"GunKickReduction", "2.00"},
+        {"WeaponKickReduction", "2.00"},
+        {"AllGunsRecoilReduction", "2.00"},
+        {"ScopeShakeReduction", "2.00"},
         {"ScopeRecoilMultiplier", "0.00"},
-        {"ScopeStability", "1.50"},
+        {"ScopeStability", "2.50"},
         {"BulletSpread", "0.00"},
         {"CrosshairSpread", "0.00"},
         {"SpreadScale", "0.00"},
@@ -441,7 +450,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.WeaponSway", "0");
         patch_cvar(content, "r.BulletSpread", "0.00");
         patch_cvar(content, "r.CrosshairSpread", "0.00");
-        patch_cvar(content, "r.ScopeStability", "2.00");
+        patch_cvar(content, "r.ScopeStability", "2.50");
         patch_cvar(content, "r.FirstBulletAccuracy", "1");
         patch_cvar(content, "r.AimPunchReduction", "1");
         patch_cvar(content, "r.FlinchReduction", "1");
@@ -476,17 +485,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"AutoAim", "1"},
         {"AimTracking", "1"},
         {"TargetLock", "1"},
-        {"TargetLockSensitivity", "150"},
+        {"TargetLockSensitivity", "200"},
         {"SmartTargetingMode", "1"},
         {"HeroPriorityLock", "1"},
         {"LowestHPTargetLock", "1"},
-        {"AimAssistRadius", "200"},
-        {"CrosshairMagnetism", "1.50"},
+        {"AimAssistRadius", "250"},
+        {"CrosshairMagnetism", "2.00"},
         {"ScopeAimAssist", "1"},
         {"RedDotAimAssist", "1"},
         {"GyroSampleRate", "1000"},
         {"GyroZeroDelay", "1"},
-        {"GyroSensitivityRatio", "2.5"},
+        {"GyroSensitivityRatio", "3.0"},
         {"GyroStabilization", "1"},
         {"GyroSmoothFactor", "1"},
         {"GyroLatencyMode", "0"}
@@ -510,11 +519,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
         // Unreal Engine 4/5 CVars
         patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "2.0");
-        patch_cvar(content, "r.AimAssistRadius", "200");
+        patch_cvar(content, "r.AimAssist.Strength", "3.0");
+        patch_cvar(content, "r.AimAssistRadius", "250");
         patch_cvar(content, "r.GyroSampleRate", "1000");
         patch_cvar(content, "r.GyroZeroDelay", "1");
-        patch_cvar(content, "r.GyroSensitivityRatio", "2.5");
+        patch_cvar(content, "r.GyroSensitivityRatio", "3.0");
         patch_cvar(content, "r.GyroStabilization", "1");
     }
 
@@ -545,10 +554,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"BulletMagnetism", ssTrack.str()},
         {"HitboxExpansion", ssHitbox.str()},
         {"TargetLockTracking", "1"},
-        {"BulletCurveFactor", "1.20"},
-        {"BulletVelocityMultiplier", "2.00"},
+        {"BulletCurveFactor", "2.00"},
+        {"BulletVelocityMultiplier", "5.00"},
         {"BulletSpread", "0.00"},
-        {"CrosshairMagnetism", "1.50"},
+        {"CrosshairMagnetism", "2.00"},
         {"FirstBulletAccuracy", "1"},
         {"ProjectileHoming", "1"}
     };
@@ -574,7 +583,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.MagicBullet", "1");
         patch_cvar(content, "r.HitboxExpansion", ssHitbox.str());
         patch_cvar(content, "r.BulletMagnetism", ssTrack.str());
-        patch_cvar(content, "r.BulletVelocityScale", "2.0");
+        patch_cvar(content, "r.BulletVelocityScale", "5.0");
     }
 
     bool success = write_file_posix(pathStr, content);
@@ -602,28 +611,31 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"DamageReductionRatio", ssRed.str()},
         {"DamageReduction", ssRed.str()},
         {"IncomingDamageReduction", ssRed.str()},
-        {"ShieldMultiplier", "2.00"},
-        {"MaxHPMultiplier", "1.50"},
-        {"DamageAbsorbRatio", "1.50"},
-        {"ArmorBoost", "150"},
-        {"MagicResistBoost", "150"},
-        {"VestDurability", "2.00"},
-        {"VestDurabilityBoost", "2.00"},
-        {"HelmetDamageReduction", "0.60"},
-        {"TenacityRatio", "0.50"},
-        {"ResilienceLevel", "3"},
+        {"ShieldMultiplier", "5.00"},
+        {"ShieldCapacity", "5.00"},
+        {"ShieldStrength", "5.00"},
+        {"MaxHPMultiplier", "3.00"},
+        {"HPBoostRatio", "3.00"},
+        {"DamageAbsorbRatio", "3.00"},
+        {"ArmorBoost", "500"},
+        {"MagicResistBoost", "500"},
+        {"VestDurability", "5.00"},
+        {"VestDurabilityBoost", "5.00"},
+        {"HelmetDamageReduction", "0.90"},
+        {"TenacityRatio", "0.80"},
+        {"ResilienceLevel", "5"},
         {"ArmorLevel", "6"},
         {"DamageResistance", ssRed.str()},
-        {"ShieldEfficiency", "2.00"},
-        {"ShieldPointsMultiplier", "2.00"},
-        {"ArmorPlateEfficiency", "2.00"},
-        {"KineticArmorBoost", "2.00"},
-        {"FlakJacketRatio", "0.60"},
+        {"ShieldEfficiency", "5.00"},
+        {"ShieldPointsMultiplier", "5.00"},
+        {"ArmorPlateEfficiency", "5.00"},
+        {"KineticArmorBoost", "5.00"},
+        {"FlakJacketRatio", "0.90"},
         {"HealthRegenDelay", "0.00"},
-        {"HealthRegenBoost", "1.50"},
-        {"FallDamageReduction", "0.00"},
-        {"ExplosionResistance", "0.50"},
-        {"HeadshotDamageReduction", "0.60"}
+        {"HealthRegenBoost", "5.00"},
+        {"FallDamageReduction", "1.00"},
+        {"ExplosionResistance", "0.90"},
+        {"HeadshotDamageReduction", "0.90"}
     };
 
     if (isXml) {
@@ -644,16 +656,81 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
         // Unreal Engine 4/5 CVars
         patch_cvar(content, "r.ArmorDamageReduction", ssRed.str());
-        patch_cvar(content, "r.VestDurabilityBoost", "2.00");
-        patch_cvar(content, "r.HelmetDamageReduction", "0.60");
+        patch_cvar(content, "r.VestDurabilityBoost", "5.00");
+        patch_cvar(content, "r.HelmetDamageReduction", "0.90");
         patch_cvar(content, "r.IncomingDamageScale", ssRed.str());
-        patch_cvar(content, "r.ShieldEfficiency", "2.00");
+        patch_cvar(content, "r.ShieldEfficiency", "5.00");
         patch_cvar(content, "r.DamageResistance", ssRed.str());
-        patch_cvar(content, "r.TenacityRatio", "0.50");
-        patch_cvar(content, "r.HealthRegenBoost", "1.50");
-        patch_cvar(content, "r.FallDamageReduction", "0.00");
-        patch_cvar(content, "r.ExplosionResistance", "0.50");
-        patch_cvar(content, "r.HeadshotDamageReduction", "0.60");
+        patch_cvar(content, "r.TenacityRatio", "0.80");
+        patch_cvar(content, "r.HealthRegenBoost", "5.00");
+        patch_cvar(content, "r.FallDamageReduction", "1.00");
+        patch_cvar(content, "r.ExplosionResistance", "0.90");
+        patch_cvar(content, "r.HeadshotDamageReduction", "0.90");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
+  (JNIEnv *env, jclass, jstring jPath, jfloat speedMultiplier, jfloat sprintBoost) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssSpeed, ssSprint;
+    ssSpeed << speedMultiplier;
+    ssSprint << sprintBoost;
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"MovementSpeedMultiplier", ssSpeed.str()},
+        {"MovementSpeedBoost", ssSpeed.str()},
+        {"SprintSpeedMultiplier", ssSprint.str()},
+        {"SprintSpeedBoost", ssSprint.str()},
+        {"SprintSensitivity", "200"},
+        {"AgilityMultiplier", ssSpeed.str()},
+        {"AttackSpeedMultiplier", "3.00"},
+        {"AttackSpeedBoost", "3.00"},
+        {"ReloadSpeedMultiplier", "3.00"},
+        {"FireRateMultiplier", "2.50"},
+        {"BulletVelocityMultiplier", "5.00"},
+        {"BulletVelocityScale", "5.00"},
+        {"ThrottleResponse", "2.50"},
+        {"AccelerationMultiplier", "3.00"},
+        {"TopSpeedBoost", "2.50"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"HighSpeedMovement", "1"}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[SpeedEngine]") == std::string::npos) {
+            content += "\n[SpeedEngine]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.MovementSpeedMultiplier", ssSpeed.str());
+        patch_cvar(content, "r.SprintSpeedMultiplier", ssSprint.str());
+        patch_cvar(content, "r.AttackSpeedMultiplier", "3.00");
+        patch_cvar(content, "r.BulletVelocityScale", "5.00");
+        patch_cvar(content, "r.ZeroInputLag", "1");
     }
 
     bool success = write_file_posix(pathStr, content);

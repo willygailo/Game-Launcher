@@ -113,23 +113,31 @@ public class WildRiftConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=2.50",
-            "PhysicalDamageBoost=2.50",
-            "MagicDamageBoost=2.50",
-            "TrueDamageBoost=2.50",
-            "DamageBoost=2.50",
-            "CritRate=99",
-            "CritDamage=3.50",
-            "CriticalDamageRate=99",
-            "CriticalHitRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "PenetrationBoost=99",
-            "ArmorPenetration=99",
-            "HeadshotMultiplier=3.50",
-            "AttackSpeedBoost=1.5",
-            "HitboxExpansion=1.50",
-            "BodyDamageMultiplier=2.00",
-            "ExplosiveDamageMultiplier=2.00"
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "MagicDamageBoost=5.00",
+            "TrueDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "CritRate=100",
+            "CritDamage=5.00",
+            "CriticalDamageRate=100",
+            "CriticalHitRate=100",
+            "CriticalDamageMultiplier=5.00",
+            "PenetrationBoost=100",
+            "ArmorPenetration=100",
+            "HeadshotMultiplier=5.00",
+            "AttackSpeedBoost=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -148,7 +156,7 @@ public class WildRiftConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Wild Rift damage boost & critical multipliers applied for " + packageName);
+        Log.i(TAG, "Wild Rift 5.0x damage boost & critical multipliers applied for " + packageName);
     }
 
     public static void applySuperFastTouch(String packageName) {
@@ -246,22 +254,27 @@ public class WildRiftConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalArmor=2.50",
-            "MagicResistance=2.50",
-            "DamageReductionRatio=0.50",
-            "DamageReduction=0.50",
-            "IncomingDamageReduction=0.50",
-            "ShieldMultiplier=2.00",
-            "ShieldStrength=2.50",
-            "ShieldEfficiency=2.00",
-            "MaxHPMultiplier=1.50",
-            "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50",
-            "MagicDefenseBoost=2.50",
-            "DamageAbsorbRatio=1.50",
-            "TenacityRatio=0.50",
+            "PhysicalArmor=5.00",
+            "MagicResistance=5.00",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
+            "IncomingDamageReduction=0.85",
+            "ShieldMultiplier=5.00",
+            "ShieldStrength=5.00",
+            "ShieldEfficiency=5.00",
+            "ShieldCapacity=5.00",
+            "MaxHPMultiplier=3.00",
+            "HPBoostRatio=3.00",
+            "ArmorBoost=500",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "DamageAbsorbRatio=3.00",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50"
+            "HealthRegenBoost=5.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.90"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -281,7 +294,52 @@ public class WildRiftConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "WildRift Armor Defense & Damage Reduction applied for " + packageName);
+        Log.i(TAG, "WildRift Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Wild Rift.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "WildRift 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

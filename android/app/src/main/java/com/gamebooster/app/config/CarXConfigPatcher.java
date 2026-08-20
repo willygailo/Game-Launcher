@@ -106,17 +106,22 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] boostKeys = {
-            "NitroMultiplier=2.50",
-            "TorqueBoost=2.50",
-            "DriftScoreMultiplier=2.50",
-            "ThrottleResponse=1.50",
-            "EnginePowerMultiplier=2.50",
-            "TopSpeedBoost=1.50",
-            "AccelerationMultiplier=2.50",
-            "DamageMultiplier=2.50",
-            "BulletDamageBoost=2.50",
-            "DamageBoost=2.50",
-            "HighDamageRateMode=1"
+            "NitroMultiplier=5.00",
+            "TorqueBoost=5.00",
+            "DriftScoreMultiplier=5.00",
+            "ThrottleResponse=3.00",
+            "EnginePowerMultiplier=5.00",
+            "TopSpeedBoost=3.00",
+            "AccelerationMultiplier=5.00",
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "HighDamageRateMode=1",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -136,7 +141,7 @@ public class CarXConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "CarX/Racing Nitro & Torque boost applied for " + packageName);
+        Log.i(TAG, "CarX/Racing 5.0x Nitro & Torque boost applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -196,7 +201,7 @@ public class CarXConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
             "DriftStability=150",
-            "TireGripBoost=1.5",
+            "TireGripBoost=2.5",
             "ChassisStability=150",
             "CameraShake=0",
             "NoCameraShake=1",
@@ -207,7 +212,7 @@ public class CarXConfigPatcher {
             "NoRecoil=1",
             "RecoilScale=0.00",
             "WeaponStability=150",
-            "ScopeStability=1.50"
+            "ScopeStability=2.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -236,17 +241,17 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ChassisDurability=2.00",
+            "ChassisDurability=5.00",
             "CollisionDamageReduction=0.00",
-            "BodyIntegrity=2.00",
+            "BodyIntegrity=5.00",
             "ImpactAbsorption=1.00",
-            "ArmorBoost=150",
-            "DamageReductionRatio=0.50",
-            "DamageReduction=0.50",
-            "IncomingDamageReduction=0.50",
-            "PhysicalDefenseBoost=2.50",
+            "ArmorBoost=500",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
+            "IncomingDamageReduction=0.85",
+            "PhysicalDefenseBoost=5.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50"
+            "HealthRegenBoost=5.00"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -266,7 +271,52 @@ public class CarXConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "CarX Chassis Durability & Impact Absorption applied for " + packageName);
+        Log.i(TAG, "CarX Chassis Durability 5.0x & Impact Absorption applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for CarX / Racing games.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "CarX 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

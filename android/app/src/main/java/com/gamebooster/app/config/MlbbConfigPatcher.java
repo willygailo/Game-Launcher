@@ -166,45 +166,53 @@ public class MlbbConfigPatcher {
             "FieldOfView=150",
             "WideScreenMode=1",
             "UltraWideCamera=1",
-            // Damage 250% & Penetration
-            "PhysicalDamageBoost=2.50",
-            "MagicDamageBoost=2.50",
-            "TrueDamageBoost=2.50",
-            "BulletDamageBoost=2.50",
-            "PhysicalPenetrationBoost=99",
-            "MagicPenetrationBoost=99",
-            "ArmorPenetration=99",
-            "MagicResistPenetration=99",
-            "DamageMultiplier=2.50",
-            "DamageBoostRatio=2.50",
-            "SkillDamageMultiplier=2.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalDamageRate=99",
-            "CriticalDamageMultiplier=3.50",
+            // Damage 500% & Penetration
+            "PhysicalDamageBoost=5.00",
+            "MagicDamageBoost=5.00",
+            "TrueDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "PhysicalPenetrationBoost=100",
+            "MagicPenetrationBoost=100",
+            "ArmorPenetration=100",
+            "MagicResistPenetration=100",
+            "DamageMultiplier=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "SkillDamageMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalDamageRate=100",
+            "CriticalDamageMultiplier=5.00",
             "CriticalHitRate=1.00",
-            "CriticalDamage=99",
-            "AttackSpeedMultiplier=2.00",
+            "CriticalDamage=100",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
             "AttackDelayReduction=1",
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
             "SkillAnimationCancelZeroDelay=1",
             "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.40",
+            "CooldownReductionBoost=0.50",
             "HighDamageRateMode=1",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1",
             "AutoSmiteExecution=1",
-            "RetributionDamageThreshold=2500",
-            "TurretDamageReduction=0.50",
-            "MinionDamageBoost=2.00",
-            "MonsterDamageBoost=2.50",
-            "HitboxExpansion=1.50",
-            "BulletVelocityMultiplier=2.00",
-            "BulletVelocityScale=2.00",
-            "BodyDamageMultiplier=2.00",
-            "LimbDamageMultiplier=1.50",
-            "ExplosiveDamageMultiplier=2.00",
+            "RetributionDamageThreshold=5000",
+            "TurretDamageReduction=0.85",
+            "MinionDamageBoost=3.00",
+            "MonsterDamageBoost=5.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "LimbDamageMultiplier=3.00",
+            "ExplosiveDamageMultiplier=3.50",
             // Gyro Super Smooth
             "GyroSampleRate=1000",
-            "GyroSensitivityRatio=2.5",
+            "GyroSensitivityRatio=3.0",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
             "GyroStabilization=1",
@@ -238,7 +246,7 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 2.5x applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 5.0x applied via Shizuku for " + packageName);
     }
 
     /**
@@ -352,30 +360,33 @@ public class MlbbConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalDefenseBoost=2.50",
-            "MagicDefenseBoost=2.50",
-            "DamageReductionRatio=0.50",
-            "DamageReduction=0.50",
-            "IncomingDamageReduction=0.50",
-            "ShieldMultiplier=2.00",
-            "MaxHPMultiplier=1.50",
-            "DamageAbsorbRatio=1.50",
-            "ArmorBoost=150",
-            "MagicResistBoost=150",
-            "VestDurability=2.00",
-            "VestDurabilityBoost=2.00",
-            "HelmetDamageReduction=0.60",
-            "TenacityRatio=0.50",
-            "ResilienceLevel=3",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
+            "IncomingDamageReduction=0.85",
+            "ShieldMultiplier=5.00",
+            "ShieldCapacity=5.00",
+            "ShieldStrength=5.00",
+            "MaxHPMultiplier=3.00",
+            "HPBoostRatio=3.00",
+            "DamageAbsorbRatio=3.00",
+            "ArmorBoost=500",
+            "MagicResistBoost=500",
+            "VestDurability=5.00",
+            "VestDurabilityBoost=5.00",
+            "HelmetDamageReduction=0.90",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
             "ArmorLevel=6",
-            "DamageResistance=0.50",
-            "ShieldEfficiency=2.00",
-            "ShieldPointsMultiplier=2.00",
+            "DamageResistance=0.85",
+            "ShieldEfficiency=5.00",
+            "ShieldPointsMultiplier=5.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50",
-            "FallDamageReduction=0.00",
-            "ExplosionResistance=0.50",
-            "HeadshotDamageReduction=0.60"
+            "HealthRegenBoost=5.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.90",
+            "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
             ensureDirectory(path);
@@ -389,7 +400,7 @@ public class MlbbConfigPatcher {
                       .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
                 }
             } else {
-                sb.append("grep -qF '[ArmorDef]' ").append(path).append(" || echo '[ArmorDef]' >> ").append(path).append("; ");
+                sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
                 for (String keyVal : armorKeys) {
                     String k = keyVal.substring(0, keyVal.indexOf("="));
                     sb.append("grep -qF '").append(k).append("' ").append(path)
@@ -404,7 +415,61 @@ public class MlbbConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "MLBB Armor Defense Boost & Damage Reduction applied for " + packageName);
+        Log.i(TAG, "MLBB Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for MLBB.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            if (path.endsWith(".xml")) {
+                for (String keyVal : speedKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
+                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
+                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
+                }
+            } else {
+                sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+                for (String keyVal : speedKeys) {
+                    String k = keyVal.substring(0, keyVal.indexOf("="));
+                    sb.append("grep -qF '").append(k).append("' ").append(path)
+                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+                }
+            }
+            String cmd = sb.toString();
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "MLBB 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**

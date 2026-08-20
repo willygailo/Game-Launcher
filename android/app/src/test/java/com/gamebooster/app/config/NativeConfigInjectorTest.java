@@ -50,20 +50,24 @@ public class NativeConfigInjectorTest {
         NativeConfigInjector.injectNoRecoil(iniFile.getAbsolutePath(), 185);
         NativeConfigInjector.injectTrackingBullet(iniFile.getAbsolutePath(), 185);
         NativeConfigInjector.injectUltraExtremeGraphics(iniFile.getAbsolutePath(), 185);
+        NativeConfigInjector.injectArmorDef(iniFile.getAbsolutePath(), 185);
+        NativeConfigInjector.injectSpeedBoost(iniFile.getAbsolutePath(), 185);
 
         String content = new String(Files.readAllBytes(iniFile.toPath()));
         assertTrue(content.contains("AimAssist=1"));
         assertTrue(content.contains("AimAssistStrength=150"));
-        assertTrue(content.contains("DamageMultiplier=2.50"));
+        assertTrue(content.contains("DamageMultiplier=5.00"));
         assertTrue(content.contains("RecoilControl=1"));
         assertTrue(content.contains("RecoilScale=0.00"));
         assertTrue(content.contains("TrackingBullet=1"));
-        assertTrue(content.contains("BulletMagnetism=1.50"));
+        assertTrue(content.contains("BulletMagnetism=2.00"));
         assertTrue(content.contains("UltraExtreme=1"));
         assertTrue(content.contains("bUseUltraExtreme=True"));
         assertTrue(content.contains("GraphicsQuality=5"));
         assertTrue(content.contains("Unlock185FPS=1"));
         assertTrue(content.contains("FPS=185"));
+        assertTrue(content.contains("DamageReductionRatio=0.85"));
+        assertTrue(content.contains("MovementSpeedMultiplier=3.00"));
     }
 
     @Test
@@ -76,12 +80,15 @@ public class NativeConfigInjectorTest {
         NativeConfigInjector.injectAimAssist(jsonFile.getAbsolutePath(), 144);
         NativeConfigInjector.injectTrackingBullet(jsonFile.getAbsolutePath(), 144);
         NativeConfigInjector.injectUltraExtremeGraphics(jsonFile.getAbsolutePath(), 144);
+        NativeConfigInjector.injectArmorDef(jsonFile.getAbsolutePath(), 144);
+        NativeConfigInjector.injectSpeedBoost(jsonFile.getAbsolutePath(), 144);
 
         String content = new String(Files.readAllBytes(jsonFile.toPath()));
         assertTrue(content.contains("\"AimAssist\": 1"));
         assertTrue(content.contains("\"TrackingBullet\": 1"));
         assertTrue(content.contains("\"UltraExtreme\": 1"));
         assertTrue(content.contains("\"GraphicQuality\": 4"));
+        assertTrue(content.contains("\"MovementSpeedMultiplier\": 3.0"));
     }
 
     @Test
@@ -96,13 +103,17 @@ public class NativeConfigInjectorTest {
         NativeConfigInjector.injectNoRecoil(xmlFile.getAbsolutePath(), 165);
         NativeConfigInjector.injectTrackingBullet(xmlFile.getAbsolutePath(), 165);
         NativeConfigInjector.injectUltraExtremeGraphics(xmlFile.getAbsolutePath(), 165);
+        NativeConfigInjector.injectArmorDef(xmlFile.getAbsolutePath(), 165);
+        NativeConfigInjector.injectSpeedBoost(xmlFile.getAbsolutePath(), 165);
 
         String content = new String(Files.readAllBytes(xmlFile.toPath()));
         assertTrue(content.contains("<string name=\"AimAssist\">1</string>"));
-        assertTrue(content.contains("<string name=\"DamageMultiplier\">2.50</string>"));
+        assertTrue(content.contains("<string name=\"DamageMultiplier\">5.00</string>"));
         assertTrue(content.contains("<string name=\"RecoilControl\">1</string>"));
         assertTrue(content.contains("<string name=\"TrackingBullet\">1</string>"));
         assertTrue(content.contains("<string name=\"UltraExtreme\">1</string>"));
+        assertTrue(content.contains("<string name=\"DamageReductionRatio\">0.85</string>"));
+        assertTrue(content.contains("<string name=\"MovementSpeedMultiplier\">3.00</string>"));
     }
 
     @Test

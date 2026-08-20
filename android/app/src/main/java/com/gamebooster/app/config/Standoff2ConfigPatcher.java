@@ -110,24 +110,34 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=2.50",
-            "PhysicalDamageBoost=2.50",
-            "BulletDamageBoost=2.50",
-            "DamageBoost=2.50",
-            "DamageBoostRatio=2.50",
-            "HeadshotMultiplier=3.50",
-            "HeadshotDamageMultiplier=3.50",
-            "CriticalDamage=99",
-            "CriticalHitRate=99",
-            "CriticalDamageMultiplier=3.50",
-            "PenetrationBoost=99",
-            "ArmorPenetration=99",
+            "DamageMultiplier=5.00",
+            "PhysicalDamageBoost=5.00",
+            "BulletDamageBoost=5.00",
+            "DamageBoost=5.00",
+            "DamageBoostRatio=5.00",
+            "HeadshotMultiplier=5.00",
+            "HeadshotDamageMultiplier=5.00",
+            "CriticalDamage=100",
+            "CriticalDamageRate=100",
+            "CriticalHitRate=100",
+            "CriticalDamageMultiplier=5.00",
+            "PenetrationBoost=100",
+            "ArmorPenetration=100",
             "HighDamageRateMode=1",
-            "HitboxExpansion=1.50",
-            "BulletVelocityMultiplier=2.00",
-            "BodyDamageMultiplier=2.00",
-            "LimbDamageMultiplier=1.50",
-            "ExplosiveDamageMultiplier=2.00"
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "MovementSpeedMultiplier=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "HitboxExpansion=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "BodyDamageMultiplier=3.50",
+            "LimbDamageMultiplier=3.00",
+            "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -146,7 +156,7 @@ public class Standoff2ConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Standoff 2 damage boost & headshot multiplier applied for " + packageName);
+        Log.i(TAG, "Standoff 2 5.0x damage boost & headshot multiplier applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -175,12 +185,13 @@ public class Standoff2ConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
+            "AimPrecision=3",
             "AimAssistStrength=150",
             "AimSmooth=1",
             "AimTracking=1",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "SensitivityMultiplier=1.5",
+            "SensitivityMultiplier=2.5",
             "Acceleration=0"
         };
         for (String path : paths) {
@@ -214,11 +225,11 @@ public class Standoff2ConfigPatcher {
             "HorizontalRecoil=0.00",
             "VerticalRecoilScale=0.00",
             "HorizontalRecoilScale=0.00",
-            "RecoilReduction=1.50",
+            "RecoilReduction=2.00",
             "WeaponStability=150",
             "WeaponKick=0",
-            "GunKickReduction=1.50",
-            "WeaponKickReduction=1.50",
+            "GunKickReduction=2.00",
+            "WeaponKickReduction=2.00",
             "NoShake=1",
             "NoCameraShake=1",
             "CameraShake=0",
@@ -230,9 +241,9 @@ public class Standoff2ConfigPatcher {
             "FirstBulletAccuracy=1",
             "AimPunchReduction=1",
             "FlinchReduction=1",
-            "ScopeShakeReduction=1.50",
+            "ScopeShakeReduction=2.00",
             "ScopeRecoilMultiplier=0.00",
-            "ScopeStability=1.50",
+            "ScopeStability=2.50",
             "WeaponSway=0"
         };
         for (String path : paths) {
@@ -262,24 +273,28 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ArmorEfficiency=2.00",
-            "VestDurability=2.00",
-            "VestDurabilityBoost=2.00",
-            "DamageReduction=0.50",
-            "DamageReductionRatio=0.50",
-            "IncomingDamageReduction=0.50",
-            "HelmetProtection=0.60",
-            "HelmetDamageReduction=0.60",
-            "ShieldCapacity=2.00",
-            "ShieldMultiplier=2.00",
-            "MaxHPMultiplier=1.50",
-            "DamageAbsorbRatio=1.50",
-            "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50",
-            "TenacityRatio=0.50",
+            "ArmorEfficiency=5.00",
+            "VestDurability=5.00",
+            "VestDurabilityBoost=5.00",
+            "DamageReduction=0.85",
+            "DamageReductionRatio=0.85",
+            "IncomingDamageReduction=0.85",
+            "HelmetProtection=0.90",
+            "HelmetDamageReduction=0.90",
+            "ShieldCapacity=5.00",
+            "ShieldMultiplier=5.00",
+            "ShieldStrength=5.00",
+            "MaxHPMultiplier=3.00",
+            "HPBoostRatio=3.00",
+            "DamageAbsorbRatio=3.00",
+            "ArmorBoost=500",
+            "PhysicalDefenseBoost=5.00",
+            "TenacityRatio=0.80",
+            "ResilienceLevel=5",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1.50",
-            "ExplosionResistance=0.50"
+            "HealthRegenBoost=5.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.90"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
@@ -299,7 +314,52 @@ public class Standoff2ConfigPatcher {
                 CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Standoff2 Armor Defense & Vest Durability applied for " + packageName);
+        Log.i(TAG, "Standoff2 Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
+    }
+
+    /**
+     * Injects Speed Boost & Movement Agility for Standoff 2.
+     */
+    public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] speedKeys = {
+            "MovementSpeedMultiplier=3.00",
+            "MovementSpeedBoost=3.00",
+            "SprintSpeedMultiplier=3.00",
+            "SprintSpeedBoost=3.00",
+            "SprintSensitivity=200",
+            "AgilityMultiplier=3.00",
+            "AttackSpeedMultiplier=3.00",
+            "AttackSpeedBoost=3.00",
+            "ReloadSpeedMultiplier=3.00",
+            "FireRateMultiplier=2.50",
+            "BulletVelocityMultiplier=5.00",
+            "BulletVelocityScale=5.00",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HighSpeedMovement=1"
+        };
+        for (String path : paths) {
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectSpeedBoost(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
+            for (String keyVal : speedKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
+            }
+        }
+        Log.i(TAG, "Standoff2 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
