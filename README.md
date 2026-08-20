@@ -5,7 +5,7 @@
 # ⚡ GAME LAUNCHER PRO — ULTIMATE GAMING SUITE ⚡
 ### *Next-Gen 185 FPS Display Lock • In-Game ART-Level Hardware Spoofing • Zero-Root Shizuku Engine*
 
-[![Release](https://img.shields.io/badge/Release-v16.0.3--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Release](https://img.shields.io/badge/Release-v16.0.6--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Dedicated-Android%2012--16%20(API%2031--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-system-requirements)
 [![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#-privilege-layer)
 [![Build Tool](https://img.shields.io/badge/Java-17%20%7C%20Gradle%208.13-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](#-building-from-source)
@@ -13,7 +13,7 @@
 
 <br/>
 
-[📥 **Download Latest APK (v16.0.3-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
+[📥 **Download Latest APK (v16.0.6-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
 
 <br/>
 
