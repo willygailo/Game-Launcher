@@ -1,32 +1,38 @@
 package com.gamebooster.app.spoofer.lsposed;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Debug;
+import android.provider.Settings;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 /**
  * AntiDetectionHooks — Prevents games and applications from detecting the device's
- * real identity, root binaries, Xposed/LSPatch framework, and Shizuku.
+ * real identity, root binaries, Xposed/LSPosed/LSPatch framework, KernelSU, APatch, and Shizuku.
  *
  * Intercepts:
- * 1. PackageManager scans (hiding LSPatch, Magisk, Shizuku, Game Booster).
+ * 1. PackageManager scans (hiding LSPatch, Magisk, KernelSU, Shizuku, Game Booster).
  * 2. File checks for su / root / xposed binaries in /system, /sbin, /data/adb.
- * 3. StackTrace inspection for xposed / lspatch trace entries.
- * 4. Runtime.exec & ProcessBuilder checks for su / which / getprop.
+ * 3. StackTrace inspection for xposed / lsposed / lspatch trace entries.
+ * 4. Runtime.exec & ProcessBuilder checks for su / which / daemonsu.
+ * 5. Debugger and developer options status inspection.
  */
 public final class AntiDetectionHooks {
 
@@ -39,6 +45,8 @@ public final class AntiDetectionHooks {
             "com.gamebooster.app",
             "com.topjohnwu.magisk",
             "io.github.vvb2060.magisk",
+            "io.github.a13e300.ksu",
+            "me.bmax.apatch",
             "com.solohsu.android.edxp.manager",
             "de.robv.android.xposed.installer",
             "bin.mt.plus",
@@ -62,12 +70,13 @@ public final class AntiDetectionHooks {
             "/su/bin/su",
             "/data/adb/magisk",
             "/data/adb/ksu",
+            "/data/adb/apatch",
             "/data/adb/lspd",
             "/data/adb/modules",
-            "/system/app/Superuser.apk",
-            "/system/app/SuperSU.apk",
-            "/system/app/Magisk.apk",
-            "/system/framework/XposedBridge.jar",
+            "/system/app/superuser.apk",
+            "/system/app/supersu.apk",
+            "/system/app/magisk.apk",
+            "/system/framework/xposedbridge.jar",
             "/system/lib/libxposed_art.so",
             "/system/lib64/libxposed_art.so"
     ));
@@ -79,6 +88,9 @@ public final class AntiDetectionHooks {
         hookFileChecks();
         hookStackTrace();
         hookProcessExecution();
+        hookEnvironmentSettings(lpparam);
+
+        XposedBridge.log("[GameBooster] AntiDetectionHooks active for " + lpparam.packageName);
     }
 
     private static void hookPackageManager(LoadPackageParam lpparam) {
@@ -175,6 +187,21 @@ public final class AntiDetectionHooks {
                         }
                     });
         } catch (Throwable ignored) {}
+
+        // getInstallerPackageName(String)
+        try {
+            XposedHelpers.findAndHookMethod(pmClass, "getInstallerPackageName", String.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            String pkg = (String) param.args[0];
+                            if (pkg != null && !isHiddenPackage(pkg)) {
+                                // Default Google Play store installer for authenticity
+                                param.setResult("com.android.vending");
+                            }
+                        }
+                    });
+        } catch (Throwable ignored) {}
     }
 
     private static void hookFileChecks() {
@@ -213,6 +240,23 @@ public final class AntiDetectionHooks {
                 }
             });
         } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(File.class, "list", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    String[] list = (String[]) param.getResult();
+                    if (list == null) return;
+                    List<String> clean = new ArrayList<>(list.length);
+                    for (String s : list) {
+                        if (s != null && !s.equalsIgnoreCase("su") && !s.equalsIgnoreCase("magisk") && !s.equalsIgnoreCase("daemonsu")) {
+                            clean.add(s);
+                        }
+                    }
+                    param.setResult(clean.toArray(new String[0]));
+                }
+            });
+        } catch (Throwable ignored) {}
     }
 
     private static void hookStackTrace() {
@@ -229,6 +273,34 @@ public final class AntiDetectionHooks {
                         if (cls != null && (cls.contains("de.robv.android.xposed")
                                 || cls.contains("org.lsposed")
                                 || cls.contains("lspatch")
+                                || cls.contains("sandhook")
+                                || cls.contains("edxposed")
+                                || cls.contains("pine")
+                                || cls.contains("com.gamebooster.app.spoofer"))) {
+                            continue;
+                        }
+                        clean.add(elem);
+                    }
+                    param.setResult(clean.toArray(new StackTraceElement[0]));
+                }
+            });
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(Thread.class, "getStackTrace", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    StackTraceElement[] stack = (StackTraceElement[]) param.getResult();
+                    if (stack == null) return;
+                    List<StackTraceElement> clean = new ArrayList<>(stack.length);
+                    for (StackTraceElement elem : stack) {
+                        if (elem == null) continue;
+                        String cls = elem.getClassName();
+                        if (cls != null && (cls.contains("de.robv.android.xposed")
+                                || cls.contains("org.lsposed")
+                                || cls.contains("lspatch")
+                                || cls.contains("sandhook")
+                                || cls.contains("edxposed")
                                 || cls.contains("com.gamebooster.app.spoofer"))) {
                             continue;
                         }
@@ -246,8 +318,8 @@ public final class AntiDetectionHooks {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     String cmd = (String) param.args[0];
-                    if (cmd != null && (cmd.equals("su") || cmd.startsWith("su ") || cmd.contains("which su"))) {
-                        param.setThrowable(new java.io.IOException("Command not found: " + cmd));
+                    if (cmd != null && isRootCommand(cmd)) {
+                        param.setThrowable(new IOException("Command not found: " + cmd));
                     }
                 }
             });
@@ -260,8 +332,8 @@ public final class AntiDetectionHooks {
                     String[] cmdArray = (String[]) param.args[0];
                     if (cmdArray != null && cmdArray.length > 0) {
                         String first = cmdArray[0];
-                        if (first != null && (first.equals("su") || first.endsWith("/su") || first.equals("which"))) {
-                            param.setThrowable(new java.io.IOException("Command not found: " + first));
+                        if (first != null && isRootCommand(first)) {
+                            param.setThrowable(new IOException("Command not found: " + first));
                         }
                     }
                 }
@@ -269,7 +341,42 @@ public final class AntiDetectionHooks {
         } catch (Throwable ignored) {}
     }
 
-    private static boolean isHiddenPackage(String pkg) {
+    private static void hookEnvironmentSettings(LoadPackageParam lpparam) {
+        // Anti-Debugging: Debug.isDebuggerConnected() -> false
+        try {
+            XposedHelpers.findAndHookMethod(Debug.class, "isDebuggerConnected",
+                    XC_MethodReplacement.returnConstant(false));
+        } catch (Throwable ignored) {}
+
+        // Settings.Secure / Settings.Global adb_enabled -> 0
+        try {
+            XposedHelpers.findAndHookMethod(Settings.Secure.class, "getInt",
+                    ContentResolver.class, String.class, int.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            String name = (String) param.args[1];
+                            if ("adb_enabled".equals(name) || "development_settings_enabled".equals(name)) {
+                                param.setResult(0);
+                            }
+                        }
+                    });
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(Settings.Global.class, "getInt",
+                    ContentResolver.class, String.class, int.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            String name = (String) param.args[1];
+                            if ("adb_enabled".equals(name) || "development_settings_enabled".equals(name)) {
+                                param.setResult(0);
+                            }
+                        }
+                    });
+        } catch (Throwable ignored) {}
+    }
+
+    public static boolean isHiddenPackage(String pkg) {
         if (pkg == null) return false;
         String lower = pkg.toLowerCase();
         for (String hidden : HIDDEN_PACKAGES) {
@@ -278,12 +385,20 @@ public final class AntiDetectionHooks {
         return false;
     }
 
-    private static boolean isBlockedPath(String path) {
+    public static boolean isBlockedPath(String path) {
         if (path == null) return false;
         String lower = path.toLowerCase();
         for (String blocked : BLOCKED_PATHS) {
             if (lower.equals(blocked) || lower.startsWith(blocked + "/")) return true;
         }
         return false;
+    }
+
+    private static boolean isRootCommand(String cmd) {
+        String lower = cmd.toLowerCase().trim();
+        return lower.equals("su") || lower.startsWith("su ") || lower.endsWith("/su") ||
+                lower.contains("which su") || lower.contains("which magisk") ||
+                lower.contains("which ksu") || lower.contains("which apatch") ||
+                lower.contains("daemonsu");
     }
 }

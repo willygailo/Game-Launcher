@@ -3,74 +3,103 @@ package com.gamebooster.app.spoofer.lsposed;
 import com.gamebooster.app.spoofer.SpoofProfile;
 
 import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 /**
- * BuildHooks — overrides android.os.Build static fields INSIDE the target game
- * process before any game code reads them, plus Build.getSerial().
- *
- * The launcher-side reflection (HardwareMaskEngine.applyInAppReflectionMask)
- * only mutated the launcher's own process — these hooks mutate the game's.
+ * BuildHooks — overrides android.os.Build and android.os.Build.VERSION static fields
+ * and methods inside the target game process before game code reads them.
  */
 public final class BuildHooks {
 
     private BuildHooks() {}
 
     public static void apply(LoadPackageParam lpparam, SpoofProfile profile) {
+        if (profile == null) return;
+
         Class<?> build = XposedHelpers.findClass("android.os.Build", lpparam.classLoader);
         if (build == null) return;
 
-        XposedHelpers.setStaticObjectField(build, "MODEL", profile.model);
-        XposedHelpers.setStaticObjectField(build, "BRAND", profile.brand);
-        XposedHelpers.setStaticObjectField(build, "MANUFACTURER", profile.manufacturer);
-        XposedHelpers.setStaticObjectField(build, "DEVICE", profile.device);
-        XposedHelpers.setStaticObjectField(build, "PRODUCT", profile.productName);
-        XposedHelpers.setStaticObjectField(build, "BOARD", profile.board);
-        XposedHelpers.setStaticObjectField(build, "HARDWARE", profile.hardware);
-        XposedHelpers.setStaticObjectField(build, "FINGERPRINT", profile.fingerprint);
-        XposedHelpers.setStaticObjectField(build, "DISPLAY", profile.displayId);
-        XposedHelpers.setStaticObjectField(build, "BOOTLOADER", profile.board);
-        XposedHelpers.setStaticObjectField(build, "RADIO", "unknown");
-        XposedHelpers.setStaticObjectField(build, "TAGS", "release-keys");
-        XposedHelpers.setStaticObjectField(build, "TYPE", "user");
-        XposedHelpers.setStaticObjectField(build, "USER", "android-build");
-        XposedHelpers.setStaticObjectField(build, "HOST", "android-build");
-        XposedHelpers.setStaticObjectField(build, "SERIAL", generateSerial(profile));
+        String serial = generateSerial(profile);
+
+        // Core Identity Fields
+        setStaticFieldSilent(build, "MODEL", profile.model);
+        setStaticFieldSilent(build, "BRAND", profile.brand);
+        setStaticFieldSilent(build, "MANUFACTURER", profile.manufacturer);
+        setStaticFieldSilent(build, "DEVICE", profile.device);
+        setStaticFieldSilent(build, "PRODUCT", profile.productName);
+        setStaticFieldSilent(build, "BOARD", profile.board);
+        setStaticFieldSilent(build, "HARDWARE", profile.hardware);
+        setStaticFieldSilent(build, "FINGERPRINT", profile.fingerprint);
+        setStaticFieldSilent(build, "DISPLAY", profile.displayId);
+        setStaticFieldSilent(build, "ID", profile.displayId);
+        setStaticFieldSilent(build, "BOOTLOADER", profile.board);
+        setStaticFieldSilent(build, "RADIO", "unknown");
+        setStaticFieldSilent(build, "TAGS", "release-keys");
+        setStaticFieldSilent(build, "TYPE", "user");
+        setStaticFieldSilent(build, "USER", "android-build");
+        setStaticFieldSilent(build, "HOST", "android-build");
+        setStaticFieldSilent(build, "SERIAL", serial);
+
         try {
             XposedHelpers.setStaticLongField(build, "TIME", 1737331955000L);
         } catch (Throwable ignored) {}
 
-        try {
-            XposedHelpers.setStaticObjectField(build, "SOC_MODEL", profile.socModel);
-            XposedHelpers.setStaticObjectField(build, "SOC_MANUFACTURER", profile.socManufacturer);
-        } catch (Throwable ignored) {}
+        // SoC Metadata (Android 12+)
+        if (profile.socModel != null && !profile.socModel.isEmpty()) {
+            setStaticFieldSilent(build, "SOC_MODEL", profile.socModel);
+        }
+        if (profile.socManufacturer != null && !profile.socManufacturer.isEmpty()) {
+            setStaticFieldSilent(build, "SOC_MANUFACTURER", profile.socManufacturer);
+        }
 
+        // Architecture ABI Lists
         try {
-            XposedHelpers.setStaticObjectField(build, "SUPPORTED_ABIS", new String[]{"arm64-v8a"});
+            XposedHelpers.setStaticObjectField(build, "SUPPORTED_ABIS", new String[]{"arm64-v8a", "armeabi-v7a", "armeabi"});
             XposedHelpers.setStaticObjectField(build, "SUPPORTED_64_BIT_ABIS", new String[]{"arm64-v8a"});
+            XposedHelpers.setStaticObjectField(build, "SUPPORTED_32_BIT_ABIS", new String[]{"armeabi-v7a", "armeabi"});
         } catch (Throwable ignored) {}
 
+        // Build.VERSION Subclass
         Class<?> version = XposedHelpers.findClass("android.os.Build$VERSION", lpparam.classLoader);
         if (version != null) {
+            setStaticFieldSilent(version, "RELEASE", profile.androidVersion != null ? profile.androidVersion : "15");
             try {
-                XposedHelpers.setStaticObjectField(version, "RELEASE", profile.androidVersion);
-                XposedHelpers.setStaticIntField(version, "SDK_INT", profile.sdkInt);
-                XposedHelpers.setStaticObjectField(version, "SECURITY_PATCH", profile.securityPatch);
-                XposedHelpers.setStaticObjectField(version, "CODENAME", "REL");
-                XposedHelpers.setStaticObjectField(version, "INCREMENTAL", profile.displayId);
+                XposedHelpers.setStaticIntField(version, "SDK_INT", profile.sdkInt > 0 ? profile.sdkInt : 35);
+            } catch (Throwable ignored) {}
+            setStaticFieldSilent(version, "SECURITY_PATCH", profile.securityPatch != null ? profile.securityPatch : "2025-01-05");
+            setStaticFieldSilent(version, "CODENAME", "REL");
+            setStaticFieldSilent(version, "INCREMENTAL", profile.displayId != null ? profile.displayId : "V1.0.0");
+            setStaticFieldSilent(version, "BASE_OS", "");
+            try {
+                XposedHelpers.setStaticIntField(version, "PREVIEW_SDK_INT", 0);
+                XposedHelpers.setStaticIntField(version, "MEDIA_PERFORMANCE_CLASS", 35);
             } catch (Throwable ignored) {}
         }
 
-        // Build.getSerial() — deterministic fake serial
+        // Method hooks: Build.getSerial() & Build.getRadioVersion()
         try {
             XposedHelpers.findAndHookMethod(build, "getSerial",
-                    XC_MethodReplacement.returnConstant(generateSerial(profile)));
+                    XC_MethodReplacement.returnConstant(serial));
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(build, "getRadioVersion",
+                    XC_MethodReplacement.returnConstant("MPSS.DE.1.0-00001"));
+        } catch (Throwable ignored) {}
+
+        XposedBridge.log("[GameBooster] BuildHooks applied: " + profile.model + " [" + profile.brand + "]");
+    }
+
+    private static void setStaticFieldSilent(Class<?> clazz, String fieldName, Object value) {
+        try {
+            XposedHelpers.setStaticObjectField(clazz, fieldName, value);
         } catch (Throwable ignored) {}
     }
 
     /** Deterministic pseudo-serial derived from the profile id. */
-    private static String generateSerial(SpoofProfile profile) {
+    public static String generateSerial(SpoofProfile profile) {
         int h = profile.id.hashCode() & 0x7fffffff;
         return "GB" + String.format("%08X", h);
     }

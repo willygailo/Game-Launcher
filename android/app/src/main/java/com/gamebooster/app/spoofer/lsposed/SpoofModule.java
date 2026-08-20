@@ -8,15 +8,11 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 /**
- * SpoofModule — LSPosed module entry (registered in assets/xposed_init).
+ * SpoofModule — LSPosed / LSPatch module entry (registered in assets/xposed_init).
  *
- * Loaded by the LSPosed framework inside EVERY scoped app process. Applies
- * in-memory device spoofing hooks ONLY for the supported games registered in
- * GamePackageRegistry (or every app when spoof_all_apps is enabled), using the
- * profile the user selected in the launcher (read via XSharedPreferences).
- *
- * All changes are in-memory at ART level — no game files are ever touched,
- * which removes the config-file tampering ban vector.
+ * Loaded by the LSPosed framework (or embedded LSPatch loader) inside scoped game processes.
+ * Applies in-memory hardware, identity, GPU, RAM, display refresh rate, and anti-detection hooks
+ * at ART level — zero game files modified on disk, eliminating file-tampering bans.
  */
 public class SpoofModule implements IXposedHookLoadPackage {
 
@@ -24,8 +20,7 @@ public class SpoofModule implements IXposedHookLoadPackage {
     public void handleLoadPackage(LoadPackageParam lpparam) {
         try {
             if (lpparam.packageName == null) return;
-            // Never hook the launcher itself or system-critical processes.
-            // spoof_all_apps must never destabilize the system.
+            // Never hook the launcher itself or critical system services
             if (isExcludedPackage(lpparam.packageName)) return;
 
             boolean allApps = SpoofConfigBridge.isSpoofAllApps();
@@ -38,22 +33,41 @@ public class SpoofModule implements IXposedHookLoadPackage {
             XposedBridge.log("[GameBooster] SpoofModule active for " + lpparam.packageName
                     + " -> " + profile.displayName + " [" + profile.model + "]");
 
-            BuildHooks.apply(lpparam, profile);
-            SystemPropertiesHooks.apply(lpparam, profile);
-            RuntimeMemoryHooks.apply(profile);
-            RamInfoHooks.apply(lpparam);
-            GlesHooks.apply(lpparam, profile);
-            ProcFileHooks.apply(lpparam, profile);
-            IdentityHooks.apply(lpparam, profile);
+            // 1. Anti-Detection Hooks FIRST (hides root, xposed, lsposed, lspatch, magisk, ksu)
             AntiDetectionHooks.apply(lpparam);
 
-            XposedBridge.log("[GameBooster] SpoofModule hooks installed for " + lpparam.packageName);
+            // 2. Android Build & Version Identity Override
+            BuildHooks.apply(lpparam, profile);
+
+            // 3. Multi-Partition SystemProperties Override (ro.*)
+            SystemPropertiesHooks.apply(lpparam, profile);
+
+            // 4. High Refresh Rate & Display Mode Hooking (120Hz/144Hz/165Hz/185Hz)
+            DisplayHooks.apply(lpparam, profile);
+
+            // 5. OpenGL ES & EGL GPU Hooking (Adreno / Immortalis)
+            GlesHooks.apply(lpparam, profile);
+
+            // 6. Runtime CPU Cores & Memory Limits Hooking
+            RuntimeMemoryHooks.apply(profile);
+
+            // 7. ActivityManager RAM Telemetry Hooking
+            RamInfoHooks.apply(lpparam);
+
+            // 8. /proc/cpuinfo, /proc/meminfo, and Shell Execution Interception
+            ProcFileHooks.apply(lpparam, profile);
+
+            // 9. Telephony, Hardware Identifiers, Android ID & User-Agent Hooking
+            IdentityHooks.apply(lpparam, profile);
+
+            XposedBridge.log("[GameBooster] All 9 SpoofModule hook layers successfully installed for " + lpparam.packageName);
         } catch (Throwable t) {
-            XposedBridge.log("[GameBooster] SpoofModule error in " + lpparam.packageName + ": " + t);
+            XposedBridge.log("[GameBooster] SpoofModule initialization error in " + lpparam.packageName + ": " + t);
         }
     }
 
-    private static boolean isExcludedPackage(String pkg) {
+    public static boolean isExcludedPackage(String pkg) {
+        if (pkg == null) return true;
         return pkg.equals("com.gamebooster.app")
                 || pkg.equals("android")
                 || pkg.equals("com.android.systemui")

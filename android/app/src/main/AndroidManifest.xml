@@ -181,6 +181,9 @@
         <meta-data
             android:name="xposedsharedprefs"
             android:value="true" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposed_scope" />
 
         <!-- Non-root (LSPatch) config bridge: lets the module inside a patched
              game process read device_spoofer_prefs via ContentResolver. -->

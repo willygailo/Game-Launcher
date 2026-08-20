@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LSPosed Module Recommended Scope -->
+    <string-array name="xposed_scope">
+        <!-- Mobile Legends: Bang Bang -->
+        <item>com.mobile.legends</item>
+        <item>com.mobilelegends.mi</item>
+        <item>com.vng.mlbbvn</item>
+        <item>com.mobilelegends.na</item>
+
+        <!-- PUBG Mobile / BGMI / New State -->
+        <item>com.tencent.ig</item>
+        <item>com.pubg.imobile</item>
+        <item>com.pubg.krmobile</item>
+        <item>com.vng.pubgmobile</item>
+        <item>com.pubg.newstate</item>
+
+        <!-- Call of Duty: Mobile / Warzone -->
+        <item>com.activision.callofduty.shooter</item>
+        <item>com.garena.game.codm</item>
+        <item>com.vng.codmvn</item>
+        <item>com.tencent.tmgp.kr.codm</item>
+        <item>com.activision.callofduty.warzone</item>
+
+        <!-- Garena Free Fire / Max -->
+        <item>com.dts.freefireth</item>
+        <item>com.dts.freefiremax</item>
+
+        <!-- League of Legends: Wild Rift -->
+        <item>com.riotgames.league.wildrift</item>
+
+        <!-- Honor of Kings / Arena of Valor -->
+        <item>com.levelinfinite.sgameGlobal</item>
+        <item>com.tencent.tmgp.sgame</item>
+        <item>com.garena.game.kgtw</item>
+        <item>com.garena.game.kgvn</item>
+
+        <!-- HoYoverse & Kuro Games -->
+        <item>com.miHoYo.GenshinImpact</item>
+        <item>com.cognosphere.GenshinImpact</item>
+        <item>com.HoYoverse.hkrpgoversea</item>
+        <item>com.HoYoverse.nap</item>
+        <item>com.kurogame.wutheringwaves.global</item>
+
+        <!-- Action / FPS / Battle Royale -->
+        <item>com.axlebolt.standoff2</item>
+        <item>com.netease.bloodstrike</item>
+        <item>com.netease.newspike</item>
+        <item>com.miracle.farlight84</item>
+        <item>com.proximabeta.mf.uamo</item>
+        <item>com.levelinfinite.deltaforce</item>
+        <item>com.tencent.tmgp.projectc</item>
+        <item>com.riotgames.valorantmobile</item>
+        <item>com.roblox.client</item>
+        <item>com.h20.carxstreet</item>
+        <item>com.gameloft.anmp.android.glofta9hm</item>
+        <item>com.ea.games.r3_row</item>
+        <item>com.supercell.brawlstars</item>
+        <item>com.supercell.clashroyale</item>
+        <item>com.supercell.clashofclans</item>
+        <item>com.supercell.squad</item>
+    </string-array>
+</resources>
