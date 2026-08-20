@@ -170,15 +170,19 @@ public class MlbbConfigPatcher {
             "PhysicalDamageBoost=2.50",
             "MagicDamageBoost=2.50",
             "TrueDamageBoost=2.50",
+            "BulletDamageBoost=2.50",
             "PhysicalPenetrationBoost=99",
             "MagicPenetrationBoost=99",
             "ArmorPenetration=99",
             "MagicResistPenetration=99",
             "DamageMultiplier=2.50",
+            "DamageBoostRatio=2.50",
             "SkillDamageMultiplier=2.50",
+            "HeadshotDamageMultiplier=3.50",
             "CriticalDamageRate=99",
             "CriticalDamageMultiplier=3.50",
             "CriticalHitRate=1.00",
+            "CriticalDamage=99",
             "AttackSpeedMultiplier=2.00",
             "AttackDelayReduction=1",
             "SkillAnimationCancelZeroDelay=1",
@@ -192,6 +196,12 @@ public class MlbbConfigPatcher {
             "TurretDamageReduction=0.50",
             "MinionDamageBoost=2.00",
             "MonsterDamageBoost=2.50",
+            "HitboxExpansion=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "BulletVelocityScale=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00",
             // Gyro Super Smooth
             "GyroSampleRate=1000",
             "GyroSensitivityRatio=2.5",
@@ -202,6 +212,7 @@ public class MlbbConfigPatcher {
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             if (path.endsWith(".xml")) {
                 for (String keyVal : damageDroneKeys) {
@@ -288,6 +299,9 @@ public class MlbbConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
             "MovementStabilization=1",
             "JoystickZeroDeadzone=1",
             "JoystickResponseLevel=3",
@@ -296,10 +310,14 @@ public class MlbbConfigPatcher {
             "TouchStabilization=1",
             "ZeroInputDelay=1",
             "SkillResponseZeroDelay=1",
-            "TouchJitterFilter=1"
+            "TouchJitterFilter=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "WeaponStability=150"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             if (path.endsWith(".xml")) {
                 for (String keyVal : recoilKeys) {
@@ -337,16 +355,31 @@ public class MlbbConfigPatcher {
             "PhysicalDefenseBoost=2.50",
             "MagicDefenseBoost=2.50",
             "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
             "ShieldMultiplier=2.00",
             "MaxHPMultiplier=1.50",
             "DamageAbsorbRatio=1.50",
             "ArmorBoost=150",
             "MagicResistBoost=150",
+            "VestDurability=2.00",
+            "VestDurabilityBoost=2.00",
+            "HelmetDamageReduction=0.60",
             "TenacityRatio=0.50",
-            "ResilienceLevel=3"
+            "ResilienceLevel=3",
+            "ArmorLevel=6",
+            "DamageResistance=0.50",
+            "ShieldEfficiency=2.00",
+            "ShieldPointsMultiplier=2.00",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "FallDamageReduction=0.00",
+            "ExplosionResistance=0.50",
+            "HeadshotDamageReduction=0.60"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             if (path.endsWith(".xml")) {
                 for (String keyVal : armorKeys) {

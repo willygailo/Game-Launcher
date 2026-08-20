@@ -233,14 +233,41 @@ public class PubgConfigPatcher {
             "+CVars=r.ScreenShake=0",
             "+CVars=r.WeaponSway=0",
             "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
             "+CVars=r.SpreadReduction=1",
-            "RecoilReduction=1",
-            "WeaponStability=150",
+            "+CVars=r.ScopeStability=2.00",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.AimPunchReduction=1",
+            "+CVars=r.FlinchReduction=1",
+            "+CVars=r.WeaponKick=0.00",
+            "+CVars=r.ViewKick=0.00",
+            "RecoilControl=1",
             "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "RecoilReduction=1.50",
+            "WeaponStability=150",
+            "ScreenShake=0",
+            "GunKick=0",
+            "WeaponKickReduction=1.50",
+            "AllGunsRecoilReduction=1.50",
+            "ScopeShakeReduction=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=1.50",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
+            "SpreadScale=0.00",
+            "BulletSpreadReduction=1",
+            "FirstBulletAccuracy=1",
             "NoCameraShake=1"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String cvar : recoilCvars) {
                 String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
@@ -267,19 +294,38 @@ public class PubgConfigPatcher {
         String[] damageCvars = {
             "+CVars=r.DamageMultiplier=2.50",
             "+CVars=r.BulletDamageScale=2.50",
-            "+CVars=r.CriticalHitRate=1.0",
             "+CVars=r.HeadshotMultiplier=3.50",
-            "+CVars=r.HitboxExpansion=1.5",
-            "+CVars=r.BulletVelocityScale=2.0",
+            "+CVars=r.WeaponDamageScale=2.50",
+            "+CVars=r.CriticalHitRate=1.00",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.PenetrationPower=2.50",
+            "+CVars=r.BodyDamageMultiplier=2.00",
+            "+CVars=r.LimbDamageMultiplier=1.50",
+            "+CVars=r.ExplosiveDamageMultiplier=2.00",
+            "DamageMultiplier=2.50",
             "PhysicalDamageBoost=2.50",
             "MagicDamageBoost=2.50",
             "TrueDamageBoost=2.50",
-            "DamageMultiplier=2.50",
+            "BulletDamageBoost=2.50",
+            "DamageBoostRatio=2.50",
+            "HeadshotMultiplier=3.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalHitRate=99",
+            "CriticalDamage=99",
             "CriticalDamageRate=99",
-            "HeadshotDamageMultiplier=3.50"
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HighDamageRateMode=1",
+            "AttackSpeedMultiplier=2.00",
+            "SkillDamageMultiplier=2.50",
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String cvar : damageCvars) {
                 String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
@@ -311,15 +357,38 @@ public class PubgConfigPatcher {
             "+CVars=r.ShieldEfficiency=2.00",
             "+CVars=r.HealthRegenBoost=1.50",
             "+CVars=r.DamageResistance=0.50",
-            "ArmorLevel=3",
-            "VestDurability=100",
-            "DamageResistance=0.50",
+            "+CVars=r.TenacityRatio=0.50",
+            "+CVars=r.FallDamageReduction=0.00",
+            "+CVars=r.ExplosionResistance=0.50",
+            "+CVars=r.HeadshotDamageReduction=0.60",
             "PhysicalDefenseBoost=2.50",
+            "MagicDefenseBoost=2.50",
+            "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
+            "ShieldMultiplier=2.00",
+            "MaxHPMultiplier=1.50",
+            "DamageAbsorbRatio=1.50",
             "ArmorBoost=150",
-            "DamageReductionRatio=0.50"
+            "MagicResistBoost=150",
+            "VestDurability=2.00",
+            "VestDurabilityBoost=2.00",
+            "HelmetDamageReduction=0.60",
+            "TenacityRatio=0.50",
+            "ResilienceLevel=3",
+            "ArmorLevel=6",
+            "DamageResistance=0.50",
+            "ShieldEfficiency=2.00",
+            "ShieldPointsMultiplier=2.00",
+            "ArmorPlateEfficiency=2.00",
+            "KineticArmorBoost=2.00",
+            "FlakJacketRatio=0.60",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             for (String cvar : armorCvars) {
                 String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;

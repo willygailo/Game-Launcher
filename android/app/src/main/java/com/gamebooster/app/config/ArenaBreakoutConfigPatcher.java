@@ -118,18 +118,48 @@ public class ArenaBreakoutConfigPatcher {
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "+CVars=r.DamageMultiplier=2.50",
+            "+CVars=r.BulletDamageBoost=2.50",
+            "+CVars=r.DamageBoost=2.50",
+            "+CVars=r.PhysicalDamageBoost=2.50",
+            "+CVars=r.HeadshotMultiplier=3.50",
+            "+CVars=r.HeadshotDamageMultiplier=3.50",
+            "+CVars=r.CriticalDamage=99",
+            "+CVars=r.CriticalHitRate=99",
+            "+CVars=r.CriticalDamageMultiplier=3.50",
+            "+CVars=r.PenetrationBoost=99",
+            "+CVars=r.ArmorPenetration=99",
+            "+CVars=r.BulletVelocityMultiplier=2.00",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BodyDamageMultiplier=2.00",
+            "+CVars=r.LimbDamageMultiplier=1.50",
+            "+CVars=r.ExplosiveDamageMultiplier=2.00",
+            "DamageMultiplier=2.50",
+            "BulletDamageBoost=2.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalHitRate=99",
+            "ArmorPenetration=99",
+            "PenetrationBoost=99"
+        };
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nBulletDamageBoost=2.50\nHeadshotDamageMultiplier=3.50\nCriticalHitRate=99\nArmorPenetration=1.90\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : damageKeys) {
+                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Arena Breakout damage script 1.9x applied for " + packageName);
+        Log.i(TAG, "Arena Breakout damage script & headshot multiplier applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -192,15 +222,31 @@ public class ArenaBreakoutConfigPatcher {
             "+CVars=r.WeaponRecoilScale=0.00",
             "+CVars=r.VerticalRecoilMultiplier=0.00",
             "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.VerticalRecoilScale=0.00",
+            "+CVars=r.HorizontalRecoilScale=0.00",
+            "+CVars=r.WeaponKickScale=0.00",
+            "+CVars=r.GunKickScale=0.00",
             "+CVars=r.CameraShake=0",
             "+CVars=r.ScreenShake=0",
             "+CVars=r.WeaponSway=0",
-            "RecoilReduction=1",
+            "+CVars=r.AimPunchMultiplier=0.00",
+            "+CVars=r.FlinchMultiplier=0.00",
+            "+CVars=r.ScopeShakeReduction=1.50",
+            "+CVars=r.ScopeStability=1.50",
+            "+CVars=r.ScopeRecoilMultiplier=0.00",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
+            "+CVars=r.SpreadScale=0.00",
+            "RecoilControl=1",
+            "RecoilReduction=1.50",
             "WeaponStability=150",
-            "ZeroRecoil=1"
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
@@ -230,13 +276,26 @@ public class ArenaBreakoutConfigPatcher {
             "+CVars=r.HelmetDamageReduction=0.60",
             "+CVars=r.DamageResistance=0.50",
             "+CVars=r.ShieldEfficiency=2.00",
+            "+CVars=r.IncomingDamageReduction=0.50",
+            "+CVars=r.MaxHPMultiplier=1.50",
+            "+CVars=r.HealthRegenDelay=0.00",
+            "+CVars=r.HealthRegenBoost=1.50",
+            "+CVars=r.ExplosionResistance=0.50",
+            "+CVars=r.FallDamageReduction=0.00",
             "ArmorLevel=6",
             "VestDurability=100",
+            "VestDurabilityBoost=2.00",
+            "HelmetDamageReduction=0.60",
+            "ArmorDamageAbsorb=0.50",
+            "ShieldCapacity=2.00",
             "DamageReductionRatio=0.50",
-            "PhysicalDefenseBoost=2.50"
+            "IncomingDamageReduction=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "ArmorBoost=150"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : armorKeys) {
                 String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;

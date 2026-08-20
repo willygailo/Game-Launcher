@@ -136,10 +136,24 @@ public class HokConfigPatcher {
             "InputSmoothing=1",
             "TouchStabilization=1",
             "ZeroInputDelay=1",
-            "SkillResponseFast=1"
+            "SkillResponseFast=1",
+            "CameraShake=0",
+            "ScreenShake=0",
+            "NoCameraShake=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeStability=1.50",
+            "WeaponSway=0",
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "SpreadScale=0.00",
+            "CrosshairSpread=0.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -165,11 +179,22 @@ public class HokConfigPatcher {
             "MagicDamageBoost=2.50",
             "TrueDamageBoost=2.50",
             "DamageMultiplier=2.50",
+            "DamageBoost=2.50",
+            "CritRate=99",
+            "CritDamage=3.50",
             "CriticalDamageRate=99",
+            "CriticalHitRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "HeadshotMultiplier=3.50",
+            "AttackSpeedBoost=1.5",
+            "HitboxExpansion=1.50",
+            "BodyDamageMultiplier=2.00",
+            "ExplosiveDamageMultiplier=2.00",
             "FOV=150"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -197,16 +222,25 @@ public class HokConfigPatcher {
             "PhysicalArmor=2.50",
             "MagicResistance=2.50",
             "DamageReduction=0.50",
+            "DamageReductionRatio=0.50",
+            "IncomingDamageReduction=0.50",
             "ShieldBoost=2.00",
+            "ShieldStrength=2.50",
+            "ShieldEfficiency=2.00",
             "MaxHPBoost=1.50",
+            "MaxHPMultiplier=1.50",
             "Tenacity=0.50",
+            "TenacityRatio=0.50",
             "ArmorBoost=150",
             "PhysicalDefenseBoost=2.50",
             "MagicDefenseBoost=2.50",
-            "DamageReductionRatio=0.50"
+            "DamageAbsorbRatio=1.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

@@ -102,18 +102,38 @@ public class CarXConfigPatcher {
     }
 
     public static void applyDamageScriptConfig(String packageName) {
-        // Racing Boost: Nitro & Torque acceleration
+        // Racing Boost: Nitro & Torque acceleration + Performance Multipliers
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] boostKeys = {
+            "NitroMultiplier=2.50",
+            "TorqueBoost=2.50",
+            "DriftScoreMultiplier=2.50",
+            "ThrottleResponse=1.50",
+            "EnginePowerMultiplier=2.50",
+            "TopSpeedBoost=1.50",
+            "AccelerationMultiplier=2.50",
+            "DamageMultiplier=2.50",
+            "BulletDamageBoost=2.50",
+            "DamageBoost=2.50",
+            "HighDamageRateMode=1"
+        };
         for (String path : paths) {
-            String boostData = "\n[EngineTune]\nNitroMultiplier=1.90\nTorqueBoost=1.90\nDriftScoreMultiplier=2.0\nThrottleResponse=1.0\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + boostData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[EngineTune]' ").append(path).append(" || echo '[EngineTune]' >> ").append(path).append("; ");
+            for (String keyVal : boostKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
             }
         }
         Log.i(TAG, "CarX/Racing Nitro & Torque boost applied for " + packageName);
@@ -179,11 +199,19 @@ public class CarXConfigPatcher {
             "TireGripBoost=1.5",
             "ChassisStability=150",
             "CameraShake=0",
+            "NoCameraShake=1",
             "ZeroCameraShake=1",
-            "TractionControl=1"
+            "TractionControl=1",
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "WeaponStability=150",
+            "ScopeStability=1.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -213,10 +241,16 @@ public class CarXConfigPatcher {
             "BodyIntegrity=2.00",
             "ImpactAbsorption=1.00",
             "ArmorBoost=150",
-            "DamageReductionRatio=0.50"
+            "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[Durability]' ").append(path).append(" || echo '[Durability]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

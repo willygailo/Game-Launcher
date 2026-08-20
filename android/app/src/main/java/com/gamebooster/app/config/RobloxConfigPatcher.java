@@ -123,14 +123,34 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
-            "RecoilReduction=1",
-            "CameraShake=0",
-            "WeaponStability=150",
+            "RecoilControl=1",
             "ZeroRecoil=1",
-            "InputSmoothing=1"
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "RecoilReduction=1.50",
+            "CameraShake=0",
+            "NoCameraShake=1",
+            "WeaponStability=150",
+            "InputSmoothing=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeStability=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "GunKick=0",
+            "WeaponKickReduction=1.50",
+            "SpreadScale=0.00",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
+            "WeaponSway=0"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -152,13 +172,30 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
+            "DamageMultiplier=2.50",
+            "PhysicalDamageBoost=2.50",
+            "BulletDamageBoost=2.50",
             "DamageBoost=2.50",
+            "DamageBoostRatio=2.50",
             "HeadshotMultiplier=3.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalDamage=99",
+            "CriticalHitRate=99",
             "CriticalDamageRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HighDamageRateMode=1",
+            "HitboxExpansion=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00",
             "FOV=120"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -185,13 +222,26 @@ public class RobloxConfigPatcher {
         String[] armorKeys = {
             "DefenseMultiplier=2.50",
             "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
             "ShieldMultiplier=2.00",
+            "ShieldCapacity=2.00",
+            "ShieldStrength=2.50",
+            "ShieldEfficiency=2.00",
             "MaxHPMultiplier=1.50",
+            "HPBoostRatio=1.50",
             "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50"
+            "PhysicalDefenseBoost=2.50",
+            "DamageAbsorbRatio=1.50",
+            "TenacityRatio=0.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "ExplosionResistance=0.50",
+            "FallDamageReduction=0.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

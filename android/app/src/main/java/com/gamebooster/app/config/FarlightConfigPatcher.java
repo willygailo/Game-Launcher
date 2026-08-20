@@ -187,15 +187,31 @@ public class FarlightConfigPatcher {
             "+CVars=r.WeaponRecoilScale=0.00",
             "+CVars=r.VerticalRecoilMultiplier=0.00",
             "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.VerticalRecoilScale=0.00",
+            "+CVars=r.HorizontalRecoilScale=0.00",
+            "+CVars=r.WeaponKickScale=0.00",
+            "+CVars=r.GunKickScale=0.00",
             "+CVars=r.ScreenShake=0",
             "+CVars=r.WeaponKick=0",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.AimPunchMultiplier=0.00",
+            "+CVars=r.FlinchMultiplier=0.00",
+            "+CVars=r.ScopeShakeReduction=1.50",
+            "+CVars=r.ScopeStability=1.50",
+            "+CVars=r.ScopeRecoilMultiplier=0.00",
             "+CVars=r.SpreadScale=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
+            "+CVars=r.BulletSpread=0.00",
             "RecoilControl=1",
             "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "RecoilReduction=1.50",
             "WeaponStability=150"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
@@ -219,13 +235,29 @@ public class FarlightConfigPatcher {
         String[] damageKeys = {
             "+CVars=r.DamageMultiplier=2.50",
             "+CVars=r.BulletDamageScale=2.50",
+            "+CVars=r.PhysicalDamageBoost=2.50",
+            "+CVars=r.DamageBoost=2.50",
             "+CVars=r.HeadshotMultiplier=3.50",
-            "+CVars=r.CriticalHitRate=1.0",
+            "+CVars=r.HeadshotDamageMultiplier=3.50",
+            "+CVars=r.CriticalDamage=99",
+            "+CVars=r.CriticalHitRate=99",
+            "+CVars=r.CriticalDamageMultiplier=3.50",
+            "+CVars=r.PenetrationBoost=99",
+            "+CVars=r.ArmorPenetration=99",
+            "+CVars=r.BulletVelocityMultiplier=2.00",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BodyDamageMultiplier=2.00",
+            "+CVars=r.LimbDamageMultiplier=1.50",
+            "+CVars=r.ExplosiveDamageMultiplier=2.00",
             "DamageMultiplier=2.50",
-            "DamageBoost=2.50"
+            "DamageBoost=2.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalHitRate=99",
+            "ArmorPenetration=99"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
@@ -255,14 +287,27 @@ public class FarlightConfigPatcher {
             "+CVars=r.ShieldEfficiency=2.00",
             "+CVars=r.ShieldCapacityBoost=2.00",
             "+CVars=r.DamageResistance=0.50",
+            "+CVars=r.VestDurabilityBoost=2.00",
+            "+CVars=r.HelmetDamageReduction=0.60",
+            "+CVars=r.MaxHPMultiplier=1.50",
+            "+CVars=r.HealthRegenDelay=0.00",
+            "+CVars=r.HealthRegenBoost=1.50",
+            "+CVars=r.IncomingDamageReduction=0.50",
+            "+CVars=r.ExplosionResistance=0.50",
+            "+CVars=r.FallDamageReduction=0.00",
             "ShieldEfficiency=2.00",
             "ShieldCapacity=200",
+            "ShieldMultiplier=2.00",
             "ArmorBoost=150",
+            "VestDurabilityBoost=2.00",
             "DamageReductionRatio=0.50",
-            "PhysicalDefenseBoost=2.50"
+            "IncomingDamageReduction=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "HealthRegenDelay=0.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

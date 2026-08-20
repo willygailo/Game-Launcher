@@ -197,16 +197,35 @@ public class ValorantConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
             "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "RecoilReduction=1.50",
+            "WeaponStability=150",
             "FirstBulletAccuracy=1",
             "SpreadScale=0.00",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
             "GunKick=0",
+            "GunKickReduction=1.50",
+            "WeaponKickReduction=1.50",
             "CameraShake=0",
-            "ZeroRecoil=1",
-            "WeaponStability=150"
+            "NoCameraShake=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=1.50",
+            "WeaponSway=0"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -229,13 +248,28 @@ public class ValorantConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
             "DamageMultiplier=2.50",
-            "HeadshotMultiplier=3.50",
-            "CriticalDamageRate=99",
+            "PhysicalDamageBoost=2.50",
+            "BulletDamageBoost=2.50",
             "DamageBoost=2.50",
-            "BulletVelocity=2.0"
+            "HeadshotMultiplier=3.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalDamage=99",
+            "CriticalDamageRate=99",
+            "CriticalHitRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HighDamageRateMode=1",
+            "HitboxExpansion=1.50",
+            "BulletVelocity=2.00",
+            "BulletVelocityMultiplier=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -265,14 +299,25 @@ public class ValorantConfigPatcher {
             "+CVars=r.LightShieldEfficiency=2.00",
             "+CVars=r.ShieldPointsMultiplier=2.00",
             "+CVars=r.DamageResistance=0.50",
+            "+CVars=r.MaxHPMultiplier=1.50",
+            "+CVars=r.HealthRegenDelay=0.00",
+            "+CVars=r.HealthRegenBoost=1.50",
+            "+CVars=r.IncomingDamageReduction=0.50",
+            "+CVars=r.ExplosionResistance=0.50",
+            "+CVars=r.FallDamageReduction=0.00",
             "ShieldEfficiency=2.00",
             "ShieldPoints=100",
+            "ShieldMultiplier=2.00",
             "ArmorBoost=150",
+            "VestDurabilityBoost=2.00",
             "DamageReductionRatio=0.50",
-            "PhysicalDefenseBoost=2.50"
+            "IncomingDamageReduction=0.50",
+            "PhysicalDefenseBoost=2.50",
+            "HealthRegenDelay=0.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

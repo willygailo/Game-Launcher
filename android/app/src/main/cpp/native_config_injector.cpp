@@ -80,6 +80,84 @@ static bool patch_cvar(std::string& content, const std::string& cvar, const std:
     }
 }
 
+static bool patch_xml_node(std::string& content, const std::string& tag, const std::string& key, const std::string& value) {
+    std::string namePattern = "name=\"" + key + "\"";
+    size_t pos = content.find(namePattern);
+    if (pos != std::string::npos) {
+        size_t lineStart = content.rfind('<', pos);
+        size_t lineEnd = content.find('>', pos);
+        if (lineStart != std::string::npos && lineEnd != std::string::npos) {
+            std::string replacement;
+            if (tag == "string") {
+                size_t closeTag = content.find("</string>", pos);
+                if (closeTag != std::string::npos && closeTag < lineEnd + 200) {
+                    lineEnd = closeTag + 8;
+                }
+                replacement = "<string name=\"" + key + "\">" + value + "</string>";
+            } else {
+                replacement = "<" + tag + " name=\"" + key + "\" value=\"" + value + "\" />";
+            }
+            content.replace(lineStart, lineEnd - lineStart + 1, replacement);
+            return true;
+        }
+    }
+
+    size_t mapEnd = content.find("</map>");
+    if (mapEnd != std::string::npos) {
+        std::string insertion;
+        if (tag == "string") {
+            insertion = "  <string name=\"" + key + "\">" + value + "</string>\n";
+        } else {
+            insertion = "  <" + tag + " name=\"" + key + "\" value=\"" + value + "\" />\n";
+        }
+        content.insert(mapEnd, insertion);
+        return true;
+    } else {
+        if (content.empty()) {
+            content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n";
+            if (tag == "string") {
+                content += "  <string name=\"" + key + "\">" + value + "</string>\n";
+            } else {
+                content += "  <" + tag + " name=\"" + key + "\" value=\"" + value + "\" />\n";
+            }
+            content += "</map>\n";
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool patch_json_prop(std::string& content, const std::string& key, const std::string& value, bool isNumeric) {
+    std::string keyPattern = "\"" + key + "\":";
+    size_t pos = content.find(keyPattern);
+    if (pos != std::string::npos) {
+        size_t valStart = pos + keyPattern.length();
+        while (valStart < content.length() && (content[valStart] == ' ' || content[valStart] == '\t')) valStart++;
+        size_t valEnd = content.find_first_of(",}\n", valStart);
+        if (valEnd == std::string::npos) valEnd = content.length();
+        std::string formattedVal = isNumeric ? value : ("\"" + value + "\"");
+        content.replace(valStart, valEnd - valStart, formattedVal);
+        return true;
+    }
+
+    size_t lastBrace = content.rfind('}');
+    if (lastBrace != std::string::npos) {
+        size_t prevNonWs = content.find_last_not_of(" \t\n\r", lastBrace - 1);
+        std::string insertion;
+        if (prevNonWs != std::string::npos && content[prevNonWs] != '{' && content[prevNonWs] != ',') {
+            insertion += ",\n";
+        } else {
+            insertion += "\n";
+        }
+        insertion += "  \"" + key + "\": " + (isNumeric ? value : ("\"" + value + "\"")) + "\n";
+        content.insert(lastBrace, insertion);
+        return true;
+    } else {
+        content = "{\n  \"" + key + "\": " + (isNumeric ? value : ("\"" + value + "\"")) + "\n}\n";
+        return true;
+    }
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectConfig
   (JNIEnv *env, jclass, jstring jPath, jstring jContent) {
     if (!jPath || !jContent) return JNI_FALSE;
@@ -101,9 +179,57 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     const char *key = env->GetStringUTFChars(jKey, nullptr);
     const char *value = env->GetStringUTFChars(jValue, nullptr);
 
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    bool success = false;
+
+    if (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos) {
+        success = patch_xml_node(content, "string", key, value);
+    } else if (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{')) {
+        success = patch_json_prop(content, key, value, false);
+    } else {
+        success = patch_key_value(content, key, value);
+    }
+
+    if (success) {
+        success = write_file_posix(pathStr, content);
+    }
+
+    env->ReleaseStringUTFChars(jPath, path);
+    env->ReleaseStringUTFChars(jKey, key);
+    env->ReleaseStringUTFChars(jValue, value);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchXmlKey
+  (JNIEnv *env, jclass, jstring jPath, jstring jTag, jstring jKey, jstring jValue) {
+    if (!jPath || !jTag || !jKey || !jValue) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    const char *tag = env->GetStringUTFChars(jTag, nullptr);
+    const char *key = env->GetStringUTFChars(jKey, nullptr);
+    const char *value = env->GetStringUTFChars(jValue, nullptr);
+
     std::string content = read_file_posix(path);
-    patch_key_value(content, key, value);
-    bool success = write_file_posix(path, content);
+    bool patched = patch_xml_node(content, tag, key, value);
+    bool success = patched && write_file_posix(path, content);
+
+    env->ReleaseStringUTFChars(jPath, path);
+    env->ReleaseStringUTFChars(jTag, tag);
+    env->ReleaseStringUTFChars(jKey, key);
+    env->ReleaseStringUTFChars(jValue, value);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchJsonKey
+  (JNIEnv *env, jclass, jstring jPath, jstring jKey, jstring jValue, jboolean isNumeric) {
+    if (!jPath || !jKey || !jValue) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    const char *key = env->GetStringUTFChars(jKey, nullptr);
+    const char *value = env->GetStringUTFChars(jValue, nullptr);
+
+    std::string content = read_file_posix(path);
+    bool patched = patch_json_prop(content, key, value, isNumeric == JNI_TRUE);
+    bool success = patched && write_file_posix(path, content);
 
     env->ReleaseStringUTFChars(jPath, path);
     env->ReleaseStringUTFChars(jKey, key);
@@ -122,14 +248,24 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         return JNI_FALSE;
     }
 
-    std::string content = read_file_posix(path);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
     for (jsize i = 0; i < lenKeys; i++) {
         auto jKeyStr = (jstring)env->GetObjectArrayElement(jKeys, i);
         auto jValStr = (jstring)env->GetObjectArrayElement(jValues, i);
         if (jKeyStr && jValStr) {
             const char *k = env->GetStringUTFChars(jKeyStr, nullptr);
             const char *v = env->GetStringUTFChars(jValStr, nullptr);
-            patch_key_value(content, k, v);
+            if (isXml) {
+                patch_xml_node(content, "string", k, v);
+            } else if (isJson) {
+                patch_json_prop(content, k, v, false);
+            } else {
+                patch_key_value(content, k, v);
+            }
             env->ReleaseStringUTFChars(jKeyStr, k);
             env->ReleaseStringUTFChars(jValStr, v);
         }
@@ -137,7 +273,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         if (jValStr) env->DeleteLocalRef(jValStr);
     }
 
-    bool success = write_file_posix(path, content);
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -146,31 +282,84 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jfloat multiplier, jfloat headshotMultiplier, jint critRate) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
 
-    std::string content = read_file_posix(path);
     std::ostringstream ssMult, ssHead, ssCrit;
     ssMult << multiplier;
     ssHead << headshotMultiplier;
     ssCrit << critRate;
 
-    patch_key_value(content, "DamageMultiplier", ssMult.str());
-    patch_key_value(content, "PhysicalDamageBoost", ssMult.str());
-    patch_key_value(content, "MagicDamageBoost", ssMult.str());
-    patch_key_value(content, "TrueDamageBoost", ssMult.str());
-    patch_key_value(content, "BulletDamageBoost", ssMult.str());
-    patch_key_value(content, "HeadshotDamageMultiplier", ssHead.str());
-    patch_key_value(content, "CriticalHitRate", ssCrit.str());
-    patch_key_value(content, "CriticalDamageMultiplier", ssHead.str());
-    patch_key_value(content, "PenetrationBoost", "99");
-    patch_key_value(content, "ArmorPenetration", "99");
-    patch_key_value(content, "HighDamageRateMode", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // UE4 CVars
-    patch_cvar(content, "r.DamageMultiplier", ssMult.str());
-    patch_cvar(content, "r.BulletDamageScale", ssMult.str());
-    patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageMultiplier", ssMult.str()},
+        {"PhysicalDamageBoost", ssMult.str()},
+        {"MagicDamageBoost", ssMult.str()},
+        {"TrueDamageBoost", ssMult.str()},
+        {"BulletDamageBoost", ssMult.str()},
+        {"DamageBoostRatio", ssMult.str()},
+        {"HeadshotMultiplier", ssHead.str()},
+        {"HeadshotDamageMultiplier", ssHead.str()},
+        {"CriticalHitRate", ssCrit.str()},
+        {"CriticalDamage", ssCrit.str()},
+        {"CriticalDamageRate", ssCrit.str()},
+        {"CriticalDamageMultiplier", ssHead.str()},
+        {"PenetrationBoost", "99"},
+        {"ArmorPenetration", "99"},
+        {"PhysicalPenetrationBoost", "99"},
+        {"MagicPenetrationBoost", "99"},
+        {"MagicResistPenetration", "99"},
+        {"HighDamageRateMode", "1"},
+        {"AttackSpeedMultiplier", "2.00"},
+        {"SkillDamageMultiplier", ssMult.str()},
+        {"DamageAssetOverride", "1"},
+        {"AutoDamageExecutionMode", "1"},
+        {"AutoSmiteExecution", "1"},
+        {"RetributionDamageThreshold", "2500"},
+        {"TurretDamageReduction", "0.50"},
+        {"MinionDamageBoost", "2.00"},
+        {"MonsterDamageBoost", ssMult.str()},
+        {"HitboxExpansion", "1.50"},
+        {"BulletVelocityMultiplier", "2.00"},
+        {"BulletVelocityScale", "2.00"},
+        {"BodyDamageMultiplier", "2.00"},
+        {"LimbDamageMultiplier", "1.50"},
+        {"ExplosiveDamageMultiplier", "2.00"}
+    };
 
-    bool success = write_file_posix(path, content);
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[DamageScript]") == std::string::npos) {
+            content += "\n[DamageScript]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.DamageMultiplier", ssMult.str());
+        patch_cvar(content, "r.BulletDamageScale", ssMult.str());
+        patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
+        patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
+        patch_cvar(content, "r.CriticalHitRate", "1.00");
+        patch_cvar(content, "r.HitboxExpansion", "1.50");
+        patch_cvar(content, "r.BulletVelocityScale", "2.00");
+        patch_cvar(content, "r.PenetrationPower", "2.50");
+        patch_cvar(content, "r.BodyDamageMultiplier", "2.00");
+        patch_cvar(content, "r.LimbDamageMultiplier", "1.50");
+        patch_cvar(content, "r.ExplosiveDamageMultiplier", "2.00");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -179,38 +368,88 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jfloat recoilScale, jint stability) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
 
-    std::string content = read_file_posix(path);
     std::ostringstream ssRecoil, ssStab;
     ssRecoil << recoilScale;
     ssStab << stability;
 
-    patch_key_value(content, "RecoilControl", "1");
-    patch_key_value(content, "ZeroRecoil", "1");
-    patch_key_value(content, "NoRecoil", "1");
-    patch_key_value(content, "RecoilScale", ssRecoil.str());
-    patch_key_value(content, "VerticalRecoil", ssRecoil.str());
-    patch_key_value(content, "HorizontalRecoil", ssRecoil.str());
-    patch_key_value(content, "RecoilReduction", "1.50");
-    patch_key_value(content, "WeaponStability", ssStab.str());
-    patch_key_value(content, "ScreenShake", "0");
-    patch_key_value(content, "GunKick", "0");
-    patch_key_value(content, "BulletSpread", "0.00");
-    patch_key_value(content, "CrosshairSpread", "0.00");
-    patch_key_value(content, "ScopeStability", "1.50");
-    patch_key_value(content, "FirstBulletAccuracy", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // UE4 CVars
-    patch_cvar(content, "r.WeaponRecoilScale", ssRecoil.str());
-    patch_cvar(content, "r.VerticalRecoilMultiplier", ssRecoil.str());
-    patch_cvar(content, "r.HorizontalRecoilMultiplier", ssRecoil.str());
-    patch_cvar(content, "r.GunKickReduction", "1");
-    patch_cvar(content, "r.CameraShake", "0");
-    patch_cvar(content, "r.ScreenShake", "0");
-    patch_cvar(content, "r.WeaponSway", "0");
-    patch_cvar(content, "r.BulletSpread", "0.00");
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"RecoilControl", "1"},
+        {"ZeroRecoil", "1"},
+        {"NoRecoil", "1"},
+        {"RecoilScale", ssRecoil.str()},
+        {"VerticalRecoil", ssRecoil.str()},
+        {"HorizontalRecoil", ssRecoil.str()},
+        {"VerticalRecoilScale", ssRecoil.str()},
+        {"HorizontalRecoilScale", ssRecoil.str()},
+        {"VerticalRecoilMultiplier", ssRecoil.str()},
+        {"HorizontalRecoilMultiplier", ssRecoil.str()},
+        {"RecoilReduction", "1.50"},
+        {"WeaponStability", ssStab.str()},
+        {"ScreenShake", "0"},
+        {"CameraShake", "0"},
+        {"NoCameraShake", "1"},
+        {"GunKick", "0"},
+        {"GunKickReduction", "1.50"},
+        {"WeaponKickReduction", "1.50"},
+        {"AllGunsRecoilReduction", "1.50"},
+        {"ScopeShakeReduction", "1.50"},
+        {"ScopeRecoilMultiplier", "0.00"},
+        {"ScopeStability", "1.50"},
+        {"BulletSpread", "0.00"},
+        {"CrosshairSpread", "0.00"},
+        {"SpreadScale", "0.00"},
+        {"BulletSpreadReduction", "1"},
+        {"FirstBulletAccuracy", "1"},
+        {"WeaponSway", "0"},
+        {"AimPunchReduction", "1"},
+        {"FlinchReduction", "1"},
+        {"MovementStabilization", "1"},
+        {"JoystickZeroDeadzone", "1"},
+        {"TouchJitterFilter", "1"},
+        {"ZeroInputDelay", "1"}
+    };
 
-    bool success = write_file_posix(path, content);
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[RecoilControl]") == std::string::npos) {
+            content += "\n[RecoilControl]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.WeaponRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.VerticalRecoilMultiplier", ssRecoil.str());
+        patch_cvar(content, "r.HorizontalRecoilMultiplier", ssRecoil.str());
+        patch_cvar(content, "r.GunKickReduction", "1");
+        patch_cvar(content, "r.CameraShake", "0");
+        patch_cvar(content, "r.ScreenShake", "0");
+        patch_cvar(content, "r.WeaponSway", "0");
+        patch_cvar(content, "r.BulletSpread", "0.00");
+        patch_cvar(content, "r.CrosshairSpread", "0.00");
+        patch_cvar(content, "r.ScopeStability", "2.00");
+        patch_cvar(content, "r.FirstBulletAccuracy", "1");
+        patch_cvar(content, "r.AimPunchReduction", "1");
+        patch_cvar(content, "r.FlinchReduction", "1");
+        patch_cvar(content, "r.WeaponKick", "0.00");
+        patch_cvar(content, "r.ViewKick", "0.00");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -219,37 +458,67 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jint strength, jint precision) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
 
-    std::string content = read_file_posix(path);
     std::ostringstream ssStr, ssPrec;
     ssStr << strength;
     ssPrec << precision;
 
-    patch_key_value(content, "AimAssist", "1");
-    patch_key_value(content, "AimAssistStrength", ssStr.str());
-    patch_key_value(content, "AimAssistLevel", "5");
-    patch_key_value(content, "AimPrecision", ssPrec.str());
-    patch_key_value(content, "AutoAim", "1");
-    patch_key_value(content, "AimTracking", "1");
-    patch_key_value(content, "TargetLock", "1");
-    patch_key_value(content, "SmartTargetingMode", "1");
-    patch_key_value(content, "HeroPriorityLock", "1");
-    patch_key_value(content, "LowestHPTargetLock", "1");
-    patch_key_value(content, "AimAssistRadius", "200");
-    patch_key_value(content, "CrosshairMagnetism", "1.50");
-    patch_key_value(content, "GyroSampleRate", "1000");
-    patch_key_value(content, "GyroZeroDelay", "1");
-    patch_key_value(content, "GyroSensitivityRatio", "2.5");
-    patch_key_value(content, "GyroStabilization", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // UE4 CVars
-    patch_cvar(content, "r.AimAssist", "1");
-    patch_cvar(content, "r.AimAssist.Strength", "2.0");
-    patch_cvar(content, "r.AimAssistRadius", "200");
-    patch_cvar(content, "r.GyroSampleRate", "1000");
-    patch_cvar(content, "r.GyroZeroDelay", "1");
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimAssist", "1"},
+        {"AimAssistStrength", ssStr.str()},
+        {"AimAssistLevel", "5"},
+        {"AimPrecision", ssPrec.str()},
+        {"AutoAim", "1"},
+        {"AimTracking", "1"},
+        {"TargetLock", "1"},
+        {"TargetLockSensitivity", "150"},
+        {"SmartTargetingMode", "1"},
+        {"HeroPriorityLock", "1"},
+        {"LowestHPTargetLock", "1"},
+        {"AimAssistRadius", "200"},
+        {"CrosshairMagnetism", "1.50"},
+        {"ScopeAimAssist", "1"},
+        {"RedDotAimAssist", "1"},
+        {"GyroSampleRate", "1000"},
+        {"GyroZeroDelay", "1"},
+        {"GyroSensitivityRatio", "2.5"},
+        {"GyroStabilization", "1"},
+        {"GyroSmoothFactor", "1"},
+        {"GyroLatencyMode", "0"}
+    };
 
-    bool success = write_file_posix(path, content);
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[AimAssist]") == std::string::npos) {
+            content += "\n[AimAssist]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.AimAssist", "1");
+        patch_cvar(content, "r.AimAssist.Strength", "2.0");
+        patch_cvar(content, "r.AimAssistRadius", "200");
+        patch_cvar(content, "r.GyroSampleRate", "1000");
+        patch_cvar(content, "r.GyroZeroDelay", "1");
+        patch_cvar(content, "r.GyroSensitivityRatio", "2.5");
+        patch_cvar(content, "r.GyroStabilization", "1");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -258,34 +527,57 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jfloat trackingStrength, jfloat hitboxMultiplier) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
 
-    std::string content = read_file_posix(path);
     std::ostringstream ssTrack, ssHitbox;
     ssTrack << trackingStrength;
     ssHitbox << hitboxMultiplier;
 
-    patch_key_value(content, "TrackingBullet", "1");
-    patch_key_value(content, "BulletTracking", "1");
-    patch_key_value(content, "AutoTrackingBullet", "1");
-    patch_key_value(content, "MagicBullet", "1");
-    patch_key_value(content, "BulletMagnetism", ssTrack.str());
-    patch_key_value(content, "HitboxExpansion", ssHitbox.str());
-    patch_key_value(content, "TargetLockTracking", "1");
-    patch_key_value(content, "BulletCurveFactor", "1.20");
-    patch_key_value(content, "BulletVelocityMultiplier", "2.00");
-    patch_key_value(content, "BulletSpread", "0.00");
-    patch_key_value(content, "CrosshairMagnetism", "1.50");
-    patch_key_value(content, "FirstBulletAccuracy", "1");
-    patch_key_value(content, "ProjectileHoming", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // UE4 CVars
-    patch_cvar(content, "r.BulletTracking", "1");
-    patch_cvar(content, "r.MagicBullet", "1");
-    patch_cvar(content, "r.HitboxExpansion", ssHitbox.str());
-    patch_cvar(content, "r.BulletMagnetism", ssTrack.str());
-    patch_cvar(content, "r.BulletVelocityScale", "2.0");
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"TrackingBullet", "1"},
+        {"BulletTracking", "1"},
+        {"AutoTrackingBullet", "1"},
+        {"MagicBullet", "1"},
+        {"BulletMagnetism", ssTrack.str()},
+        {"HitboxExpansion", ssHitbox.str()},
+        {"TargetLockTracking", "1"},
+        {"BulletCurveFactor", "1.20"},
+        {"BulletVelocityMultiplier", "2.00"},
+        {"BulletSpread", "0.00"},
+        {"CrosshairMagnetism", "1.50"},
+        {"FirstBulletAccuracy", "1"},
+        {"ProjectileHoming", "1"}
+    };
 
-    bool success = write_file_posix(path, content);
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[TrackingBullet]") == std::string::npos) {
+            content += "\n[TrackingBullet]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.BulletTracking", "1");
+        patch_cvar(content, "r.MagicBullet", "1");
+        patch_cvar(content, "r.HitboxExpansion", ssHitbox.str());
+        patch_cvar(content, "r.BulletMagnetism", ssTrack.str());
+        patch_cvar(content, "r.BulletVelocityScale", "2.0");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -294,31 +586,77 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jfloat defBoost, jfloat dmgReduction) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
 
-    std::string content = read_file_posix(path);
     std::ostringstream ssDef, ssRed;
     ssDef << defBoost;
     ssRed << dmgReduction;
 
-    patch_key_value(content, "PhysicalDefenseBoost", ssDef.str());
-    patch_key_value(content, "MagicDefenseBoost", ssDef.str());
-    patch_key_value(content, "DamageReductionRatio", ssRed.str());
-    patch_key_value(content, "ShieldMultiplier", "2.00");
-    patch_key_value(content, "MaxHPMultiplier", "1.50");
-    patch_key_value(content, "DamageAbsorbRatio", "1.50");
-    patch_key_value(content, "ArmorBoost", "150");
-    patch_key_value(content, "VestDurability", "2.00");
-    patch_key_value(content, "HelmetDamageReduction", "0.60");
-    patch_key_value(content, "TenacityRatio", "0.50");
-    patch_key_value(content, "ResilienceLevel", "3");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // UE4 CVars
-    patch_cvar(content, "r.ArmorDamageReduction", ssRed.str());
-    patch_cvar(content, "r.VestDurabilityBoost", "2.00");
-    patch_cvar(content, "r.HelmetDamageReduction", "0.60");
-    patch_cvar(content, "r.IncomingDamageScale", ssRed.str());
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"PhysicalDefenseBoost", ssDef.str()},
+        {"MagicDefenseBoost", ssDef.str()},
+        {"DamageReductionRatio", ssRed.str()},
+        {"DamageReduction", ssRed.str()},
+        {"IncomingDamageReduction", ssRed.str()},
+        {"ShieldMultiplier", "2.00"},
+        {"MaxHPMultiplier", "1.50"},
+        {"DamageAbsorbRatio", "1.50"},
+        {"ArmorBoost", "150"},
+        {"MagicResistBoost", "150"},
+        {"VestDurability", "2.00"},
+        {"VestDurabilityBoost", "2.00"},
+        {"HelmetDamageReduction", "0.60"},
+        {"TenacityRatio", "0.50"},
+        {"ResilienceLevel", "3"},
+        {"ArmorLevel", "6"},
+        {"DamageResistance", ssRed.str()},
+        {"ShieldEfficiency", "2.00"},
+        {"ShieldPointsMultiplier", "2.00"},
+        {"ArmorPlateEfficiency", "2.00"},
+        {"KineticArmorBoost", "2.00"},
+        {"FlakJacketRatio", "0.60"},
+        {"HealthRegenDelay", "0.00"},
+        {"HealthRegenBoost", "1.50"},
+        {"FallDamageReduction", "0.00"},
+        {"ExplosionResistance", "0.50"},
+        {"HeadshotDamageReduction", "0.60"}
+    };
 
-    bool success = write_file_posix(path, content);
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[DefenseConfig]") == std::string::npos) {
+            content += "\n[DefenseConfig]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+
+        // Unreal Engine 4/5 CVars
+        patch_cvar(content, "r.ArmorDamageReduction", ssRed.str());
+        patch_cvar(content, "r.VestDurabilityBoost", "2.00");
+        patch_cvar(content, "r.HelmetDamageReduction", "0.60");
+        patch_cvar(content, "r.IncomingDamageScale", ssRed.str());
+        patch_cvar(content, "r.ShieldEfficiency", "2.00");
+        patch_cvar(content, "r.DamageResistance", ssRed.str());
+        patch_cvar(content, "r.TenacityRatio", "0.50");
+        patch_cvar(content, "r.HealthRegenBoost", "1.50");
+        patch_cvar(content, "r.FallDamageReduction", "0.00");
+        patch_cvar(content, "r.ExplosionResistance", "0.50");
+        patch_cvar(content, "r.HeadshotDamageReduction", "0.60");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -419,7 +757,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::ostringstream ssFps;
     ssFps << targetFps;
 
-    // Real Ultra Extreme FPS & Refresh Rate Unlocks
+    // Refresh rate and ultra extreme graphics
     patch_key_value(content, "MaxFPS", ssFps.str());
     patch_key_value(content, "TargetFPS", ssFps.str());
     patch_key_value(content, "FPS", ssFps.str());
@@ -439,7 +777,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     patch_key_value(content, "TouchPollingRate", "1000");
     patch_key_value(content, "TouchZeroDelay", "1");
 
-    // Real Ultra Extreme Graphics Keys
+    // Ultra Extreme Graphics
     patch_key_value(content, "UltraExtreme", "1");
     patch_key_value(content, "bUseUltraExtreme", "True");
     patch_key_value(content, "GraphicsQuality", "5");
@@ -461,7 +799,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     patch_key_value(content, "UnlockMaxGraphics", "1");
     patch_key_value(content, "MaxGraphic", "1");
 
-    // Real Ultra Extreme CVars
+    // Unreal Engine CVars
     patch_cvar(content, "r.PUBGDeviceFPS", "10");
     patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
     patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
@@ -484,9 +822,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_key_value(content, "HeadshotDamageMultiplier", "3.50");
         patch_key_value(content, "CriticalHitRate", "99");
         patch_key_value(content, "PenetrationBoost", "99");
+        patch_key_value(content, "ArmorPenetration", "99");
         patch_cvar(content, "r.DamageMultiplier", "2.50");
         patch_cvar(content, "r.BulletDamageScale", "2.50");
         patch_cvar(content, "r.HeadshotMultiplier", "3.50");
+        patch_cvar(content, "r.WeaponDamageScale", "2.50");
     }
 
     if (noRecoil) {
@@ -501,10 +841,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_key_value(content, "ScreenShake", "0");
         patch_key_value(content, "GunKick", "0");
         patch_key_value(content, "BulletSpread", "0.00");
+        patch_key_value(content, "CrosshairSpread", "0.00");
         patch_cvar(content, "r.WeaponRecoilScale", "0.00");
         patch_cvar(content, "r.VerticalRecoilMultiplier", "0.00");
         patch_cvar(content, "r.HorizontalRecoilMultiplier", "0.00");
         patch_cvar(content, "r.GunKickReduction", "1");
+        patch_cvar(content, "r.CameraShake", "0");
+        patch_cvar(content, "r.ScreenShake", "0");
+        patch_cvar(content, "r.BulletSpread", "0.00");
     }
 
     if (trackingBullet) {
@@ -541,6 +885,20 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.AimAssist.Strength", "2.0");
         patch_cvar(content, "r.GyroSampleRate", "1000");
     }
+
+    // Always inject defense config
+    patch_key_value(content, "PhysicalDefenseBoost", "2.50");
+    patch_key_value(content, "MagicDefenseBoost", "2.50");
+    patch_key_value(content, "DamageReductionRatio", "0.50");
+    patch_key_value(content, "ShieldMultiplier", "2.00");
+    patch_key_value(content, "MaxHPMultiplier", "1.50");
+    patch_key_value(content, "ArmorBoost", "150");
+    patch_key_value(content, "VestDurability", "2.00");
+    patch_key_value(content, "HelmetDamageReduction", "0.60");
+    patch_cvar(content, "r.ArmorDamageReduction", "0.50");
+    patch_cvar(content, "r.VestDurabilityBoost", "2.00");
+    patch_cvar(content, "r.HelmetDamageReduction", "0.60");
+    patch_cvar(content, "r.IncomingDamageScale", "0.50");
 
     bool success = write_file_posix(path, content);
     env->ReleaseStringUTFChars(jPath, path);

@@ -47,6 +47,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectConfig(String path, String content);
     public static native boolean nativePatchKey(String path, String key, String value);
     public static native boolean nativeBatchPatchKeys(String path, String[] keys, String[] values);
+    public static native boolean nativePatchXmlKey(String path, String tag, String key, String value);
+    public static native boolean nativePatchJsonKey(String path, String key, String value, boolean isNumeric);
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);
     public static native boolean nativeInjectAimAssist(String path, int strength, int precision);
@@ -130,16 +132,45 @@ public class NativeConfigInjector {
             "MagicDamageBoost=2.50",
             "TrueDamageBoost=2.50",
             "BulletDamageBoost=2.50",
+            "DamageBoostRatio=2.50",
+            "HeadshotMultiplier=3.50",
             "HeadshotDamageMultiplier=3.50",
             "CriticalHitRate=99",
+            "CriticalDamage=99",
+            "CriticalDamageRate=99",
             "CriticalDamageMultiplier=3.50",
             "PenetrationBoost=99",
             "ArmorPenetration=99",
+            "PhysicalPenetrationBoost=99",
             "MagicPenetrationBoost=99",
+            "MagicResistPenetration=99",
             "HighDamageRateMode=1",
+            "AttackSpeedMultiplier=2.00",
+            "SkillDamageMultiplier=2.50",
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1",
+            "AutoSmiteExecution=1",
+            "RetributionDamageThreshold=2500",
+            "TurretDamageReduction=0.50",
+            "MinionDamageBoost=2.00",
+            "MonsterDamageBoost=2.50",
+            "HitboxExpansion=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "BulletVelocityScale=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00",
             "+CVars=r.DamageMultiplier=2.50",
             "+CVars=r.BulletDamageScale=2.50",
-            "+CVars=r.HeadshotMultiplier=3.50"
+            "+CVars=r.HeadshotMultiplier=3.50",
+            "+CVars=r.WeaponDamageScale=2.50",
+            "+CVars=r.CriticalHitRate=1.00",
+            "+CVars=r.HitboxExpansion=1.50",
+            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.PenetrationPower=2.50",
+            "+CVars=r.BodyDamageMultiplier=2.00",
+            "+CVars=r.LimbDamageMultiplier=1.50",
+            "+CVars=r.ExplosiveDamageMultiplier=2.00"
         };
         return batchInjectKeys(path, damageKeys, "[DamageScript]");
     }
@@ -186,20 +217,49 @@ public class NativeConfigInjector {
             "RecoilScale=0.00",
             "VerticalRecoil=0.00",
             "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "VerticalRecoilMultiplier=0.00",
+            "HorizontalRecoilMultiplier=0.00",
             "RecoilReduction=1.50",
             "WeaponStability=150",
             "ScreenShake=0",
+            "CameraShake=0",
+            "NoCameraShake=1",
             "GunKick=0",
+            "GunKickReduction=1.50",
+            "WeaponKickReduction=1.50",
+            "AllGunsRecoilReduction=1.50",
+            "ScopeShakeReduction=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=1.50",
             "BulletSpread=0.00",
             "CrosshairSpread=0.00",
-            "ScopeStability=1.50",
+            "SpreadScale=0.00",
+            "BulletSpreadReduction=1",
             "FirstBulletAccuracy=1",
+            "WeaponSway=0",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "MovementStabilization=1",
+            "JoystickZeroDeadzone=1",
+            "TouchJitterFilter=1",
+            "ZeroInputDelay=1",
             "+CVars=r.WeaponRecoilScale=0.00",
             "+CVars=r.VerticalRecoilMultiplier=0.00",
             "+CVars=r.HorizontalRecoilMultiplier=0.00",
             "+CVars=r.GunKickReduction=1",
             "+CVars=r.CameraShake=0",
-            "+CVars=r.ScreenShake=0"
+            "+CVars=r.ScreenShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
+            "+CVars=r.ScopeStability=2.00",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.AimPunchReduction=1",
+            "+CVars=r.FlinchReduction=1",
+            "+CVars=r.WeaponKick=0.00",
+            "+CVars=r.ViewKick=0.00"
         };
         return batchInjectKeys(path, recoilKeys, "[RecoilControl]");
     }
@@ -231,6 +291,7 @@ public class NativeConfigInjector {
             "AutoAim=1",
             "AimTracking=1",
             "TargetLock=1",
+            "TargetLockSensitivity=150",
             "SmartTargetingMode=1",
             "HeroPriorityLock=1",
             "LowestHPTargetLock=1",
@@ -242,9 +303,15 @@ public class NativeConfigInjector {
             "GyroZeroDelay=1",
             "GyroSensitivityRatio=2.5",
             "GyroStabilization=1",
+            "GyroSmoothFactor=1",
+            "GyroLatencyMode=0",
             "+CVars=r.AimAssist=1",
             "+CVars=r.AimAssist.Strength=2.0",
-            "+CVars=r.AimAssistRadius=200"
+            "+CVars=r.AimAssistRadius=200",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroZeroDelay=1",
+            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroStabilization=1"
         };
         return batchInjectKeys(path, aimKeys, "[AimAssist]");
     }
@@ -314,17 +381,41 @@ public class NativeConfigInjector {
             "PhysicalDefenseBoost=2.50",
             "MagicDefenseBoost=2.50",
             "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
             "ShieldMultiplier=2.00",
             "MaxHPMultiplier=1.50",
             "DamageAbsorbRatio=1.50",
             "ArmorBoost=150",
+            "MagicResistBoost=150",
             "VestDurability=2.00",
+            "VestDurabilityBoost=2.00",
             "HelmetDamageReduction=0.60",
             "TenacityRatio=0.50",
             "ResilienceLevel=3",
+            "ArmorLevel=6",
+            "DamageResistance=0.50",
+            "ShieldEfficiency=2.00",
+            "ShieldPointsMultiplier=2.00",
+            "ArmorPlateEfficiency=2.00",
+            "KineticArmorBoost=2.00",
+            "FlakJacketRatio=0.60",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "FallDamageReduction=0.00",
+            "ExplosionResistance=0.50",
+            "HeadshotDamageReduction=0.60",
             "+CVars=r.ArmorDamageReduction=0.50",
             "+CVars=r.VestDurabilityBoost=2.00",
-            "+CVars=r.HelmetDamageReduction=0.60"
+            "+CVars=r.HelmetDamageReduction=0.60",
+            "+CVars=r.IncomingDamageScale=0.50",
+            "+CVars=r.ShieldEfficiency=2.00",
+            "+CVars=r.DamageResistance=0.50",
+            "+CVars=r.TenacityRatio=0.50",
+            "+CVars=r.HealthRegenBoost=1.50",
+            "+CVars=r.FallDamageReduction=0.00",
+            "+CVars=r.ExplosionResistance=0.50",
+            "+CVars=r.HeadshotDamageReduction=0.60"
         };
         return batchInjectKeys(path, armorKeys, "[DefenseConfig]");
     }
@@ -508,7 +599,7 @@ public class NativeConfigInjector {
                     } else if (content.contains("{")) {
                         content = content.replaceFirst("\\{", "{\\n  \"" + k + "\": " + valJson + ",");
                     } else {
-                        content = "{\n  \"" + k + "\": " + valJson + "\n}\n";
+                        content = "{\\n  \"" + k + "\": " + valJson + "\n}\n";
                     }
                 }
             }

@@ -71,18 +71,44 @@ public class SupercellConfigPatcher {
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "DamageMultiplier=2.50",
+            "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "BulletDamageBoost=2.50",
+            "DamageBoost=2.50",
+            "SuperAttackMultiplier=2.50",
+            "HeadshotMultiplier=3.50",
+            "CriticalStrikeRate=99",
+            "CriticalDamage=99",
+            "CriticalHitRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HitboxExpansion=1.50",
+            "AttackSpeedBoost=1.50",
+            "BodyDamageMultiplier=2.00",
+            "ExplosiveDamageMultiplier=2.00"
+        };
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nSuperAttackMultiplier=1.90\nCriticalStrikeRate=95\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
+            for (String keyVal : damageKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Supercell damage script 1.9x applied for " + packageName);
+        Log.i(TAG, "Supercell damage boost & attack multipliers applied for " + packageName);
     }
 
     public static void applySuperFastTouch(String packageName) {
@@ -137,10 +163,24 @@ public class SupercellConfigPatcher {
             "InputZeroDelay=1",
             "MovementStabilization=1",
             "TouchSmoothing=1",
-            "ZeroInputLag=1"
+            "ZeroInputLag=1",
+            "CameraShake=0",
+            "NoCameraShake=1",
+            "ScreenShake=0",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeStability=1.50",
+            "WeaponSway=0",
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "SpreadScale=0.00",
+            "CrosshairSpread=0.00"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -166,15 +206,27 @@ public class SupercellConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
             "ShieldMultiplier=2.00",
+            "ShieldCapacity=2.00",
+            "ShieldStrength=2.50",
+            "ShieldEfficiency=2.00",
             "DefenseRatio=2.50",
             "DamageReduction=0.50",
+            "DamageReductionRatio=0.50",
+            "IncomingDamageReduction=0.50",
             "HPBoost=1.50",
+            "HPBoostRatio=1.50",
+            "MaxHPMultiplier=1.50",
             "DamageAbsorbRatio=1.50",
             "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50"
+            "PhysicalDefenseBoost=2.50",
+            "TenacityRatio=0.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "ExplosionResistance=0.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[CombatDefense]' ").append(path).append(" || echo '[CombatDefense]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

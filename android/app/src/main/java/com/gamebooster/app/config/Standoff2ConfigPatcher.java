@@ -109,18 +109,44 @@ public class Standoff2ConfigPatcher {
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] damageKeys = {
+            "DamageMultiplier=2.50",
+            "PhysicalDamageBoost=2.50",
+            "BulletDamageBoost=2.50",
+            "DamageBoost=2.50",
+            "DamageBoostRatio=2.50",
+            "HeadshotMultiplier=3.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalDamage=99",
+            "CriticalHitRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HighDamageRateMode=1",
+            "HitboxExpansion=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00"
+        };
         for (String path : paths) {
-            String dmgData = "\n[DamageScript]\nDamageMultiplier=2.50\nBulletDamageBoost=2.50\nHeadshotDamageMultiplier=3.50\nCriticalHitRate=99\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String cmd = "echo '" + dmgData + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
+            ensureParentDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
+            StringBuilder sb = new StringBuilder();
+            for (String keyVal : damageKeys) {
+                String k = keyVal.substring(0, keyVal.indexOf("="));
+                sb.append("grep -qF '").append(k).append("' ").append(path)
+                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
+                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
+            }
+            String cmd = sb.toString();
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand(cmd);
+            } else {
+                CommandExecutor.executeSystemCommand(cmd);
             }
         }
-        Log.i(TAG, "Standoff 2 damage script 1.9x applied for " + packageName);
+        Log.i(TAG, "Standoff 2 damage boost & headshot multiplier applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -180,17 +206,38 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
             "RecoilScale=0.00",
             "VerticalRecoil=0.00",
             "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "RecoilReduction=1.50",
+            "WeaponStability=150",
             "WeaponKick=0",
+            "GunKickReduction=1.50",
+            "WeaponKickReduction=1.50",
             "NoShake=1",
+            "NoCameraShake=1",
+            "CameraShake=0",
+            "ScreenShake=0",
             "SpreadReduction=1",
-            "ZeroRecoil=1",
-            "WeaponStability=150"
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
+            "SpreadScale=0.00",
+            "FirstBulletAccuracy=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=1.50",
+            "WeaponSway=0"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -217,13 +264,26 @@ public class Standoff2ConfigPatcher {
         String[] armorKeys = {
             "ArmorEfficiency=2.00",
             "VestDurability=2.00",
+            "VestDurabilityBoost=2.00",
             "DamageReduction=0.50",
+            "DamageReductionRatio=0.50",
+            "IncomingDamageReduction=0.50",
             "HelmetProtection=0.60",
+            "HelmetDamageReduction=0.60",
+            "ShieldCapacity=2.00",
+            "ShieldMultiplier=2.00",
+            "MaxHPMultiplier=1.50",
+            "DamageAbsorbRatio=1.50",
             "ArmorBoost=150",
-            "PhysicalDefenseBoost=2.50"
+            "PhysicalDefenseBoost=2.50",
+            "TenacityRatio=0.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "ExplosionResistance=0.50"
         };
         for (String path : paths) {
             ensureParentDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

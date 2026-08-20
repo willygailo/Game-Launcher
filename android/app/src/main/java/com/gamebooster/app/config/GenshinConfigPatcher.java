@@ -153,13 +153,24 @@ public class GenshinConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
             "BowSwayReduction=1",
+            "BowSwayScale=0.00",
             "CameraShake=0",
             "ScreenShake=0",
+            "NoCameraShake=1",
             "InputSmoothing=1",
-            "ZeroCameraLag=1"
+            "ZeroCameraLag=1",
+            "SkillCameraShake=0",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "ScopeShakeReduction=1.50",
+            "ScopeStability=1.50",
+            "WeaponSway=0",
+            "CrosshairSpread=0.00",
+            "SpreadScale=0.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -183,13 +194,24 @@ public class GenshinConfigPatcher {
         String[] damageKeys = {
             "ElementalDamageBoost=2.50",
             "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "TrueDamageBoost=2.50",
+            "DamageMultiplier=2.50",
+            "DamageBoost=2.50",
             "CritRate=99",
             "CritDamage=3.50",
-            "DamageMultiplier=2.50",
-            "AttackSpeedBoost=1.5"
+            "CriticalDamage=99",
+            "CriticalHitRate=99",
+            "CriticalDamageMultiplier=3.50",
+            "HeadshotMultiplier=3.50",
+            "AttackSpeedBoost=1.5",
+            "HitboxExpansion=1.50",
+            "BodyDamageMultiplier=2.00",
+            "ExplosiveDamageMultiplier=2.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -216,15 +238,24 @@ public class GenshinConfigPatcher {
         String[] armorKeys = {
             "DefenseMultiplier=2.50",
             "ShieldStrength=2.50",
+            "ShieldEfficiency=2.00",
             "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "IncomingDamageReduction=0.50",
             "ElementalResistanceBoost=1.50",
             "HPMultiplier=1.50",
+            "MaxHPMultiplier=1.50",
             "PoiseResistance=2.00",
             "ArmorBoost=150",
-            "DamageAbsorbRatio=1.50"
+            "DamageAbsorbRatio=1.50",
+            "TenacityRatio=0.50",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
+            "ExplosionResistance=0.50"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
             for (String keyVal : armorKeys) {

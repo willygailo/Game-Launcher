@@ -291,19 +291,39 @@ public class CodmConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] recoilKeys = {
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
             "WeaponRecoilScale=0.00",
             "VerticalRecoilScale=0.00",
             "HorizontalRecoilScale=0.00",
+            "VerticalRecoilMultiplier=0.00",
+            "HorizontalRecoilMultiplier=0.00",
+            "RecoilReduction=1.50",
+            "WeaponStability=150",
             "WeaponShake=0",
             "CameraShake=0",
-            "GunKickReduction=1",
+            "ScreenShake=0",
+            "GunKick=0",
+            "GunKickReduction=1.50",
+            "WeaponKickReduction=1.50",
+            "AllGunsRecoilReduction=1.50",
+            "ScopeShakeReduction=1.50",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=1.50",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
             "SpreadScale=0.00",
             "BulletSpreadReduction=1",
-            "ZeroRecoil=1",
-            "WeaponStability=150"
+            "FirstBulletAccuracy=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "WeaponSway=0",
+            "NoCameraShake=1"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectNoRecoil(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : recoilKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -329,14 +349,30 @@ public class CodmConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
             "DamageMultiplier=2.50",
+            "PhysicalDamageBoost=2.50",
+            "MagicDamageBoost=2.50",
+            "TrueDamageBoost=2.50",
             "BulletDamageBoost=2.50",
+            "DamageBoostRatio=2.50",
             "HeadshotMultiplier=3.50",
+            "HeadshotDamageMultiplier=3.50",
+            "CriticalHitRate=99",
+            "CriticalDamage=99",
             "CriticalDamageRate=99",
-            "HitboxExpansion=1.5",
-            "BulletVelocityMultiplier=2.0"
+            "CriticalDamageMultiplier=3.50",
+            "PenetrationBoost=99",
+            "ArmorPenetration=99",
+            "HighDamageRateMode=1",
+            "HitboxExpansion=1.50",
+            "BulletVelocityMultiplier=2.00",
+            "BulletVelocityScale=2.00",
+            "BodyDamageMultiplier=2.00",
+            "LimbDamageMultiplier=1.50",
+            "ExplosiveDamageMultiplier=2.00"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectHighDamage(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : damageKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
@@ -367,13 +403,30 @@ public class CodmConfigPatcher {
             "IncomingDamageReduction=0.50",
             "FlakJacketRatio=0.60",
             "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1.50",
             "ShieldPointsMultiplier=2.00",
             "PhysicalDefenseBoost=2.50",
+            "MagicDefenseBoost=2.50",
             "ArmorBoost=150",
-            "DamageReductionRatio=0.50"
+            "MagicResistBoost=150",
+            "DamageReductionRatio=0.50",
+            "DamageReduction=0.50",
+            "ShieldMultiplier=2.00",
+            "MaxHPMultiplier=1.50",
+            "DamageAbsorbRatio=1.50",
+            "VestDurability=2.00",
+            "VestDurabilityBoost=2.00",
+            "HelmetDamageReduction=0.60",
+            "TenacityRatio=0.50",
+            "ResilienceLevel=3",
+            "ArmorLevel=6",
+            "FallDamageReduction=0.00",
+            "ExplosionResistance=0.50",
+            "HeadshotDamageReduction=0.60"
         };
         for (String path : paths) {
             ensureDirectory(path);
+            NativeConfigInjector.injectArmorDef(path);
             StringBuilder sb = new StringBuilder();
             for (String keyVal : armorKeys) {
                 String k = keyVal.substring(0, keyVal.indexOf("="));
