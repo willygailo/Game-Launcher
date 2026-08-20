@@ -115,7 +115,7 @@ public final class LsposedDetector {
      * Explicitly refreshes LSPosed detection status asynchronously on a background worker thread.
      */
     public static void refreshAsync(Context context, Runnable onComplete) {
-        com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
                 boolean installed = probe("ls -d /data/adb/lspd 2>/dev/null");
                 boolean enabled = probeModuleEnabled();

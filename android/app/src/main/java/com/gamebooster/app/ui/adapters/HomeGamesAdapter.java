@@ -40,40 +40,11 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
     }
 
     public void updateList(List<GameAppInfo> newList) {
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
-            @Override
-            public int getOldListSize() {
-                return games.size();
-            }
-
-            @Override
-            public int getNewListSize() {
-                return newList.size();
-            }
-
-            @Override
-            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                GameAppInfo oldItem = games.get(oldItemPosition);
-                GameAppInfo newItem = newList.get(newItemPosition);
-                if (oldItem == null || newItem == null) return false;
-                String oldPkg = oldItem.getPackageName();
-                String newPkg = newItem.getPackageName();
-                return oldPkg != null && oldPkg.equalsIgnoreCase(newPkg);
-            }
-
-            @Override
-            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                GameAppInfo oldItem = games.get(oldItemPosition);
-                GameAppInfo newItem = newList.get(newItemPosition);
-                if (oldItem == null || newItem == null) return false;
-                return java.util.Objects.equals(oldItem.getLabel(), newItem.getLabel())
-                        && java.util.Objects.equals(oldItem.getPackageName(), newItem.getPackageName());
-            }
-        });
-
         games.clear();
-        games.addAll(newList);
-        diffResult.dispatchUpdatesTo(this);
+        if (newList != null) {
+            games.addAll(newList);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull

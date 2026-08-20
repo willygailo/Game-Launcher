@@ -16,7 +16,7 @@ public class AppExecutors {
 
     private AppExecutors() {
         this.commandIO = Executors.newSingleThreadExecutor();
-        this.scanIO = Executors.newFixedThreadPool(2);
+        this.scanIO = Executors.newFixedThreadPool(4);
         this.mainThread = new Handler(Looper.getMainLooper());
     }
 

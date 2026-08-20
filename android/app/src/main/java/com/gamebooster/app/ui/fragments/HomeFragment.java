@@ -204,12 +204,25 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
     /**
      * Non-Blocking Architecture:
-     * 1. Perform target game scan asynchronously on background scan thread
-     * 2. Update UI on the main thread with zero freeze / flicker
+     * 1. If cached games exist, display them instantly
+     * 2. Perform fresh scan asynchronously on background scan thread
+     * 3. Update UI on the main thread with zero freeze / flicker
      */
     private void loadAndScanGamesZeroDelay() {
-        if (getContext() == null || rvGames == null) return;
+        if (getContext() == null) return;
         final Context ctx = getContext().getApplicationContext();
+
+        // If games already in memory, display them right away
+        if (!gameList.isEmpty()) {
+            if (adapter != null) {
+                adapter.updateList(gameList);
+            }
+            if (tvGamesHeader != null) {
+                tvGamesHeader.setText("INSTALLED GAMES (" + gameList.size() + " DETECTED)");
+            }
+            if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
+            if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+        }
 
         com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
             List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(ctx);

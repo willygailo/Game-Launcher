@@ -185,9 +185,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             if (tabLayout.getSelectedTabPosition() != currentTabIndex) {
                 initialTab.select();
             } else {
-                if (savedInstanceState == null) {
-                    showFragmentForTab(currentTabIndex);
-                }
+                showFragmentForTab(currentTabIndex);
             }
         }
     }

@@ -170,7 +170,7 @@ public class HomeGameScanner {
     };
 
     /**
-     * Scans and returns ONLY installed instances of MLBB, PUBG Mobile, or CODM.
+     * Scans and returns all installed target and supported games on the device.
      */
     public static List<GameAppInfo> scanTargetGames(Context context) {
         List<GameAppInfo> detectedGames = new ArrayList<>();
@@ -179,44 +179,105 @@ public class HomeGameScanner {
         PackageManager pm = context.getPackageManager();
         Set<String> addedPackages = new HashSet<>();
 
+        // 1. Primary Targeted Specs Scan (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
         for (TargetGameSpec spec : ALL_TARGET_SPECS) {
             for (String pkg : spec.packageNames) {
                 if (addedPackages.contains(pkg)) continue;
 
-                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
-                if (launchIntent != null) {
-                    try {
-                        ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
-                        String label = pm.getApplicationLabel(appInfo).toString();
-                        Drawable icon = pm.getApplicationIcon(appInfo);
+                ApplicationInfo appInfo = null;
+                try {
+                    appInfo = pm.getApplicationInfo(pkg, 0);
+                } catch (Throwable ignored) {}
 
-                        detectedGames.add(new GameAppInfo(
-                                label,
-                                pkg,
-                                icon,
-                                launchIntent,
-                                spec.gameType,
-                                spec.cardBgRes,
-                                spec.badgeColor
-                        ));
-                        addedPackages.add(pkg);
-                    } catch (Throwable ignored) {
-                        // Fallback if appInfo fails but launchIntent exists
-                        Drawable defaultIcon = context.getApplicationInfo().loadIcon(pm);
-                        detectedGames.add(new GameAppInfo(
-                                spec.defaultTitle,
-                                pkg,
-                                defaultIcon,
-                                launchIntent,
-                                spec.gameType,
-                                spec.cardBgRes,
-                                spec.badgeColor
-                        ));
-                        addedPackages.add(pkg);
+                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+                if (launchIntent == null && appInfo != null) {
+                    launchIntent = new Intent(Intent.ACTION_MAIN)
+                            .addCategory(Intent.CATEGORY_LAUNCHER)
+                            .setPackage(pkg)
+                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+
+                if (appInfo != null || launchIntent != null) {
+                    String label = spec.defaultTitle;
+                    Drawable icon = null;
+                    try {
+                        if (appInfo != null) {
+                            label = pm.getApplicationLabel(appInfo).toString();
+                            icon = pm.getApplicationIcon(appInfo);
+                        } else {
+                            icon = pm.getActivityIcon(launchIntent);
+                        }
+                    } catch (Throwable ignored) {}
+
+                    if (icon == null) {
+                        try {
+                            icon = context.getApplicationInfo().loadIcon(pm);
+                        } catch (Throwable ignored) {}
                     }
+
+                    detectedGames.add(new GameAppInfo(
+                            label,
+                            pkg,
+                            icon,
+                            launchIntent,
+                            spec.gameType,
+                            spec.cardBgRes,
+                            spec.badgeColor
+                    ));
+                    addedPackages.add(pkg);
                 }
             }
         }
+
+        // 2. Secondary Scan: Known Games Registry & System Game Categories
+        try {
+            for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
+                if (addedPackages.contains(pkg)) continue;
+
+                ApplicationInfo appInfo = null;
+                try {
+                    appInfo = pm.getApplicationInfo(pkg, 0);
+                } catch (Throwable ignored) {}
+
+                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+                if (appInfo != null || launchIntent != null) {
+                    GamePackageRegistry.GameInfoSpec info = GamePackageRegistry.getSpec(pkg);
+                    String label = info != null ? info.title : pkg;
+                    String category = info != null ? info.category : "GAMING";
+                    Drawable icon = null;
+                    try {
+                        if (appInfo != null) {
+                            label = pm.getApplicationLabel(appInfo).toString();
+                            icon = pm.getApplicationIcon(appInfo);
+                        }
+                    } catch (Throwable ignored) {}
+
+                    if (icon == null) {
+                        try {
+                            icon = context.getApplicationInfo().loadIcon(pm);
+                        } catch (Throwable ignored) {}
+                    }
+
+                    if (launchIntent == null) {
+                        launchIntent = new Intent(Intent.ACTION_MAIN)
+                                .addCategory(Intent.CATEGORY_LAUNCHER)
+                                .setPackage(pkg)
+                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+
+                    detectedGames.add(new GameAppInfo(
+                            label,
+                            pkg,
+                            icon,
+                            launchIntent,
+                            category,
+                            R.drawable.home_game_card_bg_ml,
+                            Color.parseColor("#00F0FF")
+                    ));
+                    addedPackages.add(pkg);
+                }
+            }
+        } catch (Throwable ignored) {}
 
         return detectedGames;
     }
