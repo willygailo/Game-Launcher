@@ -109,7 +109,7 @@ public class NativeConfigInjector {
     }
 
     /**
-     * Injects High Damage Script keys (5.00x damage multiplier, 100% crit, penetration, speed).
+     * Injects High Damage Script keys (25.00x damage multiplier — 450% Ultra Overdrive, 100% crit, 450 penetration, 22500 retribution).
      */
     public static boolean injectHighDamage(String path) {
         return injectHighDamage(path, 185);
@@ -121,67 +121,116 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectDamageBoost(path, 5.00f, 5.00f, 100)) {
+                if (nativeInjectDamageBoost(path, 25.00f, 25.00f, 100)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
         }
 
         String[] damageKeys = {
-            "DamageMultiplier=5.00",
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "BulletDamageBoost=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
-            "HeadshotMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
+            // ── 450% Ultra Overdrive Damage ───────────────────────────────────
+            "DamageMultiplier=25.00",
+            "PhysicalDamageBoost=25.00",
+            "MagicDamageBoost=25.00",
+            "TrueDamageBoost=25.00",
+            "BulletDamageBoost=25.00",
+            "DamageBoost=25.00",
+            "DamageBoostRatio=25.00",
+            "HeadshotMultiplier=25.00",
+            "HeadshotDamageMultiplier=25.00",
             "CriticalHitRate=100",
-            "CriticalDamage=100",
+            "CriticalDamage=450",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=5.00",
-            "PenetrationBoost=100",
-            "ArmorPenetration=100",
-            "PhysicalPenetrationBoost=100",
-            "MagicPenetrationBoost=100",
-            "MagicResistPenetration=100",
+            "CriticalDamageMultiplier=25.00",
+            "PenetrationBoost=450",
+            "ArmorPenetration=450",
+            "PhysicalPenetrationBoost=450",
+            "MagicPenetrationBoost=450",
+            "MagicResistPenetration=450",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "SkillDamageMultiplier=5.00",
+            "AttackSpeedMultiplier=13.50",
+            "AttackSpeedBoost=13.50",
+            "ReloadSpeedMultiplier=13.50",
+            "FireRateMultiplier=10.00",
+            "MovementSpeedMultiplier=13.50",
+            "SprintSpeedMultiplier=13.50",
+            "SprintSensitivity=400",
+            "AgilityMultiplier=13.50",
+            "SkillDamageMultiplier=25.00",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1",
             "AutoSmiteExecution=1",
-            "RetributionDamageThreshold=5000",
-            "TurretDamageReduction=0.85",
-            "MinionDamageBoost=3.00",
-            "MonsterDamageBoost=5.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "LimbDamageMultiplier=3.00",
-            "ExplosiveDamageMultiplier=3.50",
-            "+CVars=r.DamageMultiplier=5.00",
-            "+CVars=r.BulletDamageScale=5.00",
-            "+CVars=r.HeadshotMultiplier=5.00",
-            "+CVars=r.WeaponDamageScale=5.00",
+            "RetributionDamageThreshold=22500",
+            "SmiteTrueDamage=22500",
+            "ExecuteThreshold=22500",
+            "TurretDamageReduction=0.01",
+            "MinionDamageBoost=13.50",
+            "MonsterDamageBoost=25.00",
+            "HitboxExpansion=7.50",
+            "BulletVelocityMultiplier=25.00",
+            "BulletVelocityScale=25.00",
+            "BodyDamageMultiplier=4.50",
+            "LimbDamageMultiplier=3.75",
+            "ExplosiveDamageMultiplier=4.50",
+            // ── 450% Ultra Aim Assist ─────────────────────────────────────────
+            "AimAssist=1",
+            "AimAssistStrength=300",
+            "AimAssistLevel=5",
+            "AimAssistRadius=500",
+            "AimPrecision=5",
+            "AutoAim=1",
+            "AimTracking=1",
+            "TargetLock=1",
+            "TargetLockSensitivity=300",
+            "SmartTargetingMode=1",
+            "HeroPriorityLock=1",
+            "LowestHPTargetLock=1",
+            "CrosshairMagnetism=5.00",
+            "ScopeAimAssist=1",
+            "RedDotAimAssist=1",
+            "SniperAimAssist=1",
+            "AimSnapStrength=5.00",
+            "AimMagnetism=5.00",
+            "AimLead=1",
+            "AimLeadStrength=5.00",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1",
+            "GyroSensitivityRatio=5.00",
+            "GyroStabilization=1",
+            "GyroSmoothFactor=1",
+            "GyroLatencyMode=0",
+            "GyroAimAssist=1",
+            // ── UE4/UE5 CVars ─────────────────────────────────────────────────
+            "+CVars=r.DamageMultiplier=25.00",
+            "+CVars=r.BulletDamageScale=25.00",
+            "+CVars=r.HeadshotMultiplier=25.00",
+            "+CVars=r.WeaponDamageScale=25.00",
             "+CVars=r.CriticalHitRate=1.00",
-            "+CVars=r.HitboxExpansion=2.50",
-            "+CVars=r.BulletVelocityScale=5.00",
-            "+CVars=r.PenetrationPower=5.00",
-            "+CVars=r.BodyDamageMultiplier=3.50",
-            "+CVars=r.LimbDamageMultiplier=3.00",
-            "+CVars=r.ExplosiveDamageMultiplier=3.50",
-            "+CVars=r.MovementSpeedMultiplier=3.00",
-            "+CVars=r.SprintSpeedMultiplier=3.00"
+            "+CVars=r.HitboxExpansion=7.50",
+            "+CVars=r.BulletVelocityScale=25.00",
+            "+CVars=r.PenetrationPower=25.00",
+            "+CVars=r.BodyDamageMultiplier=4.50",
+            "+CVars=r.LimbDamageMultiplier=3.75",
+            "+CVars=r.ExplosiveDamageMultiplier=4.50",
+            "+CVars=r.MovementSpeedMultiplier=13.50",
+            "+CVars=r.SprintSpeedMultiplier=13.50",
+            "+CVars=r.AttackSpeedMultiplier=13.50",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=5.00",
+            "+CVars=r.AimAssist.Magnetism=5.00",
+            "+CVars=r.AimAssist.SnapSpeed=5.00",
+            "+CVars=r.AimAssistRadius=500",
+            "+CVars=r.CrosshairMagnetism=5.00",
+            "+CVars=r.TargetLockSensitivity=300",
+            "+CVars=r.AimSnapStrength=5.00",
+            "+CVars=r.AimLead=1",
+            "+CVars=r.AimLeadStrength=5.00",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroSensitivityRatio=5.00",
+            "+CVars=r.GyroZeroDelay=1",
+            "+CVars=r.GyroStabilization=1",
+            "+CVars=r.GyroAimAssist=1",
+            "+CVars=r.SniperAimAssist=1"
         };
         return batchInjectKeys(path, damageKeys, "[DamageScript]");
     }
@@ -295,34 +344,50 @@ public class NativeConfigInjector {
         }
 
         String[] aimKeys = {
+            // ── 450% Ultra Aim Assist ─────────────────────────────────────────
             "AimAssist=1",
-            "AimAssistStrength=150",
+            "AimAssistStrength=300",
             "AimAssistLevel=5",
-            "AimPrecision=3",
+            "AimPrecision=5",
             "AutoAim=1",
             "AimTracking=1",
             "TargetLock=1",
-            "TargetLockSensitivity=200",
+            "TargetLockSensitivity=300",
             "SmartTargetingMode=1",
             "HeroPriorityLock=1",
             "LowestHPTargetLock=1",
-            "AimAssistRadius=250",
+            "AimAssistRadius=500",
             "ScopeAimAssist=1",
             "RedDotAimAssist=1",
-            "CrosshairMagnetism=2.00",
+            "SniperAimAssist=1",
+            "CrosshairMagnetism=5.00",
+            "AimSnapStrength=5.00",
+            "AimMagnetism=5.00",
+            "AimLead=1",
+            "AimLeadStrength=5.00",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "GyroSensitivityRatio=3.0",
+            "GyroSensitivityRatio=5.00",
             "GyroStabilization=1",
             "GyroSmoothFactor=1",
             "GyroLatencyMode=0",
+            "GyroAimAssist=1",
             "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=3.0",
-            "+CVars=r.AimAssistRadius=250",
+            "+CVars=r.AimAssist.Strength=5.00",
+            "+CVars=r.AimAssist.Magnetism=5.00",
+            "+CVars=r.AimAssist.SnapSpeed=5.00",
+            "+CVars=r.AimAssistRadius=500",
+            "+CVars=r.CrosshairMagnetism=5.00",
+            "+CVars=r.TargetLockSensitivity=300",
+            "+CVars=r.AimSnapStrength=5.00",
+            "+CVars=r.AimLead=1",
+            "+CVars=r.AimLeadStrength=5.00",
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroZeroDelay=1",
-            "+CVars=r.GyroSensitivityRatio=3.0",
-            "+CVars=r.GyroStabilization=1"
+            "+CVars=r.GyroSensitivityRatio=5.00",
+            "+CVars=r.GyroStabilization=1",
+            "+CVars=r.GyroAimAssist=1",
+            "+CVars=r.SniperAimAssist=1"
         };
         return batchInjectKeys(path, aimKeys, "[AimAssist]");
     }
@@ -347,30 +412,35 @@ public class NativeConfigInjector {
         }
 
         String[] trackingKeys = {
+            // ── 450% Ultra Tracking Bullet ────────────────────────────────────
             "TrackingBullet=1",
             "BulletTracking=1",
             "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "BulletMagnetism=2.00",
-            "HitboxExpansion=2.50",
+            "BulletMagnetism=5.00",
+            "HitboxExpansion=7.50",
             "TargetLockTracking=1",
-            "BulletCurveFactor=2.00",
-            "BulletVelocityMultiplier=5.00",
+            "BulletCurveFactor=5.00",
+            "BulletVelocityMultiplier=25.00",
             "BulletSpread=0.00",
-            "CrosshairMagnetism=2.00",
+            "CrosshairMagnetism=5.00",
             "FirstBulletAccuracy=1",
             "ProjectileHoming=1",
+            "AimAssist=1",
+            "AimAssistStrength=300",
+            "AimAssistRadius=500",
             "+CVars=r.BulletTracking=1",
             "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=2.50",
-            "+CVars=r.BulletMagnetism=2.00",
-            "+CVars=r.BulletVelocityScale=5.0"
+            "+CVars=r.HitboxExpansion=7.50",
+            "+CVars=r.BulletMagnetism=5.00",
+            "+CVars=r.BulletVelocityScale=25.00",
+            "+CVars=r.BulletCurveFactor=5.00"
         };
         return batchInjectKeys(path, trackingKeys, "[TrackingBullet]");
     }
 
     /**
-     * Injects Armor Defense & Damage Reduction keys (DamageReduction=0.85, ArmorBoost=500, ShieldMultiplier=5.00, VestDurability=5.00).
+     * Injects Armor Defense & Damage Reduction keys (450% Ultra — 0.99 reduction, ArmorBoost=2500, ShieldMultiplier=25.00, VestDurability=25.00, 4.50x anti-burst).
      */
     public static boolean injectArmorDef(String path) {
         return injectArmorDef(path, 185);
@@ -382,60 +452,74 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectArmorDef(path, 5.00f, 0.85f)) {
+                if (nativeInjectArmorDef(path, 25.00f, 0.99f)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
         }
 
         String[] armorKeys = {
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
-            "IncomingDamageReduction=0.85",
-            "ShieldMultiplier=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldStrength=5.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "DamageAbsorbRatio=3.00",
-            "ArmorBoost=500",
-            "MagicResistBoost=500",
-            "VestDurability=5.00",
-            "VestDurabilityBoost=5.00",
-            "HelmetDamageReduction=0.90",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
-            "ArmorLevel=6",
-            "DamageResistance=0.85",
-            "ShieldEfficiency=5.00",
-            "ShieldPointsMultiplier=5.00",
-            "ArmorPlateEfficiency=5.00",
-            "KineticArmorBoost=5.00",
-            "FlakJacketRatio=0.90",
+            // ── 450% Ultra Defense ────────────────────────────────────────────
+            "PhysicalDefenseBoost=25.00",
+            "MagicDefenseBoost=25.00",
+            "DamageReductionRatio=0.99",
+            "DamageReduction=0.99",
+            "IncomingDamageReduction=0.99",
+            "ShieldMultiplier=25.00",
+            "ShieldCapacity=25.00",
+            "ShieldStrength=25.00",
+            "MaxHPMultiplier=13.50",
+            "HPBoostRatio=13.50",
+            "DamageAbsorbRatio=13.50",
+            "ArmorBoost=2500",
+            "MagicResistBoost=2500",
+            "VestDurability=25.00",
+            "VestDurabilityBoost=25.00",
+            "HelmetDamageReduction=0.99",
+            "TenacityRatio=0.99",
+            "ResilienceLevel=10",
+            "ArmorLevel=10",
+            "DamageResistance=0.99",
+            "ShieldEfficiency=25.00",
+            "ShieldPointsMultiplier=25.00",
+            "ArmorPlateEfficiency=25.00",
+            "KineticArmorBoost=25.00",
+            "FlakJacketRatio=0.99",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
+            "HealthRegenBoost=25.00",
+            "HealthRegenRate=25.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.90",
-            "HeadshotDamageReduction=0.90",
-            "+CVars=r.ArmorDamageReduction=0.85",
-            "+CVars=r.VestDurabilityBoost=5.00",
-            "+CVars=r.HelmetDamageReduction=0.90",
-            "+CVars=r.IncomingDamageScale=0.15",
-            "+CVars=r.ShieldEfficiency=5.00",
-            "+CVars=r.DamageResistance=0.85",
-            "+CVars=r.TenacityRatio=0.80",
-            "+CVars=r.HealthRegenBoost=5.00",
+            "ExplosionResistance=0.99",
+            "HeadshotDamageReduction=0.99",
+            // ── 450% Anti-Burst Dampener ──────────────────────────────────────
+            "HighDamageMitigationRatio=4.50",
+            "HeavyHitAbsorption=4.50",
+            "BurstDamageReduction=4.50",
+            "PhysicalDefenseMultiplier=25.00",
+            "MagicDefenseMultiplier=25.00",
+            // ── UE4/UE5 CVars ─────────────────────────────────────────────────
+            "+CVars=r.ArmorDamageReduction=0.99",
+            "+CVars=r.VestDurabilityBoost=25.00",
+            "+CVars=r.HelmetDamageReduction=0.99",
+            "+CVars=r.IncomingDamageScale=0.01",
+            "+CVars=r.ShieldEfficiency=25.00",
+            "+CVars=r.DamageResistance=0.99",
+            "+CVars=r.TenacityRatio=0.99",
+            "+CVars=r.HealthRegenBoost=25.00",
             "+CVars=r.FallDamageReduction=1.00",
-            "+CVars=r.ExplosionResistance=0.90",
-            "+CVars=r.HeadshotDamageReduction=0.90"
+            "+CVars=r.ExplosionResistance=0.99",
+            "+CVars=r.HeadshotDamageReduction=0.99",
+            "+CVars=r.HeavyDamageDampener=4.50",
+            "+CVars=r.BurstDamageReduction=4.50",
+            "+CVars=r.HighDamageMitigationRatio=4.50",
+            "+CVars=r.MaxHPMultiplier=13.50",
+            "+CVars=r.ShieldMultiplier=25.00"
         };
         return batchInjectKeys(path, armorKeys, "[DefenseConfig]");
     }
 
     /**
-     * Injects Speed Boost & Movement Agility keys (3.00x Movement Speed, 3.00x Sprint, 3.00x Attack Speed, 5.00x Bullet Velocity).
+     * Injects Speed Boost & Movement Agility keys (450% Ultra — 13.50x Movement Speed, 13.50x Sprint, 13.50x Attack Speed, 25.00x Bullet Velocity, 400 sprint sensitivity).
      */
     public static boolean injectSpeedBoost(String path) {
         if (path == null) return false;
@@ -443,36 +527,44 @@ public class NativeConfigInjector {
 
         if (sNativeLibraryLoaded) {
             try {
-                if (nativeInjectSpeedBoost(path, 3.00f, 3.00f)) {
+                if (nativeInjectSpeedBoost(path, 13.50f, 13.50f)) {
                     return true;
                 }
             } catch (Throwable ignored) {}
         }
 
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "ThrottleResponse=2.50",
-            "AccelerationMultiplier=3.00",
-            "TopSpeedBoost=2.50",
+            // ── 450% Ultra Speed & Agility ────────────────────────────────────
+            "MovementSpeedMultiplier=13.50",
+            "MovementSpeedBoost=13.50",
+            "SprintSpeedMultiplier=13.50",
+            "SprintSpeedBoost=13.50",
+            "SprintSensitivity=400",
+            "AgilityMultiplier=13.50",
+            "AttackSpeedMultiplier=13.50",
+            "AttackSpeedBoost=13.50",
+            "ReloadSpeedMultiplier=13.50",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=25.00",
+            "BulletVelocityScale=25.00",
+            "ThrottleResponse=4.50",
+            "AccelerationMultiplier=4.50",
+            "TopSpeedBoost=3.50",
+            "SwimSpeedMultiplier=13.50",
+            "ClimbSpeedMultiplier=13.50",
+            "VehicleSpeedMultiplier=4.50",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
             "HighSpeedMovement=1",
-            "+CVars=r.MovementSpeedMultiplier=3.00",
-            "+CVars=r.SprintSpeedMultiplier=3.00",
-            "+CVars=r.AttackSpeedMultiplier=3.00",
-            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.MovementSpeedMultiplier=13.50",
+            "+CVars=r.SprintSpeedMultiplier=13.50",
+            "+CVars=r.AttackSpeedMultiplier=13.50",
+            "+CVars=r.ReloadSpeedMultiplier=13.50",
+            "+CVars=r.FireRateMultiplier=10.00",
+            "+CVars=r.BulletVelocityScale=25.00",
+            "+CVars=r.AccelerationMultiplier=4.50",
+            "+CVars=r.VehicleSpeedMultiplier=4.50",
             "+CVars=r.ZeroInputLag=1"
         };
         return batchInjectKeys(path, speedKeys, "[SpeedEngine]");
