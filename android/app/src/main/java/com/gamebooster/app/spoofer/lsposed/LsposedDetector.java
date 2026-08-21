@@ -117,6 +117,9 @@ public final class LsposedDetector {
     public static void refreshAsync(Context context, Runnable onComplete) {
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
+                if (context != null) {
+                    LspatchHelper.isLspatchInstalled(context);
+                }
                 boolean installed = probe("ls -d /data/adb/lspd 2>/dev/null");
                 boolean enabled = probeModuleEnabled();
                 long now = System.currentTimeMillis();

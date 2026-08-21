@@ -12,6 +12,10 @@ import com.gamebooster.app.spoofer.SpoofProfile;
 
 public class DeviceInfoChannel {
 
+    private static volatile Metrics sCachedMetrics;
+    private static volatile long sLastMetricsFetch = 0L;
+    private static final long METRICS_CACHE_TTL_MS = 1500L;
+
     public static class Metrics {
         public final String deviceSummary;
         public final int ramUsagePct;
@@ -31,6 +35,18 @@ public class DeviceInfoChannel {
     }
 
     public static Metrics getMetrics(Context context) {
+        long now = System.currentTimeMillis();
+        if (sCachedMetrics != null && (now - sLastMetricsFetch < METRICS_CACHE_TTL_MS)) {
+            return sCachedMetrics;
+        }
+
+        Metrics metrics = computeMetrics(context);
+        sCachedMetrics = metrics;
+        sLastMetricsFetch = now;
+        return metrics;
+    }
+
+    private static Metrics computeMetrics(Context context) {
         DeviceSpecModel specs = DeviceDetector.getDeviceSpecModel();
         String summary = specs.getFormattedSummary();
 
@@ -64,12 +80,15 @@ public class DeviceInfoChannel {
         float tempC = 0.0f;
         int currentMa = 0;
         if (context != null) {
-            IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-            Intent batteryIntent = context.registerReceiver(null, filter);
-            if (batteryIntent != null) {
-                int tempInt = batteryIntent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
-                tempC = tempInt / 10.0f;
-            }
+            try {
+                IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent batteryIntent = context.registerReceiver(null, filter);
+                if (batteryIntent != null) {
+                    int tempInt = batteryIntent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
+                    tempC = tempInt / 10.0f;
+                }
+            } catch (Throwable ignored) {}
+
             try {
                 BatteryManager bm = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
                 if (bm != null) {

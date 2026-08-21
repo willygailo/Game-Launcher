@@ -107,6 +107,8 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvGames.setHasFixedSize(true);
+            rvGames.setItemAnimator(null);
             adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);
         }
@@ -115,6 +117,10 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         loadAndScanGamesZeroDelay();
         return view;
     }
+
+    private volatile boolean isScanning = false;
+    private volatile long lastScanTime = 0L;
+    private static final long SCAN_DEBOUNCE_MS = 2500L;
 
     @Override
     public void onResume() {
@@ -149,7 +155,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     }
 
     private void updateStatusStrip() {
-        if (getContext() == null) return;
+        if (!isAdded() || getContext() == null) return;
 
         com.gamebooster.app.shizuku.ShizukuConnectionManager.State conn =
                 com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
@@ -196,7 +202,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             }
         }
 
-        if (tvRamUsage != null) {
+        if (tvRamUsage != null && getContext() != null) {
             DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
             tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
         }
@@ -209,7 +215,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
      * 3. Update UI on the main thread with zero freeze / flicker
      */
     private void loadAndScanGamesZeroDelay() {
-        if (getContext() == null) return;
+        if (!isAdded() || getContext() == null) return;
         final Context ctx = getContext().getApplicationContext();
 
         // If games already in memory, display them right away
@@ -224,33 +230,46 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
         }
 
+        long now = System.currentTimeMillis();
+        if (isScanning || (now - lastScanTime < SCAN_DEBOUNCE_MS)) {
+            return;
+        }
+
+        isScanning = true;
+        lastScanTime = now;
+
         com.gamebooster.app.core.AppExecutors.getInstance().executeScan(() -> {
-            List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(ctx);
+            try {
+                List<GameAppInfo> scannedGames = HomeGameScanner.scanTargetGames(ctx);
 
-            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                if (!isAdded() || getContext() == null) return;
+                com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                    isScanning = false;
+                    if (!isAdded() || getContext() == null) return;
 
-                gameList.clear();
-                gameList.addAll(scannedGames);
+                    gameList.clear();
+                    gameList.addAll(scannedGames);
 
-                if (adapter != null) {
-                    adapter.updateList(scannedGames);
-                }
+                    if (adapter != null) {
+                        adapter.updateList(scannedGames);
+                    }
 
-                // Update header count
-                if (tvGamesHeader != null) {
-                    tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
-                }
+                    // Update header count
+                    if (tvGamesHeader != null) {
+                        tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
+                    }
 
-                // Toggle empty state vs games list
-                if (scannedGames.isEmpty()) {
-                    if (rvGames != null) rvGames.setVisibility(View.GONE);
-                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
-                } else {
-                    if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
-                    if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
-                }
-            });
+                    // Toggle empty state vs games list
+                    if (scannedGames.isEmpty()) {
+                        if (rvGames != null) rvGames.setVisibility(View.GONE);
+                        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
+                        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
+                    }
+                });
+            } catch (Throwable t) {
+                isScanning = false;
+            }
         });
     }
 }

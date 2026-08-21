@@ -23,11 +23,32 @@ public final class LspatchHelper {
 
     private LspatchHelper() {}
 
+    private static volatile Boolean sCachedLspatchInstalled = null;
+    private static volatile long sLastLspatchCheck = 0L;
+    private static final long LSPATCH_CACHE_TTL_MS = 10_000L;
+
     /**
-     * Checks if LSPatch Manager is installed on the device.
+     * Checks if LSPatch Manager is installed on the device (with 10s caching for 0ms UI delay).
      */
     public static boolean isLspatchInstalled(Context context) {
         if (context == null) return false;
+        long now = System.currentTimeMillis();
+        if (sCachedLspatchInstalled != null && (now - sLastLspatchCheck < LSPATCH_CACHE_TTL_MS)) {
+            return sCachedLspatchInstalled;
+        }
+
+        boolean installed = probeLspatchInstalled(context);
+        sCachedLspatchInstalled = installed;
+        sLastLspatchCheck = now;
+        return installed;
+    }
+
+    public static void invalidateCache() {
+        sCachedLspatchInstalled = null;
+        sLastLspatchCheck = 0L;
+    }
+
+    private static boolean probeLspatchInstalled(Context context) {
         PackageManager pm = context.getPackageManager();
         try {
             pm.getPackageInfo(LSPATCH_PKG, 0);

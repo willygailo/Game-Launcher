@@ -94,11 +94,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         // Register Shizuku binder lifecycle listeners and subscribe state change listener
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
-        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
-
-        // Initialize saved tweak states and restore active tweaks
-        TweakManagerRepository.initializeStates(this);
-        TweakManagerRepository.restoreAppliedTweaksAsync(this);
 
         // Request runtime notification permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -107,40 +102,43 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         }
 
-        // Initialize RishManager 13.5 Shell Engine & Pre-warm LSPosed detector in background
+        // Asynchronous Cold-Start Engine Initialization (Zero Main-Thread Latency)
         AppExecutors.getInstance().executeCommand(() -> {
-            com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
-        });
-        com.gamebooster.app.spoofer.lsposed.LsposedDetector.refreshAsync(getApplicationContext(), null);
+            try {
+                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
+                TweakManagerRepository.initializeStates(getApplicationContext());
+                TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
+                com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
+                com.gamebooster.app.spoofer.lsposed.LsposedDetector.refreshAsync(getApplicationContext(), null);
 
-        // Bind Shizuku AIDL UserService & Auto-Grant Privileges
-        try {
-            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
-            if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
-                // Auto-Active: request Shizuku permission immediately on app start
-                ShizukuManager.requestShizukuPermission();
-            } else if (ShizukuExecutor.hasShizukuPermission()) {
-                AppExecutors.getInstance().executeCommand(() -> {
+                // Bind Shizuku AIDL UserService & Auto-Grant Privileges
+                com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
+                if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
+                    // Auto-Active: request Shizuku permission immediately on app start
+                    AppExecutors.getInstance().postToMainThread(ShizukuManager::requestShizukuPermission);
+                } else if (ShizukuExecutor.hasShizukuPermission()) {
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
-                });
-            } else {
-                // Auto-Active: Shizuku not running — auto-prompt activation once per install (post after window attach)
-                android.content.SharedPreferences prefs =
-                        getSharedPreferences("game_booster_prefs", MODE_PRIVATE);
-                if (!prefs.getBoolean("shizuku_auto_prompt_shown", false)) {
-                    if (rootLayout != null) {
-                        rootLayout.post(() -> {
-                            if (!isFinishing() && !isDestroyed()) {
-                                ShizukuManager.showShizukuPermissionDialog(MainActivity.this, "Auto-Active Engine");
-                            }
-                        });
+                } else {
+                    // Auto-Active: Shizuku not running — auto-prompt activation once per install
+                    android.content.SharedPreferences prefs =
+                            getSharedPreferences("game_booster_prefs", MODE_PRIVATE);
+                    if (!prefs.getBoolean("shizuku_auto_prompt_shown", false)) {
+                        prefs.edit().putBoolean("shizuku_auto_prompt_shown", true).apply();
+                        if (rootLayout != null) {
+                            rootLayout.post(() -> {
+                                if (!isFinishing() && !isDestroyed()) {
+                                    ShizukuManager.showShizukuPermissionDialog(MainActivity.this, "Auto-Active Engine");
+                                }
+                            });
+                        }
                     }
-                    prefs.edit().putBoolean("shizuku_auto_prompt_shown", true).apply();
                 }
+            } catch (Throwable t) {
+                Log.w("MainActivity", "Background engine warm-up warning: " + t.getMessage());
             }
-        } catch (Throwable ignored) {}
+        });
 
         if (savedInstanceState != null) {
             currentTabIndex = savedInstanceState.getInt(KEY_SELECTED_TAB, 0);
