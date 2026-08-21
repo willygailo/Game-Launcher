@@ -93,7 +93,7 @@ public final class ProcFileHooks {
         XposedBridge.log("[GameBooster] ProcFileHooks active for " + lpparam.packageName);
     }
 
-    private static byte[] resolveCommandOutput(List<String> cmd) {
+    public static byte[] resolveCommandOutput(List<String> cmd) {
         if (cmd == null || cmd.isEmpty()) return null;
         String full = String.join(" ", cmd).toLowerCase().trim();
 
@@ -117,6 +117,18 @@ public final class ProcFileHooks {
             }
         }
         return null;
+    }
+
+    public static String getCpuInfo() {
+        return cpuInfo;
+    }
+
+    public static String getMemInfo() {
+        return memInfo;
+    }
+
+    public static String getProcVersion() {
+        return procVersion;
     }
 
     /**

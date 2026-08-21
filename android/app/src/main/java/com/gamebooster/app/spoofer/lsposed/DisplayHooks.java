@@ -120,14 +120,49 @@ public final class DisplayHooks {
             }
         } catch (Throwable ignored) {}
 
+        // 5. Display.getDeviceProductInfo() -> Android 11+ (API 30+)
+        try {
+            Class<?> prodInfoClass = XposedHelpers.findClass("android.hardware.display.DeviceProductInfo", lpparam.classLoader);
+            if (prodInfoClass != null) {
+                XposedHelpers.findAndHookMethod(displayClass, "getDeviceProductInfo", new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        try {
+                            Constructor<?>[] ctors = prodInfoClass.getDeclaredConstructors();
+                            for (Constructor<?> c : ctors) {
+                                c.setAccessible(true);
+                                Class<?>[] pTypes = c.getParameterTypes();
+                                if (pTypes.length >= 2 && pTypes[0] == String.class && pTypes[1] == String.class) {
+                                    Object[] args = new Object[pTypes.length];
+                                    args[0] = profile.model;
+                                    args[1] = profile.manufacturer;
+                                    for (int i = 2; i < pTypes.length; i++) {
+                                        if (pTypes[i] == String.class) args[i] = profile.productName;
+                                        else if (pTypes[i] == int.class) args[i] = 2025;
+                                        else args[i] = null;
+                                    }
+                                    param.setResult(c.newInstance(args));
+                                    break;
+                                }
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                });
+            }
+        } catch (Throwable ignored) {}
+
         XposedBridge.log("[GameBooster] DisplayHooks installed: " + spoofedHz + "Hz unlocked for " + lpparam.packageName);
     }
 
-    private static Display.Mode createMockMode(int width, int height, float refreshRate) {
+    public static float getSpoofedHz() {
+        return spoofedHz;
+    }
+
+    public static Display.Mode createMockMode(int width, int height, float refreshRate) {
         return createMockModeWithId(1, width, height, refreshRate);
     }
 
-    private static Display.Mode createMockModeWithId(int id, int width, int height, float refreshRate) {
+    public static Display.Mode createMockModeWithId(int id, int width, int height, float refreshRate) {
         try {
             // Display.Mode(int modeId, int width, int height, float refreshRate)
             Constructor<Display.Mode> ctor = Display.Mode.class.getDeclaredConstructor(

@@ -32,6 +32,14 @@ public final class SystemPropertiesHooks {
         // 2. Samsung SemSystemProperties (Knox / Game Optimizing Service)
         hookSystemPropertiesClass(lpparam.classLoader, "android.os.SemSystemProperties");
 
+        // 3. Xiaomi / HyperOS / MIUI SystemProperties
+        hookSystemPropertiesClass(lpparam.classLoader, "miui.os.SystemProperties");
+        hookSystemPropertiesClass(lpparam.classLoader, "android.os.MiuiSystemProperties");
+
+        // 4. Oppo / Realme / OnePlus ColorOS / OplusSystemProperties
+        hookSystemPropertiesClass(lpparam.classLoader, "com.oplus.os.OplusSystemProperties");
+        hookSystemPropertiesClass(lpparam.classLoader, "com.coloros.os.ColorOSSystemProperties");
+
         XposedBridge.log("[GameBooster] SystemProperties hooks installed (" + propMap.size() + " props)");
     }
 

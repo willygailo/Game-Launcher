@@ -65,6 +65,13 @@ public final class IdentityHooks {
             hookReplaceIntSlot(tmClass, "getNetworkOperatorName", "T-Mobile");
             hookReplaceIntSlot(tmClass, "getSimCountryIso", "us");
             hookReplaceIntSlot(tmClass, "getNetworkCountryIso", "us");
+
+            // Network Types: 20 = NETWORK_TYPE_NR (5G), Phone Type: 1 = PHONE_TYPE_GSM
+            try {
+                XposedHelpers.findAndHookMethod(tmClass, "getPhoneType", XC_MethodReplacement.returnConstant(1));
+                XposedHelpers.findAndHookMethod(tmClass, "getNetworkType", XC_MethodReplacement.returnConstant(20));
+                XposedHelpers.findAndHookMethod(tmClass, "getDataNetworkType", XC_MethodReplacement.returnConstant(20));
+            } catch (Throwable ignored) {}
         }
 
         // 2. Settings.Secure & Settings.Global
@@ -156,17 +163,17 @@ public final class IdentityHooks {
     }
 
     /** Deterministic Luhn-valid 15-digit IMEI derived from the profile id. */
-    private static String generateImei(SpoofProfile profile) {
+    public static String generateImei(SpoofProfile profile) {
         String base = String.format("%014d", (profile.id.hashCode() & 0x7fffffff) % 100000000000000L);
         return base + luhnDigit(base);
     }
 
     /** Deterministic 14-digit MEID (not Luhn-checked, standard 14-digit format). */
-    private static String generateMeid(SpoofProfile profile) {
+    public static String generateMeid(SpoofProfile profile) {
         return String.format("%014d", (profile.id.hashCode() & 0x7fffffff) % 100000000000000L);
     }
 
-    private static String generateMacAddress(SpoofProfile profile) {
+    public static String generateMacAddress(SpoofProfile profile) {
         int h = profile.id.hashCode() & 0x7fffffff;
         return String.format("02:%02X:%02X:%02X:%02X:%02X",
                 (h >> 20) & 0xFF, (h >> 16) & 0xFF, (h >> 12) & 0xFF, (h >> 8) & 0xFF, h & 0xFF);

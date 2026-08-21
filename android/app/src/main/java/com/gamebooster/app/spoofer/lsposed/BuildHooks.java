@@ -89,6 +89,29 @@ public final class BuildHooks {
                     XC_MethodReplacement.returnConstant("MPSS.DE.1.0-00001"));
         } catch (Throwable ignored) {}
 
+        // Android 10+ Build.getFingerprintedPartitions()
+        try {
+            XposedHelpers.findAndHookMethod(build, "getFingerprintedPartitions", new de.robv.android.xposed.XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    try {
+                        Class<?> partitionClass = XposedHelpers.findClass("android.os.Build$Partition", lpparam.classLoader);
+                        if (partitionClass != null) {
+                            java.lang.reflect.Constructor<?> ctor = partitionClass.getDeclaredConstructor(String.class, String.class, long.class);
+                            ctor.setAccessible(true);
+                            java.util.List<Object> list = new java.util.ArrayList<>();
+                            list.add(ctor.newInstance("system", profile.fingerprint, 1737331955000L));
+                            list.add(ctor.newInstance("vendor", profile.fingerprint, 1737331955000L));
+                            list.add(ctor.newInstance("odm", profile.fingerprint, 1737331955000L));
+                            list.add(ctor.newInstance("product", profile.fingerprint, 1737331955000L));
+                            list.add(ctor.newInstance("system_ext", profile.fingerprint, 1737331955000L));
+                            param.setResult(list);
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            });
+        } catch (Throwable ignored) {}
+
         XposedBridge.log("[GameBooster] BuildHooks applied: " + profile.model + " [" + profile.brand + "]");
     }
 

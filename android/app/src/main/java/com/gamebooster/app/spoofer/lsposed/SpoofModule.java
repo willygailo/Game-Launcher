@@ -52,7 +52,7 @@ public class SpoofModule implements IXposedHookLoadPackage {
             RuntimeMemoryHooks.apply(profile);
 
             // 7. ActivityManager RAM Telemetry Hooking
-            RamInfoHooks.apply(lpparam);
+            RamInfoHooks.apply(lpparam, profile);
 
             // 8. /proc/cpuinfo, /proc/meminfo, and Shell Execution Interception
             ProcFileHooks.apply(lpparam, profile);
