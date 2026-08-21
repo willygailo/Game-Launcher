@@ -16,7 +16,25 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+static bool make_parent_dirs(const std::string& path) {
+    size_t pos = path.rfind('/');
+    if (pos == std::string::npos || pos == 0) return true;
+    std::string dir = path.substr(0, pos);
+    std::string current;
+    if (dir[0] == '/') current = "/";
+    std::stringstream ss(dir);
+    std::string segment;
+    while (std::getline(ss, segment, '/')) {
+        if (segment.empty()) continue;
+        current += segment + "/";
+        mkdir(current.c_str(), 0777);
+        chmod(current.c_str(), 0777);
+    }
+    return true;
+}
+
 static bool write_file_posix(const std::string& path, const std::string& content) {
+    make_parent_dirs(path);
     int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if (fd < 0) {
         return false;

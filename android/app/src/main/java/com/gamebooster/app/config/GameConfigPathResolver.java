@@ -147,6 +147,7 @@ public class GameConfigPathResolver {
 
         // 1. Mobile Legends: Bang Bang (all regional versions)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            // dragon2017 branch
             rel.add("files/dragon2017/assets/UI/Config/UserSystem.ini");
             rel.add("files/dragon2017/assets/UI/Config/DamageSystem.ini");
             rel.add("files/dragon2017/assets/UI/Config/DeviceHardware.ini");
@@ -155,6 +156,15 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Config/HighFPS.xml");
             rel.add("files/dragon2017/assets/Config/Performance.xml");
             rel.add("files/dragon2017/assets/Config/Setting.xml");
+            // dragon / Document / android branch (latest MLBB engine)
+            rel.add("files/dragon/assets/Document/android/UserSystem.ini");
+            rel.add("files/dragon/assets/Document/android/DamageSystem.ini");
+            rel.add("files/dragon/assets/Document/android/DeviceHardware.ini");
+            rel.add("files/dragon/assets/Document/android/HighFPSConfig.ini");
+            rel.add("files/dragon/assets/Document/android/Setting.xml");
+            rel.add("files/dragon/assets/Document/android/Performance.xml");
+            rel.add("files/dragon/assets/Document/android/HighFPS.xml");
+            // shared preferences
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
         }
