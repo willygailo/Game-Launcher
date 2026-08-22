@@ -62,7 +62,7 @@ public class NativeConfigInjector {
     // ─── High-Level Injection Engine Methods ─────────────────────────────────
 
     /**
-     * Injects or overwrites configuration content into target file path using C++ native method or Shizuku fallback.
+     * Injects or overwrites configuration content into target file path using C++ native method or atomic ConfigFileHelper fallback.
      */
     public static boolean injectConfig(String path, String content) {
         if (path == null || content == null) return false;
@@ -79,33 +79,7 @@ public class NativeConfigInjector {
             }
         }
 
-        // Java / Shizuku / Direct I/O fallback
-        if (ShizukuFileManager.hasFullAccess()) {
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        }
-
-        try {
-            File f = new File(path);
-            if (f.getParentFile() != null && !f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
-            }
-            try (FileOutputStream fos = new FileOutputStream(f)) {
-                fos.write(content.getBytes(StandardCharsets.UTF_8));
-                fos.flush();
-            }
-            f.setReadable(true, false);
-            f.setWritable(true, false);
-            return true;
-        } catch (IOException e) {
-            String cmd = "mkdir -p $(dirname '" + path + "'); echo '" + content.replace("'", "'\\''") + "' > '" + path + "'; chmod 666 '" + path + "'";
-            String res;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                res = ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                res = CommandExecutor.executeSystemCommand(cmd);
-            }
-            return res != null && !res.startsWith("ERROR");
-        }
+        return ConfigFileHelper.writeContentAtomic(path, content);
     }
 
     /**
@@ -663,116 +637,11 @@ public class NativeConfigInjector {
             } catch (Throwable ignored) {}
         }
 
-        // Direct Java file I/O when accessible
-        File f = new File(path);
-        if (f.exists() && f.canRead() && f.canWrite()) {
-            try {
-                String existing = new String(java.nio.file.Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
-                String updated = patchContentInMemory(existing, keyValues, sectionHeader, path);
-                java.nio.file.Files.write(f.toPath(), updated.getBytes(StandardCharsets.UTF_8));
-                return true;
-            } catch (Throwable ignored) {}
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if (path.endsWith(".xml")) {
-            for (String kv : keyValues) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) {
-                    String k = kv.substring(0, eq);
-                    String v = kv.substring(eq + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            }
-        } else if (path.endsWith(".json")) {
-            for (String kv : keyValues) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) {
-                    String k = kv.substring(0, eq);
-                    String v = kv.substring(eq + 1);
-                    String valJson = isNumeric(v) ? v : "\"" + v + "\"";
-                    sb.append("grep -qF '\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '2i \\  \"").append(k).append("\": ").append(valJson).append(",' ").append(path).append("; ");
-                    sb.append("sed -i 's/\"").append(k).append("\":.*/\"").append(k).append("\": ").append(valJson).append(",/' ").append(path).append("; ");
-                }
-            }
-        } else {
-            if (sectionHeader != null && !sectionHeader.trim().isEmpty()) {
-                sb.append("grep -qF '").append(sectionHeader).append("' ").append(path)
-                  .append(" || echo '").append(sectionHeader).append("' >> ").append(path).append("; ");
-            }
-            for (String kv : keyValues) {
-                String k = extractKey(kv);
-                String keyEscaped = k.replace("+", "\\+").replace(".", "\\.");
-                String kvEscaped = kv.replace("+", "\\+").replace("&", "\\&");
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(kv).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(keyEscaped).append("=.*/").append(kvEscaped).append("/' ").append(path).append("; ");
-            }
-        }
-
-        String cmd = sb.toString();
-        if (cmd.isEmpty()) return true;
-
-        String res;
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            res = ShizukuExecutor.executeShizukuCommand(cmd);
-        } else {
-            res = CommandExecutor.executeSystemCommand(cmd);
-        }
-        return res != null && !res.startsWith("ERROR");
+        return ConfigFileHelper.patchKeys(path, keyValues, sectionHeader);
     }
 
     private static String patchContentInMemory(String content, String[] keyValues, String sectionHeader, String path) {
-        if (path.endsWith(".xml")) {
-            for (String kv : keyValues) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) {
-                    String k = kv.substring(0, eq);
-                    String v = kv.substring(eq + 1);
-                    if (content.contains("name=\"" + k + "\"")) {
-                        content = content.replaceAll("name=\"" + java.util.regex.Pattern.quote(k) + "\"[^>]*>", "name=\"" + k + "\">" + v + "</string>");
-                    } else if (content.contains("</map>")) {
-                        content = content.replace("</map>", "  <string name=\"" + k + "\">" + v + "</string>\n</map>");
-                    } else {
-                        content = content + "\n<string name=\"" + k + "\">" + v + "</string>";
-                    }
-                }
-            }
-            return content;
-        } else if (path.endsWith(".json")) {
-            for (String kv : keyValues) {
-                int eq = kv.indexOf('=');
-                if (eq > 0) {
-                    String k = kv.substring(0, eq);
-                    String v = kv.substring(eq + 1);
-                    String valJson = isNumeric(v) ? v : "\"" + v + "\"";
-                    if (content.contains("\"" + k + "\"")) {
-                        content = content.replaceAll("\"" + java.util.regex.Pattern.quote(k) + "\"\\s*:\\s*[^,\\n}]+", "\"" + k + "\": " + valJson);
-                    } else if (content.contains("{")) {
-                        content = content.replaceFirst("\\{", "{\\n  \"" + k + "\": " + valJson + ",");
-                    } else {
-                        content = "{\\n  \"" + k + "\": " + valJson + "\n}\n";
-                    }
-                }
-            }
-            return content;
-        } else {
-            for (String kv : keyValues) {
-                String k = extractKey(kv);
-                String pattern = "(?m)^" + java.util.regex.Pattern.quote(k) + "=.*$";
-                if (java.util.regex.Pattern.compile(pattern).matcher(content).find()) {
-                    content = content.replaceAll(pattern, java.util.regex.Matcher.quoteReplacement(kv));
-                } else {
-                    if (!content.endsWith("\n") && !content.isEmpty()) {
-                        content += "\n";
-                    }
-                    content += kv + "\n";
-                }
-            }
-            return content;
-        }
+        return ConfigFileHelper.patchContentInMemory(content, keyValues, sectionHeader, path);
     }
 
     public static String extractKey(String kv) {

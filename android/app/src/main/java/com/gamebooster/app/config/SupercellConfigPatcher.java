@@ -1,11 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,8 +56,9 @@ public class SupercellConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, iniContent);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, iniContent)) {
+                written++;
+            }
         }
         Log.i(TAG, "Supercell competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
@@ -100,22 +96,8 @@ public class SupercellConfigPatcher {
             "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Supercell 5.0x damage boost & attack multipliers applied for " + packageName);
     }
@@ -123,16 +105,14 @@ public class SupercellConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchRate=1000",
+            "TouchResponse=1",
+            "TouchSlopReduction=1",
+            "TouchZeroDelay=1"
+        };
         for (String path : paths) {
-            String touchAppend = "\n[TouchEngine]\nTouchRate=1000\nTouchResponse=1\nTouchSlopReduction=1\nTouchZeroDelay=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(appendCmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(appendCmd);
-                }
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "Supercell Input Smoothing & Stabilization applied for " + packageName);
     }
@@ -148,20 +128,7 @@ public class SupercellConfigPatcher {
             "TouchSensitivity=150"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "Supercell Auto-Aim Assist applied for " + packageName);
     }
@@ -189,21 +156,8 @@ public class SupercellConfigPatcher {
             "CrosshairSpread=0.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "Supercell Movement Stabilization applied for " + packageName);
     }
@@ -238,22 +192,8 @@ public class SupercellConfigPatcher {
             "FallDamageReduction=1.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[CombatDefense]' ").append(path).append(" || echo '[CombatDefense]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[CombatDefense]");
         }
         Log.i(TAG, "Supercell Shield 5.0x & Defense 85% Reduction applied for " + packageName);
     }
@@ -283,22 +223,8 @@ public class SupercellConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "Supercell 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -320,20 +246,7 @@ public class SupercellConfigPatcher {
             "BulletTracking=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "Supercell Auto Attack Tracking & Super Lock applied for " + packageName);
     }
@@ -346,44 +259,25 @@ public class SupercellConfigPatcher {
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "[SupercellEngine]\nTargetFPS=%d\nMaxFPS=%d\nFPSLevel=%d\nFPSCap=%d\nHighFPSMode=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nHighRefreshRate=1\nGraphicQuality=4\nUltraExtreme=1\nHDRMode=1\nResolutionScale=1.2\n",
-                    forcedFps, forcedFps, fpsLevel, forcedFps
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^FPSCap=.*/FPSCap=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
-                         "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
-                         "sed -i 's/^UltraExtreme=.*/UltraExtreme=1/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
-    private static void ensureParentDirectory(String path) {
-        if (path == null) return;
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            String parentDir = path.substring(0, lastSlash);
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
-            } else {
-                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-            }
-        }
+        String[] keys = {
+            "TargetFPS=" + forcedFps,
+            "MaxFPS=" + forcedFps,
+            "FPSCap=" + forcedFps,
+            "FPSLevel=" + fpsLevel,
+            "GraphicQuality=4",
+            "UltraExtreme=1",
+            "HDRMode=1",
+            "ResolutionScale=1.2",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "HighRefreshRate=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[SupercellEngine]");
     }
 
     private static List<String> getConfigPaths(String pkg) {

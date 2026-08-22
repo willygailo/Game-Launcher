@@ -1,11 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -98,12 +93,13 @@ public class WildRiftConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            boolean ok;
             if (path.endsWith(".json")) {
-                forceWrite(path, jsonContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, jsonContent);
             } else {
-                forceWrite(path, iniContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, iniContent);
             }
-            written++;
+            if (ok) written++;
         }
         Log.i(TAG, "Wild Rift competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
@@ -140,21 +136,8 @@ public class WildRiftConfigPatcher {
             "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Wild Rift 5.0x damage boost & critical multipliers applied for " + packageName);
     }
@@ -162,16 +145,14 @@ public class WildRiftConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchRate=1000",
+            "TouchResponse=1",
+            "TouchSlopReduction=1",
+            "TouchZeroDelay=1"
+        };
         for (String path : paths) {
-            String touchAppend = "\n[TouchEngine]\nTouchRate=1000\nTouchResponse=1\nTouchSlopReduction=1\nTouchZeroDelay=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(appendCmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(appendCmd);
-                }
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
     }
 
@@ -187,20 +168,7 @@ public class WildRiftConfigPatcher {
             "TouchSensitivity=150"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "WildRift Smart Target Assist applied for " + packageName);
     }
@@ -228,21 +196,8 @@ public class WildRiftConfigPatcher {
             "CrosshairSpread=0.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "WildRift Input Smoothing & Stabilization applied for " + packageName);
     }
@@ -277,22 +232,8 @@ public class WildRiftConfigPatcher {
             "ExplosionResistance=0.90"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "WildRift Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
     }
@@ -322,22 +263,8 @@ public class WildRiftConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "WildRift 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -361,20 +288,7 @@ public class WildRiftConfigPatcher {
             "MagicBullet=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "WildRift Skill Auto-Tracking & Smite Execution applied for " + packageName);
     }
@@ -387,38 +301,23 @@ public class WildRiftConfigPatcher {
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = "{\n  \"graphics\": {\n    \"target_fps\": " + forcedFps + ",\n    \"max_fps\": " + forcedFps + ",\n    \"fps_level\": " + fpsLevel + ",\n    \"fpsUnlock\": true,\n    \"unlock_120\": true,\n    \"unlock_144\": true,\n    \"unlock_165\": true,\n    \"unlock_185\": true,\n    \"resolution\": 4,\n    \"quality\": 4,\n    \"character_quality\": 4,\n    \"effects_quality\": 4,\n    \"shadow_quality\": 4,\n    \"ultra_extreme\": true,\n    \"resolution_scale\": 1.2,\n    \"post_processing\": true,\n    \"vsync\": false\n  }\n}\n";
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/\"target_fps\":.*/\"target_fps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"max_fps\":.*/\"max_fps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"fps_level\":.*/\"fps_level\": " + fpsLevel + ",/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
-    private static void ensureParentDirectory(String path) {
-        if (path == null) return;
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            String parentDir = path.substring(0, lastSlash);
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
-            } else {
-                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-            }
-        }
+        String[] keys = {
+            "target_fps=" + forcedFps,
+            "max_fps=" + forcedFps,
+            "fps_level=" + fpsLevel,
+            "fpsUnlock=1",
+            "unlock_120=1",
+            "unlock_144=1",
+            "unlock_165=1",
+            "unlock_185=1",
+            "resolution=4",
+            "quality=4",
+            "ultra_extreme=1",
+            "TargetFPS=" + forcedFps,
+            "MaxFPS=" + forcedFps,
+            "FPSLevel=" + fpsLevel
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[WildRiftGraphics]");
     }
 
     private static List<String> getConfigPaths(String pkg) {

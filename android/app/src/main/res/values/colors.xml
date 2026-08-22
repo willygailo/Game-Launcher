@@ -35,6 +35,7 @@
     <color name="accent_orange">#FF8800</color>
     <color name="accent_red">#FF0055</color>
     <color name="accent_red_glow">#33FF0055</color>
+    <color name="accent_danger">#FF0055</color>
 
     <!-- Typography -->
     <color name="text_primary">#FFFFFF</color>

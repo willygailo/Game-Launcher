@@ -54,6 +54,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.gamebooster.app.terminal.TerminalCoreEngine;
 import com.gamebooster.app.terminal.TerminalFolderManager;
+import com.gamebooster.app.terminal.AnsiColorParser;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -1746,6 +1747,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         AppExecutors.getInstance().executeCommand(() -> {
             String output;
+            int exitCode = 0;
             try {
                 if (cmd.startsWith("run ")) {
                     String scriptName = cmd.substring(4).trim();
@@ -1758,25 +1760,35 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         output = mgr.executeScriptFile(scriptFile);
                     } else {
                         output = "ERROR: Script file not found: " + scriptName;
+                        exitCode = 1;
                     }
-                } else if (cmd.contains("\n") || cmd.contains(";") || cmd.contains("&&") || cmd.length() > 120) {
+                } else if (cmd.contains("\n") || cmd.length() > 120) {
                     output = TerminalCoreEngine.getInstance().writeAndExecuteTempScript("game_tweak_run.sh", cmd);
                 } else {
-                    output = TerminalCoreEngine.getInstance().executeCommand(cmd);
+                    TerminalCoreEngine.TerminalResult tr = TerminalCoreEngine.getInstance().executeCommand(cmd);
+                    output = tr.output;
+                    exitCode = tr.exitCode;
                 }
             } catch (Exception e) {
                 output = "ERROR: " + e.getMessage();
+                exitCode = 1;
             }
 
             final String finalOutput = output;
+            final int finalExitCode = exitCode;
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                if (finalOutput == null || finalOutput.isEmpty() || "SUCCESS".equalsIgnoreCase(finalOutput) || finalOutput.contains("Zero Exit Code") || finalOutput.contains("Exit Code 0")) {
-                    appendSettingsTerminalText(finalOutput != null && !finalOutput.isEmpty() ? finalOutput + "\n\n" : "[COMMAND COMPLETED (Exit Code 0)]\n\n", 0xFF00FF66);
-                } else if (finalOutput.startsWith("ERROR")) {
-                    appendSettingsTerminalText(finalOutput + "\n\n", 0xFFFF0055);
-                } else {
-                    appendSettingsTerminalText(finalOutput + "\n\n", 0xFFE2E8F0);
+                if (finalOutput != null && !finalOutput.isEmpty()) {
+                    SpannableStringBuilder parsed = AnsiColorParser.parseAnsi(finalOutput + "\n\n", 0xFFE2E8F0);
+                    settingsTerminalBuffer.append(parsed);
+                    if (settingsTerminalBuffer.length() > 30000) {
+                        settingsTerminalBuffer.delete(0, 10000);
+                    }
+                    if (tvSettingsTerminalOutput != null) {
+                        tvSettingsTerminalOutput.setText(settingsTerminalBuffer);
+                    }
+                } else if (finalExitCode != 0) {
+                    appendSettingsTerminalText("[Exit Code: " + finalExitCode + "]\n\n", 0xFFFF3366);
                 }
                 scrollSettingsTerminalToBottom();
             });

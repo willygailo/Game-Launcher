@@ -1,10 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +32,6 @@ public class ValorantConfigPatcher {
 
     /**
      * Force-overwrites ALL Valorant Mobile config paths unconditionally.
-     * Uses Shizuku (temporary root) to reach /data/data/ and /sdcard/ paths.
      *
      * @return true if at least one path was written
      */
@@ -131,8 +126,9 @@ public class ValorantConfigPatcher {
                         "ZeroInputLag=1\n" +
                         "VulkanPipeline=1\n";
             }
-            forceWrite(path, content);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
         }
         Log.i(TAG, "Valorant Mobile competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
@@ -141,23 +137,15 @@ public class ValorantConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "LowLatencyMode=1"
+        };
         for (String path : paths) {
-            String cmd =
-                "grep -qF 'TouchBoostHz' " + path + " || echo 'TouchBoostHz=185' >> " + path + "; " +
-                "sed -i 's/^TouchBoostHz=.*/TouchBoostHz=185/' " + path + "; " +
-                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
-                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
-                "grep -qF 'ZeroInputLag' " + path + " || echo 'ZeroInputLag=1' >> " + path + "; " +
-                "sed -i 's/^ZeroInputLag=.*/ZeroInputLag=1/' " + path + "; " +
-                "grep -qF 'LowLatencyMode' " + path + " || echo 'LowLatencyMode=1' >> " + path + "; " +
-                "sed -i 's/^LowLatencyMode=.*/LowLatencyMode=1/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "Valorant fast zero-delay touch applied for " + packageName);
     }
@@ -175,20 +163,7 @@ public class ValorantConfigPatcher {
             "AimPrecision=3"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "Valorant Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -224,21 +199,8 @@ public class ValorantConfigPatcher {
             "WeaponSway=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "Valorant Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -285,21 +247,8 @@ public class ValorantConfigPatcher {
             "AttackSpeedMultiplier=3.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "Valorant 5.0x Damage Boost & Headshot Multiplier applied for " + packageName);
     }
@@ -336,22 +285,8 @@ public class ValorantConfigPatcher {
             "HealthRegenBoost=5.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "Valorant Shield 5.0x & Armor Defense 85% applied for " + packageName);
     }
@@ -386,22 +321,8 @@ public class ValorantConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "Valorant 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -429,21 +350,7 @@ public class ValorantConfigPatcher {
             "FirstBulletAccuracy=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "Valorant Bullet Tracking & Hitbox Expansion applied for " + packageName);
     }
@@ -457,49 +364,22 @@ public class ValorantConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content;
-            if (path.endsWith(".json")) {
-                content = String.format("{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d.000000,\n  \"MobileFPSLimit\": %d,\n  \"FPSLevel\": %d,\n  \"GraphicQuality\": 4,\n  \"HighFPSMode\": 1,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"AntiAliasing\": 1,\n  \"VulkanEnabled\": 1,\n  \"LowLatencyMode\": 1\n}\n",
-                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
-            } else {
-                content = String.format("[/Script/Engine.GameUserSettings]\nFrameRateLimit=%d.000000\n[ScalabilityGroups]\nsg.ResolutionQuality=100.000000\nsg.ViewDistanceQuality=3\nsg.AntiAliasingQuality=1\nsg.ShadowQuality=0\nsg.PostProcessQuality=1\nsg.TextureQuality=3\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[ValorantMobileGraphics]\nMaxFPS=%d\nTargetFPS=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nFPSLevel=%d\nGraphicQuality=4\nHighFPSMode=1\n",
-                        forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, forcedFps, fpsLevel);
-            }
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + forcedFps + ",/' " + path + "; " +
-                      "sed -i 's/\"TargetFPS\":.*/\"TargetFPS\": " + forcedFps + ",/' " + path + "; " +
-                      "sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + forcedFps + ",/' " + path + "; " +
-                      "sed -i 's/\"FrameRateLimit\":.*/\"FrameRateLimit\": " + forcedFps + ".000000,/' " + path + "; " +
-                      "sed -i 's/\"MobileFPSLimit\":.*/\"MobileFPSLimit\": " + forcedFps + ",/' " + path + "; " +
-                      "chmod 666 " + path;
-            } else {
-                cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + ".000000/' " + path + "; " +
-                      "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
-                      "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                      "sed -i 's/^MobileFPSLimit=.*/MobileFPSLimit=" + forcedFps + "/' " + path + "; " +
-                      "chmod 666 " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "FrameRateLimit=" + forcedFps + ".000000",
+            "MaxFPS=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "FPSLevel=" + fpsLevel,
+            "MobileFPSLimit=" + forcedFps,
+            "+CVars=r.FrameRateLimit=" + forcedFps,
+            "+CVars=r.MobileFPSLimit=" + forcedFps,
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ValorantMobileGraphics]");
     }
 }

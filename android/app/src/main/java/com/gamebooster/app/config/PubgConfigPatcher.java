@@ -1,19 +1,16 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * PubgConfigPatcher manages internal config files for PUBG Mobile, BGMI, and regional variants.
  *
  * Two patching modes:
- *  - patch()            → standard patch: create-if-missing or sed/grep update
- *  - patchCompetitive() → competitive force-write: ALWAYS overwrites all paths, no fallback,
- *                         executed via Shizuku for full data/data access (temporary root)
+ *  - patch()            → standard patch: in-memory key/CVar upserting
+ *  - patchCompetitive() → competitive force-write: overwrites all paths atomically via ConfigFileHelper
  */
 public class PubgConfigPatcher {
 
@@ -29,6 +26,7 @@ public class PubgConfigPatcher {
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
+        patchActiveSavBinary(packageName, forcedFps);
         Log.i(TAG, "PUBGM patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
@@ -37,7 +35,6 @@ public class PubgConfigPatcher {
 
     /**
      * Force-overwrites ALL PUBGM/BGMI config paths unconditionally.
-     * Uses Shizuku (temporary root) to reach /data/data/ paths.
      * Includes full UE4 CVar injection for 120 / 144 / 165 / 185 FPS, frame rate limits, and content scale.
      *
      * @return true if at least one path was written
@@ -78,7 +75,6 @@ public class PubgConfigPatcher {
                 "+CVars=r.LogFilter=0\n" +
                 "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
                 "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
-                // ── Gyro responsiveness (input hardware tuning, not aim assist) ─
                 "+CVars=r.GyroSampleRate=1000\n" +
                 "+CVars=r.GyroSensitivityRatio=2.5\n" +
                 "+CVars=r.GyroZeroDelay=1\n" +
@@ -116,8 +112,9 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, content);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
         }
         patchActiveSavBinary(packageName, forcedFps);
         AntiLogPatcher.applyAntiLog(packageName);
@@ -135,7 +132,6 @@ public class PubgConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch CVar into PUBGM/BGMI config files.
-     * Sets r.MobileTouchBoostRate=185 for 185Hz touch acceleration and 1000Hz polling rate.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
@@ -150,27 +146,13 @@ public class PubgConfigPatcher {
             "+CVars=r.TouchSlop=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : touchCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchCvars, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "PUBGM super-fast zero-delay touch applied for " + packageName);
     }
 
     /**
      * Injects Aim Assist 150%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response (Super Smooth), and Aim Assist CVars into PUBGM/BGMI config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyAimAssistConfig(String packageName) {
         if (packageName == null) return;
@@ -198,27 +180,13 @@ public class PubgConfigPatcher {
             "FPPFieldOfView=150"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : cvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "PUBGM Aim Assist 150%, FOV 150 & Gyro 1000Hz applied for " + packageName);
     }
 
     /**
      * Injects Zero Recoil & Weapon Stability CVars for ALL guns and ALL scopes into PUBGM/BGMI config files.
-     * Eliminates vertical and horizontal weapon kick (0.00 scale) and camera shake via Shizuku root access.
      */
     public static void applyRecoilControlConfig(String packageName) {
         if (packageName == null) return;
@@ -266,21 +234,8 @@ public class PubgConfigPatcher {
             "NoCameraShake=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : recoilCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilCvars, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "PUBGM Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -334,21 +289,8 @@ public class PubgConfigPatcher {
             "AutoDamageExecutionMode=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : damageCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageCvars, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "PUBGM Damage Boost 500% & Bullet Penetration applied for " + packageName);
     }
@@ -403,22 +345,8 @@ public class PubgConfigPatcher {
             "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String cvar : armorCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorCvars, "[DefenseConfig]");
         }
         Log.i(TAG, "PUBGM Armor Defense 85% Reduction & 5.0x Vest applied for " + packageName);
     }
@@ -453,22 +381,8 @@ public class PubgConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String cvar : speedCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedCvars, "[SpeedEngine]");
         }
         Log.i(TAG, "PUBGM 3.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
@@ -496,20 +410,7 @@ public class PubgConfigPatcher {
             "BulletVelocityMultiplier=2.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String cvar : trackingCvars) {
-                String key = cvar.contains("=") ? cvar.substring(0, cvar.indexOf("=")) : cvar;
-                sb.append("grep -qF '").append(key).append("' ").append(path)
-                  .append(" || echo '").append(cvar).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(key.replace("+", "\\+")).append("=.*/").append(cvar.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingCvars, "[TrackingConfig]");
         }
         Log.i(TAG, "PUBGM Tracking Bullet & Magic Bullet applied for " + packageName);
     }
@@ -521,7 +422,7 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Patches Active.sav binary savegame file directly using byte manipulation in Shizuku temporary root.
+     * Patches Active.sav binary savegame file directly using byte manipulation.
      * Enforces FPSLevel, BattleFPS, and LobbyFPS to target levels (10=185fps, 9=165fps, 8=144fps, 7=120fps).
      */
     public static void patchActiveSavBinary(String pkg, int targetFps) {
@@ -532,79 +433,80 @@ public class PubgConfigPatcher {
             "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
         };
         for (String sav : savPaths) {
-            ensureDirectory(sav);
-            String hexByte = String.format("%02x", fpsLevel);
-            String cmd = "if [ -f " + sav + " ]; then " +
-                         "sed -i 's/FPSLevel.*/FPSLevel\\x00\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\" + hexByte + "/g' " + sav + " 2>/dev/null; " +
-                         "sed -i 's/BattleFPS.*/BattleFPS\\x00\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\" + hexByte + "/g' " + sav + " 2>/dev/null; " +
-                         "sed -i 's/LobbyFPS.*/LobbyFPS\\x00\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\" + hexByte + "/g' " + sav + " 2>/dev/null; " +
-                         "chmod 666 " + sav + "; " +
-                         "fi";
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
+            try {
+                if (!ShizukuFileManager.fileExists(sav)) continue;
+                byte[] data = ShizukuFileManager.readFileBytes(sav);
+                if (data != null && data.length > 0) {
+                    boolean modified = patchBinarySavField(data, "FPSLevel", fpsLevel);
+                    modified |= patchBinarySavField(data, "BattleFPS", fpsLevel);
+                    modified |= patchBinarySavField(data, "LobbyFPS", fpsLevel);
+                    if (modified) {
+                        ShizukuFileManager.uploadBytes(sav, data, "666");
+                    }
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "patchActiveSavBinary error for " + sav + ": " + t.getMessage());
             }
         }
         Log.i(TAG, "PUBGM Active.sav binary enforced level " + fpsLevel + " (" + targetFps + " FPS) for " + pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
+    private static boolean patchBinarySavField(byte[] data, String fieldName, int value) {
+        if (data == null || fieldName == null) return false;
+        byte[] pattern = fieldName.getBytes(StandardCharsets.UTF_8);
+        int idx = indexOfBytes(data, pattern);
+        if (idx != -1) {
+            // In Active.sav, the value byte usually appears 9-10 bytes after the field name ASCII bytes
+            for (int offset = idx + pattern.length; offset < Math.min(data.length, idx + pattern.length + 16); offset++) {
+                if (data[offset] >= 1 && data[offset] <= 10) {
+                    data[offset] = (byte) value;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static int indexOfBytes(byte[] source, byte[] target) {
+        if (source == null || target == null || source.length < target.length) return -1;
+        for (int i = 0; i <= source.length - target.length; i++) {
+            boolean match = true;
+            for (int j = 0; j < target.length; j++) {
+                if (source[i + j] != target[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return i;
+        }
+        return -1;
     }
 
     private static boolean applyPatch(String path, int targetFps) {
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
         final int pubgFpsLevel = tier.level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPS=%d\n+CVars=r.PUBGMaxFPS=%d\n+CVars=r.PUBGFrameRateLimit=%d\n+CVars=r.MobileFPSLimit=%d\n+CVars=r.FrameRateLimit=%d\n+CVars=r.PUBGHDRMode=1\n+CVars=r.MobileHDR=1\n+CVars=r.PUBGQualityLevel=4\n+CVars=r.PUBGSDKQualityLevel=4\n+CVars=r.Tonemapper.Quality=4\n+CVars=r.HDR.Display.OutputDevice=1\n+CVars=r.MobileContentScaleFactor=1.0\n+CVars=r.MobileTonemapperFilm=1\n+CVars=r.Vsync=0\n+CVars=r.TouchBoostHz=%d\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\nFrameRateLevel=%d\nbUseHDRMode=True\nbUseHighQualityBloom=True\nbUseAntiAliasing=True\n",
-                    pubgFpsLevel, targetFps, targetFps, targetFps, targetFps, targetFps, pubgFpsLevel
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String[][] cvars = {
-                {"+CVars=r.PUBGDeviceFPS",      "+CVars=r.PUBGDeviceFPS="    + pubgFpsLevel},
-                {"+CVars=r.PUBGMaxFPS",         "+CVars=r.PUBGMaxFPS="       + targetFps},
-                {"+CVars=r.PUBGFrameRateLimit",  "+CVars=r.PUBGFrameRateLimit=" + targetFps},
-                {"+CVars=r.MobileFPSLimit",      "+CVars=r.MobileFPSLimit="   + targetFps},
-                {"+CVars=r.FrameRateLimit",      "+CVars=r.FrameRateLimit="   + targetFps},
-                {"+CVars=r.PUBGHDRMode",         "+CVars=r.PUBGHDRMode=1"},
-                {"+CVars=r.MobileHDR",           "+CVars=r.MobileHDR=1"},
-                {"+CVars=r.PUBGQualityLevel",    "+CVars=r.PUBGQualityLevel=4"},
-                {"+CVars=r.PUBGSDKQualityLevel", "+CVars=r.PUBGSDKQualityLevel=4"},
-                {"+CVars=r.Unlock120Hz",         "+CVars=r.Unlock120Hz=1"},
-                {"+CVars=r.Unlock144Hz",         "+CVars=r.Unlock144Hz=1"},
-                {"+CVars=r.Unlock165Hz",         "+CVars=r.Unlock165Hz=1"},
-                {"+CVars=r.Unlock185Hz",         "+CVars=r.Unlock185Hz=1"},
-                {"+CVars=r.Vsync",               "+CVars=r.Vsync=0"}
-            };
-            for (String[] cvar : cvars) {
-                String cmd = "grep -qF '" + cvar[0] + "' " + path + " || echo '" + cvar[1] + "' >> " + path;
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
-            }
-            String updateCmd = "sed -i 's/+CVars=r.PUBGDeviceFPS=.*/+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "/' " + path + "; " +
-                              "sed -i 's/+CVars=r.PUBGMaxFPS=.*/+CVars=r.PUBGMaxFPS=" + targetFps + "/' " + path + "; " +
-                              "sed -i 's/+CVars=r.PUBGFrameRateLimit=.*/+CVars=r.PUBGFrameRateLimit=" + targetFps + "/' " + path + "; " +
-                              "sed -i 's/+CVars=r.MobileFPSLimit=.*/+CVars=r.MobileFPSLimit=" + targetFps + "/' " + path + "; " +
-                              "sed -i 's/FrameRateLevel=.*/FrameRateLevel=" + pubgFpsLevel + "/' " + path + "; " +
-                              "sed -i 's/bUseHDRMode=.*/bUseHDRMode=True/' " + path + "; " +
-                              "sed -i 's/bUseAntiAliasing=.*/bUseAntiAliasing=True/' " + path + "; " +
-                              "chmod 666 " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(updateCmd);
-            } else {
-                CommandExecutor.executeSystemCommand(updateCmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] cvars = {
+            "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel,
+            "+CVars=r.PUBGMaxFPS=" + targetFps,
+            "+CVars=r.PUBGFrameRateLimit=" + targetFps,
+            "+CVars=r.MobileFPSLimit=" + targetFps,
+            "+CVars=r.FrameRateLimit=" + targetFps,
+            "+CVars=r.PUBGHDRMode=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.PUBGQualityLevel=4",
+            "+CVars=r.PUBGSDKQualityLevel=4",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.Vsync=0",
+            "FrameRateLevel=" + pubgFpsLevel,
+            "FPS=" + targetFps,
+            "TargetFPS=" + targetFps,
+            "MaxFPS=" + targetFps,
+            "bUseHDRMode=True",
+            "bUseAntiAliasing=True"
+        };
+        return ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
     }
 }

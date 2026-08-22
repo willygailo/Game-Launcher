@@ -151,8 +151,21 @@ public class ManualSettingsPreferences {
     public static void applyManualSettings(Context context, String packageName) {
         if (context == null) return;
 
+        if (packageName != null && !packageName.trim().isEmpty() && !ShellSafety.isSafePackageName(packageName.trim())) {
+            Log.w(TAG, "Unsafe package name rejected for manual settings: " + packageName);
+            return;
+        }
+        String cleanPkg = packageName != null ? packageName.trim() : null;
+
         try {
-            // 1. GPU Render Mode
+            // 1. Android Game Mode API & Per-App Refresh Rate (Official Android 11/12/13/14/15/16)
+            if (cleanPkg != null) {
+                executeCmd("cmd game mode performance " + cleanPkg);
+                executeCmd("cmd game set --fps 185 " + cleanPkg);
+                executeCmd("cmd window set-app-refresh-rate " + cleanPkg + " 185");
+            }
+
+            // 2. GPU Render Mode
             String gpuMode = getGpuMode(context);
             if ("vulkan".equalsIgnoreCase(gpuMode)) {
                 executeCmd("setprop debug.hwui.renderer vulkan");
@@ -161,25 +174,27 @@ public class ManualSettingsPreferences {
                 executeCmd("setprop debug.hwui.renderer skiagl");
             }
 
-            // 2. CPU Governor
+            // 3. CPU Governor & Thermal Throttling Mitigation
             String cpuMode = getCpuMode(context);
             if ("performance".equalsIgnoreCase(cpuMode)) {
                 executeCmd("for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $g 2>/dev/null; done");
             }
 
-            // 3. ANGLE Graphics Backend
-            if (isAngleModeEnabled(context) && packageName != null) {
-                executeCmd("settings put global angle_gl_driver_selection_pkgs " + packageName);
+            // 4. ANGLE Graphics Backend
+            if (isAngleModeEnabled(context) && cleanPkg != null) {
+                executeCmd("settings put global angle_gl_driver_selection_pkgs " + cleanPkg);
                 executeCmd("settings put global angle_gl_driver_selection_values angle");
             }
 
-            // 4. Game Driver / Updatable Driver
-            if (isGameDriverEnabled(context) && packageName != null) {
-                executeCmd("settings put global updatable_driver_production_opt_in_apps " + packageName);
+            // 5. Game Driver / Updatable Driver (Legal Android Settings.Global)
+            if (isGameDriverEnabled(context) && cleanPkg != null) {
+                executeCmd("settings put global game_driver_all_apps 1");
+                executeCmd("settings put global game_driver_opt_in_apps " + cleanPkg);
                 executeCmd("settings put global updatable_driver_all_apps 1");
+                executeCmd("settings put global updatable_driver_production_opt_in_apps " + cleanPkg);
             }
 
-            // 5. Network Low-Latency & Dual WiFi/Cellular Boost
+            // 6. Network Low-Latency & Dual WiFi/Cellular Boost
             if (isWifiLowLatencyEnabled(context)) {
                 executeCmd("cmd wifi set-low-latency-mode enabled");
                 executeCmd("setprop net.tcp.delack.default 1");
@@ -188,7 +203,7 @@ public class ManualSettingsPreferences {
                 executeCmd("settings put global mobile_data_always_on 1");
             }
 
-            // 6. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
+            // 7. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
             executeCmd("setprop debug.egl.force_msaa 1");
             executeCmd("setprop debug.egl.swapinterval 0");
             executeCmd("setprop debug.hwui.fps_divisor 1");
@@ -201,11 +216,11 @@ public class ManualSettingsPreferences {
             executeCmd("setprop debug.sf.disable_backpressure 1");
             executeCmd("setprop debug.sf.latch_unsignaled 1");
 
-            // 7. Anti-Log & Telemetry Suppression
+            // 8. Anti-Log & Telemetry Suppression
             if (isAntiLogEnabled(context)) {
                 AntiLogPatcher.applySystemAntiLog();
-                if (packageName != null) {
-                    AntiLogPatcher.applyAntiLog(packageName);
+                if (cleanPkg != null) {
+                    AntiLogPatcher.applyAntiLog(cleanPkg);
                 }
             }
 

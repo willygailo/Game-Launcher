@@ -1,11 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -108,8 +103,9 @@ public class ArenaBreakoutConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, ueContent);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, ueContent)) {
+                written++;
+            }
         }
         Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
@@ -152,21 +148,8 @@ public class ArenaBreakoutConfigPatcher {
             "AttackSpeedMultiplier=3.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "Arena Breakout 5.0x damage script & headshot multiplier applied for " + packageName);
     }
@@ -179,16 +162,14 @@ public class ArenaBreakoutConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchRate=1000",
+            "TouchResponse=1",
+            "TouchSlopReduction=1",
+            "TouchZeroDelay=1"
+        };
         for (String path : paths) {
-            String touchAppend = "\n[TouchEngine]\nTouchRate=1000\nTouchResponse=1\nTouchSlopReduction=1\nTouchZeroDelay=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(appendCmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(appendCmd);
-                }
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
     }
 
@@ -212,20 +193,7 @@ public class ArenaBreakoutConfigPatcher {
             "CrosshairMagnetism=2.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "ArenaBreakout Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -260,21 +228,8 @@ public class ArenaBreakoutConfigPatcher {
             "RecoilScale=0.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "ArenaBreakout Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -309,22 +264,8 @@ public class ArenaBreakoutConfigPatcher {
             "ArmorBoost=500"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "ArenaBreakout Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
     }
@@ -359,22 +300,8 @@ public class ArenaBreakoutConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "ArenaBreakout 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -401,20 +328,7 @@ public class ArenaBreakoutConfigPatcher {
             "BulletVelocityMultiplier=2.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.contains("=") ? keyVal.substring(0, keyVal.indexOf("=")) : keyVal;
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/").append(k.replace("+", "\\+")).append("=.*/").append(keyVal.replace("+", "\\+")).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "ArenaBreakout Bullet Tracking & Hitbox Expansion applied for " + packageName);
     }
@@ -422,40 +336,21 @@ public class ArenaBreakoutConfigPatcher {
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = "[/Script/Engine.GameUserSettings]\nFrameRateLimit=" + forcedFps + ".000000\nFPSLevel=" + fpsLevel + "\nScreenScale=120\nResolutionScale=120\nShadowQuality=2\nAntiAliasingQuality=4\nPostProcessQuality=3\nTextureQuality=3\nEffectsQuality=3\nUltraExtreme=1\nHDRMode=1\n[UserCustom DeviceProfile]\n+CVars=r.FrameRateLimit=" + forcedFps + "\n+CVars=r.MobileFPSLimit=" + forcedFps + "\n+CVars=r.PUBGDeviceFPS=" + fpsLevel + "\n+CVars=r.Unlock120Hz=1\n+CVars=r.Unlock144Hz=1\n+CVars=r.Unlock165Hz=1\n+CVars=r.Unlock185Hz=1\n[UserCustom]\nFrameRateLevel=" + fpsLevel + "\nMaxFPS=" + forcedFps + "\nTargetFPS=" + forcedFps + "\n";
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + ".000000/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
-                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + fpsLevel + "/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
-    private static void ensureParentDirectory(String path) {
-        if (path == null) return;
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            String parentDir = path.substring(0, lastSlash);
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
-            } else {
-                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-            }
-        }
+        String[] keys = {
+            "FrameRateLimit=" + forcedFps + ".000000",
+            "MaxFPS=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "FPSLevel=" + fpsLevel,
+            "FrameRateLevel=" + fpsLevel,
+            "+CVars=r.FrameRateLimit=" + forcedFps,
+            "+CVars=r.MobileFPSLimit=" + forcedFps,
+            "+CVars=r.PUBGDeviceFPS=" + fpsLevel,
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[/Script/Engine.GameUserSettings]");
     }
 
     private static List<String> getConfigPaths(String pkg) {

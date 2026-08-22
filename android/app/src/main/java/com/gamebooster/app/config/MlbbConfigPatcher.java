@@ -1,19 +1,14 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * MlbbConfigPatcher manages internal config files for Mobile Legends: Bang Bang (all versions).
  *
  * Two patching modes:
- *  - patch()            → standard patch: create-if-missing or sed-update
- *  - patchCompetitive() → competitive force-write: ALWAYS overwrites all paths, no fallback,
- *                         executed via Shizuku for full data/data access (temporary root)
+ *  - patch()            → standard patch: in-memory key upserting
+ *  - patchCompetitive() → competitive force-write: overwrites all paths atomically via ConfigFileHelper
  */
 public class MlbbConfigPatcher {
 
@@ -37,8 +32,8 @@ public class MlbbConfigPatcher {
 
     /**
      * Force-overwrites ALL MLBB config paths unconditionally.
-     * Uses Shizuku (temporary root) to reach /data/data/ paths.
-     * Hard-locked to 185 FPS only. Sets FrameRateLevel=10 (185fps) unconditionally.
+     * Uses ConfigFileHelper atomic write with mode 666.
+     * Sets FrameRateLevel and forced FPS unconditionally.
      *
      * @return true if at least one path was written
      */
@@ -102,8 +97,9 @@ public class MlbbConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, content);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
         }
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
@@ -120,39 +116,27 @@ public class MlbbConfigPatcher {
 
     /**
      * Injects super-fast zero-delay touch response keys into MLBB config files.
-     * Optimized for 185Hz panels — sets HighFreqTouchHz=185, TouchPollingRate=1000, TouchZeroDelay=1, and max touch response level.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "HighFreqTouch=1",
+            "TouchResponseLevel=3",
+            "HighFreqTouchHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "TouchLatencyReduction=1",
+            "ZeroInputLag=1"
+        };
         for (String path : paths) {
-            String cmd =
-                "grep -qF 'HighFreqTouch' " + path + " || echo 'HighFreqTouch=1' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouch=.*/HighFreqTouch=1/' " + path + "; " +
-                "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
-                "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
-                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
-                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
-                "grep -qF 'TouchLatencyReduction' " + path + " || echo 'TouchLatencyReduction=1' >> " + path + "; " +
-                "sed -i 's/^TouchLatencyReduction=.*/TouchLatencyReduction=1/' " + path + "; " +
-                "grep -qF 'ZeroInputLag' " + path + " || echo 'ZeroInputLag=1' >> " + path + "; " +
-                "sed -i 's/^ZeroInputLag=.*/ZeroInputLag=1/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "MLBB super-fast zero-delay touch applied for " + packageName);
     }
 
     /**
      * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, Critical and Penetration keys into MLBB config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
      */
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
@@ -166,7 +150,6 @@ public class MlbbConfigPatcher {
             "FieldOfView=150",
             "WideScreenMode=1",
             "UltraWideCamera=1",
-            // Damage 500% & Penetration
             "PhysicalDamageBoost=5.00",
             "MagicDamageBoost=5.00",
             "TrueDamageBoost=5.00",
@@ -210,7 +193,6 @@ public class MlbbConfigPatcher {
             "BodyDamageMultiplier=3.50",
             "LimbDamageMultiplier=3.00",
             "ExplosiveDamageMultiplier=3.50",
-            // Gyro Super Smooth
             "GyroSampleRate=1000",
             "GyroSensitivityRatio=3.0",
             "GyroZeroDelay=1",
@@ -219,34 +201,10 @@ public class MlbbConfigPatcher {
             "GyroLatencyMode=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : damageDroneKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[DamageScript]' ").append(path).append(" || echo '[DamageScript]' >> ").append(path).append("; ");
-                sb.append("grep -qF '[CameraConfig]' ").append(path).append(" || echo '[CameraConfig]' >> ").append(path).append("; ");
-                for (String keyVal : damageDroneKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageDroneKeys, "[DamageScript]");
         }
-        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 5.0x applied via Shizuku for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 5.0x applied for " + packageName);
     }
 
     /**
@@ -272,30 +230,7 @@ public class MlbbConfigPatcher {
             "HeroLockMode=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : aimKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[AimAssist]' ").append(path).append(" || echo '[AimAssist]' >> ").append(path).append("; ");
-                for (String keyVal : aimKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "MLBB Smart Aim Assist & Hero Priority Lock applied for " + packageName);
     }
@@ -324,31 +259,8 @@ public class MlbbConfigPatcher {
             "WeaponStability=150"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : recoilKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[InputStabilization]' ").append(path).append(" || echo '[InputStabilization]' >> ").append(path).append("; ");
-                for (String keyVal : recoilKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[InputStabilization]");
         }
         Log.i(TAG, "MLBB Movement Stabilization & Joystick Zero-Deadzone applied for " + packageName);
     }
@@ -389,31 +301,8 @@ public class MlbbConfigPatcher {
             "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : armorKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-                for (String keyVal : armorKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "MLBB Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
     }
@@ -443,31 +332,8 @@ public class MlbbConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : speedKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-                for (String keyVal : speedKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "MLBB 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -493,30 +359,7 @@ public class MlbbConfigPatcher {
             "MagicBullet=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".xml")) {
-                for (String keyVal : trackingKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF 'name=\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '/<\\/map>/i \\  <string name=\"").append(k).append("\">").append(v).append("<\\/string>' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-                for (String keyVal : trackingKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "MLBB Skill Auto-Tracking & Projectile Magnetism applied for " + packageName);
     }
@@ -527,43 +370,32 @@ public class MlbbConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "[Graphics]\nHighFPSMode=1\nFrameRateLevel=%d\nGraphicsQuality=4\nHDMode=1\nHDRMode=1\nUltraHDMode=1\nShadow=1\nFPS=%d\nMaxFrameRate=%d\nTargetFPS=%d\nHighFrameRate=1\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nUltra144FPS=1\nUltra165FPS=1\nUltra185FPS=1\nHighFreqTouchHz=%d\n",
-                    frameRateLevel, forcedFps, forcedFps, forcedFps, forcedFps
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
-                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
-                         "sed -i 's/^GraphicsQuality=.*/GraphicsQuality=4/' " + path + "; " +
-                         "sed -i 's/^HDMode=.*/HDMode=1/' " + path + "; " +
-                         "sed -i 's/^HDRMode=.*/HDRMode=1/' " + path + "; " +
-                         "sed -i 's/^UltraHDMode=.*/UltraHDMode=1/' " + path + "; " +
-                         "sed -i 's/^Shadow=.*/Shadow=1/' " + path + "; " +
-                         "sed -i 's/^FPS=.*/FPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^HighFrameRate=.*/HighFrameRate=1/' " + path + "; " +
-                         "sed -i 's/^UnlockFPS=.*/UnlockFPS=1/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "HighFPSMode=1",
+            "FrameRateLevel=" + frameRateLevel,
+            "GraphicsQuality=4",
+            "HDMode=1",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "Shadow=1",
+            "FPS=" + forcedFps,
+            "MaxFrameRate=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "HighFrameRate=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "HighFreqTouchHz=" + forcedFps
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }
 }

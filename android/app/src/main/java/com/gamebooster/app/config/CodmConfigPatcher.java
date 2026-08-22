@@ -1,19 +1,14 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * CodmConfigPatcher manages internal config files for Call of Duty Mobile (all versions/regions).
  *
  * Two patching modes:
- *  - patch()            → standard patch: create-if-missing or sed-update
- *  - patchCompetitive() → competitive force-write: ALWAYS overwrites all paths, no fallback,
- *                         executed via Shizuku for full data/data access (temporary root)
+ *  - patch()            → standard patch: in-memory key/JSON/XML upserting
+ *  - patchCompetitive() → competitive force-write: overwrites all paths atomically via ConfigFileHelper
  */
 public class CodmConfigPatcher {
 
@@ -37,8 +32,7 @@ public class CodmConfigPatcher {
 
     /**
      * Force-overwrites ALL CODM config paths unconditionally.
-     * Writes proper JSON for UserSetting.json and INI for GraphicsSettings.ini.
-     * Uses Shizuku (temporary root) to reach /data/data/ paths.
+     * Writes proper JSON for UserSetting.json, XML for PlayerPrefs, and INI for GraphicsSettings.ini.
      *
      * @return true if at least one path was written
      */
@@ -101,7 +95,6 @@ public class CodmConfigPatcher {
                         "  \"ShadowQuality\": 2\n" +
                         "}\n";
             } else if (path.endsWith(".xml")) {
-                // PlayerPrefs XML format
                 content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" +
                         "<map>\n" +
                         "  <int name=\"MaxFrameRate\" value=\"" + forcedFps + "\" />\n" +
@@ -145,7 +138,6 @@ public class CodmConfigPatcher {
                         "  <int name=\"GyroLatencyMode\" value=\"0\" />\n" +
                         "</map>\n";
             } else {
-                // INI format
                 content = "[Graphics]\n" +
                         "MaxFrameRate=" + forcedFps + "\n" +
                         "TargetFPS=" + forcedFps + "\n" +
@@ -193,8 +185,9 @@ public class CodmConfigPatcher {
                         "GyroLatencyMode=0\n" +
                         "AntiAliasing=1\n";
             }
-            forceWrite(path, content);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
         }
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "CODM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
@@ -202,7 +195,7 @@ public class CodmConfigPatcher {
     }
 
     /**
-     * Applies anti-log and telemetry suppression for CODM.
+     * Applies anti-log, log directory cleaning, and telemetry suppression for CODM.
      */
     public static void applyAntiLog(String packageName) {
         if (packageName == null) return;
@@ -210,82 +203,56 @@ public class CodmConfigPatcher {
     }
 
     /**
-     * Injects super-fast zero-delay touch settings into CODM config files.
-     * Sets TouchBoostHz=185 and TouchPollingRate=1000 in both JSON and INI formats.
+     * Injects super-fast zero-delay touch response keys into CODM config files.
      */
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "TouchLatencyReduction=1",
+            "ZeroInputLag=1",
+            "TouchSensitivity=150"
+        };
         for (String path : paths) {
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "grep -qF 'TouchBoostHz' " + path +
-                      " || sed -i 's/}$/,\\n  \"TouchBoostHz\": 185,\\n  \"TouchPollingRate\": 1000,\\n  \"TouchZeroDelay\": 1,\\n  \"TouchDeadZone\": 0\\n}/' " + path + "; " +
-                      "sed -i 's/\"TouchBoostHz\":.*/\"TouchBoostHz\": 185,/' " + path + "; " +
-                      "sed -i 's/\"TouchPollingRate\":.*/\"TouchPollingRate\": 1000,/' " + path;
-            } else if (path.endsWith(".xml")) {
-                cmd = "grep -qF 'TouchBoostHz' " + path +
-                      " || sed -i 's/<\\/map>/  <int name=\"TouchBoostHz\" value=\"185\" \\/>\\n  <int name=\"TouchPollingRate\" value=\"1000\" \\/>\\n  <int name=\"TouchZeroDelay\" value=\"1\" \\/>\\n<\\/map>/' " + path;
-            } else {
-                cmd = "grep -qF 'TouchBoostHz' " + path + " || echo 'TouchBoostHz=185' >> " + path + "; " +
-                      "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
-                      "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                      "grep -qF 'TouchDeadZone' " + path + " || echo 'TouchDeadZone=0' >> " + path + "; " +
-                      "sed -i 's/^TouchBoostHz=.*/TouchBoostHz=185/' " + path + "; " +
-                      "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "CODM super-fast zero-delay touch applied for " + packageName);
     }
 
     /**
-     * Injects Aim Assist 150%, FOV (TPP 100 / FPP 150), Sprint 150, Gyro 1000Hz Ultra Response (Super Smooth), and Aim Assist keys into CODM config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     * Injects FOV 150, Sprint 150, Aim Assist 150%, and Gyro 1000Hz Ultra Response into CODM config files.
      */
     public static void applyAimAssistConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimAssistStrength=150",
             "AimAssistLevel=5",
-            "AimResponseCurve=1",
-            "AimSensitivity=150",
-            "FOV=100",
-            "FPPFOV=150",
+            "AimAssistStrength=150",
             "SprintSensitivity=150",
+            "AlwaysSprint=1",
+            "FieldOfView=150",
+            "FPP_FOV=150",
+            "TPP_FOV=100",
+            "TargetLockSensitivity=150",
             "GyroSampleRate=1000",
-            "GyroZeroDelay=1",
             "GyroSensitivityRatio=2.5",
-            "GyroStabilization=1"
+            "GyroZeroDelay=1",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "GyroLatencyMode=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "CODM Aim Assist 150%, FOV 150 & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "CODM FOV 150, Aim Assist 150% & Gyro 1000Hz applied for " + packageName);
     }
 
     /**
-     * Injects Zero Recoil & Weapon Shake Elimination keys for ALL guns and ALL scopes into CODM config files.
-     * Uses Shizuku ADB temporary root access for /data/data/ and /sdcard/ file locations.
+     * Injects Zero Recoil & Weapon Stability for ALL guns and ALL scopes into CODM config files.
      */
     public static void applyRecoilControlConfig(String packageName) {
         if (packageName == null) return;
@@ -294,18 +261,15 @@ public class CodmConfigPatcher {
             "RecoilControl=1",
             "ZeroRecoil=1",
             "NoRecoil=1",
-            "WeaponRecoilScale=0.00",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
             "VerticalRecoilScale=0.00",
             "HorizontalRecoilScale=0.00",
-            "VerticalRecoilMultiplier=0.00",
-            "HorizontalRecoilMultiplier=0.00",
             "RecoilReduction=1.50",
             "WeaponStability=150",
-            "WeaponShake=0",
-            "CameraShake=0",
             "ScreenShake=0",
             "GunKick=0",
-            "GunKickReduction=1.50",
             "WeaponKickReduction=1.50",
             "AllGunsRecoilReduction=1.50",
             "ScopeShakeReduction=1.50",
@@ -316,27 +280,13 @@ public class CodmConfigPatcher {
             "SpreadScale=0.00",
             "BulletSpreadReduction=1",
             "FirstBulletAccuracy=1",
+            "NoCameraShake=1",
             "AimPunchReduction=1",
-            "FlinchReduction=1",
-            "WeaponSway=0",
-            "NoCameraShake=1"
+            "FlinchReduction=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "CODM Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -372,88 +322,60 @@ public class CodmConfigPatcher {
             "SprintSpeedMultiplier=3.00",
             "SprintSensitivity=200",
             "AgilityMultiplier=3.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "LimbDamageMultiplier=3.00",
-            "ExplosiveDamageMultiplier=3.50"
+            "SkillDamageMultiplier=5.00",
+            "DamageAssetOverride=1",
+            "AutoDamageExecutionMode=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "CODM Damage Boost 500% & Bullet Penetration applied for " + packageName);
     }
 
     /**
-     * Injects Armor Plate Efficiency, Kinetic Armor Boost, and Damage Reduction keys into CODM config files.
+     * Injects Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction keys into CODM.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ArmorPlateEfficiency=5.00",
-            "ArmorDamageReduction=0.85",
-            "KineticArmorBoost=5.00",
+            "PhysicalDefenseBoost=5.00",
+            "MagicDefenseBoost=5.00",
+            "DamageReductionRatio=0.85",
+            "DamageReduction=0.85",
             "IncomingDamageReduction=0.85",
-            "FlakJacketRatio=0.90",
-            "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
-            "ShieldPointsMultiplier=5.00",
             "ShieldMultiplier=5.00",
             "ShieldCapacity=5.00",
             "ShieldStrength=5.00",
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "ArmorBoost=500",
-            "MagicResistBoost=500",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
             "MaxHPMultiplier=3.00",
             "HPBoostRatio=3.00",
             "DamageAbsorbRatio=3.00",
+            "ArmorBoost=500",
+            "MagicResistBoost=500",
             "VestDurability=5.00",
             "VestDurabilityBoost=5.00",
             "HelmetDamageReduction=0.90",
             "TenacityRatio=0.80",
             "ResilienceLevel=5",
+            "ArmorLevel=6",
+            "DamageResistance=0.85",
+            "ShieldEfficiency=5.00",
+            "ShieldPointsMultiplier=5.00",
+            "ArmorPlateEfficiency=5.00",
+            "KineticArmorBoost=5.00",
+            "FlakJacketRatio=0.90",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=5.00",
             "FallDamageReduction=1.00",
             "ExplosionResistance=0.90",
             "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "CODM Armor Defense 85% Reduction & 5.0x Plate Efficiency applied for " + packageName);
+        Log.i(TAG, "CODM Armor Defense 85% Reduction & 5.0x Vest applied for " + packageName);
     }
 
     /**
@@ -481,28 +403,14 @@ public class CodmConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "CODM 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "CODM 3.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
 
     /**
-     * Injects Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion keys into CODM config files.
+     * Injects Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion keys into CODM.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -510,34 +418,17 @@ public class CodmConfigPatcher {
         String[] trackingKeys = {
             "TrackingBullet=1",
             "BulletTracking=1",
-            "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "BulletMagnetism=1.50",
             "HitboxExpansion=1.50",
-            "TargetLockTracking=1",
-            "BulletCurveFactor=1.20",
+            "BulletMagnetism=1.50",
             "BulletVelocityMultiplier=2.00",
-            "BulletSpread=0.00",
-            "CrosshairMagnetism=1.50",
+            "TargetLockTracking=1",
             "FirstBulletAccuracy=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "CODM Tracking Bullet & Hitbox Expansion applied for " + packageName);
+        Log.i(TAG, "CODM Tracking Bullet & Magic Bullet applied for " + packageName);
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
@@ -546,62 +437,23 @@ public class CodmConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content;
-            if (path.endsWith(".json")) {
-                content = String.format(
-                        "{\n  \"MaxFrameRate\": %d,\n  \"TargetFPS\": %d,\n  \"FPSLimit\": %d,\n  \"FrameRateLimit\": %d,\n  \"MobileFPSLimit\": %d,\n  \"GraphicQuality\": 4,\n  \"HDRMode\": 1,\n  \"HDRColorMode\": 2,\n  \"SuperResolution\": 1,\n  \"Unlock120Hz\": 1,\n  \"Unlock144Hz\": 1,\n  \"Unlock165Hz\": 1,\n  \"Unlock185Hz\": 1,\n  \"AntiAliasing\": 1,\n  \"FieldOfView\": 100\n}\n",
-                        targetFps, targetFps, targetFps, targetFps, targetFps
-                );
-            } else if (path.endsWith(".xml")) {
-                content = String.format(
-                        "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n  <int name=\"MaxFrameRate\" value=\"%d\" />\n  <int name=\"TargetFPS\" value=\"%d\" />\n  <int name=\"FPSLimit\" value=\"%d\" />\n  <int name=\"FrameRateLimit\" value=\"%d\" />\n  <int name=\"MobileFPSLimit\" value=\"%d\" />\n  <int name=\"Unlock120Hz\" value=\"1\" />\n  <int name=\"Unlock144Hz\" value=\"1\" />\n  <int name=\"Unlock165Hz\" value=\"1\" />\n  <int name=\"Unlock185Hz\" value=\"1\" />\n  <int name=\"GraphicQuality\" value=\"4\" />\n  <int name=\"HDRMode\" value=\"1\" />\n</map>\n",
-                        targetFps, targetFps, targetFps, targetFps, targetFps
-                );
-            } else {
-                content = String.format(
-                        "[Graphics]\nMaxFrameRate=%d\nTargetFPS=%d\nFPSLimit=%d\nFrameRateLimit=%d\nMobileFPSLimit=%d\nGraphicQuality=4\nHDRMode=1\nHDRColorMode=2\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nAntiAliasing=1\n",
-                        targetFps, targetFps, targetFps, targetFps, targetFps
-                );
-            }
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd;
-            if (path.endsWith(".json")) {
-                cmd = "sed -i 's/\"MaxFrameRate\":.*/\"MaxFrameRate\": " + targetFps + ",/' " + path + "; " +
-                      "sed -i 's/\"TargetFPS\":.*/\"TargetFPS\": " + targetFps + ",/' " + path + "; " +
-                      "sed -i 's/\"FPSLimit\":.*/\"FPSLimit\": " + targetFps + ",/' " + path + "; " +
-                      "sed -i 's/\"FrameRateLimit\":.*/\"FrameRateLimit\": " + targetFps + ",/' " + path + "; " +
-                      "sed -i 's/\"GraphicQuality\":.*/\"GraphicQuality\": 4,/' " + path + "; " +
-                      "chmod 666 " + path;
-            } else if (path.endsWith(".xml")) {
-                cmd = "sed -i 's/<int name=\"MaxFrameRate\" value=\".*\" \\/>/<int name=\"MaxFrameRate\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
-                      "sed -i 's/<int name=\"TargetFPS\" value=\".*\" \\/>/<int name=\"TargetFPS\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
-                      "sed -i 's/<int name=\"FPSLimit\" value=\".*\" \\/>/<int name=\"FPSLimit\" value=\"" + targetFps + "\" \\/>/' " + path + "; " +
-                      "chmod 666 " + path;
-            } else {
-                cmd = "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + path + "; " +
-                      "sed -i 's/^TargetFPS=.*/TargetFPS=" + targetFps + "/' " + path + "; " +
-                      "sed -i 's/^FPSLimit=.*/FPSLimit=" + targetFps + "/' " + path + "; " +
-                      "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + targetFps + "/' " + path + "; " +
-                      "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
-                      "chmod 666 " + path;
-            }
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "MaxFrameRate=" + targetFps,
+            "TargetFPS=" + targetFps,
+            "FPSLimit=" + targetFps,
+            "FrameRateLimit=" + targetFps,
+            "MobileFPSLimit=" + targetFps,
+            "GraphicQuality=4",
+            "HDRMode=1",
+            "HDRColorMode=2",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "SuperResolution=1",
+            "TouchBoostHz=" + targetFps
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }
 }

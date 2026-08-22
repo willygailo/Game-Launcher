@@ -91,25 +91,29 @@ public final class AntiLogPatcher {
         sb.append("rm -rf '/sdcard/Android/data/").append(pkg).append("/cache/*' 2>/dev/null; ");
 
         // 3. Inject Anti-Log flags into game config files
+        String[] antiLogKeys = {
+            "DisableLogging=1",
+            "DisableTelemetry=1",
+            "DisableCrashlytics=1",
+            "AntiLog=1",
+            "LogcatDisable=1",
+            "+CVars=r.SuppressLogs=1",
+            "+CVars=r.DisableDebugLog=1",
+            "+CVars=r.EnableCrashReporting=0",
+            "+CVars=r.Telemetry=0",
+            "+CVars=a.DisableAnalytics=1"
+        };
         List<String> configPaths = GameConfigPathResolver.getPathsForGame(pkg);
         for (String cfgPath : configPaths) {
-            sb.append("if [ -f '").append(cfgPath).append("' ]; then ");
-            // Inject generic anti-log / disable telemetry keys
-            sb.append("grep -qF 'DisableLogging' '").append(cfgPath).append("' || echo 'DisableLogging=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF 'DisableTelemetry' '").append(cfgPath).append("' || echo 'DisableTelemetry=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF 'DisableCrashlytics' '").append(cfgPath).append("' || echo 'DisableCrashlytics=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF 'AntiLog' '").append(cfgPath).append("' || echo 'AntiLog=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF 'LogcatDisable' '").append(cfgPath).append("' || echo 'LogcatDisable=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF '+CVars=r.SuppressLogs' '").append(cfgPath).append("' || echo '+CVars=r.SuppressLogs=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF '+CVars=r.DisableDebugLog' '").append(cfgPath).append("' || echo '+CVars=r.DisableDebugLog=1' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF '+CVars=r.EnableCrashReporting' '").append(cfgPath).append("' || echo '+CVars=r.EnableCrashReporting=0' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF '+CVars=r.Telemetry' '").append(cfgPath).append("' || echo '+CVars=r.Telemetry=0' >> '").append(cfgPath).append("'; ");
-            sb.append("grep -qF '+CVars=a.DisableAnalytics' '").append(cfgPath).append("' || echo '+CVars=a.DisableAnalytics=1' >> '").append(cfgPath).append("'; ");
-            sb.append("fi; ");
+            if (ShizukuFileManager.fileExists(cfgPath)) {
+                ConfigFileHelper.patchKeys(cfgPath, antiLogKeys, "[Telemetry]");
+            }
         }
 
         String cmd = sb.toString();
-        executePrivileged(cmd);
+        if (!cmd.trim().isEmpty()) {
+            executePrivileged(cmd);
+        }
         Log.i(TAG, "Anti-Log & Telemetry suppression enforced for " + pkg);
         return true;
     }

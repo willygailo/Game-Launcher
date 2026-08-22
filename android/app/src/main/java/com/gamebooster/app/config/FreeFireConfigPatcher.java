@@ -1,15 +1,11 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * FreeFireConfigPatcher manages internal config files for Garena Free Fire and Free Fire MAX.
- * Unlocks 120/144/165 FPS, high-frequency touch, and max graphic presets.
+ * Unlocks 120/144/165/185 FPS, high-frequency touch, and max graphic presets.
  */
 public class FreeFireConfigPatcher {
 
@@ -84,8 +80,9 @@ public class FreeFireConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, content);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
         }
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "FreeFire competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
@@ -103,23 +100,15 @@ public class FreeFireConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchResponseLevel=3",
+            "HighFreqTouchHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "TouchSlopReduction=1"
+        };
         for (String path : paths) {
-            String cmd =
-                "grep -qF 'TouchResponseLevel' " + path + " || echo 'TouchResponseLevel=3' >> " + path + "; " +
-                "sed -i 's/^TouchResponseLevel=.*/TouchResponseLevel=3/' " + path + "; " +
-                "grep -qF 'HighFreqTouchHz' " + path + " || echo 'HighFreqTouchHz=185' >> " + path + "; " +
-                "sed -i 's/^HighFreqTouchHz=.*/HighFreqTouchHz=185/' " + path + "; " +
-                "grep -qF 'TouchPollingRate' " + path + " || echo 'TouchPollingRate=1000' >> " + path + "; " +
-                "sed -i 's/^TouchPollingRate=.*/TouchPollingRate=1000/' " + path + "; " +
-                "grep -qF 'TouchZeroDelay' " + path + " || echo 'TouchZeroDelay=1' >> " + path + "; " +
-                "sed -i 's/^TouchZeroDelay=.*/TouchZeroDelay=1/' " + path + "; " +
-                "grep -qF 'TouchSlopReduction' " + path + " || echo 'TouchSlopReduction=1' >> " + path + "; " +
-                "sed -i 's/^TouchSlopReduction=.*/TouchSlopReduction=1/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "FreeFire super-fast zero-delay touch applied for " + packageName);
     }
@@ -140,20 +129,7 @@ public class FreeFireConfigPatcher {
             "GyroStabilization=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "FreeFire Aim Assist 150% & Precision applied for " + packageName);
     }
@@ -192,21 +168,8 @@ public class FreeFireConfigPatcher {
             "WeaponSway=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "FreeFire Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -247,21 +210,8 @@ public class FreeFireConfigPatcher {
             "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "FreeFire Damage Boost 500% & Headshot Multiplier applied for " + packageName);
     }
@@ -303,22 +253,8 @@ public class FreeFireConfigPatcher {
             "HeadshotDamageReduction=0.90"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "FreeFire Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
     }
@@ -348,22 +284,8 @@ public class FreeFireConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "FreeFire 3.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
@@ -389,21 +311,7 @@ public class FreeFireConfigPatcher {
             "FirstBulletAccuracy=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "FreeFire Auto Aim Track & Bullet Tracking applied for " + packageName);
     }
@@ -412,39 +320,28 @@ public class FreeFireConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
         int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "[FFGraphics]\nHighFPS=1\nHighFPSMode=1\nFPSMode=2\nFrameRateLevel=%d\nMaxFPS=%d\nTargetFPS=%d\nUnlockFPS=1\nSuperHighFPS=1\nUnlock120Hz=1\nUnlock144Hz=1\nUnlock165Hz=1\nUnlock185Hz=1\nGraphicLevel=3\nShadow=1\nHighResolution=1\nVulkanEnabled=1\nHighFreqTouchHz=%d\n",
-                    frameRateLevel, forcedFps, forcedFps, forcedFps
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/^HighFPS=.*/HighFPS=1/' " + path + "; " +
-                         "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + path + "; " +
-                         "sed -i 's/^FPSMode=.*/FPSMode=2/' " + path + "; " +
-                         "sed -i 's/^FrameRateLevel=.*/FrameRateLevel=" + frameRateLevel + "/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^GraphicLevel=.*/GraphicLevel=3/' " + path + "; " +
-                         "sed -i 's/^HighResolution=.*/HighResolution=1/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "HighFPS=1",
+            "HighFPSMode=1",
+            "FPSMode=2",
+            "FrameRateLevel=" + frameRateLevel,
+            "MaxFPS=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "GraphicLevel=3",
+            "Shadow=1",
+            "HighResolution=1",
+            "VulkanEnabled=1",
+            "HighFreqTouchHz=" + forcedFps
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FFGraphics]");
     }
 }

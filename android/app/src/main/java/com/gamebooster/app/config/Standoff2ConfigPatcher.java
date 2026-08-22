@@ -1,11 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -95,12 +90,13 @@ public class Standoff2ConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            boolean ok;
             if (path.endsWith(".json")) {
-                forceWrite(path, jsonContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, jsonContent);
             } else {
-                forceWrite(path, iniContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, iniContent);
             }
-            written++;
+            if (ok) written++;
         }
         Log.i(TAG, "Standoff 2 competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
@@ -140,21 +136,8 @@ public class Standoff2ConfigPatcher {
             "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Standoff 2 5.0x damage boost & headshot multiplier applied for " + packageName);
     }
@@ -167,16 +150,14 @@ public class Standoff2ConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchRate=1000",
+            "TouchResponse=1",
+            "TouchSlopReduction=1",
+            "TouchZeroDelay=1"
+        };
         for (String path : paths) {
-            String touchAppend = "\n[TouchEngine]\nTouchRate=1000\nTouchResponse=1\nTouchSlopReduction=1\nTouchZeroDelay=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(appendCmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(appendCmd);
-                }
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
     }
 
@@ -195,20 +176,7 @@ public class Standoff2ConfigPatcher {
             "Acceleration=0"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "Standoff2 Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -247,21 +215,8 @@ public class Standoff2ConfigPatcher {
             "WeaponSway=0"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "Standoff2 Zero Recoil & Weapon Stability applied for " + packageName);
     }
@@ -297,22 +252,8 @@ public class Standoff2ConfigPatcher {
             "ExplosionResistance=0.90"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "Standoff2 Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
     }
@@ -342,22 +283,8 @@ public class Standoff2ConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "Standoff2 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -382,59 +309,29 @@ public class Standoff2ConfigPatcher {
             "AutoAimTrack=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "Standoff2 Bullet Tracking & Magic Bullet applied for " + packageName);
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = "{\n  \"graphics\": {\n    \"target_framerate\": " + forcedFps + ",\n    \"max_framerate\": " + forcedFps + ",\n    \"framerate_cap\": " + forcedFps + ",\n    \"fps_unlock\": 1,\n    \"fps_unlock_120\": 1,\n    \"fps_unlock_144\": 1,\n    \"fps_unlock_165\": 1,\n    \"fps_unlock_185\": 1,\n    \"high_fps_mode\": 1,\n    \"shader_detail\": 3,\n    \"model_detail\": 3,\n    \"texture_detail\": 3,\n    \"screen_scale\": 1.2,\n    \"anisotropic_filtering\": 16,\n    \"antialiasing\": 4,\n    \"ultra_extreme\": true\n  }\n}\n";
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/\"target_framerate\":.*/\"target_framerate\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"max_framerate\":.*/\"max_framerate\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"framerate_cap\":.*/\"framerate_cap\": " + forcedFps + ",/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
-    private static void ensureParentDirectory(String path) {
-        if (path == null) return;
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            String parentDir = path.substring(0, lastSlash);
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
-            } else {
-                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-            }
-        }
+        String[] keys = {
+            "target_framerate=" + forcedFps,
+            "max_framerate=" + forcedFps,
+            "framerate_cap=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "MaxFPS=" + forcedFps,
+            "FrameRateLimit=" + forcedFps,
+            "fps_unlock=1",
+            "fps_unlock_120=1",
+            "fps_unlock_144=1",
+            "fps_unlock_165=1",
+            "fps_unlock_185=1",
+            "high_fps_mode=1",
+            "ultra_extreme=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[StandoffGraphics]");
     }
 
     private static List<String> getConfigPaths(String pkg) {

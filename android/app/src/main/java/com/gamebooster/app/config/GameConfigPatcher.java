@@ -298,33 +298,18 @@ public class GameConfigPatcher {
     }
 
     private static boolean patchGenericConfig(String path, int targetFps) {
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format("[Graphics]\nFPS=%d\nFrameRate=%d\nHighFPSMode=1\nMaxFrameRate=%d\n",
-                    targetFps, targetFps, targetFps);
-            boolean ok = ShizukuFileManager.writeFile(path, content, "666").success;
-            if (!ok) {
-                // Auto-recover the original if a backed-up file fails to be rewritten
-                ConfigBackupManager.restorePath(null, path);
-            }
-            return ok;
-        } else {
-            // Injection guard (Phase 1.3): never build a sed command from an unsafe path
-            if (!ShellSafety.isSafeShellPath(path)) {
-                Log.w(TAG, "Refusing unsafe path in sed: " + path);
-                return false;
-            }
-            String shellPath = ShellSafety.escapeSingleQuoted(path);
-            String cmd = "sed -i 's/^FPS=.*/FPS=" + targetFps + "/' " + shellPath + "; " +
-                         "sed -i 's/^FrameRate=.*/FrameRate=" + targetFps + "/' " + shellPath + "; " +
-                         "sed -i 's/^HighFPSMode=.*/HighFPSMode=1/' " + shellPath + "; " +
-                         "sed -i 's/^MaxFrameRate=.*/MaxFrameRate=" + targetFps + "/' " + shellPath + "; " +
-                         "chmod 666 " + shellPath;
-            if (ShizukuFileManager.hasFullAccess()) {
-                com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
+        String[] genericKeys = {
+            "FPS=" + targetFps,
+            "FrameRate=" + targetFps,
+            "HighFPSMode=1",
+            "MaxFrameRate=" + targetFps,
+            "TargetFPS=" + targetFps,
+            "UnlockFPS=1"
+        };
+        boolean ok = ConfigFileHelper.patchKeys(path, genericKeys, "[Graphics]");
+        if (!ok) {
+            ConfigBackupManager.restorePath(null, path);
         }
+        return ok;
     }
 }

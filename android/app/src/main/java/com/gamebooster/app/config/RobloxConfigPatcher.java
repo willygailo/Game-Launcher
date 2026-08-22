@@ -1,16 +1,12 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * RobloxConfigPatcher manages ClientAppSettings.json FastFlags and local graphics settings
  * for Roblox on Android.
- * Unlocks 120/144/165 FPS frame rate limits and enables high performance rendering.
+ * Unlocks 120/144/165/185 FPS frame rate limits and enables high performance rendering.
  */
 public class RobloxConfigPatcher {
 
@@ -63,8 +59,9 @@ public class RobloxConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            forceWrite(path, clientAppSettings);
-            written++;
+            if (ConfigFileHelper.writeContentAtomic(path, clientAppSettings)) {
+                written++;
+            }
         }
         Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
@@ -73,18 +70,15 @@ public class RobloxConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "FFlagFastTouchResponse=True",
+            "FIntTouchPollingRate=1000",
+            "FFlagZeroTouchDelay=True",
+            "FFlagTouchSlopReduction=True",
+            "FFlagReduceInputLatency=True"
+        };
         for (String path : paths) {
-            String cmd =
-                "grep -qF '\"FFlagFastTouchResponse\"' " + path + " || echo '  \"FFlagFastTouchResponse\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FIntTouchPollingRate\"' " + path + " || echo '  \"FIntTouchPollingRate\": 1000,' >> " + path + "; " +
-                "grep -qF '\"FFlagZeroTouchDelay\"' " + path + " || echo '  \"FFlagZeroTouchDelay\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagTouchSlopReduction\"' " + path + " || echo '  \"FFlagTouchSlopReduction\": \"True\",' >> " + path + "; " +
-                "grep -qF '\"FFlagReduceInputLatency\"' " + path + " || echo '  \"FFlagReduceInputLatency\": \"True\",' >> " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "Roblox fast zero-delay touch applied for " + packageName);
     }
@@ -101,20 +95,7 @@ public class RobloxConfigPatcher {
             "TouchSensitivity=150"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "Roblox Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -149,21 +130,8 @@ public class RobloxConfigPatcher {
             "WeaponSway=0"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "Roblox Zero Recoil & Camera Shake Elimination applied for " + packageName);
     }
@@ -205,21 +173,8 @@ public class RobloxConfigPatcher {
             "FOV=150"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Roblox 5.0x Damage Boost & FOV applied for " + packageName);
     }
@@ -253,22 +208,8 @@ public class RobloxConfigPatcher {
             "FallDamageReduction=1.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "Roblox Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
     }
@@ -298,22 +239,8 @@ public class RobloxConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "Roblox 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -336,30 +263,7 @@ public class RobloxConfigPatcher {
             "TargetLockTracking=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            if (path.endsWith(".json")) {
-                for (String keyVal : trackingKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    String v = keyVal.substring(keyVal.indexOf("=") + 1);
-                    sb.append("grep -qF '\"").append(k).append("\"' ").append(path)
-                      .append(" || sed -i '2i \\  \"").append(k).append("\": \"").append(v).append("\",' ").append(path).append("; ");
-                }
-            } else {
-                sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-                for (String keyVal : trackingKeys) {
-                    String k = keyVal.substring(0, keyVal.indexOf("="));
-                    sb.append("grep -qF '").append(k).append("' ").append(path)
-                      .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                    sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-                }
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "Roblox Bullet Tracking & Hitbox Expansion applied for " + packageName);
     }
@@ -373,33 +277,20 @@ public class RobloxConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "{\n  \"DFIntTaskSchedulerTargetFps\": %d,\n  \"FIntTargetFPS\": %d,\n  \"FIntDesiredMaxFrameRate\": %d,\n  \"FFlagEnableHighFPS\": \"True\",\n  \"FFlagUnlockFPS\": \"True\",\n  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n  \"FFlagFixGraphicsQuality\": \"True\",\n  \"DFFlagDisableDPIScale\": \"True\",\n  \"FFlagCommitToFastPhysics\": \"True\",\n  \"FFlagEnableVulkan\": \"True\"\n}\n",
-                    forcedFps, forcedFps, forcedFps
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/\"DFIntTaskSchedulerTargetFps\":.*/\"DFIntTaskSchedulerTargetFps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"FIntTargetFPS\":.*/\"FIntTargetFPS\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"FIntDesiredMaxFrameRate\":.*/\"FIntDesiredMaxFrameRate\": " + forcedFps + ",/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "DFIntTaskSchedulerTargetFps=" + forcedFps,
+            "FIntTargetFPS=" + forcedFps,
+            "FIntDesiredMaxFrameRate=" + forcedFps,
+            "FFlagEnableHighFPS=True",
+            "FFlagUnlockFPS=True",
+            "FFlagDebugGraphicsPreferVulkan=True",
+            "FFlagFixGraphicsQuality=True",
+            "DFFlagDisableDPIScale=True",
+            "FFlagCommitToFastPhysics=True",
+            "FFlagEnableVulkan=True"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Roblox]");
     }
 }

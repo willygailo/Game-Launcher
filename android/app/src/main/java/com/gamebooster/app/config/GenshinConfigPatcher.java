@@ -1,16 +1,12 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * GenshinConfigPatcher manages internal config and hardware profile JSON files
  * for Genshin Impact, Honkai: Star Rail, and Zenless Zone Zero.
- * Unlocks 120/144/165 FPS, unlocks Vulkan backend, and sets max rendering quality.
+ * Unlocks 120/144/165/185 FPS, unlocks Vulkan backend, and sets max rendering quality.
  */
 public class GenshinConfigPatcher {
 
@@ -85,13 +81,15 @@ public class GenshinConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            boolean ok;
             if (path.contains("hardware_model")) {
-                forceWrite(path, hardwareConfig);
+                ok = ConfigFileHelper.writeContentAtomic(path, hardwareConfig);
             } else {
-                forceWrite(path, jsonContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, jsonContent);
             }
-            written++;
+            if (ok) written++;
         }
+        AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "Genshin competitive " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
@@ -99,21 +97,14 @@ public class GenshinConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "touch_polling_rate=1000",
+            "zero_touch_delay=1",
+            "touch_response_ms=0",
+            "input_latency_reduction=1"
+        };
         for (String path : paths) {
-            String cmd =
-                "grep -qF '\"touch_polling_rate\"' " + path + " || echo '\"touch_polling_rate\": 1000,' >> " + path + "; " +
-                "sed -i 's/\"touch_polling_rate\":.*/\"touch_polling_rate\": 1000,/' " + path + "; " +
-                "grep -qF '\"zero_touch_delay\"' " + path + " || echo '\"zero_touch_delay\": true,' >> " + path + "; " +
-                "sed -i 's/\"zero_touch_delay\":.*/\"zero_touch_delay\": true,/' " + path + "; " +
-                "grep -qF '\"touch_response_ms\"' " + path + " || echo '\"touch_response_ms\": 0,' >> " + path + "; " +
-                "sed -i 's/\"touch_response_ms\":.*/\"touch_response_ms\": 0,/' " + path + "; " +
-                "grep -qF '\"input_latency_reduction\"' " + path + " || echo '\"input_latency_reduction\": true,' >> " + path + "; " +
-                "sed -i 's/\"input_latency_reduction\":.*/\"input_latency_reduction\": true,/' " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
         }
         Log.i(TAG, "Genshin zero-delay touch acceleration applied for " + packageName);
     }
@@ -130,20 +121,7 @@ public class GenshinConfigPatcher {
             "CameraFOV=120"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
         Log.i(TAG, "Genshin Bow Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -169,21 +147,8 @@ public class GenshinConfigPatcher {
             "SpreadScale=0.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
         }
         Log.i(TAG, "Genshin Camera Stabilization & Sway Reduction applied for " + packageName);
     }
@@ -220,21 +185,8 @@ public class GenshinConfigPatcher {
             "ExplosiveDamageMultiplier=3.50"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : damageKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Genshin 5.0x Elemental & Physical Damage Boost applied for " + packageName);
     }
@@ -269,22 +221,8 @@ public class GenshinConfigPatcher {
             "FallDamageReduction=1.00"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[DefenseConfig]' ").append(path).append(" || echo '[DefenseConfig]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
         Log.i(TAG, "Genshin Defense Multiplier 5.0x & Shield Boost applied for " + packageName);
     }
@@ -314,22 +252,8 @@ public class GenshinConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "Genshin 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -352,20 +276,7 @@ public class GenshinConfigPatcher {
             "BulletTracking=1"
         };
         for (String path : paths) {
-            ensureDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "Genshin Bow Auto-Tracking & Homing Projectiles applied for " + packageName);
     }
@@ -379,34 +290,24 @@ public class GenshinConfigPatcher {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "{\n  \"fps\": %d,\n  \"max_fps\": %d,\n  \"target_frame_rate\": %d,\n  \"targetFrameRateForOthers\": %d,\n  \"fpsUnlock\": true,\n  \"fps_unlock_120\": true,\n  \"fps_unlock_144\": true,\n  \"fps_unlock_165\": true,\n  \"fps_unlock_185\": true,\n  \"graphics_quality\": 5,\n  \"render_resolution\": 1.2,\n  \"shadow_quality\": 4,\n  \"visual_effects\": 4,\n  \"sfx_quality\": 4,\n  \"environment_detail\": 4,\n  \"vulkan_enabled\": true,\n  \"unlock_120hz\": true,\n  \"unlock_144hz\": true,\n  \"unlock_165hz\": true,\n  \"unlock_185hz\": true\n}\n",
-                    forcedFps, forcedFps, forcedFps, forcedFps
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/\"fps\":.*/\"fps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"max_fps\":.*/\"max_fps\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"target_frame_rate\":.*/\"target_frame_rate\": " + forcedFps + ",/' " + path + "; " +
-                         "sed -i 's/\"targetFrameRateForOthers\":.*/\"targetFrameRateForOthers\": " + forcedFps + "/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void ensureDirectory(String path) {
-        ShizukuFileManager.ensureParentDirectory(path);
+        String[] keys = {
+            "fps=" + forcedFps,
+            "max_fps=" + forcedFps,
+            "target_frame_rate=" + forcedFps,
+            "targetFrameRateForOthers=" + forcedFps,
+            "fpsUnlock=1",
+            "fps_unlock_120=1",
+            "fps_unlock_144=1",
+            "fps_unlock_165=1",
+            "fps_unlock_185=1",
+            "vulkan_enabled=1",
+            "unlock_120hz=1",
+            "unlock_144hz=1",
+            "unlock_165hz=1",
+            "unlock_185hz=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }
 }

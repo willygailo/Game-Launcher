@@ -39,8 +39,9 @@ import java.util.Locale;
 
 /**
  * Pure Cyberpunk Terminal Emulator Activity.
- * Supports direct elevated shell & root execution, script folder management,
- * and high-performance game tweaking commands.
+ * True interactive Android shell emulator supporting ANSI escape colors,
+ * persistent directory state, tab autocompletion, Termux-style modifier bar,
+ * and high-performance kernel / game tuning script execution.
  */
 public class TerminalActivity extends AppCompatActivity {
 
@@ -48,6 +49,7 @@ public class TerminalActivity extends AppCompatActivity {
     private TextView tvTerminalStatus;
     private TextView tvTerminalOutput;
     private ScrollView scrollTerminalOutput;
+    private TextView tvTerminalPromptPrefix;
     private EditText etTerminalCommand;
     private Button btnTerminalRun;
     private Button btnClearTerminal;
@@ -58,6 +60,20 @@ public class TerminalActivity extends AppCompatActivity {
     private Button btnHistoryPrev;
     private Button btnHistoryNext;
 
+    // Quick Modifier Toolbar Buttons (Termux-style)
+    private Button btnKeyTab;
+    private Button btnKeyCtrlC;
+    private Button btnKeyCtrlL;
+    private Button btnKeySlash;
+    private Button btnKeyDash;
+    private Button btnKeyTilde;
+    private Button btnKeyPipe;
+    private Button btnKeyRedirect;
+    private Button btnKeyDollar;
+    private Button btnKeyAmp;
+    private Button btnKeySemicolon;
+
+    // Preset Buttons
     private Button btnScriptFolderAction;
     private Button btnScriptWhoami;
     private Button btnScriptFixStorage;
@@ -111,6 +127,7 @@ public class TerminalActivity extends AppCompatActivity {
         tvTerminalStatus = findViewById(R.id.tv_terminal_status);
         tvTerminalOutput = findViewById(R.id.tv_terminal_output);
         scrollTerminalOutput = findViewById(R.id.scroll_terminal_output);
+        tvTerminalPromptPrefix = findViewById(R.id.tv_terminal_prompt_prefix);
         etTerminalCommand = findViewById(R.id.et_terminal_command);
         btnTerminalRun = findViewById(R.id.btn_terminal_run);
         btnClearTerminal = findViewById(R.id.btn_clear_terminal);
@@ -121,6 +138,20 @@ public class TerminalActivity extends AppCompatActivity {
         btnHistoryPrev = findViewById(R.id.btn_terminal_history_prev);
         btnHistoryNext = findViewById(R.id.btn_terminal_history_next);
 
+        // Modifier Toolbar
+        btnKeyTab = findViewById(R.id.btn_key_tab);
+        btnKeyCtrlC = findViewById(R.id.btn_key_ctrl_c);
+        btnKeyCtrlL = findViewById(R.id.btn_key_ctrl_l);
+        btnKeySlash = findViewById(R.id.btn_key_slash);
+        btnKeyDash = findViewById(R.id.btn_key_dash);
+        btnKeyTilde = findViewById(R.id.btn_key_tilde);
+        btnKeyPipe = findViewById(R.id.btn_key_pipe);
+        btnKeyRedirect = findViewById(R.id.btn_key_redirect);
+        btnKeyDollar = findViewById(R.id.btn_key_dollar);
+        btnKeyAmp = findViewById(R.id.btn_key_amp);
+        btnKeySemicolon = findViewById(R.id.btn_key_semicolon);
+
+        // Preset Script Buttons
         btnScriptFolderAction = findViewById(R.id.btn_script_folder_action);
         btnScriptWhoami = findViewById(R.id.btn_script_whoami);
         btnScriptFixStorage = findViewById(R.id.btn_script_fix_storage);
@@ -135,13 +166,14 @@ public class TerminalActivity extends AppCompatActivity {
         btnScriptThermalBypass = findViewById(R.id.btn_script_thermal_bypass);
 
         updateStatusBanner();
+        updatePromptPrefix();
     }
 
     private void updateStatusBanner() {
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
         String androidVer = "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
         if (hasShizuku) {
-            tvTerminalStatus.setText("UID: 2000 (shell) • Shizuku Active • " + androidVer);
+            tvTerminalStatus.setText("UID: 2000 (shell) • Shizuku PTY Active • " + androidVer);
             tvTerminalStatus.setTextColor(0xFF00FF66);
         } else {
             tvTerminalStatus.setText("Local Shell (Fallback) • " + androidVer);
@@ -149,14 +181,21 @@ public class TerminalActivity extends AppCompatActivity {
         }
     }
 
+    private void updatePromptPrefix() {
+        if (tvTerminalPromptPrefix != null) {
+            String sym = TerminalCoreEngine.getInstance().getPromptSymbol();
+            tvTerminalPromptPrefix.setText(">" + sym);
+        }
+    }
+
     private void showWelcomeBanner() {
         String folderPath = TerminalFolderManager.getInstance(getApplicationContext()).getTerminalDirPath();
         appendSpannedText("====================================================\n", 0xFF00F0FF);
-        appendSpannedText("  GAME BOOSTER PRO — PURE CYBER TERMINAL ENGINE\n", 0xFF00FF66);
-        appendSpannedText("  Target: Android 13, 14, 15, 16 (API 33-36) Ready\n", 0xFF00F0FF);
+        appendSpannedText("  GAME BOOSTER PRO — REAL INTERACTIVE SHELL EMULATOR\n", 0xFF00FF66);
+        appendSpannedText("  POSIX Shell: /system/bin/sh | ANSI Color 256 Support\n", 0xFF00F0FF);
         appendSpannedText("  Scripts Folder: " + folderPath + "\n", 0xFFFFB800);
         appendSpannedText("====================================================\n", 0xFF00F0FF);
-        appendSpannedText("Commands: help, scripts, run <file>, ls, cd, pwd, cat, clear\n\n", 0xFF94A3B8);
+        appendSpannedText("Type 'help' for built-ins, TAB for auto-completion, CTRL+C to cancel.\n\n", 0xFF94A3B8);
     }
 
     private void setupListeners() {
@@ -173,11 +212,7 @@ public class TerminalActivity extends AppCompatActivity {
         }
 
         if (btnClearTerminal != null) {
-            btnClearTerminal.setOnClickListener(v -> {
-                terminalBuffer.clear();
-                tvTerminalOutput.setText("");
-                showWelcomeBanner();
-            });
+            btnClearTerminal.setOnClickListener(v -> clearTerminalBuffer());
         }
 
         if (btnCopyTerminal != null) {
@@ -205,6 +240,7 @@ public class TerminalActivity extends AppCompatActivity {
             });
         }
 
+        // History Navigation
         if (btnHistoryPrev != null) {
             btnHistoryPrev.setOnClickListener(v -> {
                 if (commandHistory.isEmpty()) return;
@@ -231,6 +267,29 @@ public class TerminalActivity extends AppCompatActivity {
                 }
             });
         }
+
+        // Modifier Toolbar Handlers
+        if (btnKeyTab != null) {
+            btnKeyTab.setOnClickListener(v -> handleTabCompletion());
+        }
+        if (btnKeyCtrlC != null) {
+            btnKeyCtrlC.setOnClickListener(v -> {
+                TerminalCoreEngine.getInstance().cancelRunningCommand();
+                appendSpannedText("^C\n", 0xFFFF3366);
+                scrollToBottom();
+            });
+        }
+        if (btnKeyCtrlL != null) {
+            btnKeyCtrlL.setOnClickListener(v -> clearTerminalBuffer());
+        }
+        if (btnKeySlash != null) btnKeySlash.setOnClickListener(v -> insertSymbolAtCursor("/"));
+        if (btnKeyDash != null) btnKeyDash.setOnClickListener(v -> insertSymbolAtCursor("-"));
+        if (btnKeyTilde != null) btnKeyTilde.setOnClickListener(v -> insertSymbolAtCursor("~"));
+        if (btnKeyPipe != null) btnKeyPipe.setOnClickListener(v -> insertSymbolAtCursor("|"));
+        if (btnKeyRedirect != null) btnKeyRedirect.setOnClickListener(v -> insertSymbolAtCursor(">"));
+        if (btnKeyDollar != null) btnKeyDollar.setOnClickListener(v -> insertSymbolAtCursor("$"));
+        if (btnKeyAmp != null) btnKeyAmp.setOnClickListener(v -> insertSymbolAtCursor("&"));
+        if (btnKeySemicolon != null) btnKeySemicolon.setOnClickListener(v -> insertSymbolAtCursor(";"));
 
         // Quick Preset Scripts & Storage Tools
         if (btnScriptWhoami != null) {
@@ -268,6 +327,53 @@ public class TerminalActivity extends AppCompatActivity {
         }
         if (btnScriptThermalBypass != null) {
             btnScriptThermalBypass.setOnClickListener(v -> runPresetCommand("dumpsys thermalservice; dumpsys battery"));
+        }
+    }
+
+    private void clearTerminalBuffer() {
+        terminalBuffer.clear();
+        tvTerminalOutput.setText("");
+        showWelcomeBanner();
+    }
+
+    private void insertSymbolAtCursor(String symbol) {
+        if (etTerminalCommand == null) return;
+        int start = Math.max(etTerminalCommand.getSelectionStart(), 0);
+        int end = Math.max(etTerminalCommand.getSelectionEnd(), 0);
+        etTerminalCommand.getText().replace(Math.min(start, end), Math.max(start, end), symbol, 0, symbol.length());
+        etTerminalCommand.setSelection(Math.min(start, end) + symbol.length());
+    }
+
+    private void handleTabCompletion() {
+        if (etTerminalCommand == null) return;
+        String currentText = etTerminalCommand.getText().toString();
+        List<String> completions = TerminalCoreEngine.getInstance().getCompletions(currentText);
+
+        if (completions.isEmpty()) {
+            Toast.makeText(this, "No completions found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (completions.size() == 1) {
+            String match = completions.get(0);
+            int lastSpace = currentText.lastIndexOf(' ');
+            String newText;
+            if (lastSpace >= 0) {
+                newText = currentText.substring(0, lastSpace + 1) + match;
+            } else {
+                newText = match;
+            }
+            etTerminalCommand.setText(newText);
+            etTerminalCommand.setSelection(newText.length());
+        } else {
+            // Display all matching completion candidates
+            appendCommandPrompt(currentText);
+            StringBuilder sb = new StringBuilder("\u001B[1;36mPossible completions:\u001B[0m\n");
+            for (String c : completions) {
+                sb.append("  \u001B[32m").append(c).append("\u001B[0m\n");
+            }
+            appendAnsiText(sb.toString() + "\n");
+            scrollToBottom();
         }
     }
 
@@ -313,15 +419,12 @@ public class TerminalActivity extends AppCompatActivity {
                 .setTitle("📜 " + scriptFile.getName())
                 .setItems(actions, (dialog, which) -> {
                     if (which == 0) {
-                        // Execute
                         String cmd = "sh " + scriptFile.getAbsolutePath();
                         etTerminalCommand.setText(cmd);
                         executeCurrentCommand();
                     } else if (which == 1) {
-                        // View / Edit
                         showEditScriptDialog(scriptFile);
                     } else if (which == 2) {
-                        // Delete
                         folderManager.deleteScript(scriptFile);
                         Toast.makeText(this, "Deleted: " + scriptFile.getName(), Toast.LENGTH_SHORT).show();
                         showTerminalFolderDialog();
@@ -334,14 +437,13 @@ public class TerminalActivity extends AppCompatActivity {
     private void showCreateScriptDialog() {
         TerminalFolderManager folderManager = TerminalFolderManager.getInstance(getApplicationContext());
 
-        View dialogView = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_1, null, false);
         EditText etName = new EditText(this);
         etName.setHint("script_name.sh");
         etName.setTextColor(0xFFFFFFFF);
         etName.setHintTextColor(0xFF64748B);
 
         EditText etContent = new EditText(this);
-        etContent.setHint("# Type bash commands here...\necho 'Game Boost Active'\n");
+        etContent.setHint("#!/system/bin/sh\n# Type bash commands here...\necho 'Game Boost Active'\n");
         etContent.setTextColor(0xFF00FF66);
         etContent.setHintTextColor(0xFF64748B);
         etContent.setMinLines(5);
@@ -361,7 +463,7 @@ public class TerminalActivity extends AppCompatActivity {
                     if (name.isEmpty()) name = "custom_script_" + System.currentTimeMillis() + ".sh";
                     folderManager.saveScript(name, content);
                     Toast.makeText(this, "Script saved: " + name, Toast.LENGTH_SHORT).show();
-                    etTerminalCommand.setText("run " + name);
+                    etTerminalCommand.setText("sh " + folderManager.getTerminalDirPath() + "/" + name);
                     executeCurrentCommand();
                 })
                 .setNeutralButton("SAVE ONLY", (dialog, which) -> {
@@ -410,11 +512,15 @@ public class TerminalActivity extends AppCompatActivity {
         historyIndex = -1;
         etTerminalCommand.setText("");
 
+        // Handle internal exit
+        if ("exit".equalsIgnoreCase(cmd) || "quit".equalsIgnoreCase(cmd)) {
+            finish();
+            return;
+        }
+
         // Handle internal clear
         if ("clear".equalsIgnoreCase(cmd) || "cls".equalsIgnoreCase(cmd)) {
-            terminalBuffer.clear();
-            tvTerminalOutput.setText("");
-            showWelcomeBanner();
+            clearTerminalBuffer();
             return;
         }
 
@@ -425,7 +531,7 @@ public class TerminalActivity extends AppCompatActivity {
             List<File> files = mgr.listScriptFiles();
             appendSpannedText("📁 Terminal Folder: " + mgr.getTerminalDirPath() + "\n", 0xFF00F0FF);
             if (files.isEmpty()) {
-                appendSpannedText("  (Folder is empty. Type 'new' or open folder dialog to create scripts)\n\n", 0xFF94A3B8);
+                appendSpannedText("  (Folder is empty. Open folder dialog to create scripts)\n\n", 0xFF94A3B8);
             } else {
                 for (File f : files) {
                     appendSpannedText("  • " + f.getName() + " (" + f.length() + " bytes)\n", 0xFF00FF66);
@@ -451,7 +557,8 @@ public class TerminalActivity extends AppCompatActivity {
                 AppExecutors.getInstance().executeCommand(() -> {
                     String output = mgr.executeScriptFile(targetFile);
                     AppExecutors.getInstance().postToMainThread(() -> {
-                        appendSpannedText(output + "\n\n", 0xFF00FF66);
+                        appendAnsiText(output + "\n\n");
+                        updatePromptPrefix();
                         scrollToBottom();
                     });
                 });
@@ -459,47 +566,39 @@ public class TerminalActivity extends AppCompatActivity {
             }
         }
 
-        if ("help".equalsIgnoreCase(cmd)) {
-            appendCommandPrompt(cmd);
-            appendSpannedText("Available Commands & Syntax Guide:\n", 0xFF00F0FF);
-            appendSpannedText(" • Terminal Scripts Folder:\n", 0xFF00FF66);
-            appendSpannedText("   scripts / folder - List all scripts in terminal folder\n", 0xFFE2E8F0);
-            appendSpannedText("   run <script.sh> - Execute script directly from terminal folder\n", 0xFFE2E8F0);
-            appendSpannedText(" • Navigation & Files:\n", 0xFF00FF66);
-            appendSpannedText("   pwd / ls -la / cd <dir> / cat <file> / mkdir <dir> / rm <file>\n", 0xFFE2E8F0);
-            appendSpannedText(" • System Settings & Properties:\n", 0xFF00FF66);
-            appendSpannedText("   settings put <global/secure/system> <key> <val>\n", 0xFFE2E8F0);
-            appendSpannedText("   setprop <key> <val> / getprop <key>\n", 0xFFE2E8F0);
-            appendSpannedText(" • Memory & Identity:\n", 0xFF00FF66);
-            appendSpannedText("   pm trim-caches 999999999999 / am kill-all / id / whoami\n", 0xFFE2E8F0);
-            appendSpannedText(" • Screen: clear / cls\n\n", 0xFFE2E8F0);
-            scrollToBottom();
-            return;
-        }
-
         appendCommandPrompt(cmd);
 
         AppExecutors.getInstance().executeCommand(() -> {
-            String output;
+            TerminalCoreEngine.TerminalResult result;
             try {
-                if (cmd.contains("\n") || cmd.contains(";") || cmd.contains("&&") || cmd.length() > 120) {
-                    output = TerminalCoreEngine.getInstance().writeAndExecuteTempScript("game_tweak_run.sh", cmd);
+                if (cmd.contains("\n") || cmd.length() > 200) {
+                    String tempOut = TerminalCoreEngine.getInstance().writeAndExecuteTempScript("game_tweak_run.sh", cmd);
+                    result = new TerminalCoreEngine.TerminalResult(tempOut, 0, TerminalCoreEngine.getInstance().getCurrentWorkingDir());
                 } else {
-                    output = TerminalCoreEngine.getInstance().executeCommand(cmd);
+                    result = TerminalCoreEngine.getInstance().executeCommand(cmd);
                 }
             } catch (Exception e) {
-                output = "ERROR: " + e.getMessage();
+                result = new TerminalCoreEngine.TerminalResult("ERROR: " + e.getMessage(), 1, TerminalCoreEngine.getInstance().getCurrentWorkingDir());
             }
 
-            final String finalOutput = output;
+            final TerminalCoreEngine.TerminalResult finalRes = result;
             AppExecutors.getInstance().postToMainThread(() -> {
-                if (finalOutput == null || finalOutput.isEmpty() || "SUCCESS".equalsIgnoreCase(finalOutput) || finalOutput.contains("Zero Exit Code") || finalOutput.contains("Exit Code 0")) {
-                    appendSpannedText(finalOutput != null && !finalOutput.isEmpty() ? finalOutput + "\n\n" : "[COMMAND COMPLETED (Exit Code 0)]\n\n", 0xFF00FF66);
-                } else if (finalOutput.startsWith("ERROR")) {
-                    appendSpannedText(finalOutput + "\n\n", 0xFFFF0055);
+                String outText = finalRes.output;
+                if (outText == null || outText.isEmpty()) {
+                    if (finalRes.exitCode == 0) {
+                        // Silent success in Unix style or minimal indicator
+                    } else {
+                        appendSpannedText("[Exit Code " + finalRes.exitCode + "]\n\n", 0xFFFF3366);
+                    }
                 } else {
-                    appendSpannedText(finalOutput + "\n\n", 0xFFE2E8F0);
+                    appendAnsiText(outText + "\n");
+                    if (finalRes.exitCode != 0 && !outText.contains("Exit Code")) {
+                        appendSpannedText("[Exit Code " + finalRes.exitCode + "]\n\n", 0xFFFF3366);
+                    } else {
+                        appendSpannedText("\n", 0xFF00FF66);
+                    }
                 }
+                updatePromptPrefix();
                 scrollToBottom();
             });
         });
@@ -507,18 +606,35 @@ public class TerminalActivity extends AppCompatActivity {
 
     private void appendCommandPrompt(String command) {
         String timestamp = new SimpleDateFormat("HH:mm:ss", Locale.US).format(new Date());
+        String userPrefix = TerminalCoreEngine.getInstance().getPromptUserPrefix();
         String currentDir = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
+        String symbol = TerminalCoreEngine.getInstance().getPromptSymbol();
+
         appendSpannedText("[" + timestamp + "] ", 0xFF64748B);
-        appendSpannedText("shizuku@android", 0xFF00F0FF);
-        appendSpannedText(":" + currentDir + "$ ", 0xFF00FF66);
+        appendSpannedText(userPrefix, 0xFF00F0FF);
+        appendSpannedText(":" + currentDir + symbol + " ", 0xFF00FF66);
         appendSpannedText(command + "\n", 0xFFFFFFFF);
         scrollToBottom();
+    }
+
+    private void appendAnsiText(String text) {
+        SpannableStringBuilder parsed = AnsiColorParser.parseAnsi(text, 0xFFE2E8F0);
+        terminalBuffer.append(parsed);
+        // Keep buffer bounded
+        if (terminalBuffer.length() > 80000) {
+            terminalBuffer.delete(0, 20000);
+        }
+        tvTerminalOutput.setText(terminalBuffer);
     }
 
     private void appendSpannedText(String text, int color) {
         int start = terminalBuffer.length();
         terminalBuffer.append(text);
         terminalBuffer.setSpan(new ForegroundColorSpan(color), start, start + text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        // Keep buffer bounded
+        if (terminalBuffer.length() > 80000) {
+            terminalBuffer.delete(0, 20000);
+        }
         tvTerminalOutput.setText(terminalBuffer);
     }
 

@@ -1,11 +1,6 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -90,19 +85,19 @@ public class CarXConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            boolean ok;
             if (path.endsWith(".json")) {
-                forceWrite(path, jsonContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, jsonContent);
             } else {
-                forceWrite(path, iniContent);
+                ok = ConfigFileHelper.writeContentAtomic(path, iniContent);
             }
-            written++;
+            if (ok) written++;
         }
         Log.i(TAG, "CarX competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
     public static void applyDamageScriptConfig(String packageName) {
-        // Racing Boost: Nitro & Torque acceleration + Performance Multipliers
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] boostKeys = {
@@ -124,22 +119,8 @@ public class CarXConfigPatcher {
             "AgilityMultiplier=3.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectHighDamage(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[EngineTune]' ").append(path).append(" || echo '[EngineTune]' >> ").append(path).append("; ");
-            for (String keyVal : boostKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, boostKeys, "[EngineTune]");
         }
         Log.i(TAG, "CarX/Racing 5.0x Nitro & Torque boost applied for " + packageName);
     }
@@ -152,16 +133,14 @@ public class CarXConfigPatcher {
     public static void applySuperFastTouch(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
+        String[] touchKeys = {
+            "TouchRate=1000",
+            "SteeringSensitivity=1.1",
+            "InputDeadZone=0.0",
+            "TouchZeroDelay=1"
+        };
         for (String path : paths) {
-            String touchAppend = "\n[SteeringControls]\nTouchRate=1000\nSteeringSensitivity=1.1\nInputDeadZone=0.0\nTouchZeroDelay=1\n";
-            if (ShizukuFileManager.fileExists(path)) {
-                String appendCmd = "echo '" + touchAppend + "' >> " + path + "; chmod 666 " + path;
-                if (ShizukuFileManager.hasFullAccess()) {
-                    ShizukuExecutor.executeShizukuCommand(appendCmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(appendCmd);
-                }
-            }
+            ConfigFileHelper.patchKeys(path, touchKeys, "[SteeringControls]");
         }
     }
 
@@ -178,20 +157,7 @@ public class CarXConfigPatcher {
             "AutoSteering=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : aimKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, aimKeys, "[SteeringAssist]");
         }
         Log.i(TAG, "CarX Steering Assist & Gyro 1000Hz applied for " + packageName);
     }
@@ -215,21 +181,8 @@ public class CarXConfigPatcher {
             "ScopeStability=2.50"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectNoRecoil(path);
-            StringBuilder sb = new StringBuilder();
-            for (String keyVal : recoilKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, recoilKeys, "[StabilityEngine]");
         }
         Log.i(TAG, "CarX Drift Stability & Chassis Balance applied for " + packageName);
     }
@@ -254,22 +207,8 @@ public class CarXConfigPatcher {
             "HealthRegenBoost=5.00"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectArmorDef(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[Durability]' ").append(path).append(" || echo '[Durability]' >> ").append(path).append("; ");
-            for (String keyVal : armorKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, armorKeys, "[Durability]");
         }
         Log.i(TAG, "CarX Chassis Durability 5.0x & Impact Absorption applied for " + packageName);
     }
@@ -299,22 +238,8 @@ public class CarXConfigPatcher {
             "HighSpeedMovement=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
             NativeConfigInjector.injectSpeedBoost(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[SpeedEngine]' ").append(path).append(" || echo '[SpeedEngine]' >> ").append(path).append("; ");
-            for (String keyVal : speedKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
         Log.i(TAG, "CarX 3.0x Speed Boost & Movement Agility applied for " + packageName);
     }
@@ -337,21 +262,7 @@ public class CarXConfigPatcher {
             "BulletTracking=1"
         };
         for (String path : paths) {
-            ensureParentDirectory(path);
-            StringBuilder sb = new StringBuilder();
-            sb.append("grep -qF '[TrackingConfig]' ").append(path).append(" || echo '[TrackingConfig]' >> ").append(path).append("; ");
-            for (String keyVal : trackingKeys) {
-                String k = keyVal.substring(0, keyVal.indexOf("="));
-                sb.append("grep -qF '").append(k).append("' ").append(path)
-                  .append(" || echo '").append(keyVal).append("' >> ").append(path).append("; ");
-                sb.append("sed -i 's/^").append(k).append("=.*/").append(keyVal).append("/' ").append(path).append("; ");
-            }
-            String cmd = sb.toString();
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
+            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
         Log.i(TAG, "CarX Racing Line Tracking & Apex Assist applied for " + packageName);
     }
@@ -359,44 +270,22 @@ public class CarXConfigPatcher {
     private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
-        if (!ShizukuFileManager.fileExists(path)) {
-            String content = String.format(
-                    "[GraphicSettings]\nTargetFPS=%d\nMaxFPS=%d\nFrameRateLimit=%d\nFPSLevel=%d\nHighFPSMode=1\nUnlockFPS=1\nUnlockHighFPS=1\nUnlock120FPS=1\nUnlock144FPS=1\nUnlock165FPS=1\nUnlock185FPS=1\nGraphicQuality=4\nUltraExtreme=1\nHDRMode=1\nVsync=0\nResolutionScale=1.2\nMotionBlur=0\nShadowQuality=2\nDynamicResolution=0\n",
-                    forcedFps, forcedFps, forcedFps, fpsLevel
-            );
-            return ShizukuFileManager.writeFile(path, content, "666").success;
-        } else {
-            String cmd = "sed -i 's/^TargetFPS=.*/TargetFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^MaxFPS=.*/MaxFPS=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^FrameRateLimit=.*/FrameRateLimit=" + forcedFps + "/' " + path + "; " +
-                         "sed -i 's/^FPSLevel=.*/FPSLevel=" + fpsLevel + "/' " + path + "; " +
-                         "sed -i 's/^GraphicQuality=.*/GraphicQuality=4/' " + path + "; " +
-                         "sed -i 's/^UltraExtreme=.*/UltraExtreme=1/' " + path + "; " +
-                         "chmod 666 " + path;
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                CommandExecutor.executeSystemCommand(cmd);
-            }
-            return true;
-        }
-    }
-
-    private static void forceWrite(String path, String content) {
-        ShizukuFileManager.writeFile(path, content, "666");
-    }
-
-    private static void ensureParentDirectory(String path) {
-        if (path == null) return;
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            String parentDir = path.substring(0, lastSlash);
-            if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("mkdir -p " + parentDir);
-            } else {
-                CommandExecutor.executeSystemCommand("mkdir -p " + parentDir);
-            }
-        }
+        String[] keys = {
+            "TargetFPS=" + forcedFps,
+            "MaxFPS=" + forcedFps,
+            "FrameRateLimit=" + forcedFps,
+            "FPSLevel=" + fpsLevel,
+            "GraphicQuality=4",
+            "UltraExtreme=1",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "UnlockHighFPS=1",
+            "Unlock120FPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[GraphicSettings]");
     }
 
     private static List<String> getConfigPaths(String pkg) {
