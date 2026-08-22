@@ -232,7 +232,7 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 6: MOCK PROCFS PAYLOAD GENERATION & GAME ENGINE INJECTION
             // ═══════════════════════════════════════════════════════════════════
-            if (fileLayersSafe) {
+            if (!lsposedActive) {
                 exportMockProcfsPayloads(profile);
 
                 // Inject hardware profile for targeted package + all registered games
@@ -240,10 +240,8 @@ public class HardwareMaskEngine {
                     injectTailoredGameHardwareConfigs(packageName.trim(), profile);
                 }
                 injectAllInstalledGamesHardwareProfile(profile);
-            } else if (lsposedActive) {
-                Log.i(TAG, "▶ LSPosed module active — in-memory ART hooks applied in target game; game files untouched.");
             } else {
-                Log.i(TAG, "▶ Kernel-AC title (" + riskTier + ") — game-file injection skipped; system props + in-app reflection only.");
+                Log.i(TAG, "▶ LSPosed module active — in-memory ART hooks applied in target game; game files untouched.");
             }
 
             Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);

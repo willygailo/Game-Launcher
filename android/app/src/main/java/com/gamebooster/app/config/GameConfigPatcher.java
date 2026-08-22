@@ -76,6 +76,7 @@ public class GameConfigPatcher {
             MlbbConfigPatcher.applyDamageScriptConfig(pkg);
             MlbbConfigPatcher.applyTrackingBulletConfig(pkg);
             MlbbConfigPatcher.applyArmorDefConfig(pkg);
+            MlbbConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -85,6 +86,7 @@ public class GameConfigPatcher {
             CodmConfigPatcher.applyDamageScriptConfig(pkg);
             CodmConfigPatcher.applyTrackingBulletConfig(pkg);
             CodmConfigPatcher.applyArmorDefConfig(pkg);
+            CodmConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -94,6 +96,7 @@ public class GameConfigPatcher {
             PubgConfigPatcher.applyDamageScriptConfig(pkg);
             PubgConfigPatcher.applyTrackingBulletConfig(pkg);
             PubgConfigPatcher.applyArmorDefConfig(pkg);
+            PubgConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
             if (FreeFireConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FreeFireConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -103,6 +106,7 @@ public class GameConfigPatcher {
             FreeFireConfigPatcher.applyDamageScriptConfig(pkg);
             FreeFireConfigPatcher.applyTrackingBulletConfig(pkg);
             FreeFireConfigPatcher.applyArmorDefConfig(pkg);
+            FreeFireConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -112,6 +116,7 @@ public class GameConfigPatcher {
             GenshinConfigPatcher.applyDamageScriptConfig(pkg);
             GenshinConfigPatcher.applyTrackingBulletConfig(pkg);
             GenshinConfigPatcher.applyArmorDefConfig(pkg);
+            GenshinConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("wildrift") || pkg.contains("riotgames.league")) {
             if (WildRiftConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (WildRiftConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -121,6 +126,7 @@ public class GameConfigPatcher {
             WildRiftConfigPatcher.applyDamageScriptConfig(pkg);
             WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
             WildRiftConfigPatcher.applyArmorDefConfig(pkg);
+            WildRiftConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -130,6 +136,7 @@ public class GameConfigPatcher {
             HokConfigPatcher.applyDamageScriptConfig(pkg);
             HokConfigPatcher.applyTrackingBulletConfig(pkg);
             HokConfigPatcher.applyArmorDefConfig(pkg);
+            HokConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
             if (BloodStrikeConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (BloodStrikeConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -139,6 +146,7 @@ public class GameConfigPatcher {
             BloodStrikeConfigPatcher.applyDamageScriptConfig(pkg);
             BloodStrikeConfigPatcher.applyTrackingBulletConfig(pkg);
             BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
+            BloodStrikeConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
             if (Standoff2ConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (Standoff2ConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -148,6 +156,7 @@ public class GameConfigPatcher {
             Standoff2ConfigPatcher.applyDamageScriptConfig(pkg);
             Standoff2ConfigPatcher.applyTrackingBulletConfig(pkg);
             Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
+            Standoff2ConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters")) {
             if (CarXConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CarXConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -157,6 +166,7 @@ public class GameConfigPatcher {
             CarXConfigPatcher.applyDamageScriptConfig(pkg);
             CarXConfigPatcher.applyTrackingBulletConfig(pkg);
             CarXConfigPatcher.applyArmorDefConfig(pkg);
+            CarXConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
             if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -166,6 +176,7 @@ public class GameConfigPatcher {
             ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
             ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
             ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
+            ArenaBreakoutConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
             if (SupercellConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (SupercellConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -175,6 +186,7 @@ public class GameConfigPatcher {
             SupercellConfigPatcher.applyDamageScriptConfig(pkg);
             SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
             SupercellConfigPatcher.applyArmorDefConfig(pkg);
+            SupercellConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (RobloxConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -184,6 +196,7 @@ public class GameConfigPatcher {
             RobloxConfigPatcher.applyDamageScriptConfig(pkg);
             RobloxConfigPatcher.applyTrackingBulletConfig(pkg);
             RobloxConfigPatcher.applyArmorDefConfig(pkg);
+            RobloxConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
             if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -193,6 +206,7 @@ public class GameConfigPatcher {
             ValorantConfigPatcher.applyDamageScriptConfig(pkg);
             ValorantConfigPatcher.applyTrackingBulletConfig(pkg);
             ValorantConfigPatcher.applyArmorDefConfig(pkg);
+            ValorantConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
             if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -202,6 +216,7 @@ public class GameConfigPatcher {
             FarlightConfigPatcher.applyDamageScriptConfig(pkg);
             FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
             FarlightConfigPatcher.applyArmorDefConfig(pkg);
+            FarlightConfigPatcher.applySpeedBoostConfig(pkg);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;
@@ -211,6 +226,8 @@ public class GameConfigPatcher {
 
         // Apply Ultra Extreme Graphics & Max FPS unlock across all resolved game paths
         NativeConfigInjector.applyUltraExtremeGraphics(pkg, forcedFps);
+        int nativeInjected = NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
+        if (nativeInjected > 0) patchedFiles += nativeInjected;
 
         // Apply Anti-Log, Telemetry suppression, and cache purge for this game
         AntiLogPatcher.applyAntiLog(pkg);
