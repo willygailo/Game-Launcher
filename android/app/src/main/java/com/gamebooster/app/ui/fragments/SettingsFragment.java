@@ -1493,18 +1493,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType type =
                     com.gamebooster.app.spoofer.lsposed.LsposedDetector.getFrameworkType(getContext());
             boolean lspatchInstalled = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isLspatchInstalled(getContext());
-            boolean anyGameHooked = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isAnyGameHookedActive();
+            java.util.List<String> activeGames = com.gamebooster.app.spoofer.lsposed.LsposedDetector.getActiveHookedGames();
             if (type == com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType.LSPOSED_ROOT) {
                 tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPosed (Root Active)");
                 tvSpoofFrameworkStatus.setTextColor(0xFF00F0FF);
-            } else if (anyGameHooked) {
-                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPatch Non-Root (Game Hook Active)");
+            } else if (!activeGames.isEmpty()) {
+                tvSpoofFrameworkStatus.setText("🧬 Combo Active: LSPatch Hook (" + activeGames.size() + " Game(s) Connected)");
                 tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
             } else if (lspatchInstalled) {
-                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPatch Ready (Non-Root Available)");
+                tvSpoofFrameworkStatus.setText("🧬 Dual-Engine Combo: LSPatch Ready + Shizuku Direct");
                 tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
             } else {
-                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: Shizuku Direct (LSPatch Non-Root Available)");
+                tvSpoofFrameworkStatus.setText("🧬 Dual-Engine Combo: Shizuku Direct (LSPatch Non-Root Ready)");
                 tvSpoofFrameworkStatus.setTextColor(0xFF94A3B8);
             }
         }

@@ -68,6 +68,20 @@ public class GamesFragment extends Fragment {
         View.OnClickListener hzClickListener = v -> {
             if (getContext() == null) return;
             int targetHz = 185;
+            int id = v.getId();
+            if (id == R.id.btn_target_60) {
+                targetHz = 60;
+            } else if (id == R.id.btn_target_90) {
+                targetHz = 90;
+            } else if (id == R.id.btn_target_120) {
+                targetHz = 120;
+            } else if (id == R.id.btn_target_144) {
+                targetHz = 144;
+            } else if (id == R.id.btn_target_165) {
+                targetHz = 165;
+            } else if (id == R.id.btn_target_185) {
+                targetHz = 185;
+            }
 
             com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
             int appliedTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());

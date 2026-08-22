@@ -129,10 +129,18 @@
         <package android:name="com.sec.android.app.samsungapps" />
         <package android:name="com.apkpure.aether" />
         <package android:name="com.qooapp.qoohelper" />
-        <!-- LSPatch & LSPosed Framework Managers -->
+        <!-- LSPatch & LSPosed Framework Managers & Root Engines -->
         <package android:name="org.lsposed.lspatch" />
         <package android:name="org.lsposed.lspatch.metamod" />
         <package android:name="org.lsposed.manager" />
+        <package android:name="org.lsposed.lspd" />
+        <package android:name="de.robv.android.xposed.installer" />
+        <package android:name="org.meowcat.edxposed.manager" />
+        <package android:name="com.solohsu.android.edxp.manager" />
+        <package android:name="com.topjohnwu.magisk" />
+        <package android:name="io.github.vvb2060.magisk" />
+        <package android:name="io.github.a13e300.ksu" />
+        <package android:name="me.bmax.apatch" />
     </queries>
 
     <application
@@ -144,6 +152,7 @@
         android:allowBackup="false"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
+        android:largeHeap="true"
         android:isGame="true"
         android:appCategory="game"
         android:hasFragileUserData="false"

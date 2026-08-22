@@ -73,6 +73,20 @@ public final class LsposedDetector {
     }
 
     /**
+     * Returns the list of currently active hooked game package names.
+     */
+    public static java.util.List<String> getActiveHookedGames() {
+        long now = System.currentTimeMillis();
+        java.util.List<String> list = new java.util.ArrayList<>();
+        for (Map.Entry<String, Long> entry : HOOKED_GAMES_HEARTBEATS.entrySet()) {
+            if (now - entry.getValue() < HEARTBEAT_TIMEOUT_MS) {
+                list.add(entry.getKey());
+            }
+        }
+        return list;
+    }
+
+    /**
      * Checks if LSPatch is installed on this device.
      */
     public static boolean isLspatchInstalled(Context context) {
