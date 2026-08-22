@@ -64,6 +64,7 @@ import com.gamebooster.app.cleaner.model.CleanResult;
 import com.gamebooster.app.cleaner.model.JunkScanResult;
 import com.gamebooster.app.cleaner.scanner.JunkScanner;
 import com.gamebooster.app.cleaner.ui.JunkCleanerDialog;
+import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
