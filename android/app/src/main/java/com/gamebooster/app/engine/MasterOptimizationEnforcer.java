@@ -207,17 +207,18 @@ public class MasterOptimizationEnforcer {
                     // Settings-global driver opt-ins work on every Android version.
                     tier1Commands.add("settings put global game_driver_opt_in_apps " + pkg);
                     tier1Commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
-                    // Phase 2.1: the GameMode shell set is Android 14+ (API 34) only;
-                    // below that, skip and rely on the SurfaceFlinger refresh override
-                    // (forceDisplayRefreshRate) + Tier-3 config patchers instead.
-                    if (GameModeApiSupport.isAvailable()) {
-                        tier1Commands.add(0, "cmd game mode performance " + pkg);
-                        tier1Commands.add(1, "cmd window set-app-refresh-rate " + pkg + " " + forcedFps);
-                        tier1Commands.add(2, "cmd game set --fps " + forcedFps + " " + pkg);
-                        tier1Commands.add(3, "device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps);
-                    } else {
-                        report.addStep("Tier 1", "GameMode shell set (cmd game / set-app-refresh-rate / game_overlay)", false,
-                                "SKIPPED — requires Android 14+ (API 34); falling back to SurfaceFlinger override + config patchers");
+                    // Android 13-16 GameMode & Refresh Rate Enforcements (Zero Fallback)
+                    if (GameModeApiSupport.isGameModeApiAvailable(android.os.Build.VERSION.SDK_INT)) {
+                        tier1Commands.add("cmd game mode performance " + pkg);
+                    }
+                    if (GameModeApiSupport.isGameOverlayApiAvailable(android.os.Build.VERSION.SDK_INT)) {
+                        tier1Commands.add("device_config put game_overlay " + pkg + " mode=2,fps=" + forcedFps + ":mode=3,fps=" + forcedFps);
+                    }
+                    if (GameModeApiSupport.isAppRefreshRateApiAvailable(android.os.Build.VERSION.SDK_INT)) {
+                        tier1Commands.add("cmd window set-app-refresh-rate " + pkg + " " + forcedFps);
+                    }
+                    if (GameModeApiSupport.isGameFpsOverrideAvailable(android.os.Build.VERSION.SDK_INT)) {
+                        tier1Commands.add("cmd game set --fps " + forcedFps + " " + pkg);
                     }
                     for (String cmd : tier1Commands) {
                         report.attemptStep("Tier 1", cmd, () -> {
