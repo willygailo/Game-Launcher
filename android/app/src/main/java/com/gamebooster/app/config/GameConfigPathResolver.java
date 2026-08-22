@@ -164,12 +164,18 @@ public class GameConfigPathResolver {
             rel.add("files/dragon/assets/Document/android/Setting.xml");
             rel.add("files/dragon/assets/Document/android/Performance.xml");
             rel.add("files/dragon/assets/Document/android/HighFPS.xml");
+            // alternative Document/android branch
+            rel.add("files/assets/Document/android/UserSystem.ini");
+            rel.add("files/assets/Document/android/DamageSystem.ini");
+            rel.add("files/assets/Document/android/HighFPSConfig.ini");
+            rel.add("files/assets/Document/android/Setting.xml");
             // shared preferences
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 2. PUBG Mobile / BGMI / Game for Peace / VNG / KR
+        // 2. PUBG Mobile / BGMI / Game for Peace / VNG / KR / New State
         else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
@@ -177,16 +183,26 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/ChineseUserCustom.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 3. Call of Duty Mobile / Warzone Mobile / Blood Strike
+        // 3. Call of Duty Mobile / Warzone Mobile
         else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Config/HardwareProfile.json");
             rel.add("files/GraphicsSettings.ini");
             rel.add("files/ControlsSettings.ini");
+            rel.add("files/UserSetting.json");
+            rel.add("files/HardwareProfile.json");
+            rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/DeviceProfile.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/app_pref.xml");
         }
 
@@ -197,9 +213,13 @@ public class GameConfigPathResolver {
             rel.add("files/content/ff_graphics.ini");
             rel.add("files/ff_graphics.json");
             rel.add("files/client_settings.json");
+            rel.add("files/ff_graphics.ini");
+            rel.add("files/GameSettings.ini");
+            rel.add("files/ClientSettings.json");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/com.dts.freefireth.v2.playerprefs.xml");
             rel.add("shared_prefs/com.dts.freefiremax.v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }
 
         // 5. Genshin Impact / Honkai Star Rail / ZZZ / Wuthering Waves
@@ -209,7 +229,12 @@ public class GameConfigPathResolver {
             rel.add("files/hardware_model_config.json");
             rel.add("files/device_config.json");
             rel.add("files/GraphicSettings.ini");
+            rel.add("files/GameSettings.json");
+            rel.add("files/UE4Game/Client/Client/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/Client/Client/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/Client/Client/Saved/Config/Android/DeviceProfile.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 6. League of Legends: Wild Rift
@@ -217,7 +242,12 @@ public class GameConfigPathResolver {
             rel.add("files/Config/GameSettings.json");
             rel.add("files/Saved/Config/Graphics.ini");
             rel.add("files/Saved/Config/DeviceProfile.json");
+            rel.add("files/GameSettings.json");
+            rel.add("files/GraphicSettings.ini");
+            rel.add("files/Saved/Config/GameSettings.json");
             rel.add("shared_prefs/RiotGames.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 7. Honor of Kings (HOK) / Arena of Valor
@@ -226,7 +256,12 @@ public class GameConfigPathResolver {
             rel.add("files/DeviceHardware.ini");
             rel.add("files/Config/GameSettings.json");
             rel.add("files/GraphicSettings.ini");
+            rel.add("files/GameSettings.json");
+            rel.add("files/UserCustom.ini");
+            rel.add("files/Settings.json");
             rel.add("shared_prefs/" + pkg + ".xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 8. Blood Strike
@@ -234,7 +269,11 @@ public class GameConfigPathResolver {
             rel.add("files/Config/UserSetting.ini");
             rel.add("files/Config/HardwareProfile.json");
             rel.add("files/GraphicsSettings.json");
+            rel.add("files/UserSetting.ini");
+            rel.add("files/Settings.json");
+            rel.add("files/GraphicSettings.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 9. Standoff 2
@@ -242,34 +281,58 @@ public class GameConfigPathResolver {
             rel.add("files/Settings.json");
             rel.add("files/Graphics.json");
             rel.add("files/UserCustom.ini");
+            rel.add("files/GraphicSettings.ini");
+            rel.add("files/GameSettings.json");
             rel.add("shared_prefs/" + pkg + ".xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 10. CarX Street / Asphalt / Speed Drifters
-        else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row")) {
+        // 10. CarX Street / Asphalt / Speed Drifters / Racing Games
+        else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters")) {
             rel.add("files/GraphicSettings.ini");
             rel.add("files/Settings.json");
+            rel.add("files/GameSettings.ini");
+            rel.add("files/DeviceHardware.ini");
+            rel.add("files/UserCustom.ini");
             rel.add("shared_prefs/" + pkg + ".xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }
 
-        // 11. Arena Breakout / Delta Force
+        // 11. Arena Breakout / Delta Force Mobile
         else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 12. Supercell Games (Brawl Stars, Clash Royale, Clash of Clans)
-        else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
+        // 12. Supercell Games (Brawl Stars, Clash Royale, Clash of Clans, Squad Busters)
+        else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans") || pkg.contains("squad")) {
             rel.add("files/GameSettings.ini");
+            rel.add("files/DeviceHardware.ini");
+            rel.add("files/settings.json");
+            rel.add("files/GraphicSettings.ini");
             rel.add("shared_prefs/game_preferences.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }
 
         // 13. Roblox
         else if (pkg.contains("roblox")) {
-            rel.add("files/DeviceHardware.json");
+            rel.add("files/ClientSettings/ClientAppSettings.json");
+            rel.add("files/ClientAppSettings.json");
             rel.add("files/AppSettings.json");
+            rel.add("files/DeviceHardware.json");
+            rel.add("files/ClientSettings.json");
             rel.add("shared_prefs/RobloxPreferences.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }
 
         // 14. Valorant Mobile / Project C
@@ -277,6 +340,11 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/Config/UserSetting.json");
+            rel.add("files/Settings.json");
+            rel.add("files/GraphicSettings.ini");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 15. Farlight 84
@@ -284,14 +352,24 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/Config/UserSetting.json");
+            rel.add("files/Settings.json");
+            rel.add("files/GraphicSettings.ini");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // Generic fallback
         else {
             rel.add("files/GameSettings.ini");
             rel.add("files/GraphicSettings.json");
+            rel.add("files/GraphicSettings.ini");
             rel.add("files/DeviceHardware.ini");
+            rel.add("files/UserCustom.ini");
+            rel.add("files/Settings.json");
+            rel.add("files/Config/UserSetting.json");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }
 
         return rel;

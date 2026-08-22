@@ -42,17 +42,25 @@ public final class AntiDetectionHooks {
             "org.lsposed.manager",
             "org.lsposed.lspd",
             "moe.shizuku.privileged.api",
+            "moe.shizuku.manager",
+            "rikka.shizuku",
+            "moe.shizuku.redirectstorage",
             "com.gamebooster.app",
             "com.topjohnwu.magisk",
             "io.github.vvb2060.magisk",
             "io.github.a13e300.ksu",
             "me.bmax.apatch",
             "com.solohsu.android.edxp.manager",
+            "org.meowcat.edxposed.manager",
             "de.robv.android.xposed.installer",
+            "com.xposed.hook",
             "bin.mt.plus",
             "com.sukhavati.gmscontainer",
             "com.vphonegaga.tit",
-            "com.f1player"
+            "com.f1player",
+            "com.catchingnow.icebox",
+            "com.draco.ladb",
+            "io.github.muntashirakon.AppManager"
     ));
 
     private static final Set<String> BLOCKED_PATHS = new HashSet<>(Arrays.asList(
@@ -68,17 +76,36 @@ public final class AntiDetectionHooks {
             "/data/local/su",
             "/data/local/tmp/su",
             "/su/bin/su",
+            "/data/adb",
             "/data/adb/magisk",
             "/data/adb/ksu",
             "/data/adb/apatch",
             "/data/adb/lspd",
             "/data/adb/modules",
+            "/data/adb/service.d",
+            "/data/adb/post-fs-data.d",
+            "/data/adb/shamiko",
+            "/data/local/tmp/shizuku",
+            "/data/local/tmp/shizuku_starter",
+            "/dev/shizuku",
+            "/dev/shizuku_service",
+            "/data/system/shizuku",
+            "/data/user_de/0/moe.shizuku.privileged.api",
+            "/data/data/moe.shizuku.privileged.api",
+            "/data/data/com.gamebooster.app",
+            "/data/data/org.lsposed.manager",
+            "/data/data/com.topjohnwu.magisk",
+            "/data/data/io.github.a13e300.ksu",
             "/system/app/superuser.apk",
             "/system/app/supersu.apk",
             "/system/app/magisk.apk",
             "/system/framework/xposedbridge.jar",
             "/system/lib/libxposed_art.so",
-            "/system/lib64/libxposed_art.so"
+            "/system/lib64/libxposed_art.so",
+            "/system/lib/liblspatch.so",
+            "/system/lib64/liblspatch.so",
+            "/system/lib/libsandhook.so",
+            "/system/lib64/libsandhook.so"
     ));
 
     private AntiDetectionHooks() {}
@@ -89,6 +116,8 @@ public final class AntiDetectionHooks {
         hookStackTrace();
         hookProcessExecution();
         hookEnvironmentSettings(lpparam);
+        hookSystemProperties(lpparam);
+        hookServiceManager(lpparam);
 
         XposedBridge.log("[GameBooster] AntiDetectionHooks active for " + lpparam.packageName);
     }
@@ -249,7 +278,8 @@ public final class AntiDetectionHooks {
                     if (list == null) return;
                     List<String> clean = new ArrayList<>(list.length);
                     for (String s : list) {
-                        if (s != null && !s.equalsIgnoreCase("su") && !s.equalsIgnoreCase("magisk") && !s.equalsIgnoreCase("daemonsu")) {
+                        if (s != null && !s.equalsIgnoreCase("su") && !s.equalsIgnoreCase("magisk")
+                                && !s.equalsIgnoreCase("daemonsu") && !s.equalsIgnoreCase("shizuku")) {
                             clean.add(s);
                         }
                     }
@@ -276,6 +306,7 @@ public final class AntiDetectionHooks {
                                 || cls.contains("sandhook")
                                 || cls.contains("edxposed")
                                 || cls.contains("pine")
+                                || cls.contains("moe.shizuku")
                                 || cls.contains("com.gamebooster.app.spoofer"))) {
                             continue;
                         }
@@ -301,6 +332,8 @@ public final class AntiDetectionHooks {
                                 || cls.contains("lspatch")
                                 || cls.contains("sandhook")
                                 || cls.contains("edxposed")
+                                || cls.contains("pine")
+                                || cls.contains("moe.shizuku")
                                 || cls.contains("com.gamebooster.app.spoofer"))) {
                             continue;
                         }
@@ -373,6 +406,86 @@ public final class AntiDetectionHooks {
                             }
                         }
                     });
+        } catch (Throwable ignored) {}
+    }
+
+    private static void hookSystemProperties(LoadPackageParam lpparam) {
+        Class<?> spClass = XposedHelpers.findClass("android.os.SystemProperties", lpparam.classLoader);
+        if (spClass == null) return;
+
+        try {
+            XposedHelpers.findAndHookMethod(spClass, "get", String.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    String key = (String) param.args[0];
+                    if (key == null) return;
+                    if ("ro.build.tags".equals(key)) param.setResult("release-keys");
+                    else if ("ro.build.type".equals(key)) param.setResult("user");
+                    else if ("ro.debuggable".equals(key)) param.setResult("0");
+                    else if ("ro.secure".equals(key)) param.setResult("1");
+                    else if ("ro.boot.flash.locked".equals(key)) param.setResult("1");
+                    else if ("ro.boot.verifiedbootstate".equals(key)) param.setResult("green");
+                    else if ("ro.boot.vbmeta.device_state".equals(key)) param.setResult("locked");
+                    else if ("ro.boot.veritymode".equals(key)) param.setResult("enforcing");
+                    else if ("ro.boot.warranty_bit".equals(key) || "ro.warranty_bit".equals(key)) param.setResult("0");
+                    else if ("sys.oem_unlock_allowed".equals(key)) param.setResult("0");
+                    else if (key.startsWith("init.svc.magisk") || key.contains("shizuku")) param.setResult("");
+                }
+            });
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(spClass, "getInt", String.class, int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    String key = (String) param.args[0];
+                    if (key == null) return;
+                    if ("ro.debuggable".equals(key)) param.setResult(0);
+                    else if ("ro.secure".equals(key) || "ro.boot.flash.locked".equals(key)) param.setResult(1);
+                    else if ("ro.boot.warranty_bit".equals(key) || "ro.warranty_bit".equals(key)) param.setResult(0);
+                }
+            });
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(spClass, "getBoolean", String.class, boolean.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    String key = (String) param.args[0];
+                    if (key == null) return;
+                    if ("ro.debuggable".equals(key)) param.setResult(false);
+                    else if ("ro.secure".equals(key) || "ro.boot.flash.locked".equals(key)) param.setResult(true);
+                }
+            });
+        } catch (Throwable ignored) {}
+    }
+
+    private static void hookServiceManager(LoadPackageParam lpparam) {
+        Class<?> smClass = XposedHelpers.findClass("android.os.ServiceManager", lpparam.classLoader);
+        if (smClass == null) return;
+
+        try {
+            XposedHelpers.findAndHookMethod(smClass, "getService", String.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    String name = (String) param.args[0];
+                    if (name != null && (name.contains("shizuku") || name.contains("moe.shizuku") || name.contains("lspd"))) {
+                        param.setResult(null);
+                    }
+                }
+            });
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.findAndHookMethod(smClass, "checkService", String.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    String name = (String) param.args[0];
+                    if (name != null && (name.contains("shizuku") || name.contains("moe.shizuku") || name.contains("lspd"))) {
+                        param.setResult(null);
+                    }
+                }
+            });
         } catch (Throwable ignored) {}
     }
 

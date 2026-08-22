@@ -35,6 +35,17 @@ public final class IdentityHooks {
         String macAddress = generateMacAddress(profile);
         byte[] macBytes = parseMacBytes(macAddress);
         String adId = UUID.nameUUIDFromBytes(profile.id.getBytes()).toString();
+        String serialNo = "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL);
+
+        // 0. Build.getSerial() & Build.SERIAL
+        try {
+            XposedHelpers.findAndHookMethod(android.os.Build.class, "getSerial",
+                    XC_MethodReplacement.returnConstant(serialNo));
+        } catch (Throwable ignored) {}
+
+        try {
+            XposedHelpers.setStaticObjectField(android.os.Build.class, "SERIAL", serialNo);
+        } catch (Throwable ignored) {}
 
         // 1. TelephonyManager
         Class<?> tmClass = XposedHelpers.findClass("android.telephony.TelephonyManager", lpparam.classLoader);
@@ -52,6 +63,9 @@ public final class IdentityHooks {
             hookReplace(tmClass, "getNetworkCountryIso", "us");
             hookReplace(tmClass, "getLine1Number", "");
             hookReplace(tmClass, "getNai", "");
+            try {
+                XposedHelpers.findAndHookMethod(tmClass, "getSimState", XC_MethodReplacement.returnConstant(5)); // SIM_STATE_READY
+            } catch (Throwable ignored) {}
 
             // int-slot overloads (getImei(int), getMeid(int), getDeviceId(int))
             hookReplaceIntSlot(tmClass, "getImei", imei);
@@ -71,6 +85,7 @@ public final class IdentityHooks {
                 XposedHelpers.findAndHookMethod(tmClass, "getPhoneType", XC_MethodReplacement.returnConstant(1));
                 XposedHelpers.findAndHookMethod(tmClass, "getNetworkType", XC_MethodReplacement.returnConstant(20));
                 XposedHelpers.findAndHookMethod(tmClass, "getDataNetworkType", XC_MethodReplacement.returnConstant(20));
+                XposedHelpers.findAndHookMethod(tmClass, "getVoiceNetworkType", XC_MethodReplacement.returnConstant(20));
             } catch (Throwable ignored) {}
         }
 
@@ -82,8 +97,8 @@ public final class IdentityHooks {
                         protected void afterHookedMethod(MethodHookParam param) {
                             String name = (String) param.args[1];
                             if ("android_id".equals(name)) param.setResult(androidId);
-                            else if ("bluetooth_address".equals(name)) param.setResult(macAddress);
-                            else if ("advertising_id".equals(name)) param.setResult(adId);
+                            else if ("bluetooth_address".equals(name) || "wifi_mac".equals(name)) param.setResult(macAddress);
+                            else if ("advertising_id".equals(name) || "oaid".equals(name) || "gaid".equals(name)) param.setResult(adId);
                         }
                     });
         } catch (Throwable ignored) {}
@@ -94,7 +109,7 @@ public final class IdentityHooks {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) {
                             String name = (String) param.args[1];
-                            if ("device_name".equals(name)) param.setResult(profile.model);
+                            if ("device_name".equals(name) || "synced_device_name".equals(name)) param.setResult(profile.model);
                         }
                     });
         } catch (Throwable ignored) {}

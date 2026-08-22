@@ -236,6 +236,26 @@ public class DeviceSpooferEngine {
         }
     }
 
+    /**
+     * Applies the active spoof profile across ALL registered games dynamically.
+     */
+    public static boolean applyActiveProfileToAllGames(Context context) {
+        if (context == null) return false;
+        boolean enabled = SpoofPreferences.isSpoofEnabled(context);
+        if (!enabled) return false;
+        String activeId = SpoofPreferences.getActiveProfileId(context);
+        if (activeId == null || activeId.trim().isEmpty()) return false;
+        SpoofProfile profile = getProfileById(activeId);
+        if (profile == null) return false;
+
+        boolean anySuccess = false;
+        for (String pkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
+            boolean ok = applyProfile(context, profile, pkg);
+            if (ok) anySuccess = true;
+        }
+        return anySuccess;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Reset
     // ─────────────────────────────────────────────────────────────────────────

@@ -70,12 +70,33 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 0: MAGISK / KERNELSU RESETPROP INJECTION (If Root Available)
             // ═══════════════════════════════════════════════════════════════════
+            String serialNo = "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL);
+            String spoofedAndroidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
+            String spoofedMac = com.gamebooster.app.spoofer.lsposed.IdentityHooks.generateMacAddress(profile);
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
+
+            batchCommands.add("resetprop -n ro.serialno \"" + serialNo + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.model \"" + profile.model + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.brand \"" + profile.brand + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.device \"" + profile.device + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.name \"" + profile.productName + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.vendor.model \"" + profile.model + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.vendor.brand \"" + profile.brand + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.vendor.name \"" + profile.productName + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.vendor.device \"" + profile.device + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.vendor.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.system.model \"" + profile.model + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.system.brand \"" + profile.brand + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.system.name \"" + profile.productName + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.system.device \"" + profile.device + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.system.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.odm.model \"" + profile.model + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.odm.brand \"" + profile.brand + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.odm.name \"" + profile.productName + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.odm.device \"" + profile.device + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.odm.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.product \"" + profile.buildProduct + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.soc.model \"" + profile.socModel + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.soc.manufacturer \"" + profile.socManufacturer + "\" 2>/dev/null");
@@ -86,6 +107,18 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.build.display.id \"" + profile.displayId + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.release \"" + profile.androidVersion + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.sdk \"" + profile.sdkInt + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.build.version.security_patch \"" + profile.securityPatch + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.build.tags release-keys 2>/dev/null");
+            batchCommands.add("resetprop -n ro.build.type user 2>/dev/null");
+            batchCommands.add("resetprop -n ro.debuggable 0 2>/dev/null");
+            batchCommands.add("resetprop -n ro.secure 1 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.flash.locked 1 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.verifiedbootstate green 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.vbmeta.device_state locked 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.veritymode enforcing 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.warranty_bit 0 2>/dev/null");
+            batchCommands.add("resetprop -n ro.warranty_bit 0 2>/dev/null");
+            batchCommands.add("resetprop -n sys.oem_unlock_allowed 0 2>/dev/null");
             batchCommands.add("resetprop -n ro.hardware.egl \"" + eglVendor + "\" 2>/dev/null");
 
             // ═══════════════════════════════════════════════════════════════════
@@ -132,6 +165,19 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 4: ANDROID MODEL & OS IDENTITY MASKING
             // ═══════════════════════════════════════════════════════════════════
+            batchCommands.add("setprop ro.serialno \"" + serialNo + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.product.vendor.model \"" + profile.model + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.product.vendor.brand \"" + profile.brand + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.product.system.model \"" + profile.model + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.product.system.brand \"" + profile.brand + "\" 2>/dev/null");
+            batchCommands.add("setprop ro.build.tags release-keys 2>/dev/null");
+            batchCommands.add("setprop ro.build.type user 2>/dev/null");
+            batchCommands.add("setprop ro.debuggable 0 2>/dev/null");
+            batchCommands.add("setprop ro.secure 1 2>/dev/null");
+            batchCommands.add("setprop ro.boot.flash.locked 1 2>/dev/null");
+            batchCommands.add("setprop ro.boot.verifiedbootstate green 2>/dev/null");
+
             for (Map.Entry<String, String> entry : profile.generateSystemProperties().entrySet()) {
                 batchCommands.add("setprop " + entry.getKey() + " \"" + entry.getValue() + "\"");
             }
@@ -176,13 +222,12 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  NETWORK / IDENTITY SPOOFING: Wi-Fi Hostname + Bluetooth + Privacy
             // ═══════════════════════════════════════════════════════════════════
-            String spoofedAndroidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
             batchCommands.add("settings put secure android_id " + spoofedAndroidId);
             batchCommands.add("settings put global device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system lock_screen_owner_info \"" + profile.model + "\"");
             batchCommands.add("settings put secure bluetooth_name \"" + profile.model + "\"");
-            batchCommands.add("settings put secure bluetooth_address \"00:00:00:00:00:00\"");
+            batchCommands.add("settings put secure bluetooth_address \"" + spoofedMac + "\"");
             batchCommands.add("settings put global randomized_mac_support 1");
             batchCommands.add("settings put global randomized_mac_connected_mac_randomization 1");
             batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
@@ -287,6 +332,9 @@ public class HardwareMaskEngine {
             setStaticField(android.os.Build.class, "BOARD", profile.board);
             setStaticField(android.os.Build.class, "FINGERPRINT", profile.fingerprint);
             setStaticField(android.os.Build.class, "DISPLAY", profile.displayId);
+            setStaticField(android.os.Build.class, "SERIAL", "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL));
+            setStaticField(android.os.Build.class, "TAGS", "release-keys");
+            setStaticField(android.os.Build.class, "TYPE", "user");
 
             try {
                 setStaticField(android.os.Build.VERSION.class, "RELEASE", profile.androidVersion);
