@@ -19,7 +19,8 @@
         android:layout_height="match_parent"
         android:background="#55080B12" />
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_settings_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
@@ -1206,11 +1207,10 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_spoof_profiles"
                     android:layout_width="match_parent"
-                    android:layout_height="260dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:clipToPadding="false"
-                    android:scrollbars="vertical"
-                    android:nestedScrollingEnabled="true"
+                    android:nestedScrollingEnabled="false"
                     android:visibility="gone" />
             </LinearLayout>
 
@@ -1265,7 +1265,7 @@
                     android:textSize="11sp" />
 
                 <!-- Pure Terminal Screen Display -->
-                <ScrollView
+                <androidx.core.widget.NestedScrollView
                     android:id="@+id/scroll_settings_terminal"
                     android:layout_width="match_parent"
                     android:layout_height="140dp"
@@ -1285,7 +1285,7 @@
                         android:textColor="#00FF66"
                         android:textSize="11sp"
                         tools:text="[00:00:00] shizuku@android:~$ id\nuid=2000(shell) gid=2000(shell)\n[READY FOR COMMANDS]" />
-                </ScrollView>
+                </androidx.core.widget.NestedScrollView>
 
                 <!-- Pure Terminal Command Input Row -->
                 <LinearLayout
@@ -1562,5 +1562,5 @@
             </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </FrameLayout>

@@ -57,7 +57,7 @@ import com.gamebooster.app.terminal.TerminalFolderManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.widget.ScrollView;
+import androidx.core.widget.NestedScrollView;
 import android.view.inputmethod.EditorInfo;
 import com.gamebooster.app.cleaner.cleaner.JunkCleanerEngine;
 import com.gamebooster.app.cleaner.model.CleanResult;
@@ -86,7 +86,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private TextView tvSettingsTerminalUid;
     private TextView tvSettingsTerminalFolderPath;
     private TextView tvSettingsTerminalOutput;
-    private ScrollView scrollSettingsTerminal;
+    private NestedScrollView scrollSettingsTerminal;
     private EditText etSettingsTerminalCmd;
     private Button btnSettingsTerminalExec;
     private Button btnSettingsScriptFolder;
@@ -975,7 +975,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (rvSpoofProfiles != null) {
             rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
-            rvSpoofProfiles.setHasFixedSize(true);
+            rvSpoofProfiles.setHasFixedSize(false);
             rvSpoofProfiles.setNestedScrollingEnabled(false);
             rvSpoofProfiles.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
@@ -1071,6 +1071,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 btnBrandAll.setTextColor(0xFF000000);
                 if (spoofProfileAdapter != null) {
                     spoofProfileAdapter.updateProfiles(new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values()));
+                }
+                if (rvSpoofProfiles != null) {
+                    rvSpoofProfiles.scrollToPosition(0);
                 }
                 if (tvSettingsSpoofBrandInfo != null) {
                     tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: 🌐 ALL (11 Gaming Brands • " + SpoofProfileRegistry.getTotalCount() + " devices)");
@@ -1170,6 +1173,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvSettingsTerminalFolderPath = view.findViewById(R.id.tv_settings_terminal_folder_path);
         tvSettingsTerminalOutput = view.findViewById(R.id.tv_settings_terminal_output);
         scrollSettingsTerminal = view.findViewById(R.id.scroll_settings_terminal);
+        if (scrollSettingsTerminal != null) {
+            scrollSettingsTerminal.setOnTouchListener((v, event) -> {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            });
+        }
         etSettingsTerminalCmd = view.findViewById(R.id.et_settings_terminal_cmd);
         btnSettingsTerminalExec = view.findViewById(R.id.btn_settings_terminal_exec);
         btnSettingsScriptFolder = view.findViewById(R.id.btn_settings_script_folder);
@@ -1520,6 +1529,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             List<SpoofProfile> brandProfiles = SpoofProfileRegistry.getByBrand(brandLabel);
             if (spoofProfileAdapter != null) {
                 spoofProfileAdapter.updateProfiles(brandProfiles);
+            }
+            if (rvSpoofProfiles != null) {
+                rvSpoofProfiles.scrollToPosition(0);
             }
             if (tvSettingsSpoofBrandInfo != null) {
                 tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: " + description + " (" + brandProfiles.size() + " models)");

@@ -142,21 +142,22 @@ public class SpoofBrandSelectorDialog {
                 btnAll.setBackgroundResource(R.drawable.btn_cyber_cyan);
                 btnAll.setTextColor(0xFF000000);
                 adapter.updateProfiles(new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values()));
+                if (rvProfiles != null) rvProfiles.scrollToPosition(0);
                 if (tvSubtitle != null) tvSubtitle.setText("Showing all 11 gaming brands (" + SpoofProfileRegistry.getTotalCount() + " flagship models)");
             });
         }
 
-        bindBrandFilter(btnRog, "Asus ROG", "⚡ ASUS ROG Phone (165Hz Gaming Flagships)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Gaming Lineup)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnNubia, "Nubia", "🎮 NUBIA RedMagic (165Hz eSports Lineup)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnXiaomi, "Xiaomi", "🚀 XIAOMI & POCO (Snapdragon 8 Series)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnRealme, "Realme", "🔥 REALME GT (Extreme Performance)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnOneplus, "OnePlus", "🏎️ ONEPLUS (Ultra Fast Oxygen/ColorOS)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnBlackshark, "Black Shark", "🦈 BLACK SHARK (Gaming Flagships)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnApple, "Apple", "🍎 APPLE (iPhone & iPad Pro 120Hz)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnVivo, "Vivo", "🎯 VIVO & iQOO (eSports Certified)", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnOppo, "Oppo", "💎 OPPO Find & Reno Series", allButtons, adapter, tvSubtitle, context);
-        bindBrandFilter(btnLenovo, "Lenovo Legion", "💻 LENOVO LEGION (Twin Fan Flagships)", allButtons, adapter, tvSubtitle, context);
+        bindBrandFilter(btnRog, "Asus ROG", "⚡ ASUS ROG Phone (165Hz Gaming Flagships)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Gaming Lineup)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnNubia, "Nubia", "🎮 NUBIA RedMagic (165Hz eSports Lineup)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnXiaomi, "Xiaomi", "🚀 XIAOMI & POCO (Snapdragon 8 Series)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnRealme, "Realme", "🔥 REALME GT (Extreme Performance)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnOneplus, "OnePlus", "🏎️ ONEPLUS (Ultra Fast Oxygen/ColorOS)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnBlackshark, "Black Shark", "🦈 BLACK SHARK (Gaming Flagships)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnApple, "Apple", "🍎 APPLE (iPhone & iPad Pro 120Hz)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnVivo, "Vivo", "🎯 VIVO & iQOO (eSports Certified)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnOppo, "Oppo", "💎 OPPO Find & Reno Series", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnLenovo, "Lenovo Legion", "💻 LENOVO LEGION (Twin Fan Flagships)", allButtons, adapter, rvProfiles, tvSubtitle, context);
 
         if (btnClose != null) {
             btnClose.setOnClickListener(v -> dialog.dismiss());
@@ -189,7 +190,7 @@ public class SpoofBrandSelectorDialog {
 
     private static void bindBrandFilter(Button btn, String brandLabel, String description,
                                         Button[] allButtons, SpoofProfileAdapter adapter,
-                                        TextView tvSubtitle, Context context) {
+                                        RecyclerView rvProfiles, TextView tvSubtitle, Context context) {
         if (btn == null) return;
         btn.setOnClickListener(v -> {
             for (Button b : allButtons) {
@@ -203,6 +204,9 @@ public class SpoofBrandSelectorDialog {
 
             List<SpoofProfile> brandProfiles = SpoofProfileRegistry.getByBrand(brandLabel);
             adapter.updateProfiles(brandProfiles);
+            if (rvProfiles != null) {
+                rvProfiles.scrollToPosition(0);
+            }
             if (tvSubtitle != null) {
                 tvSubtitle.setText(description + " (" + brandProfiles.size() + " models available)");
             }
