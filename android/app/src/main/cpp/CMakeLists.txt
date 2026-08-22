@@ -8,6 +8,13 @@ add_library(
     native_config_injector.cpp
 )
 
+# Android 15 & 16 16KB page-size kernel compatibility alignment
+target_link_options(
+    gamebooster_native
+    PRIVATE
+    "-Wl,-z,max-page-size=16384"
+)
+
 find_library(
     log-lib
     log

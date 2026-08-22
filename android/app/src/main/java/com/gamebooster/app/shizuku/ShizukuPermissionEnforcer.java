@@ -45,18 +45,12 @@ public class ShizukuPermissionEnforcer {
 
             List<String> batchCmds = new ArrayList<>();
 
-            // 1. Core Storage & File System Permissions
+            // 1. Android 13-16 Scoped Storage & Granular Media Permissions
             batchCmds.add("pm grant " + pkg + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null");
-
-            // 2. Android 13+ Granular Media Permissions
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_IMAGES 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VIDEO 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_AUDIO 2>/dev/null");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                batchCmds.add("pm grant " + pkg + " android.permission.POST_NOTIFICATIONS 2>/dev/null");
-            }
+            batchCmds.add("pm grant " + pkg + " android.permission.POST_NOTIFICATIONS 2>/dev/null");
 
             // 3. System Tuning, Secure Settings & UI Control
             batchCmds.add("pm grant " + pkg + " android.permission.WRITE_SECURE_SETTINGS 2>/dev/null");
