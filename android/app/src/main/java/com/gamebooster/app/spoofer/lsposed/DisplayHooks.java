@@ -82,10 +82,12 @@ public final class DisplayHooks {
                     int width = (originalModes != null && originalModes.length > 0) ? originalModes[0].getPhysicalWidth() : targetWidth;
                     int height = (originalModes != null && originalModes.length > 0) ? originalModes[0].getPhysicalHeight() : targetHeight;
 
-                    float[] supportedRates = new float[]{60.0f, 90.0f, 120.0f, 144.0f, 165.0f, spoofedHz};
+                    // Strict High-Refresh Only: Eliminate 60Hz completely
+                    float[] supportedRates = new float[]{90.0f, 120.0f, 144.0f, 165.0f, spoofedHz};
                     List<Display.Mode> newModes = new ArrayList<>();
                     int modeId = 1;
                     for (float rate : supportedRates) {
+                        if (rate < 90.0f) continue; // Safety guard: never emit <90Hz
                         Display.Mode m = createMockModeWithId(modeId++, width, height, rate);
                         if (m != null) {
                             newModes.add(m);

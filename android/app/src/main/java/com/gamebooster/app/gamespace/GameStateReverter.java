@@ -24,7 +24,7 @@ public final class GameStateReverter {
 
     private static final String TAG = "GameStateReverter";
 
-    static final int DEFAULT_BASELINE_HZ = 60;
+    static final int DEFAULT_BASELINE_HZ = 120;
 
     private GameStateReverter() {}
 

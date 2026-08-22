@@ -126,8 +126,8 @@ public class FloatingOverlayService extends Service {
     private boolean isExtremeActive = true;
     private boolean isTouchBoostActive = false;
     private boolean isNetBoostActive = false;
-    private int realTimeFps = 60;
-    private int onePercentLowFps = 55;
+    private int realTimeFps = 185;
+    private int onePercentLowFps = 175;
     private boolean isRealGameSurface = false;
     private int frameCounter = 0;
     private long lastFpsCalcTimeNanos = 0;

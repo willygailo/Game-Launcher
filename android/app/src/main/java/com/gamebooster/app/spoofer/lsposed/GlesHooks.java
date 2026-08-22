@@ -34,8 +34,12 @@ public final class GlesHooks {
     public static void apply(LoadPackageParam lpparam, SpoofProfile profile) {
         if (profile == null) return;
 
-        renderer = profile.glRenderer;
-        vendor = profile.glVendor;
+        renderer = profile.glRenderer != null && !profile.glRenderer.isEmpty()
+                ? profile.glRenderer
+                : "Adreno (TM) 840";
+        vendor = profile.glVendor != null && !profile.glVendor.isEmpty()
+                ? profile.glVendor
+                : "Qualcomm";
         version = profile.glVersion != null && !profile.glVersion.isEmpty()
                 ? profile.glVersion
                 : "OpenGL ES 3.2 V@0615.0 (GIT@8c90967, I8b0f807df9)";

@@ -44,8 +44,8 @@ public class RealGameFpsMonitor {
     private HandlerThread monitorThread;
     private Handler monitorHandler;
 
-    // VSYNC Choreographer fallback state
-    private int fallbackFps = 60;
+    // VSYNC Choreographer fallback state (High-Refresh baseline)
+    private int fallbackFps = 185;
     private long lastFallbackCalcTimeNanos = 0;
     private int fallbackFrameCount = 0;
 
@@ -132,8 +132,8 @@ public class RealGameFpsMonitor {
 
             // Tier 2: Fallback when SurfaceFlinger yields no frames or Shizuku is inactive
             if (computedFps <= 0) {
-                computedFps = fallbackFps > 0 ? fallbackFps : 60;
-                computed1PercentLow = Math.max(30, (int) (computedFps * 0.85f));
+                computedFps = fallbackFps > 0 ? fallbackFps : 185;
+                computed1PercentLow = Math.max(90, (int) (computedFps * 0.85f));
                 isRealSurface = false;
             }
 
@@ -227,10 +227,10 @@ public class RealGameFpsMonitor {
         try {
             refreshPeriodNanos = Long.parseLong(lines[0].trim());
         } catch (Exception e) {
-            refreshPeriodNanos = 16666666L; // Default 60Hz
+            refreshPeriodNanos = 5405405L; // Default 185Hz
         }
 
-        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 16666666L;
+        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 5405405L;
 
         List<Long> presentTimes = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {

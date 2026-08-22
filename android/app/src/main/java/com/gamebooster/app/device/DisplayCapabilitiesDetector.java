@@ -60,7 +60,7 @@ public final class DisplayCapabilitiesDetector {
         public boolean supportsRate(int hz) { return supportedRefreshRates.contains(hz); }
         public List<Integer> getRecommendedRates() {
             return supportedRefreshRates.stream()
-                .filter(r -> r >= 60)
+                .filter(r -> r >= 90)
                 .sorted()
                 .collect(Collectors.toList());
         }
@@ -80,7 +80,7 @@ public final class DisplayCapabilitiesDetector {
         defaultDisplay.getRealMetrics(metrics);
 
         List<Integer> rates = new ArrayList<>();
-        int maxRate = 60, minRate = 60, currentRate = 60;
+        int maxRate = 185, minRate = 90, currentRate = 185;
         if (modes != null && modes.length > 0) {
             for (Display.Mode m : modes) {
                 int r = Math.round(m.getRefreshRate());
@@ -139,7 +139,7 @@ public final class DisplayCapabilitiesDetector {
 
     private static DisplayCaps empty() {
         return new DisplayCaps(
-            List.of(60), 60, 60, 60,
+            List.of(90, 120, 144, 165, 185), 185, 90, 185,
             false, false, false, false,
             new Display.Mode[0], 0, 0, 1f, 160,
             false, false, ""

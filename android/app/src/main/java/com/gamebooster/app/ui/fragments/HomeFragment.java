@@ -108,6 +108,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
             rvGames.setHasFixedSize(true);
+            rvGames.setItemViewCacheSize(25);
             rvGames.setItemAnimator(null);
             adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);

@@ -17,8 +17,22 @@ public class AppExecutors {
     private final Handler mainThread;
 
     private AppExecutors() {
-        this.commandIO = Executors.newSingleThreadExecutor();
-        this.scanIO = Executors.newFixedThreadPool(4);
+        this.commandIO = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(() -> {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                r.run();
+            }, "GameBooster-CommandIO");
+            t.setDaemon(true);
+            return t;
+        });
+        this.scanIO = Executors.newFixedThreadPool(4, r -> {
+            Thread t = new Thread(() -> {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                r.run();
+            }, "GameBooster-ScanIO");
+            t.setDaemon(true);
+            return t;
+        });
         this.mainThread = new Handler(Looper.getMainLooper());
     }
 

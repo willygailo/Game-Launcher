@@ -34,7 +34,7 @@ public class GameProfileAutoConfigurator {
     public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
         if (context == null || targetFpsHz <= 0) return targetFpsHz;
         int maxRate = DisplayCapabilitiesDetector.detect(context).maxRefreshRate;
-        if (maxRate > 60 && targetFpsHz > maxRate) {
+        if (maxRate >= 90 && targetFpsHz > maxRate) {
             return maxRate;
         }
         return targetFpsHz;

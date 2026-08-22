@@ -45,7 +45,6 @@ public class GamesFragment extends Fragment {
         rvGames = view.findViewById(R.id.rv_games_list);
 
         TextView tvTargetLabel = view.findViewById(R.id.tv_target_fps_label);
-        Button btnTarget60 = view.findViewById(R.id.btn_target_60);
         Button btnTarget90 = view.findViewById(R.id.btn_target_90);
         Button btnTarget120 = view.findViewById(R.id.btn_target_120);
         Button btnTarget144 = view.findViewById(R.id.btn_target_144);
@@ -55,9 +54,9 @@ public class GamesFragment extends Fragment {
 
         if (getContext() != null && tvTargetLabel != null) {
             int currentTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
-            tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ");
+            if (currentTarget < 90) currentTarget = 185;
+            tvTargetLabel.setText("TARGET RATE: " + currentTarget + " FPS / HZ (HIGH-REFRESH)");
             DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(getContext());
-            setTargetRateVisible(btnTarget60, caps, 60);
             setTargetRateVisible(btnTarget90, caps, 90);
             setTargetRateVisible(btnTarget120, caps, 120);
             setTargetRateVisible(btnTarget144, caps, 144);
@@ -69,9 +68,7 @@ public class GamesFragment extends Fragment {
             if (getContext() == null) return;
             int targetHz = 185;
             int id = v.getId();
-            if (id == R.id.btn_target_60) {
-                targetHz = 60;
-            } else if (id == R.id.btn_target_90) {
+            if (id == R.id.btn_target_90) {
                 targetHz = 90;
             } else if (id == R.id.btn_target_120) {
                 targetHz = 120;
@@ -86,12 +83,11 @@ public class GamesFragment extends Fragment {
             com.gamebooster.app.config.GameProfileAutoConfigurator.setTargetFpsHz(getContext(), targetHz);
             int appliedTarget = com.gamebooster.app.config.GameProfileAutoConfigurator.getTargetFpsHz(getContext());
             if (tvTargetLabel != null) {
-                tvTargetLabel.setText("TARGET RATE: " + appliedTarget + " FPS / HZ");
+                tvTargetLabel.setText("TARGET RATE: " + appliedTarget + " FPS / HZ (HIGH-REFRESH)");
             }
             Toast.makeText(getContext(), "Supported game target set to " + appliedTarget + " FPS / Hz", Toast.LENGTH_SHORT).show();
         };
 
-        if (btnTarget60 != null) btnTarget60.setOnClickListener(hzClickListener);
         if (btnTarget90 != null) btnTarget90.setOnClickListener(hzClickListener);
         if (btnTarget120 != null) btnTarget120.setOnClickListener(hzClickListener);
         if (btnTarget144 != null) btnTarget144.setOnClickListener(hzClickListener);
@@ -114,6 +110,8 @@ public class GamesFragment extends Fragment {
         }
 
         rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvGames.setHasFixedSize(true);
+        rvGames.setItemViewCacheSize(25);
         adapter = new GamesAdapter(getContext(), gameList);
         rvGames.setAdapter(adapter);
 

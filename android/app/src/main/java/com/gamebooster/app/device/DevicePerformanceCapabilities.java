@@ -25,7 +25,7 @@ public final class DevicePerformanceCapabilities {
 
     private DevicePerformanceCapabilities(List<Integer> rates, int currentRefreshRate, OemFamily family) {
         List<Integer> sorted = new ArrayList<>(rates);
-        if (sorted.isEmpty()) sorted.add(60);
+        if (sorted.isEmpty()) sorted.addAll(List.of(90, 120, 144, 165, 185));
         Collections.sort(sorted);
         this.supportedRefreshRates = Collections.unmodifiableList(sorted);
         this.maxRefreshRate = sorted.get(sorted.size() - 1);
