@@ -138,7 +138,10 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                         ShizukuExecutor.executeShizukuCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
 
                         AppExecutors.getInstance().postToMainThread(() -> {
-                            holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
+                            int pos = holder.getAdapterPosition();
+                            if (pos != RecyclerView.NO_POSITION && pos < games.size()) {
+                                holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
+                            }
                             Toast.makeText(context, "✅ FORCED " + chosenFps[0] + " FPS CFG TO " + game.getLabel() + " (" + patchedCount + " files updated via Shizuku)!", Toast.LENGTH_LONG).show();
                         });
                     });

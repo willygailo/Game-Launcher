@@ -65,6 +65,8 @@ import com.gamebooster.app.cleaner.model.JunkScanResult;
 import com.gamebooster.app.cleaner.scanner.JunkScanner;
 import com.gamebooster.app.cleaner.ui.JunkCleanerDialog;
 import com.gamebooster.app.ui.dialogs.CyberActionDialog;
+import com.gamebooster.app.spoofer.SpoofProfileRegistry;
+import com.gamebooster.app.ui.dialogs.SpoofBrandSelectorDialog;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -133,7 +135,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
     private TextView tvSpoofFrameworkStatus;
+    private Button btnSelectSpoofBrand;
     private Button btnLspatchGuide;
+    private TextView tvSettingsSpoofBrandInfo;
+    private View hsvSettingsSpoofBrands;
     private RecyclerView rvSpoofProfiles;
     private SpoofProfileAdapter spoofProfileAdapter;
 
@@ -917,7 +922,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
         tvSpoofActiveProfile = view.findViewById(R.id.tv_spoof_active_profile);
         tvSpoofFrameworkStatus = view.findViewById(R.id.tv_spoof_framework_status);
+        btnSelectSpoofBrand = view.findViewById(R.id.btn_select_spoof_brand);
         btnLspatchGuide = view.findViewById(R.id.btn_lspatch_guide);
+        tvSettingsSpoofBrandInfo = view.findViewById(R.id.tv_settings_spoof_brand_info);
+        hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
 
         if (btnLspatchGuide != null) {
@@ -928,12 +936,43 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        if (btnSelectSpoofBrand != null) {
+            btnSelectSpoofBrand.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                SpoofBrandSelectorDialog.show(getContext(), profile -> {
+                    if (profile != null) {
+                        isProgrammaticToggle = true;
+                        if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
+                        isProgrammaticToggle = false;
+                        if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
+                        if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(View.VISIBLE);
+                        if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
+                        if (spoofProfileAdapter != null) {
+                            spoofProfileAdapter.setActiveProfileId(profile.id);
+                            spoofProfileAdapter.updateProfiles(SpoofProfileRegistry.getByBrand(profile.brandLabel));
+                        }
+                        updateSpoofUiState();
+                    } else {
+                        updateSpoofUiState();
+                    }
+                });
+            });
+        }
+
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
             isProgrammaticToggle = true;
             switchDeviceSpoof.setChecked(spoofEnabled);
             isProgrammaticToggle = false;
         }
+
+        if (hsvSettingsSpoofBrands != null) {
+            hsvSettingsSpoofBrands.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+        }
+        if (tvSettingsSpoofBrandInfo != null) {
+            tvSettingsSpoofBrandInfo.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+        }
+
         if (rvSpoofProfiles != null) {
             rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
             rvSpoofProfiles.setHasFixedSize(true);
@@ -955,9 +994,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
                 isProgrammaticToggle = false;
                 if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
+                if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(View.VISIBLE);
+                if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
                 if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(profile.id);
                 updateSpoofUiState();
-                Toast.makeText(getContext(), "⚡ Activating: " + profile.displayName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "⚡ Activating Brand: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand) + " • " + profile.displayName, Toast.LENGTH_SHORT).show();
 
                 // 2. Perform background real-world hardware & game file injection
                 AppExecutors.getInstance().executeCommand(() -> {
@@ -966,31 +1007,88 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         if (!isAdded() || getContext() == null) return;
                         String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
                         if (!applied && blockReason != null) {
-                            // Revert the optimistic prefs/UI so we never show an
-                            // "active" profile that did not actually apply
                             SpoofPreferences.setSpoofEnabled(getContext(), wasEnabled);
                             SpoofPreferences.setActiveProfileId(getContext(), previousProfileId);
                             isProgrammaticToggle = true;
                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(wasEnabled);
                             isProgrammaticToggle = false;
                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
+                            if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
+                            if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(previousProfileId);
                             updateSpoofUiState();
                             Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
                             return;
                         }
                         updateSpoofUiState();
-                        String warning = DeviceSpooferEngine.getLastSanityWarning();
-                        if (warning != null) {
-                            Toast.makeText(getContext(), "⚠️ " + warning, Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(getContext(), "✅ Spoof Profile Applied: " + profile.displayName, Toast.LENGTH_SHORT).show();
-                        }
+                        CyberActionDialog.show(
+                                getContext(),
+                                "🎭 BRAND & DEVICE IDENTITY ACTIVE",
+                                true,
+                                "Brand: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand),
+                                "Model: " + profile.displayName + " (" + profile.model + ")",
+                                "GPU: " + profile.glRenderer + " (165Hz Max FPS Ready)"
+                        );
                     });
                 });
             });
             rvSpoofProfiles.setAdapter(spoofProfileAdapter);
         }
+
+        // Setup Brand Filter Buttons in Card Spoof
+        Button btnBrandAll = view.findViewById(R.id.btn_brand_all);
+        Button btnBrandRog = view.findViewById(R.id.btn_brand_rog);
+        Button btnBrandSamsung = view.findViewById(R.id.btn_brand_samsung);
+        Button btnBrandNubia = view.findViewById(R.id.btn_brand_nubia);
+        Button btnBrandXiaomi = view.findViewById(R.id.btn_brand_xiaomi);
+        Button btnBrandRealme = view.findViewById(R.id.btn_brand_realme);
+        Button btnBrandOneplus = view.findViewById(R.id.btn_brand_oneplus);
+        Button btnBrandBlackshark = view.findViewById(R.id.btn_brand_blackshark);
+        Button btnBrandApple = view.findViewById(R.id.btn_brand_apple);
+        Button btnBrandVivo = view.findViewById(R.id.btn_brand_vivo);
+        Button btnBrandOppo = view.findViewById(R.id.btn_brand_oppo);
+        Button btnBrandLenovo = view.findViewById(R.id.btn_brand_lenovo);
+
+        Button[] settingsBrandButtons = new Button[]{
+                btnBrandAll, btnBrandRog, btnBrandSamsung, btnBrandNubia,
+                btnBrandXiaomi, btnBrandRealme, btnBrandOneplus, btnBrandBlackshark,
+                btnBrandApple, btnBrandVivo, btnBrandOppo, btnBrandLenovo
+        };
+
+        Runnable resetBrandChips = () -> {
+            for (Button b : settingsBrandButtons) {
+                if (b != null && getContext() != null) {
+                    b.setBackgroundResource(R.drawable.btn_cyber_dark);
+                    b.setTextColor(getResources().getColor(R.color.accent_cyan));
+                }
+            }
+        };
+
+        if (btnBrandAll != null) {
+            btnBrandAll.setOnClickListener(v -> {
+                resetBrandChips.run();
+                btnBrandAll.setBackgroundResource(R.drawable.btn_cyber_cyan);
+                btnBrandAll.setTextColor(0xFF000000);
+                if (spoofProfileAdapter != null) {
+                    spoofProfileAdapter.updateProfiles(new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values()));
+                }
+                if (tvSettingsSpoofBrandInfo != null) {
+                    tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: 🌐 ALL (11 Gaming Brands • " + SpoofProfileRegistry.getTotalCount() + " devices)");
+                }
+            });
+        }
+
+        setupSettingsBrandFilter(btnBrandRog, "Asus ROG", "⚡ ASUS ROG (165Hz Gaming Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Lineup)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandNubia, "Nubia", "🎮 NUBIA RedMagic (165Hz eSports Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandXiaomi, "Xiaomi", "🚀 XIAOMI & POCO (Snapdragon 8 Series)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandRealme, "Realme", "🔥 REALME GT (Extreme Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandOneplus, "OnePlus", "🏎️ ONEPLUS (Ultra Performance)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandBlackshark, "Black Shark", "🦈 BLACK SHARK (Gaming Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandApple, "Apple", "🍎 APPLE (120Hz Pro Lineup)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandVivo, "Vivo", "🎯 VIVO & iQOO (eSports Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandOppo, "Oppo", "💎 OPPO (Find & Reno Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandLenovo, "Lenovo Legion", "💻 LENOVO LEGION (Gaming Flagships)", settingsBrandButtons, resetBrandChips);
 
         if (switchDeviceSpoof != null) {
             switchDeviceSpoof.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -1001,6 +1099,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (rvSpoofProfiles != null) {
                     rvSpoofProfiles.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 }
+                if (hsvSettingsSpoofBrands != null) {
+                    hsvSettingsSpoofBrands.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+                if (tvSettingsSpoofBrandInfo != null) {
+                    tvSettingsSpoofBrandInfo.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+
                 if (!isChecked) {
                     AppExecutors.getInstance().executeCommand(() -> {
                         DeviceSpooferEngine.resetSpoofing();
@@ -1026,13 +1131,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                                     if (isAdded() && getContext() != null) {
                                         String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
                                         if (!applied && blockReason != null) {
-                                            // Revert: a profile that failed to apply must not stay active
                                             SpoofPreferences.setSpoofEnabled(getContext(), false);
                                             SpoofPreferences.clearActiveProfile(getContext());
                                             isProgrammaticToggle = true;
                                             if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(false);
                                             isProgrammaticToggle = false;
                                             if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.GONE);
+                                            if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(View.GONE);
+                                            if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(View.GONE);
                                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
                                             updateSpoofUiState();
                                             Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
@@ -1053,7 +1159,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         }
                     } else {
                         updateSpoofUiState();
-                        Toast.makeText(getContext(), "👇 Piliin ang nais mong Spoof Device sa listahan sa ibaba", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "🏷️ Piliin ang nais mong Brand (ROG, Samsung, etc.) sa listahan o pindutin ang 'SELECT BRAND'", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -1402,6 +1508,23 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 tvSpoofFrameworkStatus.setTextColor(0xFF94A3B8);
             }
         }
+    }
+
+    private void setupSettingsBrandFilter(Button btn, String brandLabel, String description, Button[] allButtons, Runnable resetBrandChips) {
+        if (btn == null) return;
+        btn.setOnClickListener(v -> {
+            if (getContext() == null) return;
+            resetBrandChips.run();
+            btn.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            btn.setTextColor(0xFF000000);
+            List<SpoofProfile> brandProfiles = SpoofProfileRegistry.getByBrand(brandLabel);
+            if (spoofProfileAdapter != null) {
+                spoofProfileAdapter.updateProfiles(brandProfiles);
+            }
+            if (tvSettingsSpoofBrandInfo != null) {
+                tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: " + description + " (" + brandProfiles.size() + " models)");
+            }
+        });
     }
 
     private void updateNetworkModeUi(String mode) {

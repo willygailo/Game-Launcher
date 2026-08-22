@@ -6,15 +6,19 @@
     android:paddingHorizontal="14dp"
     android:paddingVertical="12dp"
     android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground"
+    android:background="@drawable/card_glass_shape"
+    android:layout_marginBottom="8dp"
     android:clickable="true"
     android:focusable="true">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="📱"
-        android:textSize="20sp"
+        android:id="@+id/tv_device_brand_icon"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/badge_neon_purple"
+        android:gravity="center"
+        android:text="⚡"
+        android:textSize="18sp"
         android:layout_marginEnd="10dp" />
 
     <LinearLayout
@@ -23,22 +27,43 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_device_name"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Samsung Galaxy S25 Ultra"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_brand_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_neon_cyan"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="ASUS ROG"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tv_device_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ROG Phone 8 Pro"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_device_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="SM-S938B • Snapdragon 8 Elite • Adreno 830"
-            android:textColor="@color/text_muted"
+            android:layout_marginTop="3dp"
+            android:text="AI2401 • Snapdragon 8 Gen 3 • Adreno 750 • 24GB RAM • 165Hz"
+            android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>
 
@@ -52,7 +77,8 @@
         android:textStyle="bold"
         android:background="@drawable/badge_neon_green"
         android:paddingHorizontal="8dp"
-        android:paddingVertical="3dp"
+        android:paddingVertical="4dp"
+        android:layout_marginStart="8dp"
         android:visibility="gone" />
 
 </LinearLayout>

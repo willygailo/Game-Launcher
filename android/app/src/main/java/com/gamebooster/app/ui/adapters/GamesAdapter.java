@@ -84,7 +84,10 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
                     GameProfilePreferences.Profile chosen = profiles[chosenIdx[0]];
                     int targetFps = GameProfilePreferences.getTargetHz(context, chosen);
                     GameProfilePreferences.setProfile(context, game.getPackageName(), chosen);
-                    holder.tvProfile.setText(GameProfilePreferences.getSummary(context, game.getPackageName()));
+                    int pos = holder.getAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION && pos < games.size()) {
+                        holder.tvProfile.setText(GameProfilePreferences.getSummary(context, game.getPackageName()));
+                    }
 
                     Toast.makeText(context, "⚡ Forcing " + targetFps + " FPS config into " + game.getLabel() + " game files...", Toast.LENGTH_SHORT).show();
 
