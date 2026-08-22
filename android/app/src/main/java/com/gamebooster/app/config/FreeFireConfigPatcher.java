@@ -47,23 +47,23 @@ public class FreeFireConfigPatcher {
                 "Unlock185Hz=1\n" +
                 // ── 1000% Aim Assist & Smart Lock ──
                 "AimAssist=1\n" +
-                "AutoAimPrecision=10.0\n" +
-                "AimAssistStrength=1000\n" +
+                "AutoAimPrecision=100.0\n" +
+                "AimAssistStrength=10000\n" +
                 "AimAssistLevel=10\n" +
-                "AimPrecision=10\n" +
+                "AimPrecision=100\n" +
                 "AutoAim=1\n" +
                 "AimTracking=1\n" +
                 "TargetLock=1\n" +
-                "TargetLockSensitivity=1000\n" +
-                "AimAssistRadius=1000\n" +
+                "TargetLockSensitivity=10000\n" +
+                "AimAssistRadius=5000\n" +
                 "CrosshairMagnetism=100.00\n" +
                 "AimSnapStrength=100.00\n" +
                 "AimMagnetism=100.00\n" +
-                "SprintSensitivity=500\n" +
-                "GeneralSensitivity=500\n" +
-                "RedDotSensitivity=500\n" +
-                "TPPFov=100\n" +
-                "FPPFov=150\n" +
+                "SprintSensitivity=1000\n" +
+                "GeneralSensitivity=1000\n" +
+                "RedDotSensitivity=1000\n" +
+                "TPPFov=180\n" +
+                "FPPFov=180\n" +
                 // ── All Guns & All Scopes Zero Recoil ──
                 "NoRecoil=1\n" +
                 "ZeroRecoil=1\n" +
@@ -94,57 +94,57 @@ public class FreeFireConfigPatcher {
                 "NoCameraShake=1\n" +
                 "WeaponStability=500\n" +
                 // ── 1000% Damage Overdrive ──
-                "DamageMultiplier=100.00\n" +
-                "PhysicalDamageBoost=100.00\n" +
-                "MagicDamageBoost=100.00\n" +
-                "TrueDamageBoost=100.00\n" +
-                "DamageBoostRatio=100.00\n" +
-                "HeadshotDamageMultiplier=100.00\n" +
-                "BulletDamageBoost=100.00\n" +
-                "CriticalDamage=1000\n" +
+                "DamageMultiplier=1000.00\n" +
+                "PhysicalDamageBoost=1000.00\n" +
+                "MagicDamageBoost=1000.00\n" +
+                "TrueDamageBoost=1000.00\n" +
+                "DamageBoostRatio=1000.00\n" +
+                "HeadshotDamageMultiplier=1000.00\n" +
+                "BulletDamageBoost=1000.00\n" +
+                "CriticalDamage=10000\n" +
                 "CriticalHitRate=100\n" +
-                "ArmorPenetration=1000\n" +
+                "ArmorPenetration=10000\n" +
                 // ── 1000% Tracking Bullet ──
                 "TrackingBullet=1\n" +
                 "BulletTracking=1\n" +
                 "AutoTrackingBullet=1\n" +
                 "MagicBullet=1\n" +
                 "BulletMagnetism=100.00\n" +
-                "HitboxExpansion=50.00\n" +
+                "HitboxExpansion=100.00\n" +
                 "ProjectileHoming=1\n" +
                 "HomingStrength=100.00\n" +
-                "BulletCurveFactor=50.00\n" +
-                "BulletVelocityMultiplier=100.00\n" +
-                // ── 1000% Armor Defense ──
-                "PhysicalDefenseBoost=100.00\n" +
-                "MagicDefenseBoost=100.00\n" +
-                "PhysicalDefenseMultiplier=100.00\n" +
-                "MagicDefenseMultiplier=100.00\n" +
-                "DamageReductionRatio=0.999\n" +
-                "DamageReduction=0.999\n" +
-                "IncomingDamageReduction=0.999\n" +
-                "ShieldMultiplier=100.00\n" +
-                "ShieldCapacity=100.00\n" +
-                "ShieldStrength=100.00\n" +
-                "MaxHPMultiplier=50.00\n" +
-                "HPBoostRatio=50.00\n" +
-                "DamageAbsorbRatio=50.00\n" +
-                "ArmorBoost=10000\n" +
-                "MagicResistBoost=10000\n" +
-                "VestDurability=100.00\n" +
-                "VestDurabilityBoost=100.00\n" +
-                "HelmetDamageReduction=0.999\n" +
-                "TenacityRatio=0.999\n" +
-                "HealthRegenBoost=100.00\n" +
-                "HeavyHitAbsorption=10.00\n" +
-                "BurstDamageReduction=10.00\n" +
-                "HighDamageMitigationRatio=10.00\n" +
+                "BulletCurveFactor=100.00\n" +
+                "BulletVelocityMultiplier=200.00\n" +
+                // ── 1500+ Shield & Armor Defense ──
+                "PhysicalDefenseBoost=1000.00\n" +
+                "MagicDefenseBoost=1000.00\n" +
+                "PhysicalDefenseMultiplier=1000.00\n" +
+                "MagicDefenseMultiplier=1000.00\n" +
+                "DamageReductionRatio=0.9999\n" +
+                "DamageReduction=0.9999\n" +
+                "IncomingDamageReduction=0.9999\n" +
+                "ShieldMultiplier=1500.00\n" +
+                "ShieldCapacity=1500.00\n" +
+                "ShieldStrength=1500.00\n" +
+                "MaxHPMultiplier=100.00\n" +
+                "HPBoostRatio=100.00\n" +
+                "DamageAbsorbRatio=100.00\n" +
+                "ArmorBoost=50000\n" +
+                "MagicResistBoost=50000\n" +
+                "VestDurability=1000.00\n" +
+                "VestDurabilityBoost=1000.00\n" +
+                "HelmetDamageReduction=0.9999\n" +
+                "TenacityRatio=0.9999\n" +
+                "HealthRegenBoost=1000.00\n" +
+                "HeavyHitAbsorption=100.00\n" +
+                "BurstDamageReduction=100.00\n" +
+                "HighDamageMitigationRatio=100.00\n" +
                 "TouchResponseLevel=3\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "GyroSampleRate=1000\n" +
-                "GyroSensitivityRatio=10.0\n" +
+                "GyroSensitivityRatio=20.0\n" +
                 "GyroZeroDelay=1\n" +
                 "GyroSmoothFactor=1\n" +
                 "GyroStabilization=1\n" +
@@ -191,14 +191,14 @@ public class FreeFireConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimPrecision=10",
-            "AimAssistStrength=1000",
+            "AimPrecision=100",
+            "AimAssistStrength=10000",
             "AimAssistLevel=10",
             "AutoAim=1",
             "AimTracking=1",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
-            "AimAssistRadius=1000",
+            "TargetLockSensitivity=10000",
+            "AimAssistRadius=5000",
             "ScopeAimAssist=1",
             "RedDotAimAssist=1",
             "SniperAimAssist=1",
@@ -206,15 +206,15 @@ public class FreeFireConfigPatcher {
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
             "GyroSampleRate=1000",
-            "GyroSensitivity=500",
-            "GyroSensitivityRatio=10.0",
+            "GyroSensitivity=1000",
+            "GyroSensitivityRatio=20.0",
             "GyroStabilization=1"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "FreeFire 1000% Aim Assist & Precision applied for " + packageName);
+        Log.i(TAG, "FreeFire 10000 Aim Assist & Precision applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -278,36 +278,36 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=100.00",
-            "PhysicalDamageBoost=100.00",
-            "MagicDamageBoost=100.00",
-            "TrueDamageBoost=100.00",
-            "BulletDamageBoost=100.00",
-            "DamageBoost=100.00",
-            "DamageBoostRatio=100.00",
-            "HeadshotMultiplier=100.00",
-            "HeadshotDamageMultiplier=100.00",
-            "CriticalDamage=1000",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "MagicDamageBoost=1000.00",
+            "TrueDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "DamageBoost=1000.00",
+            "DamageBoostRatio=1000.00",
+            "HeadshotMultiplier=1000.00",
+            "HeadshotDamageMultiplier=1000.00",
+            "CriticalDamage=10000",
             "CriticalHitRate=100",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=10.00",
-            "PenetrationBoost=1000",
-            "ArmorPenetration=1000",
+            "CriticalDamageMultiplier=50.00",
+            "PenetrationBoost=10000",
+            "ArmorPenetration=10000",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "HitboxExpansion=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
-            "BodyDamageMultiplier=10.00",
-            "LimbDamageMultiplier=10.00",
-            "ExplosiveDamageMultiplier=10.00"
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "HitboxExpansion=100.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
+            "BodyDamageMultiplier=50.00",
+            "LimbDamageMultiplier=50.00",
+            "ExplosiveDamageMultiplier=50.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
@@ -317,49 +317,121 @@ public class FreeFireConfigPatcher {
     }
 
     /**
+     * Injects Fast Cooldown, Character Active Skill CDR & Fast Reload for Free Fire.
+     */
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdKeys = {
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "CooldownReduction=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "CharacterSkillCooldownReduction=0.99",
+            "ActiveSkillCooldown=0.01",
+            "ReloadSpeedMultiplier=25.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackDelayReduction=1",
+            "InstantSkillRelease=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
+        }
+        Log.i(TAG, "FreeFire Fast Cooldown 99% CDR & Instant Reload applied for " + packageName);
+    }
+
+    /**
+     * Injects 1500+ Shield Overdrive & Gloo Wall/Armor Boost for Free Fire.
+     */
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldKeys = {
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "GlooWallHPBoost=1500.00",
+            "ArmorBoost=50000",
+            "VestDurability=1000.00",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "HelmetDamageReduction=0.9999",
+            "HealthRegenBoost=1000.00",
+            "BurstDamageReduction=100.00"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "FreeFire 1500+ Shield Overdrive applied for " + packageName);
+    }
+
+    /**
+     * Injects Drone View FOV 180 for Free Fire.
+     */
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneKeys = {
+            "TPPFov=180",
+            "FPPFov=180",
+            "FieldOfView=180",
+            "CameraFOV=180",
+            "DroneView=1",
+            "DroneViewHeight=4"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "FreeFire Drone View FOV 180 applied for " + packageName);
+    }
+
+    /**
      * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Shield Capacity for Free Fire.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "PhysicalDefenseMultiplier=100.00",
-            "MagicDefenseMultiplier=100.00",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "ShieldMultiplier=100.00",
-            "ShieldCapacity=100.00",
-            "ShieldStrength=100.00",
-            "MaxHPMultiplier=50.00",
-            "HPBoostRatio=50.00",
-            "DamageAbsorbRatio=50.00",
-            "ArmorBoost=10000",
-            "MagicResistBoost=10000",
-            "VestDurability=100.00",
-            "VestDurabilityBoost=100.00",
-            "HelmetDamageReduction=0.999",
-            "TenacityRatio=0.999",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "PhysicalDefenseMultiplier=1000.00",
+            "MagicDefenseMultiplier=1000.00",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "MaxHPMultiplier=100.00",
+            "HPBoostRatio=100.00",
+            "DamageAbsorbRatio=100.00",
+            "ArmorBoost=50000",
+            "MagicResistBoost=50000",
+            "VestDurability=1000.00",
+            "VestDurabilityBoost=1000.00",
+            "HelmetDamageReduction=0.9999",
+            "TenacityRatio=0.9999",
             "ResilienceLevel=10",
             "ArmorLevel=10",
-            "DamageResistance=0.999",
-            "ShieldEfficiency=100.00",
+            "DamageResistance=0.9999",
+            "ShieldEfficiency=1500.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
+            "HealthRegenBoost=1000.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.999",
-            "HeadshotDamageReduction=0.999",
-            "HighDamageMitigationRatio=10.00",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "ExplosionResistance=0.9999",
+            "HeadshotDamageReduction=0.9999",
+            "HighDamageMitigationRatio=100.00",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "FreeFire 1000% Armor Defense & 100x Vest Durability applied for " + packageName);
+        Log.i(TAG, "FreeFire 1000% Armor Defense & 1500x Vest Durability applied for " + packageName);
     }
 
     /**
@@ -369,18 +441,18 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -390,7 +462,7 @@ public class FreeFireConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "FreeFire 10.0x Speed Boost & Sprint Agility applied for " + packageName);
+        Log.i(TAG, "FreeFire 15.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
 
     /**
@@ -406,12 +478,12 @@ public class FreeFireConfigPatcher {
             "MagicBullet=1",
             "AutoAimTrack=1",
             "HeadshotTracking=1",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "BulletMagnetism=100.00",
             "TargetLockTracking=1",
             "CrosshairMagnetism=100.00",
-            "BulletCurveFactor=50.00",
-            "BulletVelocityMultiplier=100.00",
+            "BulletCurveFactor=100.00",
+            "BulletVelocityMultiplier=200.00",
             "FirstBulletAccuracy=1",
             "ProjectileHoming=1",
             "HomingStrength=100.00"

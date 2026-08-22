@@ -54,10 +54,10 @@ public class BloodStrikeConfigPatcher {
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
                 "AimAssist=1\n" +
-                "AimAssistStrength=1000\n" +
+                "AimAssistStrength=10000\n" +
                 "AimAssistLevel=10\n" +
-                "AimPrecision=10\n" +
-                "TargetLockSensitivity=1000\n" +
+                "AimPrecision=100\n" +
+                "TargetLockSensitivity=10000\n" +
                 "CrosshairMagnetism=100.00\n" +
                 "AimSnapStrength=100.00\n" +
                 "AimMagnetism=100.00\n" +
@@ -65,28 +65,32 @@ public class BloodStrikeConfigPatcher {
                 "BulletTracking=1\n" +
                 "AutoTrackingBullet=1\n" +
                 "MagicBullet=1\n" +
-                "HitboxExpansion=50.00\n" +
+                "HitboxExpansion=100.00\n" +
                 "BulletMagnetism=100.00\n" +
-                "BulletCurveFactor=50.00\n" +
-                "BulletVelocityMultiplier=100.00\n" +
+                "BulletCurveFactor=100.00\n" +
+                "BulletVelocityMultiplier=200.00\n" +
                 "ProjectileHoming=1\n" +
                 "HomingStrength=100.00\n" +
-                "PhysicalDefenseBoost=100.00\n" +
-                "MagicDefenseBoost=100.00\n" +
-                "DamageReductionRatio=0.999\n" +
-                "DamageReduction=0.999\n" +
-                "IncomingDamageReduction=0.999\n" +
-                "ShieldMultiplier=100.00\n" +
-                "ShieldCapacity=100.00\n" +
-                "ArmorBoost=10000\n" +
-                "VestDurability=100.00\n" +
-                "HelmetDamageReduction=0.999\n" +
-                "TenacityRatio=0.999\n" +
-                "BulletDamageBoost=100.00\n" +
-                "DamageMultiplier=100.00\n" +
-                "HeadshotDamageMultiplier=100.00\n" +
+                "PhysicalDefenseBoost=1000.00\n" +
+                "MagicDefenseBoost=1000.00\n" +
+                "DamageReductionRatio=0.9999\n" +
+                "DamageReduction=0.9999\n" +
+                "IncomingDamageReduction=0.9999\n" +
+                "ShieldMultiplier=1500.00\n" +
+                "ShieldCapacity=1500.00\n" +
+                "ArmorBoost=50000\n" +
+                "VestDurability=1500.00\n" +
+                "HelmetDamageReduction=0.9999\n" +
+                "TenacityRatio=0.9999\n" +
+                "BulletDamageBoost=1000.00\n" +
+                "DamageMultiplier=1000.00\n" +
+                "HeadshotDamageMultiplier=1000.00\n" +
                 "CriticalHitRate=100\n" +
-                "CriticalDamage=1000\n" +
+                "CriticalDamage=10000\n" +
+                "DroneView=1\n" +
+                "DroneViewHeight=4\n" +
+                "CameraFOV=180\n" +
+                "FieldOfView=180\n" +
                 "NoRecoil=1\n" +
                 "CrosshairSpread=0.00\n" +
                 "ScopeStability=5.00\n";
@@ -105,23 +109,27 @@ public class BloodStrikeConfigPatcher {
                 "    \"resolution_scale\": 1.2,\n" +
                 "    \"graphic_quality\": \"ultra\",\n" +
                 "    \"hdr_enabled\": true,\n" +
+                "    \"drone_view\": true,\n" +
+                "    \"camera_fov\": 180,\n" +
                 "    \"vsync\": false\n" +
                 "  },\n" +
                 "  \"combat\": {\n" +
-                "    \"damage_boost_ratio\": 100.00,\n" +
-                "    \"bullet_damage_multiplier\": 100.00,\n" +
-                "    \"headshot_multiplier\": 100.00,\n" +
+                "    \"damage_boost_ratio\": 1000.00,\n" +
+                "    \"bullet_damage_multiplier\": 1000.00,\n" +
+                "    \"headshot_multiplier\": 1000.00,\n" +
                 "    \"critical_strike_rate\": 100,\n" +
+                "    \"critical_damage\": 10000,\n" +
                 "    \"recoil_reduction\": 1.00,\n" +
                 "    \"crosshair_spread\": 0.00,\n" +
                 "    \"aim_assist\": 1,\n" +
-                "    \"aim_assist_strength\": 1000,\n" +
+                "    \"aim_assist_strength\": 10000,\n" +
                 "    \"aim_magnetism\": 100.00,\n" +
                 "    \"bullet_tracking\": 1,\n" +
                 "    \"magic_bullet\": 1,\n" +
-                "    \"hitbox_expansion\": 50.00,\n" +
-                "    \"damage_reduction\": 0.999,\n" +
-                "    \"armor_boost\": 10000\n" +
+                "    \"hitbox_expansion\": 100.00,\n" +
+                "    \"damage_reduction\": 0.9999,\n" +
+                "    \"shield_multiplier\": 1500.00,\n" +
+                "    \"armor_boost\": 50000\n" +
                 "  },\n" +
                 "  \"input\": {\n" +
                 "    \"touch_hz\": 1000,\n" +
@@ -149,42 +157,106 @@ public class BloodStrikeConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=100.00",
-            "PhysicalDamageBoost=100.00",
-            "MagicDamageBoost=100.00",
-            "TrueDamageBoost=100.00",
-            "BulletDamageBoost=100.00",
-            "DamageBoost=100.00",
-            "DamageBoostRatio=100.00",
-            "HeadshotMultiplier=100.00",
-            "HeadshotDamageMultiplier=100.00",
-            "CriticalDamage=1000",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "MagicDamageBoost=1000.00",
+            "TrueDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "DamageBoost=1000.00",
+            "DamageBoostRatio=1000.00",
+            "HeadshotMultiplier=1000.00",
+            "HeadshotDamageMultiplier=1000.00",
+            "CriticalDamage=10000",
             "CriticalHitRate=100",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=10.00",
-            "PenetrationBoost=1000",
-            "ArmorPenetration=1000",
+            "CriticalDamageMultiplier=50.00",
+            "PenetrationBoost=10000",
+            "ArmorPenetration=10000",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "HitboxExpansion=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
-            "BodyDamageMultiplier=10.00",
-            "LimbDamageMultiplier=10.00",
-            "ExplosiveDamageMultiplier=10.00"
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "HitboxExpansion=100.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
+            "BodyDamageMultiplier=50.00",
+            "LimbDamageMultiplier=50.00",
+            "ExplosiveDamageMultiplier=50.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
         Log.i(TAG, "Blood Strike 1000% damage boost & headshot multiplier applied for " + packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdKeys = {
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "CooldownReduction=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "SkillAnimationCancelZeroDelay=1",
+            "SkillResponseZeroDelay=1",
+            "SkillCastZeroDelay=1",
+            "InstantSkillRelease=1",
+            "ReloadSpeedMultiplier=25.00",
+            "UnlimitedMana=1",
+            "NoManaCost=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
+        }
+        Log.i(TAG, "Blood Strike Fast Cooldown 99% CDR applied for " + packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldKeys = {
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "ArmorEfficiency=1000.00",
+            "ArmorDamageReduction=0.9999",
+            "KineticArmorBoost=1500.00",
+            "BodyArmorMultiplier=1500.00",
+            "VestDurability=1500.00",
+            "ArmorBoost=50000",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "HealthRegenBoost=1000.00"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "Blood Strike 1500+ Shield Overdrive applied for " + packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneKeys = {
+            "DroneView=1",
+            "DroneViewHeight=4",
+            "CameraFOV=180",
+            "FieldOfView=180",
+            "FOV=180"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "Blood Strike Drone View Ultra FOV 180 applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -211,26 +283,26 @@ public class BloodStrikeConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimPrecision=10",
-            "AimAssistStrength=1000",
+            "AimPrecision=100",
+            "AimAssistStrength=10000",
             "AimAssistLevel=10",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
-            "AimAssistRadius=1000",
+            "TargetLockSensitivity=10000",
+            "AimAssistRadius=5000",
             "CrosshairMagnetism=100.00",
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
-            "AimAssistFOV=150",
+            "AimAssistFOV=180",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "TouchSensitivity=500",
-            "AimTrackingRate=10.0"
+            "TouchSensitivity=1000",
+            "AimTrackingRate=20.0"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "BloodStrike 1000% Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "BloodStrike 10000 Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -281,38 +353,38 @@ public class BloodStrikeConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ArmorEfficiency=100.00",
-            "ArmorDamageReduction=0.999",
-            "KineticArmorBoost=100.00",
-            "BodyArmorMultiplier=100.00",
-            "HelmetDamageReduction=0.999",
-            "VestDurabilityBoost=100.00",
-            "VestDurability=100.00",
-            "ShieldCapacity=100.00",
-            "ShieldMultiplier=100.00",
-            "ShieldStrength=100.00",
-            "ShieldPointsMultiplier=100.00",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "ArmorBoost=10000",
-            "MagicResistBoost=10000",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "MaxHPMultiplier=50.00",
-            "HPBoostRatio=50.00",
-            "DamageAbsorbRatio=50.00",
-            "TenacityRatio=0.999",
+            "ArmorEfficiency=1000.00",
+            "ArmorDamageReduction=0.9999",
+            "KineticArmorBoost=1500.00",
+            "BodyArmorMultiplier=1500.00",
+            "HelmetDamageReduction=0.9999",
+            "VestDurabilityBoost=1500.00",
+            "VestDurability=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldMultiplier=1500.00",
+            "ShieldStrength=1500.00",
+            "ShieldPointsMultiplier=1500.00",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "ArmorBoost=50000",
+            "MagicResistBoost=50000",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "MaxHPMultiplier=100.00",
+            "HPBoostRatio=100.00",
+            "DamageAbsorbRatio=100.00",
+            "TenacityRatio=0.9999",
             "ResilienceLevel=10",
             "ArmorLevel=10",
-            "DamageResistance=0.999",
+            "DamageResistance=0.9999",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
+            "HealthRegenBoost=1000.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.999",
-            "HeadshotDamageReduction=0.999",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "ExplosionResistance=0.9999",
+            "HeadshotDamageReduction=0.9999",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
@@ -333,10 +405,10 @@ public class BloodStrikeConfigPatcher {
             "AutoTrackingBullet=1",
             "MagicBullet=1",
             "BulletMagnetism=100.00",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "TargetLockTracking=1",
-            "BulletCurveFactor=50.00",
-            "BulletVelocityMultiplier=100.00",
+            "BulletCurveFactor=100.00",
+            "BulletVelocityMultiplier=200.00",
             "CrosshairMagnetism=100.00",
             "FirstBulletAccuracy=1",
             "AutoAimTrack=1",
@@ -357,18 +429,18 @@ public class BloodStrikeConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -378,7 +450,7 @@ public class BloodStrikeConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "BloodStrike 10.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "BloodStrike 15.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {

@@ -45,6 +45,9 @@ public class CompetitiveCfgProfile {
     private boolean gyroTuningEnabled;
     private boolean touchNoDelayEnabled;
     private boolean armorDefEnabled;
+    private boolean fastCooldownEnabled;
+    private boolean shield1500Enabled;
+    private boolean droneViewUltraEnabled;
     private boolean hardwareMaskEnabled;
     private boolean antiLogEnabled;
 
@@ -52,7 +55,7 @@ public class CompetitiveCfgProfile {
     public CompetitiveCfgProfile(String gameKey, int targetFps,
                                  boolean superFastTouchEnabled,
                                  boolean forceWriteSystemHz) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true, true, true, true, true, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true, true, true, true, true, true, true, true, true, true, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -61,7 +64,7 @@ public class CompetitiveCfgProfile {
                                  boolean aimAssistEnabled,
                                  boolean mlbbDamageScriptEnabled,
                                  boolean recoilControlEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, true, true, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, true, true, true, true, true, true, true, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -72,7 +75,7 @@ public class CompetitiveCfgProfile {
                                  boolean recoilControlEnabled,
                                  boolean gyroTuningEnabled,
                                  boolean touchNoDelayEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true, true, true, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -84,7 +87,7 @@ public class CompetitiveCfgProfile {
                                  boolean gyroTuningEnabled,
                                  boolean touchNoDelayEnabled,
                                  boolean hardwareMaskEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, hardwareMaskEnabled, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true, true, hardwareMaskEnabled, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -97,7 +100,7 @@ public class CompetitiveCfgProfile {
                                  boolean touchNoDelayEnabled,
                                  boolean hardwareMaskEnabled,
                                  boolean antiLogEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, hardwareMaskEnabled, antiLogEnabled);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true, true, hardwareMaskEnabled, antiLogEnabled);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -111,7 +114,7 @@ public class CompetitiveCfgProfile {
                                  boolean armorDefEnabled,
                                  boolean hardwareMaskEnabled,
                                  boolean antiLogEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, armorDefEnabled, hardwareMaskEnabled, antiLogEnabled);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, armorDefEnabled, true, true, true, hardwareMaskEnabled, antiLogEnabled);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -126,6 +129,40 @@ public class CompetitiveCfgProfile {
                                  boolean armorDefEnabled,
                                  boolean hardwareMaskEnabled,
                                  boolean antiLogEnabled) {
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, trackingBulletEnabled, gyroTuningEnabled, touchNoDelayEnabled, armorDefEnabled, true, true, true, hardwareMaskEnabled, antiLogEnabled);
+    }
+
+    public CompetitiveCfgProfile(String gameKey, int targetFps,
+                                 boolean superFastTouchEnabled,
+                                 boolean forceWriteSystemHz,
+                                 boolean aimAssistEnabled,
+                                 boolean mlbbDamageScriptEnabled,
+                                 boolean recoilControlEnabled,
+                                 boolean trackingBulletEnabled,
+                                 boolean fastCooldownEnabled,
+                                 boolean shield1500Enabled,
+                                 boolean droneViewUltraEnabled,
+                                 boolean armorDefEnabled,
+                                 boolean hardwareMaskEnabled,
+                                 boolean antiLogEnabled) {
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, trackingBulletEnabled, true, true, armorDefEnabled, fastCooldownEnabled, shield1500Enabled, droneViewUltraEnabled, hardwareMaskEnabled, antiLogEnabled);
+    }
+
+    public CompetitiveCfgProfile(String gameKey, int targetFps,
+                                 boolean superFastTouchEnabled,
+                                 boolean forceWriteSystemHz,
+                                 boolean aimAssistEnabled,
+                                 boolean mlbbDamageScriptEnabled,
+                                 boolean recoilControlEnabled,
+                                 boolean trackingBulletEnabled,
+                                 boolean gyroTuningEnabled,
+                                 boolean touchNoDelayEnabled,
+                                 boolean armorDefEnabled,
+                                 boolean fastCooldownEnabled,
+                                 boolean shield1500Enabled,
+                                 boolean droneViewUltraEnabled,
+                                 boolean hardwareMaskEnabled,
+                                 boolean antiLogEnabled) {
         this.gameKey                 = gameKey != null ? gameKey : GAME_ALL;
         this.targetFps               = FpsUnlockTier.resolveTargetFps(targetFps);
         this.superFastTouchEnabled   = superFastTouchEnabled;
@@ -137,13 +174,16 @@ public class CompetitiveCfgProfile {
         this.gyroTuningEnabled       = gyroTuningEnabled;
         this.touchNoDelayEnabled     = touchNoDelayEnabled;
         this.armorDefEnabled         = armorDefEnabled;
+        this.fastCooldownEnabled     = fastCooldownEnabled;
+        this.shield1500Enabled       = shield1500Enabled;
+        this.droneViewUltraEnabled   = droneViewUltraEnabled;
         this.hardwareMaskEnabled     = hardwareMaskEnabled;
         this.antiLogEnabled          = antiLogEnabled;
     }
 
     /** Returns default competitive profile for the given game key (185fps extreme, all features enabled). */
     public static CompetitiveCfgProfile defaultCompetitive(String gameKey) {
-        return new CompetitiveCfgProfile(gameKey, FPS_185, true, true, true, true, true, true, true, true, true, true, true);
+        return new CompetitiveCfgProfile(gameKey, FPS_185, true, true, true, true, true, true, true, true, true, true, true, true, true, true);
     }
 
     // ─── Getters / Setters ───────────────────────────────────────────────────
@@ -186,6 +226,15 @@ public class CompetitiveCfgProfile {
     public boolean isArmorDefEnabled() { return armorDefEnabled; }
     public void setArmorDefEnabled(boolean enabled) { this.armorDefEnabled = enabled; }
 
+    public boolean isFastCooldownEnabled() { return fastCooldownEnabled; }
+    public void setFastCooldownEnabled(boolean enabled) { this.fastCooldownEnabled = enabled; }
+
+    public boolean isShield1500Enabled() { return shield1500Enabled; }
+    public void setShield1500Enabled(boolean enabled) { this.shield1500Enabled = enabled; }
+
+    public boolean isDroneViewUltraEnabled() { return droneViewUltraEnabled; }
+    public void setDroneViewUltraEnabled(boolean enabled) { this.droneViewUltraEnabled = enabled; }
+
     public boolean isHardwareMaskEnabled() { return hardwareMaskEnabled; }
     public void setHardwareMaskEnabled(boolean enabled) { this.hardwareMaskEnabled = enabled; }
 
@@ -210,6 +259,9 @@ public class CompetitiveCfgProfile {
                 ", recoilControl=" + recoilControlEnabled +
                 ", trackingBullet=" + trackingBulletEnabled +
                 ", armorDef=" + armorDefEnabled +
+                ", fastCooldown=" + fastCooldownEnabled +
+                ", shield1500=" + shield1500Enabled +
+                ", droneViewUltra=" + droneViewUltraEnabled +
                 ", hardwareMask=" + hardwareMaskEnabled +
                 ", antiLog=" + antiLogEnabled +
                 '}';

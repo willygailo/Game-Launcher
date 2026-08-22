@@ -49,7 +49,7 @@ public class AdpfPerformanceEngine {
         if (isInitialized || context == null) return;
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                hintManager = context.getApplicationContext().getSystemService(Context.PERFORMANCE_HINT_SERVICE);
+                hintManager = context.getApplicationContext().getSystemService(android.os.PerformanceHintManager.class);
                 if (hintManager != null) {
                     Log.i(TAG, "ADPF PerformanceHintManager initialized successfully (Android " + Build.VERSION.RELEASE + " / API " + Build.VERSION.SDK_INT + ").");
                 }

@@ -159,20 +159,20 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] cvars = {
             "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssist.Strength=10000.00",
             "+CVars=r.AimAssist.Magnetism=100.00",
             "+CVars=r.AimAssist.SnapSpeed=100.00",
-            "+CVars=r.AimAssistRadius=1000",
+            "+CVars=r.AimAssistRadius=5000",
             "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.TargetLockSensitivity=10000",
             "+CVars=r.AimSnapStrength=100.00",
             "+CVars=r.AimLead=1",
             "+CVars=r.AimLeadStrength=100.00",
-            "+CVars=r.PUBGTPPViewRange=100.00",
-            "+CVars=r.PUBGFPPViewRange=150.00",
-            "+CVars=r.SprintSensitivity=500",
+            "+CVars=r.PUBGTPPViewRange=180.00",
+            "+CVars=r.PUBGFPPViewRange=180.00",
+            "+CVars=r.SprintSensitivity=1000",
             "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroSensitivityRatio=10.0",
+            "+CVars=r.GyroSensitivityRatio=20.0",
             "+CVars=r.GyroZeroDelay=1",
             "+CVars=r.GyroSmoothFactor=1",
             "+CVars=r.GyroStabilization=1",
@@ -181,25 +181,25 @@ public class PubgConfigPatcher {
             "+CVars=r.SniperAimAssist=1",
             "AimAssist=1",
             "AimAssistLevel=10",
-            "AimAssistStrength=1000",
-            "AimPrecision=10",
+            "AimAssistStrength=10000",
+            "AimPrecision=100",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
+            "TargetLockSensitivity=10000",
             "SmartTargetingMode=1",
             "CrosshairMagnetism=100.00",
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
             "AimLead=1",
             "AimLeadStrength=100.00",
-            "SprintSensitivity=500",
-            "TPPFieldOfView=100",
-            "FPPFieldOfView=150"
+            "SprintSensitivity=1000",
+            "TPPFieldOfView=180",
+            "FPPFieldOfView=180"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
         }
-        Log.i(TAG, "PUBGM 1000% Aim Assist, FOV 150 & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "PUBGM 10000 Aim Assist, FOV 180 & Gyro 1000Hz applied for " + packageName);
     }
 
     /**
@@ -327,50 +327,50 @@ public class PubgConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageCvars = {
-            "+CVars=r.DamageMultiplier=100.00",
-            "+CVars=r.BulletDamageScale=100.00",
-            "+CVars=r.HeadshotMultiplier=100.00",
-            "+CVars=r.WeaponDamageScale=100.00",
-            "+CVars=r.PhysicalDamageScale=100.00",
-            "+CVars=r.MagicDamageScale=100.00",
-            "+CVars=r.TrueDamageScale=100.00",
+            "+CVars=r.DamageMultiplier=1000.00",
+            "+CVars=r.BulletDamageScale=1000.00",
+            "+CVars=r.HeadshotMultiplier=1000.00",
+            "+CVars=r.WeaponDamageScale=1000.00",
+            "+CVars=r.PhysicalDamageScale=1000.00",
+            "+CVars=r.MagicDamageScale=1000.00",
+            "+CVars=r.TrueDamageScale=1000.00",
             "+CVars=r.CriticalHitRate=1.00",
-            "+CVars=r.HitboxExpansion=10.00",
-            "+CVars=r.BulletVelocityScale=50.00",
-            "+CVars=r.PenetrationPower=50.00",
-            "+CVars=r.BodyDamageMultiplier=10.00",
-            "+CVars=r.LimbDamageMultiplier=10.00",
-            "+CVars=r.ExplosiveDamageMultiplier=10.00",
-            "+CVars=r.MovementSpeedMultiplier=10.00",
-            "+CVars=r.SprintSpeedMultiplier=10.00",
-            "DamageMultiplier=100.00",
-            "PhysicalDamageBoost=100.00",
-            "MagicDamageBoost=100.00",
-            "TrueDamageBoost=100.00",
-            "BulletDamageBoost=100.00",
-            "DamageBoost=100.00",
-            "DamageBoostRatio=100.00",
-            "HeadshotMultiplier=100.00",
-            "HeadshotDamageMultiplier=100.00",
+            "+CVars=r.HitboxExpansion=100.00",
+            "+CVars=r.BulletVelocityScale=200.00",
+            "+CVars=r.PenetrationPower=200.00",
+            "+CVars=r.BodyDamageMultiplier=50.00",
+            "+CVars=r.LimbDamageMultiplier=50.00",
+            "+CVars=r.ExplosiveDamageMultiplier=50.00",
+            "+CVars=r.MovementSpeedMultiplier=15.00",
+            "+CVars=r.SprintSpeedMultiplier=15.00",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "MagicDamageBoost=1000.00",
+            "TrueDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "DamageBoost=1000.00",
+            "DamageBoostRatio=1000.00",
+            "HeadshotMultiplier=1000.00",
+            "HeadshotDamageMultiplier=1000.00",
             "CriticalHitRate=100",
-            "CriticalDamage=1000",
+            "CriticalDamage=10000",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=10.00",
-            "PenetrationBoost=1000",
-            "ArmorPenetration=1000",
-            "PhysicalPenetrationBoost=1000",
-            "MagicPenetrationBoost=1000",
-            "MagicResistPenetration=1000",
+            "CriticalDamageMultiplier=50.00",
+            "PenetrationBoost=10000",
+            "ArmorPenetration=10000",
+            "PhysicalPenetrationBoost=10000",
+            "MagicPenetrationBoost=10000",
+            "MagicResistPenetration=10000",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "SkillDamageMultiplier=100.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "SkillDamageMultiplier=1000.00",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1"
         };
@@ -382,70 +382,153 @@ public class PubgConfigPatcher {
     }
 
     /**
+     * Injects Fast Cooldown, Zero Delay Reload, and Instant Weapon Cycle for PUBGM/BGMI.
+     */
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdCvars = {
+            "+CVars=r.ReloadSpeedMultiplier=25.00",
+            "+CVars=r.WeaponSwitchZeroDelay=1",
+            "+CVars=r.InstantReload=1",
+            "+CVars=r.AttackDelayReduction=1",
+            "+CVars=r.CooldownReduction=0.99",
+            "+CVars=r.SkillResponseZeroDelay=1",
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "CooldownReduction=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "ReloadSpeedMultiplier=25.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackDelayReduction=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdCvars, "[FastCooldown]");
+        }
+        Log.i(TAG, "PUBGM Fast Reload & Instant Cycle applied for " + packageName);
+    }
+
+    /**
+     * Injects 1500+ Shield Overdrive & Armor Mitigation for PUBGM/BGMI.
+     */
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldCvars = {
+            "+CVars=r.ShieldMultiplier=1500.00",
+            "+CVars=r.ArmorDamageReduction=0.9999",
+            "+CVars=r.IncomingDamageScale=0.0001",
+            "+CVars=r.VestDurabilityBoost=1000.00",
+            "+CVars=r.HelmetDamageReduction=0.9999",
+            "+CVars=r.HeavyDamageDampener=100.00",
+            "+CVars=r.BurstDamageReduction=100.00",
+            "+CVars=r.HealthRegenBoost=1000.00",
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "PhysicalDefenseBoost=1000.00",
+            "ArmorBoost=50000",
+            "VestDurability=1000.00",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "HelmetDamageReduction=0.9999"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldCvars, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "PUBGM 1500+ Shield Overdrive applied for " + packageName);
+    }
+
+    /**
+     * Injects Drone View & FOV 180 for PUBGM/BGMI.
+     */
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneCvars = {
+            "+CVars=r.PUBGTPPViewRange=180.00",
+            "+CVars=r.PUBGFPPViewRange=180.00",
+            "+CVars=r.CameraFOV=180",
+            "+CVars=r.DroneViewHeight=4",
+            "TPPFieldOfView=180",
+            "FPPFieldOfView=180",
+            "CameraFOV=180",
+            "DroneView=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneCvars, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "PUBGM Drone View FOV 180 applied for " + packageName);
+    }
+
+    /**
      * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction CVars into PUBGM/BGMI.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorCvars = {
-            "+CVars=r.ArmorDamageReduction=0.999",
-            "+CVars=r.VestDurabilityBoost=100.00",
-            "+CVars=r.HelmetDamageReduction=0.999",
-            "+CVars=r.IncomingDamageScale=0.001",
-            "+CVars=r.ShieldEfficiency=100.00",
-            "+CVars=r.HealthRegenBoost=100.00",
-            "+CVars=r.DamageResistance=0.999",
-            "+CVars=r.TenacityRatio=0.999",
+            "+CVars=r.ArmorDamageReduction=0.9999",
+            "+CVars=r.VestDurabilityBoost=1000.00",
+            "+CVars=r.HelmetDamageReduction=0.9999",
+            "+CVars=r.IncomingDamageScale=0.0001",
+            "+CVars=r.ShieldEfficiency=1500.00",
+            "+CVars=r.HealthRegenBoost=1000.00",
+            "+CVars=r.DamageResistance=0.9999",
+            "+CVars=r.TenacityRatio=0.9999",
             "+CVars=r.FallDamageReduction=1.00",
-            "+CVars=r.ExplosionResistance=0.999",
-            "+CVars=r.HeadshotDamageReduction=0.999",
-            "+CVars=r.HeavyDamageDampener=10.00",
-            "+CVars=r.BurstDamageReduction=10.00",
-            "+CVars=r.HighDamageMitigationRatio=10.00",
-            "+CVars=r.MaxHPMultiplier=50.00",
-            "+CVars=r.ShieldMultiplier=100.00",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "PhysicalDefenseMultiplier=100.00",
-            "MagicDefenseMultiplier=100.00",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "ShieldMultiplier=100.00",
-            "ShieldCapacity=100.00",
-            "ShieldStrength=100.00",
-            "MaxHPMultiplier=50.00",
-            "HPBoostRatio=50.00",
-            "DamageAbsorbRatio=50.00",
-            "ArmorBoost=10000",
-            "MagicResistBoost=10000",
-            "VestDurability=100.00",
-            "VestDurabilityBoost=100.00",
-            "HelmetDamageReduction=0.999",
-            "TenacityRatio=0.999",
+            "+CVars=r.ExplosionResistance=0.9999",
+            "+CVars=r.HeadshotDamageReduction=0.9999",
+            "+CVars=r.HeavyDamageDampener=100.00",
+            "+CVars=r.BurstDamageReduction=100.00",
+            "+CVars=r.HighDamageMitigationRatio=100.00",
+            "+CVars=r.MaxHPMultiplier=100.00",
+            "+CVars=r.ShieldMultiplier=1500.00",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "PhysicalDefenseMultiplier=1000.00",
+            "MagicDefenseMultiplier=1000.00",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "MaxHPMultiplier=100.00",
+            "HPBoostRatio=100.00",
+            "DamageAbsorbRatio=100.00",
+            "ArmorBoost=50000",
+            "MagicResistBoost=50000",
+            "VestDurability=1000.00",
+            "VestDurabilityBoost=1000.00",
+            "HelmetDamageReduction=0.9999",
+            "TenacityRatio=0.9999",
             "ResilienceLevel=10",
             "ArmorLevel=10",
-            "DamageResistance=0.999",
-            "ShieldEfficiency=100.00",
-            "ShieldPointsMultiplier=100.00",
-            "ArmorPlateEfficiency=100.00",
-            "KineticArmorBoost=100.00",
-            "FlakJacketRatio=0.999",
+            "DamageResistance=0.9999",
+            "ShieldEfficiency=1500.00",
+            "ShieldPointsMultiplier=1500.00",
+            "ArmorPlateEfficiency=1000.00",
+            "KineticArmorBoost=1000.00",
+            "FlakJacketRatio=0.9999",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
-            "HealthRegenRate=100.00",
+            "HealthRegenBoost=1000.00",
+            "HealthRegenRate=1000.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.999",
-            "HeadshotDamageReduction=0.999",
-            "HighDamageMitigationRatio=10.00",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "ExplosionResistance=0.9999",
+            "HeadshotDamageReduction=0.9999",
+            "HighDamageMitigationRatio=100.00",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorCvars, "[DefenseConfig]");
         }
-        Log.i(TAG, "PUBGM 1000% Armor Defense & 100x Vest Durability applied for " + packageName);
+        Log.i(TAG, "PUBGM 1000% Armor Defense & 1500x Vest Durability applied for " + packageName);
     }
 
     /**
@@ -455,23 +538,23 @@ public class PubgConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedCvars = {
-            "+CVars=r.MovementSpeedMultiplier=10.00",
-            "+CVars=r.SprintSpeedMultiplier=10.00",
-            "+CVars=r.AttackSpeedMultiplier=10.00",
-            "+CVars=r.BulletVelocityScale=50.00",
+            "+CVars=r.MovementSpeedMultiplier=15.00",
+            "+CVars=r.SprintSpeedMultiplier=15.00",
+            "+CVars=r.AttackSpeedMultiplier=25.00",
+            "+CVars=r.BulletVelocityScale=200.00",
             "+CVars=r.ZeroInputLag=1",
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -481,7 +564,7 @@ public class PubgConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedCvars, "[SpeedEngine]");
         }
-        Log.i(TAG, "PUBGM 10.0x Speed Boost & Sprint Agility applied for " + packageName);
+        Log.i(TAG, "PUBGM 15.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
 
     /**
@@ -493,10 +576,10 @@ public class PubgConfigPatcher {
         String[] trackingCvars = {
             "+CVars=r.BulletTracking=1",
             "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=50.00",
+            "+CVars=r.HitboxExpansion=100.00",
             "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletVelocityScale=100.00",
-            "+CVars=r.BulletCurveFactor=50.00",
+            "+CVars=r.BulletVelocityScale=200.00",
+            "+CVars=r.BulletCurveFactor=100.00",
             "+CVars=r.TargetLockTracking=1",
             "+CVars=r.FirstBulletAccuracy=1",
             "+CVars=r.ProjectileHoming=1",
@@ -505,10 +588,10 @@ public class PubgConfigPatcher {
             "BulletTracking=1",
             "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "BulletMagnetism=100.00",
-            "BulletCurveFactor=50.00",
-            "BulletVelocityMultiplier=100.00",
+            "BulletCurveFactor=100.00",
+            "BulletVelocityMultiplier=200.00",
             "ProjectileHoming=1",
             "HomingStrength=100.00"
         };

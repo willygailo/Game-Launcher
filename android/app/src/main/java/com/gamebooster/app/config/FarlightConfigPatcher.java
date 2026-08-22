@@ -63,10 +63,10 @@ public class FarlightConfigPatcher {
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroPollingRate\": 1000,\n" +
                         "  \"AimAssist\": 1,\n" +
-                        "  \"AimAssistStrength\": 1000,\n" +
+                        "  \"AimAssistStrength\": 10000,\n" +
                         "  \"AimAssistLevel\": 10,\n" +
-                        "  \"AimPrecision\": 10,\n" +
-                        "  \"TargetLockSensitivity\": 1000,\n" +
+                        "  \"AimPrecision\": 100,\n" +
+                        "  \"TargetLockSensitivity\": 10000,\n" +
                         "  \"CrosshairMagnetism\": 100.00,\n" +
                         "  \"AimSnapStrength\": 100.00,\n" +
                         "  \"AimMagnetism\": 100.00,\n" +
@@ -74,29 +74,32 @@ public class FarlightConfigPatcher {
                         "  \"BulletTracking\": 1,\n" +
                         "  \"AutoTrackingBullet\": 1,\n" +
                         "  \"MagicBullet\": 1,\n" +
-                        "  \"HitboxExpansion\": 50.00,\n" +
+                        "  \"HitboxExpansion\": 100.00,\n" +
                         "  \"BulletMagnetism\": 100.00,\n" +
                         "  \"ProjectileHoming\": 1,\n" +
                         "  \"HomingStrength\": 100.00,\n" +
-                        "  \"BulletCurveFactor\": 50.00,\n" +
-                        "  \"BulletVelocityMultiplier\": 100.00,\n" +
-                        "  \"PhysicalDefenseBoost\": 100.00,\n" +
-                        "  \"MagicDefenseBoost\": 100.00,\n" +
-                        "  \"DamageReductionRatio\": 0.999,\n" +
-                        "  \"DamageReduction\": 0.999,\n" +
-                        "  \"IncomingDamageReduction\": 0.999,\n" +
-                        "  \"ShieldMultiplier\": 100.00,\n" +
-                        "  \"ShieldCapacity\": 100.00,\n" +
-                        "  \"ArmorBoost\": 10000,\n" +
-                        "  \"VestDurability\": 100.00,\n" +
-                        "  \"HelmetDamageReduction\": 0.999,\n" +
-                        "  \"TenacityRatio\": 0.999,\n" +
-                        "  \"DamageMultiplier\": 100.00,\n" +
-                        "  \"DamageBoostRatio\": 100.00,\n" +
-                        "  \"BulletDamageBoost\": 100.00,\n" +
-                        "  \"HeadshotDamageMultiplier\": 100.00,\n" +
+                        "  \"BulletCurveFactor\": 100.00,\n" +
+                        "  \"BulletVelocityMultiplier\": 200.00,\n" +
+                        "  \"PhysicalDefenseBoost\": 1000.00,\n" +
+                        "  \"MagicDefenseBoost\": 1000.00,\n" +
+                        "  \"DamageReductionRatio\": 0.9999,\n" +
+                        "  \"DamageReduction\": 0.9999,\n" +
+                        "  \"IncomingDamageReduction\": 0.9999,\n" +
+                        "  \"ShieldMultiplier\": 1500.00,\n" +
+                        "  \"ShieldCapacity\": 1500.00,\n" +
+                        "  \"ArmorBoost\": 50000,\n" +
+                        "  \"VestDurability\": 1500.00,\n" +
+                        "  \"HelmetDamageReduction\": 0.9999,\n" +
+                        "  \"TenacityRatio\": 0.9999,\n" +
+                        "  \"DamageMultiplier\": 1000.00,\n" +
+                        "  \"DamageBoostRatio\": 1000.00,\n" +
+                        "  \"BulletDamageBoost\": 1000.00,\n" +
+                        "  \"HeadshotDamageMultiplier\": 1000.00,\n" +
                         "  \"CriticalHitRate\": 100,\n" +
-                        "  \"CriticalDamage\": 1000,\n" +
+                        "  \"CriticalDamage\": 10000,\n" +
+                        "  \"DroneView\": 1,\n" +
+                        "  \"DroneViewHeight\": 4,\n" +
+                        "  \"CameraFOV\": 180,\n" +
                         "  \"RecoilReduction\": 1.00,\n" +
                         "  \"LowLatencyMode\": 1,\n" +
                         "  \"AntiAliasing\": 1\n" +
@@ -129,31 +132,35 @@ public class FarlightConfigPatcher {
                         "+CVars=r.AimAssist.Strength=100.00\n" +
                         "+CVars=r.AimAssist.Magnetism=100.00\n" +
                         "+CVars=r.AimAssist.SnapSpeed=100.00\n" +
-                        "+CVars=r.AimAssistRadius=1000\n" +
+                        "+CVars=r.AimAssistRadius=5000\n" +
                         "+CVars=r.CrosshairMagnetism=100.00\n" +
-                        "+CVars=r.TargetLockSensitivity=1000\n" +
+                        "+CVars=r.TargetLockSensitivity=10000\n" +
                         "+CVars=r.AimSnapStrength=100.00\n" +
                         "+CVars=r.BulletTracking=1\n" +
                         "+CVars=r.MagicBullet=1\n" +
-                        "+CVars=r.HitboxExpansion=50.00\n" +
+                        "+CVars=r.HitboxExpansion=100.00\n" +
                         "+CVars=r.BulletMagnetism=100.00\n" +
-                        "+CVars=r.BulletVelocityScale=100.00\n" +
-                        "+CVars=r.BulletCurveFactor=50.00\n" +
+                        "+CVars=r.BulletVelocityScale=200.00\n" +
+                        "+CVars=r.BulletCurveFactor=100.00\n" +
                         "+CVars=r.TargetLockTracking=1\n" +
                         "+CVars=r.FirstBulletAccuracy=1\n" +
                         "+CVars=r.ProjectileHoming=1\n" +
                         "+CVars=r.HomingStrength=100.00\n" +
-                        "+CVars=r.ArmorDamageReduction=0.999\n" +
-                        "+CVars=r.ShieldEfficiency=100.00\n" +
-                        "+CVars=r.ShieldRechargeRate=100.00\n" +
-                        "+CVars=r.ShieldCapacityBoost=100.00\n" +
-                        "+CVars=r.DamageResistance=0.999\n" +
-                        "+CVars=r.VestDurabilityBoost=100.00\n" +
-                        "+CVars=r.HelmetDamageReduction=0.999\n" +
-                        "+CVars=r.MaxHPMultiplier=50.00\n" +
-                        "+CVars=r.IncomingDamageScale=0.001\n" +
-                        "+CVars=r.HeavyDamageDampener=10.00\n" +
-                        "+CVars=r.BurstDamageReduction=10.00\n" +
+                        "+CVars=r.ArmorDamageReduction=0.9999\n" +
+                        "+CVars=r.ShieldEfficiency=1500.00\n" +
+                        "+CVars=r.ShieldMultiplier=1500.00\n" +
+                        "+CVars=r.ShieldRechargeRate=1000.00\n" +
+                        "+CVars=r.ShieldCapacityBoost=1500.00\n" +
+                        "+CVars=r.DamageResistance=0.9999\n" +
+                        "+CVars=r.VestDurabilityBoost=1500.00\n" +
+                        "+CVars=r.HelmetDamageReduction=0.9999\n" +
+                        "+CVars=r.MaxHPMultiplier=100.00\n" +
+                        "+CVars=r.IncomingDamageScale=0.0001\n" +
+                        "+CVars=r.HeavyDamageDampener=100.00\n" +
+                        "+CVars=r.BurstDamageReduction=100.00\n" +
+                        "+CVars=r.CameraFOV=180\n" +
+                        "+CVars=r.FieldOfView=180\n" +
+                        "+CVars=r.DroneViewHeight=4\n" +
                         "[SolarlandGraphics]\n" +
                         "FrameRateLimit=" + forcedFps + "\n" +
                         "MaxFPS=" + forcedFps + "\n" +
@@ -171,10 +178,10 @@ public class FarlightConfigPatcher {
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
                         "AimAssist=1\n" +
-                        "AimAssistStrength=1000\n" +
+                        "AimAssistStrength=10000\n" +
                         "AimAssistLevel=10\n" +
-                        "AimPrecision=10\n" +
-                        "TargetLockSensitivity=1000\n" +
+                        "AimPrecision=100\n" +
+                        "TargetLockSensitivity=10000\n" +
                         "CrosshairMagnetism=100.00\n" +
                         "AimSnapStrength=100.00\n" +
                         "AimMagnetism=100.00\n" +
@@ -182,26 +189,29 @@ public class FarlightConfigPatcher {
                         "BulletTracking=1\n" +
                         "AutoTrackingBullet=1\n" +
                         "MagicBullet=1\n" +
-                        "HitboxExpansion=50.00\n" +
+                        "HitboxExpansion=100.00\n" +
                         "BulletMagnetism=100.00\n" +
-                        "BulletCurveFactor=50.00\n" +
-                        "BulletVelocityMultiplier=100.00\n" +
-                        "PhysicalDefenseBoost=100.00\n" +
-                        "MagicDefenseBoost=100.00\n" +
-                        "DamageReductionRatio=0.999\n" +
-                        "DamageReduction=0.999\n" +
-                        "IncomingDamageReduction=0.999\n" +
-                        "ShieldMultiplier=100.00\n" +
-                        "ShieldCapacity=100.00\n" +
-                        "ArmorBoost=10000\n" +
-                        "VestDurability=100.00\n" +
-                        "HelmetDamageReduction=0.999\n" +
-                        "TenacityRatio=0.999\n" +
-                        "DamageMultiplier=100.00\n" +
-                        "BulletDamageBoost=100.00\n" +
-                        "HeadshotDamageMultiplier=100.00\n" +
+                        "BulletCurveFactor=100.00\n" +
+                        "BulletVelocityMultiplier=200.00\n" +
+                        "PhysicalDefenseBoost=1000.00\n" +
+                        "MagicDefenseBoost=1000.00\n" +
+                        "DamageReductionRatio=0.9999\n" +
+                        "DamageReduction=0.9999\n" +
+                        "IncomingDamageReduction=0.9999\n" +
+                        "ShieldMultiplier=1500.00\n" +
+                        "ShieldCapacity=1500.00\n" +
+                        "ArmorBoost=50000\n" +
+                        "VestDurability=1500.00\n" +
+                        "HelmetDamageReduction=0.9999\n" +
+                        "TenacityRatio=0.9999\n" +
+                        "DamageMultiplier=1000.00\n" +
+                        "BulletDamageBoost=1000.00\n" +
+                        "HeadshotDamageMultiplier=1000.00\n" +
                         "CriticalHitRate=100\n" +
-                        "CriticalDamage=1000\n" +
+                        "CriticalDamage=10000\n" +
+                        "DroneView=1\n" +
+                        "DroneViewHeight=4\n" +
+                        "CameraFOV=180\n" +
                         "RecoilReduction=1.00\n" +
                         "WeaponKickScale=0.00\n" +
                         "ZeroInputLag=1\n";
@@ -238,29 +248,29 @@ public class FarlightConfigPatcher {
             "+CVars=r.AimAssist.Strength=100.00",
             "+CVars=r.AimAssist.Magnetism=100.00",
             "+CVars=r.AimAssist.SnapSpeed=100.00",
-            "+CVars=r.AimAssistRadius=1000",
+            "+CVars=r.AimAssistRadius=5000",
             "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.TargetLockSensitivity=10000",
             "+CVars=r.AimSnapStrength=100.00",
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroZeroDelay=1",
             "AimAssist=1",
-            "AimPrecision=10",
-            "AimAssistStrength=1000",
+            "AimPrecision=100",
+            "AimAssistStrength=10000",
             "AimAssistLevel=10",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
-            "AimAssistRadius=1000",
+            "TargetLockSensitivity=10000",
+            "AimAssistRadius=5000",
             "CrosshairMagnetism=100.00",
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
-            "GyroSensitivity=500"
+            "GyroSensitivity=1000"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "Farlight 84 1000% Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "Farlight 84 10000 Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -303,40 +313,107 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "+CVars=r.DamageMultiplier=100.00",
-            "+CVars=r.BulletDamageScale=100.00",
-            "+CVars=r.PhysicalDamageBoost=100.00",
-            "+CVars=r.DamageBoost=100.00",
-            "+CVars=r.HeadshotMultiplier=100.00",
-            "+CVars=r.HeadshotDamageMultiplier=100.00",
-            "+CVars=r.CriticalDamage=1000",
+            "+CVars=r.DamageMultiplier=1000.00",
+            "+CVars=r.BulletDamageScale=1000.00",
+            "+CVars=r.PhysicalDamageBoost=1000.00",
+            "+CVars=r.DamageBoost=1000.00",
+            "+CVars=r.HeadshotMultiplier=1000.00",
+            "+CVars=r.HeadshotDamageMultiplier=1000.00",
+            "+CVars=r.CriticalDamage=10000",
             "+CVars=r.CriticalHitRate=100",
-            "+CVars=r.CriticalDamageMultiplier=10.00",
-            "+CVars=r.PenetrationBoost=1000",
-            "+CVars=r.ArmorPenetration=1000",
-            "+CVars=r.BulletVelocityMultiplier=50.00",
-            "+CVars=r.HitboxExpansion=10.00",
-            "+CVars=r.BodyDamageMultiplier=10.00",
-            "+CVars=r.LimbDamageMultiplier=10.00",
-            "+CVars=r.ExplosiveDamageMultiplier=10.00",
-            "+CVars=r.MovementSpeedMultiplier=10.00",
-            "+CVars=r.SprintSpeedMultiplier=10.00",
-            "DamageMultiplier=100.00",
-            "DamageBoost=100.00",
-            "HeadshotDamageMultiplier=100.00",
+            "+CVars=r.CriticalDamageMultiplier=50.00",
+            "+CVars=r.PenetrationBoost=10000",
+            "+CVars=r.ArmorPenetration=10000",
+            "+CVars=r.BulletVelocityMultiplier=200.00",
+            "+CVars=r.HitboxExpansion=100.00",
+            "+CVars=r.BodyDamageMultiplier=50.00",
+            "+CVars=r.LimbDamageMultiplier=50.00",
+            "+CVars=r.ExplosiveDamageMultiplier=50.00",
+            "+CVars=r.MovementSpeedMultiplier=15.00",
+            "+CVars=r.SprintSpeedMultiplier=15.00",
+            "DamageMultiplier=1000.00",
+            "DamageBoost=1000.00",
+            "HeadshotDamageMultiplier=1000.00",
             "CriticalHitRate=100",
-            "CriticalDamage=1000",
-            "ArmorPenetration=1000",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AttackSpeedMultiplier=10.00"
+            "CriticalDamage=10000",
+            "ArmorPenetration=10000",
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AttackSpeedMultiplier=25.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[UserCustom DeviceProfile]");
         }
         Log.i(TAG, "Farlight 84 1000% Damage Boost & Headshot Multiplier applied for " + packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdKeys = {
+            "+CVars=r.CooldownReduction=0.99",
+            "+CVars=r.SkillResponseZeroDelay=1",
+            "+CVars=r.InstantCast=1",
+            "+CVars=r.ReloadSpeedMultiplier=25.00",
+            "+CVars=r.JetpackRechargeMultiplier=100.00",
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "ReloadSpeedMultiplier=25.00",
+            "JetpackCooldownReduction=0.99",
+            "UnlimitedEnergy=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
+        }
+        Log.i(TAG, "Farlight 84 Fast Cooldown & Infinite Jetpack applied for " + packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldKeys = {
+            "+CVars=r.ArmorDamageReduction=0.9999",
+            "+CVars=r.ShieldMultiplier=1500.00",
+            "+CVars=r.ShieldEfficiency=1500.00",
+            "+CVars=r.ShieldCapacityBoost=1500.00",
+            "+CVars=r.DamageResistance=0.9999",
+            "+CVars=r.VestDurabilityBoost=1500.00",
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldEfficiency=1500.00",
+            "ArmorBoost=50000",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "Farlight 84 1500+ Shield Overdrive applied for " + packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneKeys = {
+            "+CVars=r.CameraFOV=180",
+            "+CVars=r.FieldOfView=180",
+            "+CVars=r.DroneViewHeight=4",
+            "DroneView=1",
+            "DroneViewHeight=4",
+            "CameraFOV=180",
+            "FieldOfView=180",
+            "FOV=180"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "Farlight 84 Drone View Ultra FOV 180 applied for " + packageName);
     }
 
     /**
@@ -346,37 +423,37 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "+CVars=r.ArmorDamageReduction=0.999",
-            "+CVars=r.ShieldRechargeRate=100.00",
-            "+CVars=r.ShieldEfficiency=100.00",
-            "+CVars=r.ShieldCapacityBoost=100.00",
-            "+CVars=r.DamageResistance=0.999",
-            "+CVars=r.VestDurabilityBoost=100.00",
-            "+CVars=r.HelmetDamageReduction=0.999",
-            "+CVars=r.MaxHPMultiplier=50.00",
+            "+CVars=r.ArmorDamageReduction=0.9999",
+            "+CVars=r.ShieldRechargeRate=1000.00",
+            "+CVars=r.ShieldEfficiency=1500.00",
+            "+CVars=r.ShieldCapacityBoost=1500.00",
+            "+CVars=r.DamageResistance=0.9999",
+            "+CVars=r.VestDurabilityBoost=1500.00",
+            "+CVars=r.HelmetDamageReduction=0.9999",
+            "+CVars=r.MaxHPMultiplier=100.00",
             "+CVars=r.HealthRegenDelay=0.00",
-            "+CVars=r.HealthRegenBoost=100.00",
-            "+CVars=r.IncomingDamageReduction=0.999",
-            "+CVars=r.ExplosionResistance=0.999",
+            "+CVars=r.HealthRegenBoost=1000.00",
+            "+CVars=r.IncomingDamageReduction=0.9999",
+            "+CVars=r.ExplosionResistance=0.9999",
             "+CVars=r.FallDamageReduction=1.00",
-            "+CVars=r.HeavyDamageDampener=10.00",
-            "+CVars=r.BurstDamageReduction=10.00",
-            "ShieldEfficiency=100.00",
-            "ShieldCapacity=100.00",
-            "ShieldMultiplier=100.00",
-            "ShieldStrength=100.00",
-            "ArmorBoost=10000",
-            "VestDurabilityBoost=100.00",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
+            "+CVars=r.HeavyDamageDampener=100.00",
+            "+CVars=r.BurstDamageReduction=100.00",
+            "ShieldEfficiency=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldMultiplier=1500.00",
+            "ShieldStrength=1500.00",
+            "ArmorBoost=50000",
+            "VestDurabilityBoost=1500.00",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
-            "TenacityRatio=0.999",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "HealthRegenBoost=1000.00",
+            "TenacityRatio=0.9999",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
@@ -392,23 +469,23 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "+CVars=r.MovementSpeedMultiplier=10.00",
-            "+CVars=r.SprintSpeedMultiplier=10.00",
-            "+CVars=r.AttackSpeedMultiplier=10.00",
-            "+CVars=r.BulletVelocityScale=50.00",
+            "+CVars=r.MovementSpeedMultiplier=15.00",
+            "+CVars=r.SprintSpeedMultiplier=15.00",
+            "+CVars=r.AttackSpeedMultiplier=25.00",
+            "+CVars=r.BulletVelocityScale=200.00",
             "+CVars=r.ZeroInputLag=1",
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -418,7 +495,7 @@ public class FarlightConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "Farlight 84 10.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "Farlight 84 15.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
@@ -430,10 +507,10 @@ public class FarlightConfigPatcher {
         String[] trackingKeys = {
             "+CVars=r.BulletTracking=1",
             "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=50.00",
+            "+CVars=r.HitboxExpansion=100.00",
             "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletVelocityScale=100.00",
-            "+CVars=r.BulletCurveFactor=50.00",
+            "+CVars=r.BulletVelocityScale=200.00",
+            "+CVars=r.BulletCurveFactor=100.00",
             "+CVars=r.TargetLockTracking=1",
             "+CVars=r.FirstBulletAccuracy=1",
             "+CVars=r.ProjectileHoming=1",
@@ -442,10 +519,10 @@ public class FarlightConfigPatcher {
             "BulletTracking=1",
             "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "BulletMagnetism=100.00",
-            "BulletCurveFactor=50.00",
-            "BulletVelocityMultiplier=100.00",
+            "BulletCurveFactor=100.00",
+            "BulletVelocityMultiplier=200.00",
             "CrosshairMagnetism=100.00",
             "ProjectileHoming=1",
             "HomingStrength=100.00"

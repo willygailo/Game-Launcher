@@ -40,6 +40,9 @@ public class CfgProfileManager {
     private static final String KEY_ARMOR_SUFFIX = "_armor_def";
     private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
     private static final String KEY_ANTILOG_SUFFIX = "_anti_log";
+    private static final String KEY_FAST_CD_SUFFIX = "_fast_cd";
+    private static final String KEY_SHIELD_SUFFIX = "_shield1500";
+    private static final String KEY_DRONE_SUFFIX = "_drone_view";
 
     // ─── Supported game packages per game key ────────────────────────────────
 
@@ -187,6 +190,9 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_DMG_SUFFIX,    profile.isMlbbDamageScriptEnabled());
         ed.putBoolean(key + KEY_RECOIL_SUFFIX, profile.isRecoilControlEnabled());
         ed.putBoolean(key + KEY_TRACKING_SUFFIX, profile.isTrackingBulletEnabled());
+        ed.putBoolean(key + KEY_FAST_CD_SUFFIX, profile.isFastCooldownEnabled());
+        ed.putBoolean(key + KEY_SHIELD_SUFFIX, profile.isShield1500Enabled());
+        ed.putBoolean(key + KEY_DRONE_SUFFIX,  profile.isDroneViewUltraEnabled());
         ed.putBoolean(key + KEY_ARMOR_SUFFIX,  profile.isArmorDefEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
@@ -209,10 +215,13 @@ public class CfgProfileManager {
         boolean dmg      = prefs.getBoolean(key + KEY_DMG_SUFFIX, true);
         boolean recoil   = prefs.getBoolean(key + KEY_RECOIL_SUFFIX, true);
         boolean tracking = prefs.getBoolean(key + KEY_TRACKING_SUFFIX, true);
+        boolean fastCd   = prefs.getBoolean(key + KEY_FAST_CD_SUFFIX, true);
+        boolean shield   = prefs.getBoolean(key + KEY_SHIELD_SUFFIX, true);
+        boolean drone    = prefs.getBoolean(key + KEY_DRONE_SUFFIX, true);
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, true, true, armor, mask, antiLog);
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────
@@ -284,7 +293,7 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_CARX,
                 CompetitiveCfgProfile.GAME_ARENABREAKOUT,
                 CompetitiveCfgProfile.GAME_SUPERCELL}) {
-            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true, true);
+            CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
         // One global Hz force for all
@@ -316,6 +325,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 MlbbConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                MlbbConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                MlbbConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                MlbbConfigPatcher.applyDroneViewUltraConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 MlbbConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -335,6 +353,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 PubgConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                PubgConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                PubgConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                PubgConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 PubgConfigPatcher.applyArmorDefConfig(pkg);
@@ -356,6 +383,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 CodmConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                CodmConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                CodmConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                CodmConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 CodmConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -375,6 +411,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 FreeFireConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                FreeFireConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                FreeFireConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                FreeFireConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 FreeFireConfigPatcher.applyArmorDefConfig(pkg);
@@ -396,6 +441,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 GenshinConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                GenshinConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                GenshinConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                GenshinConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 GenshinConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -415,6 +469,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 HokConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                HokConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                HokConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                HokConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 HokConfigPatcher.applyArmorDefConfig(pkg);
@@ -436,6 +499,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 RobloxConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                RobloxConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                RobloxConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                RobloxConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 RobloxConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -455,6 +527,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 ValorantConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                ValorantConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                ValorantConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                ValorantConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 ValorantConfigPatcher.applyArmorDefConfig(pkg);
@@ -476,6 +557,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                FarlightConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                FarlightConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                FarlightConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 FarlightConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -495,6 +585,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 BloodStrikeConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                BloodStrikeConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                BloodStrikeConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                BloodStrikeConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
@@ -516,6 +615,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 Standoff2ConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                Standoff2ConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                Standoff2ConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                Standoff2ConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -535,6 +643,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                WildRiftConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                WildRiftConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                WildRiftConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 WildRiftConfigPatcher.applyArmorDefConfig(pkg);
@@ -556,6 +673,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 CarXConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                CarXConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                CarXConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                CarXConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 CarXConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -576,6 +702,15 @@ public class CfgProfileManager {
             if (profile.isTrackingBulletEnabled()) {
                 ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
             }
+            if (profile.isFastCooldownEnabled()) {
+                ArenaBreakoutConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                ArenaBreakoutConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                ArenaBreakoutConfigPatcher.applyDroneViewConfig(pkg);
+            }
             if (profile.isArmorDefEnabled()) {
                 ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
             }
@@ -595,6 +730,15 @@ public class CfgProfileManager {
             }
             if (profile.isTrackingBulletEnabled()) {
                 SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                SupercellConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                SupercellConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                SupercellConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 SupercellConfigPatcher.applyArmorDefConfig(pkg);
@@ -701,6 +845,57 @@ public class CfgProfileManager {
                 CarXConfigPatcher.applyTrackingBulletConfig(pkg);
                 ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
                 SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
+            }
+            if (profile.isFastCooldownEnabled()) {
+                MlbbConfigPatcher.applyFastCooldownConfig(pkg);
+                PubgConfigPatcher.applyFastCooldownConfig(pkg);
+                CodmConfigPatcher.applyFastCooldownConfig(pkg);
+                FreeFireConfigPatcher.applyFastCooldownConfig(pkg);
+                GenshinConfigPatcher.applyFastCooldownConfig(pkg);
+                HokConfigPatcher.applyFastCooldownConfig(pkg);
+                RobloxConfigPatcher.applyFastCooldownConfig(pkg);
+                ValorantConfigPatcher.applyFastCooldownConfig(pkg);
+                FarlightConfigPatcher.applyFastCooldownConfig(pkg);
+                BloodStrikeConfigPatcher.applyFastCooldownConfig(pkg);
+                Standoff2ConfigPatcher.applyFastCooldownConfig(pkg);
+                WildRiftConfigPatcher.applyFastCooldownConfig(pkg);
+                CarXConfigPatcher.applyFastCooldownConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyFastCooldownConfig(pkg);
+                SupercellConfigPatcher.applyFastCooldownConfig(pkg);
+            }
+            if (profile.isShield1500Enabled()) {
+                MlbbConfigPatcher.applyShield1500Config(pkg);
+                PubgConfigPatcher.applyShield1500Config(pkg);
+                CodmConfigPatcher.applyShield1500Config(pkg);
+                FreeFireConfigPatcher.applyShield1500Config(pkg);
+                GenshinConfigPatcher.applyShield1500Config(pkg);
+                HokConfigPatcher.applyShield1500Config(pkg);
+                RobloxConfigPatcher.applyShield1500Config(pkg);
+                ValorantConfigPatcher.applyShield1500Config(pkg);
+                FarlightConfigPatcher.applyShield1500Config(pkg);
+                BloodStrikeConfigPatcher.applyShield1500Config(pkg);
+                Standoff2ConfigPatcher.applyShield1500Config(pkg);
+                WildRiftConfigPatcher.applyShield1500Config(pkg);
+                CarXConfigPatcher.applyShield1500Config(pkg);
+                ArenaBreakoutConfigPatcher.applyShield1500Config(pkg);
+                SupercellConfigPatcher.applyShield1500Config(pkg);
+            }
+            if (profile.isDroneViewUltraEnabled()) {
+                MlbbConfigPatcher.applyDroneViewUltraConfig(pkg);
+                PubgConfigPatcher.applyDroneViewConfig(pkg);
+                CodmConfigPatcher.applyDroneViewConfig(pkg);
+                FreeFireConfigPatcher.applyDroneViewConfig(pkg);
+                GenshinConfigPatcher.applyDroneViewConfig(pkg);
+                HokConfigPatcher.applyDroneViewConfig(pkg);
+                RobloxConfigPatcher.applyDroneViewConfig(pkg);
+                ValorantConfigPatcher.applyDroneViewConfig(pkg);
+                FarlightConfigPatcher.applyDroneViewConfig(pkg);
+                BloodStrikeConfigPatcher.applyDroneViewConfig(pkg);
+                Standoff2ConfigPatcher.applyDroneViewConfig(pkg);
+                WildRiftConfigPatcher.applyDroneViewConfig(pkg);
+                CarXConfigPatcher.applyDroneViewConfig(pkg);
+                ArenaBreakoutConfigPatcher.applyDroneViewConfig(pkg);
+                SupercellConfigPatcher.applyDroneViewConfig(pkg);
             }
             if (profile.isArmorDefEnabled()) {
                 MlbbConfigPatcher.applyArmorDefConfig(pkg);

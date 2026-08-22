@@ -51,12 +51,12 @@ public class CarXConfigPatcher {
                 "ShadowQuality=2\n" +
                 "DynamicResolution=0\n" +
                 "AimAssist=1\n" +
-                "AimAssistStrength=1000\n" +
+                "AimAssistStrength=10000\n" +
                 "AimAssistLevel=10\n" +
-                "AimPrecision=10\n" +
+                "AimPrecision=100\n" +
                 "SteeringAssist=1\n" +
-                "SteeringAssistStrength=1000\n" +
-                "TargetLockSensitivity=1000\n" +
+                "SteeringAssistStrength=10000\n" +
+                "TargetLockSensitivity=10000\n" +
                 "CrosshairMagnetism=100.00\n" +
                 "AimSnapStrength=100.00\n" +
                 "AimMagnetism=100.00\n" +
@@ -65,24 +65,28 @@ public class CarXConfigPatcher {
                 "AutoCounterSteer=1\n" +
                 "DriftTrackingAssist=1\n" +
                 "SteeringMagnetism=100.00\n" +
-                "HitboxExpansion=50.00\n" +
+                "HitboxExpansion=100.00\n" +
                 "TrackingBullet=1\n" +
                 "BulletTracking=1\n" +
                 "AutoTrackingBullet=1\n" +
                 "MagicBullet=1\n" +
-                "ChassisDurability=100.00\n" +
-                "CollisionDamageReduction=0.001\n" +
-                "BodyIntegrity=100.00\n" +
-                "ImpactAbsorption=10.00\n" +
-                "DamageReductionRatio=0.999\n" +
-                "DamageReduction=0.999\n" +
-                "IncomingDamageReduction=0.999\n" +
-                "PhysicalDefenseBoost=100.00\n" +
-                "ArmorBoost=10000\n" +
-                "TenacityRatio=0.999\n" +
-                "NitroMultiplier=100.00\n" +
-                "TorqueBoost=100.00\n" +
-                "DriftScoreMultiplier=10.0\n" +
+                "ChassisDurability=1500.00\n" +
+                "CollisionDamageReduction=0.0001\n" +
+                "BodyIntegrity=1500.00\n" +
+                "ImpactAbsorption=100.00\n" +
+                "DamageReductionRatio=0.9999\n" +
+                "DamageReduction=0.9999\n" +
+                "IncomingDamageReduction=0.9999\n" +
+                "PhysicalDefenseBoost=1000.00\n" +
+                "ArmorBoost=50000\n" +
+                "ShieldMultiplier=1500.00\n" +
+                "TenacityRatio=0.9999\n" +
+                "NitroMultiplier=1000.00\n" +
+                "TorqueBoost=1000.00\n" +
+                "DriftScoreMultiplier=50.0\n" +
+                "DroneView=1\n" +
+                "DroneViewHeight=4\n" +
+                "CameraFOV=180\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n";
@@ -103,16 +107,18 @@ public class CarXConfigPatcher {
                 "    \"graphic_quality\": \"ultra\",\n" +
                 "    \"resolution_scale\": 1.2,\n" +
                 "    \"hdr_enabled\": true,\n" +
+                "    \"drone_view\": true,\n" +
+                "    \"camera_fov\": 180,\n" +
                 "    \"vsync\": false\n" +
                 "  },\n" +
                 "  \"performance\": {\n" +
                 "    \"aim_assist\": 1,\n" +
-                "    \"aim_assist_strength\": 1000,\n" +
+                "    \"aim_assist_strength\": 10000,\n" +
                 "    \"aim_assist_level\": 10,\n" +
-                "    \"aim_precision\": 10,\n" +
+                "    \"aim_precision\": 100,\n" +
                 "    \"steering_assist\": 1,\n" +
-                "    \"steering_assist_strength\": 1000,\n" +
-                "    \"target_lock_sensitivity\": 1000,\n" +
+                "    \"steering_assist_strength\": 10000,\n" +
+                "    \"target_lock_sensitivity\": 10000,\n" +
                 "    \"crosshair_magnetism\": 100.00,\n" +
                 "    \"aim_snap_strength\": 100.00,\n" +
                 "    \"aim_magnetism\": 100.00,\n" +
@@ -120,24 +126,25 @@ public class CarXConfigPatcher {
                 "    \"apex_assist\": 1,\n" +
                 "    \"drift_tracking_assist\": 1,\n" +
                 "    \"steering_magnetism\": 100.00,\n" +
-                "    \"hitbox_expansion\": 50.00,\n" +
+                "    \"hitbox_expansion\": 100.00,\n" +
                 "    \"tracking_bullet\": 1,\n" +
                 "    \"bullet_tracking\": 1,\n" +
                 "    \"auto_tracking_bullet\": 1,\n" +
                 "    \"magic_bullet\": 1,\n" +
-                "    \"chassis_durability\": 100.00,\n" +
-                "    \"collision_damage_reduction\": 0.001,\n" +
-                "    \"body_integrity\": 100.00,\n" +
-                "    \"impact_absorption\": 10.00,\n" +
-                "    \"damage_reduction_ratio\": 0.999,\n" +
-                "    \"damage_reduction\": 0.999,\n" +
-                "    \"incoming_damage_reduction\": 0.999,\n" +
-                "    \"physical_defense_boost\": 100.00,\n" +
-                "    \"armor_boost\": 10000,\n" +
-                "    \"tenacity_ratio\": 0.999,\n" +
-                "    \"nitro_boost\": 100.00,\n" +
-                "    \"torque_multiplier\": 100.00,\n" +
-                "    \"drift_multiplier\": 10.0\n" +
+                "    \"chassis_durability\": 1500.00,\n" +
+                "    \"collision_damage_reduction\": 0.0001,\n" +
+                "    \"body_integrity\": 1500.00,\n" +
+                "    \"impact_absorption\": 100.00,\n" +
+                "    \"damage_reduction_ratio\": 0.9999,\n" +
+                "    \"damage_reduction\": 0.9999,\n" +
+                "    \"incoming_damage_reduction\": 0.9999,\n" +
+                "    \"physical_defense_boost\": 1000.00,\n" +
+                "    \"shield_multiplier\": 1500.00,\n" +
+                "    \"armor_boost\": 50000,\n" +
+                "    \"tenacity_ratio\": 0.9999,\n" +
+                "    \"nitro_boost\": 1000.00,\n" +
+                "    \"torque_multiplier\": 1000.00,\n" +
+                "    \"drift_multiplier\": 50.0\n" +
                 "  }\n" +
                 "}\n";
 
@@ -160,30 +167,86 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] boostKeys = {
-            "NitroMultiplier=100.00",
-            "TorqueBoost=100.00",
-            "DriftScoreMultiplier=10.00",
-            "ThrottleResponse=10.00",
-            "EnginePowerMultiplier=100.00",
-            "TopSpeedBoost=10.00",
-            "AccelerationMultiplier=100.00",
-            "DamageMultiplier=100.00",
-            "PhysicalDamageBoost=100.00",
-            "BulletDamageBoost=100.00",
-            "DamageBoost=100.00",
-            "DamageBoostRatio=100.00",
-            "HeadshotMultiplier=100.00",
+            "NitroMultiplier=1000.00",
+            "TorqueBoost=1000.00",
+            "DriftScoreMultiplier=50.00",
+            "ThrottleResponse=50.00",
+            "EnginePowerMultiplier=1000.00",
+            "TopSpeedBoost=50.00",
+            "AccelerationMultiplier=1000.00",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "DamageBoost=1000.00",
+            "DamageBoostRatio=1000.00",
+            "HeadshotMultiplier=1000.00",
             "HighDamageRateMode=1",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00"
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, boostKeys, "[EngineTune]");
         }
         Log.i(TAG, "CarX/Racing 1000% Nitro, Torque & Engine Boost applied for " + packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdKeys = {
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "InstantNitroRegen=1",
+            "NitroCooldownReduction=0.99",
+            "UnlimitedNitro=1",
+            "InstantGearShift=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
+        }
+        Log.i(TAG, "CarX Fast Cooldown & Instant Nitro applied for " + packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldKeys = {
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ChassisDurability=1500.00",
+            "BodyIntegrity=1500.00",
+            "ArmorBoost=50000",
+            "CollisionDamageReduction=0.0001",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "CarX 1500+ Shield & Chassis Durability applied for " + packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneKeys = {
+            "DroneView=1",
+            "DroneViewHeight=4",
+            "CameraFOV=180",
+            "FieldOfView=180",
+            "FOV=180"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "CarX Drone View Ultra FOV 180 applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -196,7 +259,7 @@ public class CarXConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] touchKeys = {
             "TouchRate=1000",
-            "SteeringSensitivity=1.1",
+            "SteeringSensitivity=1.5",
             "InputDeadZone=0.0",
             "TouchZeroDelay=1"
         };
@@ -210,27 +273,27 @@ public class CarXConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimPrecision=10",
-            "AimAssistStrength=1000",
+            "AimPrecision=100",
+            "AimAssistStrength=10000",
             "AimAssistLevel=10",
             "SteeringAssist=1",
-            "SteeringAssistStrength=1000",
+            "SteeringAssistStrength=10000",
             "CounterSteerAssist=1",
             "CrosshairMagnetism=100.00",
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
+            "TargetLockSensitivity=10000",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "SteeringSensitivity=500",
+            "SteeringSensitivity=1000",
             "AutoSteering=1"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[SteeringAssist]");
         }
-        Log.i(TAG, "CarX 1000% Steering/Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "CarX 10000 Steering/Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -265,26 +328,26 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ChassisDurability=100.00",
-            "CollisionDamageReduction=0.001",
-            "BodyIntegrity=100.00",
-            "ImpactAbsorption=10.00",
-            "ArmorBoost=10000",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "ShieldMultiplier=100.00",
-            "DamageAbsorbRatio=50.00",
-            "TenacityRatio=0.999",
+            "ChassisDurability=1500.00",
+            "CollisionDamageReduction=0.0001",
+            "BodyIntegrity=1500.00",
+            "ImpactAbsorption=100.00",
+            "ArmorBoost=50000",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "ShieldMultiplier=1500.00",
+            "DamageAbsorbRatio=100.00",
+            "TenacityRatio=0.9999",
             "ResilienceLevel=10",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
-            "ExplosionResistance=0.999",
+            "HealthRegenBoost=1000.00",
+            "ExplosionResistance=0.9999",
             "FallDamageReduction=1.00",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
@@ -300,18 +363,18 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -321,7 +384,7 @@ public class CarXConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "CarX 10.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "CarX 15.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
@@ -338,7 +401,7 @@ public class CarXConfigPatcher {
             "SteeringMagnetism=100.00",
             "TireGripTracking=1",
             "TargetLockTracking=1",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "BulletMagnetism=100.00",
             "TrackingBullet=1",
             "BulletTracking=1",

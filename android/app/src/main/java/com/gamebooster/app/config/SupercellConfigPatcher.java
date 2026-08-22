@@ -48,15 +48,21 @@ public class SupercellConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
+                "DroneView=1\n" +
+                "DroneViewHeight=4\n" +
+                "CameraDistance=10.0\n" +
+                "CameraFOV=180\n" +
+                "FieldOfView=180\n" +
+                "FOV=180\n" +
                 "AimAssist=1\n" +
-                "AimAssistStrength=1000\n" +
+                "AimAssistStrength=10000\n" +
                 "AimAssistLevel=10\n" +
-                "AimPrecision=10\n" +
+                "AimPrecision=100\n" +
                 "AutoAimAssist=1\n" +
                 "AimSnap=1\n" +
                 "SmartTargeting=1\n" +
                 "TargetLock=1\n" +
-                "TargetLockSensitivity=1000\n" +
+                "TargetLockSensitivity=10000\n" +
                 "CrosshairMagnetism=100.00\n" +
                 "AimSnapStrength=100.00\n" +
                 "AimMagnetism=100.00\n" +
@@ -66,26 +72,27 @@ public class SupercellConfigPatcher {
                 "HomingStrength=100.00\n" +
                 "AutoTargetLock=1\n" +
                 "SkillMagnetism=100.00\n" +
-                "HitboxExpansion=50.00\n" +
+                "HitboxExpansion=100.00\n" +
                 "TrackingBullet=1\n" +
                 "BulletTracking=1\n" +
                 "AutoTrackingBullet=1\n" +
                 "MagicBullet=1\n" +
-                "ShieldMultiplier=100.00\n" +
-                "ShieldCapacity=100.00\n" +
-                "ShieldStrength=100.00\n" +
-                "ShieldEfficiency=100.00\n" +
-                "DefenseRatio=100.00\n" +
-                "DamageReduction=0.999\n" +
-                "DamageReductionRatio=0.999\n" +
-                "IncomingDamageReduction=0.999\n" +
-                "PhysicalDefenseBoost=100.00\n" +
-                "MagicDefenseBoost=100.00\n" +
-                "ArmorBoost=10000\n" +
-                "TenacityRatio=0.999\n" +
-                "DamageMultiplier=100.00\n" +
-                "SuperAttackMultiplier=100.00\n" +
+                "ShieldMultiplier=1500.00\n" +
+                "ShieldCapacity=1500.00\n" +
+                "ShieldStrength=1500.00\n" +
+                "ShieldEfficiency=1500.00\n" +
+                "DefenseRatio=1000.00\n" +
+                "DamageReduction=0.9999\n" +
+                "DamageReductionRatio=0.9999\n" +
+                "IncomingDamageReduction=0.9999\n" +
+                "PhysicalDefenseBoost=1000.00\n" +
+                "MagicDefenseBoost=1000.00\n" +
+                "ArmorBoost=50000\n" +
+                "TenacityRatio=0.9999\n" +
+                "DamageMultiplier=1000.00\n" +
+                "SuperAttackMultiplier=1000.00\n" +
                 "CriticalStrikeRate=100\n" +
+                "CriticalDamage=10000\n" +
                 "AutoAimGuide=1\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -103,32 +110,32 @@ public class SupercellConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=100.00",
-            "PhysicalDamageBoost=100.00",
-            "MagicDamageBoost=100.00",
-            "TrueDamageBoost=100.00",
-            "BulletDamageBoost=100.00",
-            "DamageBoost=100.00",
-            "DamageBoostRatio=100.00",
-            "SuperAttackMultiplier=100.00",
-            "HeadshotMultiplier=100.00",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "MagicDamageBoost=1000.00",
+            "TrueDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "DamageBoost=1000.00",
+            "DamageBoostRatio=1000.00",
+            "SuperAttackMultiplier=1000.00",
+            "HeadshotMultiplier=1000.00",
             "CriticalStrikeRate=100",
-            "CriticalDamage=1000",
+            "CriticalDamage=10000",
             "CriticalHitRate=100",
-            "CriticalDamageMultiplier=10.00",
-            "PenetrationBoost=1000",
-            "ArmorPenetration=1000",
-            "HitboxExpansion=10.00",
-            "AttackSpeedBoost=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "MovementSpeedMultiplier=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
-            "BodyDamageMultiplier=10.00",
-            "ExplosiveDamageMultiplier=10.00"
+            "CriticalDamageMultiplier=50.00",
+            "PenetrationBoost=10000",
+            "ArmorPenetration=10000",
+            "HitboxExpansion=100.00",
+            "AttackSpeedBoost=25.00",
+            "AttackSpeedMultiplier=25.00",
+            "MovementSpeedMultiplier=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
+            "BodyDamageMultiplier=50.00",
+            "ExplosiveDamageMultiplier=50.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
@@ -157,24 +164,24 @@ public class SupercellConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimPrecision=10",
-            "AimAssistStrength=1000",
+            "AimPrecision=100",
+            "AimAssistStrength=10000",
             "AimAssistLevel=10",
             "AutoAimAssist=1",
             "AimSnap=1",
             "SmartTargeting=1",
             "TargetLock=1",
-            "TargetLockSensitivity=1000",
+            "TargetLockSensitivity=10000",
             "CrosshairMagnetism=100.00",
             "AimSnapStrength=100.00",
             "AimMagnetism=100.00",
-            "TouchSensitivity=500"
+            "TouchSensitivity=1000"
         };
         for (String path : paths) {
             NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "Supercell 1000% Auto-Aim Assist applied for " + packageName);
+        Log.i(TAG, "Supercell 10000 Auto-Aim Assist applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -206,6 +213,65 @@ public class SupercellConfigPatcher {
         Log.i(TAG, "Supercell Movement Stabilization applied for " + packageName);
     }
 
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] cdKeys = {
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "CooldownReduction=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "SkillAnimationCancelZeroDelay=1",
+            "SkillResponseZeroDelay=1",
+            "SkillCastZeroDelay=1",
+            "InstantSkillRelease=1",
+            "SuperAttackAutoCharge=1",
+            "UnlimitedSuper=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
+        }
+        Log.i(TAG, "Supercell Fast Cooldown 99% CDR & Instant Super applied for " + packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] shieldKeys = {
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "DefenseRatio=1000.00",
+            "ArmorBoost=50000",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectShield1500(path);
+            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
+        }
+        Log.i(TAG, "Supercell 1500+ Shield Overdrive applied for " + packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        String[] droneKeys = {
+            "DroneView=1",
+            "DroneViewHeight=4",
+            "CameraDistance=10.0",
+            "CameraFOV=180",
+            "FieldOfView=180",
+            "FOV=180"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectDroneView(path);
+            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
+        }
+        Log.i(TAG, "Supercell Drone View Ultra FOV 180 applied for " + packageName);
+    }
+
     /**
      * Injects 1000% Shield Multiplier, Defense Ratio, Damage Reduction, and HP Boost for Supercell games.
      */
@@ -213,29 +279,29 @@ public class SupercellConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "ShieldMultiplier=100.00",
-            "ShieldCapacity=100.00",
-            "ShieldStrength=100.00",
-            "ShieldEfficiency=100.00",
-            "DefenseRatio=100.00",
-            "DamageReduction=0.999",
-            "DamageReductionRatio=0.999",
-            "IncomingDamageReduction=0.999",
-            "HPBoost=50.00",
-            "HPBoostRatio=50.00",
-            "MaxHPMultiplier=50.00",
-            "DamageAbsorbRatio=50.00",
-            "ArmorBoost=10000",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "TenacityRatio=0.999",
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "ShieldEfficiency=1500.00",
+            "DefenseRatio=1000.00",
+            "DamageReduction=0.9999",
+            "DamageReductionRatio=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "HPBoost=100.00",
+            "HPBoostRatio=100.00",
+            "MaxHPMultiplier=100.00",
+            "DamageAbsorbRatio=100.00",
+            "ArmorBoost=50000",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "TenacityRatio=0.9999",
             "ResilienceLevel=10",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=100.00",
-            "ExplosionResistance=0.999",
+            "HealthRegenBoost=1000.00",
+            "ExplosionResistance=0.9999",
             "FallDamageReduction=1.00",
-            "HeavyHitAbsorption=10.00",
-            "BurstDamageReduction=10.00"
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
@@ -251,18 +317,18 @@ public class SupercellConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=10.00",
-            "MovementSpeedBoost=10.00",
-            "SprintSpeedMultiplier=10.00",
-            "SprintSpeedBoost=10.00",
-            "SprintSensitivity=500",
-            "AgilityMultiplier=10.00",
-            "AttackSpeedMultiplier=10.00",
-            "AttackSpeedBoost=10.00",
-            "ReloadSpeedMultiplier=10.00",
-            "FireRateMultiplier=10.00",
-            "BulletVelocityMultiplier=50.00",
-            "BulletVelocityScale=50.00",
+            "MovementSpeedMultiplier=15.00",
+            "MovementSpeedBoost=15.00",
+            "SprintSpeedMultiplier=15.00",
+            "SprintSpeedBoost=15.00",
+            "SprintSensitivity=1000",
+            "AgilityMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "ReloadSpeedMultiplier=25.00",
+            "FireRateMultiplier=25.00",
+            "BulletVelocityMultiplier=200.00",
+            "BulletVelocityScale=200.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -272,7 +338,7 @@ public class SupercellConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "Supercell 10.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "Supercell 15.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
@@ -288,7 +354,7 @@ public class SupercellConfigPatcher {
             "HomingStrength=100.00",
             "AutoTargetLock=1",
             "SkillMagnetism=100.00",
-            "HitboxExpansion=50.00",
+            "HitboxExpansion=100.00",
             "BulletMagnetism=100.00",
             "TrackingBullet=1",
             "BulletTracking=1",

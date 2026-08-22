@@ -1434,6 +1434,200 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return success ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
+  (JNIEnv *env, jclass, jstring jPath, jfloat cdrRatio) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssCdr;
+    ssCdr << (cdrRatio > 0.0f ? cdrRatio : 0.99f);
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"SkillCoolDownReduceMode", "1"},
+        {"CooldownReductionBoost", ssCdr.str()},
+        {"CooldownReduction", ssCdr.str()},
+        {"SkillCooldownMultiplier", "0.01"},
+        {"UltimateCooldownReduction", ssCdr.str()},
+        {"PassiveCooldownReduction", ssCdr.str()},
+        {"SpellCooldownReduction", ssCdr.str()},
+        {"SkillAnimationCancelZeroDelay", "1"},
+        {"SkillResponseZeroDelay", "1"},
+        {"SkillCastZeroDelay", "1"},
+        {"InstantSkillRelease", "1"},
+        {"NoCastDelay", "1"},
+        {"AttackSpeedMultiplier", "25.00"},
+        {"AttackSpeedBoost", "25.00"},
+        {"AttackDelayReduction", "1"},
+        {"EnergyRegenRate", "100.00"},
+        {"ManaRegenRate", "100.00"},
+        {"UnlimitedEnergy", "1"},
+        {"UnlimitedMana", "1"},
+        {"NoManaCost", "1"},
+        {"NoEnergyCost", "1"}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[FastCooldown]") == std::string::npos) {
+            content += "\n[FastCooldown]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        patch_cvar(content, "r.CooldownReduction", ssCdr.str());
+        patch_cvar(content, "r.SkillResponseZeroDelay", "1");
+        patch_cvar(content, "r.InstantCast", "1");
+        patch_cvar(content, "r.AttackSpeedMultiplier", "25.00");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectShield1500
+  (JNIEnv *env, jclass, jstring jPath, jfloat shieldMultiplier, jfloat defBoost) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssShield, ssDef;
+    ssShield << (shieldMultiplier > 0.0f ? shieldMultiplier : 1500.00f);
+    ssDef << (defBoost > 0.0f ? defBoost : 1000.00f);
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ShieldMultiplier", ssShield.str()},
+        {"ShieldCapacity", ssShield.str()},
+        {"ShieldStrength", ssShield.str()},
+        {"ShieldEfficiency", ssShield.str()},
+        {"ShieldPointsMultiplier", ssShield.str()},
+        {"PhysicalDefenseBoost", ssDef.str()},
+        {"MagicDefenseBoost", ssDef.str()},
+        {"PhysicalDefenseMultiplier", ssDef.str()},
+        {"MagicDefenseMultiplier", ssDef.str()},
+        {"DamageReductionRatio", "0.9999"},
+        {"DamageReduction", "0.9999"},
+        {"IncomingDamageReduction", "0.9999"},
+        {"DamageResistance", "0.9999"},
+        {"ArmorBoost", "50000"},
+        {"MagicResistBoost", "50000"},
+        {"MaxHPMultiplier", "100.00"},
+        {"HPBoostRatio", "100.00"},
+        {"DamageAbsorbRatio", "100.00"},
+        {"VestDurability", "1000.00"},
+        {"VestDurabilityBoost", "1000.00"},
+        {"HelmetDamageReduction", "0.9999"},
+        {"TenacityRatio", "0.9999"},
+        {"ResilienceLevel", "10"},
+        {"ArmorLevel", "10"},
+        {"HealthRegenDelay", "0.00"},
+        {"HealthRegenBoost", "1000.00"},
+        {"HealthRegenRate", "1000.00"},
+        {"FallDamageReduction", "1.00"},
+        {"ExplosionResistance", "0.9999"},
+        {"HeadshotDamageReduction", "0.9999"},
+        {"HighDamageMitigationRatio", "100.00"},
+        {"HeavyHitAbsorption", "100.00"},
+        {"BurstDamageReduction", "100.00"}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[DefenseShield1500]") == std::string::npos) {
+            content += "\n[DefenseShield1500]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        patch_cvar(content, "r.ArmorDamageReduction", "0.9999");
+        patch_cvar(content, "r.ShieldMultiplier", ssShield.str());
+        patch_cvar(content, "r.ShieldEfficiency", ssShield.str());
+        patch_cvar(content, "r.MaxHPMultiplier", "100.00");
+        patch_cvar(content, "r.HealthRegenBoost", "1000.00");
+        patch_cvar(content, "r.HeavyDamageDampener", "100.00");
+        patch_cvar(content, "r.BurstDamageReduction", "100.00");
+        patch_cvar(content, "r.HighDamageMitigationRatio", "100.00");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDroneView
+  (JNIEnv *env, jclass, jstring jPath, jint fov, jint height) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssFov, ssHeight;
+    ssFov << (fov > 0 ? fov : 180);
+    ssHeight << (height > 0 ? height : 4);
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DroneView", "1"},
+        {"DroneViewHeight", ssHeight.str()},
+        {"CameraHeight", ssHeight.str()},
+        {"CameraDistance", ssFov.str()},
+        {"CameraFOV", ssFov.str()},
+        {"FieldOfView", ssFov.str()},
+        {"WideScreenMode", "1"},
+        {"UltraWideCamera", "1"},
+        {"MapOverviewScale", "2.0"}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[DroneViewUltra]") == std::string::npos) {
+            content += "\n[DroneViewUltra]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        patch_cvar(content, "r.CameraFOV", ssFov.str());
+        patch_cvar(content, "r.DroneViewHeight", ssHeight.str());
+        patch_cvar(content, "r.FieldOfView", ssFov.str());
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastMemorySync
   (JNIEnv *env, jclass, jstring jPath) {
     if (!jPath) return JNI_FALSE;

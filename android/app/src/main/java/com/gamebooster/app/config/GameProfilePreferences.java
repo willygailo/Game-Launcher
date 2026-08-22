@@ -77,6 +77,6 @@ public final class GameProfilePreferences {
                          pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
 
         CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ " + cfg.getTargetFps() + " • GYRO 1000Hz (SMOOTH)" + (cfg.isAimAssistEnabled() ? " • AIM 150%" : "") + (cfg.isRecoilControlEnabled() ? " • NO RECOIL" : "") + (cfg.isMlbbDamageScriptEnabled() ? " • DMG 150%" : "") + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
+        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ " + cfg.getTargetFps() + " • GYRO 1000Hz" + (cfg.isAimAssistEnabled() ? " • AIM 10000" : "") + (cfg.isRecoilControlEnabled() ? " • NO RECOIL" : "") + (cfg.isMlbbDamageScriptEnabled() ? " • DMG 1000+" : "") + (cfg.isTrackingBulletEnabled() ? " • TRACKER 1000+" : "") + (cfg.isFastCooldownEnabled() ? " • FAST CD 99%" : "") + (cfg.isShield1500Enabled() ? " • SHIELD 1500+" : "") + (cfg.isDroneViewUltraEnabled() ? " • DRONE FOV 180" : "") + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
     }
 }

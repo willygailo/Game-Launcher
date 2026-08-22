@@ -60,6 +60,9 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectTrackingBullet1000(String path, float trackingStrength, float hitboxMultiplier);
     public static native boolean nativeInjectArmorDef(String path, float defBoost, float dmgReduction);
     public static native boolean nativeInjectArmorDef1000(String path, float defBoost, float dmgReduction);
+    public static native boolean nativeInjectFastCooldown(String path, float cdrRatio);
+    public static native boolean nativeInjectShield1500(String path, float shieldMultiplier, float defBoost);
+    public static native boolean nativeInjectDroneView(String path, int fov, int height);
     public static native boolean nativeInjectUltraExtremeGraphics(String path, int targetFps);
     public static native boolean nativeInjectPerGameProfile(String path, String gameKey, int targetFps, boolean highDamage, boolean noRecoil, boolean trackingBullet, boolean aimAssist);
     public static native boolean nativeFastMemorySync(String path);
@@ -789,6 +792,201 @@ public class NativeConfigInjector {
     }
 
     /**
+     * Injects Fast Cooldown (CDR 0.99, zero animation delay, instant cast) into target config file.
+     */
+    public static boolean injectFastCooldown(String path) {
+        return injectFastCooldown(path, 185);
+    }
+
+    public static boolean injectFastCooldown(String path, int targetFps) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectFastCooldown(path, 0.99f)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] cdKeys = {
+            "SkillCoolDownReduceMode=1",
+            "CooldownReductionBoost=0.99",
+            "CooldownReduction=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "UltimateCooldownReduction=0.99",
+            "PassiveCooldownReduction=0.99",
+            "SpellCooldownReduction=0.99",
+            "SkillAnimationCancelZeroDelay=1",
+            "SkillResponseZeroDelay=1",
+            "SkillCastZeroDelay=1",
+            "InstantSkillRelease=1",
+            "NoCastDelay=1",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "AttackDelayReduction=1",
+            "EnergyRegenRate=100.00",
+            "ManaRegenRate=100.00",
+            "UnlimitedEnergy=1",
+            "UnlimitedMana=1",
+            "NoManaCost=1",
+            "NoEnergyCost=1",
+            "+CVars=r.CooldownReduction=0.99",
+            "+CVars=r.SkillResponseZeroDelay=1",
+            "+CVars=r.InstantCast=1",
+            "+CVars=r.AttackSpeedMultiplier=25.00"
+        };
+        return batchInjectKeys(path, cdKeys, "[FastCooldown]");
+    }
+
+    /**
+     * Injects Fast Cooldown across all candidate paths for a game package.
+     */
+    public static void applyFastCooldownConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim().toLowerCase();
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        if (paths == null || paths.isEmpty()) return;
+
+        for (String path : paths) {
+            injectFastCooldown(path);
+        }
+        Log.i(TAG, "NativeConfigInjector: Applied Fast Cooldown to " + paths.size() + " paths for " + packageName);
+    }
+
+    /**
+     * Injects 1500+ Shield Overdrive and God-Mode Damage Mitigation into target config file.
+     */
+    public static boolean injectShield1500(String path) {
+        return injectShield1500(path, 185);
+    }
+
+    public static boolean injectShield1500(String path, int targetFps) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectShield1500(path, 1500.00f, 1000.00f)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] shieldKeys = {
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "ShieldEfficiency=1500.00",
+            "ShieldPointsMultiplier=1500.00",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "PhysicalDefenseMultiplier=1000.00",
+            "MagicDefenseMultiplier=1000.00",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "DamageResistance=0.9999",
+            "ArmorBoost=50000",
+            "MagicResistBoost=50000",
+            "MaxHPMultiplier=100.00",
+            "HPBoostRatio=100.00",
+            "DamageAbsorbRatio=100.00",
+            "VestDurability=1000.00",
+            "VestDurabilityBoost=1000.00",
+            "HelmetDamageReduction=0.9999",
+            "TenacityRatio=0.9999",
+            "ResilienceLevel=10",
+            "ArmorLevel=10",
+            "HealthRegenDelay=0.00",
+            "HealthRegenBoost=1000.00",
+            "HealthRegenRate=1000.00",
+            "FallDamageReduction=1.00",
+            "ExplosionResistance=0.9999",
+            "HeadshotDamageReduction=0.9999",
+            "HighDamageMitigationRatio=100.00",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00",
+            "+CVars=r.ArmorDamageReduction=0.9999",
+            "+CVars=r.ShieldMultiplier=1500.00",
+            "+CVars=r.ShieldEfficiency=1500.00",
+            "+CVars=r.MaxHPMultiplier=100.00",
+            "+CVars=r.HealthRegenBoost=1000.00",
+            "+CVars=r.HeavyDamageDampener=100.00",
+            "+CVars=r.BurstDamageReduction=100.00",
+            "+CVars=r.HighDamageMitigationRatio=100.00"
+        };
+        return batchInjectKeys(path, shieldKeys, "[DefenseShield1500]");
+    }
+
+    /**
+     * Injects 1500+ Shield Overdrive across all candidate paths for a game package.
+     */
+    public static void applyShield1500Config(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim().toLowerCase();
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        if (paths == null || paths.isEmpty()) return;
+
+        for (String path : paths) {
+            injectShield1500(path);
+        }
+        Log.i(TAG, "NativeConfigInjector: Applied 1500+ Shield to " + paths.size() + " paths for " + packageName);
+    }
+
+    /**
+     * Injects Drone View (Camera FOV 180, Height 4.0) into target config file.
+     */
+    public static boolean injectDroneView(String path) {
+        return injectDroneView(path, 180, 4);
+    }
+
+    public static boolean injectDroneView(String path, int fov, int height) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectDroneView(path, fov, height)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] droneKeys = {
+            "DroneView=1",
+            "DroneViewHeight=" + height,
+            "CameraHeight=" + height,
+            "CameraDistance=" + fov,
+            "CameraFOV=" + fov,
+            "FieldOfView=" + fov,
+            "WideScreenMode=1",
+            "UltraWideCamera=1",
+            "MapOverviewScale=2.0",
+            "+CVars=r.CameraFOV=" + fov,
+            "+CVars=r.DroneViewHeight=" + height,
+            "+CVars=r.FieldOfView=" + fov
+        };
+        return batchInjectKeys(path, droneKeys, "[DroneViewUltra]");
+    }
+
+    /**
+     * Injects Drone View across all candidate paths for a game package.
+     */
+    public static void applyDroneViewConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim().toLowerCase();
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        if (paths == null || paths.isEmpty()) return;
+
+        for (String path : paths) {
+            injectDroneView(path);
+        }
+        Log.i(TAG, "NativeConfigInjector: Applied Drone View FOV 180 to " + paths.size() + " paths for " + packageName);
+    }
+
+    /**
      * Batch injects key-value pairs into target configuration file using sed/grep or C++ batch patch.
      */
     public static boolean batchInjectKeys(String path, String[] keyValues, String sectionHeader) {
@@ -929,7 +1127,7 @@ public class NativeConfigInjector {
     }
 
     /**
-     * Injects all updated competitive configurations (High Damage, No Recoil, High Aim Assist, Tracking Bullet, Armor Def, Super Touch, Ultra Extreme Graphics)
+     * Injects all updated competitive configurations (High Damage, No Recoil, High Aim Assist, Tracking Bullet, Armor Def, Shield 1500, Fast CD, Drone View, Super Touch, Ultra Extreme Graphics)
      * across all candidate paths for a game package.
      */
     public static int injectAllConfigsForPackage(String packageName, int targetFps) {
@@ -947,6 +1145,9 @@ public class NativeConfigInjector {
             ok |= injectAimAssist(path);
             ok |= injectTrackingBullet(path);
             ok |= injectArmorDef(path);
+            ok |= injectShield1500(path);
+            ok |= injectFastCooldown(path);
+            ok |= injectDroneView(path);
             ok |= injectSuperFastTouch(path);
             if (ok) count++;
         }
