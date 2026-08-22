@@ -66,27 +66,55 @@ public class CodmConfigPatcher {
                         "  \"FieldOfView\": 150,\n" +
                         "  \"FPP_FOV\": 150,\n" +
                         "  \"TPP_FOV\": 100,\n" +
-                        "  \"SprintSensitivity\": 150,\n" +
+                        "  \"SprintSensitivity\": 500,\n" +
                         "  \"AlwaysSprint\": 1,\n" +
                         "  \"AimAssist\": 1,\n" +
-                        "  \"AimAssistStrength\": 150,\n" +
-                        "  \"AimAssistLevel\": 5,\n" +
-                        "  \"TargetLockSensitivity\": 150,\n" +
+                        "  \"AimAssistStrength\": 1000,\n" +
+                        "  \"AimAssistLevel\": 10,\n" +
+                        "  \"AimPrecision\": 10,\n" +
+                        "  \"TargetLockSensitivity\": 1000,\n" +
+                        "  \"CrosshairMagnetism\": 100.00,\n" +
+                        "  \"AimSnapStrength\": 100.00,\n" +
+                        "  \"AimMagnetism\": 100.00,\n" +
+                        "  \"TrackingBullet\": 1,\n" +
+                        "  \"BulletTracking\": 1,\n" +
+                        "  \"AutoTrackingBullet\": 1,\n" +
+                        "  \"MagicBullet\": 1,\n" +
+                        "  \"HitboxExpansion\": 50.00,\n" +
+                        "  \"BulletMagnetism\": 100.00,\n" +
+                        "  \"ProjectileHoming\": 1,\n" +
+                        "  \"HomingStrength\": 100.00,\n" +
+                        "  \"BulletCurveFactor\": 50.00,\n" +
+                        "  \"BulletVelocityMultiplier\": 100.00,\n" +
+                        "  \"PhysicalDefenseBoost\": 100.00,\n" +
+                        "  \"MagicDefenseBoost\": 100.00,\n" +
+                        "  \"DamageReductionRatio\": 0.999,\n" +
+                        "  \"DamageReduction\": 0.999,\n" +
+                        "  \"IncomingDamageReduction\": 0.999,\n" +
+                        "  \"ShieldMultiplier\": 100.00,\n" +
+                        "  \"ShieldCapacity\": 100.00,\n" +
+                        "  \"ArmorBoost\": 10000,\n" +
+                        "  \"VestDurability\": 100.00,\n" +
+                        "  \"HelmetDamageReduction\": 0.999,\n" +
+                        "  \"TenacityRatio\": 0.999,\n" +
                         "  \"RecoilScale\": 0.00,\n" +
-                        "  \"WeaponKickReduction\": 1.50,\n" +
-                        "  \"AllGunsRecoilReduction\": 1.50,\n" +
-                        "  \"ScopeShakeReduction\": 1.50,\n" +
+                        "  \"WeaponKickReduction\": 1.00,\n" +
+                        "  \"AllGunsRecoilReduction\": 1.00,\n" +
+                        "  \"ScopeShakeReduction\": 1.00,\n" +
                         "  \"ScopeRecoilMultiplier\": 0.00,\n" +
-                        "  \"ScopeStability\": 1.50,\n" +
+                        "  \"ScopeStability\": 5.00,\n" +
                         "  \"VerticalRecoilScale\": 0.00,\n" +
                         "  \"HorizontalRecoilScale\": 0.00,\n" +
                         "  \"BulletSpread\": 0.00,\n" +
-                        "  \"DamageBoostRatio\": 2.50,\n" +
-                        "  \"BulletDamageBoost\": 2.50,\n" +
-                        "  \"HeadshotDamageMultiplier\": 3.50,\n" +
-                        "  \"CriticalHitRate\": 99,\n" +
+                        "  \"DamageMultiplier\": 100.00,\n" +
+                        "  \"DamageBoostRatio\": 100.00,\n" +
+                        "  \"BulletDamageBoost\": 100.00,\n" +
+                        "  \"HeadshotDamageMultiplier\": 100.00,\n" +
+                        "  \"CriticalHitRate\": 100,\n" +
+                        "  \"CriticalDamage\": 1000,\n" +
+                        "  \"ArmorPenetration\": 1000,\n" +
                         "  \"GyroSampleRate\": 1000,\n" +
-                        "  \"GyroSensitivityRatio\": 2.5,\n" +
+                        "  \"GyroSensitivityRatio\": 10.0,\n" +
                         "  \"GyroZeroDelay\": 1,\n" +
                         "  \"GyroSmoothFactor\": 1,\n" +
                         "  \"GyroStabilization\": 1,\n" +
@@ -114,24 +142,45 @@ public class CodmConfigPatcher {
                         "  <int name=\"FieldOfView\" value=\"150\" />\n" +
                         "  <int name=\"FPP_FOV\" value=\"150\" />\n" +
                         "  <int name=\"TPP_FOV\" value=\"100\" />\n" +
-                        "  <int name=\"SprintSensitivity\" value=\"150\" />\n" +
+                        "  <int name=\"SprintSensitivity\" value=\"500\" />\n" +
                         "  <int name=\"AimAssist\" value=\"1\" />\n" +
-                        "  <int name=\"AimAssistStrength\" value=\"150\" />\n" +
-                        "  <int name=\"AimAssistLevel\" value=\"5\" />\n" +
-                        "  <int name=\"TargetLockSensitivity\" value=\"150\" />\n" +
+                        "  <int name=\"AimAssistStrength\" value=\"1000\" />\n" +
+                        "  <int name=\"AimAssistLevel\" value=\"10\" />\n" +
+                        "  <int name=\"AimPrecision\" value=\"10\" />\n" +
+                        "  <int name=\"TargetLockSensitivity\" value=\"1000\" />\n" +
+                        "  <float name=\"CrosshairMagnetism\" value=\"100.00\" />\n" +
+                        "  <float name=\"AimSnapStrength\" value=\"100.00\" />\n" +
+                        "  <float name=\"AimMagnetism\" value=\"100.00\" />\n" +
+                        "  <int name=\"TrackingBullet\" value=\"1\" />\n" +
+                        "  <int name=\"BulletTracking\" value=\"1\" />\n" +
+                        "  <int name=\"AutoTrackingBullet\" value=\"1\" />\n" +
+                        "  <int name=\"MagicBullet\" value=\"1\" />\n" +
+                        "  <float name=\"HitboxExpansion\" value=\"50.00\" />\n" +
+                        "  <float name=\"BulletMagnetism\" value=\"100.00\" />\n" +
+                        "  <float name=\"BulletVelocityMultiplier\" value=\"100.00\" />\n" +
+                        "  <float name=\"PhysicalDefenseBoost\" value=\"100.00\" />\n" +
+                        "  <float name=\"MagicDefenseBoost\" value=\"100.00\" />\n" +
+                        "  <float name=\"DamageReductionRatio\" value=\"0.999\" />\n" +
+                        "  <float name=\"ShieldMultiplier\" value=\"100.00\" />\n" +
+                        "  <int name=\"ArmorBoost\" value=\"10000\" />\n" +
+                        "  <float name=\"VestDurability\" value=\"100.00\" />\n" +
+                        "  <float name=\"HelmetDamageReduction\" value=\"0.999\" />\n" +
                         "  <float name=\"RecoilScale\" value=\"0.00\" />\n" +
-                        "  <float name=\"WeaponKickReduction\" value=\"1.50\" />\n" +
-                        "  <float name=\"AllGunsRecoilReduction\" value=\"1.50\" />\n" +
-                        "  <float name=\"ScopeShakeReduction\" value=\"1.50\" />\n" +
+                        "  <float name=\"WeaponKickReduction\" value=\"1.00\" />\n" +
+                        "  <float name=\"AllGunsRecoilReduction\" value=\"1.00\" />\n" +
+                        "  <float name=\"ScopeShakeReduction\" value=\"1.00\" />\n" +
                         "  <float name=\"ScopeRecoilMultiplier\" value=\"0.00\" />\n" +
                         "  <float name=\"VerticalRecoilScale\" value=\"0.00\" />\n" +
                         "  <float name=\"HorizontalRecoilScale\" value=\"0.00\" />\n" +
-                        "  <float name=\"DamageBoostRatio\" value=\"2.50\" />\n" +
-                        "  <float name=\"BulletDamageBoost\" value=\"2.50\" />\n" +
-                        "  <float name=\"HeadshotDamageMultiplier\" value=\"3.50\" />\n" +
-                        "  <int name=\"CriticalHitRate\" value=\"99\" />\n" +
+                        "  <float name=\"DamageMultiplier\" value=\"100.00\" />\n" +
+                        "  <float name=\"DamageBoostRatio\" value=\"100.00\" />\n" +
+                        "  <float name=\"BulletDamageBoost\" value=\"100.00\" />\n" +
+                        "  <float name=\"HeadshotDamageMultiplier\" value=\"100.00\" />\n" +
+                        "  <int name=\"CriticalHitRate\" value=\"100\" />\n" +
+                        "  <int name=\"CriticalDamage\" value=\"1000\" />\n" +
+                        "  <int name=\"ArmorPenetration\" value=\"1000\" />\n" +
                         "  <int name=\"GyroSampleRate\" value=\"1000\" />\n" +
-                        "  <float name=\"GyroSensitivityRatio\" value=\"2.5\" />\n" +
+                        "  <float name=\"GyroSensitivityRatio\" value=\"10.0\" />\n" +
                         "  <int name=\"GyroZeroDelay\" value=\"1\" />\n" +
                         "  <int name=\"GyroSmoothFactor\" value=\"1\" />\n" +
                         "  <int name=\"GyroStabilization\" value=\"1\" />\n" +
@@ -159,26 +208,54 @@ public class CodmConfigPatcher {
                         "FieldOfView=150\n" +
                         "FPP_FOV=150\n" +
                         "TPP_FOV=100\n" +
-                        "SprintSensitivity=150\n" +
+                        "SprintSensitivity=500\n" +
                         "AimAssist=1\n" +
-                        "AimAssistStrength=150\n" +
-                        "AimAssistLevel=5\n" +
-                        "TargetLockSensitivity=150\n" +
+                        "AimAssistStrength=1000\n" +
+                        "AimAssistLevel=10\n" +
+                        "AimPrecision=10\n" +
+                        "TargetLockSensitivity=1000\n" +
+                        "CrosshairMagnetism=100.00\n" +
+                        "AimSnapStrength=100.00\n" +
+                        "AimMagnetism=100.00\n" +
+                        "TrackingBullet=1\n" +
+                        "BulletTracking=1\n" +
+                        "AutoTrackingBullet=1\n" +
+                        "MagicBullet=1\n" +
+                        "HitboxExpansion=50.00\n" +
+                        "BulletMagnetism=100.00\n" +
+                        "ProjectileHoming=1\n" +
+                        "HomingStrength=100.00\n" +
+                        "BulletCurveFactor=50.00\n" +
+                        "BulletVelocityMultiplier=100.00\n" +
+                        "PhysicalDefenseBoost=100.00\n" +
+                        "MagicDefenseBoost=100.00\n" +
+                        "DamageReductionRatio=0.999\n" +
+                        "DamageReduction=0.999\n" +
+                        "IncomingDamageReduction=0.999\n" +
+                        "ShieldMultiplier=100.00\n" +
+                        "ShieldCapacity=100.00\n" +
+                        "ArmorBoost=10000\n" +
+                        "VestDurability=100.00\n" +
+                        "HelmetDamageReduction=0.999\n" +
+                        "TenacityRatio=0.999\n" +
                         "RecoilScale=0.00\n" +
-                        "WeaponKickReduction=1.50\n" +
-                        "AllGunsRecoilReduction=1.50\n" +
-                        "ScopeShakeReduction=1.50\n" +
+                        "WeaponKickReduction=1.00\n" +
+                        "AllGunsRecoilReduction=1.00\n" +
+                        "ScopeShakeReduction=1.00\n" +
                         "ScopeRecoilMultiplier=0.00\n" +
-                        "ScopeStability=1.50\n" +
+                        "ScopeStability=5.00\n" +
                         "VerticalRecoilScale=0.00\n" +
                         "HorizontalRecoilScale=0.00\n" +
                         "BulletSpread=0.00\n" +
-                        "DamageBoostRatio=2.50\n" +
-                        "BulletDamageBoost=2.50\n" +
-                        "HeadshotDamageMultiplier=3.50\n" +
-                        "CriticalHitRate=99\n" +
+                        "DamageMultiplier=100.00\n" +
+                        "DamageBoostRatio=100.00\n" +
+                        "BulletDamageBoost=100.00\n" +
+                        "HeadshotDamageMultiplier=100.00\n" +
+                        "CriticalHitRate=100\n" +
+                        "CriticalDamage=1000\n" +
+                        "ArmorPenetration=1000\n" +
                         "GyroSampleRate=1000\n" +
-                        "GyroSensitivityRatio=2.5\n" +
+                        "GyroSensitivityRatio=10.0\n" +
                         "GyroZeroDelay=1\n" +
                         "GyroSmoothFactor=1\n" +
                         "GyroStabilization=1\n" +
@@ -190,7 +267,7 @@ public class CodmConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "CODM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "CODM competitive HDR " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -214,7 +291,7 @@ public class CodmConfigPatcher {
             "TouchZeroDelay=1",
             "TouchLatencyReduction=1",
             "ZeroInputLag=1",
-            "TouchSensitivity=150"
+            "TouchSensitivity=500"
         };
         for (String path : paths) {
             ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
@@ -223,32 +300,39 @@ public class CodmConfigPatcher {
     }
 
     /**
-     * Injects FOV 150, Sprint 150, Aim Assist 150%, and Gyro 1000Hz Ultra Response into CODM config files.
+     * Injects FOV 150, Sprint 500, Aim Assist 1000%, and Gyro 1000Hz Ultra Response into CODM config files.
      */
     public static void applyAimAssistConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
-            "AimAssistLevel=5",
-            "AimAssistStrength=150",
-            "SprintSensitivity=150",
+            "AimAssistLevel=10",
+            "AimAssistStrength=1000",
+            "AimPrecision=10",
+            "SprintSensitivity=500",
             "AlwaysSprint=1",
             "FieldOfView=150",
             "FPP_FOV=150",
             "TPP_FOV=100",
-            "TargetLockSensitivity=150",
+            "TargetLock=1",
+            "TargetLockSensitivity=1000",
+            "AimAssistRadius=1000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
             "GyroSampleRate=1000",
-            "GyroSensitivityRatio=2.5",
+            "GyroSensitivityRatio=10.0",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
             "GyroStabilization=1",
             "GyroLatencyMode=0"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "CODM FOV 150, Aim Assist 150% & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "CODM FOV 150, 1000% Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     /**
@@ -266,15 +350,15 @@ public class CodmConfigPatcher {
             "HorizontalRecoil=0.00",
             "VerticalRecoilScale=0.00",
             "HorizontalRecoilScale=0.00",
-            "RecoilReduction=1.50",
-            "WeaponStability=150",
+            "RecoilReduction=1.00",
+            "WeaponStability=500",
             "ScreenShake=0",
             "GunKick=0",
-            "WeaponKickReduction=1.50",
-            "AllGunsRecoilReduction=1.50",
-            "ScopeShakeReduction=1.50",
+            "WeaponKickReduction=1.00",
+            "AllGunsRecoilReduction=1.00",
+            "ScopeShakeReduction=1.00",
             "ScopeRecoilMultiplier=0.00",
-            "ScopeStability=1.50",
+            "ScopeStability=5.00",
             "BulletSpread=0.00",
             "CrosshairSpread=0.00",
             "SpreadScale=0.00",
@@ -292,37 +376,43 @@ public class CodmConfigPatcher {
     }
 
     /**
-     * Injects Damage Multiplier & Critical Penetration keys into CODM config files.
+     * Injects 1000% Damage Multiplier & Critical Penetration keys into CODM config files.
      */
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=5.00",
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "BulletDamageBoost=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
-            "HeadshotMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
+            "DamageMultiplier=100.00",
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "BulletDamageBoost=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
+            "HeadshotMultiplier=100.00",
+            "HeadshotDamageMultiplier=100.00",
             "CriticalHitRate=100",
-            "CriticalDamage=100",
+            "CriticalDamage=1000",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=5.00",
-            "PenetrationBoost=100",
-            "ArmorPenetration=100",
+            "CriticalDamageMultiplier=10.00",
+            "PenetrationBoost=1000",
+            "ArmorPenetration=1000",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "SkillDamageMultiplier=5.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "MovementSpeedMultiplier=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "HitboxExpansion=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
+            "BodyDamageMultiplier=10.00",
+            "LimbDamageMultiplier=10.00",
+            "ExplosiveDamageMultiplier=10.00",
+            "SkillDamageMultiplier=100.00",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1"
         };
@@ -330,52 +420,57 @@ public class CodmConfigPatcher {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
-        Log.i(TAG, "CODM Damage Boost 500% & Bullet Penetration applied for " + packageName);
+        Log.i(TAG, "CODM Damage Boost 1000% & Bullet Penetration applied for " + packageName);
     }
 
     /**
-     * Injects Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction keys into CODM.
+     * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction keys into CODM.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
-            "IncomingDamageReduction=0.85",
-            "ShieldMultiplier=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldStrength=5.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "DamageAbsorbRatio=3.00",
-            "ArmorBoost=500",
-            "MagicResistBoost=500",
-            "VestDurability=5.00",
-            "VestDurabilityBoost=5.00",
-            "HelmetDamageReduction=0.90",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
-            "ArmorLevel=6",
-            "DamageResistance=0.85",
-            "ShieldEfficiency=5.00",
-            "ShieldPointsMultiplier=5.00",
-            "ArmorPlateEfficiency=5.00",
-            "KineticArmorBoost=5.00",
-            "FlakJacketRatio=0.90",
+            "PhysicalDefenseBoost=100.00",
+            "MagicDefenseBoost=100.00",
+            "PhysicalDefenseMultiplier=100.00",
+            "MagicDefenseMultiplier=100.00",
+            "DamageReductionRatio=0.999",
+            "DamageReduction=0.999",
+            "IncomingDamageReduction=0.999",
+            "ShieldMultiplier=100.00",
+            "ShieldCapacity=100.00",
+            "ShieldStrength=100.00",
+            "MaxHPMultiplier=50.00",
+            "HPBoostRatio=50.00",
+            "DamageAbsorbRatio=50.00",
+            "ArmorBoost=10000",
+            "MagicResistBoost=10000",
+            "VestDurability=100.00",
+            "VestDurabilityBoost=100.00",
+            "HelmetDamageReduction=0.999",
+            "TenacityRatio=0.999",
+            "ResilienceLevel=10",
+            "ArmorLevel=10",
+            "DamageResistance=0.999",
+            "ShieldEfficiency=100.00",
+            "ShieldPointsMultiplier=100.00",
+            "ArmorPlateEfficiency=100.00",
+            "KineticArmorBoost=100.00",
+            "FlakJacketRatio=0.999",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
+            "HealthRegenBoost=100.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.90",
-            "HeadshotDamageReduction=0.90"
+            "ExplosionResistance=0.999",
+            "HeadshotDamageReduction=0.999",
+            "HighDamageMitigationRatio=10.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "CODM Armor Defense 85% Reduction & 5.0x Vest applied for " + packageName);
+        Log.i(TAG, "CODM 1000% Armor Defense & 100x Vest applied for " + packageName);
     }
 
     /**
@@ -385,18 +480,18 @@ public class CodmConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -406,11 +501,11 @@ public class CodmConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "CODM 3.0x Speed Boost & Sprint Agility applied for " + packageName);
+        Log.i(TAG, "CODM 10.0x Speed Boost & Sprint Agility applied for " + packageName);
     }
 
     /**
-     * Injects Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion keys into CODM.
+     * Injects 1000% Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion keys into CODM.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -418,17 +513,22 @@ public class CodmConfigPatcher {
         String[] trackingKeys = {
             "TrackingBullet=1",
             "BulletTracking=1",
+            "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "HitboxExpansion=1.50",
-            "BulletMagnetism=1.50",
-            "BulletVelocityMultiplier=2.00",
+            "HitboxExpansion=50.00",
+            "BulletMagnetism=100.00",
+            "BulletCurveFactor=50.00",
+            "BulletVelocityMultiplier=100.00",
             "TargetLockTracking=1",
-            "FirstBulletAccuracy=1"
+            "FirstBulletAccuracy=1",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "CODM Tracking Bullet & Magic Bullet applied for " + packageName);
+        Log.i(TAG, "CODM 1000% Tracking Bullet & Magic Bullet applied for " + packageName);
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────

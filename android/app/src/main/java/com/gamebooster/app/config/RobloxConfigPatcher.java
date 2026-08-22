@@ -53,7 +53,25 @@ public class RobloxConfigPatcher {
                 "  \"FIntGyroPollingRate\": 1000,\n" +
                 "  \"FFlagDisableCameraShake\": \"True\",\n" +
                 "  \"FFlagWeaponRecoilReduction\": \"True\",\n" +
-                "  \"FFlagDamageBoostMode\": \"True\"\n" +
+                "  \"FFlagAimAssist\": \"True\",\n" +
+                "  \"FIntAimAssistStrength\": 1000,\n" +
+                "  \"FIntAimAssistLevel\": 10,\n" +
+                "  \"FIntAimPrecision\": 10,\n" +
+                "  \"FIntTargetLockSensitivity\": 1000,\n" +
+                "  \"FIntCrosshairMagnetism\": 100,\n" +
+                "  \"FFlagBulletTracking\": \"True\",\n" +
+                "  \"FFlagAutoTrackingBullet\": \"True\",\n" +
+                "  \"FFlagMagicBullet\": \"True\",\n" +
+                "  \"FIntHitboxExpansion\": 50,\n" +
+                "  \"FIntBulletMagnetism\": 100,\n" +
+                "  \"FFlagProjectileHoming\": \"True\",\n" +
+                "  \"FIntHomingStrength\": 100,\n" +
+                "  \"FIntDefenseMultiplier\": 100,\n" +
+                "  \"FIntDamageReduction\": 999,\n" +
+                "  \"FIntShieldMultiplier\": 100,\n" +
+                "  \"FIntArmorBoost\": 10000,\n" +
+                "  \"FFlagDamageBoostMode\": \"True\",\n" +
+                "  \"FIntDamageMultiplier\": 100\n" +
                 "}\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -63,7 +81,7 @@ public class RobloxConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -87,17 +105,31 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
+            "FFlagAimAssist=True",
+            "FIntAimAssistStrength=1000",
+            "FIntAimAssistLevel=10",
+            "FIntAimPrecision=10",
+            "FIntTargetLockSensitivity=1000",
+            "FIntCrosshairMagnetism=100",
             "AimAssist=1",
-            "AimAssistStrength=150",
-            "CameraSensitivity=150",
+            "AimPrecision=10",
+            "AimAssistStrength=1000",
+            "AimAssistLevel=10",
+            "TargetLock=1",
+            "TargetLockSensitivity=1000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
+            "CameraSensitivity=500",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "TouchSensitivity=150"
+            "TouchSensitivity=500"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "Roblox Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "Roblox 1000% Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -112,18 +144,18 @@ public class RobloxConfigPatcher {
             "HorizontalRecoil=0.00",
             "VerticalRecoilScale=0.00",
             "HorizontalRecoilScale=0.00",
-            "RecoilReduction=1.50",
+            "RecoilReduction=1.00",
             "CameraShake=0",
             "NoCameraShake=1",
-            "WeaponStability=150",
+            "WeaponStability=500",
             "InputSmoothing=1",
-            "ScopeShakeReduction=1.50",
-            "ScopeStability=1.50",
+            "ScopeShakeReduction=1.00",
+            "ScopeStability=5.00",
             "ScopeRecoilMultiplier=0.00",
             "AimPunchReduction=1",
             "FlinchReduction=1",
             "GunKick=0",
-            "WeaponKickReduction=1.50",
+            "WeaponKickReduction=1.00",
             "SpreadScale=0.00",
             "BulletSpread=0.00",
             "CrosshairSpread=0.00",
@@ -140,78 +172,84 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "DamageMultiplier=5.00",
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "BulletDamageBoost=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
-            "HeadshotMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
-            "CriticalDamage=100",
+            "DamageMultiplier=100.00",
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "BulletDamageBoost=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
+            "HeadshotMultiplier=100.00",
+            "HeadshotDamageMultiplier=100.00",
+            "CriticalDamage=1000",
             "CriticalHitRate=100",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=5.00",
-            "PenetrationBoost=100",
-            "ArmorPenetration=100",
+            "CriticalDamageMultiplier=10.00",
+            "PenetrationBoost=1000",
+            "ArmorPenetration=1000",
             "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "LimbDamageMultiplier=3.00",
-            "ExplosiveDamageMultiplier=3.50",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "MovementSpeedMultiplier=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "HitboxExpansion=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
+            "BodyDamageMultiplier=10.00",
+            "LimbDamageMultiplier=10.00",
+            "ExplosiveDamageMultiplier=10.00",
             "FOV=150"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
-        Log.i(TAG, "Roblox 5.0x Damage Boost & FOV applied for " + packageName);
+        Log.i(TAG, "Roblox 1000% Damage Boost & FOV applied for " + packageName);
     }
 
     /**
-     * Injects Defense Multiplier, Damage Reduction, Shield Multiplier, and HP Boost for Roblox.
+     * Injects 1000% Defense Multiplier, Damage Reduction, Shield Multiplier, and HP Boost for Roblox.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "DefenseMultiplier=5.00",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
-            "IncomingDamageReduction=0.85",
-            "ShieldMultiplier=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldStrength=5.00",
-            "ShieldEfficiency=5.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "ArmorBoost=500",
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "DamageAbsorbRatio=3.00",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
+            "FFlagDefenseBoost=True",
+            "FIntDefenseMultiplier=100",
+            "FIntDamageReduction=999",
+            "FIntShieldMultiplier=100",
+            "DefenseMultiplier=100.00",
+            "DamageReductionRatio=0.999",
+            "DamageReduction=0.999",
+            "IncomingDamageReduction=0.999",
+            "ShieldMultiplier=100.00",
+            "ShieldCapacity=100.00",
+            "ShieldStrength=100.00",
+            "ShieldEfficiency=100.00",
+            "MaxHPMultiplier=50.00",
+            "HPBoostRatio=50.00",
+            "ArmorBoost=10000",
+            "PhysicalDefenseBoost=100.00",
+            "MagicDefenseBoost=100.00",
+            "DamageAbsorbRatio=50.00",
+            "TenacityRatio=0.999",
+            "ResilienceLevel=10",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
-            "ExplosionResistance=0.90",
-            "FallDamageReduction=1.00"
+            "HealthRegenBoost=100.00",
+            "ExplosionResistance=0.999",
+            "FallDamageReduction=1.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "Roblox Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+        Log.i(TAG, "Roblox 1000% Armor Defense & 100x Shield applied for " + packageName);
     }
 
     /**
@@ -221,18 +259,18 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -242,11 +280,11 @@ public class RobloxConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "Roblox 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "Roblox 10.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
-     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Target Lock for Roblox.
+     * Injects 1000% Bullet Tracking, Magic Bullet, Hitbox Expansion, and Target Lock for Roblox.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -256,16 +294,28 @@ public class RobloxConfigPatcher {
             "FFlagHitboxExpansion=True",
             "FFlagMagicBullet=True",
             "FFlagTargetLockTracking=True",
+            "FFlagProjectileHoming=True",
+            "FIntHitboxExpansion=50",
+            "FIntBulletMagnetism=100",
+            "FIntHomingStrength=100",
             "BulletTracking=1",
             "TrackingBullet=1",
-            "HitboxExpansion=1.50",
-            "BulletMagnetism=1.50",
-            "TargetLockTracking=1"
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
+            "HitboxExpansion=50.00",
+            "BulletMagnetism=100.00",
+            "BulletCurveFactor=50.00",
+            "BulletVelocityMultiplier=100.00",
+            "CrosshairMagnetism=100.00",
+            "TargetLockTracking=1",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "Roblox Bullet Tracking & Hitbox Expansion applied for " + packageName);
+        Log.i(TAG, "Roblox 1000% Bullet Tracking & Hitbox Expansion applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

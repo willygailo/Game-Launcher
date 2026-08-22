@@ -321,54 +321,63 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HeadshotMultiplier", ssHead.str()},
         {"HeadshotDamageMultiplier", ssHead.str()},
         {"CriticalHitRate", ssCrit.str()},
-        {"CriticalDamage", "450"},
+        {"CriticalDamage", "1000"},
         {"CriticalDamageRate", ssCrit.str()},
         {"CriticalDamageMultiplier", ssHead.str()},
-        {"PenetrationBoost", "450"},
-        {"ArmorPenetration", "450"},
-        {"PhysicalPenetrationBoost", "450"},
-        {"MagicPenetrationBoost", "450"},
-        {"MagicResistPenetration", "450"},
+        {"PenetrationBoost", "1000"},
+        {"ArmorPenetration", "1000"},
+        {"PhysicalPenetrationBoost", "1000"},
+        {"MagicPenetrationBoost", "1000"},
+        {"MagicResistPenetration", "1000"},
         {"HighDamageRateMode", "1"},
-        {"AttackSpeedMultiplier", "13.50"},
-        {"AttackSpeedBoost", "13.50"},
-        {"ReloadSpeedMultiplier", "13.50"},
+        {"AttackSpeedMultiplier", "10.00"},
+        {"AttackSpeedBoost", "10.00"},
+        {"ReloadSpeedMultiplier", "10.00"},
         {"FireRateMultiplier", "10.00"},
-        {"MovementSpeedMultiplier", "13.50"},
-        {"SprintSpeedMultiplier", "13.50"},
-        {"SprintSensitivity", "400"},
-        {"AgilityMultiplier", "13.50"},
+        {"MovementSpeedMultiplier", "10.00"},
+        {"SprintSpeedMultiplier", "10.00"},
+        {"SprintSensitivity", "500"},
+        {"AgilityMultiplier", "10.00"},
         {"SkillDamageMultiplier", ssMult.str()},
         {"DamageAssetOverride", "1"},
         {"AutoDamageExecutionMode", "1"},
         {"AutoSmiteExecution", "1"},
-        {"RetributionDamageThreshold", "22500"},
-        {"SmiteTrueDamage", "22500"},
-        {"ExecuteThreshold", "22500"},
+        {"RetributionDamageThreshold", "99999"},
+        {"SmiteTrueDamage", "99999"},
+        {"ExecuteThreshold", "99999"},
         {"TurretDamageReduction", "0.01"},
-        {"MinionDamageBoost", "13.50"},
+        {"MinionDamageBoost", "100.00"},
         {"MonsterDamageBoost", ssMult.str()},
-        {"HitboxExpansion", "7.50"},
-        {"BulletVelocityMultiplier", "25.00"},
-        {"BulletVelocityScale", "25.00"},
-        {"BodyDamageMultiplier", "4.50"},
-        {"LimbDamageMultiplier", "3.75"},
-        {"ExplosiveDamageMultiplier", "4.50"},
+        {"HitboxExpansion", "10.00"},
+        {"BulletVelocityMultiplier", "50.00"},
+        {"BulletVelocityScale", "50.00"},
+        {"BodyDamageMultiplier", "10.00"},
+        {"LimbDamageMultiplier", "10.00"},
+        {"ExplosiveDamageMultiplier", "10.00"},
         {"AimAssist", "1"},
-        {"AimAssistStrength", "300"},
-        {"AimAssistLevel", "5"},
-        {"AimAssistRadius", "500"},
-        {"AimPrecision", "5"},
+        {"AimAssistStrength", "1000"},
+        {"AimAssistLevel", "10"},
+        {"AimAssistRadius", "1000"},
+        {"AimPrecision", "10"},
         {"AutoAim", "1"},
         {"AimTracking", "1"},
         {"TargetLock", "1"},
-        {"TargetLockSensitivity", "300"},
+        {"TargetLockSensitivity", "1000"},
         {"SmartTargetingMode", "1"},
         {"HeroPriorityLock", "1"},
         {"LowestHPTargetLock", "1"},
-        {"CrosshairMagnetism", "5.00"},
+        {"CrosshairMagnetism", "100.00"},
+        {"AimSnapStrength", "100.00"},
+        {"AimMagnetism", "100.00"},
         {"ScopeAimAssist", "1"},
-        {"RedDotAimAssist", "1"}
+        {"RedDotAimAssist", "1"},
+        {"AllHeroDamageMultiplier", "10.00"},
+        {"TankDamageMultiplier", "10.00"},
+        {"FighterDamageMultiplier", "10.00"},
+        {"AssassinDamageMultiplier", "10.00"},
+        {"MageDamageMultiplier", "10.00"},
+        {"MarksmanDamageMultiplier", "10.00"},
+        {"SupportDamageMultiplier", "10.00"}
     };
 
     if (isXml) {
@@ -387,30 +396,119 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
-        // Unreal Engine 4/5 CVars — 450% Ultra Overdrive
+        // Unreal Engine 4/5 CVars — 1000% Ultra Overdrive Damage
         patch_cvar(content, "r.DamageMultiplier", ssMult.str());
         patch_cvar(content, "r.BulletDamageScale", ssMult.str());
         patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
         patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
         patch_cvar(content, "r.CriticalHitRate", "1.00");
-        patch_cvar(content, "r.HitboxExpansion", "7.50");
-        patch_cvar(content, "r.BulletVelocityScale", "25.00");
-        patch_cvar(content, "r.PenetrationPower", "25.00");
-        patch_cvar(content, "r.BodyDamageMultiplier", "4.50");
-        patch_cvar(content, "r.LimbDamageMultiplier", "3.75");
-        patch_cvar(content, "r.ExplosiveDamageMultiplier", "4.50");
-        patch_cvar(content, "r.MovementSpeedMultiplier", "13.50");
-        patch_cvar(content, "r.SprintSpeedMultiplier", "13.50");
-        patch_cvar(content, "r.AttackSpeedMultiplier", "13.50");
+        patch_cvar(content, "r.HitboxExpansion", "10.00");
+        patch_cvar(content, "r.BulletVelocityScale", "50.00");
+        patch_cvar(content, "r.PenetrationPower", "50.00");
+        patch_cvar(content, "r.BodyDamageMultiplier", "10.00");
+        patch_cvar(content, "r.LimbDamageMultiplier", "10.00");
+        patch_cvar(content, "r.ExplosiveDamageMultiplier", "10.00");
+        patch_cvar(content, "r.MovementSpeedMultiplier", "10.00");
+        patch_cvar(content, "r.SprintSpeedMultiplier", "10.00");
+        patch_cvar(content, "r.AttackSpeedMultiplier", "10.00");
         patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "5.00");
-        patch_cvar(content, "r.AimAssistRadius", "500");
-        patch_cvar(content, "r.CrosshairMagnetism", "5.00");
-        patch_cvar(content, "r.TargetLockSensitivity", "300");
+        patch_cvar(content, "r.AimAssist.Strength", "10.00");
+        patch_cvar(content, "r.AimAssistRadius", "800");
+        patch_cvar(content, "r.CrosshairMagnetism", "10.00");
+        patch_cvar(content, "r.TargetLockSensitivity", "500");
         patch_cvar(content, "r.GyroSampleRate", "1000");
-        patch_cvar(content, "r.GyroSensitivityRatio", "5.00");
+        patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
         patch_cvar(content, "r.GyroZeroDelay", "1");
         patch_cvar(content, "r.GyroStabilization", "1");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroDamage1000
+  (JNIEnv *env, jclass, jstring jPath, jfloat damageMultiplier, jfloat headshotMultiplier, jint critRate, jint penetration) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssMult, ssHead, ssCrit, ssPen;
+    ssMult << damageMultiplier;
+    ssHead << headshotMultiplier;
+    ssCrit << critRate;
+    ssPen << penetration;
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageMultiplier", ssMult.str()},
+        {"PhysicalDamageBoost", ssMult.str()},
+        {"MagicDamageBoost", ssMult.str()},
+        {"TrueDamageBoost", ssMult.str()},
+        {"BulletDamageBoost", ssMult.str()},
+        {"DamageBoostRatio", ssMult.str()},
+        {"SkillDamageMultiplier", ssMult.str()},
+        {"HeroDamageMultiplier", ssMult.str()},
+        {"AllHeroDamageMultiplier", "10.00"},
+        {"TankDamageMultiplier", "10.00"},
+        {"FighterDamageMultiplier", "10.00"},
+        {"AssassinDamageMultiplier", "10.00"},
+        {"MageDamageMultiplier", "10.00"},
+        {"MarksmanDamageMultiplier", "10.00"},
+        {"SupportDamageMultiplier", "10.00"},
+        {"HeadshotMultiplier", ssHead.str()},
+        {"HeadshotDamageMultiplier", ssHead.str()},
+        {"CriticalHitRate", ssCrit.str()},
+        {"CriticalDamage", "1000"},
+        {"CriticalDamageRate", ssCrit.str()},
+        {"CriticalDamageMultiplier", "10.00"},
+        {"PenetrationBoost", ssPen.str()},
+        {"ArmorPenetration", ssPen.str()},
+        {"PhysicalPenetrationBoost", ssPen.str()},
+        {"MagicPenetrationBoost", ssPen.str()},
+        {"MagicResistPenetration", ssPen.str()},
+        {"HighDamageRateMode", "1"},
+        {"DamageAssetOverride", "1"},
+        {"AutoDamageExecutionMode", "1"},
+        {"AutoSmiteExecution", "1"},
+        {"RetributionDamageThreshold", "99999"},
+        {"SmiteTrueDamage", "99999"},
+        {"ExecuteThreshold", "99999"},
+        {"AttackSpeedMultiplier", "10.00"},
+        {"AttackSpeedBoost", "10.00"},
+        {"MovementSpeedMultiplier", "10.00"},
+        {"SprintSpeedMultiplier", "10.00"},
+        {"CooldownReductionBoost", "0.80"},
+        {"SkillCoolDownReduceMode", "1"},
+        {"HitboxExpansion", "10.00"},
+        {"MinionDamageBoost", "100.00"},
+        {"MonsterDamageBoost", ssMult.str()},
+        {"TurretDamageReduction", "0.01"}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[HeroDamage1000]") == std::string::npos) {
+            content += "\n[HeroDamage1000]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        patch_cvar(content, "r.DamageMultiplier", ssMult.str());
+        patch_cvar(content, "r.HeroDamageMultiplier", "10.00");
+        patch_cvar(content, "r.PhysicalDamageScale", ssMult.str());
+        patch_cvar(content, "r.MagicDamageScale", ssMult.str());
+        patch_cvar(content, "r.TrueDamageScale", ssMult.str());
     }
 
     bool success = write_file_posix(pathStr, content);
@@ -443,18 +541,18 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HorizontalRecoilScale", ssRecoil.str()},
         {"VerticalRecoilMultiplier", ssRecoil.str()},
         {"HorizontalRecoilMultiplier", ssRecoil.str()},
-        {"RecoilReduction", "2.00"},
+        {"RecoilReduction", "1.00"},
         {"WeaponStability", ssStab.str()},
         {"ScreenShake", "0"},
         {"CameraShake", "0"},
         {"NoCameraShake", "1"},
         {"GunKick", "0"},
-        {"GunKickReduction", "2.00"},
-        {"WeaponKickReduction", "2.00"},
-        {"AllGunsRecoilReduction", "2.00"},
-        {"ScopeShakeReduction", "2.00"},
+        {"GunKickReduction", "1.00"},
+        {"WeaponKickReduction", "1.00"},
+        {"AllGunsRecoilReduction", "1.00"},
+        {"ScopeShakeReduction", "1.00"},
         {"ScopeRecoilMultiplier", "0.00"},
-        {"ScopeStability", "2.50"},
+        {"ScopeStability", "5.00"},
         {"BulletSpread", "0.00"},
         {"CrosshairSpread", "0.00"},
         {"SpreadScale", "0.00"},
@@ -466,7 +564,25 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"MovementStabilization", "1"},
         {"JoystickZeroDeadzone", "1"},
         {"TouchJitterFilter", "1"},
-        {"ZeroInputDelay", "1"}
+        {"ZeroInputDelay", "1"},
+        {"IronSightRecoil", "0.00"},
+        {"RedDotRecoil", "0.00"},
+        {"HoloRecoil", "0.00"},
+        {"Scope2xRecoil", "0.00"},
+        {"Scope3xRecoil", "0.00"},
+        {"Scope4xRecoil", "0.00"},
+        {"Scope6xRecoil", "0.00"},
+        {"Scope8xRecoil", "0.00"},
+        {"CantedSightRecoil", "0.00"},
+        {"ThermalScopeRecoil", "0.00"},
+        {"SniperScopeRecoil", "0.00"},
+        {"ARRecoilReduction", "1.00"},
+        {"DMRRecoilReduction", "1.00"},
+        {"SniperRecoilReduction", "1.00"},
+        {"SMGRecoilReduction", "1.00"},
+        {"LMGRecoilReduction", "1.00"},
+        {"ShotgunRecoilReduction", "1.00"},
+        {"PistolRecoilReduction", "1.00"}
     };
 
     if (isXml) {
@@ -485,7 +601,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
-        // Unreal Engine 4/5 CVars
+        // Unreal Engine 4/5 CVars — Full Zero Recoil
         patch_cvar(content, "r.WeaponRecoilScale", ssRecoil.str());
         patch_cvar(content, "r.VerticalRecoilMultiplier", ssRecoil.str());
         patch_cvar(content, "r.HorizontalRecoilMultiplier", ssRecoil.str());
@@ -495,12 +611,106 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.WeaponSway", "0");
         patch_cvar(content, "r.BulletSpread", "0.00");
         patch_cvar(content, "r.CrosshairSpread", "0.00");
-        patch_cvar(content, "r.ScopeStability", "2.50");
+        patch_cvar(content, "r.ScopeStability", "5.00");
         patch_cvar(content, "r.FirstBulletAccuracy", "1");
         patch_cvar(content, "r.AimPunchReduction", "1");
         patch_cvar(content, "r.FlinchReduction", "1");
         patch_cvar(content, "r.WeaponKick", "0.00");
         patch_cvar(content, "r.ViewKick", "0.00");
+        patch_cvar(content, "r.RedDotRecoilScale", "0.00");
+        patch_cvar(content, "r.HoloRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope2xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope3xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope4xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope6xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope8xRecoilScale", "0.00");
+        patch_cvar(content, "r.CantedSightRecoilScale", "0.00");
+        patch_cvar(content, "r.IronSightRecoilScale", "0.00");
+        patch_cvar(content, "r.ARRecoilScale", "0.00");
+        patch_cvar(content, "r.DMRRecoilScale", "0.00");
+        patch_cvar(content, "r.SniperRecoilScale", "0.00");
+        patch_cvar(content, "r.SMGRecoilScale", "0.00");
+        patch_cvar(content, "r.LMGRecoilScale", "0.00");
+        patch_cvar(content, "r.ShotgunRecoilScale", "0.00");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil
+  (JNIEnv *env, jclass, jstring jPath, jfloat recoilScale, jint stability) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::ostringstream ssRecoil, ssStab;
+    ssRecoil << recoilScale;
+    ssStab << stability;
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ScopeRecoilZero", "1"},
+        {"AllScopesZeroRecoil", "1"},
+        {"IronSightRecoil", ssRecoil.str()},
+        {"RedDotRecoil", ssRecoil.str()},
+        {"HoloRecoil", ssRecoil.str()},
+        {"Scope2xRecoil", ssRecoil.str()},
+        {"Scope3xRecoil", ssRecoil.str()},
+        {"Scope4xRecoil", ssRecoil.str()},
+        {"Scope6xRecoil", ssRecoil.str()},
+        {"Scope8xRecoil", ssRecoil.str()},
+        {"CantedSightRecoil", ssRecoil.str()},
+        {"ThermalScopeRecoil", ssRecoil.str()},
+        {"SniperScopeRecoil", ssRecoil.str()},
+        {"ScopeShakeReduction", "1.00"},
+        {"ScopeStability", "5.00"},
+        {"ScopeRecoilMultiplier", ssRecoil.str()},
+        {"AllGunsRecoilReduction", "1.00"},
+        {"ARRecoilScale", ssRecoil.str()},
+        {"DMRRecoilScale", ssRecoil.str()},
+        {"SniperRecoilScale", ssRecoil.str()},
+        {"SMGRecoilScale", ssRecoil.str()},
+        {"LMGRecoilScale", ssRecoil.str()},
+        {"ShotgunRecoilScale", ssRecoil.str()},
+        {"PistolRecoilScale", ssRecoil.str()},
+        {"WeaponStability", ssStab.str()}
+    };
+
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[ScopeRecoilControl]") == std::string::npos) {
+            content += "\n[ScopeRecoilControl]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        patch_cvar(content, "r.RedDotRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.HoloRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.Scope2xRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.Scope3xRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.Scope4xRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.Scope6xRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.Scope8xRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.CantedSightRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.IronSightRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.ARRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.DMRRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.SniperRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.SMGRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.LMGRecoilScale", ssRecoil.str());
+        patch_cvar(content, "r.ShotgunRecoilScale", ssRecoil.str());
     }
 
     bool success = write_file_posix(pathStr, content);
@@ -516,36 +726,36 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string content = read_file_posix(pathStr);
 
     std::ostringstream ssStr, ssPrec;
-    ssStr << strength;
-    ssPrec << precision;
+    ssStr << (strength > 0 ? strength : 1000);
+    ssPrec << (precision > 0 ? precision : 10);
 
     bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
     bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
     std::vector<std::pair<std::string, std::string>> keys = {
         {"AimAssist", "1"},
-        {"AimAssistStrength", "300"},
-        {"AimAssistLevel", "5"},
-        {"AimPrecision", "5"},
+        {"AimAssistStrength", ssStr.str()},
+        {"AimAssistLevel", "10"},
+        {"AimPrecision", ssPrec.str()},
         {"AutoAim", "1"},
         {"AimTracking", "1"},
         {"TargetLock", "1"},
-        {"TargetLockSensitivity", "300"},
+        {"TargetLockSensitivity", "1000"},
         {"SmartTargetingMode", "1"},
         {"HeroPriorityLock", "1"},
         {"LowestHPTargetLock", "1"},
-        {"AimAssistRadius", "500"},
-        {"CrosshairMagnetism", "5.00"},
+        {"AimAssistRadius", "1000"},
+        {"CrosshairMagnetism", "100.00"},
         {"ScopeAimAssist", "1"},
         {"RedDotAimAssist", "1"},
         {"SniperAimAssist", "1"},
-        {"AimSnapStrength", "5.00"},
-        {"AimMagnetism", "5.00"},
+        {"AimSnapStrength", "100.00"},
+        {"AimMagnetism", "100.00"},
         {"AimLead", "1"},
-        {"AimLeadStrength", "5.00"},
+        {"AimLeadStrength", "100.00"},
         {"GyroSampleRate", "1000"},
         {"GyroZeroDelay", "1"},
-        {"GyroSensitivityRatio", "5.00"},
+        {"GyroSensitivityRatio", "10.00"},
         {"GyroStabilization", "1"},
         {"GyroSmoothFactor", "1"},
         {"GyroLatencyMode", "0"},
@@ -568,20 +778,20 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
-        // Unreal Engine 4/5 CVars — 450% Ultra Aim Assist
+        // Unreal Engine 4/5 CVars — 1000% Aim Assist
         patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "5.00");
-        patch_cvar(content, "r.AimAssist.Magnetism", "5.00");
-        patch_cvar(content, "r.AimAssist.SnapSpeed", "5.00");
-        patch_cvar(content, "r.AimAssistRadius", "500");
-        patch_cvar(content, "r.CrosshairMagnetism", "5.00");
-        patch_cvar(content, "r.TargetLockSensitivity", "300");
-        patch_cvar(content, "r.AimSnapStrength", "5.00");
+        patch_cvar(content, "r.AimAssist.Strength", "100.00");
+        patch_cvar(content, "r.AimAssist.Magnetism", "100.00");
+        patch_cvar(content, "r.AimAssist.SnapSpeed", "100.00");
+        patch_cvar(content, "r.AimAssistRadius", "1000");
+        patch_cvar(content, "r.CrosshairMagnetism", "100.00");
+        patch_cvar(content, "r.TargetLockSensitivity", "1000");
+        patch_cvar(content, "r.AimSnapStrength", "100.00");
         patch_cvar(content, "r.AimLead", "1");
-        patch_cvar(content, "r.AimLeadStrength", "5.00");
+        patch_cvar(content, "r.AimLeadStrength", "100.00");
         patch_cvar(content, "r.GyroSampleRate", "1000");
         patch_cvar(content, "r.GyroZeroDelay", "1");
-        patch_cvar(content, "r.GyroSensitivityRatio", "5.00");
+        patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
         patch_cvar(content, "r.GyroStabilization", "1");
         patch_cvar(content, "r.GyroAimAssist", "1");
         patch_cvar(content, "r.SniperAimAssist", "1");
@@ -592,6 +802,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return success ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000
+  (JNIEnv *env, jclass clazz, jstring jPath, jint strength, jfloat precision) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist(env, clazz, jPath, strength, (jint)precision);
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet
   (JNIEnv *env, jclass, jstring jPath, jfloat trackingStrength, jfloat hitboxMultiplier) {
     if (!jPath) return JNI_FALSE;
@@ -600,8 +815,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string content = read_file_posix(pathStr);
 
     std::ostringstream ssTrack, ssHitbox;
-    ssTrack << trackingStrength;
-    ssHitbox << hitboxMultiplier;
+    ssTrack << (trackingStrength > 0.0f ? trackingStrength : 100.00f);
+    ssHitbox << (hitboxMultiplier > 0.0f ? hitboxMultiplier : 50.00f);
 
     bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
     bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
@@ -614,12 +829,13 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"BulletMagnetism", ssTrack.str()},
         {"HitboxExpansion", ssHitbox.str()},
         {"TargetLockTracking", "1"},
-        {"BulletCurveFactor", "2.00"},
-        {"BulletVelocityMultiplier", "5.00"},
+        {"BulletCurveFactor", "50.00"},
+        {"BulletVelocityMultiplier", "100.00"},
         {"BulletSpread", "0.00"},
-        {"CrosshairMagnetism", "2.00"},
+        {"CrosshairMagnetism", "100.00"},
         {"FirstBulletAccuracy", "1"},
-        {"ProjectileHoming", "1"}
+        {"ProjectileHoming", "1"},
+        {"HomingStrength", "100.00"}
     };
 
     if (isXml) {
@@ -638,17 +854,25 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
-        // Unreal Engine 4/5 CVars
+        // Unreal Engine 4/5 CVars — 1000% Tracking Bullet
         patch_cvar(content, "r.BulletTracking", "1");
         patch_cvar(content, "r.MagicBullet", "1");
         patch_cvar(content, "r.HitboxExpansion", ssHitbox.str());
         patch_cvar(content, "r.BulletMagnetism", ssTrack.str());
-        patch_cvar(content, "r.BulletVelocityScale", "5.0");
+        patch_cvar(content, "r.BulletVelocityScale", "100.00");
+        patch_cvar(content, "r.BulletCurveFactor", "50.00");
+        patch_cvar(content, "r.ProjectileHoming", "1");
+        patch_cvar(content, "r.HomingStrength", "100.00");
     }
 
     bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000
+  (JNIEnv *env, jclass clazz, jstring jPath, jfloat trackingStrength, jfloat hitboxMultiplier) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet(env, clazz, jPath, trackingStrength, hitboxMultiplier);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef
@@ -659,8 +883,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string content = read_file_posix(pathStr);
 
     std::ostringstream ssDef, ssRed;
-    ssDef << defBoost;
-    ssRed << dmgReduction;
+    ssDef << (defBoost > 0.0f ? defBoost : 100.00f);
+    ssRed << (dmgReduction > 0.0f ? dmgReduction : 0.999f);
 
     bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
     bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
@@ -668,40 +892,40 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::vector<std::pair<std::string, std::string>> keys = {
         {"PhysicalDefenseBoost", ssDef.str()},
         {"MagicDefenseBoost", ssDef.str()},
+        {"PhysicalDefenseMultiplier", ssDef.str()},
+        {"MagicDefenseMultiplier", ssDef.str()},
         {"DamageReductionRatio", ssRed.str()},
         {"DamageReduction", ssRed.str()},
         {"IncomingDamageReduction", ssRed.str()},
-        {"ShieldMultiplier", "25.00"},
-        {"ShieldCapacity", "25.00"},
-        {"ShieldStrength", "25.00"},
-        {"MaxHPMultiplier", "13.50"},
-        {"HPBoostRatio", "13.50"},
-        {"DamageAbsorbRatio", "13.50"},
-        {"ArmorBoost", "2500"},
-        {"MagicResistBoost", "2500"},
-        {"VestDurability", "25.00"},
-        {"VestDurabilityBoost", "25.00"},
-        {"HelmetDamageReduction", "0.99"},
-        {"TenacityRatio", "0.99"},
+        {"ShieldMultiplier", "100.00"},
+        {"ShieldCapacity", "100.00"},
+        {"ShieldStrength", "100.00"},
+        {"MaxHPMultiplier", "50.00"},
+        {"HPBoostRatio", "50.00"},
+        {"DamageAbsorbRatio", "50.00"},
+        {"ArmorBoost", "10000"},
+        {"MagicResistBoost", "10000"},
+        {"VestDurability", "100.00"},
+        {"VestDurabilityBoost", "100.00"},
+        {"HelmetDamageReduction", "0.999"},
+        {"TenacityRatio", "0.999"},
         {"ResilienceLevel", "10"},
         {"ArmorLevel", "10"},
         {"DamageResistance", ssRed.str()},
-        {"ShieldEfficiency", "25.00"},
-        {"ShieldPointsMultiplier", "25.00"},
-        {"ArmorPlateEfficiency", "25.00"},
-        {"KineticArmorBoost", "25.00"},
-        {"FlakJacketRatio", "0.99"},
+        {"ShieldEfficiency", "100.00"},
+        {"ShieldPointsMultiplier", "100.00"},
+        {"ArmorPlateEfficiency", "100.00"},
+        {"KineticArmorBoost", "100.00"},
+        {"FlakJacketRatio", "0.999"},
         {"HealthRegenDelay", "0.00"},
-        {"HealthRegenBoost", "25.00"},
-        {"HealthRegenRate", "25.00"},
+        {"HealthRegenBoost", "100.00"},
+        {"HealthRegenRate", "100.00"},
         {"FallDamageReduction", "1.00"},
-        {"ExplosionResistance", "0.99"},
-        {"HeadshotDamageReduction", "0.99"},
-        {"HighDamageMitigationRatio", "4.50"},
-        {"HeavyHitAbsorption", "4.50"},
-        {"BurstDamageReduction", "4.50"},
-        {"PhysicalDefenseMultiplier", "25.00"},
-        {"MagicDefenseMultiplier", "25.00"}
+        {"ExplosionResistance", "0.999"},
+        {"HeadshotDamageReduction", "0.999"},
+        {"HighDamageMitigationRatio", "10.00"},
+        {"HeavyHitAbsorption", "10.00"},
+        {"BurstDamageReduction", "10.00"}
     };
 
     if (isXml) {
@@ -720,28 +944,33 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
-        // Unreal Engine 4/5 CVars — 450% Ultra Defense
+        // Unreal Engine 4/5 CVars — 1000% Defense Tier
         patch_cvar(content, "r.ArmorDamageReduction", ssRed.str());
-        patch_cvar(content, "r.VestDurabilityBoost", "25.00");
-        patch_cvar(content, "r.HelmetDamageReduction", "0.99");
-        patch_cvar(content, "r.IncomingDamageScale", "0.01");
-        patch_cvar(content, "r.ShieldEfficiency", "25.00");
+        patch_cvar(content, "r.VestDurabilityBoost", "100.00");
+        patch_cvar(content, "r.HelmetDamageReduction", "0.999");
+        patch_cvar(content, "r.IncomingDamageScale", "0.001");
+        patch_cvar(content, "r.ShieldEfficiency", "100.00");
         patch_cvar(content, "r.DamageResistance", ssRed.str());
-        patch_cvar(content, "r.TenacityRatio", "0.99");
-        patch_cvar(content, "r.HealthRegenBoost", "25.00");
+        patch_cvar(content, "r.TenacityRatio", "0.999");
+        patch_cvar(content, "r.HealthRegenBoost", "100.00");
         patch_cvar(content, "r.FallDamageReduction", "1.00");
-        patch_cvar(content, "r.ExplosionResistance", "0.99");
-        patch_cvar(content, "r.HeadshotDamageReduction", "0.99");
-        patch_cvar(content, "r.HeavyDamageDampener", "4.50");
-        patch_cvar(content, "r.BurstDamageReduction", "4.50");
-        patch_cvar(content, "r.HighDamageMitigationRatio", "4.50");
-        patch_cvar(content, "r.MaxHPMultiplier", "13.50");
-        patch_cvar(content, "r.ShieldMultiplier", "25.00");
+        patch_cvar(content, "r.ExplosionResistance", "0.999");
+        patch_cvar(content, "r.HeadshotDamageReduction", "0.999");
+        patch_cvar(content, "r.HeavyDamageDampener", "10.00");
+        patch_cvar(content, "r.BurstDamageReduction", "10.00");
+        patch_cvar(content, "r.HighDamageMitigationRatio", "10.00");
+        patch_cvar(content, "r.MaxHPMultiplier", "50.00");
+        patch_cvar(content, "r.ShieldMultiplier", "100.00");
     }
 
     bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef1000
+  (JNIEnv *env, jclass clazz, jstring jPath, jfloat defBoost, jfloat dmgReduction) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef(env, clazz, jPath, defBoost, dmgReduction);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
@@ -969,34 +1198,61 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     patch_cvar(content, "r.MobileHDR", "1");
 
     if (highDamage) {
-        patch_key_value(content, "DamageMultiplier", "25.00");
-        patch_key_value(content, "PhysicalDamageBoost", "25.00");
-        patch_key_value(content, "MagicDamageBoost", "25.00");
-        patch_key_value(content, "TrueDamageBoost", "25.00");
-        patch_key_value(content, "BulletDamageBoost", "25.00");
-        patch_key_value(content, "HeadshotDamageMultiplier", "25.00");
+        patch_key_value(content, "DamageMultiplier", "100.00");
+        patch_key_value(content, "PhysicalDamageBoost", "100.00");
+        patch_key_value(content, "MagicDamageBoost", "100.00");
+        patch_key_value(content, "TrueDamageBoost", "100.00");
+        patch_key_value(content, "BulletDamageBoost", "100.00");
+        patch_key_value(content, "HeadshotDamageMultiplier", "100.00");
         patch_key_value(content, "CriticalHitRate", "100");
-        patch_key_value(content, "CriticalDamage", "450");
-        patch_key_value(content, "PenetrationBoost", "450");
-        patch_key_value(content, "ArmorPenetration", "450");
-        patch_key_value(content, "HitboxExpansion", "7.50");
-        patch_key_value(content, "BulletVelocityMultiplier", "25.00");
-        patch_key_value(content, "SmiteTrueDamage", "22500");
-        patch_key_value(content, "RetributionDamageThreshold", "22500");
+        patch_key_value(content, "CriticalDamage", "1000");
+        patch_key_value(content, "CriticalDamageRate", "100");
+        patch_key_value(content, "CriticalDamageMultiplier", "10.00");
+        patch_key_value(content, "PenetrationBoost", "1000");
+        patch_key_value(content, "ArmorPenetration", "1000");
+        patch_key_value(content, "PhysicalPenetrationBoost", "1000");
+        patch_key_value(content, "MagicPenetrationBoost", "1000");
+        patch_key_value(content, "MagicResistPenetration", "1000");
+        patch_key_value(content, "SkillDamageMultiplier", "100.00");
+        patch_key_value(content, "HeroDamageMultiplier", "10.00");
+        patch_key_value(content, "AllHeroDamageMultiplier", "10.00");
+        patch_key_value(content, "TankDamageMultiplier", "10.00");
+        patch_key_value(content, "FighterDamageMultiplier", "10.00");
+        patch_key_value(content, "AssassinDamageMultiplier", "10.00");
+        patch_key_value(content, "MageDamageMultiplier", "10.00");
+        patch_key_value(content, "MarksmanDamageMultiplier", "10.00");
+        patch_key_value(content, "SupportDamageMultiplier", "10.00");
+        patch_key_value(content, "HitboxExpansion", "10.00");
+        patch_key_value(content, "BulletVelocityMultiplier", "50.00");
+        patch_key_value(content, "SmiteTrueDamage", "99999");
+        patch_key_value(content, "RetributionDamageThreshold", "99999");
+        patch_key_value(content, "ExecuteThreshold", "99999");
+        patch_key_value(content, "AutoDamageExecutionMode", "1");
+        patch_key_value(content, "AutoSmiteExecution", "1");
         patch_key_value(content, "AimAssist", "1");
-        patch_key_value(content, "AimAssistStrength", "300");
-        patch_key_value(content, "AimAssistRadius", "500");
-        patch_key_value(content, "CrosshairMagnetism", "5.00");
-        patch_cvar(content, "r.DamageMultiplier", "25.00");
-        patch_cvar(content, "r.BulletDamageScale", "25.00");
-        patch_cvar(content, "r.HeadshotMultiplier", "25.00");
-        patch_cvar(content, "r.WeaponDamageScale", "25.00");
-        patch_cvar(content, "r.PenetrationPower", "25.00");
-        patch_cvar(content, "r.HitboxExpansion", "7.50");
-        patch_cvar(content, "r.BulletVelocityScale", "25.00");
+        patch_key_value(content, "AimAssistStrength", "1000");
+        patch_key_value(content, "AimAssistLevel", "10");
+        patch_key_value(content, "AimPrecision", "10");
+        patch_key_value(content, "TargetLockSensitivity", "1000");
+        patch_key_value(content, "AimAssistRadius", "1000");
+        patch_key_value(content, "CrosshairMagnetism", "100.00");
+        patch_key_value(content, "AimSnapStrength", "100.00");
+        patch_key_value(content, "AimMagnetism", "100.00");
+        patch_cvar(content, "r.DamageMultiplier", "100.00");
+        patch_cvar(content, "r.BulletDamageScale", "100.00");
+        patch_cvar(content, "r.HeadshotMultiplier", "100.00");
+        patch_cvar(content, "r.WeaponDamageScale", "100.00");
+        patch_cvar(content, "r.PhysicalDamageScale", "100.00");
+        patch_cvar(content, "r.MagicDamageScale", "100.00");
+        patch_cvar(content, "r.TrueDamageScale", "100.00");
+        patch_cvar(content, "r.PenetrationPower", "50.00");
+        patch_cvar(content, "r.HitboxExpansion", "10.00");
+        patch_cvar(content, "r.BulletVelocityScale", "50.00");
         patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "5.00");
-        patch_cvar(content, "r.AimAssistRadius", "500");
+        patch_cvar(content, "r.AimAssist.Strength", "100.00");
+        patch_cvar(content, "r.AimAssistRadius", "1000");
+        patch_cvar(content, "r.CrosshairMagnetism", "100.00");
+        patch_cvar(content, "r.TargetLockSensitivity", "1000");
     }
 
     if (noRecoil) {
@@ -1006,19 +1262,68 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_key_value(content, "RecoilScale", "0.00");
         patch_key_value(content, "VerticalRecoil", "0.00");
         patch_key_value(content, "HorizontalRecoil", "0.00");
-        patch_key_value(content, "RecoilReduction", "1.50");
-        patch_key_value(content, "WeaponStability", "150");
+        patch_key_value(content, "VerticalRecoilScale", "0.00");
+        patch_key_value(content, "HorizontalRecoilScale", "0.00");
+        patch_key_value(content, "RecoilReduction", "1.00");
+        patch_key_value(content, "WeaponStability", "500");
         patch_key_value(content, "ScreenShake", "0");
+        patch_key_value(content, "CameraShake", "0");
+        patch_key_value(content, "NoCameraShake", "1");
         patch_key_value(content, "GunKick", "0");
+        patch_key_value(content, "GunKickReduction", "1.00");
+        patch_key_value(content, "WeaponKickReduction", "1.00");
+        patch_key_value(content, "AllGunsRecoilReduction", "1.00");
+        patch_key_value(content, "ScopeShakeReduction", "1.00");
+        patch_key_value(content, "ScopeRecoilMultiplier", "0.00");
+        patch_key_value(content, "ScopeStability", "5.00");
         patch_key_value(content, "BulletSpread", "0.00");
         patch_key_value(content, "CrosshairSpread", "0.00");
+        patch_key_value(content, "SpreadScale", "0.00");
+        patch_key_value(content, "BulletSpreadReduction", "1");
+        patch_key_value(content, "FirstBulletAccuracy", "1");
+        patch_key_value(content, "WeaponSway", "0");
+        patch_key_value(content, "IronSightRecoil", "0.00");
+        patch_key_value(content, "RedDotRecoil", "0.00");
+        patch_key_value(content, "HoloRecoil", "0.00");
+        patch_key_value(content, "Scope2xRecoil", "0.00");
+        patch_key_value(content, "Scope3xRecoil", "0.00");
+        patch_key_value(content, "Scope4xRecoil", "0.00");
+        patch_key_value(content, "Scope6xRecoil", "0.00");
+        patch_key_value(content, "Scope8xRecoil", "0.00");
+        patch_key_value(content, "CantedSightRecoil", "0.00");
+        patch_key_value(content, "ThermalScopeRecoil", "0.00");
+        patch_key_value(content, "SniperScopeRecoil", "0.00");
+        patch_key_value(content, "ARRecoilReduction", "1.00");
+        patch_key_value(content, "DMRRecoilReduction", "1.00");
+        patch_key_value(content, "SniperRecoilReduction", "1.00");
+        patch_key_value(content, "SMGRecoilReduction", "1.00");
+        patch_key_value(content, "LMGRecoilReduction", "1.00");
+        patch_key_value(content, "ShotgunRecoilReduction", "1.00");
         patch_cvar(content, "r.WeaponRecoilScale", "0.00");
         patch_cvar(content, "r.VerticalRecoilMultiplier", "0.00");
         patch_cvar(content, "r.HorizontalRecoilMultiplier", "0.00");
         patch_cvar(content, "r.GunKickReduction", "1");
         patch_cvar(content, "r.CameraShake", "0");
         patch_cvar(content, "r.ScreenShake", "0");
+        patch_cvar(content, "r.WeaponSway", "0");
         patch_cvar(content, "r.BulletSpread", "0.00");
+        patch_cvar(content, "r.CrosshairSpread", "0.00");
+        patch_cvar(content, "r.ScopeStability", "5.00");
+        patch_cvar(content, "r.RedDotRecoilScale", "0.00");
+        patch_cvar(content, "r.HoloRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope2xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope3xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope4xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope6xRecoilScale", "0.00");
+        patch_cvar(content, "r.Scope8xRecoilScale", "0.00");
+        patch_cvar(content, "r.CantedSightRecoilScale", "0.00");
+        patch_cvar(content, "r.IronSightRecoilScale", "0.00");
+        patch_cvar(content, "r.ARRecoilScale", "0.00");
+        patch_cvar(content, "r.DMRRecoilScale", "0.00");
+        patch_cvar(content, "r.SniperRecoilScale", "0.00");
+        patch_cvar(content, "r.SMGRecoilScale", "0.00");
+        patch_cvar(content, "r.LMGRecoilScale", "0.00");
+        patch_cvar(content, "r.ShotgunRecoilScale", "0.00");
     }
 
     if (trackingBullet) {
@@ -1026,65 +1331,102 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_key_value(content, "BulletTracking", "1");
         patch_key_value(content, "AutoTrackingBullet", "1");
         patch_key_value(content, "MagicBullet", "1");
-        patch_key_value(content, "BulletMagnetism", "1.50");
-        patch_key_value(content, "HitboxExpansion", "1.50");
+        patch_key_value(content, "BulletMagnetism", "100.00");
+        patch_key_value(content, "HitboxExpansion", "50.00");
         patch_key_value(content, "TargetLockTracking", "1");
-        patch_key_value(content, "BulletVelocityMultiplier", "2.00");
+        patch_key_value(content, "BulletCurveFactor", "50.00");
+        patch_key_value(content, "BulletVelocityMultiplier", "100.00");
+        patch_key_value(content, "BulletSpread", "0.00");
+        patch_key_value(content, "CrosshairMagnetism", "100.00");
         patch_key_value(content, "ProjectileHoming", "1");
+        patch_key_value(content, "HomingStrength", "100.00");
         patch_cvar(content, "r.BulletTracking", "1");
         patch_cvar(content, "r.MagicBullet", "1");
-        patch_cvar(content, "r.HitboxExpansion", "1.50");
-        patch_cvar(content, "r.BulletMagnetism", "1.50");
+        patch_cvar(content, "r.HitboxExpansion", "50.00");
+        patch_cvar(content, "r.BulletMagnetism", "100.00");
+        patch_cvar(content, "r.BulletVelocityScale", "100.00");
+        patch_cvar(content, "r.BulletCurveFactor", "50.00");
+        patch_cvar(content, "r.ProjectileHoming", "1");
+        patch_cvar(content, "r.HomingStrength", "100.00");
     }
 
     if (aimAssist) {
         patch_key_value(content, "AimAssist", "1");
-        patch_key_value(content, "AimAssistStrength", "150");
-        patch_key_value(content, "AimAssistLevel", "5");
-        patch_key_value(content, "AimPrecision", "3");
+        patch_key_value(content, "AimAssistStrength", "1000");
+        patch_key_value(content, "AimAssistLevel", "10");
+        patch_key_value(content, "AimPrecision", "10");
         patch_key_value(content, "AutoAim", "1");
         patch_key_value(content, "AimTracking", "1");
         patch_key_value(content, "TargetLock", "1");
+        patch_key_value(content, "TargetLockSensitivity", "1000");
         patch_key_value(content, "SmartTargetingMode", "1");
         patch_key_value(content, "HeroPriorityLock", "1");
         patch_key_value(content, "LowestHPTargetLock", "1");
-        patch_key_value(content, "CrosshairMagnetism", "1.50");
+        patch_key_value(content, "AimAssistRadius", "1000");
+        patch_key_value(content, "CrosshairMagnetism", "100.00");
+        patch_key_value(content, "AimSnapStrength", "100.00");
+        patch_key_value(content, "AimMagnetism", "100.00");
+        patch_key_value(content, "AimLead", "1");
+        patch_key_value(content, "AimLeadStrength", "100.00");
         patch_key_value(content, "GyroSampleRate", "1000");
         patch_key_value(content, "GyroZeroDelay", "1");
+        patch_key_value(content, "GyroSensitivityRatio", "10.00");
+        patch_key_value(content, "GyroStabilization", "1");
         patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "2.0");
+        patch_cvar(content, "r.AimAssist.Strength", "100.00");
+        patch_cvar(content, "r.AimAssist.Magnetism", "100.00");
+        patch_cvar(content, "r.AimAssist.SnapSpeed", "100.00");
+        patch_cvar(content, "r.AimAssistRadius", "1000");
+        patch_cvar(content, "r.CrosshairMagnetism", "100.00");
+        patch_cvar(content, "r.TargetLockSensitivity", "1000");
+        patch_cvar(content, "r.AimSnapStrength", "100.00");
+        patch_cvar(content, "r.AimLeadStrength", "100.00");
         patch_cvar(content, "r.GyroSampleRate", "1000");
+        patch_cvar(content, "r.GyroZeroDelay", "1");
+        patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
+        patch_cvar(content, "r.GyroAimAssist", "1");
     }
 
-    // Always inject 450% defense config
-    patch_key_value(content, "PhysicalDefenseBoost", "25.00");
-    patch_key_value(content, "MagicDefenseBoost", "25.00");
-    patch_key_value(content, "DamageReductionRatio", "0.99");
-    patch_key_value(content, "DamageReduction", "0.99");
-    patch_key_value(content, "IncomingDamageReduction", "0.99");
-    patch_key_value(content, "ShieldMultiplier", "25.00");
-    patch_key_value(content, "ShieldCapacity", "25.00");
-    patch_key_value(content, "MaxHPMultiplier", "13.50");
-    patch_key_value(content, "HealthRegenBoost", "25.00");
-    patch_key_value(content, "ArmorBoost", "2500");
-    patch_key_value(content, "MagicResistBoost", "2500");
-    patch_key_value(content, "VestDurability", "25.00");
-    patch_key_value(content, "HelmetDamageReduction", "0.99");
-    patch_key_value(content, "ExplosionResistance", "0.99");
+    // Always inject 1000% defense config
+    patch_key_value(content, "PhysicalDefenseBoost", "100.00");
+    patch_key_value(content, "MagicDefenseBoost", "100.00");
+    patch_key_value(content, "PhysicalDefenseMultiplier", "100.00");
+    patch_key_value(content, "MagicDefenseMultiplier", "100.00");
+    patch_key_value(content, "DamageReductionRatio", "0.999");
+    patch_key_value(content, "DamageReduction", "0.999");
+    patch_key_value(content, "IncomingDamageReduction", "0.999");
+    patch_key_value(content, "ShieldMultiplier", "100.00");
+    patch_key_value(content, "ShieldCapacity", "100.00");
+    patch_key_value(content, "ShieldStrength", "100.00");
+    patch_key_value(content, "MaxHPMultiplier", "50.00");
+    patch_key_value(content, "HPBoostRatio", "50.00");
+    patch_key_value(content, "DamageAbsorbRatio", "50.00");
+    patch_key_value(content, "HealthRegenBoost", "100.00");
+    patch_key_value(content, "HealthRegenRate", "100.00");
+    patch_key_value(content, "ArmorBoost", "10000");
+    patch_key_value(content, "MagicResistBoost", "10000");
+    patch_key_value(content, "VestDurability", "100.00");
+    patch_key_value(content, "VestDurabilityBoost", "100.00");
+    patch_key_value(content, "HelmetDamageReduction", "0.999");
+    patch_key_value(content, "ExplosionResistance", "0.999");
     patch_key_value(content, "FallDamageReduction", "1.00");
-    patch_key_value(content, "HighDamageMitigationRatio", "4.50");
-    patch_key_value(content, "HeavyHitAbsorption", "4.50");
-    patch_key_value(content, "BurstDamageReduction", "4.50");
-    patch_cvar(content, "r.ArmorDamageReduction", "0.99");
-    patch_cvar(content, "r.VestDurabilityBoost", "25.00");
-    patch_cvar(content, "r.HelmetDamageReduction", "0.99");
-    patch_cvar(content, "r.IncomingDamageScale", "0.01");
-    patch_cvar(content, "r.ShieldMultiplier", "25.00");
-    patch_cvar(content, "r.MaxHPMultiplier", "13.50");
-    patch_cvar(content, "r.HealthRegenBoost", "25.00");
-    patch_cvar(content, "r.HeavyDamageDampener", "4.50");
-    patch_cvar(content, "r.BurstDamageReduction", "4.50");
-    patch_cvar(content, "r.ExplosionResistance", "0.99");
+    patch_key_value(content, "HighDamageMitigationRatio", "10.00");
+    patch_key_value(content, "HeavyHitAbsorption", "10.00");
+    patch_key_value(content, "BurstDamageReduction", "10.00");
+    patch_key_value(content, "HeadshotDamageReduction", "0.999");
+    patch_cvar(content, "r.ArmorDamageReduction", "0.999");
+    patch_cvar(content, "r.VestDurabilityBoost", "100.00");
+    patch_cvar(content, "r.HelmetDamageReduction", "0.999");
+    patch_cvar(content, "r.IncomingDamageScale", "0.001");
+    patch_cvar(content, "r.ShieldMultiplier", "100.00");
+    patch_cvar(content, "r.ShieldEfficiency", "100.00");
+    patch_cvar(content, "r.MaxHPMultiplier", "50.00");
+    patch_cvar(content, "r.HealthRegenBoost", "100.00");
+    patch_cvar(content, "r.HeavyDamageDampener", "10.00");
+    patch_cvar(content, "r.BurstDamageReduction", "10.00");
+    patch_cvar(content, "r.HighDamageMitigationRatio", "10.00");
+    patch_cvar(content, "r.ExplosionResistance", "0.999");
+    patch_cvar(content, "r.HeadshotDamageReduction", "0.999");
 
     bool success = write_file_posix(path, content);
     env->ReleaseStringUTFChars(jPath, path);

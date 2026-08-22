@@ -79,20 +79,88 @@ public class MlbbConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
-                "PhysicalDamageBoost=2.50\n" +
-                "MagicDamageBoost=2.50\n" +
-                "TrueDamageBoost=2.50\n" +
-                "DamageMultiplier=2.50\n" +
-                "CriticalDamageRate=99\n" +
-                "HeadshotDamageMultiplier=3.50\n" +
+                "PhysicalDamageBoost=100.00\n" +
+                "MagicDamageBoost=100.00\n" +
+                "TrueDamageBoost=100.00\n" +
+                "DamageMultiplier=100.00\n" +
+                "SkillDamageMultiplier=100.00\n" +
+                "HeroDamageMultiplier=10.00\n" +
+                "AllHeroDamageMultiplier=10.00\n" +
+                "TankDamageMultiplier=10.00\n" +
+                "FighterDamageMultiplier=10.00\n" +
+                "AssassinDamageMultiplier=10.00\n" +
+                "MageDamageMultiplier=10.00\n" +
+                "MarksmanDamageMultiplier=10.00\n" +
+                "SupportDamageMultiplier=10.00\n" +
+                "CriticalDamageRate=100\n" +
+                "CriticalDamage=1000\n" +
+                "CriticalDamageMultiplier=10.00\n" +
+                "PhysicalPenetrationBoost=1000\n" +
+                "MagicPenetrationBoost=1000\n" +
+                "ArmorPenetration=1000\n" +
+                "MagicResistPenetration=1000\n" +
+                "SmiteTrueDamage=99999\n" +
+                "RetributionDamageThreshold=99999\n" +
+                "ExecuteThreshold=99999\n" +
+                "HeadshotDamageMultiplier=100.00\n" +
                 "GyroSampleRate=1000\n" +
-                "GyroSensitivityRatio=2.5\n" +
+                "GyroSensitivityRatio=10.0\n" +
                 "GyroZeroDelay=1\n" +
                 "GyroSmoothFactor=1\n" +
                 "GyroStabilization=1\n" +
                 "GyroLatencyMode=0\n" +
-                "AimAssistStrength=150\n" +
-                "AimAssistLevel=5\n";
+                // ── 1000% Aim Assist & Lock ──
+                "AimAssist=1\n" +
+                "AimAssistStrength=1000\n" +
+                "AimAssistLevel=10\n" +
+                "AimPrecision=10\n" +
+                "AutoAim=1\n" +
+                "AimTracking=1\n" +
+                "TargetLock=1\n" +
+                "TargetLockSensitivity=1000\n" +
+                "SmartTargetingMode=1\n" +
+                "HeroPriorityLock=1\n" +
+                "LowestHPTargetLock=1\n" +
+                "AimAssistRadius=1000\n" +
+                "CrosshairMagnetism=100.00\n" +
+                "AimSnapStrength=100.00\n" +
+                "AimMagnetism=100.00\n" +
+                // ── 1000% Tracking & Skill Homing ──
+                "TrackingBullet=1\n" +
+                "BulletTracking=1\n" +
+                "AutoTrackingBullet=1\n" +
+                "MagicBullet=1\n" +
+                "AutoTrackingSkill=1\n" +
+                "SkillMagnetism=100.00\n" +
+                "BulletMagnetism=100.00\n" +
+                "HitboxExpansion=50.00\n" +
+                "ProjectileHoming=1\n" +
+                "HomingStrength=100.00\n" +
+                "BulletCurveFactor=50.00\n" +
+                "BulletVelocityMultiplier=100.00\n" +
+                // ── 1000% Defense & Invulnerability ──
+                "PhysicalDefenseBoost=100.00\n" +
+                "MagicDefenseBoost=100.00\n" +
+                "PhysicalDefenseMultiplier=100.00\n" +
+                "MagicDefenseMultiplier=100.00\n" +
+                "DamageReductionRatio=0.999\n" +
+                "DamageReduction=0.999\n" +
+                "IncomingDamageReduction=0.999\n" +
+                "ShieldMultiplier=100.00\n" +
+                "ShieldCapacity=100.00\n" +
+                "ShieldStrength=100.00\n" +
+                "MaxHPMultiplier=50.00\n" +
+                "HPBoostRatio=50.00\n" +
+                "DamageAbsorbRatio=50.00\n" +
+                "ArmorBoost=10000\n" +
+                "MagicResistBoost=10000\n" +
+                "VestDurability=100.00\n" +
+                "HelmetDamageReduction=0.999\n" +
+                "TenacityRatio=0.999\n" +
+                "HealthRegenBoost=100.00\n" +
+                "HeavyHitAbsorption=10.00\n" +
+                "BurstDamageReduction=10.00\n" +
+                "HighDamageMitigationRatio=10.00\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -102,7 +170,7 @@ public class MlbbConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View + 1000% Damage + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -136,7 +204,7 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Drone View (Camera Height / FOV 150), Damage Script 90+, Physical/Magic/True Damage Boost, Critical and Penetration keys into MLBB config files.
+     * Injects Drone View (Camera Height / FOV 150), 1000% Damage Script, Physical/Magic/True Damage Boost, Critical and Penetration keys into MLBB config files across all heroes.
      */
     public static void applyDamageScriptConfig(String packageName) {
         if (packageName == null) return;
@@ -150,72 +218,86 @@ public class MlbbConfigPatcher {
             "FieldOfView=150",
             "WideScreenMode=1",
             "UltraWideCamera=1",
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "BulletDamageBoost=5.00",
-            "PhysicalPenetrationBoost=100",
-            "MagicPenetrationBoost=100",
-            "ArmorPenetration=100",
-            "MagicResistPenetration=100",
-            "DamageMultiplier=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
-            "SkillDamageMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
+            // ── 1000% Damage Overdrive (All MLBB Heroes) ──
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "BulletDamageBoost=100.00",
+            "PhysicalPenetrationBoost=1000",
+            "MagicPenetrationBoost=1000",
+            "ArmorPenetration=1000",
+            "MagicResistPenetration=1000",
+            "PenetrationBoost=1000",
+            "DamageMultiplier=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
+            "SkillDamageMultiplier=100.00",
+            "HeroDamageMultiplier=10.00",
+            "AllHeroDamageMultiplier=10.00",
+            "TankDamageMultiplier=10.00",
+            "FighterDamageMultiplier=10.00",
+            "AssassinDamageMultiplier=10.00",
+            "MageDamageMultiplier=10.00",
+            "MarksmanDamageMultiplier=10.00",
+            "SupportDamageMultiplier=10.00",
+            "HeadshotDamageMultiplier=100.00",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=5.00",
+            "CriticalDamageMultiplier=10.00",
             "CriticalHitRate=1.00",
-            "CriticalDamage=100",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
+            "CriticalDamage=1000",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
             "AttackDelayReduction=1",
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
             "SkillAnimationCancelZeroDelay=1",
             "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.50",
+            "CooldownReductionBoost=0.80",
             "HighDamageRateMode=1",
             "DamageAssetOverride=1",
             "AutoDamageExecutionMode=1",
             "AutoSmiteExecution=1",
-            "RetributionDamageThreshold=5000",
-            "TurretDamageReduction=0.85",
-            "MinionDamageBoost=3.00",
-            "MonsterDamageBoost=5.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "LimbDamageMultiplier=3.00",
-            "ExplosiveDamageMultiplier=3.50",
+            "RetributionDamageThreshold=99999",
+            "SmiteTrueDamage=99999",
+            "ExecuteThreshold=99999",
+            "TurretDamageReduction=0.01",
+            "MinionDamageBoost=100.00",
+            "MonsterDamageBoost=100.00",
+            "HitboxExpansion=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
+            "BodyDamageMultiplier=10.00",
+            "LimbDamageMultiplier=10.00",
+            "ExplosiveDamageMultiplier=10.00",
             "GyroSampleRate=1000",
-            "GyroSensitivityRatio=3.0",
+            "GyroSensitivityRatio=5.0",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
             "GyroStabilization=1",
             "GyroLatencyMode=0"
         };
         for (String path : paths) {
-            NativeConfigInjector.injectHighDamage(path);
+            NativeConfigInjector.injectHeroDamage1000(path);
             ConfigFileHelper.patchKeys(path, damageDroneKeys, "[DamageScript]");
         }
-        Log.i(TAG, "MLBB Drone View FOV 150 & Damage Script 5.0x applied for " + packageName);
+        Log.i(TAG, "MLBB Drone View FOV 150 & 1000% Damage Script applied for all heroes in " + packageName);
     }
 
     /**
-     * Injects Smart Aim Assist, Hero Priority Lock, and Skill Target Assistance for MLBB.
+     * Injects 1000% Smart Aim Assist, Hero Priority Lock, and Skill Target Assistance for MLBB.
      */
     public static void applyAimAssistConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
-            "AimAssistStrength=150",
-            "AimAssistLevel=5",
+            "AimAssist=1",
+            "AimAssistStrength=1000",
+            "AimAssistLevel=10",
+            "AimPrecision=10",
             "AutoSkillLock=1",
             "SkillTargetAssist=1",
             "SmartTargetingMode=1",
@@ -227,12 +309,18 @@ public class MlbbConfigPatcher {
             "SkillPredictPath=1",
             "AutoAimAssist=1",
             "TargetTracker=1",
-            "HeroLockMode=1"
+            "HeroLockMode=1",
+            "TargetLockSensitivity=1000",
+            "AimAssistRadius=1000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "MLBB Smart Aim Assist & Hero Priority Lock applied for " + packageName);
+        Log.i(TAG, "MLBB 1000% Smart Aim Assist & Hero Priority Lock applied for " + packageName);
     }
 
     /**
@@ -256,7 +344,7 @@ public class MlbbConfigPatcher {
             "TouchJitterFilter=1",
             "AimPunchReduction=1",
             "FlinchReduction=1",
-            "WeaponStability=150"
+            "WeaponStability=500"
         };
         for (String path : paths) {
             NativeConfigInjector.injectNoRecoil(path);
@@ -266,45 +354,50 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects Armor Defense Boost, Damage Reduction, Shield Multiplier, and Resilience for MLBB.
+     * Injects 1000% Armor Defense Boost, Damage Reduction, Shield Multiplier, and Resilience for MLBB.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
-            "IncomingDamageReduction=0.85",
-            "ShieldMultiplier=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldStrength=5.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "DamageAbsorbRatio=3.00",
-            "ArmorBoost=500",
-            "MagicResistBoost=500",
-            "VestDurability=5.00",
-            "VestDurabilityBoost=5.00",
-            "HelmetDamageReduction=0.90",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
-            "ArmorLevel=6",
-            "DamageResistance=0.85",
-            "ShieldEfficiency=5.00",
-            "ShieldPointsMultiplier=5.00",
+            "PhysicalDefenseBoost=100.00",
+            "MagicDefenseBoost=100.00",
+            "PhysicalDefenseMultiplier=100.00",
+            "MagicDefenseMultiplier=100.00",
+            "DamageReductionRatio=0.999",
+            "DamageReduction=0.999",
+            "IncomingDamageReduction=0.999",
+            "ShieldMultiplier=100.00",
+            "ShieldCapacity=100.00",
+            "ShieldStrength=100.00",
+            "MaxHPMultiplier=50.00",
+            "HPBoostRatio=50.00",
+            "DamageAbsorbRatio=50.00",
+            "ArmorBoost=10000",
+            "MagicResistBoost=10000",
+            "VestDurability=100.00",
+            "VestDurabilityBoost=100.00",
+            "HelmetDamageReduction=0.999",
+            "TenacityRatio=0.999",
+            "ResilienceLevel=10",
+            "ArmorLevel=10",
+            "DamageResistance=0.999",
+            "ShieldEfficiency=100.00",
+            "ShieldPointsMultiplier=100.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
+            "HealthRegenBoost=100.00",
             "FallDamageReduction=1.00",
-            "ExplosionResistance=0.90",
-            "HeadshotDamageReduction=0.90"
+            "ExplosionResistance=0.999",
+            "HeadshotDamageReduction=0.999",
+            "HighDamageMitigationRatio=10.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "MLBB Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+        Log.i(TAG, "MLBB 1000% Armor Defense & 100x Shield Multiplier applied for " + packageName);
     }
 
     /**
@@ -314,18 +407,18 @@ public class MlbbConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -335,33 +428,40 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "MLBB 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "MLBB 10.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
-     * Injects Skill Auto-Tracking, Projectile Magnetism, Retribution/Smite Lock, and Hitbox Tracking for MLBB.
+     * Injects 1000% Skill Auto-Tracking, Projectile Magnetism, Retribution/Smite Lock, and Hitbox Tracking for MLBB.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] trackingKeys = {
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
             "AutoTrackingSkill=1",
             "AutoTargetLock=1",
             "SkillPathPrediction=1",
             "AutoRetributionSmiteLock=1",
-            "SkillMagnetism=1.50",
+            "SkillMagnetism=100.00",
+            "BulletMagnetism=100.00",
             "BasicAttackTracking=1",
             "ProjectileTracking=1",
-            "HitboxExpansion=1.50",
+            "HitboxExpansion=50.00",
             "TargetLockTracking=1",
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "MagicBullet=1"
+            "ProjectileHoming=1",
+            "HomingStrength=100.00",
+            "BulletCurveFactor=50.00",
+            "BulletVelocityMultiplier=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "MLBB Skill Auto-Tracking & Projectile Magnetism applied for " + packageName);
+        Log.i(TAG, "MLBB 1000% Skill Auto-Tracking & Projectile Magnetism applied for " + packageName);
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────

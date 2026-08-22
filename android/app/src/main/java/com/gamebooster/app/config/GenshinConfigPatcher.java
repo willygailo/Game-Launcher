@@ -63,9 +63,36 @@ public class GenshinConfigPatcher {
                 "  \"touch_response_ms\": 0,\n" +
                 "  \"input_latency_reduction\": true,\n" +
                 "  \"gyro_sample_rate\": 1000,\n" +
-                "  \"damage_multiplier\": 1.90,\n" +
-                "  \"attack_speed_multiplier\": 1.5,\n" +
-                "  \"crit_rate_boost\": 0.95,\n" +
+                "  \"aim_assist\": 1,\n" +
+                "  \"aim_assist_strength\": 1000,\n" +
+                "  \"aim_assist_level\": 10,\n" +
+                "  \"aim_precision\": 10,\n" +
+                "  \"target_lock_sensitivity\": 1000,\n" +
+                "  \"crosshair_magnetism\": 100.00,\n" +
+                "  \"aim_snap_strength\": 100.00,\n" +
+                "  \"aim_magnetism\": 100.00,\n" +
+                "  \"bow_auto_tracking\": 1,\n" +
+                "  \"homing_arrows\": 1,\n" +
+                "  \"projectile_homing\": 1,\n" +
+                "  \"homing_strength\": 100.00,\n" +
+                "  \"hitbox_expansion\": 50.00,\n" +
+                "  \"bullet_magnetism\": 100.00,\n" +
+                "  \"bullet_tracking\": 1,\n" +
+                "  \"auto_tracking_bullet\": 1,\n" +
+                "  \"magic_bullet\": 1,\n" +
+                "  \"defense_multiplier\": 100.00,\n" +
+                "  \"shield_strength\": 100.00,\n" +
+                "  \"shield_capacity\": 100.00,\n" +
+                "  \"shield_multiplier\": 100.00,\n" +
+                "  \"damage_reduction_ratio\": 0.999,\n" +
+                "  \"damage_reduction\": 0.999,\n" +
+                "  \"incoming_damage_reduction\": 0.999,\n" +
+                "  \"elemental_resistance_boost\": 100.00,\n" +
+                "  \"armor_boost\": 10000,\n" +
+                "  \"tenacity_ratio\": 0.999,\n" +
+                "  \"damage_multiplier\": 100.00,\n" +
+                "  \"attack_speed_multiplier\": 10.0,\n" +
+                "  \"crit_rate_boost\": 1.00,\n" +
                 "  \"recoil_compensation\": 1.0,\n" +
                 "  \"camera_shake\": 0.0\n" +
                 "}\n";
@@ -90,7 +117,7 @@ public class GenshinConfigPatcher {
             if (ok) written++;
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "Genshin competitive " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "Genshin competitive " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -113,17 +140,26 @@ public class GenshinConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
+            "AimAssist=1",
+            "AimPrecision=10",
+            "AimAssistStrength=1000",
+            "AimAssistLevel=10",
             "BowAimAssist=1",
-            "AimAssistStrength=150",
+            "AutoTargeting=1",
+            "TargetLock=1",
+            "TargetLockSensitivity=1000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "AutoTargeting=1",
             "CameraFOV=120"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "Genshin Bow Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "Genshin 1000% Bow Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -140,8 +176,8 @@ public class GenshinConfigPatcher {
             "SkillCameraShake=0",
             "AimPunchReduction=1",
             "FlinchReduction=1",
-            "ScopeShakeReduction=1.50",
-            "ScopeStability=1.50",
+            "ScopeShakeReduction=1.00",
+            "ScopeStability=5.00",
             "WeaponSway=0",
             "CrosshairSpread=0.00",
             "SpreadScale=0.00"
@@ -157,74 +193,76 @@ public class GenshinConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "ElementalDamageBoost=5.00",
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "DamageMultiplier=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
+            "ElementalDamageBoost=100.00",
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "DamageMultiplier=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
             "CritRate=100",
-            "CritDamage=5.00",
-            "CriticalDamage=100",
+            "CritDamage=10.00",
+            "CriticalDamage=1000",
             "CriticalHitRate=100",
             "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=5.00",
-            "HeadshotMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
-            "AttackSpeedBoost=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "ExplosiveDamageMultiplier=3.50"
+            "CriticalDamageMultiplier=10.00",
+            "HeadshotMultiplier=100.00",
+            "HeadshotDamageMultiplier=100.00",
+            "AttackSpeedBoost=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "MovementSpeedMultiplier=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "HitboxExpansion=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
+            "BodyDamageMultiplier=10.00",
+            "ExplosiveDamageMultiplier=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
-        Log.i(TAG, "Genshin 5.0x Elemental & Physical Damage Boost applied for " + packageName);
+        Log.i(TAG, "Genshin 1000% Elemental & Physical Damage Boost applied for " + packageName);
     }
 
     /**
-     * Injects Defense Multiplier, Shield Strength, Elemental Resistance, and Poise Resistance into Genshin/Star Rail/ZZZ.
+     * Injects 1000% Defense Multiplier, Shield Strength, Elemental Resistance, and Poise Resistance into Genshin/Star Rail/ZZZ.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "DefenseMultiplier=5.00",
-            "ShieldStrength=5.00",
-            "ShieldEfficiency=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldMultiplier=5.00",
-            "DamageReductionRatio=0.85",
-            "DamageReduction=0.85",
-            "IncomingDamageReduction=0.85",
-            "ElementalResistanceBoost=5.00",
-            "HPMultiplier=3.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "PoiseResistance=5.00",
-            "ArmorBoost=500",
-            "DamageAbsorbRatio=3.00",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
+            "DefenseMultiplier=100.00",
+            "ShieldStrength=100.00",
+            "ShieldEfficiency=100.00",
+            "ShieldCapacity=100.00",
+            "ShieldMultiplier=100.00",
+            "DamageReductionRatio=0.999",
+            "DamageReduction=0.999",
+            "IncomingDamageReduction=0.999",
+            "ElementalResistanceBoost=100.00",
+            "HPMultiplier=50.00",
+            "MaxHPMultiplier=50.00",
+            "HPBoostRatio=50.00",
+            "PoiseResistance=100.00",
+            "ArmorBoost=10000",
+            "DamageAbsorbRatio=50.00",
+            "TenacityRatio=0.999",
+            "ResilienceLevel=10",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
-            "ExplosionResistance=0.90",
-            "FallDamageReduction=1.00"
+            "HealthRegenBoost=100.00",
+            "ExplosionResistance=0.999",
+            "FallDamageReduction=1.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "Genshin Defense Multiplier 5.0x & Shield Boost applied for " + packageName);
+        Log.i(TAG, "Genshin 1000% Defense Multiplier & Shield Boost applied for " + packageName);
     }
 
     /**
@@ -234,18 +272,18 @@ public class GenshinConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -255,11 +293,11 @@ public class GenshinConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "Genshin 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "Genshin 10.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
-     * Injects Bow Auto-Tracking, Homing Projectiles, and Target Lock for Genshin/Hoyoverse.
+     * Injects 1000% Bow Auto-Tracking, Homing Projectiles, and Target Lock for Genshin/Hoyoverse.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -270,15 +308,20 @@ public class GenshinConfigPatcher {
             "TargetLockTracking=1",
             "AutoTargetLock=1",
             "SkillProjectileTracking=1",
-            "HitboxExpansion=1.50",
-            "BulletMagnetism=1.50",
+            "HitboxExpansion=50.00",
+            "BulletMagnetism=100.00",
             "TrackingBullet=1",
-            "BulletTracking=1"
+            "BulletTracking=1",
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "Genshin Bow Auto-Tracking & Homing Projectiles applied for " + packageName);
+        Log.i(TAG, "Genshin 1000% Bow Auto-Tracking & Homing Projectiles applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {

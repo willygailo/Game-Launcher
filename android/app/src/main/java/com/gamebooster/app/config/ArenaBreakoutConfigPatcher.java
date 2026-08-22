@@ -76,6 +76,39 @@ public class ArenaBreakoutConfigPatcher {
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
+                // ── 1000% Aim Assist CVars ──
+                "+CVars=r.AimAssist=1\n" +
+                "+CVars=r.AimAssist.Strength=100.00\n" +
+                "+CVars=r.AimAssist.Magnetism=100.00\n" +
+                "+CVars=r.AimAssist.SnapSpeed=100.00\n" +
+                "+CVars=r.AimAssistRadius=1000\n" +
+                "+CVars=r.CrosshairMagnetism=100.00\n" +
+                "+CVars=r.TargetLockSensitivity=1000\n" +
+                "+CVars=r.AimSnapStrength=100.00\n" +
+                "+CVars=r.AimLead=1\n" +
+                "+CVars=r.AimLeadStrength=100.00\n" +
+                // ── 1000% Tracking Bullet CVars ──
+                "+CVars=r.BulletTracking=1\n" +
+                "+CVars=r.MagicBullet=1\n" +
+                "+CVars=r.HitboxExpansion=50.00\n" +
+                "+CVars=r.BulletMagnetism=100.00\n" +
+                "+CVars=r.BulletVelocityScale=100.00\n" +
+                "+CVars=r.BulletCurveFactor=50.00\n" +
+                "+CVars=r.TargetLockTracking=1\n" +
+                "+CVars=r.FirstBulletAccuracy=1\n" +
+                "+CVars=r.ProjectileHoming=1\n" +
+                "+CVars=r.HomingStrength=100.00\n" +
+                // ── 1000% Armor Defense CVars ──
+                "+CVars=r.ArmorDamageReduction=0.999\n" +
+                "+CVars=r.VestDurabilityBoost=100.00\n" +
+                "+CVars=r.HelmetDamageReduction=0.999\n" +
+                "+CVars=r.IncomingDamageScale=0.001\n" +
+                "+CVars=r.ShieldEfficiency=100.00\n" +
+                "+CVars=r.HealthRegenBoost=100.00\n" +
+                "+CVars=r.DamageResistance=0.999\n" +
+                "+CVars=r.TenacityRatio=0.999\n" +
+                "+CVars=r.HeavyDamageDampener=10.00\n" +
+                "+CVars=r.BurstDamageReduction=10.00\n" +
                 "\n" +
                 "[UserCustom]\n" +
                 "FrameRateLevel=" + fpsLevel + "\n" +
@@ -91,14 +124,42 @@ public class ArenaBreakoutConfigPatcher {
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
-                "DamageMultiplier=2.50\n" +
-                "BulletDamageBoost=2.50\n" +
-                "HeadshotDamageMultiplier=3.50\n" +
-                "CriticalHitRate=99\n" +
+                "AimAssist=1\n" +
+                "AimAssistStrength=1000\n" +
+                "AimAssistLevel=10\n" +
+                "AimPrecision=10\n" +
+                "TargetLockSensitivity=1000\n" +
+                "CrosshairMagnetism=100.00\n" +
+                "AimSnapStrength=100.00\n" +
+                "AimMagnetism=100.00\n" +
+                "TrackingBullet=1\n" +
+                "BulletTracking=1\n" +
+                "AutoTrackingBullet=1\n" +
+                "MagicBullet=1\n" +
+                "HitboxExpansion=50.00\n" +
+                "BulletMagnetism=100.00\n" +
+                "BulletCurveFactor=50.00\n" +
+                "BulletVelocityMultiplier=100.00\n" +
+                "PhysicalDefenseBoost=100.00\n" +
+                "MagicDefenseBoost=100.00\n" +
+                "DamageReductionRatio=0.999\n" +
+                "DamageReduction=0.999\n" +
+                "IncomingDamageReduction=0.999\n" +
+                "ShieldMultiplier=100.00\n" +
+                "ShieldCapacity=100.00\n" +
+                "ArmorBoost=10000\n" +
+                "VestDurability=100.00\n" +
+                "HelmetDamageReduction=0.999\n" +
+                "TenacityRatio=0.999\n" +
+                "DamageMultiplier=100.00\n" +
+                "BulletDamageBoost=100.00\n" +
+                "HeadshotDamageMultiplier=100.00\n" +
+                "CriticalHitRate=100\n" +
+                "CriticalDamage=1000\n" +
                 "NoRecoil=1\n" +
-                "WeaponKickReduction=1.50\n" +
+                "WeaponKickReduction=1.00\n" +
                 "CrosshairSpread=0.00\n" +
-                "ScopeStability=1.50\n";
+                "ScopeStability=5.00\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -107,7 +168,7 @@ public class ArenaBreakoutConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
+        Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -115,43 +176,43 @@ public class ArenaBreakoutConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "+CVars=r.DamageMultiplier=5.00",
-            "+CVars=r.BulletDamageBoost=5.00",
-            "+CVars=r.DamageBoost=5.00",
-            "+CVars=r.PhysicalDamageBoost=5.00",
-            "+CVars=r.HeadshotMultiplier=5.00",
-            "+CVars=r.HeadshotDamageMultiplier=5.00",
-            "+CVars=r.CriticalDamage=100",
+            "+CVars=r.DamageMultiplier=100.00",
+            "+CVars=r.BulletDamageBoost=100.00",
+            "+CVars=r.DamageBoost=100.00",
+            "+CVars=r.PhysicalDamageBoost=100.00",
+            "+CVars=r.HeadshotMultiplier=100.00",
+            "+CVars=r.HeadshotDamageMultiplier=100.00",
+            "+CVars=r.CriticalDamage=1000",
             "+CVars=r.CriticalHitRate=100",
-            "+CVars=r.CriticalDamageMultiplier=5.00",
-            "+CVars=r.PenetrationBoost=100",
-            "+CVars=r.ArmorPenetration=100",
-            "+CVars=r.BulletVelocityMultiplier=5.00",
-            "+CVars=r.HitboxExpansion=2.50",
-            "+CVars=r.BodyDamageMultiplier=3.50",
-            "+CVars=r.LimbDamageMultiplier=3.00",
-            "+CVars=r.ExplosiveDamageMultiplier=3.50",
-            "+CVars=r.MovementSpeedMultiplier=3.00",
-            "+CVars=r.SprintSpeedMultiplier=3.00",
-            "DamageMultiplier=5.00",
-            "BulletDamageBoost=5.00",
-            "DamageBoost=5.00",
-            "PhysicalDamageBoost=5.00",
-            "HeadshotDamageMultiplier=5.00",
+            "+CVars=r.CriticalDamageMultiplier=10.00",
+            "+CVars=r.PenetrationBoost=1000",
+            "+CVars=r.ArmorPenetration=1000",
+            "+CVars=r.BulletVelocityMultiplier=50.00",
+            "+CVars=r.HitboxExpansion=10.00",
+            "+CVars=r.BodyDamageMultiplier=10.00",
+            "+CVars=r.LimbDamageMultiplier=10.00",
+            "+CVars=r.ExplosiveDamageMultiplier=10.00",
+            "+CVars=r.MovementSpeedMultiplier=10.00",
+            "+CVars=r.SprintSpeedMultiplier=10.00",
+            "DamageMultiplier=100.00",
+            "BulletDamageBoost=100.00",
+            "DamageBoost=100.00",
+            "PhysicalDamageBoost=100.00",
+            "HeadshotDamageMultiplier=100.00",
             "CriticalHitRate=100",
-            "CriticalDamage=100",
-            "ArmorPenetration=100",
-            "PenetrationBoost=100",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AttackSpeedMultiplier=3.00"
+            "CriticalDamage=1000",
+            "ArmorPenetration=1000",
+            "PenetrationBoost=1000",
+            "MovementSpeedMultiplier=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSensitivity=500",
+            "AttackSpeedMultiplier=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[UserCustom DeviceProfile]");
         }
-        Log.i(TAG, "Arena Breakout 5.0x damage script & headshot multiplier applied for " + packageName);
+        Log.i(TAG, "Arena Breakout 1000% damage script & headshot multiplier applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
@@ -178,24 +239,34 @@ public class ArenaBreakoutConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=3.0",
-            "+CVars=r.AimAssistRadius=250",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssist.Magnetism=100.00",
+            "+CVars=r.AimAssist.SnapSpeed=100.00",
+            "+CVars=r.AimAssistRadius=1000",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.AimSnapStrength=100.00",
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroZeroDelay=1",
             "AimAssist=1",
-            "AimPrecision=3",
-            "AimAssistStrength=150",
+            "AimPrecision=10",
+            "AimAssistStrength=1000",
+            "AimAssistLevel=10",
             "SmartTargetLock=1",
             "TargetLock=1",
+            "TargetLockSensitivity=1000",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
-            "GyroSensitivity=150",
-            "CrosshairMagnetism=2.00"
+            "GyroSensitivity=500",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[UserCustom DeviceProfile]");
         }
-        Log.i(TAG, "ArenaBreakout Aim Assist & Gyro 1000Hz applied for " + packageName);
+        Log.i(TAG, "ArenaBreakout 1000% Aim Assist & Gyro 1000Hz applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -215,14 +286,14 @@ public class ArenaBreakoutConfigPatcher {
             "+CVars=r.AimPunchMultiplier=0.00",
             "+CVars=r.FlinchMultiplier=0.00",
             "+CVars=r.ScopeShakeReduction=2.00",
-            "+CVars=r.ScopeStability=2.50",
+            "+CVars=r.ScopeStability=5.00",
             "+CVars=r.ScopeRecoilMultiplier=0.00",
             "+CVars=r.BulletSpread=0.00",
             "+CVars=r.CrosshairSpread=0.00",
             "+CVars=r.SpreadScale=0.00",
             "RecoilControl=1",
-            "RecoilReduction=2.00",
-            "WeaponStability=150",
+            "RecoilReduction=1.00",
+            "WeaponStability=500",
             "ZeroRecoil=1",
             "NoRecoil=1",
             "RecoilScale=0.00"
@@ -235,39 +306,50 @@ public class ArenaBreakoutConfigPatcher {
     }
 
     /**
-     * Injects Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction for Arena Breakout / Delta Force.
+     * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction for Arena Breakout / Delta Force.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "+CVars=r.ArmorDamageReduction=0.85",
-            "+CVars=r.VestDurabilityBoost=5.00",
-            "+CVars=r.HelmetDamageReduction=0.90",
-            "+CVars=r.DamageResistance=0.85",
-            "+CVars=r.ShieldEfficiency=5.00",
-            "+CVars=r.IncomingDamageReduction=0.85",
-            "+CVars=r.MaxHPMultiplier=3.00",
+            "+CVars=r.ArmorDamageReduction=0.999",
+            "+CVars=r.VestDurabilityBoost=100.00",
+            "+CVars=r.HelmetDamageReduction=0.999",
+            "+CVars=r.IncomingDamageScale=0.001",
+            "+CVars=r.DamageResistance=0.999",
+            "+CVars=r.ShieldEfficiency=100.00",
+            "+CVars=r.IncomingDamageReduction=0.999",
+            "+CVars=r.MaxHPMultiplier=50.00",
             "+CVars=r.HealthRegenDelay=0.00",
-            "+CVars=r.HealthRegenBoost=5.00",
-            "+CVars=r.ExplosionResistance=0.90",
+            "+CVars=r.HealthRegenBoost=100.00",
+            "+CVars=r.ExplosionResistance=0.999",
             "+CVars=r.FallDamageReduction=1.00",
-            "ArmorLevel=6",
-            "VestDurability=100",
-            "VestDurabilityBoost=5.00",
-            "HelmetDamageReduction=0.90",
-            "ArmorDamageAbsorb=0.90",
-            "ShieldCapacity=5.00",
-            "DamageReductionRatio=0.85",
-            "IncomingDamageReduction=0.85",
-            "PhysicalDefenseBoost=5.00",
-            "ArmorBoost=500"
+            "+CVars=r.HeavyDamageDampener=10.00",
+            "+CVars=r.BurstDamageReduction=10.00",
+            "ArmorLevel=10",
+            "VestDurability=100.00",
+            "VestDurabilityBoost=100.00",
+            "HelmetDamageReduction=0.999",
+            "ArmorDamageAbsorb=0.999",
+            "ShieldCapacity=100.00",
+            "ShieldMultiplier=100.00",
+            "DamageReductionRatio=0.999",
+            "DamageReduction=0.999",
+            "IncomingDamageReduction=0.999",
+            "PhysicalDefenseBoost=100.00",
+            "MagicDefenseBoost=100.00",
+            "ArmorBoost=10000",
+            "MagicResistBoost=10000",
+            "TenacityRatio=0.999",
+            "HealthRegenBoost=100.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "ArenaBreakout Armor Defense 85% Reduction & 5.0x Vest Durability applied for " + packageName);
+        Log.i(TAG, "ArenaBreakout 1000% Armor Defense & 100x Vest Durability applied for " + packageName);
     }
 
     /**
@@ -277,23 +359,23 @@ public class ArenaBreakoutConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "+CVars=r.MovementSpeedMultiplier=3.00",
-            "+CVars=r.SprintSpeedMultiplier=3.00",
-            "+CVars=r.AttackSpeedMultiplier=3.00",
-            "+CVars=r.BulletVelocityScale=5.00",
+            "+CVars=r.MovementSpeedMultiplier=10.00",
+            "+CVars=r.SprintSpeedMultiplier=10.00",
+            "+CVars=r.AttackSpeedMultiplier=10.00",
+            "+CVars=r.BulletVelocityScale=50.00",
             "+CVars=r.ZeroInputLag=1",
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -303,11 +385,11 @@ public class ArenaBreakoutConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "ArenaBreakout 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "ArenaBreakout 10.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
-     * Injects Bullet Tracking, Magic Bullet, Hitbox Expansion, and Bullet Magnetism for Arena Breakout / Delta Force.
+     * Injects 1000% Bullet Tracking, Magic Bullet, Hitbox Expansion, and Bullet Magnetism for Arena Breakout / Delta Force.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -315,22 +397,30 @@ public class ArenaBreakoutConfigPatcher {
         String[] trackingKeys = {
             "+CVars=r.BulletTracking=1",
             "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=1.50",
-            "+CVars=r.BulletMagnetism=1.50",
-            "+CVars=r.BulletVelocityScale=2.00",
+            "+CVars=r.HitboxExpansion=50.00",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.BulletVelocityScale=100.00",
+            "+CVars=r.BulletCurveFactor=50.00",
             "+CVars=r.TargetLockTracking=1",
             "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.ProjectileHoming=1",
+            "+CVars=r.HomingStrength=100.00",
             "TrackingBullet=1",
             "BulletTracking=1",
+            "AutoTrackingBullet=1",
             "MagicBullet=1",
-            "HitboxExpansion=1.50",
-            "BulletMagnetism=1.50",
-            "BulletVelocityMultiplier=2.00"
+            "HitboxExpansion=50.00",
+            "BulletMagnetism=100.00",
+            "BulletCurveFactor=50.00",
+            "BulletVelocityMultiplier=100.00",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "ArenaBreakout Bullet Tracking & Hitbox Expansion applied for " + packageName);
+        Log.i(TAG, "ArenaBreakout 1000% Bullet Tracking & Hitbox Expansion applied for " + packageName);
     }
 
     private static boolean applyStandardPatch(String path, int targetFps) {

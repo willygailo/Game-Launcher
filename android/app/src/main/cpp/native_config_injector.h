@@ -115,6 +115,46 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
 /*
  * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectHeroDamage1000
+ * Signature: (Ljava/lang/String;FFII)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroDamage1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectScopeZeroRecoil
+ * Signature: (Ljava/lang/String;FI)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil
+  (JNIEnv *, jclass, jstring, jfloat, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectAimAssist1000
+ * Signature: (Ljava/lang/String;IF)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000
+  (JNIEnv *, jclass, jstring, jint, jfloat);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectTrackingBullet1000
+ * Signature: (Ljava/lang/String;FF)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectArmorDef1000
+ * Signature: (Ljava/lang/String;FF)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
  * Method:    nativeFastMemorySync
  * Signature: (Ljava/lang/String;)Z
  */

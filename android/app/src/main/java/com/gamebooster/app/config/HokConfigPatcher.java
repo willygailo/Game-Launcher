@@ -52,9 +52,42 @@ public class HokConfigPatcher {
                 "CameraDistance=150\n" +
                 "CameraFOV=150\n" +
                 "FieldOfView=150\n" +
-                "PhysicalDamageMultiplier=2.50\n" +
-                "MagicDamageMultiplier=2.50\n" +
-                "CriticalRateBoost=95\n" +
+                "AimAssist=1\n" +
+                "AimAssistStrength=1000\n" +
+                "AimAssistLevel=10\n" +
+                "AimPrecision=10\n" +
+                "TargetLockSensitivity=1000\n" +
+                "CrosshairMagnetism=100.00\n" +
+                "AimSnapStrength=100.00\n" +
+                "AimMagnetism=100.00\n" +
+                "SmartTargeting=1\n" +
+                "TargetLock=1\n" +
+                "SkillTargetAssist=1\n" +
+                "AutoAim=1\n" +
+                "SkillTracking=1\n" +
+                "AutoTargetLock=1\n" +
+                "TargetLockTracking=1\n" +
+                "PredictPath=1\n" +
+                "SkillMagnetism=100.00\n" +
+                "HitboxExpansion=50.00\n" +
+                "TrackingBullet=1\n" +
+                "BulletTracking=1\n" +
+                "AutoTrackingBullet=1\n" +
+                "MagicBullet=1\n" +
+                "PhysicalDefenseBoost=100.00\n" +
+                "MagicDefenseBoost=100.00\n" +
+                "PhysicalArmor=100.00\n" +
+                "MagicResistance=100.00\n" +
+                "DamageReductionRatio=0.999\n" +
+                "DamageReduction=0.999\n" +
+                "IncomingDamageReduction=0.999\n" +
+                "ShieldMultiplier=100.00\n" +
+                "ShieldCapacity=100.00\n" +
+                "ArmorBoost=10000\n" +
+                "TenacityRatio=0.999\n" +
+                "PhysicalDamageMultiplier=100.00\n" +
+                "MagicDamageMultiplier=100.00\n" +
+                "CriticalRateBoost=100\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
@@ -68,7 +101,7 @@ public class HokConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "HOK competitive " + forcedFps + "FPS + Drone View force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "HOK competitive " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -93,16 +126,24 @@ public class HokConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         String[] aimKeys = {
             "AimAssist=1",
+            "AimPrecision=10",
+            "AimAssistStrength=1000",
+            "AimAssistLevel=10",
             "SmartTargeting=1",
             "TargetLock=1",
+            "TargetLockSensitivity=1000",
             "SkillTargetAssist=1",
             "AutoAim=1",
-            "TouchSensitivity=150"
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
+            "TouchSensitivity=500"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectAimAssist(path);
             ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
         }
-        Log.i(TAG, "HOK Smart Target Assist applied for " + packageName);
+        Log.i(TAG, "HOK 1000% Smart Target Assist applied for " + packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
@@ -118,8 +159,8 @@ public class HokConfigPatcher {
             "NoCameraShake=1",
             "AimPunchReduction=1",
             "FlinchReduction=1",
-            "ScopeShakeReduction=1.50",
-            "ScopeStability=1.50",
+            "ScopeShakeReduction=1.00",
+            "ScopeStability=5.00",
             "WeaponSway=0",
             "RecoilControl=1",
             "ZeroRecoil=1",
@@ -138,77 +179,79 @@ public class HokConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] damageKeys = {
-            "PhysicalDamageBoost=5.00",
-            "MagicDamageBoost=5.00",
-            "TrueDamageBoost=5.00",
-            "DamageMultiplier=5.00",
-            "DamageBoost=5.00",
-            "DamageBoostRatio=5.00",
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "DamageMultiplier=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
             "CritRate=100",
-            "CritDamage=5.00",
-            "CriticalDamage=100",
+            "CritDamage=10.00",
+            "CriticalDamage=1000",
             "CriticalDamageRate=100",
             "CriticalHitRate=100",
-            "CriticalDamageMultiplier=5.00",
-            "HeadshotMultiplier=5.00",
-            "HeadshotDamageMultiplier=5.00",
-            "AttackSpeedBoost=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "MovementSpeedMultiplier=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "HitboxExpansion=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
-            "BodyDamageMultiplier=3.50",
-            "ExplosiveDamageMultiplier=3.50",
+            "CriticalDamageMultiplier=10.00",
+            "HeadshotMultiplier=100.00",
+            "HeadshotDamageMultiplier=100.00",
+            "AttackSpeedBoost=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "MovementSpeedMultiplier=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "HitboxExpansion=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
+            "BodyDamageMultiplier=10.00",
+            "ExplosiveDamageMultiplier=10.00",
             "FOV=150"
         };
         for (String path : paths) {
             NativeConfigInjector.injectHighDamage(path);
             ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
         }
-        Log.i(TAG, "HOK 5.0x Damage Boost & FOV applied for " + packageName);
+        Log.i(TAG, "HOK 1000% Damage Boost & FOV applied for " + packageName);
     }
 
     /**
-     * Injects Physical Armor, Magic Resistance, Damage Reduction, and Shield Boost for Honor of Kings / Arena of Valor.
+     * Injects 1000% Physical Armor, Magic Resistance, Damage Reduction, and Shield Boost for Honor of Kings / Arena of Valor.
      */
     public static void applyArmorDefConfig(String packageName) {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] armorKeys = {
-            "PhysicalArmor=5.00",
-            "MagicResistance=5.00",
-            "DamageReduction=0.85",
-            "DamageReductionRatio=0.85",
-            "IncomingDamageReduction=0.85",
-            "ShieldBoost=5.00",
-            "ShieldStrength=5.00",
-            "ShieldEfficiency=5.00",
-            "ShieldCapacity=5.00",
-            "ShieldMultiplier=5.00",
-            "MaxHPBoost=3.00",
-            "MaxHPMultiplier=3.00",
-            "HPBoostRatio=3.00",
-            "Tenacity=0.80",
-            "TenacityRatio=0.80",
-            "ResilienceLevel=5",
-            "ArmorBoost=500",
-            "PhysicalDefenseBoost=5.00",
-            "MagicDefenseBoost=5.00",
-            "DamageAbsorbRatio=3.00",
+            "PhysicalArmor=100.00",
+            "MagicResistance=100.00",
+            "DamageReduction=0.999",
+            "DamageReductionRatio=0.999",
+            "IncomingDamageReduction=0.999",
+            "ShieldBoost=100.00",
+            "ShieldStrength=100.00",
+            "ShieldEfficiency=100.00",
+            "ShieldCapacity=100.00",
+            "ShieldMultiplier=100.00",
+            "MaxHPBoost=50.00",
+            "MaxHPMultiplier=50.00",
+            "HPBoostRatio=50.00",
+            "Tenacity=0.999",
+            "TenacityRatio=0.999",
+            "ResilienceLevel=10",
+            "ArmorBoost=10000",
+            "PhysicalDefenseBoost=100.00",
+            "MagicDefenseBoost=100.00",
+            "DamageAbsorbRatio=50.00",
             "HealthRegenDelay=0.00",
-            "HealthRegenBoost=5.00",
-            "ExplosionResistance=0.90",
-            "FallDamageReduction=1.00"
+            "HealthRegenBoost=100.00",
+            "ExplosionResistance=0.999",
+            "FallDamageReduction=1.00",
+            "HeavyHitAbsorption=10.00",
+            "BurstDamageReduction=10.00"
         };
         for (String path : paths) {
             NativeConfigInjector.injectArmorDef(path);
             ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
         }
-        Log.i(TAG, "HOK Armor Defense 85% Reduction & 5.0x Shield applied for " + packageName);
+        Log.i(TAG, "HOK 1000% Armor Defense & 100x Shield applied for " + packageName);
     }
 
     /**
@@ -218,18 +261,18 @@ public class HokConfigPatcher {
         if (packageName == null) return;
         List<String> paths = getConfigPaths(packageName);
         String[] speedKeys = {
-            "MovementSpeedMultiplier=3.00",
-            "MovementSpeedBoost=3.00",
-            "SprintSpeedMultiplier=3.00",
-            "SprintSpeedBoost=3.00",
-            "SprintSensitivity=200",
-            "AgilityMultiplier=3.00",
-            "AttackSpeedMultiplier=3.00",
-            "AttackSpeedBoost=3.00",
-            "ReloadSpeedMultiplier=3.00",
-            "FireRateMultiplier=2.50",
-            "BulletVelocityMultiplier=5.00",
-            "BulletVelocityScale=5.00",
+            "MovementSpeedMultiplier=10.00",
+            "MovementSpeedBoost=10.00",
+            "SprintSpeedMultiplier=10.00",
+            "SprintSpeedBoost=10.00",
+            "SprintSensitivity=500",
+            "AgilityMultiplier=10.00",
+            "AttackSpeedMultiplier=10.00",
+            "AttackSpeedBoost=10.00",
+            "ReloadSpeedMultiplier=10.00",
+            "FireRateMultiplier=10.00",
+            "BulletVelocityMultiplier=50.00",
+            "BulletVelocityScale=50.00",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
             "ZeroInputLag=1",
@@ -239,11 +282,11 @@ public class HokConfigPatcher {
             NativeConfigInjector.injectSpeedBoost(path);
             ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
         }
-        Log.i(TAG, "HOK 3.0x Speed Boost & Movement Agility applied for " + packageName);
+        Log.i(TAG, "HOK 10.0x Speed Boost & Movement Agility applied for " + packageName);
     }
 
     /**
-     * Injects Skill Auto-Tracking, Target Lock, and Skill Magnetism for Honor of Kings.
+     * Injects 1000% Skill Auto-Tracking, Target Lock, and Skill Magnetism for Honor of Kings.
      */
     public static void applyTrackingBulletConfig(String packageName) {
         if (packageName == null) return;
@@ -253,18 +296,22 @@ public class HokConfigPatcher {
             "AutoTargetLock=1",
             "TargetLockTracking=1",
             "PredictPath=1",
-            "SkillMagnetism=1.50",
+            "SkillMagnetism=100.00",
             "HeroPriorityLock=1",
             "LowestHPTargetLock=1",
-            "HitboxExpansion=1.50",
+            "HitboxExpansion=50.00",
             "TrackingBullet=1",
             "BulletTracking=1",
-            "MagicBullet=1"
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00"
         };
         for (String path : paths) {
+            NativeConfigInjector.injectTrackingBullet(path);
             ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
         }
-        Log.i(TAG, "HOK Skill Auto-Tracking & Target Lock applied for " + packageName);
+        Log.i(TAG, "HOK 1000% Skill Auto-Tracking & Target Lock applied for " + packageName);
     }
 
     public static void applyAntiLog(String packageName) {
