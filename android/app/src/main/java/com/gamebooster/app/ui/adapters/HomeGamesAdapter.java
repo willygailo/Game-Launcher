@@ -86,13 +86,19 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
     }
 
     private void showProfilePicker(GameViewHolder holder, GameAppInfo game) {
-        String pkg = game.getPackageName();
+        String pkg = game.getPackageName().toLowerCase();
         String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
                          pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         pkg.contains("cod") || pkg.contains("callofduty") ? CompetitiveCfgProfile.GAME_CODM :
+                         pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
                          pkg.contains("freefire") || pkg.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                         pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") ? CompetitiveCfgProfile.GAME_GENSHIN :
+                         pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
+                         pkg.contains("wildrift") || pkg.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
                          pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
+                         pkg.contains("bloodstrike") || pkg.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
+                         pkg.contains("standoff2") || pkg.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
+                         pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
+                         pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
+                         pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
                          pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
                          pkg.contains("projectc") || pkg.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
                          pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
