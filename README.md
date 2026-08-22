@@ -1,19 +1,20 @@
 <div align="center">
 
-<img src="android/app/src/main/res/drawable/hero_banner.gif" alt="Game Launcher PRO Hero Banner" width="100%" />
-
 # ⚡ GAME LAUNCHER PRO — ULTIMATE GAMING SUITE ⚡
-### *Next-Gen 185 FPS Display Lock • In-Game ART-Level Hardware Spoofing • Zero-Root Shizuku Engine*
+### *Next-Gen 185 FPS Display Lock • In-Game ART-Level Hardware Spoofing • Dual Shizuku + LSPatch Engine*
 
-[![Release](https://img.shields.io/badge/Release-v16.0.9--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
-[![Android Support](https://img.shields.io/badge/Dedicated-Android%2012--16%20(API%2031--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-system-requirements)
-[![Zero Root](https://img.shields.io/badge/Shizuku-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#-privilege-layer)
+<br/>
+
+[![Release](https://img.shields.io/badge/Release-v16.1.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Android Support](https://img.shields.io/badge/Supported-Android%2013--16%20(API%2033--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-system-requirements)
+[![LSPatch Combo](https://img.shields.io/badge/Dual--Engine-LSPatch%20%2B%20Shizuku-FF007F?style=for-the-badge&logo=android&logoColor=white)](#-dual-engine-lspatch--shizuku-combo)
+[![Zero Root](https://img.shields.io/badge/Privilege-Zero--Root%20UID%202000-7B2CBF?style=for-the-badge&logo=android&logoColor=white)](#-privilege-layer)
 [![Build Tool](https://img.shields.io/badge/Java-17%20%7C%20Gradle%208.13-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](#-building-from-source)
 [![License](https://img.shields.io/badge/License-MIT-FFB703?style=for-the-badge)](#-license)
 
 <br/>
 
-[📥 **Download Latest APK (v16.0.9-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
+[📥 **Download Latest APK (v16.1.0-PRO)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Core Capabilities**](#-core-capabilities) • [🧬 **LSPatch Combo**](#-dual-engine-lspatch--shizuku-combo) • [🎮 **Supported Games**](#-supported-esports-titles) • [🏗️ **Architecture**](#-system-architecture) • [🚀 **Installation & Setup**](#-installation--setup)
 
 <br/>
 
@@ -23,55 +24,67 @@
 
 ## 🌟 Executive Overview
 
-**Game Launcher PRO** transforms your Android device into a dedicated, low-latency flagship gaming machine. Engineered directly on top of the **Shizuku Privileged IPC Engine (UID 2000)**, it unlocks hardware display overrides, eliminates thermal throttling governors, synchronizes touch polling frequencies, and dynamically injects competitive in-game configurations—**completely non-root and zero IAP**. Online anti-cheat compatibility is never guaranteed — see [Security & Risk Transparency](#-security--risk-transparency).
+**Game Launcher PRO** transforms your Android device into a dedicated, ultra-low-latency esports gaming powerhouse. Built upon the **Shizuku Privileged IPC Engine (UID 2000)** and a **Non-Root In-Memory ART LSPatch / LSPosed Bridge**, it unlocks hardware refresh rates up to **185 FPS**, eliminates thermal throttling governors, forces 1000Hz touch polling, and injects competitive in-game physics & graphics configurations—**100% Non-Root and Free**.
 
 ```
-  ⚡ 185Hz Extreme ROG Mode  │  🎭 5-Layer Flagship Spoofer  │  🎯 1000Hz Touch Polling  │  🔒 Zero-Root Shizuku Engine
+  ⚡ 185Hz Extreme ROG Mode  │  🎮 Adreno 840 GPU Spoofing  │  🧬 LSPatch Non-Root ART Hooks  │  🎯 1000Hz Ultra Touch Polling
 ```
 
 ---
 
 ## ✨ Core Capabilities
 
-### ⚡ 1. Extreme Display & Refresh Rate Engine
-* **SurfaceFlinger Binder Synchronization**: Enforces hardware screen refresh rates up to **185Hz, 165Hz, 144Hz, 120Hz, and 90Hz** by overriding system display modes.
-* **Android 14–16 Game Mode API**: Automates `cmd game mode performance` and configures target downscaling & framerate schedulers.
-* **WindowManager Display Lock**: Neutralizes dynamic refresh rate stepping to prevent frame drops in heated team fights.
+### ⚡ 1. High-Refresh Display Engine (90Hz – 185Hz Only)
+* **Zero 60Hz Policy**: Completely eliminates 60Hz and 60 FPS caps. Enforces exclusive high-refresh modes: **90Hz, 120Hz, 144Hz, 165Hz, and 185Hz Extreme Max**.
+* **SurfaceFlinger Synchronization**: Overrides hardware frame dispatching via `service call SurfaceFlinger 1035/1036`.
+* **Android 14–16 Game Mode API**: Automates `cmd game mode performance` and sets target downscaling & framerate schedulers.
+* **WindowManager Display Lock**: Prevents dynamic frame stepping and thermal drops during team fights.
 
-### 🎭 2. 5-Layer Flagship Hardware Identity Spoofer
-* **Elite Device Signatures**:
-  * 🔴 **ASUS ROG Phone 9 Pro** *(Snapdragon 8 Elite / 24GB RAM / 185Hz)*
-  * 🌌 **Samsung Galaxy S26 Ultra** *(Snapdragon 8 Elite / Adreno 840)*
-  * ⚡ **REDMAGIC 10 Pro+** *(185Hz eSports Edition / Liquid Cooling Profile)*
-  * ⚡ **Vivo iQOO 15 Pro** *(Dimensity 9400 / Immortalis-G925)*
+### 🎮 2. Adreno 840 Flagship Hardware & GPU Spoofer
+* **Flagship Device & GPU Profiles**:
+  * 🔴 **ASUS ROG Phone 9 Pro** *(Snapdragon 8 Elite • Adreno 840 • 185Hz)*
+  * 🌌 **Samsung Galaxy S26 Ultra** *(Snapdragon 8 Elite • Adreno 840 • 24GB RAM)*
+  * ⚡ **REDMAGIC 10 Pro+** *(185Hz eSports Edition • Liquid Cooling Profile)*
+  * ⚡ **Vivo iQOO 15 Pro** *(Dimensity 9400 • Immortalis-G925)*
   * 🐉 **Xiaomi 15 Ultra** *(Vulkan Ultra Gaming Profile)*
   * 🍏 **Apple A18 Pro / iPad Pro M4** *(High-tier graphics unlocking)*
-* **Storage & ProcFS Virtualization**: Masks `/proc/cpuinfo` and `/proc/meminfo` to seamlessly bypass title-level hardware whitelists.
+* **OpenGL ES & Vulkan Interception**: Hooks `glGetString(GL_RENDERER/VENDOR/VERSION)` to report **`Adreno (TM) 840` / `Qualcomm`** for unlocking max graphics settings.
+* **ProcFS & Memory Virtualization**: Masks `/proc/cpuinfo` and `/proc/meminfo` to bypass game-level hardware whitelists.
 
-### 🧬 2b. In-Game ART-Level Spoofer — LSPosed Module (Root)
-* **True in-process spoofing**: The same APK doubles as an LSPosed module that hooks the game's **own process** at ART level — `Build.*` fields, `SystemProperties.get()`, `Runtime.totalMemory()`, `ActivityManager.getMemoryInfo()`, `glGetString(GL_RENDERER/VENDOR/VERSION)`, `/proc/cpuinfo`, `/proc/meminfo`, `/proc/version`, IMEI/MEID/IMSI/SIM serial, ANDROID_ID, and WebView User-Agent are all masked **inside the game**, where anti-cheat actually checks.
-* **Zero file tampering**: No game config files are touched when the module is active — the LSPosed path replaces the file-injection layers, removing the config-file ban vector.
-* **Auto-scoped to supported titles**: Hooks apply only to the supported games in the registry (or every app via the `spoof_all_apps` toggle) — system processes are never hooked.
-* **Live config sync**: The profile selected in the launcher is read in-game via LSPosed `XSharedPreferences` (world-readable safe-zone), so switching profiles in the app applies on the next game launch — no file drops needed.
+### 🧬 3. Dual-Engine: LSPatch (Non-Root) + LSPosed (Root) ART Hooks
+* **True In-Process Masking**: The APK functions as a launcher AND an in-memory ART hook module.
+* **Zero File Tampering**: When the module is active, device identity is intercepted directly in RAM, bypassing config file bans.
+* **Live Configuration Sync**: Settings configured in the launcher are read in-game in real time through `SpoofPrefsProvider`.
 
-### 🎯 3. Zero-Delay Touch & Esports Input Engine
-* **1000Hz Fast Touch Polling**: Dramatically minimizes input lag and touch deadzones for millisecond-precision responsiveness.
-* **1000Hz Gyroscope Calibration**: Stabilizes micro-jitter and optimizes sensor sampling curves for competitive shooters.
-* **AOT Speed Pre-compilation**: Eliminates runtime JIT micro-stutter by compiling DEX bytecode ahead-of-time.
+### 🎯 4. Zero-Delay Touch & Input Acceleration
+* **1000Hz Ultra Touch Polling**: Minimizes input lag and touch slop for pixel-precise crosshair control.
+* **1000Hz Gyroscope Calibration**: Eliminates micro-jitter and stabilizes sensor sampling for competitive shooters.
+* **AOT Speed Pre-compilation**: Compiles game DEX bytecode ahead-of-time to eliminate runtime stutter.
 
-### 🗂️ 4. Privileged File Management & In-Memory Patching
-* **Full CRUD Game Storage Access**: Seamlessly read, write, backup, and restore protected configuration files in `/data/data/<package>/` and `/sdcard/Android/data/<package>/`.
-* **Atomic Binary Patching**: Safely injects memory offsets into Unreal Engine `.sav` files (e.g. `Active.sav`), Unity player preferences, and FastFlags.
-
-### 📡 5. Network & Low-Jitter Packet Prioritizer
+### 📡 5. Low-Jitter Gaming Network Optimizer
 * **Wi-Fi Low-Latency Mode**: Locks Wi-Fi chips into low-jitter gaming state.
-* **TCP Buffer Tuning**: Optimizes network buffers for stable ping and reduced packet loss.
+* **TCP Buffer Tuning**: Optimizes buffers (`tcp_default_init_rwnd`) for stable ping and reduced packet loss.
 * **Ultra-Fast Gaming DNS**: Resolves connection routes with prioritized routing servers.
 
-### 🛠️ 6. Cyber SetEdit & Terminal Suite
-* **Real-Time Property Injector**: Modify Android `system`, `secure`, and `global` table variables with persistent boot-time locking.
-* **Shell Script Preset Runner**: Execute custom performance scripts directly through the integrated Cyber Terminal.
-* **Customizable Floating HUD**: Real-time FPS, RAM, battery temperature, and profile switching overlay.
+---
+
+## 🧬 Dual-Engine: LSPatch + Shizuku Combo
+
+```mermaid
+graph TD
+    A[Game Launcher PRO] -->|System Commands & Display 185Hz| B(Shizuku ADB - UID 2000)
+    A -->|In-Memory ART Hooks| C(LSPatch Non-Root / LSPosed)
+    B -->|Hardware Level| D[Screen 185Hz, CPU/GPU Max, Zero 60Hz]
+    C -->|Game Process RAM| E[Adreno 840 GPU, ROG 9 Identity, Unlocked Graphics]
+    D --> F[🔥 Extreme Esports Performance]
+    E --> F
+```
+
+### 📱 How to Use LSPatch (100% Non-Root):
+1. Open **Game Launcher PRO** → go to **Settings** → tap **🧬 Non-Root LSPatch Guide**.
+2. Tap **Export Module APK** (automatically shares `Game_Space.apk` to LSPatch).
+3. In **LSPatch**, tap **New Patch (+)**, choose your installed game, embed `Game Launcher PRO`, and install.
+4. Launch the patched game—hardware spoofing and Adreno 840 GPU hooks will run **inside the game process without root**!
 
 ---
 
@@ -79,14 +92,14 @@
 
 | Game Title | Category | Unlocked Capabilities |
 | :--- | :---: | :--- |
-| **PUBG Mobile / BGMI** *(All Versions)* | Battle Royale | 90/120/185 FPS `Active.sav` unlock, Multithreaded Vulkan RHI, Ultra MSAA, 1000Hz Gyro |
-| **Mobile Legends: Bang Bang** | MOBA | 120/165/185 FPS Ultra mode, Drone FOV scaling, Ultra Outline, Super Sampling, Touch Boost |
+| **PUBG Mobile / BGMI** *(All Versions)* | Battle Royale | 90/120/185 FPS `Active.sav` unlock, Multithreaded Vulkan, 1000Hz Gyro, Zero Recoil Physics |
+| **Mobile Legends: Bang Bang** | MOBA | 120/165/185 FPS Ultra mode, Drone FOV scaling, Ultra Outline, Super Sampling |
 | **Call of Duty: Mobile & Warzone** | FPS | 120/144/185 FPS Max, Real-time dynamic shadows, Zero deadzone touch, Sensitivity curve sync |
 | **Free Fire & Free Fire MAX** | Battle Royale | 120/185 FPS Unlock, 1000Hz Touch polling, Aim response acceleration, Jitter reduction |
-| **Genshin Impact & Wuthering Waves** | Action RPG | Max Graphics whitelist override, Uncapped 120 FPS, Vulkan backend routing, Camera distance |
+| **Genshin Impact & Wuthering Waves** | Action RPG | Max Graphics whitelist override, Uncapped 120 FPS, Vulkan backend routing |
 | **Arena Breakout** | Tactical FPS | 120/144 FPS high-tier unlocked, Thermal throttle bypass, Audio footprint enhancer |
 | **Blood Strike** | FPS | 120/165 FPS high refresh mode, Low latency touch, Memory compaction |
-| **CarX Street** | Racing | Ultra graphic profile, 120/144 FPS uncapped renderer, Shading quality enhancement |
+| **CarX Street** | Racing | Ultra graphic profile, 120/144/185 FPS uncapped renderer, Shading quality enhancement |
 | **Farlight 84** | Hero Shooter | 120/165/185 FPS Solarland graphics engine, Recoil stabilization, Fast touch response |
 | **Valorant Mobile / Project C** | Tactical FPS | 120/144/185 FPS UE4 CVars, 1000Hz touch & gyro tuning, Zero-delay crosshair stabilizer |
 | **League of Legends: Wild Rift** | MOBA | 120 FPS Extreme preset, Dynamic resolution scaling off, Zero-delay input pipeline |
@@ -109,28 +122,23 @@ Game-Launcher/
 │   │   │   ├── booster/                # Audio, GPU driver, and network latency engines
 │   │   │   ├── config/                 # Per-game configuration patchers (PUBG, MLBB, CODM, etc.)
 │   │   │   ├── core/                   # Threading executors, JS interface & profiles
-│   │   │   ├── device/                 # Hardware & display capability detectors
+│   │   │   ├── device/                 # Hardware & display capability detectors (90-185Hz)
 │   │   │   ├── engine/                 # MasterOptimizationEnforcer & CommandExecutor
 │   │   │   ├── games/                  # App scanning, registries, and launch helpers
 │   │   │   ├── gamespace/              # Auto game monitoring, DND, and cache cleaner
 │   │   │   ├── overlay/                # Floating HUD indicators & Crosshair overlay
 │   │   │   ├── services/               # Background monitoring & boot receivers
 │   │   │   ├── shizuku/                # Shizuku Binder communication & privileged file manager
-│   │   │   ├── spoofer/                # 5-Layer HardwareMaskEngine & brand profiles
-│   │   │   │   └── lsposed/             # LSPosed module: in-game ART-level hooks (Build, props, RAM, GPU, /proc, identity)
+│   │   │   ├── spoofer/                # 5-Layer HardwareMaskEngine & brand profiles (Adreno 840)
+│   │   │   │   └── lsposed/             # LSPatch/LSPosed module: in-game ART hooks (Display, GL, Props)
 │   │   │   ├── terminal/               # Cyber Terminal engine & script management
 │   │   │   ├── tweaks/                 # System-level performance parameter controllers
 │   │   │   └── ui/                     # Cyberpunk design system, fragments & adapters
 │   │   ├── src/main/assets/xposed_init # LSPosed module entry point (legacy API 82)
 │   │   ├── src/main/res/               # High-contrast cyber drawables, layouts & tokens
-│   │   └── libs/XposedBridgeApi-82.jar # Vendored official Xposed API (compileOnly, not on Maven Central)
+│   │   └── libs/XposedBridgeApi-82.jar # Vendored official Xposed API
 │   └── build.gradle                    # Gradle Build Configuration (API 36 / Java 17)
-├── platform-tools-latest-linux/         # Bundled official Android SDK Platform Tools (ADB/Fastboot)
-├── shizuku/                             # Standalone Shizuku shell toolkit (rish & rish_shizuku.dex)
 ├── tools/                               # Automated PC setup & Shizuku activation scripts
-│   ├── activate_shizuku.sh             # One-click Shizuku service starter via ADB
-│   ├── grant_permissions.sh            # Privileged permission granter for Game Launcher Pro
-│   └── setup_device.sh                 # All-in-one onboarding and installation tool
 └── README.md                            # Documentation & Release Guide
 ```
 
@@ -156,50 +164,28 @@ Game-Launcher/
 Connect your Android device to your computer with **USB Debugging enabled**, then run:
 
 ```bash
-# 1. Run all-in-one setup (Installs APK, grants permissions, and activates Shizuku)
+# Run all-in-one setup (Installs APK, grants permissions, and activates Shizuku)
 ./tools/setup_device.sh
-
-# Or run individual automated tasks:
-./tools/activate_shizuku.sh    # Starts Shizuku privileged service via ADB
-./tools/grant_permissions.sh   # Grants WRITE_SECURE_SETTINGS, DUMP, PACKAGE_USAGE_STATS
 ```
-
----
-
-### 🧬 Method 3: In-Game Hardware Spoofing (LSPosed Module — Root)
-
-The built-in **LSPosed module** masks the device identity **inside the game process itself** (ART-level hooks — the same APK doubles as the module):
-
-1. **Requirements**: A rooted device (Magisk/KernelSU) with **LSPosed** (Zygisk/Riru) installed and enabled.
-2. **Install & activate**:
-   * Install the APK, open it once (writes the spoof profile bridge), then reboot.
-   * Open **LSPosed Manager → Modules → Game Booster** → enable it.
-   * Set **Scope**: check the games you want spoofed (or rely on the `spoof_all_apps` toggle in the launcher).
-3. **Select your profile** in the launcher (e.g. ROG Phone 9 Pro, Galaxy S26 Ultra) — it applies automatically in-game on the next launch.
-4. **Verify**: LSPosed Manager → Logs shows `SpoofModule active for <game> -> <profile>`.
-   * The launcher's SYSTEM ENGINE chip turns **🧬 LSPOSED MODULE ACTIVE** when the module is detected.
-   * When the module is active, the file-injection layers are automatically bypassed — no game files are touched.
-
-> 💡 **Note**: Shizuku (Methods 1–2) covers display, settings, permissions, and system tweaks on **any** device. The LSPosed module is **root-only** and covers the *in-process* identity checks that Shizuku cannot reach.
 
 ---
 
 ## 🛠️ Building from Source
 
 ### Prerequisites:
-- **JDK 17** or **JDK 21** configured (`JAVA_HOME`).
+- **JDK 17** or **JDK 21** (`JAVA_HOME`).
 - **Android SDK Build Tools** (API 36).
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repository
 git clone https://github.com/willygailo/Game-Launcher.git
 cd Game-Launcher/android
 
-# 2. Build clean release and debug APKs
+# 2. Build release and debug APKs
 ./gradlew clean assembleRelease assembleDebug
 ```
 
-The compiled binaries will be output to:
+Binaries output path:
 - **Release APK**: `android/app/build/outputs/apk/release/Game_Space.apk`
 - **Debug APK**: `android/app/build/outputs/apk/debug/Game_Space_Debug.apk`
 
@@ -207,48 +193,7 @@ The compiled binaries will be output to:
 
 ## 🔒 Security & Risk Transparency
 
-> **Honest summary:** Game Launcher PRO runs **zero-root via Shizuku** for
-> system-level control and — on rooted devices — ships an **optional LSPosed
-> module** that hooks supported game processes at ART level to mask device
-> identity *in-process*. Both paths rewrite system display parameters, patch
-> game configuration files, and spoof device identity — all of which can be
-> detected by anti-cheat systems. **Xposed/LSPosed presence itself is a
-> well-known detection signal for kernel-level anti-cheat (e.g. Tencent ACE,
-> used by PUBG Mobile / CoD Mobile / Honor of Kings).** No tool can honestly
-> promise "100% safe" against online anti-cheat ecosystems. Use at your own
-> risk on accounts you care about.
-
-| Feature | What it changes | Risk | Why |
-| :-- | :-- | :-- | :-- |
-| Refresh-rate / FPS overrides | Android display & Game Mode parameters | Low | Standard system APIs; may be limited by panel hardware (e.g. a 60Hz panel will not run 185Hz) |
-| Device identity spoofer | `/proc` masks, build props, device fingerprints | **High — known ban vector** | Anti-cheat flags impossible hardware (e.g. Apple SoC on a Snapdragon device). The app now blocks provable mismatches via `SpoofSanityChecker` (Phase 2.4), but this cannot guarantee safety |
-| LSPosed module (in-game hooks) | ART-level hooks inside game process: Build, SystemProperties, RAM, GL, `/proc`, IMEI, ANDROID_ID | **Very High — framework presence detectable** | Requires root. Xposed/LSPosed framework presence is detected by kernel-level anti-cheat (Tencent ACE, etc.) and can trigger immediate flags. Only enable for games you accept losing access to |
-| Game config patching (`Active.sav`, FastFlags, CFG) | Per-game config files | Medium–High | Config modifications are detectable; devs may reset, integrity-check, or flag modified configs |
-| Network prioritizer | Wi-Fi/cellular QoS settings | Low | Standard Android knobs |
-
-### FAQ
-
-- **Shizuku died / permissions revoked — what now?** Open Shizuku again
-  (Settings → Shizuku & System Permissions → Grant) and hit **Master
-  Enforce**. The app never requires root; everything runs via UID 2000.
-- **My FPS override is not applying.** Open **Settings → Diagnostics →
-  REFRESH** and check `Shizuku/root available` and `AIDL service connected`;
-  if either is `false`, Shizuku is not running. If both are `true`, your panel
-  may not support the target Hz (Check `verifyEnforcementStatus()` output).
-- **The game reset my config.** Known behavior: several titles reset or
-  integrity-check configs on update or launch (flagged per-game on the Games
-  screen — e.g. CoD Mobile, PUBG Mobile, Genshin). Re-apply after updates.
-- **The LSPosed module is not applying.** Enable **Game Booster** in LSPosed
-  Manager → Modules, set its scope to the games, then force-stop the games and
-  relaunch. Check LSPosed Manager → Logs for `SpoofModule active for <game>`.
-  The module is root-only — it will never activate on a Shizuku-only device.
-- **I need help / want to report a bug.** Export diagnostics: Settings →
-  Diagnostics → **EXPORT** — the share sheet gives a text snapshot with app
-  version, enforcement status, spoof state, and any captured crash log.
-- **Is my account at risk?** Yes, potentially — see the risk table above.
-  Spoofing or patching files in online games can lead to bans. This project is
-  provided as-is (MIT) with no warranty; the developer is not responsible for
-  loss of access to accounts.
+> **Important:** Game Launcher PRO operates **zero-root via Shizuku** for system display control and ships an **in-memory LSPatch/LSPosed module** for game process masking. No file modifications are performed when the module is active. Use responsibly.
 
 ---
 
