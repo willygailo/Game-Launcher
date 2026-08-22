@@ -1,10 +1,11 @@
 package com.gamebooster.app.gamespace;
-import com.gamebooster.app.config.*;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.engine.CommandExecutor;
+
+import java.io.File;
 
 public class GameCacheCleaner {
 
@@ -15,15 +16,31 @@ public class GameCacheCleaner {
             Log.i(TAG, "Starting Deep Game Cache & Shader Storage Cleaning...");
 
             // Execute package cache trim & system cache purge
-            CommandExecutor.executeSystemCommand("pm trim-caches 1000M");
-            CommandExecutor.executeSystemCommand("rm -rf /data/local/tmp/*");
+            CommandExecutor.executeSystemCommand("pm trim-caches 4096M");
+            CommandExecutor.executeSystemCommand("rm -rf /data/local/tmp/* 2>/dev/null");
+            CommandExecutor.executeSystemCommand("rm -rf /data/anr/* 2>/dev/null");
+            CommandExecutor.executeSystemCommand("rm -rf /data/tombstones/* 2>/dev/null");
             CommandExecutor.executeSystemCommand("sync && echo 3 > /proc/sys/vm/drop_caches");
             CommandExecutor.executeSystemCommand("cmd package bg-dexopt-job");
 
             if (context != null) {
-                java.io.File cacheDir = context.getCacheDir();
+                File cacheDir = context.getCacheDir();
                 if (cacheDir != null && cacheDir.isDirectory()) {
                     deleteDirContents(cacheDir);
+                }
+
+                File codeCacheDir = context.getCodeCacheDir();
+                if (codeCacheDir != null && codeCacheDir.isDirectory()) {
+                    deleteDirContents(codeCacheDir);
+                }
+
+                File[] extCaches = context.getExternalCacheDirs();
+                if (extCaches != null) {
+                    for (File extCache : extCaches) {
+                        if (extCache != null && extCache.isDirectory()) {
+                            deleteDirContents(extCache);
+                        }
+                    }
                 }
             }
 
@@ -35,11 +52,11 @@ public class GameCacheCleaner {
         }
     }
 
-    private static void deleteDirContents(java.io.File dir) {
+    private static void deleteDirContents(File dir) {
         if (dir == null || !dir.isDirectory()) return;
-        java.io.File[] files = dir.listFiles();
+        File[] files = dir.listFiles();
         if (files != null) {
-            for (java.io.File file : files) {
+            for (File file : files) {
                 if (file.isDirectory()) {
                     deleteDirContents(file);
                 }

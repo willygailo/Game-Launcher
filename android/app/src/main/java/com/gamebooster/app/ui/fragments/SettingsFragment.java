@@ -59,6 +59,11 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.widget.ScrollView;
 import android.view.inputmethod.EditorInfo;
+import com.gamebooster.app.cleaner.cleaner.JunkCleanerEngine;
+import com.gamebooster.app.cleaner.model.CleanResult;
+import com.gamebooster.app.cleaner.model.JunkScanResult;
+import com.gamebooster.app.cleaner.scanner.JunkScanner;
+import com.gamebooster.app.cleaner.ui.JunkCleanerDialog;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -89,6 +94,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnSettingsScriptTouch;
     private Button btnSettingsTerminalClear;
     private final SpannableStringBuilder settingsTerminalBuffer = new SpannableStringBuilder();
+
+    // Junk & Storage Cache Cleaner UI
+    private TextView tvJunkCleanerStatus;
+    private TextView tvJunkQuickSize;
+    private TextView tvJunkQuickDetail;
+    private Button btnScanJunk;
+    private Button btnQuickCleanJunk;
+    private Button btnOpenCleanerDashboard;
+    private JunkScanResult lastJunkScanResult;
+    private final JunkScanner junkScanner = new JunkScanner();
+    private final JunkCleanerEngine junkCleanerEngine = new JunkCleanerEngine();
 
     // Hardware & Boost Switches
     private Switch switchAngleMode;
@@ -379,6 +395,37 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         Toast.makeText(getContext(), "✅ Purged logs for " + count + " game packages", Toast.LENGTH_SHORT).show();
                     });
                 });
+            });
+        }
+
+        // Card 2.2: Junk Files & Storage Cache Cleaner
+        tvJunkCleanerStatus = view.findViewById(R.id.tv_junk_cleaner_status);
+        tvJunkQuickSize = view.findViewById(R.id.tv_junk_quick_size);
+        tvJunkQuickDetail = view.findViewById(R.id.tv_junk_quick_detail);
+        btnScanJunk = view.findViewById(R.id.btn_scan_junk);
+        btnQuickCleanJunk = view.findViewById(R.id.btn_quick_clean_junk);
+        btnOpenCleanerDashboard = view.findViewById(R.id.btn_open_cleaner_dashboard);
+
+        if (btnScanJunk != null) {
+            btnScanJunk.setOnClickListener(v -> performQuickJunkScan());
+        }
+
+        if (btnQuickCleanJunk != null) {
+            btnQuickCleanJunk.setOnClickListener(v -> performQuickJunkClean());
+        }
+
+        if (btnOpenCleanerDashboard != null) {
+            btnOpenCleanerDashboard.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    JunkCleanerDialog.show(getContext(), result -> {
+                        if (tvJunkQuickSize != null) {
+                            tvJunkQuickSize.setText("0.0 MB");
+                        }
+                        if (tvJunkCleanerStatus != null) {
+                            tvJunkCleanerStatus.setText("Last Cleaned: Freed " + result.getFormattedBytesFreed() + " (Storage Reclaimed)");
+                        }
+                    });
+                }
             });
         }
 
@@ -1742,5 +1789,62 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
+    }
+
+    private void performQuickJunkScan() {
+        if (getContext() == null) return;
+        if (btnScanJunk != null) btnScanJunk.setEnabled(false);
+        if (tvJunkCleanerStatus != null) tvJunkCleanerStatus.setText("🔍 Scanning storage caches, temp logs & residual files...");
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            JunkScanResult scanResult = junkScanner.scanStorage(getContext(), null);
+            lastJunkScanResult = scanResult;
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                if (btnScanJunk != null) btnScanJunk.setEnabled(true);
+                if (tvJunkQuickSize != null) {
+                    tvJunkQuickSize.setText(scanResult.getFormattedTotalSize());
+                }
+                if (tvJunkCleanerStatus != null) {
+                    tvJunkCleanerStatus.setText("Scan Complete: " + scanResult.getItems().size() + " items found (" + scanResult.getFormattedTotalSize() + ")");
+                }
+                if (tvJunkQuickDetail != null) {
+                    tvJunkQuickDetail.setText(scanResult.getItems().size() + " cleanable junk files detected");
+                }
+                Toast.makeText(getContext(), "🔍 Found " + scanResult.getFormattedTotalSize() + " junk files", Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+
+    private void performQuickJunkClean() {
+        if (getContext() == null) return;
+        if (btnQuickCleanJunk != null) btnQuickCleanJunk.setEnabled(false);
+        Toast.makeText(getContext(), "⚡ Executing 1-Tap Storage Clean...", Toast.LENGTH_SHORT).show();
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            JunkScanResult scanToClean = lastJunkScanResult;
+            if (scanToClean == null || scanToClean.getItems().isEmpty()) {
+                scanToClean = junkScanner.scanStorage(getContext(), null);
+            }
+            CleanResult cleanResult = junkCleanerEngine.executeClean(getContext(), scanToClean, null);
+            lastJunkScanResult = null;
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                if (btnQuickCleanJunk != null) btnQuickCleanJunk.setEnabled(true);
+                if (tvJunkQuickSize != null) tvJunkQuickSize.setText("0.0 MB");
+                if (tvJunkCleanerStatus != null) {
+                    tvJunkCleanerStatus.setText("✅ Cleaned! Freed " + cleanResult.getFormattedBytesFreed() + " (" + cleanResult.getFilesDeletedCount() + " items purged)");
+                }
+                CyberActionDialog.show(
+                        getContext(),
+                        "🧹 1-TAP STORAGE PURGED",
+                        true,
+                        "Storage Space Reclaimed: " + cleanResult.getFormattedBytesFreed(),
+                        "Purged " + cleanResult.getFilesDeletedCount() + " caches & temp files",
+                        "Filesystem Flash TRIM: Complete"
+                );
+            });
+        });
     }
 }
