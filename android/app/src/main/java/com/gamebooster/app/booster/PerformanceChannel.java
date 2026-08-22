@@ -89,6 +89,17 @@ public class PerformanceChannel {
                     "setprop debug.sf.fps_limit " + hz + "\n" +
                     "setprop persist.sys.NV_FPSLIMIT " + hz + "\n" +
                     "setprop persist.sys.NV_POWERMODE 1\n" +
+                    "setprop debug.gr.swapinterval 0\n" +
+                    "setprop debug.egl.swapinterval 0\n" +
+                    "setprop debug.sf.disable_backpressure 1\n" +
+                    "setprop debug.sf.latch_unsignaled 1\n" +
+                    "setprop debug.graphics.game_default_frame_rate.disabled 1\n" +
+                    "settings put system peak_refresh_rate " + hz + ".0\n" +
+                    "settings put system min_refresh_rate " + hz + ".0\n" +
+                    "settings put system user_refresh_rate " + hz + "\n" +
+                    "settings put global peak_refresh_rate " + hz + ".0\n" +
+                    "settings put global min_refresh_rate " + hz + ".0\n" +
+                    "cmd window set-app-refresh-rate global " + hz + "\n" +
                     "service call SurfaceFlinger 1035 i32 " + hz + "\n" +
                     "service call SurfaceFlinger 1036 i32 " + hz + "\n" +
                     "cmd power set-mode 0 1\n" +

@@ -75,6 +75,8 @@ public class HzFpsFragment extends Fragment {
         final int forcedHz = 185;
         AppExecutors.getInstance().executeCommand(() -> {
             HzFpsChannel.RefreshRateResult result = HzFpsChannel.setRefreshRate(getContext(), forcedHz);
+            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(forcedHz);
+            com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(forcedHz);
             if (result.success) GameProfileAutoConfigurator.setTargetFpsHz(getContext(), result.appliedHz);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
