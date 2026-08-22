@@ -4,7 +4,10 @@ import android.util.Log;
 
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,13 +113,11 @@ public final class ConfigFileHelper {
         String[] lines = content.split("\\r?\\n");
         List<String> resultLines = new ArrayList<>(lines.length + keyValues.length + 4);
         Map<String, String> pendingKeys = new LinkedHashMap<>();
-        Map<String, String> rawKeyMap = new LinkedHashMap<>();
 
         for (String kv : keyValues) {
             if (kv == null || kv.trim().isEmpty()) continue;
             String normalizedKey = extractNormalizedKey(kv.trim());
             pendingKeys.put(normalizedKey, kv.trim());
-            rawKeyMap.put(normalizedKey, kv.trim());
         }
 
         String currentSection = "";
@@ -201,25 +202,38 @@ public final class ConfigFileHelper {
 
     public static String patchJsonContent(String content, String[] keyValues) {
         if (keyValues == null || keyValues.length == 0) return content != null ? content : "{}";
-        if (content == null || content.trim().isEmpty() || !content.contains("{")) {
-            StringBuilder sb = new StringBuilder("{\n");
-            for (int i = 0; i < keyValues.length; i++) {
-                String kv = keyValues[i];
+
+        // Try standard org.json.JSONObject first for guaranteed structural correctness
+        try {
+            JSONObject json = (content != null && content.trim().startsWith("{"))
+                    ? new JSONObject(content)
+                    : new JSONObject();
+
+            for (String kv : keyValues) {
                 if (kv == null || kv.trim().isEmpty()) continue;
                 int eq = kv.indexOf('=');
-                if (eq > 0) {
-                    String k = kv.substring(0, eq).trim();
-                    String v = kv.substring(eq + 1).trim();
-                    String formattedVal = formatJsonValue(v);
-                    sb.append("  \"").append(k).append("\": ").append(formattedVal);
-                    if (i < keyValues.length - 1) sb.append(",");
-                    sb.append("\n");
+                if (eq <= 0) continue;
+                String k = kv.substring(0, eq).trim();
+                String v = kv.substring(eq + 1).trim();
+
+                if (v.equalsIgnoreCase("true")) {
+                    json.put(k, true);
+                } else if (v.equalsIgnoreCase("false")) {
+                    json.put(k, false);
+                } else if (isInteger(v)) {
+                    json.put(k, Long.parseLong(v));
+                } else if (isFloat(v)) {
+                    json.put(k, Double.parseDouble(v));
+                } else {
+                    json.put(k, v);
                 }
             }
-            sb.append("}\n");
-            return sb.toString();
+            return json.toString(2) + "\n";
+        } catch (Throwable t) {
+            Log.d(TAG, "JSON object parsing fallback to regex: " + t.getMessage());
         }
 
+        // Fallback: Regex-based JSON patcher for comments or non-strict JSON files
         String updated = content;
         List<String> unmappedKeys = new ArrayList<>();
 
@@ -295,8 +309,12 @@ public final class ConfigFileHelper {
             for (String entry : unmappedEntries) {
                 insertion.append(entry).append("\n");
             }
-            insertion.append("</map>");
-            updated = updated.replace("</map>", insertion.toString());
+            int lastClose = updated.lastIndexOf("</map>");
+            if (lastClose != -1) {
+                updated = updated.substring(0, lastClose) + insertion.toString() + updated.substring(lastClose);
+            } else {
+                updated = updated + "\n" + insertion.toString();
+            }
         }
 
         return updated;
@@ -352,7 +370,7 @@ public final class ConfigFileHelper {
         }
     }
 
-    private static boolean isInteger(String s) {
+    public static boolean isInteger(String s) {
         if (s == null || s.isEmpty()) return false;
         try {
             Long.parseLong(s);
@@ -362,7 +380,7 @@ public final class ConfigFileHelper {
         }
     }
 
-    private static boolean isFloat(String s) {
+    public static boolean isFloat(String s) {
         if (s == null || s.isEmpty() || !s.contains(".")) return false;
         try {
             Float.parseFloat(s);
