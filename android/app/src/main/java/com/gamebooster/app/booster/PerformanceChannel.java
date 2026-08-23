@@ -88,18 +88,48 @@ public class PerformanceChannel {
                     "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
                     "setprop debug.sf.fps_limit " + hz + "\n" +
                     "setprop persist.sys.NV_FPSLIMIT " + hz + "\n" +
+                    "setprop persist.sys.game.fps " + hz + "\n" +
+                    "setprop persist.sys.game.rate " + hz + "\n" +
+                    "setprop persist.sys.fps " + hz + "\n" +
+                    "setprop debug.cpurend.fps " + hz + "\n" +
+                    "setprop persist.vendor.power.dfps.level " + hz + "\n" +
+                    "setprop persist.vendor.display.vrr.disable 1\n" +
+                    "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
+                    "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
+                    "setprop ro.vendor.dfps.enable 0\n" +
+                    "setprop vendor.display.enable_default_fps_switch 0\n" +
+                    "setprop debug.hwui.fps_divisor 1\n" +
                     "setprop persist.sys.NV_POWERMODE 1\n" +
                     "setprop debug.gr.swapinterval 0\n" +
                     "setprop debug.egl.swapinterval 0\n" +
                     "setprop debug.sf.disable_backpressure 1\n" +
                     "setprop debug.sf.latch_unsignaled 1\n" +
                     "setprop debug.graphics.game_default_frame_rate.disabled 1\n" +
+                    "settings put system match_content_frame_rate 0\n" +
+                    "settings put secure match_content_frame_rate_preference 0\n" +
                     "settings put system peak_refresh_rate " + hz + ".0\n" +
                     "settings put system min_refresh_rate " + hz + ".0\n" +
                     "settings put system user_refresh_rate " + hz + "\n" +
                     "settings put global peak_refresh_rate " + hz + ".0\n" +
                     "settings put global min_refresh_rate " + hz + ".0\n" +
+                    "settings put secure user_refresh_rate " + hz + "\n" +
+                    "settings put global surface_flinger_peak_refresh_rate " + hz + "\n" +
+                    "settings put secure refresh_rate_mode 2\n" +
+                    "settings put system sec_display_fps " + hz + "\n" +
+                    "settings put secure game_auto_temperature_control 0\n" +
+                    "settings put global oneplus_screen_refresh_rate 2\n" +
+                    "settings put global realme_screen_refresh_rate " + hz + "\n" +
+                    "settings put global oppo_screen_refresh_rate " + hz + "\n" +
+                    "settings put system asus_option_display_refresh_rate " + hz + "\n" +
+                    "settings put system asus_hfr_mode 1\n" +
+                    "settings put system screen_refresh_rate " + hz + "\n" +
+                    "settings put system iqoo_refresh_rate " + hz + "\n" +
+                    "settings put system display_refresh_rate " + hz + "\n" +
+                    "settings put system redmagic_refresh_rate " + hz + "\n" +
                     "cmd window set-app-refresh-rate global " + hz + "\n" +
+                    "cmd game set --fps " + hz + " global\n" +
+                    "cmd game mode performance global\n" +
+                    "device_config put game_overlay global mode=2,fps=" + hz + ":mode=3,fps=" + hz + "\n" +
                     "service call SurfaceFlinger 1035 i32 " + hz + "\n" +
                     "service call SurfaceFlinger 1036 i32 " + hz + "\n" +
                     "cmd power set-mode 0 1\n" +

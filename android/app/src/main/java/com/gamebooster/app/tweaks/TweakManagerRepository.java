@@ -205,6 +205,16 @@ public class TweakManagerRepository {
                 true
         ));
 
+        TWEAKS.add(new TweakItem(
+                "disable_game_fps_limits",
+                "Disable Default Game FPS & 120Hz/60Hz Limit Lock",
+                "Disables Android default 60Hz/120Hz game frame rate limits, match-content frame rate, and vendor DFPS for unrestricted 185Hz gameplay",
+                "setprop debug.graphics.game_default_frame_rate.disabled 1; setprop ro.vendor.dfps.enable 0; setprop vendor.display.enable_default_fps_switch 0; setprop persist.vendor.power.dfps.level 0; setprop persist.vendor.display.vrr.disable 1; setprop ro.surface_flinger.set_idle_timer_ms 0; setprop ro.surface_flinger.set_touch_timer_ms 0; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; setprop persist.sys.game.fps 185; setprop persist.sys.game.rate 185; setprop persist.sys.fps 185; settings put system match_content_frame_rate 0; settings put secure match_content_frame_rate_preference 0; settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; settings put system user_refresh_rate 185; settings put global peak_refresh_rate 185.0; settings put global min_refresh_rate 185.0; service call SurfaceFlinger 1035 i32 185; service call SurfaceFlinger 1036 i32 185; cmd game set --fps 185 global; cmd window set-app-refresh-rate global 185; device_config put game_overlay global mode=2,fps=185:mode=3,fps=185",
+                "setprop debug.graphics.game_default_frame_rate.disabled 0; setprop ro.vendor.dfps.enable 1; setprop vendor.display.enable_default_fps_switch 1; setprop persist.vendor.power.dfps.level 60; setprop persist.vendor.display.vrr.disable 0; setprop debug.sf.fps_limit 0; setprop persist.sys.NV_FPSLIMIT 0; settings put system match_content_frame_rate 1; settings put secure match_content_frame_rate_preference 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
         // =========================================================================
         // 3. SYSTEM & SHIZUKU ADB PRIVILEGED TWEAKS (Unique & Non-Overlapping)
         // =========================================================================
@@ -234,6 +244,26 @@ public class TweakManagerRepository {
                 "Overrides Android ThermalService status to normal (0) and sets vendor thermal mode to performance",
                 "cmd thermalservice override-status 0; cmd thermal override-status 0; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
                 "cmd thermalservice override-status -1; cmd thermal override-status -1; setprop debug.thermal.throttle.disable 0; setprop vendor.thermal.mode normal",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "android_13_16_adpf_fixed_perf",
+                "Android 13/14/15/16 ADPF & Fixed Performance Lock",
+                "Enables Android Dynamic Performance Framework (ADPF) CPU/GPU hints and locks CPU/GPU clocks with Fixed Performance Mode",
+                "cmd power set-fixed-performance-mode-enabled true; setprop debug.sf.enable_adpf_cpu_hint true; setprop debug.hwui.use_hint_manager true; setprop persist.sys.adpf.enable 1; setprop persist.sys.adpf.mode 1; setprop debug.adpf.hint.enabled 1; setprop debug.adpf.cpu.boost 1; setprop debug.adpf.gpu.boost 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.predict_hwc_composition_strategy 1",
+                "cmd power set-fixed-performance-mode-enabled false; setprop debug.sf.enable_adpf_cpu_hint false; setprop debug.hwui.use_hint_manager false; setprop persist.sys.adpf.enable 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "android_13_16_deviceconfig_interventions",
+                "Android 13-16 DeviceConfig Game Interventions & Phantom Killer Bypass",
+                "Locks DeviceConfig sync to persistent, enables runtime startup caches, and disables Android 12-16 phantom process killer",
+                "cmd device_config set_sync_disabled_for_tests persistent; device_config put runtime_native_boot use_app_image_startup_cache true; device_config put runtime_native_boot pin_app_image_startup_cache true; device_config put runtime_native_boot boost_sched_priority true; device_config put activity_manager max_phantom_processes 2147483647; settings put global settings_enable_monitor_phantom_procs false; settings put global cached_apps_freezer enabled",
+                "cmd device_config set_sync_disabled_for_tests none; settings put global settings_enable_monitor_phantom_procs true",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));

@@ -116,6 +116,11 @@ public final class MaxHzForceChannel {
         ok += run("setprop persist.sys.game.fps "              + hz);                total++;
         ok += run("setprop persist.sys.game.rate "             + hz);                total++;
         ok += run("setprop persist.vendor.power.dfps.level "   + hz);                total++;
+        ok += run("setprop persist.vendor.display.vrr.disable 1");                   total++;
+        ok += run("setprop ro.surface_flinger.set_idle_timer_ms 0");                 total++;
+        ok += run("setprop ro.surface_flinger.set_touch_timer_ms 0");                total++;
+        ok += run("setprop persist.sys.fps "                   + hz);                total++;
+        ok += run("setprop debug.cpurend.fps "                 + hz);                total++;
         ok += run("setprop ro.vendor.display.default_fps "     + hz);                total++;
         ok += run("setprop vendor.display.fps "                + hz);                total++;
         ok += run("setprop debug.hwui.fps_divisor 1");                               total++;
@@ -137,12 +142,14 @@ public final class MaxHzForceChannel {
             // Samsung (OneUI) — mode 2 = Dynamic / High, mode 1 = Standard 60Hz
             ok += run("settings put secure refresh_rate_mode " + (targetHz >= 90 ? "2" : "1")); total++;
             ok += run("settings put system sec_display_fps " + hz);                  total++;
+            ok += run("settings put secure game_auto_temperature_control 0");        total++;
 
         } else if (id.contains("oneplus") || id.contains("oppo") || id.contains("realme")) {
             // OnePlus / Realme / Oppo (OxygenOS / ColorOS)
             ok += run("settings put global oneplus_screen_refresh_rate "
                     + (targetHz >= 90 ? "2" : "1"));                                total++;
             ok += run("settings put global realme_screen_refresh_rate " + hz);       total++;
+            ok += run("settings put global oppo_screen_refresh_rate " + hz);         total++;
 
         } else if (id.contains("asus")) {
             // ASUS ROG Phone / ZenFone

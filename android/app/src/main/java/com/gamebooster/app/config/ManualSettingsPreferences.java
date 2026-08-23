@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.engine.GameModeApiSupport;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 public class ManualSettingsPreferences {
@@ -225,19 +226,59 @@ public class ManualSettingsPreferences {
             }
 
             // 7. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
+            // Disable Android Default Frame Rate & Disable 120Hz/60Hz Game Limiting
             executeCmd("setprop debug.egl.force_msaa 1");
             executeCmd("setprop debug.egl.swapinterval 0");
+            executeCmd("setprop debug.gr.swapinterval 0");
             executeCmd("setprop debug.hwui.fps_divisor 1");
             executeCmd("setprop debug.graphics.game_default_frame_rate.disabled 1");
             executeCmd("setprop ro.vendor.dfps.enable 0");
             executeCmd("setprop vendor.display.enable_default_fps_switch 0");
+            executeCmd("setprop persist.vendor.power.dfps.level 0");
+            executeCmd("setprop persist.vendor.display.vrr.disable 1");
+            executeCmd("setprop ro.surface_flinger.set_idle_timer_ms 0");
+            executeCmd("setprop ro.surface_flinger.set_touch_timer_ms 0");
+            executeCmd("setprop debug.sf.fps_limit 185");
+            executeCmd("setprop persist.sys.NV_FPSLIMIT 185");
             executeCmd("setprop persist.sys.game.fps 185");
             executeCmd("setprop persist.sys.game.rate 185");
+            executeCmd("setprop persist.sys.fps 185");
+            executeCmd("setprop debug.cpurend.fps 185");
             executeCmd("setprop persist.sys.power.game_mode 1");
             executeCmd("setprop debug.sf.disable_backpressure 1");
             executeCmd("setprop debug.sf.latch_unsignaled 1");
 
-            // 8. Anti-Log & Telemetry Suppression
+            // Disable Android Match Content Frame Rate & System Refresh Rate Limiters
+            executeCmd("settings put system match_content_frame_rate 0");
+            executeCmd("settings put secure match_content_frame_rate_preference 0");
+            executeCmd("settings put system peak_refresh_rate 185.0");
+            executeCmd("settings put system min_refresh_rate 185.0");
+            executeCmd("settings put system user_refresh_rate 185");
+            executeCmd("settings put global peak_refresh_rate 185.0");
+            executeCmd("settings put global min_refresh_rate 185.0");
+            executeCmd("service call SurfaceFlinger 1035 i32 185");
+            executeCmd("service call SurfaceFlinger 1036 i32 185");
+
+            // Disable OEM-specific 120Hz/60Hz game throttling (MIUI/HyperOS Joyose, Samsung GOS, ColorOS/OxygenOS, ROG, iQOO, RedMagic)
+            executeCmd("settings put secure user_refresh_rate 185");
+            executeCmd("settings put global surface_flinger_peak_refresh_rate 185");
+            executeCmd("settings put secure refresh_rate_mode 2");
+            executeCmd("settings put system sec_display_fps 185");
+            executeCmd("settings put secure game_auto_temperature_control 0");
+            executeCmd("settings put global oneplus_screen_refresh_rate 2");
+            executeCmd("settings put global realme_screen_refresh_rate 185");
+            executeCmd("settings put global oppo_screen_refresh_rate 185");
+            executeCmd("settings put system asus_option_display_refresh_rate 185");
+            executeCmd("settings put system asus_hfr_mode 1");
+            executeCmd("settings put system screen_refresh_rate 185");
+            executeCmd("settings put system iqoo_refresh_rate 185");
+            executeCmd("settings put system display_refresh_rate 185");
+            executeCmd("settings put system redmagic_refresh_rate 185");
+
+            // 8. Android 13, 14, 15, 16 Modern OS & ADPF Flags (Zero Fallback)
+            GameModeApiSupport.applyModernAndroidPerformanceFlags(cleanPkg, 185);
+
+            // 9. Anti-Log & Telemetry Suppression
             if (isAntiLogEnabled(context)) {
                 AntiLogPatcher.applySystemAntiLog();
                 if (cleanPkg != null) {
