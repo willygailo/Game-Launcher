@@ -12,7 +12,7 @@
 
 <br/>
 
-[![Latest Release](https://img.shields.io/badge/Release-v16.2.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Latest Release](https://img.shields.io/badge/Release-v16.3.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Android-13--16-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=0D1117)](#-quick-start)
 [![Display Lock](https://img.shields.io/badge/Display-90Hz%20to%20185Hz-FF0055?style=for-the-badge&logo=speedtest&logoColor=white&labelColor=0D1117)](#-features)
 [![License](https://img.shields.io/badge/License-MIT-00E5FF?style=for-the-badge&labelColor=0D1117)](#-license)
@@ -36,11 +36,13 @@
 ## ✨ Features
 
 * 🔥 **Extreme Refresh Rates**: Uncaps 90Hz, 120Hz, 144Hz, 165Hz, and 185Hz display modes with zero 60Hz throttling.
+* ⚡ **Native CPU Core Affinity & Scheduling**: Direct C++ CPU core pinning for game rendering threads to prevent frame drops.
+* 🎮 **Unreal Engine & Unity Injectors**: Custom engine-level configuration injectors tailored for mobile competitive titles.
 * 🎭 **Flagship Device Identity**: Spoofs device profiles (ROG Phone 9 Pro, RedMagic 10 Pro+, Galaxy S26 Ultra, etc.) across Snapdragon, Dimensity, and Apple chipsets.
 * 🎯 **1000Hz Ultra Touch Polling**: Reduces touch latency and optimizes crosshair aiming response.
 * 📊 **Live FPS & 1% Low HUD**: Real-time draggable overlay monitoring frame rates, frame jitter, RAM, and temperature.
 * 🌐 **Low-Latency Turbo Network**: Wi-Fi QoS and TCP BBR gaming packet prioritization.
-* 🛡️ **100% Non-Root**: Operates securely via Shizuku API and optional LSPatch module.
+* 🛡️ **100% Non-Root Shizuku Engine**: Seamless auto-grant permissions and automated tweak restoration via Shizuku API.
 
 ---
 
