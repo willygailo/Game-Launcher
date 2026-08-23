@@ -165,12 +165,18 @@ public class TerminalFolderManager {
 
         createScriptIfNotExists("6_gpu_angle_vulkan_driver.sh",
                 "# ==================================================\n" +
-                "# GAME BOOSTER PRO - GPU ANGLE & VULKAN DRIVER\n" +
+                "# GAME BOOSTER PRO - PER-GAME ANGLE & VULKAN DRIVER\n" +
                 "# ==================================================\n" +
-                "settings put global angle_gl_driver_all_angle 1\n" +
-                "settings put global game_driver_all_apps 1\n" +
+                "settings put global angle_gl_driver_all_angle 0\n" +
+                "settings put global game_driver_all_apps 0\n" +
+                "settings put global updatable_driver_all_apps 0\n" +
+                "GAMES='com.mobile.legends,com.tencent.ig,com.activision.callofduty.shooter,com.dts.freefireth,com.miHoYo.GenshinImpact,com.riotgames.league.wildrift,com.axlebolt.standoff2,com.levelinfinite.sgameGlobal,com.roblox.client,com.farlightgames.farlight84.android'\n" +
+                "settings put global game_driver_opt_in_apps $GAMES\n" +
+                "settings put global updatable_driver_production_opt_in_apps $GAMES\n" +
+                "settings put global angle_gl_driver_selection_pkgs $GAMES\n" +
+                "settings put global angle_gl_driver_selection_values angle,angle,angle,angle,angle,angle,angle,angle,angle,angle\n" +
                 "setprop debug.hwui.renderer vulkan\n" +
-                "echo '[GPU ANGLE & VULKAN DRIVER ENABLED]'\n"
+                "echo '[PER-GAME ANGLE & GAME DRIVER ENABLED FOR COMPETITIVE GAMES]'\n"
         );
 
         createScriptIfNotExists("7_thermal_throttle_bypass.sh",

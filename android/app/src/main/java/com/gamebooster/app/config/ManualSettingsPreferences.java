@@ -180,18 +180,29 @@ public class ManualSettingsPreferences {
                 executeCmd("for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $g 2>/dev/null; done");
             }
 
-            // 4. ANGLE Graphics Backend
-            if (isAngleModeEnabled(context) && cleanPkg != null) {
-                executeCmd("settings put global angle_gl_driver_selection_pkgs " + cleanPkg);
-                executeCmd("settings put global angle_gl_driver_selection_values angle");
+            // 4. ANGLE Graphics Backend (Per-Application only — never all apps)
+            if (isAngleModeEnabled(context)) {
+                String targetPkgs = (cleanPkg != null) ? cleanPkg : com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+                executeCmd("settings put global angle_gl_driver_all_angle 0");
+                executeCmd("settings put global angle_enabled_pkgs 1");
+                executeCmd("settings put global angle_gl_driver_selection_pkgs " + targetPkgs);
+                String[] pkgs = targetPkgs.split(",");
+                StringBuilder values = new StringBuilder();
+                for (int i = 0; i < pkgs.length; i++) {
+                    if (i > 0) values.append(",");
+                    values.append("angle");
+                }
+                executeCmd("settings put global angle_gl_driver_selection_values " + values.toString());
             }
 
-            // 5. Game Driver / Updatable Driver (Legal Android Settings.Global)
-            if (isGameDriverEnabled(context) && cleanPkg != null) {
-                executeCmd("settings put global game_driver_all_apps 1");
-                executeCmd("settings put global game_driver_opt_in_apps " + cleanPkg);
-                executeCmd("settings put global updatable_driver_all_apps 1");
-                executeCmd("settings put global updatable_driver_production_opt_in_apps " + cleanPkg);
+            // 5. Game Driver / Updatable Driver (Per-Application only — never all apps)
+            if (isGameDriverEnabled(context)) {
+                String targetPkgs = (cleanPkg != null) ? cleanPkg : com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+                executeCmd("settings put global game_driver_all_apps 0");
+                executeCmd("settings put global updatable_driver_all_apps 0");
+                executeCmd("settings put global game_driver_opt_in_apps " + targetPkgs);
+                executeCmd("settings put global game_driver_prerelease_opt_in_apps " + targetPkgs);
+                executeCmd("settings put global updatable_driver_production_opt_in_apps " + targetPkgs);
             }
 
             // 6. Network Low-Latency, 5G/6G & Dual WiFi/Cellular Boost

@@ -146,10 +146,14 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_vulkan_ver \"" + profile.vulkanVersion + "\"");
             batchCommands.add("setprop debug.game.spoofed_vulkan_driver \"" + profile.vulkanDriverVersion + "\"");
 
-            // ANGLE & Game Driver Routing
-            batchCommands.add("settings put global angle_gl_driver_all_angle 1");
-            batchCommands.add("settings put global game_driver_all_apps 1");
-            batchCommands.add("settings put global updatable_driver_all_apps 1");
+            // ANGLE & Game Driver Routing (Per-Application Only — Never All Apps)
+            batchCommands.add("settings put global angle_gl_driver_all_angle 0");
+            batchCommands.add("settings put global game_driver_all_apps 0");
+            batchCommands.add("settings put global updatable_driver_all_apps 0");
+            String targetGames = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+            batchCommands.add("settings put global game_driver_opt_in_apps " + targetGames);
+            batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + targetGames);
+            batchCommands.add("settings put global angle_gl_driver_selection_pkgs " + targetGames);
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 3: RAM & MEMORY MASKING
@@ -257,9 +261,11 @@ public class HardwareMaskEngine {
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
                 ShizukuExecutor.executeShizukuCommands(
-                        "settings put global game_driver_all_apps 1",
-                        "settings put global updatable_driver_all_apps 1",
+                        "settings put global game_driver_all_apps 0",
+                        "settings put global updatable_driver_all_apps 0",
+                        "settings put global game_driver_opt_in_apps \"" + pkg + "\"",
                         "settings put global updatable_driver_production_opt_in_apps \"" + pkg + "\"",
+                        "settings put global angle_gl_driver_all_angle 0",
                         "settings put global angle_gl_driver_selection_pkgs \"" + pkg + "\"",
                         "settings put global angle_gl_driver_selection_values angle"
                 );

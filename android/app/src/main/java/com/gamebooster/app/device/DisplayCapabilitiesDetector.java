@@ -184,8 +184,11 @@ public final class DisplayCapabilitiesDetector {
         public boolean enableGameMode(String packageName) {
             boolean ok = true;
             ok &= props.set("global:game_mode", "1").success;
-            ok &= props.set("global:game_driver_all_apps", "1").success;
-            if (!packageName.isEmpty()) {
+            ok &= props.set("global:game_driver_all_apps", "0").success;
+            ok &= props.set("global:updatable_driver_all_apps", "0").success;
+            if (packageName != null && !packageName.isEmpty()) {
+                ok &= props.set("global:game_driver_opt_in_apps", packageName).success;
+                ok &= props.set("global:updatable_driver_production_opt_in_apps", packageName).success;
                 ok &= props.set("global:game_mode_" + packageName, "1").success;
             }
             return ok;
