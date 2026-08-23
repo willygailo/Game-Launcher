@@ -87,9 +87,11 @@ public class GameConfigPatcher {
             CodmConfigPatcher.applyTrackingBulletConfig(pkg);
             CodmConfigPatcher.applyArmorDefConfig(pkg);
             CodmConfigPatcher.applySpeedBoostConfig(pkg);
-        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+        } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            PubgConfigPatcher.deployPakPatch(pkg);
+            PubgConfigPatcher.purgeGameCacheAndLogs(pkg);
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);
@@ -127,6 +129,16 @@ public class GameConfigPatcher {
             WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
             WildRiftConfigPatcher.applyArmorDefConfig(pkg);
             WildRiftConfigPatcher.applySpeedBoostConfig(pkg);
+        } else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
+            if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
+            ArenaBreakoutConfigPatcher.applyAimAssistConfig(pkg);
+            ArenaBreakoutConfigPatcher.applyRecoilControlConfig(pkg);
+            ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
+            ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
+            ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
+            ArenaBreakoutConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -167,16 +179,6 @@ public class GameConfigPatcher {
             CarXConfigPatcher.applyTrackingBulletConfig(pkg);
             CarXConfigPatcher.applyArmorDefConfig(pkg);
             CarXConfigPatcher.applySpeedBoostConfig(pkg);
-        } else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
-            if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
-            if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
-            ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
-            ArenaBreakoutConfigPatcher.applyAimAssistConfig(pkg);
-            ArenaBreakoutConfigPatcher.applyRecoilControlConfig(pkg);
-            ArenaBreakoutConfigPatcher.applyDamageScriptConfig(pkg);
-            ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
-            ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
-            ArenaBreakoutConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
             if (SupercellConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (SupercellConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -217,6 +219,11 @@ public class GameConfigPatcher {
             FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
             FarlightConfigPatcher.applyArmorDefConfig(pkg);
             FarlightConfigPatcher.applySpeedBoostConfig(pkg);
+        } else if (pkg.contains("pesam") || pkg.contains("fifamobile") || pkg.contains("easports")) {
+            for (String path : configPaths) {
+                if (patchGenericConfig(path, forcedFps)) patchedFiles++;
+            }
+            NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;

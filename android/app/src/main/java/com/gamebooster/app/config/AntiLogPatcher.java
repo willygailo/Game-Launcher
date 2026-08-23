@@ -61,7 +61,9 @@ public final class AntiLogPatcher {
             // Roblox
             "com.roblox.client",
             // Supercell
-            "com.supercell.brawlstars", "com.supercell.clashroyale", "com.supercell.clashofclans", "com.supercell.squad"
+            "com.supercell.brawlstars", "com.supercell.clashroyale", "com.supercell.clashofclans", "com.supercell.squad",
+            // Sports (PES / EA FC)
+            "jp.konami.pesam", "com.ea.gp.fifamobile"
     );
 
     // ─── Per-Game Anti-Log Application ─────────────────────────────────────────
