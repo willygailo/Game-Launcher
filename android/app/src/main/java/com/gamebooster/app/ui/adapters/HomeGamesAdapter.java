@@ -34,9 +34,18 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
 
     public HomeGamesAdapter(Context context, List<GameAppInfo> initialGames) {
         this.context = context;
+        setHasStableIds(true);
         if (initialGames != null) {
             this.games.addAll(initialGames);
         }
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (position >= 0 && position < games.size()) {
+            return games.get(position).getPackageName().hashCode();
+        }
+        return RecyclerView.NO_ID;
     }
 
     public void updateList(List<GameAppInfo> newList) {

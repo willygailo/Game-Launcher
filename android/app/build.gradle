@@ -116,7 +116,10 @@ android {
                 'META-INF/NOTICE.txt',
                 'META-INF/notice.txt',
                 'META-INF/ASL2.0',
-                'META-INF/*.kotlin_module'
+                'META-INF/*.kotlin_module',
+                'META-INF/*.version',
+                'META-INF/INDEX.LIST',
+                'DebugProbesKt.bin'
             ]
         }
         jniLibs {
