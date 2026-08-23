@@ -194,13 +194,23 @@ public class ManualSettingsPreferences {
                 executeCmd("settings put global updatable_driver_production_opt_in_apps " + cleanPkg);
             }
 
-            // 6. Network Low-Latency & Dual WiFi/Cellular Boost
+            // 6. Network Low-Latency, 5G/6G & Dual WiFi/Cellular Boost
             if (isWifiLowLatencyEnabled(context)) {
                 executeCmd("cmd wifi set-low-latency-mode enabled");
                 executeCmd("setprop net.tcp.delack.default 1");
             }
+            if (is5g6gDataEnabled(context)) {
+                executeCmd("setprop persist.vendor.radio.5g_mode_pref 1");
+                executeCmd("settings put global mobile_data_always_on 1");
+            }
             if (isDualDataWifiEnabled(context)) {
                 executeCmd("settings put global mobile_data_always_on 1");
+            }
+            if (isTetherHwEnabled(context)) {
+                executeCmd("settings put global tether_offload_disabled 0");
+            }
+            if (isForceGnssEnabled(context)) {
+                executeCmd("settings put global force_gnss_raw_measurements 1");
             }
 
             // 7. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)

@@ -276,7 +276,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchGamingDnd = view.findViewById(R.id.switch_gaming_dnd);
         switchAutoGameBoost = view.findViewById(R.id.switch_auto_game_boost);
         switchEsportsAudio = view.findViewById(R.id.switch_esports_audio);
-        Button btnCleanCaches = view.findViewById(R.id.btn_clean_game_caches);
 
         if (switchOverlayHud != null) {
             isProgrammaticToggle = true;
@@ -343,24 +342,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (isChecked && !requireShizukuForToggle(buttonView, "Esports Footstep Audio Boost")) return;
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
                 Toast.makeText(getContext(), isChecked ? "🎧 Esports Footstep Audio Boost Enabled" : "Esports Audio Disabled", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        if (btnCleanCaches != null) {
-            btnCleanCaches.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Game Caches & Shaders Cleaner")) return;
-                btnCleanCaches.setEnabled(false);
-                Toast.makeText(getContext(), "🧹 Cleaning Game Shaders & Storage Caches...", Toast.LENGTH_SHORT).show();
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = com.gamebooster.app.gamespace.GameCacheCleaner.performDeepGameCacheClean(getContext());
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnCleanCaches.setEnabled(true);
-                        Toast.makeText(getContext(), "✅ Game Caches & Shaders Cleaned", Toast.LENGTH_SHORT).show();
-                    });
-                });
             });
         }
 
