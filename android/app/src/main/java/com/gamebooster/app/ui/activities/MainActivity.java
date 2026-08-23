@@ -102,6 +102,19 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             }
         }
 
+        // Android 13-16 Predictive Back / OnBackPressed Handling
+        // If on Settings tab (or other tab != 0), Back returns to Home (Tab 0) instead of abruptly exiting the app.
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (currentTabIndex != 0) {
+                    selectTab(0);
+                } else {
+                    finish();
+                }
+            }
+        });
+
         // Asynchronous Cold-Start Engine Initialization (Zero Main-Thread Latency)
         AppExecutors.getInstance().executeCommand(() -> {
             try {

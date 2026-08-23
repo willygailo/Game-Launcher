@@ -408,13 +408,21 @@ public class MasterOptimizationEnforcer {
     }
 
     public static EnforcementStatus verifyEnforcementStatus(Context context) {
-        boolean shizuku = ShizukuExecutor.hasShizukuPermission();
-        boolean aidl = ShizukuUserServiceConnector.getInstance().isServiceConnected();
-        int appliedCount = 0;
-        int total = TweakManagerRepository.getAllTweaks().size();
-        for (com.gamebooster.app.tweaks.TweakItem item : TweakManagerRepository.getAllTweaks()) {
-            if (item.isApplied()) appliedCount++;
+        try {
+            boolean shizuku = ShizukuExecutor.hasShizukuPermission();
+            boolean aidl = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+            int appliedCount = 0;
+            List<com.gamebooster.app.tweaks.TweakItem> list = TweakManagerRepository.getAllTweaks();
+            int total = list != null ? list.size() : 0;
+            if (list != null) {
+                for (com.gamebooster.app.tweaks.TweakItem item : list) {
+                    if (item != null && item.isApplied()) appliedCount++;
+                }
+            }
+            return new EnforcementStatus(shizuku, aidl, appliedCount, total, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT);
+        } catch (Throwable t) {
+            Log.w(TAG, "verifyEnforcementStatus error: " + t.getMessage());
+            return new EnforcementStatus(false, false, 0, 0, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT);
         }
-        return new EnforcementStatus(shizuku, aidl, appliedCount, total, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT);
     }
 }

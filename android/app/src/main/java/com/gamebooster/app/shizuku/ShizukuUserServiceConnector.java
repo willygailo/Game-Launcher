@@ -73,7 +73,11 @@ public class ShizukuUserServiceConnector {
     }
 
     public synchronized boolean isServiceConnected() {
-        return userServiceInstance != null && userServiceInstance.asBinder().isBinderAlive();
+        try {
+            return userServiceInstance != null && userServiceInstance.asBinder() != null && userServiceInstance.asBinder().isBinderAlive();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     public synchronized void bindService() {

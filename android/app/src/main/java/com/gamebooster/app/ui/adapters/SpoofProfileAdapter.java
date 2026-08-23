@@ -92,7 +92,7 @@ public class SpoofProfileAdapter extends RecyclerView.Adapter<SpoofProfileAdapte
             holder.tvBrandIcon.setText("📱");
         }
 
-        boolean isActive = profile.id.equals(activeProfileId);
+        boolean isActive = profile != null && profile.id != null && profile.id.equals(activeProfileId);
         holder.tvActiveBadge.setVisibility(isActive ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> {

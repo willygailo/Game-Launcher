@@ -250,11 +250,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (btnOpenSettings != null) {
             btnOpenSettings.setOnClickListener(v -> {
+                if (getContext() == null) return;
                 try {
-                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + getContext().getPackageName()));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                } catch (Exception ignored) {}
+                } catch (Exception e) {
+                    try {
+                        Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    } catch (Exception ignored) {}
+                }
             });
         }
 
@@ -1355,13 +1363,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     public void onBinderStateChanged(boolean alive) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                if (tweaksAdapter != null) {
-                    tweaksAdapter.setShizukuAlive(alive);
+                if (!isAdded() || getContext() == null) return;
+                try {
+                    if (tweaksAdapter != null) {
+                        tweaksAdapter.setShizukuAlive(alive);
+                    }
+                    if (bannerDisconnect != null) {
+                        bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
+                    }
+                    refreshAllStatuses();
+                } catch (Throwable t) {
+                    android.util.Log.w("SettingsFragment", "onBinderStateChanged error: " + t.getMessage());
                 }
-                if (bannerDisconnect != null) {
-                    bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
-                }
-                refreshAllStatuses();
             });
             if (alive && getContext() != null) {
                 TweakManagerRepository.restoreAppliedTweaksAsync(getContext());
@@ -1385,24 +1398,28 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private void refreshAllStatuses() {
-        EngineUIHelper.refreshEngineStatus(tvEngineStatus);
-        EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
-        updateSystemSettingsStatus();
-        updateSpoofUiState();
-        updatePrecisionAimStatus();
-        if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
-            switchPrecisionInputTuner.setOnCheckedChangeListener(null);
-            switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
-            switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
+        try {
+            EngineUIHelper.refreshEngineStatus(tvEngineStatus);
+            EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
+            updateSystemSettingsStatus();
+            updateSpoofUiState();
+            updatePrecisionAimStatus();
+            if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
+                switchPrecisionInputTuner.setOnCheckedChangeListener(null);
+                switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
+                switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
+            }
+            boolean alive = ShizukuExecutor.hasShizukuPermission();
+            if (tweaksAdapter != null) {
+                tweaksAdapter.setShizukuAlive(alive);
+            }
+            if (bannerDisconnect != null) {
+                bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
+            }
+            updateTerminalStatusInSettings();
+        } catch (Throwable t) {
+            android.util.Log.w("SettingsFragment", "refreshAllStatuses error: " + t.getMessage());
         }
-        boolean alive = ShizukuExecutor.hasShizukuPermission();
-        if (tweaksAdapter != null) {
-            tweaksAdapter.setShizukuAlive(alive);
-        }
-        if (bannerDisconnect != null) {
-            bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
-        }
-        updateTerminalStatusInSettings();
     }
 
     private void handlePrecisionTunerToggle(boolean isChecked) {

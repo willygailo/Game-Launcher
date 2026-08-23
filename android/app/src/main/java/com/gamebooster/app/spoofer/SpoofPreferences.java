@@ -28,7 +28,7 @@ public class SpoofPreferences {
         // so fall back to MODE_PRIVATE — the module is not active there anyway.
         try {
             return context.getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);
-        } catch (SecurityException e) {
+        } catch (Throwable e) {
             return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         }
     }
