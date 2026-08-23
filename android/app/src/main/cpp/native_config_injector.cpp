@@ -4,6 +4,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/syscall.h>
+#include <sched.h>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -1798,3 +1801,94 @@ JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nat
     if (content.empty()) return 0;
     return static_cast<jlong>(calculate_crc32(reinterpret_cast<const unsigned char*>(content.data()), content.size()));
 }
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessCpuAffinity
+  (JNIEnv *, jclass, jint pid, jint cpuMask) {
+    if (pid <= 0) pid = getpid();
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    if (cpuMask <= 0) {
+        // Default to performance/prime big cores (Cores 4-7 on standard 8-core CPU)
+        for (int i = 4; i < 8; i++) {
+            CPU_SET(i, &mask);
+        }
+    } else {
+        for (int i = 0; i < 16; i++) {
+            if (cpuMask & (1 << i)) {
+                CPU_SET(i, &mask);
+            }
+        }
+    }
+
+    setpriority(PRIO_PROCESS, pid, -20);
+
+    int res = sched_setaffinity(pid, sizeof(mask), &mask);
+    if (res != 0) {
+        res = syscall(__NR_sched_setaffinity, pid, sizeof(mask), &mask);
+    }
+    return (res == 0) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUnrealEngineIni
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    int fps = (targetFps >= 90) ? targetFps : 185;
+    std::ostringstream ssFps;
+    ssFps << fps;
+
+    if (content.find("[/Script/Engine.Engine]") == std::string::npos) {
+        content += "\n[/Script/Engine.Engine]\n";
+    }
+    if (content.find("[SystemSettings]") == std::string::npos) {
+        content += "\n[SystemSettings]\n";
+    }
+
+    patch_key_value(content, "bSmoothFrameRate", "False");
+    patch_key_value(content, "bUseFixedFrameRate", "True");
+    patch_key_value(content, "FixedFrameRate", ssFps.str());
+    patch_cvar(content, "r.VSync", "0");
+    patch_cvar(content, "r.FinishCurrentFrame", "0");
+    patch_cvar(content, "r.OneFrameThreadLag", "0");
+    patch_cvar(content, "t.MaxFPS", ssFps.str());
+    patch_cvar(content, "r.MobileContentScaleFactor", "1.0");
+    patch_cvar(content, "r.MaxQualityMode", "0");
+    patch_cvar(content, "r.Streaming.PoolSize", "0");
+    patch_cvar(content, "r.RenderTargetPoolMin", "1024");
+    patch_cvar(content, "r.ShadowQuality", "0");
+    patch_cvar(content, "r.DistanceFieldShadowing", "0");
+    patch_cvar(content, "r.DistanceFieldAO", "0");
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUnityBootConfig
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    int fps = (targetFps >= 90) ? targetFps : 185;
+    std::ostringstream ssFps;
+    ssFps << fps;
+
+    patch_key_value(content, "gfx-enable-native-gles", "1");
+    patch_key_value(content, "wait-for-native-debugger", "0");
+    patch_key_value(content, "player-connection-debug", "0");
+    patch_key_value(content, "target-frame-rate", ssFps.str());
+    patch_key_value(content, "hdr-display-enabled", "0");
+    patch_key_value(content, "gc-max-time-slice", "3");
+    patch_key_value(content, "vulkan-enable-validation", "0");
+    patch_key_value(content, "profiler-enable-profiling", "0");
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+

@@ -62,7 +62,7 @@ public class ShizukuManager {
                     if (ctx != null) {
                         ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
                         ShizukuFileManager.grantAllStoragePermissions(ctx);
-                        com.gamebooster.app.config.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                        com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
                     }
                 } catch (Throwable t) {
                     Log.w(TAG, "Post-permission enforcement error: " + t.getMessage());
@@ -85,7 +85,7 @@ public class ShizukuManager {
                 if (ctx != null) {
                     ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
                     ShizukuFileManager.grantAllStoragePermissions(ctx);
-                    com.gamebooster.app.config.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
                 }
             }
         } catch (Exception ignored) {}

@@ -386,6 +386,30 @@ public final class CommonConfigTuningInjector {
     }
 
     /**
+     * Injects Unreal Engine 4/5 SystemSettings & 185 FPS unlocks into Engine.ini.
+     */
+    public static void applyUnrealEngineOptimization(String packageName, int targetFps) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUnrealEngineIni(path, targetFps);
+        }
+        Log.i(TAG, "Unreal Engine 4/5 optimization injected @ " + targetFps + "fps for " + packageName);
+    }
+
+    /**
+     * Injects Unity boot.config optimization flags (native GLES, no debugger, 185 FPS).
+     */
+    public static void applyUnityBootConfigOptimization(String packageName, int targetFps) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUnityBootConfig(path, targetFps);
+        }
+        Log.i(TAG, "Unity boot.config optimization injected @ " + targetFps + "fps for " + packageName);
+    }
+
+    /**
      * Injects Anti-Log / Privacy Guard keys into game configs.
      */
     public static void applyAntiLog(String packageName) {
@@ -408,5 +432,7 @@ public final class CommonConfigTuningInjector {
         if (profile.isDroneViewUltraEnabled()) applyDroneViewUltraConfig(packageName);
         if (profile.isArmorDefEnabled()) applyArmorDefConfig(packageName);
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
+        applyUnrealEngineOptimization(packageName, profile.getTargetFps());
+        applyUnityBootConfigOptimization(packageName, profile.getTargetFps());
     }
 }

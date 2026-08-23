@@ -400,6 +400,69 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
+
+        // =========================================================================
+        // 5. FLAGSHIP ZERO-LATENCY, KERNEL GOVERNOR & TCP BBR TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "sf_zero_latency_latching",
+                "SurfaceFlinger Zero-Latency Latching & Queue Elimination",
+                "Forces SurfaceFlinger to latch buffers unsignaled without waiting for fence sync and unthrottles early duration scheduling",
+                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.enable_gl_backpressure 1; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "angle_vulkan_driver_preference",
+                "Updatable Game Driver & ANGLE Vulkan Driver Selection",
+                "Forces Android system-wide Updatable Game Driver and sets ANGLE backend preference for low CPU driver overhead",
+                "settings put global game_driver_all_apps 1; settings put global updatable_driver_all_apps 1; setprop debug.angle.backend 2",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; setprop debug.angle.backend 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "adreno_mali_sysfs_governors",
+                "Adreno & Mali Sysfs GPU Clock & Governor Lock",
+                "Directly sets GPU devfreq governor to performance and locks min/max power levels to prevent thermal down-stepping",
+                "echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null; echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null; echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null",
+                "echo simple_ondemand > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null; echo 1 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "tcp_bbr_gaming_low_latency",
+                "Linux TCP BBR Congestion Control & Nagle Bypass",
+                "Applies TCP BBR congestion algorithm and disables Nagle packet buffering for zero-jitter multiplayer gaming",
+                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null",
+                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=0 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "raw_touch_zero_slop",
+                "Raw Touch Calibration & Gesture Delay Elimination",
+                "Reduces long-press & multi-press timeouts to eliminate OS gesture navigation touch delays",
+                "settings put secure long_press_timeout 150; settings put secure multi_press_timeout 100; setprop touch.size.calibration geometric; setprop touch.pressure.scale 0.001",
+                "settings put secure long_press_timeout 400; settings put secure multi_press_timeout 300",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "cpu_core_pinning_and_oom_lock",
+                "CPU Thread Affinity & LMK OOM Immunity Lock",
+                "Instructs kernel scheduler to prioritize foreground game processes with maximum real-time priority and LMK immunity",
+                "setprop sys.games.cpu_affinity 1; setprop sys.use_fifo 1; setprop sys.perf.sched_uclamp_min 1024",
+                "setprop sys.games.cpu_affinity 0; setprop sys.use_fifo 0; setprop sys.perf.sched_uclamp_min 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {

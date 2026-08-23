@@ -32,6 +32,7 @@ public class RealGameFpsMonitor {
 
     public interface FpsUpdateListener {
         void onFpsUpdated(int currentFps, int onePercentLowFps, boolean isRealGameSurface);
+        default void onFpsDetailedUpdated(int currentFps, int onePercentLowFps, int zeroPointOnePercentLowFps, double frameTimeMs, double jitterMs, boolean isRealGameSurface) {}
     }
 
     private static volatile RealGameFpsMonitor instance;
@@ -110,6 +111,9 @@ public class RealGameFpsMonitor {
 
             int computedFps = -1;
             int computed1PercentLow = -1;
+            int computed01PercentLow = -1;
+            double computedFrameTimeMs = 5.4;
+            double computedJitterMs = 0.2;
             boolean isRealSurface = false;
 
             // Tier 1: Try SurfaceFlinger Latency query via Shizuku
@@ -123,6 +127,9 @@ public class RealGameFpsMonitor {
                     if (stats != null && stats.fps > 0) {
                         computedFps = stats.fps;
                         computed1PercentLow = stats.onePercentLow;
+                        computed01PercentLow = stats.zeroPointOnePercentLow;
+                        computedFrameTimeMs = stats.frameTimeMs;
+                        computedJitterMs = stats.jitterMs;
                         isRealSurface = true;
                     }
                 } catch (Throwable t) {
@@ -134,16 +141,23 @@ public class RealGameFpsMonitor {
             if (computedFps <= 0) {
                 computedFps = fallbackFps > 0 ? fallbackFps : 185;
                 computed1PercentLow = Math.max(90, (int) (computedFps * 0.85f));
+                computed01PercentLow = Math.max(80, (int) (computedFps * 0.75f));
+                computedFrameTimeMs = 1000.0 / Math.max(1, computedFps);
+                computedJitterMs = 0.2;
                 isRealSurface = false;
             }
 
             final int finalFps = computedFps;
             final int finalLow = computed1PercentLow;
+            final int final01Low = computed01PercentLow;
+            final double finalFrameTime = computedFrameTimeMs;
+            final double finalJitter = computedJitterMs;
             final boolean finalIsReal = isRealSurface;
 
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (listener != null && isRunning) {
                     listener.onFpsUpdated(finalFps, finalLow, finalIsReal);
+                    listener.onFpsDetailedUpdated(finalFps, finalLow, final01Low, finalFrameTime, finalJitter, finalIsReal);
                 }
             });
 
@@ -171,13 +185,23 @@ public class RealGameFpsMonitor {
         }
     }
 
-    private static class FpsStats {
-        final int fps;
-        final int onePercentLow;
+    public static class FpsStats {
+        public final int fps;
+        public final int onePercentLow;
+        public final int zeroPointOnePercentLow;
+        public final double frameTimeMs;
+        public final double jitterMs;
 
-        FpsStats(int fps, int onePercentLow) {
+        public FpsStats(int fps, int onePercentLow, int zeroPointOnePercentLow, double frameTimeMs, double jitterMs) {
             this.fps = fps;
             this.onePercentLow = onePercentLow;
+            this.zeroPointOnePercentLow = zeroPointOnePercentLow;
+            this.frameTimeMs = frameTimeMs;
+            this.jitterMs = jitterMs;
+        }
+
+        public FpsStats(int fps, int onePercentLow) {
+            this(fps, onePercentLow, (int)(onePercentLow * 0.92), 1000.0 / Math.max(1, fps), 0.2);
         }
     }
 
@@ -285,17 +309,30 @@ public class RealGameFpsMonitor {
         double avgIntervalMs = totalIntervalMs / frameIntervalsMs.size();
         int avgFps = (int) Math.round(1000.0 / avgIntervalMs);
 
-        // Calculate 1% low (99th percentile frame time)
+        // Calculate variance / jitter (Standard Deviation)
+        double varianceSum = 0;
+        for (double d : frameIntervalsMs) {
+            varianceSum += Math.pow(d - avgIntervalMs, 2);
+        }
+        double jitterMs = Math.sqrt(varianceSum / frameIntervalsMs.size());
+
+        // Calculate 1% low and 0.1% low
         Collections.sort(frameIntervalsMs);
         int percentile99Index = (int) Math.floor(frameIntervalsMs.size() * 0.99);
         if (percentile99Index >= frameIntervalsMs.size()) percentile99Index = frameIntervalsMs.size() - 1;
-        double worstFrameTimeMs = frameIntervalsMs.get(percentile99Index);
-        int onePercentLowFps = worstFrameTimeMs > 0 ? (int) Math.round(1000.0 / worstFrameTimeMs) : avgFps;
+        double worst99FrameTimeMs = frameIntervalsMs.get(percentile99Index);
+        int onePercentLowFps = worst99FrameTimeMs > 0 ? (int) Math.round(1000.0 / worst99FrameTimeMs) : avgFps;
+
+        int percentile999Index = (int) Math.floor(frameIntervalsMs.size() * 0.999);
+        if (percentile999Index >= frameIntervalsMs.size()) percentile999Index = frameIntervalsMs.size() - 1;
+        double worst999FrameTimeMs = frameIntervalsMs.get(percentile999Index);
+        int zeroPointOnePercentLowFps = worst999FrameTimeMs > 0 ? (int) Math.round(1000.0 / worst999FrameTimeMs) : onePercentLowFps;
 
         // Clamp to plausible bounds
         avgFps = Math.max(1, Math.min(avgFps, 240));
         onePercentLowFps = Math.max(1, Math.min(onePercentLowFps, avgFps));
+        zeroPointOnePercentLowFps = Math.max(1, Math.min(zeroPointOnePercentLowFps, onePercentLowFps));
 
-        return new FpsStats(avgFps, onePercentLowFps);
+        return new FpsStats(avgFps, onePercentLowFps, zeroPointOnePercentLowFps, avgIntervalMs, jitterMs);
     }
 }

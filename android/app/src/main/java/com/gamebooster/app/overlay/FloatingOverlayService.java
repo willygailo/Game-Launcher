@@ -128,6 +128,9 @@ public class FloatingOverlayService extends Service {
     private boolean isNetBoostActive = false;
     private int realTimeFps = 185;
     private int onePercentLowFps = 175;
+    private int zeroPointOnePercentLowFps = 165;
+    private double frameTimeMs = 5.4;
+    private double frameJitterMs = 0.2;
     private boolean isRealGameSurface = false;
     private int frameCounter = 0;
     private long lastFpsCalcTimeNanos = 0;
@@ -631,10 +634,23 @@ public class FloatingOverlayService extends Service {
         } catch (Exception ignored) {}
 
         // 2. Real Game FPS Telemetry Engine
-        RealGameFpsMonitor.getInstance().start(getApplicationContext(), (currentFps, lowFps, isReal) -> {
-            realTimeFps = currentFps;
-            onePercentLowFps = lowFps;
-            isRealGameSurface = isReal;
+        RealGameFpsMonitor.getInstance().start(getApplicationContext(), new RealGameFpsMonitor.FpsUpdateListener() {
+            @Override
+            public void onFpsUpdated(int currentFps, int lowFps, boolean isReal) {
+                realTimeFps = currentFps;
+                onePercentLowFps = lowFps;
+                isRealGameSurface = isReal;
+            }
+
+            @Override
+            public void onFpsDetailedUpdated(int currentFps, int lowFps, int zeroPointOneLow, double ftMs, double jitter, boolean isReal) {
+                realTimeFps = currentFps;
+                onePercentLowFps = lowFps;
+                zeroPointOnePercentLowFps = zeroPointOneLow;
+                frameTimeMs = ftMs;
+                frameJitterMs = jitter;
+                isRealGameSurface = isReal;
+            }
         });
 
         // 3. Metrics Updater (1 sec ticker)
@@ -787,7 +803,7 @@ public class FloatingOverlayService extends Service {
             }
             if (tvHudFpsStatus != null) {
                 if (isRealGameSurface && onePercentLowFps > 0) {
-                    tvHudFpsStatus.setText(fpsStatus + " • 1% Low: " + onePercentLowFps + " FPS");
+                    tvHudFpsStatus.setText(String.format("%s • 1%%: %d • 0.1%%: %d (%.1fms ±%.1f)", fpsStatus, onePercentLowFps, zeroPointOnePercentLowFps, frameTimeMs, frameJitterMs));
                 } else {
                     tvHudFpsStatus.setText(fpsStatus);
                 }

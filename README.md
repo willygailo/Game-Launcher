@@ -46,8 +46,8 @@
   * 🟣 **144 FPS / 144Hz** — ROG Gaming Display Synchronizer
   * 🔴 **165 FPS / 165Hz** — RedMagic Pro Hyper-Refresh Tier
   * 🔥 **185 FPS / 185Hz** — Extreme Max Unthrottled Panel Override
-* 🛡️ **SurfaceFlinger Unthrottler**: Dispatches `service call SurfaceFlinger 1035 i32 185` and `1036 i32 185` to disable panel power-saving down-stepping.
-* 📱 **Android 14–16 Game Mode API**: Automates `cmd game mode performance` and sets dynamic app refresh rate clamps globally.
+* 🛡️ **SurfaceFlinger Unthrottler & Zero-Latency Latching**: Dispatches `debug.sf.latch_unsignaled=1`, `enable_gl_backpressure=0`, and `service call SurfaceFlinger 1035/1036 i32 185` for zero-latency frame presentation.
+* 📱 **Android 14–16 Game Mode API**: Automates `cmd game mode performance`, sets dynamic app refresh rate clamps globally, and activates Updatable Game Driver preferences.
 
 ---
 
@@ -64,7 +64,14 @@
 
 ---
 
-### 🎯 3. Zero-Delay Touch & Combat Physics Optimization
+### 🧠 3. Native C++ CPU Affinity & Linux Kernel Governors
+* ⚡ **POSIX Prime Core Affinity**: Native C++ `sched_setaffinity` syscall locks game render threads (`MainThread`, `UnityMain`, `RHIThread`) directly to Cortex-X4 / Prime CPU cores.
+* 🛡️ **LMK OOM Score Immunity**: Pins game PID `oom_score_adj` to `-1000` (immune to Android LowMemoryKiller) with real-time `renice -20` priority.
+* ⚙️ **GPU Sysfs Performance Locks**: Direct sysfs override for Qualcomm Adreno `kgsl-3d0` and ARM Mali governors to prevent thermal down-stepping.
+
+---
+
+### 🎯 4. Zero-Delay Touch & Combat Physics Optimization
 * ⚡ **1000Hz Ultra Touch Polling**: Lowers touch slop (`touch_slop_reduction=1`) and scales pressure thresholds to `0.001` for zero crosshair delay.
 * 🎯 **Zero Recoil & Combat Tuning**: Injects real-time game physics optimizations (`ZeroRecoil=1`, `DamageMultiplier=4.50`, `AimAssistMagnet=1`).
 * ⏱️ **Sub-Millisecond Threading**: High-priority background executor pool for instant, stutter-free Shizuku command execution.
@@ -72,10 +79,24 @@
 
 ---
 
-### 📡 4. Low-Latency Turbo Network Engine
-* 📶 **Wi-Fi 7 / 6E Gaming QoS**: Locks Wi-Fi chips into low-jitter packet forwarding mode.
-* 🌐 **TCP Dynamic Buffer Tuning**: Sets optimal TCP receive windows (`tcp_default_init_rwnd=60`) to eliminate ping spikes.
+### 🕹️ 5. Engine-Specific FastFlags & INI Injectors
+* 🧱 **Roblox FastFlags Auto-Injector**: Generates `ClientAppSettings.json` with `DFIntTaskSchedulerTargetFps=185`, Vulkan prefer flags, and uncapped memory limits.
+* ⚡ **Unreal Engine 4/5 `Engine.ini` Tuner**: Direct injection of `r.VSync=0`, `r.FinishCurrentFrame=0`, `r.OneFrameThreadLag=0`, and `t.MaxFPS=185`.
+* 🎮 **Unity `boot.config` Pipeline**: Forces `gfx-enable-native-gles=1`, `gc-max-time-slice=3`, and removes debug overhead.
+
+---
+
+### 📡 6. Low-Latency Turbo Network & TCP BBR Engine
+* 📶 **Wi-Fi 7 / 6E Gaming QoS**: Locks Wi-Fi hardware into Android `WIFI_MODE_FULL_LOW_LATENCY` state.
+* 🌐 **Linux TCP BBR Congestion Control**: Applies TCP BBR congestion algorithm and disables Nagle packet buffering (`tcp_nodelay=1`) to eliminate ping spikes.
 * 🛡️ **Ultra-Fast eSports DNS**: Routes game server traffic through prioritized latency-optimized nodes.
+
+---
+
+### 📊 7. Pro 1% Low & 0.1% Low FPS HUD Telemetry
+* 📈 **SurfaceFlinger Latency Parser**: Real-time 99th and 99.9th percentile frame latency computation.
+* ⏱️ **Frame-Time Jitter Metrics**: Displays live frame-time variance (e.g. `5.4ms ± 0.1ms`) to track and eliminate micro-stutters.
+* 🎯 **Custom Floating Pro HUD**: Draggable overlay featuring real-time FPS, 1% Low, SoC thermal status, RAM utilization, and ping monitor.
 
 ---
 
@@ -83,16 +104,16 @@
 
 | Game Title | Category | Unlocked Engine Features | Max Target |
 | :--- | :---: | :--- | :---: |
-| **PUBG Mobile / BGMI** *(Global, KR, VN, TW, IN)* | Battle Royale | `Active.sav` 185 FPS Unlock, Multithreaded Vulkan, 1000Hz Gyro, Zero Recoil | 🔥 **185 FPS** |
-| **Mobile Legends: Bang Bang** | MOBA | 185Hz Ultra Mode, Drone FOV Scaling, Super Sampling, Zero Touch Slop | 🔥 **185 FPS** |
+| **PUBG Mobile / BGMI** *(Global, KR, VN, TW, IN)* | Battle Royale | `Active.sav` 185 FPS Unlock, UE4/5 `Engine.ini`, 1000Hz Gyro, Zero Recoil | 🔥 **185 FPS** |
+| **Mobile Legends: Bang Bang** | MOBA | 185Hz Ultra Mode, Unity `boot.config`, Drone FOV, Super Sampling, Zero Touch Slop | 🔥 **185 FPS** |
 | **Call of Duty: Mobile & Warzone** | FPS | 185 FPS Ultra Preset, 1000Hz Touch Poll, Instant Crosshair Stabilizer | 🔥 **185 FPS** |
-| **Free Fire & Free Fire MAX** | Battle Royale | 185 FPS Uncap, High Sensitivity Curve Sync, Jitter Buffer Reduction | 🔥 **185 FPS** |
+| **Free Fire & Free Fire MAX** | Battle Royale | 185 FPS Uncap, Unity Pipeline, High Sensitivity Curve Sync, Jitter Buffer Reduction | 🔥 **185 FPS** |
 | **Genshin Impact & Wuthering Waves** | Action RPG | Adreno 840 Whitelist Override, 120 FPS Uncapped Renderer, Vulkan Backend | ⚡ **120 FPS** |
 | **CarX Street & Asphalt Legends** | Racing | Ultra Graphics Unlock, 185 FPS Shader Pipeline, Nitro/Torque Multiplier | 🔥 **185 FPS** |
 | **Blood Strike** | FPS | 165/185 FPS High Refresh Mode, Low-Latency Touch, Fast Aim Response | 🔥 **185 FPS** |
-| **Arena Breakout** | Tactical FPS | 144 FPS High-Tier Presets, Thermal Throttle Bypass, Audio Footprint Boost | 🚀 **144 FPS** |
+| **Arena Breakout** | Tactical FPS | 144 FPS High-Tier Presets, UE4 `Engine.ini`, Thermal Throttle Bypass | 🚀 **144 FPS** |
 | **Farlight 84** | Hero Shooter | 185 FPS Solarland Engine Override, Recoil Stabilization | 🔥 **185 FPS** |
-| **Roblox** | Sandbox | FastFlags 185 FPS Scheduler, Uncapped Memory Allocation | 🔥 **185 FPS** |
+| **Roblox** | Sandbox | FastFlags `ClientAppSettings.json` 185 FPS Scheduler, Uncapped Memory | 🔥 **185 FPS** |
 
 ---
 

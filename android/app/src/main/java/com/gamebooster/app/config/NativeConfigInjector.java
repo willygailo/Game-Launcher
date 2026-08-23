@@ -69,8 +69,83 @@ public class NativeConfigInjector {
     public static native boolean nativePreserveFileTimestamps(String path, long atimeSec, long mtimeSec);
     public static native boolean nativeStealthWrite(String path, String content);
     public static native long nativeCalculateConfigCrc32(String path);
+    public static native boolean nativeSetProcessCpuAffinity(int pid, int cpuMask);
+    public static native boolean nativeInjectUnrealEngineIni(String path, int targetFps);
+    public static native boolean nativeInjectUnityBootConfig(String path, int targetFps);
 
     // ─── High-Level Injection Engine Methods ─────────────────────────────────
+
+    /**
+     * Pins a target process or thread to high-performance Big/Prime CPU cores.
+     */
+    public static boolean setProcessCpuAffinity(int pid, int cpuMask) {
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeSetProcessCpuAffinity(pid, cpuMask);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native CPU affinity fallback: " + t.getMessage());
+            }
+        }
+        // Fallback to taskset via Shizuku/shell
+        if (pid > 0) {
+            String maskHex = (cpuMask > 0) ? Integer.toHexString(cpuMask) : "f0";
+            CommandExecutor.executeSystemCommand("taskset -p " + maskHex + " " + pid);
+            CommandExecutor.executeSystemCommand("renice -n -20 -p " + pid);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Injects Unreal Engine 4/5 Engine.ini graphics and FPS unlocks.
+     */
+    public static boolean injectUnrealEngineIni(String path, int targetFps) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectUnrealEngineIni(path, targetFps)) return true;
+            } catch (Throwable t) {
+                Log.w(TAG, "Native Unreal Engine INI fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "r.VSync=0",
+            "r.FinishCurrentFrame=0",
+            "r.OneFrameThreadLag=0",
+            "t.MaxFPS=" + targetFps,
+            "r.MobileContentScaleFactor=1.0",
+            "r.Streaming.PoolSize=0",
+            "r.RenderTargetPoolMin=1024",
+            "r.ShadowQuality=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[SystemSettings]");
+    }
+
+    /**
+     * Injects Unity boot.config optimization flags.
+     */
+    public static boolean injectUnityBootConfig(String path, int targetFps) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectUnityBootConfig(path, targetFps)) return true;
+            } catch (Throwable t) {
+                Log.w(TAG, "Native Unity boot.config fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "gfx-enable-native-gles=1",
+            "wait-for-native-debugger=0",
+            "player-connection-debug=0",
+            "target-frame-rate=" + targetFps,
+            "hdr-display-enabled=0",
+            "gc-max-time-slice=3"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "");
+    }
+
 
     /**
      * Injects configuration with stealth timestamp retention.
