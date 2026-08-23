@@ -108,9 +108,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_per_app_games"
         android:layout_width="match_parent"
-        android:layout_height="260dp"
+        android:layout_height="280dp"
         android:nestedScrollingEnabled="true"
-        android:overScrollMode="never" />
+        android:overScrollMode="never"
+        android:scrollbars="vertical" />
 
     <!-- Bottom Buttons -->
     <LinearLayout

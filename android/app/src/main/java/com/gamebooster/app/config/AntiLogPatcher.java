@@ -221,6 +221,42 @@ public final class AntiLogPatcher {
         } else if (pkg.contains("bloodstrike") || pkg.contains("netease")) {
             paths.add("/sdcard/Android/data/" + pkg + "/files/netease/logs");
             paths.add("/sdcard/Android/data/" + pkg + "/files/netease/crash");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
+        } else if (pkg.contains("arena") || pkg.contains("breakout") || pkg.contains("deltaforce") || pkg.contains("proximabeta")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/UAGame/UAGame/Saved/Logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/UAGame/UAGame/Saved/Crashes");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/cloudgame_log");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/tlog");
+        } else if (pkg.contains("farlight") || pkg.contains("miracle")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Crashes");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Solarland/Logs");
+        } else if (pkg.contains("sgame") || pkg.contains("hok") || pkg.contains("arenaofvalor") || pkg.contains("kgtw")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/tencent/tlog");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/tlog");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/apm_logs");
+            paths.add("/data/data/" + pkg + "/files/tencent");
+        } else if (pkg.contains("wildrift") || pkg.contains("league")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/r3dlogs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+            paths.add("/data/data/" + pkg + "/files/r3dlogs");
+        } else if (pkg.contains("standoff") || pkg.contains("axlebolt")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+            paths.add("/data/data/" + pkg + "/files/Unity");
+        } else if (pkg.contains("carx") || pkg.contains("glofta") || pkg.contains("ea.games.r3")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+        } else if (pkg.contains("roblox")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/logs");
+            paths.add("/data/data/" + pkg + "/files/logs");
+        } else if (pkg.contains("valorant") || pkg.contains("projectc")) {
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Crashes");
+        } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clash")) {
+            paths.add("/data/data/" + pkg + "/files/analytics");
+            paths.add("/data/data/" + pkg + "/files/logs");
+            paths.add("/sdcard/Android/data/" + pkg + "/files/analytics");
         }
 
         return paths;

@@ -52,17 +52,25 @@
         android:orientation="vertical"
         android:padding="14dp">
 
-        <TextView
-            android:id="@+id/tv_inspector_content"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:ellipsize="none"
-            android:fontFamily="monospace"
-            android:lineSpacingMultiplier="1.2"
-            android:scrollbars="vertical"
-            android:text="Querying device identity layers..."
-            android:textColor="#E0E6ED"
-            android:textSize="11sp" />
+            android:layout_height="260dp"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/tv_inspector_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="none"
+                android:fontFamily="monospace"
+                android:lineSpacingMultiplier="1.2"
+                android:textIsSelectable="true"
+                android:text="Querying device identity layers..."
+                android:textColor="#E0E6ED"
+                android:textSize="11sp" />
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
     <!-- Action Buttons -->

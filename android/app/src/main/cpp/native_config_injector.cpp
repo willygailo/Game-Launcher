@@ -1050,83 +1050,105 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
 
-    std::string content = read_file_posix(path);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
     std::ostringstream ssFps;
     ssFps << targetFps;
 
-    // Real Ultra Extreme FPS & Refresh Rate Unlocks
-    patch_key_value(content, "FPS", ssFps.str());
-    patch_key_value(content, "TargetFPS", ssFps.str());
-    patch_key_value(content, "MaxFPS", ssFps.str());
-    patch_key_value(content, "MaxFrameRate", ssFps.str());
-    patch_key_value(content, "FrameRateLimit", ssFps.str());
-    patch_key_value(content, "MobileFPSLimit", ssFps.str());
-    patch_key_value(content, "HighFPSMode", "1");
-    patch_key_value(content, "HighFrameRate", "1");
-    patch_key_value(content, "SuperHighFPS", "1");
-    patch_key_value(content, "UnlockFPS", "1");
-    patch_key_value(content, "UnlockHighFPS", "1");
-    patch_key_value(content, "Unlock120Hz", "1");
-    patch_key_value(content, "Unlock144Hz", "1");
-    patch_key_value(content, "Unlock165Hz", "1");
-    patch_key_value(content, "Unlock185Hz", "1");
-    patch_key_value(content, "Unlock120FPS", "1");
-    patch_key_value(content, "Unlock144FPS", "1");
-    patch_key_value(content, "Unlock165FPS", "1");
-    patch_key_value(content, "Unlock185FPS", "1");
-    patch_key_value(content, "Ultra144FPS", "1");
-    patch_key_value(content, "Ultra165FPS", "1");
-    patch_key_value(content, "Ultra185FPS", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // Real Ultra Extreme Graphics Unlocks
-    patch_key_value(content, "UltraExtreme", "1");
-    patch_key_value(content, "bUseUltraExtreme", "True");
-    patch_key_value(content, "GraphicsQuality", "5");
-    patch_key_value(content, "GraphicQuality", "4");
-    patch_key_value(content, "GraphicLevel", "4");
-    patch_key_value(content, "HDRMode", "1");
-    patch_key_value(content, "HDRColorMode", "2");
-    patch_key_value(content, "UltraHDMode", "1");
-    patch_key_value(content, "HDMode", "1");
-    patch_key_value(content, "SuperResolution", "1");
-    patch_key_value(content, "ResolutionScale", "1.20");
-    patch_key_value(content, "ScreenScale", "120");
-    patch_key_value(content, "Shadow", "1");
-    patch_key_value(content, "ShadowQuality", "2");
-    patch_key_value(content, "AntiAliasing", "1");
-    patch_key_value(content, "AntiAliasingQuality", "4");
-    patch_key_value(content, "PostProcessQuality", "3");
-    patch_key_value(content, "TextureQuality", "3");
-    patch_key_value(content, "EffectsQuality", "3");
-    patch_key_value(content, "FoliageQuality", "2");
-    patch_key_value(content, "ShadingQuality", "2");
-    patch_key_value(content, "VulkanEnabled", "1");
-    patch_key_value(content, "bUseHDRMode", "True");
-    patch_key_value(content, "bUseHighQualityBloom", "True");
-    patch_key_value(content, "bUseAntiAliasing", "True");
-    patch_key_value(content, "UnlockMaxGraphics", "1");
-    patch_key_value(content, "MaxGraphic", "1");
-    patch_key_value(content, "UltraQuality", "1");
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPS", ssFps.str()},
+        {"TargetFPS", ssFps.str()},
+        {"MaxFPS", ssFps.str()},
+        {"MaxFrameRate", ssFps.str()},
+        {"FrameRateLimit", ssFps.str()},
+        {"MobileFPSLimit", ssFps.str()},
+        {"HighFPSMode", "1"},
+        {"HighFrameRate", "1"},
+        {"SuperHighFPS", "1"},
+        {"UnlockFPS", "1"},
+        {"UnlockHighFPS", "1"},
+        {"Unlock120Hz", "1"},
+        {"Unlock144Hz", "1"},
+        {"Unlock165Hz", "1"},
+        {"Unlock185Hz", "1"},
+        {"Unlock120FPS", "1"},
+        {"Unlock144FPS", "1"},
+        {"Unlock165FPS", "1"},
+        {"Unlock185FPS", "1"},
+        {"Ultra144FPS", "1"},
+        {"Ultra165FPS", "1"},
+        {"Ultra185FPS", "1"},
+        {"UltraExtreme", "1"},
+        {"bUseUltraExtreme", "True"},
+        {"GraphicsQuality", "5"},
+        {"GraphicQuality", "4"},
+        {"GraphicLevel", "4"},
+        {"HDRMode", "1"},
+        {"HDRColorMode", "2"},
+        {"UltraHDMode", "1"},
+        {"HDMode", "1"},
+        {"SuperResolution", "1"},
+        {"ResolutionScale", "1.20"},
+        {"ScreenScale", "120"},
+        {"Shadow", "1"},
+        {"ShadowQuality", "2"},
+        {"AntiAliasing", "1"},
+        {"AntiAliasingQuality", "4"},
+        {"PostProcessQuality", "3"},
+        {"TextureQuality", "3"},
+        {"EffectsQuality", "3"},
+        {"FoliageQuality", "2"},
+        {"ShadingQuality", "2"},
+        {"VulkanEnabled", "1"},
+        {"bUseHDRMode", "True"},
+        {"bUseHighQualityBloom", "True"},
+        {"bUseAntiAliasing", "True"},
+        {"UnlockMaxGraphics", "1"},
+        {"MaxGraphic", "1"},
+        {"UltraQuality", "1"}
+    };
 
-    // UE4 CVars
-    patch_cvar(content, "r.PUBGDeviceFPS", "10");
-    patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
-    patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
-    patch_cvar(content, "r.FrameRateLimit", ssFps.str());
-    patch_cvar(content, "r.MobileFPSLimit", ssFps.str());
-    patch_cvar(content, "r.PUBGQualityLevel", "4");
-    patch_cvar(content, "r.PUBGSDKQualityLevel", "4");
-    patch_cvar(content, "r.Tonemapper.Quality", "4");
-    patch_cvar(content, "r.PUBGHDRMode", "1");
-    patch_cvar(content, "r.MobileHDR", "1");
-    patch_cvar(content, "r.HDR.Display.OutputDevice", "1");
-    patch_cvar(content, "r.Unlock120Hz", "1");
-    patch_cvar(content, "r.Unlock144Hz", "1");
-    patch_cvar(content, "r.Unlock165Hz", "1");
-    patch_cvar(content, "r.Unlock185Hz", "1");
-    patch_cvar(content, "r.MobileContentScaleFactor", "1.0");
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[GraphicsSettings]") == std::string::npos) {
+            content += "\n[GraphicsSettings]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+        // UE4 CVars
+        patch_cvar(content, "r.PUBGDeviceFPS", "10");
+        patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
+        patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
+        patch_cvar(content, "r.FrameRateLimit", ssFps.str());
+        patch_cvar(content, "r.MobileFPSLimit", ssFps.str());
+        patch_cvar(content, "r.PUBGQualityLevel", "4");
+        patch_cvar(content, "r.PUBGSDKQualityLevel", "4");
+        patch_cvar(content, "r.Tonemapper.Quality", "4");
+        patch_cvar(content, "r.PUBGHDRMode", "1");
+        patch_cvar(content, "r.MobileHDR", "1");
+        patch_cvar(content, "r.HDR.Display.OutputDevice", "1");
+        patch_cvar(content, "r.Unlock120Hz", "1");
+        patch_cvar(content, "r.Unlock144Hz", "1");
+        patch_cvar(content, "r.Unlock165Hz", "1");
+        patch_cvar(content, "r.Unlock185Hz", "1");
+        patch_cvar(content, "r.MobileContentScaleFactor", "1.0");
+        patch_cvar(content, "r.VSync", "0");
+        patch_cvar(content, "r.FinishCurrentFrame", "0");
+        patch_cvar(content, "r.OneFrameThreadLag", "0");
+    }
 
-    bool success = write_file_posix(path, content);
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;
 }
@@ -1137,298 +1159,333 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     const char *path = env->GetStringUTFChars(jPath, nullptr);
     const char *gameKey = env->GetStringUTFChars(jGameKey, nullptr);
 
-    std::string content = read_file_posix(path);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
     std::ostringstream ssFps;
     ssFps << targetFps;
 
-    // Refresh rate and ultra extreme graphics
-    patch_key_value(content, "MaxFPS", ssFps.str());
-    patch_key_value(content, "TargetFPS", ssFps.str());
-    patch_key_value(content, "FPS", ssFps.str());
-    patch_key_value(content, "HighFPSMode", "1");
-    patch_key_value(content, "Unlock185Hz", "1");
-    patch_key_value(content, "Unlock165Hz", "1");
-    patch_key_value(content, "Unlock144Hz", "1");
-    patch_key_value(content, "Unlock120Hz", "1");
-    patch_key_value(content, "Unlock185FPS", "1");
-    patch_key_value(content, "Unlock165FPS", "1");
-    patch_key_value(content, "Unlock144FPS", "1");
-    patch_key_value(content, "Unlock120FPS", "1");
-    patch_key_value(content, "Ultra185FPS", "1");
-    patch_key_value(content, "Ultra165FPS", "1");
-    patch_key_value(content, "Ultra144FPS", "1");
-    patch_key_value(content, "HighFreqTouchHz", ssFps.str());
-    patch_key_value(content, "TouchPollingRate", "1000");
-    patch_key_value(content, "TouchZeroDelay", "1");
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
-    // Ultra Extreme Graphics
-    patch_key_value(content, "UltraExtreme", "1");
-    patch_key_value(content, "bUseUltraExtreme", "True");
-    patch_key_value(content, "GraphicsQuality", "5");
-    patch_key_value(content, "GraphicQuality", "4");
-    patch_key_value(content, "HDRMode", "1");
-    patch_key_value(content, "HDRColorMode", "2");
-    patch_key_value(content, "UltraHDMode", "1");
-    patch_key_value(content, "SuperResolution", "1");
-    patch_key_value(content, "ResolutionScale", "1.20");
-    patch_key_value(content, "ScreenScale", "120");
-    patch_key_value(content, "ShadowQuality", "2");
-    patch_key_value(content, "AntiAliasingQuality", "4");
-    patch_key_value(content, "PostProcessQuality", "3");
-    patch_key_value(content, "TextureQuality", "3");
-    patch_key_value(content, "EffectsQuality", "3");
-    patch_key_value(content, "FoliageQuality", "2");
-    patch_key_value(content, "ShadingQuality", "2");
-    patch_key_value(content, "VulkanEnabled", "1");
-    patch_key_value(content, "UnlockMaxGraphics", "1");
-    patch_key_value(content, "MaxGraphic", "1");
-
-    // Unreal Engine CVars
-    patch_cvar(content, "r.PUBGDeviceFPS", "10");
-    patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
-    patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
-    patch_cvar(content, "r.FrameRateLimit", ssFps.str());
-    patch_cvar(content, "r.MobileFPSLimit", ssFps.str());
-    patch_cvar(content, "r.Unlock120Hz", "1");
-    patch_cvar(content, "r.Unlock144Hz", "1");
-    patch_cvar(content, "r.Unlock165Hz", "1");
-    patch_cvar(content, "r.Unlock185Hz", "1");
-    patch_cvar(content, "r.PUBGQualityLevel", "4");
-    patch_cvar(content, "r.PUBGSDKQualityLevel", "4");
-    patch_cvar(content, "r.MobileHDR", "1");
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"MaxFPS", ssFps.str()},
+        {"TargetFPS", ssFps.str()},
+        {"FPS", ssFps.str()},
+        {"HighFPSMode", "1"},
+        {"Unlock185Hz", "1"},
+        {"Unlock165Hz", "1"},
+        {"Unlock144Hz", "1"},
+        {"Unlock120Hz", "1"},
+        {"Unlock185FPS", "1"},
+        {"Unlock165FPS", "1"},
+        {"Unlock144FPS", "1"},
+        {"Unlock120FPS", "1"},
+        {"Ultra185FPS", "1"},
+        {"Ultra165FPS", "1"},
+        {"Ultra144FPS", "1"},
+        {"HighFreqTouchHz", ssFps.str()},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"UltraExtreme", "1"},
+        {"bUseUltraExtreme", "True"},
+        {"GraphicsQuality", "5"},
+        {"GraphicQuality", "4"},
+        {"HDRMode", "1"},
+        {"HDRColorMode", "2"},
+        {"UltraHDMode", "1"},
+        {"SuperResolution", "1"},
+        {"ResolutionScale", "1.20"},
+        {"ScreenScale", "120"},
+        {"ShadowQuality", "2"},
+        {"AntiAliasingQuality", "4"},
+        {"PostProcessQuality", "3"},
+        {"TextureQuality", "3"},
+        {"EffectsQuality", "3"},
+        {"FoliageQuality", "2"},
+        {"ShadingQuality", "2"},
+        {"VulkanEnabled", "1"},
+        {"UnlockMaxGraphics", "1"},
+        {"MaxGraphic", "1"},
+        {"PhysicalDefenseBoost", "100.00"},
+        {"MagicDefenseBoost", "100.00"},
+        {"PhysicalDefenseMultiplier", "100.00"},
+        {"MagicDefenseMultiplier", "100.00"},
+        {"DamageReductionRatio", "0.999"},
+        {"DamageReduction", "0.999"},
+        {"IncomingDamageReduction", "0.999"},
+        {"ShieldMultiplier", "100.00"},
+        {"ShieldCapacity", "100.00"},
+        {"ShieldStrength", "100.00"},
+        {"MaxHPMultiplier", "50.00"},
+        {"HPBoostRatio", "50.00"},
+        {"DamageAbsorbRatio", "50.00"},
+        {"HealthRegenBoost", "100.00"},
+        {"HealthRegenRate", "100.00"},
+        {"ArmorBoost", "10000"},
+        {"MagicResistBoost", "10000"},
+        {"VestDurability", "100.00"},
+        {"VestDurabilityBoost", "100.00"},
+        {"HelmetDamageReduction", "0.999"},
+        {"ExplosionResistance", "0.999"},
+        {"FallDamageReduction", "1.00"},
+        {"HighDamageMitigationRatio", "10.00"},
+        {"HeavyHitAbsorption", "10.00"},
+        {"BurstDamageReduction", "10.00"},
+        {"HeadshotDamageReduction", "0.999"}
+    };
 
     if (highDamage) {
-        patch_key_value(content, "DamageMultiplier", "100.00");
-        patch_key_value(content, "PhysicalDamageBoost", "100.00");
-        patch_key_value(content, "MagicDamageBoost", "100.00");
-        patch_key_value(content, "TrueDamageBoost", "100.00");
-        patch_key_value(content, "BulletDamageBoost", "100.00");
-        patch_key_value(content, "HeadshotDamageMultiplier", "100.00");
-        patch_key_value(content, "CriticalHitRate", "100");
-        patch_key_value(content, "CriticalDamage", "1000");
-        patch_key_value(content, "CriticalDamageRate", "100");
-        patch_key_value(content, "CriticalDamageMultiplier", "10.00");
-        patch_key_value(content, "PenetrationBoost", "1000");
-        patch_key_value(content, "ArmorPenetration", "1000");
-        patch_key_value(content, "PhysicalPenetrationBoost", "1000");
-        patch_key_value(content, "MagicPenetrationBoost", "1000");
-        patch_key_value(content, "MagicResistPenetration", "1000");
-        patch_key_value(content, "SkillDamageMultiplier", "100.00");
-        patch_key_value(content, "HeroDamageMultiplier", "10.00");
-        patch_key_value(content, "AllHeroDamageMultiplier", "10.00");
-        patch_key_value(content, "TankDamageMultiplier", "10.00");
-        patch_key_value(content, "FighterDamageMultiplier", "10.00");
-        patch_key_value(content, "AssassinDamageMultiplier", "10.00");
-        patch_key_value(content, "MageDamageMultiplier", "10.00");
-        patch_key_value(content, "MarksmanDamageMultiplier", "10.00");
-        patch_key_value(content, "SupportDamageMultiplier", "10.00");
-        patch_key_value(content, "HitboxExpansion", "10.00");
-        patch_key_value(content, "BulletVelocityMultiplier", "50.00");
-        patch_key_value(content, "SmiteTrueDamage", "99999");
-        patch_key_value(content, "RetributionDamageThreshold", "99999");
-        patch_key_value(content, "ExecuteThreshold", "99999");
-        patch_key_value(content, "AutoDamageExecutionMode", "1");
-        patch_key_value(content, "AutoSmiteExecution", "1");
-        patch_key_value(content, "AimAssist", "1");
-        patch_key_value(content, "AimAssistStrength", "1000");
-        patch_key_value(content, "AimAssistLevel", "10");
-        patch_key_value(content, "AimPrecision", "10");
-        patch_key_value(content, "TargetLockSensitivity", "1000");
-        patch_key_value(content, "AimAssistRadius", "1000");
-        patch_key_value(content, "CrosshairMagnetism", "100.00");
-        patch_key_value(content, "AimSnapStrength", "100.00");
-        patch_key_value(content, "AimMagnetism", "100.00");
-        patch_cvar(content, "r.DamageMultiplier", "100.00");
-        patch_cvar(content, "r.BulletDamageScale", "100.00");
-        patch_cvar(content, "r.HeadshotMultiplier", "100.00");
-        patch_cvar(content, "r.WeaponDamageScale", "100.00");
-        patch_cvar(content, "r.PhysicalDamageScale", "100.00");
-        patch_cvar(content, "r.MagicDamageScale", "100.00");
-        patch_cvar(content, "r.TrueDamageScale", "100.00");
-        patch_cvar(content, "r.PenetrationPower", "50.00");
-        patch_cvar(content, "r.HitboxExpansion", "10.00");
-        patch_cvar(content, "r.BulletVelocityScale", "50.00");
-        patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "100.00");
-        patch_cvar(content, "r.AimAssistRadius", "1000");
-        patch_cvar(content, "r.CrosshairMagnetism", "100.00");
-        patch_cvar(content, "r.TargetLockSensitivity", "1000");
+        keys.push_back({"DamageMultiplier", "100.00"});
+        keys.push_back({"PhysicalDamageBoost", "100.00"});
+        keys.push_back({"MagicDamageBoost", "100.00"});
+        keys.push_back({"TrueDamageBoost", "100.00"});
+        keys.push_back({"BulletDamageBoost", "100.00"});
+        keys.push_back({"HeadshotDamageMultiplier", "100.00"});
+        keys.push_back({"CriticalHitRate", "100"});
+        keys.push_back({"CriticalDamage", "1000"});
+        keys.push_back({"CriticalDamageRate", "100"});
+        keys.push_back({"CriticalDamageMultiplier", "10.00"});
+        keys.push_back({"PenetrationBoost", "1000"});
+        keys.push_back({"ArmorPenetration", "1000"});
+        keys.push_back({"PhysicalPenetrationBoost", "1000"});
+        keys.push_back({"MagicPenetrationBoost", "1000"});
+        keys.push_back({"MagicResistPenetration", "1000"});
+        keys.push_back({"SkillDamageMultiplier", "100.00"});
+        keys.push_back({"HeroDamageMultiplier", "10.00"});
+        keys.push_back({"AllHeroDamageMultiplier", "10.00"});
+        keys.push_back({"TankDamageMultiplier", "10.00"});
+        keys.push_back({"FighterDamageMultiplier", "10.00"});
+        keys.push_back({"AssassinDamageMultiplier", "10.00"});
+        keys.push_back({"MageDamageMultiplier", "10.00"});
+        keys.push_back({"MarksmanDamageMultiplier", "10.00"});
+        keys.push_back({"SupportDamageMultiplier", "10.00"});
+        keys.push_back({"HitboxExpansion", "10.00"});
+        keys.push_back({"BulletVelocityMultiplier", "50.00"});
+        keys.push_back({"SmiteTrueDamage", "99999"});
+        keys.push_back({"RetributionDamageThreshold", "99999"});
+        keys.push_back({"ExecuteThreshold", "99999"});
+        keys.push_back({"AutoDamageExecutionMode", "1"});
+        keys.push_back({"AutoSmiteExecution", "1"});
+        keys.push_back({"AimAssist", "1"});
+        keys.push_back({"AimAssistStrength", "1000"});
+        keys.push_back({"AimAssistLevel", "10"});
+        keys.push_back({"AimPrecision", "10"});
+        keys.push_back({"TargetLockSensitivity", "1000"});
+        keys.push_back({"AimAssistRadius", "1000"});
+        keys.push_back({"CrosshairMagnetism", "100.00"});
+        keys.push_back({"AimSnapStrength", "100.00"});
+        keys.push_back({"AimMagnetism", "100.00"});
     }
 
     if (noRecoil) {
-        patch_key_value(content, "RecoilControl", "1");
-        patch_key_value(content, "ZeroRecoil", "1");
-        patch_key_value(content, "NoRecoil", "1");
-        patch_key_value(content, "RecoilScale", "0.00");
-        patch_key_value(content, "VerticalRecoil", "0.00");
-        patch_key_value(content, "HorizontalRecoil", "0.00");
-        patch_key_value(content, "VerticalRecoilScale", "0.00");
-        patch_key_value(content, "HorizontalRecoilScale", "0.00");
-        patch_key_value(content, "RecoilReduction", "1.00");
-        patch_key_value(content, "WeaponStability", "500");
-        patch_key_value(content, "ScreenShake", "0");
-        patch_key_value(content, "CameraShake", "0");
-        patch_key_value(content, "NoCameraShake", "1");
-        patch_key_value(content, "GunKick", "0");
-        patch_key_value(content, "GunKickReduction", "1.00");
-        patch_key_value(content, "WeaponKickReduction", "1.00");
-        patch_key_value(content, "AllGunsRecoilReduction", "1.00");
-        patch_key_value(content, "ScopeShakeReduction", "1.00");
-        patch_key_value(content, "ScopeRecoilMultiplier", "0.00");
-        patch_key_value(content, "ScopeStability", "5.00");
-        patch_key_value(content, "BulletSpread", "0.00");
-        patch_key_value(content, "CrosshairSpread", "0.00");
-        patch_key_value(content, "SpreadScale", "0.00");
-        patch_key_value(content, "BulletSpreadReduction", "1");
-        patch_key_value(content, "FirstBulletAccuracy", "1");
-        patch_key_value(content, "WeaponSway", "0");
-        patch_key_value(content, "IronSightRecoil", "0.00");
-        patch_key_value(content, "RedDotRecoil", "0.00");
-        patch_key_value(content, "HoloRecoil", "0.00");
-        patch_key_value(content, "Scope2xRecoil", "0.00");
-        patch_key_value(content, "Scope3xRecoil", "0.00");
-        patch_key_value(content, "Scope4xRecoil", "0.00");
-        patch_key_value(content, "Scope6xRecoil", "0.00");
-        patch_key_value(content, "Scope8xRecoil", "0.00");
-        patch_key_value(content, "CantedSightRecoil", "0.00");
-        patch_key_value(content, "ThermalScopeRecoil", "0.00");
-        patch_key_value(content, "SniperScopeRecoil", "0.00");
-        patch_key_value(content, "ARRecoilReduction", "1.00");
-        patch_key_value(content, "DMRRecoilReduction", "1.00");
-        patch_key_value(content, "SniperRecoilReduction", "1.00");
-        patch_key_value(content, "SMGRecoilReduction", "1.00");
-        patch_key_value(content, "LMGRecoilReduction", "1.00");
-        patch_key_value(content, "ShotgunRecoilReduction", "1.00");
-        patch_cvar(content, "r.WeaponRecoilScale", "0.00");
-        patch_cvar(content, "r.VerticalRecoilMultiplier", "0.00");
-        patch_cvar(content, "r.HorizontalRecoilMultiplier", "0.00");
-        patch_cvar(content, "r.GunKickReduction", "1");
-        patch_cvar(content, "r.CameraShake", "0");
-        patch_cvar(content, "r.ScreenShake", "0");
-        patch_cvar(content, "r.WeaponSway", "0");
-        patch_cvar(content, "r.BulletSpread", "0.00");
-        patch_cvar(content, "r.CrosshairSpread", "0.00");
-        patch_cvar(content, "r.ScopeStability", "5.00");
-        patch_cvar(content, "r.RedDotRecoilScale", "0.00");
-        patch_cvar(content, "r.HoloRecoilScale", "0.00");
-        patch_cvar(content, "r.Scope2xRecoilScale", "0.00");
-        patch_cvar(content, "r.Scope3xRecoilScale", "0.00");
-        patch_cvar(content, "r.Scope4xRecoilScale", "0.00");
-        patch_cvar(content, "r.Scope6xRecoilScale", "0.00");
-        patch_cvar(content, "r.Scope8xRecoilScale", "0.00");
-        patch_cvar(content, "r.CantedSightRecoilScale", "0.00");
-        patch_cvar(content, "r.IronSightRecoilScale", "0.00");
-        patch_cvar(content, "r.ARRecoilScale", "0.00");
-        patch_cvar(content, "r.DMRRecoilScale", "0.00");
-        patch_cvar(content, "r.SniperRecoilScale", "0.00");
-        patch_cvar(content, "r.SMGRecoilScale", "0.00");
-        patch_cvar(content, "r.LMGRecoilScale", "0.00");
-        patch_cvar(content, "r.ShotgunRecoilScale", "0.00");
+        keys.push_back({"RecoilControl", "1"});
+        keys.push_back({"ZeroRecoil", "1"});
+        keys.push_back({"NoRecoil", "1"});
+        keys.push_back({"RecoilScale", "0.00"});
+        keys.push_back({"VerticalRecoil", "0.00"});
+        keys.push_back({"HorizontalRecoil", "0.00"});
+        keys.push_back({"VerticalRecoilScale", "0.00"});
+        keys.push_back({"HorizontalRecoilScale", "0.00"});
+        keys.push_back({"RecoilReduction", "1.00"});
+        keys.push_back({"WeaponStability", "500"});
+        keys.push_back({"ScreenShake", "0"});
+        keys.push_back({"CameraShake", "0"});
+        keys.push_back({"NoCameraShake", "1"});
+        keys.push_back({"GunKick", "0"});
+        keys.push_back({"GunKickReduction", "1.00"});
+        keys.push_back({"WeaponKickReduction", "1.00"});
+        keys.push_back({"AllGunsRecoilReduction", "1.00"});
+        keys.push_back({"ScopeShakeReduction", "1.00"});
+        keys.push_back({"ScopeRecoilMultiplier", "0.00"});
+        keys.push_back({"ScopeStability", "5.00"});
+        keys.push_back({"BulletSpread", "0.00"});
+        keys.push_back({"CrosshairSpread", "0.00"});
+        keys.push_back({"SpreadScale", "0.00"});
+        keys.push_back({"BulletSpreadReduction", "1"});
+        keys.push_back({"FirstBulletAccuracy", "1"});
+        keys.push_back({"WeaponSway", "0"});
+        keys.push_back({"IronSightRecoil", "0.00"});
+        keys.push_back({"RedDotRecoil", "0.00"});
+        keys.push_back({"HoloRecoil", "0.00"});
+        keys.push_back({"Scope2xRecoil", "0.00"});
+        keys.push_back({"Scope3xRecoil", "0.00"});
+        keys.push_back({"Scope4xRecoil", "0.00"});
+        keys.push_back({"Scope6xRecoil", "0.00"});
+        keys.push_back({"Scope8xRecoil", "0.00"});
+        keys.push_back({"CantedSightRecoil", "0.00"});
+        keys.push_back({"ThermalScopeRecoil", "0.00"});
+        keys.push_back({"SniperScopeRecoil", "0.00"});
+        keys.push_back({"ARRecoilReduction", "1.00"});
+        keys.push_back({"DMRRecoilReduction", "1.00"});
+        keys.push_back({"SniperRecoilReduction", "1.00"});
+        keys.push_back({"SMGRecoilReduction", "1.00"});
+        keys.push_back({"LMGRecoilReduction", "1.00"});
+        keys.push_back({"ShotgunRecoilReduction", "1.00"});
     }
 
     if (trackingBullet) {
-        patch_key_value(content, "TrackingBullet", "1");
-        patch_key_value(content, "BulletTracking", "1");
-        patch_key_value(content, "AutoTrackingBullet", "1");
-        patch_key_value(content, "MagicBullet", "1");
-        patch_key_value(content, "BulletMagnetism", "100.00");
-        patch_key_value(content, "HitboxExpansion", "50.00");
-        patch_key_value(content, "TargetLockTracking", "1");
-        patch_key_value(content, "BulletCurveFactor", "50.00");
-        patch_key_value(content, "BulletVelocityMultiplier", "100.00");
-        patch_key_value(content, "BulletSpread", "0.00");
-        patch_key_value(content, "CrosshairMagnetism", "100.00");
-        patch_key_value(content, "ProjectileHoming", "1");
-        patch_key_value(content, "HomingStrength", "100.00");
-        patch_cvar(content, "r.BulletTracking", "1");
-        patch_cvar(content, "r.MagicBullet", "1");
-        patch_cvar(content, "r.HitboxExpansion", "50.00");
-        patch_cvar(content, "r.BulletMagnetism", "100.00");
-        patch_cvar(content, "r.BulletVelocityScale", "100.00");
-        patch_cvar(content, "r.BulletCurveFactor", "50.00");
-        patch_cvar(content, "r.ProjectileHoming", "1");
-        patch_cvar(content, "r.HomingStrength", "100.00");
+        keys.push_back({"TrackingBullet", "1"});
+        keys.push_back({"BulletTracking", "1"});
+        keys.push_back({"AutoTrackingBullet", "1"});
+        keys.push_back({"MagicBullet", "1"});
+        keys.push_back({"BulletMagnetism", "100.00"});
+        keys.push_back({"HitboxExpansion", "50.00"});
+        keys.push_back({"TargetLockTracking", "1"});
+        keys.push_back({"BulletCurveFactor", "50.00"});
+        keys.push_back({"BulletVelocityMultiplier", "100.00"});
+        keys.push_back({"BulletSpread", "0.00"});
+        keys.push_back({"CrosshairMagnetism", "100.00"});
+        keys.push_back({"ProjectileHoming", "1"});
+        keys.push_back({"HomingStrength", "100.00"});
     }
 
     if (aimAssist) {
-        patch_key_value(content, "AimAssist", "1");
-        patch_key_value(content, "AimAssistStrength", "1000");
-        patch_key_value(content, "AimAssistLevel", "10");
-        patch_key_value(content, "AimPrecision", "10");
-        patch_key_value(content, "AutoAim", "1");
-        patch_key_value(content, "AimTracking", "1");
-        patch_key_value(content, "TargetLock", "1");
-        patch_key_value(content, "TargetLockSensitivity", "1000");
-        patch_key_value(content, "SmartTargetingMode", "1");
-        patch_key_value(content, "HeroPriorityLock", "1");
-        patch_key_value(content, "LowestHPTargetLock", "1");
-        patch_key_value(content, "AimAssistRadius", "1000");
-        patch_key_value(content, "CrosshairMagnetism", "100.00");
-        patch_key_value(content, "AimSnapStrength", "100.00");
-        patch_key_value(content, "AimMagnetism", "100.00");
-        patch_key_value(content, "AimLead", "1");
-        patch_key_value(content, "AimLeadStrength", "100.00");
-        patch_key_value(content, "GyroSampleRate", "1000");
-        patch_key_value(content, "GyroZeroDelay", "1");
-        patch_key_value(content, "GyroSensitivityRatio", "10.00");
-        patch_key_value(content, "GyroStabilization", "1");
-        patch_cvar(content, "r.AimAssist", "1");
-        patch_cvar(content, "r.AimAssist.Strength", "100.00");
-        patch_cvar(content, "r.AimAssist.Magnetism", "100.00");
-        patch_cvar(content, "r.AimAssist.SnapSpeed", "100.00");
-        patch_cvar(content, "r.AimAssistRadius", "1000");
-        patch_cvar(content, "r.CrosshairMagnetism", "100.00");
-        patch_cvar(content, "r.TargetLockSensitivity", "1000");
-        patch_cvar(content, "r.AimSnapStrength", "100.00");
-        patch_cvar(content, "r.AimLeadStrength", "100.00");
-        patch_cvar(content, "r.GyroSampleRate", "1000");
-        patch_cvar(content, "r.GyroZeroDelay", "1");
-        patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
-        patch_cvar(content, "r.GyroAimAssist", "1");
+        keys.push_back({"AimAssist", "1"});
+        keys.push_back({"AimAssistStrength", "1000"});
+        keys.push_back({"AimAssistLevel", "10"});
+        keys.push_back({"AimPrecision", "10"});
+        keys.push_back({"AutoAim", "1"});
+        keys.push_back({"AimTracking", "1"});
+        keys.push_back({"TargetLock", "1"});
+        keys.push_back({"TargetLockSensitivity", "1000"});
+        keys.push_back({"SmartTargetingMode", "1"});
+        keys.push_back({"HeroPriorityLock", "1"});
+        keys.push_back({"LowestHPTargetLock", "1"});
+        keys.push_back({"AimAssistRadius", "1000"});
+        keys.push_back({"CrosshairMagnetism", "100.00"});
+        keys.push_back({"AimSnapStrength", "100.00"});
+        keys.push_back({"AimMagnetism", "100.00"});
+        keys.push_back({"AimLead", "1"});
+        keys.push_back({"AimLeadStrength", "100.00"});
+        keys.push_back({"GyroSampleRate", "1000"});
+        keys.push_back({"GyroZeroDelay", "1"});
+        keys.push_back({"GyroSensitivityRatio", "10.00"});
+        keys.push_back({"GyroStabilization", "1"});
     }
 
-    // Always inject 1000% defense config
-    patch_key_value(content, "PhysicalDefenseBoost", "100.00");
-    patch_key_value(content, "MagicDefenseBoost", "100.00");
-    patch_key_value(content, "PhysicalDefenseMultiplier", "100.00");
-    patch_key_value(content, "MagicDefenseMultiplier", "100.00");
-    patch_key_value(content, "DamageReductionRatio", "0.999");
-    patch_key_value(content, "DamageReduction", "0.999");
-    patch_key_value(content, "IncomingDamageReduction", "0.999");
-    patch_key_value(content, "ShieldMultiplier", "100.00");
-    patch_key_value(content, "ShieldCapacity", "100.00");
-    patch_key_value(content, "ShieldStrength", "100.00");
-    patch_key_value(content, "MaxHPMultiplier", "50.00");
-    patch_key_value(content, "HPBoostRatio", "50.00");
-    patch_key_value(content, "DamageAbsorbRatio", "50.00");
-    patch_key_value(content, "HealthRegenBoost", "100.00");
-    patch_key_value(content, "HealthRegenRate", "100.00");
-    patch_key_value(content, "ArmorBoost", "10000");
-    patch_key_value(content, "MagicResistBoost", "10000");
-    patch_key_value(content, "VestDurability", "100.00");
-    patch_key_value(content, "VestDurabilityBoost", "100.00");
-    patch_key_value(content, "HelmetDamageReduction", "0.999");
-    patch_key_value(content, "ExplosionResistance", "0.999");
-    patch_key_value(content, "FallDamageReduction", "1.00");
-    patch_key_value(content, "HighDamageMitigationRatio", "10.00");
-    patch_key_value(content, "HeavyHitAbsorption", "10.00");
-    patch_key_value(content, "BurstDamageReduction", "10.00");
-    patch_key_value(content, "HeadshotDamageReduction", "0.999");
-    patch_cvar(content, "r.ArmorDamageReduction", "0.999");
-    patch_cvar(content, "r.VestDurabilityBoost", "100.00");
-    patch_cvar(content, "r.HelmetDamageReduction", "0.999");
-    patch_cvar(content, "r.IncomingDamageScale", "0.001");
-    patch_cvar(content, "r.ShieldMultiplier", "100.00");
-    patch_cvar(content, "r.ShieldEfficiency", "100.00");
-    patch_cvar(content, "r.MaxHPMultiplier", "50.00");
-    patch_cvar(content, "r.HealthRegenBoost", "100.00");
-    patch_cvar(content, "r.HeavyDamageDampener", "10.00");
-    patch_cvar(content, "r.BurstDamageReduction", "10.00");
-    patch_cvar(content, "r.HighDamageMitigationRatio", "10.00");
-    patch_cvar(content, "r.ExplosionResistance", "0.999");
-    patch_cvar(content, "r.HeadshotDamageReduction", "0.999");
+    if (isXml) {
+        for (const auto& kv : keys) {
+            patch_xml_node(content, "string", kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : keys) {
+            patch_json_prop(content, kv.first, kv.second, false);
+        }
+    } else {
+        if (content.find("[GameBoosterProfile]") == std::string::npos) {
+            content += "\n[GameBoosterProfile]\n";
+        }
+        for (const auto& kv : keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
 
-    bool success = write_file_posix(path, content);
+        // Unreal Engine CVars
+        patch_cvar(content, "r.PUBGDeviceFPS", "10");
+        patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
+        patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
+        patch_cvar(content, "r.FrameRateLimit", ssFps.str());
+        patch_cvar(content, "r.MobileFPSLimit", ssFps.str());
+        patch_cvar(content, "r.Unlock120Hz", "1");
+        patch_cvar(content, "r.Unlock144Hz", "1");
+        patch_cvar(content, "r.Unlock165Hz", "1");
+        patch_cvar(content, "r.Unlock185Hz", "1");
+        patch_cvar(content, "r.PUBGQualityLevel", "4");
+        patch_cvar(content, "r.PUBGSDKQualityLevel", "4");
+        patch_cvar(content, "r.MobileHDR", "1");
+        patch_cvar(content, "r.VSync", "0");
+        patch_cvar(content, "r.FinishCurrentFrame", "0");
+        patch_cvar(content, "r.OneFrameThreadLag", "0");
+
+        if (highDamage) {
+            patch_cvar(content, "r.DamageMultiplier", "100.00");
+            patch_cvar(content, "r.BulletDamageScale", "100.00");
+            patch_cvar(content, "r.HeadshotMultiplier", "100.00");
+            patch_cvar(content, "r.WeaponDamageScale", "100.00");
+            patch_cvar(content, "r.PhysicalDamageScale", "100.00");
+            patch_cvar(content, "r.MagicDamageScale", "100.00");
+            patch_cvar(content, "r.TrueDamageScale", "100.00");
+            patch_cvar(content, "r.PenetrationPower", "50.00");
+            patch_cvar(content, "r.HitboxExpansion", "10.00");
+            patch_cvar(content, "r.BulletVelocityScale", "50.00");
+            patch_cvar(content, "r.AimAssist", "1");
+            patch_cvar(content, "r.AimAssist.Strength", "100.00");
+            patch_cvar(content, "r.AimAssistRadius", "1000");
+            patch_cvar(content, "r.CrosshairMagnetism", "100.00");
+            patch_cvar(content, "r.TargetLockSensitivity", "1000");
+        }
+
+        if (noRecoil) {
+            patch_cvar(content, "r.WeaponRecoilScale", "0.00");
+            patch_cvar(content, "r.VerticalRecoilMultiplier", "0.00");
+            patch_cvar(content, "r.HorizontalRecoilMultiplier", "0.00");
+            patch_cvar(content, "r.GunKickReduction", "1");
+            patch_cvar(content, "r.CameraShake", "0");
+            patch_cvar(content, "r.ScreenShake", "0");
+            patch_cvar(content, "r.WeaponSway", "0");
+            patch_cvar(content, "r.BulletSpread", "0.00");
+            patch_cvar(content, "r.CrosshairSpread", "0.00");
+            patch_cvar(content, "r.ScopeStability", "5.00");
+            patch_cvar(content, "r.RedDotRecoilScale", "0.00");
+            patch_cvar(content, "r.HoloRecoilScale", "0.00");
+            patch_cvar(content, "r.Scope2xRecoilScale", "0.00");
+            patch_cvar(content, "r.Scope3xRecoilScale", "0.00");
+            patch_cvar(content, "r.Scope4xRecoilScale", "0.00");
+            patch_cvar(content, "r.Scope6xRecoilScale", "0.00");
+            patch_cvar(content, "r.Scope8xRecoilScale", "0.00");
+            patch_cvar(content, "r.CantedSightRecoilScale", "0.00");
+            patch_cvar(content, "r.IronSightRecoilScale", "0.00");
+            patch_cvar(content, "r.ARRecoilScale", "0.00");
+            patch_cvar(content, "r.DMRRecoilScale", "0.00");
+            patch_cvar(content, "r.SniperRecoilScale", "0.00");
+            patch_cvar(content, "r.SMGRecoilScale", "0.00");
+            patch_cvar(content, "r.LMGRecoilScale", "0.00");
+            patch_cvar(content, "r.ShotgunRecoilScale", "0.00");
+        }
+
+        if (trackingBullet) {
+            patch_cvar(content, "r.BulletTracking", "1");
+            patch_cvar(content, "r.MagicBullet", "1");
+            patch_cvar(content, "r.HitboxExpansion", "50.00");
+            patch_cvar(content, "r.BulletMagnetism", "100.00");
+            patch_cvar(content, "r.BulletVelocityScale", "100.00");
+            patch_cvar(content, "r.BulletCurveFactor", "50.00");
+            patch_cvar(content, "r.ProjectileHoming", "1");
+            patch_cvar(content, "r.HomingStrength", "100.00");
+        }
+
+        if (aimAssist) {
+            patch_cvar(content, "r.AimAssist", "1");
+            patch_cvar(content, "r.AimAssist.Strength", "100.00");
+            patch_cvar(content, "r.AimAssist.Magnetism", "100.00");
+            patch_cvar(content, "r.AimAssist.SnapSpeed", "100.00");
+            patch_cvar(content, "r.AimAssistRadius", "1000");
+            patch_cvar(content, "r.CrosshairMagnetism", "100.00");
+            patch_cvar(content, "r.TargetLockSensitivity", "1000");
+            patch_cvar(content, "r.AimSnapStrength", "100.00");
+            patch_cvar(content, "r.AimLeadStrength", "100.00");
+            patch_cvar(content, "r.GyroSampleRate", "1000");
+            patch_cvar(content, "r.GyroZeroDelay", "1");
+            patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
+            patch_cvar(content, "r.GyroAimAssist", "1");
+        }
+
+        patch_cvar(content, "r.ArmorDamageReduction", "0.999");
+        patch_cvar(content, "r.VestDurabilityBoost", "100.00");
+        patch_cvar(content, "r.HelmetDamageReduction", "0.999");
+        patch_cvar(content, "r.IncomingDamageScale", "0.001");
+        patch_cvar(content, "r.ShieldMultiplier", "100.00");
+        patch_cvar(content, "r.ShieldEfficiency", "100.00");
+        patch_cvar(content, "r.MaxHPMultiplier", "50.00");
+        patch_cvar(content, "r.HealthRegenBoost", "100.00");
+        patch_cvar(content, "r.HeavyDamageDampener", "10.00");
+        patch_cvar(content, "r.BurstDamageReduction", "10.00");
+        patch_cvar(content, "r.HighDamageMitigationRatio", "10.00");
+        patch_cvar(content, "r.ExplosionResistance", "0.999");
+        patch_cvar(content, "r.HeadshotDamageReduction", "0.999");
+    }
+
+    bool success = write_file_posix(pathStr, content);
     env->ReleaseStringUTFChars(jPath, path);
     env->ReleaseStringUTFChars(jGameKey, gameKey);
     return success ? JNI_TRUE : JNI_FALSE;

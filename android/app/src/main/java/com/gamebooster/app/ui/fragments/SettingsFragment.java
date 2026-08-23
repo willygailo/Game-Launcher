@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.text.Editable;
@@ -1196,8 +1197,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvSettingsTerminalOutput = view.findViewById(R.id.tv_settings_terminal_output);
         scrollSettingsTerminal = view.findViewById(R.id.scroll_settings_terminal);
         if (scrollSettingsTerminal != null) {
+            scrollSettingsTerminal.setNestedScrollingEnabled(true);
             scrollSettingsTerminal.setOnTouchListener((v, event) -> {
-                v.getParent().requestDisallowInterceptTouchEvent(true);
+                int action = event.getActionMasked();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    if (v.canScrollVertically(1) || v.canScrollVertically(-1)) {
+                        v.getParent().requestDisallowInterceptTouchEvent(true);
+                    }
+                } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                    v.getParent().requestDisallowInterceptTouchEvent(false);
+                }
                 return false;
             });
         }
