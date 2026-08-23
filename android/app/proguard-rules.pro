@@ -1,0 +1,34 @@
+# ProGuard rules for Game Launcher PRO
+
+# Keep JNI / Native method bindings
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep NativeConfigInjector and all JNI models
+-keep class com.gamebooster.app.config.NativeConfigInjector { *; }
+-keep class com.gamebooster.app.spoofer.** { *; }
+-keep class com.gamebooster.app.spoofer.hook.** { *; }
+
+# Keep Shizuku AIDL & IPC classes
+-keep class moe.shizuku.** { *; }
+-keep interface moe.shizuku.** { *; }
+-keep class rikka.shizuku.** { *; }
+
+# Keep reflection fields (for Build & SystemProperties mutation)
+-keepclassmembers class android.os.Build { *; }
+-keepclassmembers class android.os.Build$VERSION { *; }
+
+# Keep Glide annotations and generated code
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep class * extends com.bumptech.glide.module.AppGlideModule {
+    <init>(...);
+}
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+    **[] $VALUES;
+    public *;
+}
+
+# Don't warn about internal packages
+-dontwarn moe.shizuku.**
+-dontwarn rikka.shizuku.**
