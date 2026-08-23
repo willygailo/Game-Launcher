@@ -259,7 +259,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         // Card 1b: Diagnostics — shareable crash + settings snapshot
-        com.gamebooster.app.diagnostics.CrashLog.install(requireContext());
+        if (getContext() != null) {
+            com.gamebooster.app.diagnostics.CrashLog.install(getContext().getApplicationContext());
+        }
         tvDiagStatus = view.findViewById(R.id.tv_diag_status);
         Button btnDiagRefresh = view.findViewById(R.id.btn_diag_refresh);
         Button btnDiagExport = view.findViewById(R.id.btn_diag_export);

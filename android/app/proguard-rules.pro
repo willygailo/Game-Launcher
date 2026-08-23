@@ -1,25 +1,50 @@
 # ====================================================================
-# Game Launcher PRO — Full R8 / ProGuard Optimization Rules
+# Game Launcher PRO — Safe ProGuard & R8 Keep Rules
 # ====================================================================
+
+# Keep all project classes and members to prevent runtime ClassNotFoundException
+-keep class com.gamebooster.app.** { *; }
+-dontwarn com.gamebooster.app.**
+
+# Keep all Android components (Activities, Services, Receivers, Fragments, Views)
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+-keep public class * extends android.app.backup.BackupAgentHelper
+-keep public class * extends android.preference.Preference
+-keep public class * extends androidx.fragment.app.Fragment {
+    public <init>();
+}
+-keep public class * extends androidx.fragment.app.DialogFragment {
+    public <init>();
+}
+-keep public class * extends androidx.recyclerview.widget.RecyclerView$ViewHolder {
+    public <init>(android.view.View);
+}
+-keep public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+}
 
 # Keep JNI native methods
 -keepclasseswithmembernames class * {
     native <methods>;
 }
 
-# WebView JS bridge: 12 @JavascriptInterface methods in GameBoosterJsInterface
-# are invoked from JavaScript (invisible to R8) — keep every annotated method.
+# WebView JS bridge: @JavascriptInterface methods
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# Shizuku API: ShizukuExecutor resolves Shizuku.newProcess(..) reflectively
-# to spawn the native Shizuku command pipeline.
+# Shizuku API: Keep all Shizuku AIDL and internal classes
 -keep class dev.rikka.shizuku.** { *; }
 -dontwarn dev.rikka.shizuku.**
+-keep class rikka.shizuku.** { *; }
+-dontwarn rikka.shizuku.**
 
-# LSPosed / Xposed module — entry loaded by the framework from assets/xposed_init.
-# R8 must never strip, rename, or inline the module entry + hooks.
+# LSPosed / Xposed module — entry loaded by framework from assets/xposed_init
 -keep class com.gamebooster.app.spoofer.lsposed.** { *; }
 -keep class de.robv.android.xposed.** { *; }
 -keepclassmembers class * implements de.robv.android.xposed.IXposedHookLoadPackage {
@@ -27,7 +52,7 @@
 }
 -dontwarn de.robv.android.xposed.**
 
-# Glide image loading optimization & keep rules
+# Glide image loading
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep class * extends com.bumptech.glide.module.AppGlideModule {
     <init>(...);
@@ -38,8 +63,5 @@
 }
 -dontwarn com.bumptech.glide.**
 
-# Optimization & byte-code tuning
--repackageclasses 'com.gamebooster.app.opt'
--allowaccessmodification
--mergeinterfacesaggressively
+# Retain annotations and stack traces for crash diagnostics
 -keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod,SourceFile,LineNumberTable
