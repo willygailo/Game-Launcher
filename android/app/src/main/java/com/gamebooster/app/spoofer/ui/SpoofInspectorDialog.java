@@ -16,18 +16,15 @@ import android.widget.TextView;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 import com.gamebooster.app.spoofer.SpoofPreferences;
 import com.gamebooster.app.spoofer.SpoofProfile;
-import com.gamebooster.app.spoofer.lsposed.LspatchHelper;
-import com.gamebooster.app.spoofer.lsposed.LsposedDetector;
-import com.gamebooster.app.shizuku.ShizukuFileManager;
-
-import java.util.Map;
 
 /**
  * SpoofInspectorDialog — Real-time live diagnostic verification inspector
- * for all device spoofing and hardware masking layers.
+ * for all device spoofing and hardware masking layers via Shizuku.
  */
 public class SpoofInspectorDialog {
 
@@ -61,7 +58,7 @@ public class SpoofInspectorDialog {
         Button btnClose = view.findViewById(R.id.btn_inspector_close);
 
         Runnable queryDiagnostics = () -> {
-            tvContent.setText("⏳ Querying live system and hook diagnostic state...");
+            tvContent.setText("⏳ Querying live system and Shizuku diagnostic state...");
 
             AppExecutors.getInstance().executeCommand(() -> {
                 StringBuilder sb = new StringBuilder();
@@ -69,9 +66,8 @@ public class SpoofInspectorDialog {
                 boolean spoofEnabled = SpoofPreferences.isSpoofEnabled(context);
                 String activeProfileId = SpoofPreferences.getActiveProfileId(context);
                 SpoofProfile activeProfile = activeProfileId != null ? DeviceSpooferEngine.getProfileById(activeProfileId) : null;
-                boolean lsposedActive = LsposedDetector.isModuleEnabled();
-                boolean lspatchInstalled = LspatchHelper.isLspatchInstalled(context);
-                boolean shizukuActive = ShizukuFileManager.hasFullAccess();
+                boolean shizukuActive = ShizukuExecutor.hasShizukuPermission();
+                boolean scopedAccess = ShizukuFileManager.hasFullAccess();
 
                 sb.append("═══════════════════════════════════════════════════════\n");
                 sb.append("▶ [GAME BOOSTER LIVE SPOOF DIAGNOSTICS]\n");
@@ -80,13 +76,12 @@ public class SpoofInspectorDialog {
                 sb.append("1. MASTER CONFIGURATION:\n");
                 sb.append("   • Master Spoof Toggle : ").append(spoofEnabled ? "ENABLED [ACTIVE]" : "DISABLED").append("\n");
                 sb.append("   • Active Global Target: ").append(activeProfile != null ? activeProfile.displayName + " [" + activeProfile.model + "]" : "None").append("\n");
-                sb.append("   • Spoof All Apps Mode : ").append(SpoofPreferences.isSpoofAllApps(context) ? "YES (Universal)" : "NO (Games Only)").append("\n\n");
+                sb.append("   • Target Android OS   : Android 13 - 16 (API 33-36 Fully Supported)\n\n");
 
-                sb.append("2. EXECUTION HOOK TIERS:\n");
-                sb.append("   • LSPosed (Root Zygisk): ").append(lsposedActive ? "✔ ACTIVE (In-Memory ART)" : "✖ Not Active").append("\n");
-                sb.append("   • LSPatch (Non-Root)   : ").append(lspatchInstalled ? "✔ INSTALLED (Bridge Ready)" : "✖ Not Installed").append("\n");
-                sb.append("   • Shizuku ADB Shell    : ").append(shizukuActive ? "✔ GRANTED (UID 2000)" : "✖ Not Granted").append("\n");
-                sb.append("   • Prefs Bridge Provider: content://com.gamebooster.app.spoofprefs/spoof [READY]\n\n");
+                sb.append("2. ELEVATED EXECUTION ENGINE:\n");
+                sb.append("   • Shizuku ADB Shell   : ").append(shizukuActive ? "✔ GRANTED (UID 2000 Non-Root)" : "✖ Not Granted / Disconnected").append("\n");
+                sb.append("   • Scoped Storage Access: ").append(scopedAccess ? "✔ UNLOCKED (/sdcard/Android/data)" : "✖ Restricted").append("\n");
+                sb.append("   • Architecture Engine : Pure Shizuku Wireless ADB Subsystem\n\n");
 
                 sb.append("3. IN-APP PROCESS IDENTITY (Build.*):\n");
                 sb.append("   • Model       : ").append(Build.MODEL).append("\n");
@@ -108,19 +103,13 @@ public class SpoofInspectorDialog {
                     }
                 } catch (Throwable ignored) {}
 
-                sb.append("\n5. REGISTERED HOOK LAYERS (12 LAYERS):\n");
-                sb.append("   [1] Anti-Detection & Root Hider\n");
-                sb.append("   [2] Build & Version Identity\n");
-                sb.append("   [3] SystemProperties Multi-Partition ro.*\n");
-                sb.append("   [4] Display Modes (120Hz-185Hz)\n");
-                sb.append("   [5] OpenGL ES & EGL GPU Renderer\n");
-                sb.append("   [6] Runtime CPU Cores & Heap VM\n");
-                sb.append("   [7] ActivityManager RAM Telemetry\n");
-                sb.append("   [8] Procfs /proc/cpuinfo & meminfo\n");
-                sb.append("   [9] Telephony & Unique Android ID\n");
-                sb.append("   [10] Battery Thermal Headroom & Power\n");
-                sb.append("   [11] 960Hz Touch Digitizer & Sensor\n");
-                sb.append("   [12] Low-Latency Spatial Gaming Audio\n");
+                sb.append("\n5. SHIZUKU MASKING SUBSYSTEMS:\n");
+                sb.append("   [1] System Property Overrides (ro.product.*, ro.soc.*)\n");
+                sb.append("   [2] Android 13-16 Game Mode API (cmd game mode 2)\n");
+                sb.append("   [3] High-Performance Game Driver Opt-In (ANGLE/Vulkan)\n");
+                sb.append("   [4] SurfaceFlinger Refresh Rate Lock (120Hz-185Hz)\n");
+                sb.append("   [5] Direct Game Config Injection (DeviceProfile.ini / JSON)\n");
+                sb.append("   [6] Mock Procfs Hardware Mask Export\n");
 
                 String resultText = sb.toString();
 
@@ -128,14 +117,11 @@ public class SpoofInspectorDialog {
                     if (!dialog.isShowing()) return;
 
                     tvContent.setText(resultText);
-                    if (lsposedActive) {
-                        tvMode.setText("[LSPOSED ART HOOK]");
+                    if (shizukuActive) {
+                        tvMode.setText("[SHIZUKU ADB PRIVILEGED]");
                         tvMode.setTextColor(Color.parseColor("#00FF66"));
-                    } else if (shizukuActive) {
-                        tvMode.setText("[SHIZUKU ADB MODE]");
-                        tvMode.setTextColor(Color.parseColor("#00F0FF"));
                     } else {
-                        tvMode.setText("[STANDBY / APP ONLY]");
+                        tvMode.setText("[SHIZUKU DISCONNECTED]");
                         tvMode.setTextColor(Color.parseColor("#FFCC00"));
                     }
                 });
@@ -158,7 +144,7 @@ public class SpoofInspectorDialog {
                 if (activeDialog.isShowing()) {
                     activeDialog.dismiss();
                 }
-            } catch (Exception ignored) {}
+            } catch (Throwable ignored) {}
             activeDialog = null;
         }
     }

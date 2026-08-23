@@ -22,15 +22,7 @@ public class SpoofPreferences {
     private static final String PREFIX_PKG_PROFILE = "pkg_profile_";
 
     private static SharedPreferences getPrefs(Context context) {
-        // MODE_WORLD_READABLE lets the LSPosed module (running inside game
-        // processes) read this file via XSharedPreferences. On devices without
-        // LSPosed (or with the module disabled) this throws SecurityException,
-        // so fall back to MODE_PRIVATE — the module is not active there anyway.
-        try {
-            return context.getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);
-        } catch (Throwable e) {
-            return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        }
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     // ── Global Spoof Toggle ──
@@ -43,7 +35,7 @@ public class SpoofPreferences {
         getPrefs(context).edit().putBoolean(KEY_SPOOF_ENABLED, enabled).apply();
     }
 
-    // ── Spoof All Apps Toggle (LSPosed module applies to every app, not just games) ──
+    // ── Spoof All Apps Toggle ──
 
     public static boolean isSpoofAllApps(Context context) {
         return getPrefs(context).getBoolean(KEY_SPOOF_ALL_APPS, false);
@@ -107,8 +99,6 @@ public class SpoofPreferences {
 
     /**
      * Exposes all persisted spoof preferences as a key→value map.
-     * Used by SpoofPrefsProvider so the LSPatch module (running inside a game
-     * process, non-root) can read the launcher's spoof config via ContentResolver.
      */
     public static Map<String, String> readAllPrefs(Context context) {
         Map<String, String> out = new HashMap<>();

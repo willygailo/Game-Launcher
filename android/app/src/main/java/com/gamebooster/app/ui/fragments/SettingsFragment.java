@@ -139,8 +139,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
     private TextView tvSpoofFrameworkStatus;
-    private Button btnSelectSpoofBrand;
-    private Button btnLspatchGuide;
     private TextView tvSettingsSpoofBrandInfo;
     private View hsvSettingsSpoofBrands;
     private RecyclerView rvSpoofProfiles;
@@ -917,61 +915,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
         tvSpoofActiveProfile = view.findViewById(R.id.tv_spoof_active_profile);
         tvSpoofFrameworkStatus = view.findViewById(R.id.tv_spoof_framework_status);
-        btnSelectSpoofBrand = view.findViewById(R.id.btn_select_spoof_brand);
-        btnLspatchGuide = view.findViewById(R.id.btn_lspatch_guide);
         tvSettingsSpoofBrandInfo = view.findViewById(R.id.tv_settings_spoof_brand_info);
         hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
-
-        Button btnPerAppSpoof = view.findViewById(R.id.btn_per_app_spoof);
-        Button btnSpoofInspector = view.findViewById(R.id.btn_spoof_inspector);
-
-        if (btnPerAppSpoof != null) {
-            btnPerAppSpoof.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    PerAppSpoofDialog.show(getContext());
-                }
-            });
-        }
-
-        if (btnSpoofInspector != null) {
-            btnSpoofInspector.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    SpoofInspectorDialog.show(getContext());
-                }
-            });
-        }
-
-        if (btnLspatchGuide != null) {
-            btnLspatchGuide.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.spoofer.lsposed.LspatchHelper.showLspatchGuideDialog(getContext());
-                }
-            });
-        }
-
-        if (btnSelectSpoofBrand != null) {
-            btnSelectSpoofBrand.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                SpoofBrandSelectorDialog.show(getContext(), profile -> {
-                    if (profile != null) {
-                        isProgrammaticToggle = true;
-                        if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
-                        isProgrammaticToggle = false;
-                        if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
-                        if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(View.VISIBLE);
-                        if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
-                        if (spoofProfileAdapter != null) {
-                            spoofProfileAdapter.setActiveProfileId(profile.id);
-                            spoofProfileAdapter.updateProfiles(SpoofProfileRegistry.getByBrand(profile.brandLabel));
-                        }
-                        updateSpoofUiState();
-                    } else {
-                        updateSpoofUiState();
-                    }
-                });
-            });
-        }
 
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
@@ -981,17 +927,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (hsvSettingsSpoofBrands != null) {
-            hsvSettingsSpoofBrands.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+            hsvSettingsSpoofBrands.setVisibility(View.VISIBLE);
         }
         if (tvSettingsSpoofBrandInfo != null) {
-            tvSettingsSpoofBrandInfo.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+            tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
         }
 
         if (rvSpoofProfiles != null) {
             rvSpoofProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
             rvSpoofProfiles.setHasFixedSize(false);
             rvSpoofProfiles.setNestedScrollingEnabled(false);
-            rvSpoofProfiles.setVisibility(spoofEnabled ? View.VISIBLE : View.GONE);
+            rvSpoofProfiles.setVisibility(View.VISIBLE);
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
                 if (getContext() == null || profile == null) return;
@@ -1113,15 +1059,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (isChecked && !requireShizukuForToggle(buttonView, "Device Identity Spoofer")) return;
 
                 SpoofPreferences.setSpoofEnabled(getContext(), isChecked);
-                if (rvSpoofProfiles != null) {
-                    rvSpoofProfiles.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                }
-                if (hsvSettingsSpoofBrands != null) {
-                    hsvSettingsSpoofBrands.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                }
-                if (tvSettingsSpoofBrandInfo != null) {
-                    tvSettingsSpoofBrandInfo.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                }
 
                 if (!isChecked) {
                     AppExecutors.getInstance().executeCommand(() -> {
@@ -1530,22 +1467,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (tvSpoofFrameworkStatus != null) {
-            com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType type =
-                    com.gamebooster.app.spoofer.lsposed.LsposedDetector.getFrameworkType(getContext());
-            boolean lspatchInstalled = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isLspatchInstalled(getContext());
-            java.util.List<String> activeGames = com.gamebooster.app.spoofer.lsposed.LsposedDetector.getActiveHookedGames();
-            if (type == com.gamebooster.app.spoofer.lsposed.LsposedDetector.FrameworkType.LSPOSED_ROOT) {
-                tvSpoofFrameworkStatus.setText("🧬 Hooking Engine: LSPosed (Root Active)");
-                tvSpoofFrameworkStatus.setTextColor(0xFF00F0FF);
-            } else if (!activeGames.isEmpty()) {
-                tvSpoofFrameworkStatus.setText("🧬 Combo Active: LSPatch Hook (" + activeGames.size() + " Game(s) Connected)");
-                tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
-            } else if (lspatchInstalled) {
-                tvSpoofFrameworkStatus.setText("🧬 Dual-Engine Combo: LSPatch Ready + Shizuku Direct");
+            boolean shizukuActive = ShizukuExecutor.hasShizukuPermission();
+            if (shizukuActive) {
+                tvSpoofFrameworkStatus.setText("⚡ Shizuku Elevated Shell: Active (UID 2000 Non-Root)");
                 tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
             } else {
-                tvSpoofFrameworkStatus.setText("🧬 Dual-Engine Combo: Shizuku Direct (LSPatch Non-Root Ready)");
-                tvSpoofFrameworkStatus.setTextColor(0xFF94A3B8);
+                tvSpoofFrameworkStatus.setText("⚠️ Shizuku API: Disconnected (Open Shizuku to Grant)");
+                tvSpoofFrameworkStatus.setTextColor(0xFFFFB800);
             }
         }
     }

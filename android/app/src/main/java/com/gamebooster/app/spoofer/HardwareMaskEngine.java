@@ -72,7 +72,7 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             String serialNo = "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL);
             String spoofedAndroidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
-            String spoofedMac = com.gamebooster.app.spoofer.lsposed.IdentityHooks.generateMacAddress(profile);
+            String spoofedMac = generateMacAddress(profile);
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
 
             batchCommands.add("resetprop -n ro.serialno \"" + serialNo + "\" 2>/dev/null");
@@ -246,8 +246,7 @@ public class HardwareMaskEngine {
                     ShizukuExecutor.executeShizukuCommandsWithResults(batchCommands);
             boolean commandsExecuted = execResults != null && !execResults.isEmpty();
             if (!commandsExecuted) {
-                Log.w(TAG, "No elevated channel available — system-level masking layers did NOT run. "
-                        + "Grant Shizuku permission (or use the LSPosed/LSPatch module for in-game spoofing).");
+                Log.w(TAG, "No elevated Shizuku channel available — ensure Shizuku permission is granted.");
             } else {
                 int failures = 0;
                 for (String r : execResults) {
@@ -275,36 +274,23 @@ public class HardwareMaskEngine {
                 com.gamebooster.app.booster.MaxHzForceChannel.forceApply(profile.maxRefreshRateHz);
             }
 
-            boolean lsposedActive = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled();
-
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 5: IN-APP REFLECTION OVERRIDE & HARDWARE PROFILES
             // ═══════════════════════════════════════════════════════════════════
-            if (!lsposedActive) {
-                applyInAppReflectionMask(profile);
-            }
+            applyInAppReflectionMask(profile);
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 6: MOCK PROCFS PAYLOAD GENERATION & GAME ENGINE INJECTION
             // ═══════════════════════════════════════════════════════════════════
-            if (!lsposedActive) {
-                exportMockProcfsPayloads(profile);
+            exportMockProcfsPayloads(profile);
 
-                // Inject hardware profile for targeted package + all registered games
-                if (packageName != null && !packageName.trim().isEmpty()) {
-                    injectTailoredGameHardwareConfigs(packageName.trim(), profile);
-                }
-                injectAllInstalledGamesHardwareProfile(profile);
-            } else {
-                Log.i(TAG, "▶ LSPosed module active — in-memory ART hooks applied in target game; game files untouched.");
+            // Inject hardware profile for targeted package + all registered games
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                injectTailoredGameHardwareConfigs(packageName.trim(), profile);
             }
+            injectAllInstalledGamesHardwareProfile(profile);
 
-            Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);
-
-            // Honest success reporting: system-wide masking only really applies
-            // when an elevated channel ran the batch. With the LSPosed module the
-            // real spoof is in-memory inside the game, so that path is also a success.
-            if (lsposedActive) return true;
+            Log.i(TAG, "✔ [MASKING COMPLETE] Shizuku Hardware masking active for " + profile.displayName);
             return commandsExecuted;
 
         } catch (Throwable t) {
@@ -566,6 +552,20 @@ public class HardwareMaskEngine {
         } catch (Throwable t) {
             Log.w(TAG, "resetHardwareMask non-fatal error: " + t.getMessage());
         }
+    }
+
+    public static String generateMacAddress(SpoofProfile profile) {
+        long seed = (long) (profile != null ? profile.id : "default").hashCode() & 0xFFFFFFFFL;
+        java.util.Random rand = new java.util.Random(seed);
+        byte[] macBytes = new byte[6];
+        rand.nextBytes(macBytes);
+        macBytes[0] = (byte) ((macBytes[0] & 0xFE) | 0x02); // locally administered unicast
+        StringBuilder sb = new StringBuilder(18);
+        for (byte b : macBytes) {
+            if (sb.length() > 0) sb.append(":");
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
     }
 
     private static void setStaticField(Class<?> clazz, String fieldName, Object value) {

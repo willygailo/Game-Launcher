@@ -167,20 +167,8 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         if (isShizukuActive) {
             if (tvEngineMode != null) {
-                // LSPosed / LSPatch module active -> in-game ART spoofing is active
-                if (com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled()) {
-                    tvEngineMode.setText("🧬 LSPOSED + SHIZUKU FULL ACCESS");
-                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00F0FF"));
-                } else if (com.gamebooster.app.spoofer.lsposed.LsposedDetector.isAnyGameHookedActive()) {
-                    tvEngineMode.setText("🧬 LSPATCH + SHIZUKU FULL ACCESS");
-                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-                } else if (com.gamebooster.app.spoofer.lsposed.LsposedDetector.isLspatchInstalled(getContext())) {
-                    tvEngineMode.setText("🧬 LSPATCH READY + SHIZUKU ACTIVE");
-                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-                } else {
-                    tvEngineMode.setText("⚡ FULL ACCESS: SHIZUKU API ACTIVE");
-                    tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-                }
+                tvEngineMode.setText("⚡ FULL ACCESS: SHIZUKU API ACTIVE");
+                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
             }
         } else if (ShizukuExecutor.isShizukuAvailable()) {
             if (tvEngineMode != null) {

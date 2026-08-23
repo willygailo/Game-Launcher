@@ -120,9 +120,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             try {
                 com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
                 TweakManagerRepository.initializeStates(getApplicationContext());
-                TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                 com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
-                com.gamebooster.app.spoofer.lsposed.LsposedDetector.refreshAsync(getApplicationContext(), null);
 
                 // Bind Shizuku AIDL UserService & Auto-Grant Privileges
                 com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();

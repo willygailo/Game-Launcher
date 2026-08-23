@@ -129,18 +129,8 @@
         <package android:name="com.sec.android.app.samsungapps" />
         <package android:name="com.apkpure.aether" />
         <package android:name="com.qooapp.qoohelper" />
-        <!-- LSPatch & LSPosed Framework Managers & Root Engines -->
-        <package android:name="org.lsposed.lspatch" />
-        <package android:name="org.lsposed.lspatch.metamod" />
-        <package android:name="org.lsposed.manager" />
-        <package android:name="org.lsposed.lspd" />
-        <package android:name="de.robv.android.xposed.installer" />
-        <package android:name="org.meowcat.edxposed.manager" />
-        <package android:name="com.solohsu.android.edxp.manager" />
-        <package android:name="com.topjohnwu.magisk" />
-        <package android:name="io.github.vvb2060.magisk" />
-        <package android:name="io.github.a13e300.ksu" />
-        <package android:name="me.bmax.apatch" />
+        <!-- Shizuku & System Package Queries -->
+        <package android:name="moe.shizuku.privileged.api" />
     </queries>
 
     <application
@@ -171,34 +161,6 @@
         <meta-data
             android:name="android.game_service"
             android:value="true" />
-
-        <!-- LSPosed module metadata: required for LSPosed Manager to list this
-             APK as a module. xposedminversion >= 93 + xposedsharedprefs enable
-             the world-readable prefs bridge (safe-zone) so SpoofConfigBridge can
-             read device_spoofer_prefs from inside game processes. -->
-        <meta-data
-            android:name="xposedmodule"
-            android:value="true" />
-        <meta-data
-            android:name="xposeddescription"
-            android:value="Game Booster device &amp; hardware spoofing engine" />
-        <meta-data
-            android:name="xposedminversion"
-            android:value="93" />
-        <meta-data
-            android:name="xposedsharedprefs"
-            android:value="true" />
-        <meta-data
-            android:name="xposedscope"
-            android:resource="@array/xposed_scope" />
-
-        <!-- Non-root (LSPatch) config bridge: lets the module inside a patched
-             game process read device_spoofer_prefs via ContentResolver. -->
-        <provider
-            android:name="com.gamebooster.app.spoofer.SpoofPrefsProvider"
-            android:authorities="com.gamebooster.app.spoofprefs"
-            android:exported="true"
-            android:enabled="true" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

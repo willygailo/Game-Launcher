@@ -44,14 +44,6 @@
 -keep class rikka.shizuku.** { *; }
 -dontwarn rikka.shizuku.**
 
-# LSPosed / Xposed module — entry loaded by framework from assets/xposed_init
--keep class com.gamebooster.app.spoofer.lsposed.** { *; }
--keep class de.robv.android.xposed.** { *; }
--keepclassmembers class * implements de.robv.android.xposed.IXposedHookLoadPackage {
-    public void handleLoadPackage(de.robv.android.xposed.callbacks.XC_LoadPackage$LoadPackageParam);
-}
--dontwarn de.robv.android.xposed.**
-
 # Glide image loading
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep class * extends com.bumptech.glide.module.AppGlideModule {
