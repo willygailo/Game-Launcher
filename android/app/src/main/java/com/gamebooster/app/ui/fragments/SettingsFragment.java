@@ -67,6 +67,9 @@ import com.gamebooster.app.cleaner.scanner.JunkScanner;
 import com.gamebooster.app.cleaner.ui.JunkCleanerDialog;
 import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 import com.gamebooster.app.spoofer.SpoofProfileRegistry;
+import com.gamebooster.app.spoofer.ui.PerAppSpoofDialog;
+import com.gamebooster.app.spoofer.ui.SpoofInspectorDialog;
+import com.gamebooster.app.anticheat.ui.AntiCheatInspectorDialog;
 import com.gamebooster.app.ui.dialogs.SpoofBrandSelectorDialog;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -928,6 +931,34 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvSettingsSpoofBrandInfo = view.findViewById(R.id.tv_settings_spoof_brand_info);
         hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
+
+        Button btnPerAppSpoof = view.findViewById(R.id.btn_per_app_spoof);
+        Button btnSpoofInspector = view.findViewById(R.id.btn_spoof_inspector);
+
+        if (btnPerAppSpoof != null) {
+            btnPerAppSpoof.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    PerAppSpoofDialog.show(getContext());
+                }
+            });
+        }
+
+        if (btnSpoofInspector != null) {
+            btnSpoofInspector.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    SpoofInspectorDialog.show(getContext());
+                }
+            });
+        }
+
+        Button btnAnticheatShield = view.findViewById(R.id.btn_anticheat_shield);
+        if (btnAnticheatShield != null) {
+            btnAnticheatShield.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    AntiCheatInspectorDialog.show(getContext(), null);
+                }
+            });
+        }
 
         if (btnLspatchGuide != null) {
             btnLspatchGuide.setOnClickListener(v -> {

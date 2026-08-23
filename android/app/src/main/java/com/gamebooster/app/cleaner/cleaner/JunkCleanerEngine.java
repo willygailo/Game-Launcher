@@ -1,20 +1,31 @@
 package com.gamebooster.app.cleaner.cleaner;
 
 import android.content.Context;
+import android.os.Environment;
+import android.os.StatFs;
 import android.util.Log;
 
 import com.gamebooster.app.cleaner.model.CleanResult;
 import com.gamebooster.app.cleaner.model.JunkCategory;
 import com.gamebooster.app.cleaner.model.JunkItem;
 import com.gamebooster.app.cleaner.model.JunkScanResult;
+import com.gamebooster.app.cleaner.scanner.StorageStatsHelper;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JunkCleanerEngine — Multi-Tier Real Android Storage Cleaner.
+ *
+ * Implements real Android framework cache eviction (StorageManager.allocateBytes),
+ * elevated Package Manager trim (pm trim-caches), direct physical file unlinking,
+ * and StatFs before-and-after storage delta verification.
+ */
 public class JunkCleanerEngine {
 
     private static final String TAG = "JunkCleanerEngine";
@@ -49,143 +60,175 @@ public class JunkCleanerEngine {
     public CleanResult executeClean(Context context, JunkScanResult scanResult, OnCleanProgressListener listener) {
         isCleaning = true;
         long startTime = System.currentTimeMillis();
-        long totalFreedBytes = 0;
+        long physicalFreedBytes = 0;
         int deletedFilesCount = 0;
         List<String> logs = new ArrayList<>();
 
+        // Capture exact storage baseline before cleaning
+        long availableBytesBefore = getAvailableStorageBytes();
+        logs.add("Initial Available Storage: " + JunkScanResult.formatBytes(availableBytesBefore));
+
         try {
             if (scanResult == null || scanResult.getItems().isEmpty()) {
-                logs.add("No items to clean.");
+                logs.add("No items selected to clean.");
                 return new CleanResult(true, 0, 0, 0, logs);
             }
 
             List<JunkItem> items = scanResult.getItems();
             int totalItems = items.size();
+            long totalAppCacheTarget = 0;
+            boolean hasSystemTrimItem = false;
 
+            // Phase 1: Physical File & Category Deletion (0% - 75%)
             for (int i = 0; i < totalItems; i++) {
                 JunkItem item = items.get(i);
                 if (!item.isSelected()) continue;
 
-                int progressPct = (int) (((i + 1) / (float) totalItems) * 80);
-                notifyProgress(listener, progressPct, "Cleaning " + item.getDisplayName() + "...", totalFreedBytes);
+                int progressPct = (int) (((i + 1) / (float) totalItems) * 75);
+                notifyProgress(listener, progressPct, "Cleaning: " + item.getDisplayName(), physicalFreedBytes);
 
-                if ("SYSTEM_TRIM_CACHES".equals(item.getPath())) {
-                    long systemFreed = executeSystemTrim(context, logs);
-                    totalFreedBytes += systemFreed > 0 ? systemFreed : item.getSizeBytes();
-                    deletedFilesCount++;
+                if ("SYSTEM_ALLOCATABLE_TRIM".equals(item.getPath()) || "SYSTEM_TRIM_CACHES".equals(item.getPath())) {
+                    hasSystemTrimItem = true;
                     continue;
                 }
 
-                // If it is an App Cache for an installed package
-                if (item.getCategory() == JunkCategory.APP_CACHE && item.getPackageName() != null) {
-                    boolean cleanedApp = cleanAppCache(item.getPackageName(), item.getPath(), logs);
-                    if (cleanedApp) {
-                        totalFreedBytes += item.getSizeBytes();
+                // If it is an App Cache item
+                if (item.getCategory() == JunkCategory.APP_CACHE) {
+                    totalAppCacheTarget += item.getSizeBytes();
+                    long appFreed = cleanAppCache(context, item.getPackageName(), item.getPath(), logs);
+                    if (appFreed > 0) {
+                        physicalFreedBytes += appFreed;
                         deletedFilesCount++;
                     }
                     continue;
                 }
 
-                // Standard File or Directory deletion
-                boolean deleted = deleteJunkItem(item, logs);
-                if (deleted) {
-                    totalFreedBytes += item.getSizeBytes();
+                // Standard File or Directory deletion (Thumbnails, Obsolete APKs, Logs, Empty Folders)
+                long freed = deleteJunkItem(item, logs);
+                if (freed > 0 || (item.getCategory() == JunkCategory.EMPTY_FOLDERS && freed >= 0)) {
+                    physicalFreedBytes += freed;
                     deletedFilesCount++;
                 }
             }
 
-            // Phase 2: Deep App internal/external cache purge (80% - 92%)
-            notifyProgress(listener, 88, "Purging application cache buffers across system...", totalFreedBytes);
-            if (context != null) {
-                long appCacheFreed = purgeAppCaches(context);
-                totalFreedBytes += appCacheFreed;
-                logs.add("App internal & external caches purged.");
+            // Phase 2: OS Framework System Cache Eviction via StorageManager.allocateBytes (75% - 85%)
+            if (context != null && (totalAppCacheTarget > 0 || hasSystemTrimItem)) {
+                notifyProgress(listener, 80, "Triggering OS native cache eviction...", physicalFreedBytes);
+                long targetToAllocate = totalAppCacheTarget > 0 ? totalAppCacheTarget : 256L * 1024L * 1024L;
+                boolean allocated = StorageStatsHelper.allocateBytes(context, targetToAllocate);
+                if (allocated) {
+                    logs.add("StorageManager.allocateBytes evicted OS app caches.");
+                }
             }
 
-            // Phase 3: Android system package cache trim across ALL apps
-            notifyProgress(listener, 94, "Triggering Android package manager trim-caches...", totalFreedBytes);
-            executeSystemTrim(context, logs);
+            // Phase 3: Elevated Shizuku / ADB pm trim-caches (85% - 92%)
+            if (ShizukuFileManager.hasFullAccess()) {
+                notifyProgress(listener, 88, "Executing PackageManager trim-caches across system...", physicalFreedBytes);
+                executeElevatedSystemTrim(logs);
+            }
 
-            // Phase 4: Final storage trim & memory drop (95% - 100%)
-            notifyProgress(listener, 98, "Optimizing NAND flash storage (fstrim)...", totalFreedBytes);
-            executeFinalOptimizations(logs);
+            // Phase 4: Purge Launcher's own cache buffers (92% - 96%)
+            if (context != null) {
+                notifyProgress(listener, 94, "Purging launcher internal caches...", physicalFreedBytes);
+                long launcherFreed = purgeLauncherCaches(context);
+                physicalFreedBytes += launcherFreed;
+                logs.add("Launcher caches purged: " + JunkScanResult.formatBytes(launcherFreed));
+            }
 
-            notifyProgress(listener, 100, "Clean complete!", totalFreedBytes);
+            // Phase 5: Final NAND Flash storage trim & sync (96% - 100%)
+            notifyProgress(listener, 98, "Optimizing NAND flash storage (fstrim)...", physicalFreedBytes);
+            executeFinalStorageTrim(logs);
+
+            // Phase 6: Measure 100% Real Storage Delta
+            long availableBytesAfter = getAvailableStorageBytes();
+            long storageDeltaFreed = Math.max(0, availableBytesAfter - availableBytesBefore);
+            long finalReportedFreed = Math.max(storageDeltaFreed, physicalFreedBytes);
 
             long duration = System.currentTimeMillis() - startTime;
-            logs.add("Clean Completed in " + duration + "ms. Freed: " + JunkScanResult.formatBytes(totalFreedBytes));
-            return new CleanResult(true, totalFreedBytes, deletedFilesCount, duration, logs);
+            logs.add("Available Storage After: " + JunkScanResult.formatBytes(availableBytesAfter));
+            logs.add("Storage Delta Freed: " + JunkScanResult.formatBytes(storageDeltaFreed));
+            logs.add("Physical Files Deleted: " + deletedFilesCount + " (" + JunkScanResult.formatBytes(physicalFreedBytes) + ")");
+            logs.add("Clean Completed in " + duration + "ms.");
+
+            notifyProgress(listener, 100, "Clean complete!", finalReportedFreed);
+
+            return new CleanResult(true, finalReportedFreed, deletedFilesCount, duration, logs);
 
         } catch (Throwable t) {
             Log.e(TAG, "Error executing clean operation", t);
             logs.add("Error during cleaning: " + t.getMessage());
             long duration = System.currentTimeMillis() - startTime;
-            return new CleanResult(false, totalFreedBytes, deletedFilesCount, duration, logs);
+            return new CleanResult(false, physicalFreedBytes, deletedFilesCount, duration, logs);
         } finally {
             isCleaning = false;
         }
     }
 
-    private boolean cleanAppCache(String packageName, String path, List<String> logs) {
-        boolean anyCleaned = false;
+    private long cleanAppCache(Context context, String packageName, String path, List<String> logs) {
+        long freed = 0;
 
-        // 1. Clean accessible external cache directory
+        // 1. If it's our own app, delete cache files directly
+        if (context != null && context.getPackageName().equals(packageName)) {
+            freed += purgeLauncherCaches(context);
+            return freed;
+        }
+
+        // 2. Clean accessible external cache directory
         if (path != null && !path.isEmpty()) {
             File cacheDir = new File(path);
-            if (cacheDir.exists()) {
+            if (cacheDir.exists() && cacheDir.canWrite()) {
+                long size = getFolderSize(cacheDir);
                 deleteDirectoryContents(cacheDir);
-                logs.add("Purged external cache: " + path);
-                anyCleaned = true;
+                logs.add("Purged accessible external cache: " + path);
+                freed += size;
             }
         }
 
-        // 2. Privileged App Cache Deletion via Shizuku / ADB shell
+        // 3. Privileged deletion if Shizuku is available
         if (ShizukuFileManager.hasFullAccess() && packageName != null) {
             try {
-                CommandExecutor.executeSystemCommand("rm -rf /data/data/" + packageName + "/cache/* 2>/dev/null");
-                CommandExecutor.executeSystemCommand("rm -rf /data/data/" + packageName + "/code_cache/* 2>/dev/null");
-                CommandExecutor.executeSystemCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* 2>/dev/null");
-                CommandExecutor.executeSystemCommand("rm -rf /sdcard/Android/data/" + packageName + "/code_cache/* 2>/dev/null");
-                logs.add("Purged privileged cache for " + packageName);
-                anyCleaned = true;
+                // Delete external app cache via ADB shell UID 2000
+                ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/code_cache/* 2>/dev/null");
             } catch (Throwable ignored) {}
         }
 
-        return anyCleaned;
+        return freed;
     }
 
-    private boolean deleteJunkItem(JunkItem item, List<String> logs) {
+    private long deleteJunkItem(JunkItem item, List<String> logs) {
         String path = item.getPath();
-        if (path == null || path.isEmpty()) return false;
+        if (path == null || path.isEmpty()) return 0;
 
         try {
             File file = new File(path);
             if (file.exists()) {
+                long size = item.isDirectory() ? getFolderSize(file) : file.length();
                 if (item.isDirectory()) {
                     deleteRecursively(file);
                     logs.add("Deleted directory: " + path);
-                    return true;
+                    return size;
                 } else {
                     boolean ok = file.delete();
                     if (ok) {
                         logs.add("Deleted file: " + path);
-                        return true;
+                        return size;
                     }
                 }
             }
 
-            // Privileged deletion via Shizuku if local file delete didn't work
+            // Privileged deletion fallback via Shizuku
             if (ShizukuFileManager.hasFullAccess()) {
                 boolean ok = ShizukuFileManager.deletePath(path);
                 if (ok) {
                     logs.add("Deleted via Shizuku: " + path);
-                    return true;
+                    return item.getSizeBytes();
                 }
             }
         } catch (Throwable t) {
             Log.w(TAG, "Failed to delete: " + path, t);
         }
-        return false;
+        return 0;
     }
 
     private void deleteDirectoryContents(File dir) {
@@ -214,22 +257,23 @@ public class JunkCleanerEngine {
         fileOrDir.delete();
     }
 
-    private long executeSystemTrim(Context context, List<String> logs) {
+    private void executeElevatedSystemTrim(List<String> logs) {
         try {
-            logs.add("Executing pm trim-caches 4096M across all apps...");
-            CommandExecutor.executeSystemCommand("pm trim-caches 4096M");
-            CommandExecutor.executeSystemCommand("rm -rf /data/local/tmp/* 2>/dev/null");
-            CommandExecutor.executeSystemCommand("rm -rf /data/anr/* 2>/dev/null");
-            CommandExecutor.executeSystemCommand("rm -rf /data/tombstones/* 2>/dev/null");
-            CommandExecutor.executeSystemCommand("sync && echo 3 > /proc/sys/vm/drop_caches");
-            return 128L * 1024L * 1024L; // Reclaimed ~128MB system buffer
+            logs.add("Running pm trim-caches 1000G...");
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand("pm trim-caches 1000G 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/local/tmp/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/anr/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/tombstones/* 2>/dev/null");
+            } else {
+                CommandExecutor.executeSystemCommand("pm trim-caches 1000G 2>/dev/null");
+            }
         } catch (Throwable t) {
-            Log.w(TAG, "System trim exception", t);
-            return 0;
+            Log.w(TAG, "Elevated system trim exception", t);
         }
     }
 
-    private long purgeAppCaches(Context context) {
+    private long purgeLauncherCaches(Context context) {
         long freed = 0;
         try {
             File cacheDir = context.getCacheDir();
@@ -257,12 +301,29 @@ public class JunkCleanerEngine {
         return freed;
     }
 
-    private void executeFinalOptimizations(List<String> logs) {
+    private void executeFinalStorageTrim(List<String> logs) {
         try {
-            CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null");
-            CommandExecutor.executeSystemCommand("sync");
-            logs.add("Flash Storage fstrim complete.");
+            if (ShizukuFileManager.hasFullAccess()) {
+                ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("sync");
+            } else {
+                CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null");
+                CommandExecutor.executeSystemCommand("sync");
+            }
         } catch (Throwable ignored) {}
+    }
+
+    private long getAvailableStorageBytes() {
+        try {
+            File dataDir = Environment.getDataDirectory();
+            if (dataDir != null && dataDir.exists()) {
+                StatFs statFs = new StatFs(dataDir.getPath());
+                return statFs.getAvailableBytes();
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "getAvailableStorageBytes exception", t);
+        }
+        return 0;
     }
 
     private long getFolderSize(File dir) {

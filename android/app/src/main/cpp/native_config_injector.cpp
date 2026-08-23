@@ -1650,3 +1650,77 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     env->ReleaseStringUTFChars(jPath, path);
     return JNI_TRUE;
 }
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePreserveFileTimestamps
+  (JNIEnv *env, jclass, jstring jPath, jlong atimeSec, jlong mtimeSec) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+
+    struct timespec times[2];
+    times[0].tv_sec = static_cast<time_t>(atimeSec);
+    times[0].tv_nsec = 0;
+    times[1].tv_sec = static_cast<time_t>(mtimeSec);
+    times[1].tv_nsec = 0;
+
+    int res = utimensat(AT_FDCWD, path, times, 0);
+    env->ReleaseStringUTFChars(jPath, path);
+    return (res == 0) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeStealthWrite
+  (JNIEnv *env, jclass, jstring jPath, jstring jContent) {
+    if (!jPath || !jContent) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    const char *content = env->GetStringUTFChars(jContent, nullptr);
+    jsize len = env->GetStringUTFLength(jContent);
+
+    struct stat st;
+    bool hadStat = (stat(path, &st) == 0);
+
+    make_parent_dirs(path);
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, hadStat ? st.st_mode : 0660);
+    if (fd < 0) {
+        env->ReleaseStringUTFChars(jPath, path);
+        env->ReleaseStringUTFChars(jContent, content);
+        return JNI_FALSE;
+    }
+
+    ssize_t written = write(fd, content, len);
+    fchmod(fd, hadStat ? st.st_mode : 0660);
+    fsync(fd);
+    close(fd);
+
+    if (hadStat) {
+        struct timespec times[2];
+        times[0].tv_sec = st.st_atime;
+        times[0].tv_nsec = 0;
+        times[1].tv_sec = st.st_mtime;
+        times[1].tv_nsec = 0;
+        utimensat(AT_FDCWD, path, times, 0);
+    }
+
+    env->ReleaseStringUTFChars(jPath, path);
+    env->ReleaseStringUTFChars(jContent, content);
+    return (written == len) ? JNI_TRUE : JNI_FALSE;
+}
+
+static uint32_t calculate_crc32(const unsigned char *data, size_t length) {
+    uint32_t crc = 0xFFFFFFFF;
+    for (size_t i = 0; i < length; ++i) {
+        crc ^= data[i];
+        for (int j = 0; j < 8; ++j) {
+            crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
+        }
+    }
+    return ~crc;
+}
+
+JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCalculateConfigCrc32
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return 0;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string content = read_file_posix(path);
+    env->ReleaseStringUTFChars(jPath, path);
+    if (content.empty()) return 0;
+    return static_cast<jlong>(calculate_crc32(reinterpret_cast<const unsigned char*>(content.data()), content.size()));
+}

@@ -185,6 +185,30 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastMemorySync
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativePreserveFileTimestamps
+ * Signature: (Ljava/lang/String;JJ)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePreserveFileTimestamps
+  (JNIEnv *, jclass, jstring, jlong, jlong);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeStealthWrite
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeStealthWrite
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeCalculateConfigCrc32
+ * Signature: (Ljava/lang/String;)J
+ */
+JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCalculateConfigCrc32
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

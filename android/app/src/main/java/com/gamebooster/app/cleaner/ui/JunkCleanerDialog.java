@@ -3,6 +3,7 @@ package com.gamebooster.app.cleaner.ui;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
@@ -22,10 +23,14 @@ import com.gamebooster.app.cleaner.cleaner.JunkCleanerEngine;
 import com.gamebooster.app.cleaner.model.CleanResult;
 import com.gamebooster.app.cleaner.model.JunkScanResult;
 import com.gamebooster.app.cleaner.scanner.JunkScanner;
+import com.gamebooster.app.cleaner.scanner.StorageStatsHelper;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 
+/**
+ * JunkCleanerDialog — UI Dialog for Real Android Junk Scanning & Storage Purge.
+ */
 public class JunkCleanerDialog {
 
     public interface OnCleanFinishedListener {
@@ -67,12 +72,17 @@ public class JunkCleanerDialog {
 
         rvCategories.setLayoutManager(new LinearLayoutManager(context));
 
+        // Auto-check / Auto-grant elevated permissions if Shizuku is connected
         if (ShizukuFileManager.hasFullAccess()) {
-            tvModeBadge.setText("[SHIZUKU ROOT PURGE]");
+            StorageStatsHelper.autoGrantPrivilegedPermissions(context);
+            tvModeBadge.setText("[SHIZUKU PM TRIM ACTIVE]");
             tvModeBadge.setTextColor(Color.parseColor("#00FF66"));
+        } else if (StorageStatsHelper.hasUsageStatsPermission(context)) {
+            tvModeBadge.setText("[STORAGE STATS ENGINE]");
+            tvModeBadge.setTextColor(Color.parseColor("#00F0FF"));
         } else {
             tvModeBadge.setText("[STANDARD SAFE CLEAN]");
-            tvModeBadge.setTextColor(Color.parseColor("#00F0FF"));
+            tvModeBadge.setTextColor(Color.parseColor("#FFCC00"));
         }
 
         final JunkScanner scanner = new JunkScanner();
@@ -137,7 +147,6 @@ public class JunkCleanerDialog {
             btnClose.setEnabled(false);
             pbProgress.setProgress(0);
 
-            long bytesToFree = currentScan[0].getSelectedBytes();
             tvStatus.setText("🧹 Cleaning storage cache & files...");
 
             engine.cleanJunkAsync(context, currentScan[0], new JunkCleanerEngine.OnCleanProgressListener() {

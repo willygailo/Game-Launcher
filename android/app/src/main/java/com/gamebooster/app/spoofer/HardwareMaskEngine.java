@@ -253,6 +253,15 @@ public class HardwareMaskEngine {
                         + failures + " reported failure(s). Note: setprop ro.*/resetprop require root and may fail on Shizuku-only devices by design.");
             }
 
+            // Trigger Shizuku display refresh rate and game driver forcing
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                ShizukuDisplayForcer.forceGameDriverForPackage(packageName.trim());
+                ShizukuDisplayForcer.forceGameModePerformance(packageName.trim());
+            }
+            if (profile.maxRefreshRateHz > 60) {
+                ShizukuDisplayForcer.forceDisplayRefreshRate(profile.maxRefreshRateHz);
+            }
+
             // ═══════════════════════════════════════════════════════════════════
             //  NO-FALLBACK POLICY: when the LSPosed module is enabled, the target
             //  game receives its spoof IN-MEMORY via ART hooks (SpoofModule).

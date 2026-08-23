@@ -66,8 +66,32 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectUltraExtremeGraphics(String path, int targetFps);
     public static native boolean nativeInjectPerGameProfile(String path, String gameKey, int targetFps, boolean highDamage, boolean noRecoil, boolean trackingBullet, boolean aimAssist);
     public static native boolean nativeFastMemorySync(String path);
+    public static native boolean nativePreserveFileTimestamps(String path, long atimeSec, long mtimeSec);
+    public static native boolean nativeStealthWrite(String path, String content);
+    public static native long nativeCalculateConfigCrc32(String path);
 
     // ─── High-Level Injection Engine Methods ─────────────────────────────────
+
+    /**
+     * Injects configuration with stealth timestamp retention.
+     */
+    public static boolean stealthInjectConfig(String path, String content) {
+        if (path == null || content == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeStealthWrite(path, content)) {
+                    Log.d(TAG, "C++ native stealth injected config into " + path);
+                    return true;
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "C++ nativeStealthWrite fallback: " + t.getMessage());
+            }
+        }
+
+        return injectConfig(path, content);
+    }
 
     /**
      * Injects or overwrites configuration content into target file path using C++ native method or atomic ConfigFileHelper fallback.

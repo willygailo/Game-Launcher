@@ -11,7 +11,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
  * SpoofModule — LSPosed / LSPatch module entry (registered in assets/xposed_init).
  *
  * Loaded by the LSPosed framework (or embedded LSPatch loader) inside scoped game processes.
- * Applies in-memory hardware, identity, GPU, RAM, display refresh rate, and anti-detection hooks
+ * Applies in-memory hardware, identity, GPU, RAM, display refresh rate, battery, sensor, and anti-detection hooks
  * at ART level — zero game files modified on disk, eliminating file-tampering bans.
  */
 public class SpoofModule implements IXposedHookLoadPackage {
@@ -60,7 +60,16 @@ public class SpoofModule implements IXposedHookLoadPackage {
             // 9. Telephony, Hardware Identifiers, Android ID & User-Agent Hooking
             IdentityHooks.apply(lpparam, profile);
 
-            XposedBridge.log("[GameBooster] All 9 SpoofModule hook layers successfully installed for " + lpparam.packageName);
+            // 10. Battery Temperature & Power State Hooking (Bypass Charging / Cool Temp)
+            BatteryManagerHooks.apply(lpparam, profile);
+
+            // 11. Sensor & High Polling Touch Digitizer Hooking (720Hz / 960Hz)
+            SensorAndInputHooks.apply(lpparam, profile);
+
+            // 12. Low-Latency Gaming Audio Hardware Hooking (Dolby / DTS:X)
+            AudioHardwareHooks.apply(lpparam, profile);
+
+            XposedBridge.log("[GameBooster] All 12 SpoofModule hook layers successfully installed for " + lpparam.packageName);
         } catch (Throwable t) {
             XposedBridge.log("[GameBooster] SpoofModule initialization error in " + lpparam.packageName + ": " + t);
         }
