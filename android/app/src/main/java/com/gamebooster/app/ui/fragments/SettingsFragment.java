@@ -69,7 +69,6 @@ import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 import com.gamebooster.app.spoofer.SpoofProfileRegistry;
 import com.gamebooster.app.spoofer.ui.PerAppSpoofDialog;
 import com.gamebooster.app.spoofer.ui.SpoofInspectorDialog;
-import com.gamebooster.app.anticheat.ui.AntiCheatInspectorDialog;
 import com.gamebooster.app.ui.dialogs.SpoofBrandSelectorDialog;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -947,15 +946,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnSpoofInspector.setOnClickListener(v -> {
                 if (getContext() != null) {
                     SpoofInspectorDialog.show(getContext());
-                }
-            });
-        }
-
-        Button btnAnticheatShield = view.findViewById(R.id.btn_anticheat_shield);
-        if (btnAnticheatShield != null) {
-            btnAnticheatShield.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    AntiCheatInspectorDialog.show(getContext(), null);
                 }
             });
         }

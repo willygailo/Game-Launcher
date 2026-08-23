@@ -1,6 +1,7 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
+import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -117,14 +118,78 @@ public class PubgConfigPatcher {
             }
         }
         patchActiveSavBinary(packageName, forcedFps);
+        deployPakPatch(packageName);
+        purgeGameCacheAndLogs(packageName);
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
     /**
-     * Applies anti-log, log directory cleaning, and telemetry suppression for PUBGM/BGMI.
+     * Deploys game_patch_*.pak file to PUBGM Saved/Paks directory for 120/144/165/185 FPS unlock.
      */
+    public static boolean deployPakPatch(String pkg) {
+        if (pkg == null) return false;
+        String pakFileName = "game_patch_4.5.0.21377.pak";
+        String[] candidateSources = {
+            "/storage/emulated/0/" + pakFileName,
+            "/sdcard/" + pakFileName,
+            "/storage/emulated/0/Download/" + pakFileName,
+            "/sdcard/Download/" + pakFileName,
+            "/storage/emulated/0/GameLauncher/" + pakFileName,
+            "/sdcard/GameLauncher/" + pakFileName
+        };
+
+        String foundSource = null;
+        for (String src : candidateSources) {
+            if (ShizukuFileManager.fileExists(src)) {
+                foundSource = src;
+                break;
+            }
+        }
+
+        if (foundSource == null) {
+            return false;
+        }
+
+        String[] targetDirs = {
+            "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks",
+            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks"
+        };
+
+        boolean deployed = false;
+        for (String dir : targetDirs) {
+            ShizukuFileManager.makeDirectory(dir);
+            String dest = dir + "/" + pakFileName;
+            String copyCmd = "cp -f \"" + foundSource + "\" \"" + dest + "\" && chmod 666 \"" + dest + "\"";
+            CommandExecutor.executeSystemCommand(copyCmd);
+            if (ShizukuFileManager.fileExists(dest)) {
+                deployed = true;
+                Log.i(TAG, "Successfully deployed " + pakFileName + " to " + dest);
+            }
+        }
+        return deployed;
+    }
+
+    /**
+     * Purges temporary conflict caches and logs so new config / pak applies cleanly.
+     */
+    public static void purgeGameCacheAndLogs(String pkg) {
+        if (pkg == null) return;
+        String[] cleanCmds = {
+            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs/* 2>/dev/null",
+            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/* 2>/dev/null",
+            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/light_data/* 2>/dev/null",
+            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/UpdateInfo/* 2>/dev/null",
+            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/TGPA/* 2>/dev/null",
+            "rm -rf /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs/* 2>/dev/null",
+            "rm -rf /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/* 2>/dev/null",
+            "rm -rf /sdcard/Android/data/" + pkg + "/files/TGPA/* 2>/dev/null"
+        };
+        for (String cmd : cleanCmds) {
+            CommandExecutor.executeSystemCommand(cmd);
+        }
+    }
 
     // ─── Delegated Common Tuning Injectors ───────────────────────────────────
 
@@ -190,8 +255,10 @@ public class PubgConfigPatcher {
         if (pkg == null) return;
         final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
         String[] savPaths = {
+            "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
             "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
-            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
+            "/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
         };
         for (String sav : savPaths) {
             try {

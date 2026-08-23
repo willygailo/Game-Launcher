@@ -1054,17 +1054,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btn_anticheat_shield"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🛡️ ANTI-CHEAT &amp; INTEGRITY SHIELD AUDIT"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tv_settings_spoof_brand_info"
                     android:layout_width="match_parent"

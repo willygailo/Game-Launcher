@@ -250,7 +250,21 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 7. Honor of Kings (HOK) / Arena of Valor
+        // 7. Arena Breakout / Delta Force Mobile (Checked before HoK to avoid levelinfinite collision)
+        else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
+            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/UAGame/UAGame/Saved/Paks/");
+            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Paks/");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+        }
+
+        // 8. Honor of Kings (HOK) / Arena of Valor
         else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") ||
                  pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             rel.add("files/DeviceHardware.ini");
@@ -264,7 +278,7 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 8. Blood Strike
+        // 9. Blood Strike
         else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
             rel.add("files/Config/UserSetting.ini");
             rel.add("files/Config/HardwareProfile.json");
@@ -276,7 +290,7 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 9. Standoff 2
+        // 10. Standoff 2
         else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
             rel.add("files/Settings.json");
             rel.add("files/Graphics.json");
@@ -288,8 +302,8 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 10. CarX Street / Asphalt / Speed Drifters / Racing Games
-        else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters")) {
+        // 11. CarX Street / Asphalt / Speed Drifters / Racing Games
+        else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters") || pkg.contains("fdtw")) {
             rel.add("files/GraphicSettings.ini");
             rel.add("files/Settings.json");
             rel.add("files/GameSettings.ini");
@@ -298,18 +312,6 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + ".xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
-        }
-
-        // 11. Arena Breakout / Delta Force Mobile
-        else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
-            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini");
-            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/GameUserSettings.ini");
-            rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
-            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
-            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
-            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
         // 12. Supercell Games (Brawl Stars, Clash Royale, Clash of Clans, Squad Busters)
@@ -340,6 +342,7 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Paks/");
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Settings.json");
             rel.add("files/GraphicSettings.ini");
@@ -352,9 +355,20 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/Solarland/Solarland/Saved/Paks/");
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Settings.json");
             rel.add("files/GraphicSettings.ini");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+        }
+
+        // 16. Sports (eFootball / PES / EA FC / FIFA)
+        else if (pkg.contains("pesam") || pkg.contains("fifamobile") || pkg.contains("ea.gp")) {
+            rel.add("files/GraphicSettings.ini");
+            rel.add("files/GameSettings.json");
+            rel.add("files/DeviceHardware.ini");
+            rel.add("files/UserCustom.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }

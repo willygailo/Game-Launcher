@@ -269,22 +269,10 @@ public class HardwareMaskEngine {
                 com.gamebooster.app.booster.MaxHzForceChannel.forceApply(profile.maxRefreshRateHz);
             }
 
-            // ═══════════════════════════════════════════════════════════════════
-            //  NO-FALLBACK POLICY: when the LSPosed module is enabled, the target
-            //  game receives its spoof IN-MEMORY via ART hooks (SpoofModule).
-            //  File-based layers are skipped entirely to avoid config-file
-            //  tampering detection — the in-game hooks are the real spoof.
-            //  ═══════════════════════════════════════════════════════════════════
             boolean lsposedActive = com.gamebooster.app.spoofer.lsposed.LsposedDetector.isModuleEnabled();
 
-            // Kernel-anti-cheat titles (Tencent ACE): never touch game files even
-            // without LSPosed — file tampering is what kernel AC flags. In-app
-            // reflection + system props are the safe, fully working layers here.
-            boolean highRiskGame = riskTier == GameSpoofSafetyRegistry.RiskTier.HIGH_RISK;
-            boolean fileLayersSafe = !lsposedActive && !highRiskGame;
-
             // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 5: IN-APP REFLECTION OVERRIDE
+            //  LAYER 5: IN-APP REFLECTION OVERRIDE & HARDWARE PROFILES
             // ═══════════════════════════════════════════════════════════════════
             if (!lsposedActive) {
                 applyInAppReflectionMask(profile);
