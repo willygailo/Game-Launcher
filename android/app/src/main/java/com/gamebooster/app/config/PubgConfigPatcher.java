@@ -2,6 +2,7 @@ package com.gamebooster.app.config;
 
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -137,7 +138,14 @@ public class PubgConfigPatcher {
             "/storage/emulated/0/Download/" + pakFileName,
             "/sdcard/Download/" + pakFileName,
             "/storage/emulated/0/GameLauncher/" + pakFileName,
-            "/sdcard/GameLauncher/" + pakFileName
+            "/sdcard/GameLauncher/" + pakFileName,
+            "/storage/emulated/0/Game-Launcher/" + pakFileName,
+            "/sdcard/Game-Launcher/" + pakFileName,
+            "/storage/emulated/0/Documents/" + pakFileName,
+            "/sdcard/Documents/" + pakFileName,
+            "/storage/emulated/0/Documents/Game-Launcher/" + pakFileName,
+            "/sdcard/Documents/Game-Launcher/" + pakFileName,
+            "/data/local/tmp/" + pakFileName
         };
 
         String foundSource = null;
@@ -162,7 +170,11 @@ public class PubgConfigPatcher {
             ShizukuFileManager.makeDirectory(dir);
             String dest = dir + "/" + pakFileName;
             String copyCmd = "cp -f \"" + foundSource + "\" \"" + dest + "\" && chmod 666 \"" + dest + "\"";
-            CommandExecutor.executeSystemCommand(copyCmd);
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(copyCmd);
+            } else {
+                CommandExecutor.executeSystemCommand(copyCmd);
+            }
             if (ShizukuFileManager.fileExists(dest)) {
                 deployed = true;
                 Log.i(TAG, "Successfully deployed " + pakFileName + " to " + dest);

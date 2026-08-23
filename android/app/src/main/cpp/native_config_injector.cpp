@@ -1126,8 +1126,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         for (const auto& kv : keys) {
             patch_key_value(content, kv.first, kv.second);
         }
+
+        std::string pubgFpsLevel = "10";
+        if (targetFps >= 185) pubgFpsLevel = "10";
+        else if (targetFps >= 165) pubgFpsLevel = "9";
+        else if (targetFps >= 144) pubgFpsLevel = "8";
+        else if (targetFps >= 120) pubgFpsLevel = "7";
+        else if (targetFps >= 90) pubgFpsLevel = "6";
+        else pubgFpsLevel = "5";
+
         // UE4 CVars
-        patch_cvar(content, "r.PUBGDeviceFPS", "10");
+        patch_cvar(content, "r.PUBGDeviceFPS", pubgFpsLevel);
         patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
         patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
         patch_cvar(content, "r.FrameRateLimit", ssFps.str());
@@ -1380,8 +1389,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
 
+        std::string pubgFpsLevel = "10";
+        if (targetFps >= 185) pubgFpsLevel = "10";
+        else if (targetFps >= 165) pubgFpsLevel = "9";
+        else if (targetFps >= 144) pubgFpsLevel = "8";
+        else if (targetFps >= 120) pubgFpsLevel = "7";
+        else if (targetFps >= 90) pubgFpsLevel = "6";
+        else pubgFpsLevel = "5";
+
         // Unreal Engine CVars
-        patch_cvar(content, "r.PUBGDeviceFPS", "10");
+        patch_cvar(content, "r.PUBGDeviceFPS", pubgFpsLevel);
         patch_cvar(content, "r.PUBGMaxFPS", ssFps.str());
         patch_cvar(content, "r.PUBGFrameRateLimit", ssFps.str());
         patch_cvar(content, "r.FrameRateLimit", ssFps.str());

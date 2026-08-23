@@ -208,6 +208,7 @@ public class MasterOptimizationEnforcer {
                     tier1Commands.add("settings put global game_driver_opt_in_apps " + pkg);
                     tier1Commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
                     // Android 13-16 GameMode & Refresh Rate Enforcements (Zero Fallback)
+                    GameModeApiSupport.applyModernAndroidPerformanceFlags(pkg, forcedFps);
                     if (GameModeApiSupport.isGameModeApiAvailable(android.os.Build.VERSION.SDK_INT)) {
                         tier1Commands.add("cmd game mode performance " + pkg);
                     }
