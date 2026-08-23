@@ -153,307 +153,57 @@ public class BloodStrikeConfigPatcher {
         return written > 0;
     }
 
-    public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageKeys = {
-            "DamageMultiplier=1000.00",
-            "PhysicalDamageBoost=1000.00",
-            "MagicDamageBoost=1000.00",
-            "TrueDamageBoost=1000.00",
-            "BulletDamageBoost=1000.00",
-            "DamageBoost=1000.00",
-            "DamageBoostRatio=1000.00",
-            "HeadshotMultiplier=1000.00",
-            "HeadshotDamageMultiplier=1000.00",
-            "CriticalDamage=10000",
-            "CriticalHitRate=100",
-            "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=50.00",
-            "PenetrationBoost=10000",
-            "ArmorPenetration=10000",
-            "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "MovementSpeedMultiplier=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "HitboxExpansion=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "BodyDamageMultiplier=50.00",
-            "LimbDamageMultiplier=50.00",
-            "ExplosiveDamageMultiplier=50.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectHighDamage(path);
-            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
-        }
-        Log.i(TAG, "Blood Strike 1000% damage boost & headshot multiplier applied for " + packageName);
-    }
-
-    public static void applyFastCooldownConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cdKeys = {
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "CooldownReduction=0.99",
-            "SkillCooldownMultiplier=0.01",
-            "SkillAnimationCancelZeroDelay=1",
-            "SkillResponseZeroDelay=1",
-            "SkillCastZeroDelay=1",
-            "InstantSkillRelease=1",
-            "ReloadSpeedMultiplier=25.00",
-            "UnlimitedMana=1",
-            "NoManaCost=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectFastCooldown(path);
-            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
-        }
-        Log.i(TAG, "Blood Strike Fast Cooldown 99% CDR applied for " + packageName);
-    }
-
-    public static void applyShield1500Config(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] shieldKeys = {
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldStrength=1500.00",
-            "ArmorEfficiency=1000.00",
-            "ArmorDamageReduction=0.9999",
-            "KineticArmorBoost=1500.00",
-            "BodyArmorMultiplier=1500.00",
-            "VestDurability=1500.00",
-            "ArmorBoost=50000",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "HealthRegenBoost=1000.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectShield1500(path);
-            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
-        }
-        Log.i(TAG, "Blood Strike 1500+ Shield Overdrive applied for " + packageName);
-    }
-
-    public static void applyDroneViewConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] droneKeys = {
-            "DroneView=1",
-            "DroneViewHeight=4",
-            "CameraFOV=180",
-            "FieldOfView=180",
-            "FOV=180"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectDroneView(path);
-            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
-        }
-        Log.i(TAG, "Blood Strike Drone View Ultra FOV 180 applied for " + packageName);
-    }
-
-    public static void applyAntiLog(String packageName) {
-        if (packageName == null) return;
-        AntiLogPatcher.applyAntiLog(packageName);
-    }
+    // ─── Delegated Common Tuning Injectors ───────────────────────────────────
 
     public static void applySuperFastTouch(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] touchKeys = {
-            "TouchRate=1000",
-            "TouchResponse=1",
-            "TouchSlopReduction=1",
-            "TouchZeroDelay=1"
-        };
-        for (String path : paths) {
-            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
-        }
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimKeys = {
-            "AimAssist=1",
-            "AimPrecision=100",
-            "AimAssistStrength=10000",
-            "AimAssistLevel=10",
-            "TargetLock=1",
-            "TargetLockSensitivity=10000",
-            "AimAssistRadius=5000",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00",
-            "AimAssistFOV=180",
-            "GyroSampleRate=1000",
-            "GyroZeroDelay=1",
-            "TouchSensitivity=1000",
-            "AimTrackingRate=20.0"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectAimAssist(path);
-            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
-        }
-        Log.i(TAG, "BloodStrike 10000 Aim Assist & Gyro 1000Hz applied for " + packageName);
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] recoilKeys = {
-            "RecoilControl=1",
-            "ZeroRecoil=1",
-            "NoRecoil=1",
-            "RecoilScale=0.00",
-            "VerticalRecoil=0.00",
-            "HorizontalRecoil=0.00",
-            "VerticalRecoilScale=0.00",
-            "HorizontalRecoilScale=0.00",
-            "RecoilReduction=1.00",
-            "WeaponStability=500",
-            "ScreenShake=0",
-            "CameraShake=0",
-            "NoCameraShake=1",
-            "GunKick=0",
-            "WeaponKick=0",
-            "GunKickReduction=1.00",
-            "WeaponKickReduction=1.00",
-            "AllGunsRecoilReduction=1.00",
-            "ScopeShakeReduction=1.00",
-            "ScopeRecoilMultiplier=0.00",
-            "ScopeStability=5.00",
-            "BulletSpread=0.00",
-            "CrosshairSpread=0.00",
-            "SpreadScale=0.00",
-            "SpreadReduction=1",
-            "FirstBulletAccuracy=1",
-            "AimPunchReduction=1",
-            "FlinchReduction=1",
-            "WeaponSway=0"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectNoRecoil(path);
-            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
-        }
-        Log.i(TAG, "BloodStrike Zero Recoil & Weapon Stability applied for " + packageName);
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Armor Efficiency, Kinetic Armor Boost, Helmet Protection, and Damage Resistance into Blood Strike.
-     */
+    public static void applyDamageScriptConfig(String packageName) {
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        CommonConfigTuningInjector.applyFastCooldownConfig(packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        CommonConfigTuningInjector.applyShield1500Config(packageName);
+    }
+
+    public static void applyDroneViewUltraConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
+    }
+
     public static void applyArmorDefConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] armorKeys = {
-            "ArmorEfficiency=1000.00",
-            "ArmorDamageReduction=0.9999",
-            "KineticArmorBoost=1500.00",
-            "BodyArmorMultiplier=1500.00",
-            "HelmetDamageReduction=0.9999",
-            "VestDurabilityBoost=1500.00",
-            "VestDurability=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldMultiplier=1500.00",
-            "ShieldStrength=1500.00",
-            "ShieldPointsMultiplier=1500.00",
-            "PhysicalDefenseBoost=1000.00",
-            "MagicDefenseBoost=1000.00",
-            "ArmorBoost=50000",
-            "MagicResistBoost=50000",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "MaxHPMultiplier=100.00",
-            "HPBoostRatio=100.00",
-            "DamageAbsorbRatio=100.00",
-            "TenacityRatio=0.9999",
-            "ResilienceLevel=10",
-            "ArmorLevel=10",
-            "DamageResistance=0.9999",
-            "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1000.00",
-            "FallDamageReduction=1.00",
-            "ExplosionResistance=0.9999",
-            "HeadshotDamageReduction=0.9999",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectArmorDef(path);
-            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
-        }
-        Log.i(TAG, "BloodStrike 1000% Armor Defense Boost & Damage Resistance applied for " + packageName);
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Bullet Tracking, Magic Bullet, Hitbox Expansion, and Crosshair Magnetism for Blood Strike.
-     */
-    public static void applyTrackingBulletConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] trackingKeys = {
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "BulletMagnetism=100.00",
-            "HitboxExpansion=100.00",
-            "TargetLockTracking=1",
-            "BulletCurveFactor=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "CrosshairMagnetism=100.00",
-            "FirstBulletAccuracy=1",
-            "AutoAimTrack=1",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectTrackingBullet(path);
-            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
-        }
-        Log.i(TAG, "BloodStrike 1000% Bullet Tracking & Magic Bullet applied for " + packageName);
-    }
-
-    /**
-     * Injects Speed Boost & Movement Agility for Blood Strike.
-     */
     public static void applySpeedBoostConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] speedKeys = {
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "ZeroInputLag=1",
-            "HighSpeedMovement=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectSpeedBoost(path);
-            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
-        }
-        Log.i(TAG, "BloodStrike 15.0x Speed Boost & Movement Agility applied for " + packageName);
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 
-    private static boolean applyStandardPatch(String path, int targetFps) {
+    public static void applyTrackingBulletConfig(String packageName) {
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
+    }
+
+    public static void applyAntiLog(String packageName) {
+        CommonConfigTuningInjector.applyAntiLog(packageName);
+    }
+
+private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {

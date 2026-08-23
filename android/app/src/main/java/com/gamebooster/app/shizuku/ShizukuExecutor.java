@@ -133,8 +133,12 @@ public class ShizukuExecutor {
             }
         } catch (Throwable ignored) {}
 
-        // Tier 3: Elevated Root / Direct Command fallback
-        return com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(command);
+        // Tier 3: Local Shell unprivileged fallback
+        com.gamebooster.app.engine.ShellExecutor.CommandResult shellRes = com.gamebooster.app.engine.ShellExecutor.executeCommand(command, false);
+        if (shellRes.isSuccess()) {
+            return shellRes.stdout.isEmpty() ? "SUCCESS" : shellRes.stdout;
+        }
+        return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
     }
 
     public static void grantAppPermissionsViaShizuku(Context context) {

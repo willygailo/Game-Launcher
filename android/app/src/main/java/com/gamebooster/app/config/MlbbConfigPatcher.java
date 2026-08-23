@@ -213,396 +213,58 @@ public class MlbbConfigPatcher {
     /**
      * Applies anti-log, log directory cleaning, and telemetry suppression for MLBB.
      */
-    public static void applyAntiLog(String packageName) {
-        if (packageName == null) return;
-        AntiLogPatcher.applyAntiLog(packageName);
-    }
 
-    /**
-     * Injects super-fast zero-delay touch response keys into MLBB config files.
-     */
+    // ─── Delegated Common Tuning Injectors ───────────────────────────────────
+
     public static void applySuperFastTouch(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] touchKeys = {
-            "HighFreqTouch=1",
-            "TouchResponseLevel=3",
-            "HighFreqTouchHz=185",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "TouchLatencyReduction=1",
-            "ZeroInputLag=1"
-        };
-        for (String path : paths) {
-            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
-        }
-        Log.i(TAG, "MLBB super-fast zero-delay touch applied for " + packageName);
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
     }
 
-    /**
-     * Injects Drone View (Camera Height 4 / FOV 180), 1000% Damage Script, Physical/Magic/True Damage Boost, Critical and Penetration keys into MLBB config files across all heroes.
-     */
-    public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageDroneKeys = {
-            "DroneView=1",
-            "DroneViewHeight=4",
-            "CameraHeight=4",
-            "CameraDistance=180",
-            "CameraFOV=180",
-            "FieldOfView=180",
-            "WideScreenMode=1",
-            "UltraWideCamera=1",
-            // ── 1000% Damage Overdrive (All MLBB Heroes) ──
-            "PhysicalDamageBoost=1000.00",
-            "MagicDamageBoost=1000.00",
-            "TrueDamageBoost=1000.00",
-            "BulletDamageBoost=1000.00",
-            "PhysicalPenetrationBoost=10000",
-            "MagicPenetrationBoost=10000",
-            "ArmorPenetration=10000",
-            "MagicResistPenetration=10000",
-            "PenetrationBoost=10000",
-            "DamageMultiplier=1000.00",
-            "DamageBoost=1000.00",
-            "DamageBoostRatio=1000.00",
-            "SkillDamageMultiplier=1000.00",
-            "HeroDamageMultiplier=50.00",
-            "AllHeroDamageMultiplier=50.00",
-            "TankDamageMultiplier=50.00",
-            "FighterDamageMultiplier=50.00",
-            "AssassinDamageMultiplier=50.00",
-            "MageDamageMultiplier=50.00",
-            "MarksmanDamageMultiplier=50.00",
-            "SupportDamageMultiplier=50.00",
-            "HeadshotDamageMultiplier=1000.00",
-            "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=50.00",
-            "CriticalHitRate=1.00",
-            "CriticalDamage=10000",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "AttackDelayReduction=1",
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "SkillAnimationCancelZeroDelay=1",
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "HighDamageRateMode=1",
-            "DamageAssetOverride=1",
-            "AutoDamageExecutionMode=1",
-            "AutoSmiteExecution=1",
-            "RetributionDamageThreshold=999999",
-            "SmiteTrueDamage=999999",
-            "ExecuteThreshold=999999",
-            "TurretDamageReduction=0.001",
-            "MinionDamageBoost=1000.00",
-            "MonsterDamageBoost=1000.00",
-            "HitboxExpansion=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "BodyDamageMultiplier=50.00",
-            "LimbDamageMultiplier=50.00",
-            "ExplosiveDamageMultiplier=50.00",
-            "GyroSampleRate=1000",
-            "GyroSensitivityRatio=20.0",
-            "GyroZeroDelay=1",
-            "GyroSmoothFactor=1",
-            "GyroStabilization=1",
-            "GyroLatencyMode=0"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectHeroDamage1000(path);
-            ConfigFileHelper.patchKeys(path, damageDroneKeys, "[DamageScript]");
-        }
-        Log.i(TAG, "MLBB Drone View FOV 180 & 1000% Damage Script applied for all heroes in " + packageName);
-    }
-
-    /**
-     * Injects Fast Cooldown (CDR 0.99, zero cast delay, instant energy/mana) for MLBB.
-     */
-    public static void applyFastCooldownConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cdKeys = {
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "CooldownReduction=0.99",
-            "SkillCooldownMultiplier=0.01",
-            "UltimateCooldownReduction=0.99",
-            "PassiveCooldownReduction=0.99",
-            "SpellCooldownReduction=0.99",
-            "SkillAnimationCancelZeroDelay=1",
-            "SkillResponseZeroDelay=1",
-            "SkillCastZeroDelay=1",
-            "InstantSkillRelease=1",
-            "NoCastDelay=1",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "AttackDelayReduction=1",
-            "EnergyRegenRate=100.00",
-            "ManaRegenRate=100.00",
-            "UnlimitedEnergy=1",
-            "UnlimitedMana=1",
-            "NoManaCost=1",
-            "NoEnergyCost=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectFastCooldown(path);
-            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
-        }
-        Log.i(TAG, "MLBB Fast Cooldown 99% CDR & Instant Cast applied for " + packageName);
-    }
-
-    /**
-     * Injects 1500+ Shield Overdrive & Damage Mitigation for MLBB.
-     */
-    public static void applyShield1500Config(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] shieldKeys = {
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldStrength=1500.00",
-            "ShieldEfficiency=1500.00",
-            "ShieldPointsMultiplier=1500.00",
-            "PhysicalDefenseBoost=1000.00",
-            "MagicDefenseBoost=1000.00",
-            "PhysicalDefenseMultiplier=1000.00",
-            "MagicDefenseMultiplier=1000.00",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "DamageResistance=0.9999",
-            "ArmorBoost=50000",
-            "MagicResistBoost=50000",
-            "MaxHPMultiplier=100.00",
-            "HPBoostRatio=100.00",
-            "DamageAbsorbRatio=100.00",
-            "VestDurability=1000.00",
-            "HelmetDamageReduction=0.9999",
-            "TenacityRatio=0.9999",
-            "HealthRegenBoost=1000.00",
-            "HealthRegenRate=1000.00",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00",
-            "HighDamageMitigationRatio=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectShield1500(path);
-            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
-        }
-        Log.i(TAG, "MLBB 1500+ Shield & God-Mode Defense applied for " + packageName);
-    }
-
-    /**
-     * Injects Drone View Ultra (Camera FOV 180, Height 4.0) for MLBB.
-     */
-    public static void applyDroneViewUltraConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] droneKeys = {
-            "DroneView=1",
-            "DroneViewHeight=4",
-            "CameraHeight=4",
-            "CameraDistance=180",
-            "CameraFOV=180",
-            "FieldOfView=180",
-            "WideScreenMode=1",
-            "UltraWideCamera=1",
-            "MapOverviewScale=2.0"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectDroneView(path);
-            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
-        }
-        Log.i(TAG, "MLBB Drone View Ultra FOV 180 applied for " + packageName);
-    }
-
-    /**
-     * Injects 1000% Smart Aim Assist, Hero Priority Lock, and Skill Target Assistance for MLBB.
-     */
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimKeys = {
-            "AimAssist=1",
-            "AimAssistStrength=10000",
-            "AimAssistLevel=10",
-            "AimPrecision=100",
-            "AutoSkillLock=1",
-            "SkillTargetAssist=1",
-            "SmartTargetingMode=1",
-            "HeroPriorityLock=1",
-            "LowestHPTargetLock=1",
-            "NearestTargetLock=0",
-            "SkillAimAssist=1",
-            "SmartAimCast=1",
-            "SkillPredictPath=1",
-            "AutoAimAssist=1",
-            "TargetTracker=1",
-            "HeroLockMode=1",
-            "TargetLockSensitivity=10000",
-            "AimAssistRadius=5000",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectAimAssist(path);
-            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
-        }
-        Log.i(TAG, "MLBB 1000% Smart Aim Assist & Hero Priority Lock applied for " + packageName);
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
     }
 
-    /**
-     * Injects joystick and movement stabilization, zero input delay, and skill cancel zero-delay for MLBB.
-     */
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] recoilKeys = {
-            "RecoilControl=1",
-            "ZeroRecoil=1",
-            "NoRecoil=1",
-            "MovementStabilization=1",
-            "JoystickZeroDeadzone=1",
-            "JoystickResponseLevel=3",
-            "SkillCancellationZeroDelay=1",
-            "InputSmoothing=1",
-            "TouchStabilization=1",
-            "ZeroInputDelay=1",
-            "SkillResponseZeroDelay=1",
-            "TouchJitterFilter=1",
-            "AimPunchReduction=1",
-            "FlinchReduction=1",
-            "WeaponStability=500"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectNoRecoil(path);
-            ConfigFileHelper.patchKeys(path, recoilKeys, "[InputStabilization]");
-        }
-        Log.i(TAG, "MLBB Movement Stabilization & Joystick Zero-Deadzone applied for " + packageName);
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Armor Defense Boost, Damage Reduction, Shield Multiplier, and Resilience for MLBB.
-     */
+    public static void applyDamageScriptConfig(String packageName) {
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        CommonConfigTuningInjector.applyFastCooldownConfig(packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        CommonConfigTuningInjector.applyShield1500Config(packageName);
+    }
+
+    public static void applyDroneViewUltraConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
+    }
+
     public static void applyArmorDefConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] armorKeys = {
-            "PhysicalDefenseBoost=1000.00",
-            "MagicDefenseBoost=1000.00",
-            "PhysicalDefenseMultiplier=1000.00",
-            "MagicDefenseMultiplier=1000.00",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldStrength=1500.00",
-            "MaxHPMultiplier=100.00",
-            "HPBoostRatio=100.00",
-            "DamageAbsorbRatio=100.00",
-            "ArmorBoost=50000",
-            "MagicResistBoost=50000",
-            "VestDurability=1000.00",
-            "VestDurabilityBoost=1000.00",
-            "HelmetDamageReduction=0.9999",
-            "TenacityRatio=0.9999",
-            "ResilienceLevel=10",
-            "ArmorLevel=10",
-            "DamageResistance=0.9999",
-            "ShieldEfficiency=1500.00",
-            "ShieldPointsMultiplier=1500.00",
-            "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1000.00",
-            "HealthRegenRate=1000.00",
-            "FallDamageReduction=1.00",
-            "ExplosionResistance=0.9999",
-            "HeadshotDamageReduction=0.9999",
-            "HighDamageMitigationRatio=100.00",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectArmorDef(path);
-            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
-        }
-        Log.i(TAG, "MLBB 1000% Armor Defense & 1500x Shield Multiplier applied for " + packageName);
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
     }
 
-    /**
-     * Injects Speed Boost & Movement Agility for MLBB.
-     */
     public static void applySpeedBoostConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] speedKeys = {
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "ZeroInputLag=1",
-            "HighSpeedMovement=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectSpeedBoost(path);
-            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
-        }
-        Log.i(TAG, "MLBB 15.0x Speed Boost & Movement Agility applied for " + packageName);
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Skill Auto-Tracking, Projectile Magnetism, Retribution/Smite Lock, and Hitbox Tracking for MLBB.
-     */
     public static void applyTrackingBulletConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] trackingKeys = {
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "AutoTrackingSkill=1",
-            "AutoTargetLock=1",
-            "SkillPathPrediction=1",
-            "AutoRetributionSmiteLock=1",
-            "SkillMagnetism=100.00",
-            "BulletMagnetism=100.00",
-            "BasicAttackTracking=1",
-            "ProjectileTracking=1",
-            "HitboxExpansion=100.00",
-            "TargetLockTracking=1",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00",
-            "BulletCurveFactor=100.00",
-            "BulletVelocityMultiplier=200.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectTrackingBullet(path);
-            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
-        }
-        Log.i(TAG, "MLBB 1000% Skill Auto-Tracking & Projectile Magnetism applied for " + packageName);
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
     }
 
-    // ─── Internal ─────────────────────────────────────────────────────────────
+    public static void applyAntiLog(String packageName) {
+        CommonConfigTuningInjector.applyAntiLog(packageName);
+    }
+
+// ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);

@@ -55,22 +55,7 @@ public class GameLauncherHelper {
                 DeviceSpooferEngine.applySpoofing(context, pkgName);
 
                 // Auto-apply saved per-game Competitive CFG Profile (FPS + Super Touch + Shizuku Hz)
-                String pkgLower = pkgName.toLowerCase();
-                String gameKey = pkgLower.contains("mobile.legends") || pkgLower.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                                 pkgLower.contains("pubg") || pkgLower.contains("tencent.ig") || pkgLower.contains("imobile") || pkgLower.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                                 pkgLower.contains("cod") || pkgLower.contains("callofduty") || pkgLower.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
-                                 pkgLower.contains("freefire") || pkgLower.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                                 pkgLower.contains("genshin") || pkgLower.contains("mihoyo") || pkgLower.contains("cognosphere") || pkgLower.contains("hoyoverse") || pkgLower.contains("hkrpg") || pkgLower.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
-                                 pkgLower.contains("wildrift") || pkgLower.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
-                                 pkgLower.contains("sgame") || pkgLower.contains("levelinfinite") || pkgLower.contains("arenaofvalor") || pkgLower.contains("kgtw") || pkgLower.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                                 pkgLower.contains("bloodstrike") || pkgLower.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
-                                 pkgLower.contains("standoff2") || pkgLower.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
-                                 pkgLower.contains("carx") || pkgLower.contains("glofta9hm") || pkgLower.contains("asphalt") || pkgLower.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
-                                 pkgLower.contains("uamo") || pkgLower.contains("arenabreakout") || pkgLower.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
-                                 pkgLower.contains("supercell") || pkgLower.contains("brawlstars") || pkgLower.contains("clashroyale") || pkgLower.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
-                                 pkgLower.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
-                                 pkgLower.contains("projectc") || pkgLower.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                                 pkgLower.contains("farlight") || pkgLower.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
+                String gameKey = CfgProfileManager.resolveGameKey(pkgName);
                 
                 CompetitiveCfgProfile cfgProf = CfgProfileManager.loadProfile(context, gameKey);
                 CfgProfileManager.applyProfile(context, gameKey, cfgProf);

@@ -255,11 +255,18 @@ public class HardwareMaskEngine {
 
             // Trigger Shizuku display refresh rate and game driver forcing
             if (packageName != null && !packageName.trim().isEmpty()) {
-                ShizukuDisplayForcer.forceGameDriverForPackage(packageName.trim());
-                ShizukuDisplayForcer.forceGameModePerformance(packageName.trim());
+                String pkg = packageName.trim();
+                ShizukuExecutor.executeShizukuCommands(
+                        "settings put global game_driver_all_apps 1",
+                        "settings put global updatable_driver_all_apps 1",
+                        "settings put global updatable_driver_production_opt_in_apps \"" + pkg + "\"",
+                        "settings put global angle_gl_driver_selection_pkgs \"" + pkg + "\"",
+                        "settings put global angle_gl_driver_selection_values angle"
+                );
+                com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(pkg);
             }
             if (profile.maxRefreshRateHz > 60) {
-                ShizukuDisplayForcer.forceDisplayRefreshRate(profile.maxRefreshRateHz);
+                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(profile.maxRefreshRateHz);
             }
 
             // ═══════════════════════════════════════════════════════════════════

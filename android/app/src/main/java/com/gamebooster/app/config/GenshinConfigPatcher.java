@@ -123,276 +123,57 @@ public class GenshinConfigPatcher {
         return written > 0;
     }
 
+    // ─── Delegated Common Tuning Injectors ───────────────────────────────────
+
     public static void applySuperFastTouch(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] touchKeys = {
-            "touch_polling_rate=1000",
-            "zero_touch_delay=1",
-            "touch_response_ms=0",
-            "input_latency_reduction=1"
-        };
-        for (String path : paths) {
-            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
-        }
-        Log.i(TAG, "Genshin zero-delay touch acceleration applied for " + packageName);
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimKeys = {
-            "AimAssist=1",
-            "AimPrecision=100",
-            "AimAssistStrength=10000",
-            "AimAssistLevel=10",
-            "BowAimAssist=1",
-            "AutoTargeting=1",
-            "TargetLock=1",
-            "TargetLockSensitivity=10000",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00",
-            "GyroSampleRate=1000",
-            "GyroZeroDelay=1",
-            "CameraFOV=180"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectAimAssist(path);
-            ConfigFileHelper.patchKeys(path, aimKeys, "[AimAssist]");
-        }
-        Log.i(TAG, "Genshin 10000 Bow Aim Assist & Gyro 1000Hz applied for " + packageName);
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] recoilKeys = {
-            "BowSwayReduction=1",
-            "BowSwayScale=0.00",
-            "CameraShake=0",
-            "ScreenShake=0",
-            "NoCameraShake=1",
-            "InputSmoothing=1",
-            "ZeroCameraLag=1",
-            "SkillCameraShake=0",
-            "AimPunchReduction=1",
-            "FlinchReduction=1",
-            "ScopeShakeReduction=1.00",
-            "ScopeStability=5.00",
-            "WeaponSway=0",
-            "CrosshairSpread=0.00",
-            "SpreadScale=0.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectNoRecoil(path);
-            ConfigFileHelper.patchKeys(path, recoilKeys, "[WeaponStability]");
-        }
-        Log.i(TAG, "Genshin Camera Stabilization & Sway Reduction applied for " + packageName);
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
     }
 
     public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageKeys = {
-            "ElementalDamageBoost=1000.00",
-            "PhysicalDamageBoost=1000.00",
-            "MagicDamageBoost=1000.00",
-            "TrueDamageBoost=1000.00",
-            "DamageMultiplier=1000.00",
-            "DamageBoost=1000.00",
-            "DamageBoostRatio=1000.00",
-            "CritRate=100",
-            "CritDamage=50.00",
-            "CriticalDamage=10000",
-            "CriticalHitRate=100",
-            "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=50.00",
-            "HeadshotMultiplier=1000.00",
-            "HeadshotDamageMultiplier=1000.00",
-            "AttackSpeedBoost=25.00",
-            "AttackSpeedMultiplier=25.00",
-            "MovementSpeedMultiplier=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "HitboxExpansion=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "BodyDamageMultiplier=50.00",
-            "ExplosiveDamageMultiplier=50.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectHighDamage(path);
-            ConfigFileHelper.patchKeys(path, damageKeys, "[DamageScript]");
-        }
-        Log.i(TAG, "Genshin 1000% Elemental & Physical Damage Boost applied for " + packageName);
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
     }
 
     public static void applyFastCooldownConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cdKeys = {
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "CooldownReduction=0.99",
-            "SkillCooldownMultiplier=0.01",
-            "SkillAnimationCancelZeroDelay=1",
-            "SkillResponseZeroDelay=1",
-            "SkillCastZeroDelay=1",
-            "InstantSkillRelease=1",
-            "EnergyRechargeMultiplier=100.00",
-            "UnlimitedEnergy=1",
-            "NoEnergyCost=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectFastCooldown(path);
-            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
-        }
-        Log.i(TAG, "Genshin Fast Cooldown 99% CDR & Infinite Burst applied for " + packageName);
+        CommonConfigTuningInjector.applyFastCooldownConfig(packageName);
     }
 
     public static void applyShield1500Config(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] shieldKeys = {
-            "ShieldMultiplier=1500.00",
-            "ShieldStrength=1500.00",
-            "ShieldCapacity=1500.00",
-            "DefenseMultiplier=1000.00",
-            "ElementalResistanceBoost=1000.00",
-            "ArmorBoost=50000",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectShield1500(path);
-            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
-        }
-        Log.i(TAG, "Genshin 1500+ Shield Overdrive applied for " + packageName);
+        CommonConfigTuningInjector.applyShield1500Config(packageName);
+    }
+
+    public static void applyDroneViewUltraConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
     }
 
     public static void applyDroneViewConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] droneKeys = {
-            "DroneView=1",
-            "DroneViewHeight=4",
-            "CameraDistance=10.0",
-            "CameraFOV=180",
-            "FieldOfView=180",
-            "FOV=180"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectDroneView(path);
-            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
-        }
-        Log.i(TAG, "Genshin Drone View Ultra FOV 180 applied for " + packageName);
+        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Defense Multiplier, Shield Strength, Elemental Resistance, and Poise Resistance into Genshin/Star Rail/ZZZ.
-     */
     public static void applyArmorDefConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] armorKeys = {
-            "DefenseMultiplier=1000.00",
-            "ShieldStrength=1500.00",
-            "ShieldEfficiency=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldMultiplier=1500.00",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "ElementalResistanceBoost=1000.00",
-            "HPMultiplier=100.00",
-            "MaxHPMultiplier=100.00",
-            "HPBoostRatio=100.00",
-            "PoiseResistance=1000.00",
-            "ArmorBoost=50000",
-            "DamageAbsorbRatio=100.00",
-            "TenacityRatio=0.9999",
-            "ResilienceLevel=10",
-            "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1000.00",
-            "ExplosionResistance=0.9999",
-            "FallDamageReduction=1.00",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectArmorDef(path);
-            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
-        }
-        Log.i(TAG, "Genshin 1000% Defense Multiplier & 1500x Shield Boost applied for " + packageName);
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
     }
 
-    /**
-     * Injects Speed Boost & Movement Agility for Genshin / Star Rail / ZZZ.
-     */
     public static void applySpeedBoostConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] speedKeys = {
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "ZeroInputLag=1",
-            "HighSpeedMovement=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectSpeedBoost(path);
-            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
-        }
-        Log.i(TAG, "Genshin 15.0x Speed Boost & Movement Agility applied for " + packageName);
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Bow Auto-Tracking, Homing Projectiles, and Target Lock for Genshin/Hoyoverse.
-     */
     public static void applyTrackingBulletConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] trackingKeys = {
-            "BowAutoTracking=1",
-            "HomingArrows=1",
-            "TargetLockTracking=1",
-            "AutoTargetLock=1",
-            "SkillProjectileTracking=1",
-            "HitboxExpansion=100.00",
-            "BulletMagnetism=100.00",
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectTrackingBullet(path);
-            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
-        }
-        Log.i(TAG, "Genshin 1000% Bow Auto-Tracking & Homing Projectiles applied for " + packageName);
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
     }
 
     public static void applyAntiLog(String packageName) {
-        if (packageName == null) return;
-        AntiLogPatcher.applyAntiLog(packageName);
+        CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-    private static List<String> getConfigPaths(String pkg) {
+private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 

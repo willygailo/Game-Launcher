@@ -179,323 +179,57 @@ public class ArenaBreakoutConfigPatcher {
         return written > 0;
     }
 
-    public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageKeys = {
-            "+CVars=r.DamageMultiplier=1000.00",
-            "+CVars=r.BulletDamageBoost=1000.00",
-            "+CVars=r.DamageBoost=1000.00",
-            "+CVars=r.PhysicalDamageBoost=1000.00",
-            "+CVars=r.HeadshotMultiplier=1000.00",
-            "+CVars=r.HeadshotDamageMultiplier=1000.00",
-            "+CVars=r.CriticalDamage=10000",
-            "+CVars=r.CriticalHitRate=100",
-            "+CVars=r.CriticalDamageMultiplier=50.00",
-            "+CVars=r.PenetrationBoost=10000",
-            "+CVars=r.ArmorPenetration=10000",
-            "+CVars=r.BulletVelocityMultiplier=200.00",
-            "+CVars=r.HitboxExpansion=100.00",
-            "+CVars=r.BodyDamageMultiplier=50.00",
-            "+CVars=r.LimbDamageMultiplier=50.00",
-            "+CVars=r.ExplosiveDamageMultiplier=50.00",
-            "+CVars=r.MovementSpeedMultiplier=15.00",
-            "+CVars=r.SprintSpeedMultiplier=15.00",
-            "DamageMultiplier=1000.00",
-            "BulletDamageBoost=1000.00",
-            "DamageBoost=1000.00",
-            "PhysicalDamageBoost=1000.00",
-            "HeadshotDamageMultiplier=1000.00",
-            "CriticalHitRate=100",
-            "CriticalDamage=10000",
-            "ArmorPenetration=10000",
-            "PenetrationBoost=10000",
-            "MovementSpeedMultiplier=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSensitivity=1000",
-            "AttackSpeedMultiplier=25.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectHighDamage(path);
-            ConfigFileHelper.patchKeys(path, damageKeys, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "Arena Breakout 1000% damage script & headshot multiplier applied for " + packageName);
-    }
-
-    public static void applyFastCooldownConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cdKeys = {
-            "+CVars=r.CooldownReduction=0.99",
-            "+CVars=r.SkillResponseZeroDelay=1",
-            "+CVars=r.InstantCast=1",
-            "+CVars=r.ReloadSpeedMultiplier=25.00",
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "SkillCooldownMultiplier=0.01",
-            "ReloadSpeedMultiplier=25.00",
-            "UnlimitedMana=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectFastCooldown(path);
-            ConfigFileHelper.patchKeys(path, cdKeys, "[FastCooldown]");
-        }
-        Log.i(TAG, "Arena Breakout Fast Cooldown 99% CDR applied for " + packageName);
-    }
-
-    public static void applyShield1500Config(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] shieldKeys = {
-            "+CVars=r.ArmorDamageReduction=0.9999",
-            "+CVars=r.ShieldMultiplier=1500.00",
-            "+CVars=r.VestDurabilityBoost=1500.00",
-            "+CVars=r.DamageResistance=0.9999",
-            "+CVars=r.IncomingDamageScale=0.0001",
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "VestDurabilityBoost=1500.00",
-            "VestDurability=1500.00",
-            "ArmorBoost=50000",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectShield1500(path);
-            ConfigFileHelper.patchKeys(path, shieldKeys, "[DefenseShield1500]");
-        }
-        Log.i(TAG, "Arena Breakout 1500+ Shield Overdrive applied for " + packageName);
-    }
-
-    public static void applyDroneViewConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] droneKeys = {
-            "+CVars=r.CameraFOV=180",
-            "+CVars=r.FieldOfView=180",
-            "+CVars=r.DroneViewHeight=4",
-            "DroneView=1",
-            "DroneViewHeight=4",
-            "CameraFOV=180",
-            "FieldOfView=180",
-            "FOV=180"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectDroneView(path);
-            ConfigFileHelper.patchKeys(path, droneKeys, "[DroneViewUltra]");
-        }
-        Log.i(TAG, "Arena Breakout Drone View Ultra FOV 180 applied for " + packageName);
-    }
-
-    public static void applyAntiLog(String packageName) {
-        if (packageName == null) return;
-        AntiLogPatcher.applyAntiLog(packageName);
-    }
+    // ─── Delegated Common Tuning Injectors ───────────────────────────────────
 
     public static void applySuperFastTouch(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] touchKeys = {
-            "TouchRate=1000",
-            "TouchResponse=1",
-            "TouchSlopReduction=1",
-            "TouchZeroDelay=1"
-        };
-        for (String path : paths) {
-            ConfigFileHelper.patchKeys(path, touchKeys, "[TouchEngine]");
-        }
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
     }
 
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] aimKeys = {
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
-            "+CVars=r.AimAssist.Magnetism=100.00",
-            "+CVars=r.AimAssist.SnapSpeed=100.00",
-            "+CVars=r.AimAssistRadius=5000",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=10000",
-            "+CVars=r.AimSnapStrength=100.00",
-            "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroZeroDelay=1",
-            "AimAssist=1",
-            "AimPrecision=100",
-            "AimAssistStrength=10000",
-            "AimAssistLevel=10",
-            "SmartTargetLock=1",
-            "TargetLock=1",
-            "TargetLockSensitivity=10000",
-            "GyroSampleRate=1000",
-            "GyroZeroDelay=1",
-            "GyroSensitivity=1000",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectAimAssist(path);
-            ConfigFileHelper.patchKeys(path, aimKeys, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "ArenaBreakout 10000 Aim Assist & Gyro 1000Hz applied for " + packageName);
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
     }
 
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] recoilKeys = {
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.VerticalRecoilScale=0.00",
-            "+CVars=r.HorizontalRecoilScale=0.00",
-            "+CVars=r.WeaponKickScale=0.00",
-            "+CVars=r.GunKickScale=0.00",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.ScreenShake=0",
-            "+CVars=r.WeaponSway=0",
-            "+CVars=r.AimPunchMultiplier=0.00",
-            "+CVars=r.FlinchMultiplier=0.00",
-            "+CVars=r.ScopeShakeReduction=2.00",
-            "+CVars=r.ScopeStability=5.00",
-            "+CVars=r.ScopeRecoilMultiplier=0.00",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.CrosshairSpread=0.00",
-            "+CVars=r.SpreadScale=0.00",
-            "RecoilControl=1",
-            "RecoilReduction=1.00",
-            "WeaponStability=500",
-            "ZeroRecoil=1",
-            "NoRecoil=1",
-            "RecoilScale=0.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectNoRecoil(path);
-            ConfigFileHelper.patchKeys(path, recoilKeys, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "ArenaBreakout Zero Recoil & Weapon Stability applied for " + packageName);
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction for Arena Breakout / Delta Force.
-     */
+    public static void applyDamageScriptConfig(String packageName) {
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
+    }
+
+    public static void applyFastCooldownConfig(String packageName) {
+        CommonConfigTuningInjector.applyFastCooldownConfig(packageName);
+    }
+
+    public static void applyShield1500Config(String packageName) {
+        CommonConfigTuningInjector.applyShield1500Config(packageName);
+    }
+
+    public static void applyDroneViewUltraConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+    }
+
+    public static void applyDroneViewConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
+    }
+
     public static void applyArmorDefConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] armorKeys = {
-            "+CVars=r.ArmorDamageReduction=0.9999",
-            "+CVars=r.VestDurabilityBoost=1500.00",
-            "+CVars=r.HelmetDamageReduction=0.9999",
-            "+CVars=r.IncomingDamageScale=0.0001",
-            "+CVars=r.DamageResistance=0.9999",
-            "+CVars=r.ShieldEfficiency=1500.00",
-            "+CVars=r.IncomingDamageReduction=0.9999",
-            "+CVars=r.MaxHPMultiplier=100.00",
-            "+CVars=r.HealthRegenDelay=0.00",
-            "+CVars=r.HealthRegenBoost=1000.00",
-            "+CVars=r.ExplosionResistance=0.9999",
-            "+CVars=r.FallDamageReduction=1.00",
-            "+CVars=r.HeavyDamageDampener=100.00",
-            "+CVars=r.BurstDamageReduction=100.00",
-            "ArmorLevel=10",
-            "VestDurability=1500.00",
-            "VestDurabilityBoost=1500.00",
-            "HelmetDamageReduction=0.9999",
-            "ArmorDamageAbsorb=0.9999",
-            "ShieldCapacity=1500.00",
-            "ShieldMultiplier=1500.00",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "PhysicalDefenseBoost=1000.00",
-            "MagicDefenseBoost=1000.00",
-            "ArmorBoost=50000",
-            "MagicResistBoost=50000",
-            "TenacityRatio=0.9999",
-            "HealthRegenBoost=1000.00",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectArmorDef(path);
-            ConfigFileHelper.patchKeys(path, armorKeys, "[DefenseConfig]");
-        }
-        Log.i(TAG, "ArenaBreakout 1000% Armor Defense & 1500x Vest Durability applied for " + packageName);
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
     }
 
-    /**
-     * Injects Speed Boost & Movement Agility for Arena Breakout / Delta Force.
-     */
     public static void applySpeedBoostConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] speedKeys = {
-            "+CVars=r.MovementSpeedMultiplier=15.00",
-            "+CVars=r.SprintSpeedMultiplier=15.00",
-            "+CVars=r.AttackSpeedMultiplier=25.00",
-            "+CVars=r.BulletVelocityScale=200.00",
-            "+CVars=r.ZeroInputLag=1",
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "ZeroInputLag=1",
-            "HighSpeedMovement=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectSpeedBoost(path);
-            ConfigFileHelper.patchKeys(path, speedKeys, "[SpeedEngine]");
-        }
-        Log.i(TAG, "ArenaBreakout 15.0x Speed Boost & Movement Agility applied for " + packageName);
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Bullet Tracking, Magic Bullet, Hitbox Expansion, and Bullet Magnetism for Arena Breakout / Delta Force.
-     */
     public static void applyTrackingBulletConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] trackingKeys = {
-            "+CVars=r.BulletTracking=1",
-            "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=100.00",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletVelocityScale=200.00",
-            "+CVars=r.BulletCurveFactor=100.00",
-            "+CVars=r.TargetLockTracking=1",
-            "+CVars=r.FirstBulletAccuracy=1",
-            "+CVars=r.ProjectileHoming=1",
-            "+CVars=r.HomingStrength=100.00",
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "HitboxExpansion=100.00",
-            "BulletMagnetism=100.00",
-            "BulletCurveFactor=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectTrackingBullet(path);
-            ConfigFileHelper.patchKeys(path, trackingKeys, "[TrackingConfig]");
-        }
-        Log.i(TAG, "ArenaBreakout 1000% Bullet Tracking & Hitbox Expansion applied for " + packageName);
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
     }
 
-    private static boolean applyStandardPatch(String path, int targetFps) {
+    public static void applyAntiLog(String packageName) {
+        CommonConfigTuningInjector.applyAntiLog(packageName);
+    }
+
+private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {

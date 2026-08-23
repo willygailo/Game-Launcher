@@ -125,484 +125,58 @@ public class PubgConfigPatcher {
     /**
      * Applies anti-log, log directory cleaning, and telemetry suppression for PUBGM/BGMI.
      */
-    public static void applyAntiLog(String packageName) {
-        if (packageName == null) return;
-        AntiLogPatcher.applyAntiLog(packageName);
-    }
 
-    /**
-     * Injects super-fast zero-delay touch CVar into PUBGM/BGMI config files.
-     */
+    // ─── Delegated Common Tuning Injectors ───────────────────────────────────
+
     public static void applySuperFastTouch(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] touchCvars = {
-            "+CVars=r.MobileTouchBoostRate=185",
-            "+CVars=r.TouchSampleRate=1000",
-            "+CVars=r.TouchResponseTime=0",
-            "+CVars=r.ZeroTouchDelay=1",
-            "+CVars=r.InputLatencyReduction=1",
-            "+CVars=r.TouchDeadzone=0",
-            "+CVars=r.TouchSlop=0"
-        };
-        for (String path : paths) {
-            ConfigFileHelper.patchKeys(path, touchCvars, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "PUBGM super-fast zero-delay touch applied for " + packageName);
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
     }
 
-    /**
-     * Injects 1000% Aim Assist, FOV (TPP 100 / FPP 150), Sprint 500, Gyro 1000Hz Ultra Response (Super Smooth), and Aim Assist CVars into PUBGM/BGMI config files.
-     */
     public static void applyAimAssistConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cvars = {
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=10000.00",
-            "+CVars=r.AimAssist.Magnetism=100.00",
-            "+CVars=r.AimAssist.SnapSpeed=100.00",
-            "+CVars=r.AimAssistRadius=5000",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=10000",
-            "+CVars=r.AimSnapStrength=100.00",
-            "+CVars=r.AimLead=1",
-            "+CVars=r.AimLeadStrength=100.00",
-            "+CVars=r.PUBGTPPViewRange=180.00",
-            "+CVars=r.PUBGFPPViewRange=180.00",
-            "+CVars=r.SprintSensitivity=1000",
-            "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroSensitivityRatio=20.0",
-            "+CVars=r.GyroZeroDelay=1",
-            "+CVars=r.GyroSmoothFactor=1",
-            "+CVars=r.GyroStabilization=1",
-            "+CVars=r.GyroLatencyMode=0",
-            "+CVars=r.GyroAimAssist=1",
-            "+CVars=r.SniperAimAssist=1",
-            "AimAssist=1",
-            "AimAssistLevel=10",
-            "AimAssistStrength=10000",
-            "AimPrecision=100",
-            "TargetLock=1",
-            "TargetLockSensitivity=10000",
-            "SmartTargetingMode=1",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00",
-            "AimLead=1",
-            "AimLeadStrength=100.00",
-            "SprintSensitivity=1000",
-            "TPPFieldOfView=180",
-            "FPPFieldOfView=180"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectAimAssist(path);
-            ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "PUBGM 10000 Aim Assist, FOV 180 & Gyro 1000Hz applied for " + packageName);
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
     }
 
-    /**
-     * Injects Zero Recoil & Weapon Stability CVars for ALL guns and ALL scopes into PUBGM/BGMI config files.
-     */
     public static void applyRecoilControlConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] recoilCvars = {
-            // ── Core Engine Zero Recoil CVars ──
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.RecoilControl=1",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.GunKickReduction=1",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.ScreenShake=0",
-            "+CVars=r.WeaponSway=0",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.CrosshairSpread=0.00",
-            "+CVars=r.SpreadReduction=1",
-            "+CVars=r.ScopeStability=5.00",
-            "+CVars=r.FirstBulletAccuracy=1",
-            "+CVars=r.AimPunchReduction=1",
-            "+CVars=r.FlinchReduction=1",
-            "+CVars=r.WeaponKick=0.00",
-            "+CVars=r.ViewKick=0.00",
-            // ── All Scopes Zero Recoil CVars (Red Dot, Holo, 2x, 3x, 4x, 6x, 8x, Canted, Iron Sight) ──
-            "+CVars=r.RedDotRecoilScale=0.00",
-            "+CVars=r.HoloRecoilScale=0.00",
-            "+CVars=r.Scope2xRecoilScale=0.00",
-            "+CVars=r.Scope3xRecoilScale=0.00",
-            "+CVars=r.Scope4xRecoilScale=0.00",
-            "+CVars=r.Scope6xRecoilScale=0.00",
-            "+CVars=r.Scope8xRecoilScale=0.00",
-            "+CVars=r.CantedSightRecoilScale=0.00",
-            "+CVars=r.IronSightRecoilScale=0.00",
-            // ── All Guns Zero Recoil CVars (AR, DMR, Sniper, SMG, LMG, Shotgun) ──
-            "+CVars=r.ARRecoilScale=0.00",
-            "+CVars=r.DMRRecoilScale=0.00",
-            "+CVars=r.SniperRecoilScale=0.00",
-            "+CVars=r.SMGRecoilScale=0.00",
-            "+CVars=r.LMGRecoilScale=0.00",
-            "+CVars=r.ShotgunRecoilScale=0.00",
-            "+CVars=r.M416RecoilScale=0.00",
-            "+CVars=r.AKMRecoilScale=0.00",
-            "+CVars=r.BerylRecoilScale=0.00",
-            "+CVars=r.SCARLRecoilScale=0.00",
-            "+CVars=r.AUGRecoilScale=0.00",
-            "+CVars=r.GrozaRecoilScale=0.00",
-            "+CVars=r.ACE32RecoilScale=0.00",
-            "+CVars=r.AWMRecoilScale=0.00",
-            "+CVars=r.M24RecoilScale=0.00",
-            "+CVars=r.Kar98kRecoilScale=0.00",
-            "+CVars=r.AMRRecoilScale=0.00",
-            "+CVars=r.SLRRecoilScale=0.00",
-            "+CVars=r.SKSRecoilScale=0.00",
-            "+CVars=r.Mini14RecoilScale=0.00",
-            "+CVars=r.Mk14RecoilScale=0.00",
-            "+CVars=r.UZIRecoilScale=0.00",
-            "+CVars=r.VectorRecoilScale=0.00",
-            "+CVars=r.UMP45RecoilScale=0.00",
-            "+CVars=r.P90RecoilScale=0.00",
-            "+CVars=r.DP28RecoilScale=0.00",
-            "+CVars=r.M249RecoilScale=0.00",
-            "+CVars=r.MG3RecoilScale=0.00",
-            "+CVars=r.DBSRecoilScale=0.00",
-            // ── Standard Key-Value Direct Overrides ──
-            "RecoilControl=1",
-            "ZeroRecoil=1",
-            "NoRecoil=1",
-            "RecoilScale=0.00",
-            "VerticalRecoil=0.00",
-            "HorizontalRecoil=0.00",
-            "VerticalRecoilScale=0.00",
-            "HorizontalRecoilScale=0.00",
-            "VerticalRecoilMultiplier=0.00",
-            "HorizontalRecoilMultiplier=0.00",
-            "RecoilReduction=1.00",
-            "WeaponStability=500",
-            "ScreenShake=0",
-            "CameraShake=0",
-            "NoCameraShake=1",
-            "GunKick=0",
-            "GunKickReduction=1.00",
-            "WeaponKickReduction=1.00",
-            "AllGunsRecoilReduction=1.00",
-            "ScopeShakeReduction=1.00",
-            "ScopeRecoilMultiplier=0.00",
-            "ScopeStability=5.00",
-            "IronSightRecoil=0.00",
-            "RedDotRecoil=0.00",
-            "HoloRecoil=0.00",
-            "Scope2xRecoil=0.00",
-            "Scope3xRecoil=0.00",
-            "Scope4xRecoil=0.00",
-            "Scope6xRecoil=0.00",
-            "Scope8xRecoil=0.00",
-            "CantedSightRecoil=0.00",
-            "ThermalScopeRecoil=0.00",
-            "SniperScopeRecoil=0.00",
-            "ARRecoilReduction=1.00",
-            "DMRRecoilReduction=1.00",
-            "SniperRecoilReduction=1.00",
-            "SMGRecoilReduction=1.00",
-            "LMGRecoilReduction=1.00",
-            "ShotgunRecoilReduction=1.00",
-            "BulletSpread=0.00",
-            "CrosshairSpread=0.00",
-            "SpreadScale=0.00",
-            "BulletSpreadReduction=1",
-            "FirstBulletAccuracy=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectScopeZeroRecoil(path);
-            ConfigFileHelper.patchKeys(path, recoilCvars, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "PUBGM Zero Recoil & Weapon Stability for ALL Guns & ALL Scopes applied for " + packageName);
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Damage Multiplier & Critical Penetration CVars into PUBGM/BGMI config files.
-     */
     public static void applyDamageScriptConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] damageCvars = {
-            "+CVars=r.DamageMultiplier=1000.00",
-            "+CVars=r.BulletDamageScale=1000.00",
-            "+CVars=r.HeadshotMultiplier=1000.00",
-            "+CVars=r.WeaponDamageScale=1000.00",
-            "+CVars=r.PhysicalDamageScale=1000.00",
-            "+CVars=r.MagicDamageScale=1000.00",
-            "+CVars=r.TrueDamageScale=1000.00",
-            "+CVars=r.CriticalHitRate=1.00",
-            "+CVars=r.HitboxExpansion=100.00",
-            "+CVars=r.BulletVelocityScale=200.00",
-            "+CVars=r.PenetrationPower=200.00",
-            "+CVars=r.BodyDamageMultiplier=50.00",
-            "+CVars=r.LimbDamageMultiplier=50.00",
-            "+CVars=r.ExplosiveDamageMultiplier=50.00",
-            "+CVars=r.MovementSpeedMultiplier=15.00",
-            "+CVars=r.SprintSpeedMultiplier=15.00",
-            "DamageMultiplier=1000.00",
-            "PhysicalDamageBoost=1000.00",
-            "MagicDamageBoost=1000.00",
-            "TrueDamageBoost=1000.00",
-            "BulletDamageBoost=1000.00",
-            "DamageBoost=1000.00",
-            "DamageBoostRatio=1000.00",
-            "HeadshotMultiplier=1000.00",
-            "HeadshotDamageMultiplier=1000.00",
-            "CriticalHitRate=100",
-            "CriticalDamage=10000",
-            "CriticalDamageRate=100",
-            "CriticalDamageMultiplier=50.00",
-            "PenetrationBoost=10000",
-            "ArmorPenetration=10000",
-            "PhysicalPenetrationBoost=10000",
-            "MagicPenetrationBoost=10000",
-            "MagicResistPenetration=10000",
-            "HighDamageRateMode=1",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "MovementSpeedMultiplier=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "SkillDamageMultiplier=1000.00",
-            "DamageAssetOverride=1",
-            "AutoDamageExecutionMode=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectHighDamage(path);
-            ConfigFileHelper.patchKeys(path, damageCvars, "[UserCustom DeviceProfile]");
-        }
-        Log.i(TAG, "PUBGM Damage Boost 1000% & Bullet Penetration applied for " + packageName);
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
     }
 
-    /**
-     * Injects Fast Cooldown, Zero Delay Reload, and Instant Weapon Cycle for PUBGM/BGMI.
-     */
     public static void applyFastCooldownConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] cdCvars = {
-            "+CVars=r.ReloadSpeedMultiplier=25.00",
-            "+CVars=r.WeaponSwitchZeroDelay=1",
-            "+CVars=r.InstantReload=1",
-            "+CVars=r.AttackDelayReduction=1",
-            "+CVars=r.CooldownReduction=0.99",
-            "+CVars=r.SkillResponseZeroDelay=1",
-            "SkillCoolDownReduceMode=1",
-            "CooldownReductionBoost=0.99",
-            "CooldownReduction=0.99",
-            "SkillCooldownMultiplier=0.01",
-            "ReloadSpeedMultiplier=25.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackDelayReduction=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectFastCooldown(path);
-            ConfigFileHelper.patchKeys(path, cdCvars, "[FastCooldown]");
-        }
-        Log.i(TAG, "PUBGM Fast Reload & Instant Cycle applied for " + packageName);
+        CommonConfigTuningInjector.applyFastCooldownConfig(packageName);
     }
 
-    /**
-     * Injects 1500+ Shield Overdrive & Armor Mitigation for PUBGM/BGMI.
-     */
     public static void applyShield1500Config(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] shieldCvars = {
-            "+CVars=r.ShieldMultiplier=1500.00",
-            "+CVars=r.ArmorDamageReduction=0.9999",
-            "+CVars=r.IncomingDamageScale=0.0001",
-            "+CVars=r.VestDurabilityBoost=1000.00",
-            "+CVars=r.HelmetDamageReduction=0.9999",
-            "+CVars=r.HeavyDamageDampener=100.00",
-            "+CVars=r.BurstDamageReduction=100.00",
-            "+CVars=r.HealthRegenBoost=1000.00",
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldStrength=1500.00",
-            "PhysicalDefenseBoost=1000.00",
-            "ArmorBoost=50000",
-            "VestDurability=1000.00",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "HelmetDamageReduction=0.9999"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectShield1500(path);
-            ConfigFileHelper.patchKeys(path, shieldCvars, "[DefenseShield1500]");
-        }
-        Log.i(TAG, "PUBGM 1500+ Shield Overdrive applied for " + packageName);
+        CommonConfigTuningInjector.applyShield1500Config(packageName);
     }
 
-    /**
-     * Injects Drone View & FOV 180 for PUBGM/BGMI.
-     */
+    public static void applyDroneViewUltraConfig(String packageName) {
+        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+    }
+
     public static void applyDroneViewConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] droneCvars = {
-            "+CVars=r.PUBGTPPViewRange=180.00",
-            "+CVars=r.PUBGFPPViewRange=180.00",
-            "+CVars=r.CameraFOV=180",
-            "+CVars=r.DroneViewHeight=4",
-            "TPPFieldOfView=180",
-            "FPPFieldOfView=180",
-            "CameraFOV=180",
-            "DroneView=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectDroneView(path);
-            ConfigFileHelper.patchKeys(path, droneCvars, "[DroneViewUltra]");
-        }
-        Log.i(TAG, "PUBGM Drone View FOV 180 applied for " + packageName);
+        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Armor Defense, Vest Durability, Helmet Protection, and Damage Reduction CVars into PUBGM/BGMI.
-     */
     public static void applyArmorDefConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] armorCvars = {
-            "+CVars=r.ArmorDamageReduction=0.9999",
-            "+CVars=r.VestDurabilityBoost=1000.00",
-            "+CVars=r.HelmetDamageReduction=0.9999",
-            "+CVars=r.IncomingDamageScale=0.0001",
-            "+CVars=r.ShieldEfficiency=1500.00",
-            "+CVars=r.HealthRegenBoost=1000.00",
-            "+CVars=r.DamageResistance=0.9999",
-            "+CVars=r.TenacityRatio=0.9999",
-            "+CVars=r.FallDamageReduction=1.00",
-            "+CVars=r.ExplosionResistance=0.9999",
-            "+CVars=r.HeadshotDamageReduction=0.9999",
-            "+CVars=r.HeavyDamageDampener=100.00",
-            "+CVars=r.BurstDamageReduction=100.00",
-            "+CVars=r.HighDamageMitigationRatio=100.00",
-            "+CVars=r.MaxHPMultiplier=100.00",
-            "+CVars=r.ShieldMultiplier=1500.00",
-            "PhysicalDefenseBoost=1000.00",
-            "MagicDefenseBoost=1000.00",
-            "PhysicalDefenseMultiplier=1000.00",
-            "MagicDefenseMultiplier=1000.00",
-            "DamageReductionRatio=0.9999",
-            "DamageReduction=0.9999",
-            "IncomingDamageReduction=0.9999",
-            "ShieldMultiplier=1500.00",
-            "ShieldCapacity=1500.00",
-            "ShieldStrength=1500.00",
-            "MaxHPMultiplier=100.00",
-            "HPBoostRatio=100.00",
-            "DamageAbsorbRatio=100.00",
-            "ArmorBoost=50000",
-            "MagicResistBoost=50000",
-            "VestDurability=1000.00",
-            "VestDurabilityBoost=1000.00",
-            "HelmetDamageReduction=0.9999",
-            "TenacityRatio=0.9999",
-            "ResilienceLevel=10",
-            "ArmorLevel=10",
-            "DamageResistance=0.9999",
-            "ShieldEfficiency=1500.00",
-            "ShieldPointsMultiplier=1500.00",
-            "ArmorPlateEfficiency=1000.00",
-            "KineticArmorBoost=1000.00",
-            "FlakJacketRatio=0.9999",
-            "HealthRegenDelay=0.00",
-            "HealthRegenBoost=1000.00",
-            "HealthRegenRate=1000.00",
-            "FallDamageReduction=1.00",
-            "ExplosionResistance=0.9999",
-            "HeadshotDamageReduction=0.9999",
-            "HighDamageMitigationRatio=100.00",
-            "HeavyHitAbsorption=100.00",
-            "BurstDamageReduction=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectArmorDef(path);
-            ConfigFileHelper.patchKeys(path, armorCvars, "[DefenseConfig]");
-        }
-        Log.i(TAG, "PUBGM 1000% Armor Defense & 1500x Vest Durability applied for " + packageName);
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
     }
 
-    /**
-     * Injects Speed Boost & Movement Agility for PUBGM/BGMI.
-     */
     public static void applySpeedBoostConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] speedCvars = {
-            "+CVars=r.MovementSpeedMultiplier=15.00",
-            "+CVars=r.SprintSpeedMultiplier=15.00",
-            "+CVars=r.AttackSpeedMultiplier=25.00",
-            "+CVars=r.BulletVelocityScale=200.00",
-            "+CVars=r.ZeroInputLag=1",
-            "MovementSpeedMultiplier=15.00",
-            "MovementSpeedBoost=15.00",
-            "SprintSpeedMultiplier=15.00",
-            "SprintSpeedBoost=15.00",
-            "SprintSensitivity=1000",
-            "AgilityMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00",
-            "AttackSpeedBoost=25.00",
-            "ReloadSpeedMultiplier=25.00",
-            "FireRateMultiplier=25.00",
-            "BulletVelocityMultiplier=200.00",
-            "BulletVelocityScale=200.00",
-            "TouchPollingRate=1000",
-            "TouchZeroDelay=1",
-            "ZeroInputLag=1",
-            "HighSpeedMovement=1"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectSpeedBoost(path);
-            ConfigFileHelper.patchKeys(path, speedCvars, "[SpeedEngine]");
-        }
-        Log.i(TAG, "PUBGM 15.0x Speed Boost & Sprint Agility applied for " + packageName);
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 
-    /**
-     * Injects 1000% Tracking Bullet, Bullet Magnetism, Magic Bullet, and Hitbox Expansion CVars into PUBGM/BGMI.
-     */
     public static void applyTrackingBulletConfig(String packageName) {
-        if (packageName == null) return;
-        List<String> paths = getConfigPaths(packageName);
-        String[] trackingCvars = {
-            "+CVars=r.BulletTracking=1",
-            "+CVars=r.MagicBullet=1",
-            "+CVars=r.HitboxExpansion=100.00",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletVelocityScale=200.00",
-            "+CVars=r.BulletCurveFactor=100.00",
-            "+CVars=r.TargetLockTracking=1",
-            "+CVars=r.FirstBulletAccuracy=1",
-            "+CVars=r.ProjectileHoming=1",
-            "+CVars=r.HomingStrength=100.00",
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "HitboxExpansion=100.00",
-            "BulletMagnetism=100.00",
-            "BulletCurveFactor=100.00",
-            "BulletVelocityMultiplier=200.00",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00"
-        };
-        for (String path : paths) {
-            NativeConfigInjector.injectTrackingBullet(path);
-            ConfigFileHelper.patchKeys(path, trackingCvars, "[TrackingConfig]");
-        }
-        Log.i(TAG, "PUBGM 1000% Tracking Bullet & Magic Bullet applied for " + packageName);
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
     }
 
-    // ─── Internal ─────────────────────────────────────────────────────────────
+    public static void applyAntiLog(String packageName) {
+        CommonConfigTuningInjector.applyAntiLog(packageName);
+    }
+
+// ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);

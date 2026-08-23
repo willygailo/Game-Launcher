@@ -55,4 +55,13 @@ public final class GameModeApiSupport {
     public static boolean isAppRefreshRateApiAvailable(int sdk) {
         return sdk >= MIN_APP_REFRESH_RATE_API;
     }
+
+    /** Forces Android Game Mode Performance via Shizuku shell. */
+    public static void setGameModePerformance(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
+                "cmd game mode performance " + packageName.trim(),
+                "cmd game mode 2 " + packageName.trim()
+        );
+    }
 }
