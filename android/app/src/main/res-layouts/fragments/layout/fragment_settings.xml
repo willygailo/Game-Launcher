@@ -904,8 +904,7 @@
                     android:id="@+id/rv_tweaks_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:nestedScrollingEnabled="false" />
+                    android:layout_marginTop="10dp" />
             </LinearLayout>
 
             <!-- CARD SPOOF: HARDWARE DEVICE SPOOFING -->
@@ -1221,7 +1220,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
                     android:visibility="gone" />
             </LinearLayout>
 
@@ -1283,7 +1281,6 @@
                     android:layout_marginTop="10dp"
                     android:background="@drawable/terminal_pure_window_bg"
                     android:fillViewport="true"
-                    android:nestedScrollingEnabled="true"
                     android:overScrollMode="never"
                     android:scrollbars="vertical"
                     android:padding="10dp">

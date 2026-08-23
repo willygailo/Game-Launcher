@@ -251,7 +251,6 @@
             android:id="@+id/rv_games_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
             android:clipToPadding="false" />
 
         <!-- Empty State (Shown when no target games detected) -->

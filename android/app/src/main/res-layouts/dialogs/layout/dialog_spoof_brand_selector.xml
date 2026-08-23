@@ -240,7 +240,6 @@
         android:layout_height="320dp"
         android:layout_marginTop="12dp"
         android:clipToPadding="false"
-        android:nestedScrollingEnabled="true"
         android:scrollbars="vertical" />
 
     <!-- Bottom Actions -->
