@@ -56,7 +56,18 @@ public class ShizukuManager {
                 try {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 } catch (Throwable ignored) {}
-                // Phase 1.1: drive the connection state machine to READY
+                // Auto-elevate: grant all permissions & restore optimizations
+                try {
+                    android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                    if (ctx != null) {
+                        ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
+                        ShizukuFileManager.grantAllStoragePermissions(ctx);
+                        com.gamebooster.app.config.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "Post-permission enforcement error: " + t.getMessage());
+                }
+                // Drive the connection state machine to READY
                 ShizukuConnectionManager.getInstance().onBinderReceived();
             }
             notifyStateChanged(granted);
@@ -70,9 +81,14 @@ public class ShizukuManager {
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
             } else {
                 ShizukuUserServiceConnector.getInstance().bindService();
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
+                    ShizukuFileManager.grantAllStoragePermissions(ctx);
+                    com.gamebooster.app.config.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                }
             }
         } catch (Exception ignored) {}
-        // Phase 1.1: converge the connection state machine
         ShizukuConnectionManager.getInstance().onBinderReceived();
         notifyStateChanged(isShizukuRunningAndGranted());
     };
