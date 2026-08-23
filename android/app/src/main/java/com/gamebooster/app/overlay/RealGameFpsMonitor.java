@@ -205,15 +205,26 @@ public class RealGameFpsMonitor {
         }
     }
 
+    // Cache for resolved SurfaceFlinger layer name
+    private String cachedLayerName = null;
+    private long lastLayerResolveTime = 0L;
+    private String lastResolvedPkg = null;
+
     /**
-     * Queries SurfaceFlinger latency buffer to extract true hardware present timings.
+     * Resolves the active SurfaceView or rendering layer name from SurfaceFlinger.
+     * Matches exact package layers (e.g. SurfaceView[pkg/...], pkg/..., pkg#0)
+     * across all game engines (Unity, Unreal Engine, Cocos, custom native renderers).
      */
-    private FpsStats querySurfaceFlingerFps(String targetPkg) {
-        // Step 1: Detect active foreground surface layer name if package is unspecified
-        String layerName = null;
-        if (targetPkg != null && !targetPkg.trim().isEmpty()) {
-            layerName = targetPkg.trim();
-        } else {
+    private String resolveActiveGameLayer(String targetPkg) {
+        long now = System.currentTimeMillis();
+        if (targetPkg != null && targetPkg.equals(lastResolvedPkg) && cachedLayerName != null && (now - lastLayerResolveTime < 2500L)) {
+            return cachedLayerName;
+        }
+
+        String pkg = (targetPkg != null && !targetPkg.trim().isEmpty()) ? targetPkg.trim() : null;
+
+        // Auto-detect foreground package if not set
+        if (pkg == null) {
             String focusDump = ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
             if (focusDump != null && !focusDump.isEmpty()) {
                 for (String line : focusDump.split("\n")) {
@@ -222,8 +233,8 @@ public class RealGameFpsMonitor {
                         int space = line.lastIndexOf(' ', slash);
                         if (space >= 0 && slash > space) {
                             String p = line.substring(space + 1, slash).trim();
-                            if (!p.isEmpty() && !p.contains(" ") && p.contains(".")) {
-                                layerName = p;
+                            if (!p.isEmpty() && !p.contains(" ") && p.contains(".") && !p.contains("com.gamebooster.app")) {
+                                pkg = p;
                                 break;
                             }
                         }
@@ -232,6 +243,57 @@ public class RealGameFpsMonitor {
             }
         }
 
+        // Query active layer list from SurfaceFlinger
+        String listOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --list");
+        if (listOutput == null || listOutput.isEmpty() || listOutput.startsWith("ERROR")) {
+            // Fallback to raw package name
+            return pkg;
+        }
+
+        String bestLayer = null;
+        int bestPriority = -1;
+
+        for (String line : listOutput.split("\n")) {
+            String layer = line.trim();
+            if (layer.isEmpty() || layer.contains("com.gamebooster.app") || layer.contains("NavigationBar") || layer.contains("StatusBar") || layer.contains("ScreenDecorOverlay")) {
+                continue;
+            }
+
+            int priority = -1;
+            if (pkg != null && layer.contains(pkg)) {
+                if (layer.contains("SurfaceView") || layer.contains("surface-view")) {
+                    priority = 100; // Top priority: Game render surface
+                } else if (layer.contains("#") && layer.contains("/")) {
+                    priority = 80;  // Standard activity layer
+                } else {
+                    priority = 60;  // Package-associated layer
+                }
+            } else if (pkg == null && (layer.contains("SurfaceView") || layer.contains("surface-view"))) {
+                priority = 40; // General SurfaceView from any active game
+            }
+
+            if (priority > bestPriority) {
+                bestPriority = priority;
+                bestLayer = layer;
+                if (priority == 100) break; // Found exact game surface layer
+            }
+        }
+
+        if (bestLayer != null) {
+            cachedLayerName = bestLayer;
+            lastLayerResolveTime = now;
+            lastResolvedPkg = pkg;
+            return bestLayer;
+        }
+
+        return pkg;
+    }
+
+    /**
+     * Queries SurfaceFlinger latency buffer to extract true hardware present timings.
+     */
+    private FpsStats querySurfaceFlingerFps(String targetPkg) {
+        String layerName = resolveActiveGameLayer(targetPkg);
         if (layerName == null || layerName.isEmpty()) {
             return null;
         }
@@ -239,11 +301,13 @@ public class RealGameFpsMonitor {
         // Query SurfaceFlinger latency for the identified layer
         String latencyOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --latency \"" + layerName + "\"");
         if (latencyOutput == null || latencyOutput.isEmpty() || latencyOutput.startsWith("ERROR")) {
+            cachedLayerName = null; // Invalidate cache on failure
             return null;
         }
 
         String[] lines = latencyOutput.split("\n");
         if (lines.length < 5) {
+            cachedLayerName = null;
             return null;
         }
 
@@ -251,10 +315,10 @@ public class RealGameFpsMonitor {
         try {
             refreshPeriodNanos = Long.parseLong(lines[0].trim());
         } catch (Exception e) {
-            refreshPeriodNanos = 5405405L; // Default 185Hz
+            refreshPeriodNanos = 6944444L; // Default 144Hz (~6.94ms)
         }
 
-        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 5405405L;
+        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 6944444L;
 
         List<Long> presentTimes = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {
@@ -280,8 +344,6 @@ public class RealGameFpsMonitor {
         List<Double> frameIntervalsMs = new ArrayList<>();
         int validFrames = 0;
         long lastTime = presentTimes.get(0);
-        long nowNanos = System.nanoTime();
-        long windowStartNanos = nowNanos - 1_200_000_000L; // Last 1.2s window
 
         for (int i = 1; i < presentTimes.size(); i++) {
             long pt = presentTimes.get(i);

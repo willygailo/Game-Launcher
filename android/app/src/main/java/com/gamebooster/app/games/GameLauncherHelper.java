@@ -43,6 +43,7 @@ public class GameLauncherHelper {
         GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(context, pkgName);
         GameSessionSettings.begin(context, pkgName);
         AutoGameMonitorService.start(context);
+        com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(pkgName);
 
         // 1. Offload privileged optimizations to AppExecutors so launch is instant
         AppExecutors.getInstance().executeCommand(() -> {

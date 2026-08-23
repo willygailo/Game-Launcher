@@ -773,7 +773,8 @@ public class FloatingOverlayService extends Service {
         // 1. Update Collapsed Pill Viewport
         if (layoutCollapsedPill != null && layoutCollapsedPill.getVisibility() == View.VISIBLE) {
             if (tvPillFps != null) {
-                tvPillFps.setText(String.format("%d FPS", activeFps));
+                String tag = isRealGameSurface ? "🎮 " : "";
+                tvPillFps.setText(String.format("%s%d FPS", tag, activeFps));
                 tvPillFps.setTextColor(fpsColor);
             }
             if (tvPillTemp != null) {
@@ -789,7 +790,8 @@ public class FloatingOverlayService extends Service {
         // 2. Update Micro FPS Viewport
         if (layoutMicroFps != null && layoutMicroFps.getVisibility() == View.VISIBLE) {
             if (tvMicroFps != null) {
-                tvMicroFps.setText(String.format("⚡ %d FPS", activeFps));
+                String tag = isRealGameSurface ? "🎮 " : "⚡ ";
+                tvMicroFps.setText(String.format("%s%d FPS", tag, activeFps));
                 tvMicroFps.setTextColor(fpsColor);
             }
         }

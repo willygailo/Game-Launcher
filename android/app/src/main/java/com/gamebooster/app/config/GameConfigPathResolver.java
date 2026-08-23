@@ -373,7 +373,7 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // Generic fallback
+        // Generic fallback (All installed / custom games: Unity, UE4/5, Custom)
         else {
             rel.add("files/GameSettings.ini");
             rel.add("files/GraphicSettings.json");
@@ -382,6 +382,11 @@ public class GameConfigPathResolver {
             rel.add("files/UserCustom.ini");
             rel.add("files/Settings.json");
             rel.add("files/Config/UserSetting.json");
+            rel.add("files/il2cpp/boot.config");
+            rel.add("files/Unity/boot.config");
+            rel.add("files/boot.config");
+            rel.add("files/UE4Game/Game/Game/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/Game/Game/Saved/Config/Android/UserCustom.ini");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
         }

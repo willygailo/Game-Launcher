@@ -1238,6 +1238,11 @@ public class NativeConfigInjector {
         int count = 0;
         for (String path : paths) {
             boolean ok = false;
+            if (path.endsWith("boot.config")) {
+                ok |= injectUnityBootConfig(path, targetFps);
+            } else if (path.endsWith("Engine.ini") || path.endsWith("GameUserSettings.ini") || path.endsWith("UserCustom.ini")) {
+                ok |= injectUnrealEngineIni(path, targetFps);
+            }
             ok |= injectUltraExtremeGraphics(path, targetFps);
             ok |= injectHighDamage(path);
             ok |= injectNoRecoil(path);

@@ -148,7 +148,8 @@ public class AutoGameMonitorService extends Service {
                 PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
                 GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
                 
-                // 5. Auto-Start Floating Gaming HUD
+                // 5. Auto-Start Floating Gaming HUD & Bind Real FPS Target
+                com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
                 if (!FloatingOverlayService.isOverlayRunning()) {
                     FloatingOverlayService.startOverlay(getApplicationContext());
                 }
@@ -161,6 +162,7 @@ public class AutoGameMonitorService extends Service {
             } else if (!isGameActive && lastActiveGamePackage != null) {
                 Log.i(TAG, "Game exited — reverting to baseline system state");
                 lastActiveGamePackage = null;
+                com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(null);
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
                 GameStateReverter.RevertReport revertReport =
                         GameStateReverter.revertToBaseline(getApplicationContext());
