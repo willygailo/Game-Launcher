@@ -33,7 +33,130 @@ public class PubgConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to all PUBGM/BGMI config paths.
+     * Includes frame-pacing, 16x anisotropic filtering, max shadow resolution, TAA upscale,
+     * and full UE4 CVar injection — the most complete single-call patch for PUBGM.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+        final FpsUnlockTier tier = FpsUnlockTier.FPS_144;
+
+        String[] keys = {
+            // ── SuperSmooth 144fps UE4 CVars ──
+            "+CVars=r.PUBGDeviceFPS=8",
+            "+CVars=r.PUBGMaxFPS=144",
+            "+CVars=r.PUBGFrameRateLimit=144",
+            "+CVars=r.FrameRateLimit=144",
+            "+CVars=r.MobileFPSLimit=144",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.TouchBoostHz=144",
+            "+CVars=r.MobileTouchBoostRate=144",
+            "+CVars=r.FramePacing=1",
+            // ── UltraExtreme Graphics CVars ──
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.PUBGHDRMode=1",
+            "+CVars=r.PUBGQualityLevel=4",
+            "+CVars=r.PUBGSDKQualityLevel=4",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.HDR.Display.OutputDevice=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.ReflectionCaptureResolution=256",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.MobileTonemapperFilm=1",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SuppressLogs=1",
+            "+CVars=r.DisableDebugLog=1",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroZeroDelay=1",
+            // ── INI Keys ──
+            "FPS=144",
+            "MaxFPS=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "MobileFPSLimit=144",
+            "FrameRateLevel=8",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "HighFPSMode=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── UltraExtreme Graphics INI ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "ResolutionQuality=120",
+            "ResolutionScale=120",
+            "ScreenScale=120",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            "bUseHighQualityBloom=True",
+            "BloomQuality=5",
+            "AntiAliasingQuality=4",
+            "bUseAntiAliasing=True",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "TextureQuality=4",
+            "MaxAnisotropy=16",
+            "bReduceLoadedMips=False",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150",
+            "bDisableAnalytics=True",
+            "bDisableBugReporting=True",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=2.5",
+            "GyroZeroDelay=1",
+            "GyroLatencyMode=0",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "TouchBoostHz=144",
+            "TouchPollingRate=1000",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 144);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
 
     /**
      * Force-overwrites ALL PUBGM/BGMI config paths unconditionally.
@@ -127,46 +250,51 @@ public class PubgConfigPatcher {
     }
 
     /**
-     * Deploys game_patch_*.pak file to PUBGM Saved/Paks directory for 120/144/165/185 FPS unlock.
+     * Optional deployment of a custom game_patch_*.pak file to PUBGM Saved/Paks directory.
+     * Note: PAK patches are completely optional; 100% of FPS, Graphics, and Performance unlocks
+     * operate natively through UserCustom.ini and Active.sav binary byte patching.
      */
     public static boolean deployPakPatch(String pkg) {
-        if (pkg == null) return false;
-        String pakFileName = "game_patch_4.5.0.21377.pak";
-        String[] candidateSources = {
-            "/storage/emulated/0/" + pakFileName,
-            "/sdcard/" + pakFileName,
-            "/storage/emulated/0/Download/" + pakFileName,
-            "/sdcard/Download/" + pakFileName,
-            "/storage/emulated/0/GameLauncher/" + pakFileName,
-            "/sdcard/GameLauncher/" + pakFileName,
-            "/storage/emulated/0/Game-Launcher/" + pakFileName,
-            "/sdcard/Game-Launcher/" + pakFileName,
-            "/storage/emulated/0/Documents/" + pakFileName,
-            "/sdcard/Documents/" + pakFileName,
-            "/storage/emulated/0/Documents/Game-Launcher/" + pakFileName,
-            "/sdcard/Documents/Game-Launcher/" + pakFileName,
-            "/data/local/tmp/" + pakFileName
+        if (pkg == null || pkg.trim().isEmpty()) return false;
+
+        String[] candidateDirs = {
+            "/storage/emulated/0/Download",
+            "/sdcard/Download",
+            "/storage/emulated/0/Documents/Game-Launcher",
+            "/sdcard/Documents/Game-Launcher",
+            "/storage/emulated/0/GameLauncher",
+            "/sdcard/GameLauncher",
+            "/data/local/tmp"
         };
 
         String foundSource = null;
-        for (String src : candidateSources) {
-            if (ShizukuFileManager.fileExists(src)) {
-                foundSource = src;
+        String pakFileName = null;
+
+        for (String dir : candidateDirs) {
+            if (!ShizukuFileManager.fileExists(dir)) continue;
+            // Quick check for any game_patch*.pak
+            String checkCmd = "ls -1 \"" + dir + "\"/game_patch*.pak 2>/dev/null | head -n 1";
+            String res = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(checkCmd)
+                    : CommandExecutor.executeSystemCommand(checkCmd);
+            if (res != null && !res.trim().isEmpty() && !res.startsWith("ERROR:") && !res.contains("No such")) {
+                foundSource = res.trim();
+                int slash = foundSource.lastIndexOf('/');
+                pakFileName = (slash >= 0) ? foundSource.substring(slash + 1) : foundSource;
                 break;
             }
         }
 
-        if (foundSource == null) {
+        if (foundSource == null || pakFileName == null || pakFileName.isEmpty()) {
+            Log.d(TAG, "No optional PAK file found for " + pkg + "; relying purely on native INI & Active.sav binary patch.");
             return false;
         }
 
-        String[] targetDirs = {
-            "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks",
-            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks"
-        };
-
+        List<String> basePaths = GameConfigPathResolver.generateBasePaths(pkg);
         boolean deployed = false;
-        for (String dir : targetDirs) {
+
+        for (String base : basePaths) {
+            String dir = base + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks";
             ShizukuFileManager.makeDirectory(dir);
             String dest = dir + "/" + pakFileName;
             String copyCmd = "cp -f \"" + foundSource + "\" \"" + dest + "\" && chmod 666 \"" + dest + "\"";
@@ -177,7 +305,7 @@ public class PubgConfigPatcher {
             }
             if (ShizukuFileManager.fileExists(dest)) {
                 deployed = true;
-                Log.i(TAG, "Successfully deployed " + pakFileName + " to " + dest);
+                Log.i(TAG, "Successfully deployed optional " + pakFileName + " to " + dest);
             }
         }
         return deployed;

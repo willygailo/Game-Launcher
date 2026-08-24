@@ -82,6 +82,98 @@ public class DeltaForceConfigPatcher {
         return written > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth ────────────────────────────────────
+
+    /**
+     * Applies the 144fps SuperSmooth + UltraExtreme max graphics preset for Delta Force Mobile.
+     * Targets UE5 CVars (UserCustom.ini DeviceProfile) and raw renderer settings (Engine.ini /
+     * Scalability.ini).  Covers: 144fps unlock, resolution scale 120%, shadow 2048, TAA 4,
+     * anisotropy 16, HDR, frame pacing, 1000Hz touch polling.
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        // ── CVars block for UserCustom.ini ──────────────────────────────────
+        String[] cvarKeys = {
+            // FPS unlock
+            "+CVars=r.MaxFPS=144",
+            "+CVars=r.FrameRateLimit=144",
+            "+CVars=r.MobileFPSLimit=144",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            // SuperSmooth
+            "+CVars=r.VSync=0",
+            "+CVars=r.OneFrameThreadLag=0",
+            "+CVars=r.FinishCurrentFrame=0",
+            "+CVars=r.DFR.Enabled=0",
+            "+CVars=r.FramePacing=1",
+            // UltraExtreme graphics
+            "+CVars=r.MobileContentScaleFactor=1.2",
+            "+CVars=r.ShadowQuality=5",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.DefaultFeature.AntiAliasing=4",
+            "+CVars=r.TemporalAA.Quality=4",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.ReflectionEnvironment=1",
+            "+CVars=r.SSR.Quality=4",
+            "+CVars=r.PostProcessAAQuality=6",
+            "+CVars=r.TranslucencyLightingVolumeDim=64",
+            "+CVars=r.LightFunctionQuality=2",
+            "+CVars=r.DetailMode=2",
+            "+CVars=r.Streaming.PoolSize=0",
+            "+CVars=r.RenderTargetPoolMin=2048",
+            "+CVars=r.HDR.EnableHDROutput=1",
+            "+CVars=r.HDR.Display.OutputDevice=4",
+            // Touch 1000Hz
+            "+CVars=r.TouchBoostHz=144",
+            "+CVars=r.TouchPollingRate=1000",
+            "+CVars=r.GyroSampleRate=1000",
+        };
+
+        // ── Raw renderer keys for Engine.ini / Scalability.ini ──────────────
+        String[] rawKeys = {
+            "r.MaxFPS=144",
+            "r.FrameRateLimit=144",
+            "r.MobileFPSLimit=144",
+            "r.VSync=0",
+            "r.OneFrameThreadLag=0",
+            "r.FinishCurrentFrame=0",
+            "r.FramePacing=1",
+            "r.MobileContentScaleFactor=1.2",
+            "r.ShadowQuality=5",
+            "r.Shadow.MaxResolution=2048",
+            "r.Tonemapper.Quality=4",
+            "r.DefaultFeature.AntiAliasing=4",
+            "r.TemporalAA.Quality=4",
+            "r.MaxAnisotropy=16",
+            "r.BloomQuality=5",
+            "r.PostProcessAAQuality=6",
+            "r.DetailMode=2",
+            "r.HDR.EnableHDROutput=1",
+            "r.HDR.Display.OutputDevice=4",
+            "bSmoothFrameRate=False",
+            "MaxSmoothedFrameRate=144",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            boolean isUserCustom = path.contains("UserCustom");
+            String[] keys = isUserCustom ? cvarKeys : rawKeys;
+            String section = isUserCustom ? "[UserCustom DeviceProfile]" : "[/Script/Engine.RendererSettings]";
+            if (ConfigFileHelper.patchKeys(path, keys, section)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "DeltaForce UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     private static boolean applyPatch(String path, int forcedFps) {
         String[] keys = new String[]{
                 "+CVars=r.MaxFPS=" + forcedFps,

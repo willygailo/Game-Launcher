@@ -28,7 +28,83 @@ public class ValorantConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Valorant Mobile.
+     * Injects both UE4 CVar-style keys and INI keys for full coverage.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── UE4 CVars ──
+            "+CVars=r.FrameRateLimit=144",
+            "+CVars=r.MobileFPSLimit=144",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.FramePacing=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.SuppressLogs=1",
+            // ── INI Keys ──
+            "MaxFPS=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "ShadingQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HDRMode=1",
+            "ResolutionScale=120",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TouchBoostHz=144",
+            "TouchPollingRate=1000",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Valorant UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
 
     /**
      * Force-overwrites ALL Valorant Mobile config paths unconditionally.

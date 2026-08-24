@@ -174,5 +174,90 @@ public enum FpsUnlockTier {
                 "+CVars=r.HDR.Display.OutputDevice=1\n";
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Helpers ─────────────────────────────
+
+    /**
+     * Returns true if this tier is 144fps or above (UltraHighFps threshold).
+     */
+    public boolean isUltraHighFps() {
+        return fps >= 144;
+    }
+
+    /**
+     * Returns UE4 CVar-style frame-pacing, texture quality, shadow, and AA boost flags.
+     * Combine with getUE4UnlockCVars() for a full SuperSmooth injection block.
+     */
+    public String getSuperSmoothCVars() {
+        return "+CVars=r.Vsync=0\n"
+             + "+CVars=r.FramePacing=1\n"
+             + "+CVars=r.VelocityBlur=1\n"
+             + "+CVars=r.TemporalAA.Upscale=1\n"
+             + "+CVars=r.MobileContentScaleFactor=1.0\n"
+             + "+CVars=r.MobileReduceLoadedMips=0\n"
+             + "+CVars=r.MaxAnisotropy=16\n"
+             + "+CVars=r.BloomQuality=5\n"
+             + "+CVars=r.DepthOfFieldQuality=4\n"
+             + "+CVars=r.Shadow.MaxResolution=2048\n"
+             + "+CVars=r.Shadow.CSM.MaxMobileCascades=4\n"
+             + "+CVars=r.ReflectionCaptureResolution=256\n"
+             + "+CVars=r.AllowOcclusionQueries=1\n"
+             + "+CVars=r.TouchBoostHz=" + fps + "\n"
+             + "+CVars=r.MobileTouchBoostRate=" + fps + "\n";
+    }
+
+    /**
+     * Returns INI-style max graphics quality flags (resolution, HDR, AA, shadow, textures).
+     * Compatible with all game config sections that accept plain key=value pairs.
+     */
+    public String getGraphicsMaxFlags() {
+        return "UltraExtreme=1\n"
+             + "bUseUltraExtreme=True\n"
+             + "GraphicsQuality=5\n"
+             + "GraphicQuality=4\n"
+             + "GraphicLevel=4\n"
+             + "ResolutionQuality=120\n"
+             + "ResolutionScale=120\n"
+             + "ScreenScale=120\n"
+             + "HDRMode=1\n"
+             + "UltraHDMode=1\n"
+             + "HDRColorMode=2\n"
+             + "SuperResolution=1\n"
+             + "bUseHDRMode=True\n"
+             + "bUseHighQualityBloom=True\n"
+             + "BloomQuality=5\n"
+             + "AntiAliasingQuality=4\n"
+             + "bUseAntiAliasing=True\n"
+             + "ShadowQuality=2\n"
+             + "ShadowDistance=3\n"
+             + "ShadowResolution=2048\n"
+             + "TextureQuality=4\n"
+             + "MaxAnisotropy=16\n"
+             + "bReduceLoadedMips=False\n"
+             + "bFramePacingEnabled=True\n"
+             + "Vsync=0\n"
+             + "TouchBoostHz=" + fps + "\n"
+             + "TouchPollingRate=1000\n";
+    }
+
+    /**
+     * Returns a combined INI block for UltraExtreme 144fps: unlock flags + max graphics + FPS keys.
+     * Intended specifically for the FPS_144 tier but works for any tier >= 144fps.
+     */
+    public String getUltraExtreme144Flags() {
+        return getUnlockFlags()
+             + getGraphicsMaxFlags()
+             + "FPS=" + fps + "\n"
+             + "MaxFPS=" + fps + "\n"
+             + "TargetFPS=" + fps + "\n"
+             + "FrameRateLimit=" + fps + "\n"
+             + "MobileFPSLimit=" + fps + "\n"
+             + "UnlockFPS=1\n"
+             + "Unlock" + fps + "FPS=1\n"
+             + "Ultra" + fps + "FPS=1\n"
+             + "FrameRateLevel=" + level + "\n"
+             + "HighFPSMode=1\n"
+             + "SuperHighFPS=1\n";
+    }
+
     private static final int[] HZ_UNLOCK_FLAGS = {120, 144, 165, 185};
 }

@@ -23,6 +23,60 @@ public class BloodStrikeConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Blood Strike.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "+CVars=r.FrameRateLimit=144",
+            "+CVars=r.MobileFPSLimit=144",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.FramePacing=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "MaxFPS=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
+            "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
+            "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
+            "HDRMode=1", "ResolutionScale=120",
+            "UltraExtreme=1", "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True", "Vsync=0",
+            "TouchBoostHz=144", "TouchPollingRate=1000",
+            "GyroSampleRate=1000", "GyroZeroDelay=1",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "BloodStrike UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

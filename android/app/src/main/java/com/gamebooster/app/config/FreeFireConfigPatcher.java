@@ -23,6 +23,78 @@ public class FreeFireConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Free Fire / Free Fire MAX.
+     * Injects full quality unlock into [FFGraphics] section of all config paths.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+        final FpsUnlockTier tier = FpsUnlockTier.FPS_144;
+
+        String[] keys = {
+            "HighFPS=1",
+            "HighFPSMode=1",
+            "FPSMode=2",
+            "FrameRateLevel=8",
+            "MaxFPS=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── Max Graphics ──
+            "GraphicLevel=4",
+            "TextureQuality=4",
+            "Shadow=1",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HighResolution=1",
+            "ResolutionScale=120",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "SuperResolution=1",
+            "VulkanEnabled=1",
+            "bReduceLoadedMips=False",
+            // ── SuperSmooth Frame Pacing ──
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "HighFreqTouchHz=144",
+            "TouchBoostHz=144",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=20.0",
+            "GyroZeroDelay=1",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[FFGraphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "FreeFire UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

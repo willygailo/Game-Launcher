@@ -30,8 +30,12 @@ public class CompetitiveCfgProfile {
     public static final String GAME_SUPERCELL     = "SUPERCELL";
     public static final String GAME_ALL           = "ALL";
 
-    // ─── FPS Tier Constant — 185 only ──────────────────────────────────────
+    // ─── FPS Tier Constants ─────────────────────────────────────────────────
     public static final int FPS_185 = 185;
+    public static final int FPS_165 = 165;
+    public static final int FPS_144 = 144;
+    public static final int FPS_120 = 120;
+    public static final int FPS_90  =  90;
 
     // ─── Fields ──────────────────────────────────────────────────────────────
     private final String gameKey;
@@ -184,6 +188,91 @@ public class CompetitiveCfgProfile {
     /** Returns default competitive profile for the given game key (185fps extreme, all features enabled). */
     public static CompetitiveCfgProfile defaultCompetitive(String gameKey) {
         return new CompetitiveCfgProfile(gameKey, FPS_185, true, true, true, true, true, true, true, true, true, true, true, true, true, true);
+    }
+
+    // ─── UltraExtreme 144fps SuperSmooth Factory Methods ─────────────────────
+
+    /**
+     * Returns a 144fps SuperSmooth + UltraExtreme profile with ALL features enabled.
+     * Use when the user selects the "144fps SuperSmooth UltraExtreme" preset.
+     *
+     * @param gameKey one of the GAME_* constants (e.g. {@link #GAME_PUBGM})
+     */
+    public static CompetitiveCfgProfile ultraExtreme144(String gameKey) {
+        return new CompetitiveCfgProfile(
+            gameKey,
+            FPS_144,
+            /* superFastTouchEnabled  */ true,
+            /* forceWriteSystemHz     */ true,
+            /* aimAssistEnabled       */ true,
+            /* mlbbDamageScriptEnabled*/ true,
+            /* recoilControlEnabled   */ true,
+            /* trackingBulletEnabled  */ true,
+            /* gyroTuningEnabled      */ true,
+            /* touchNoDelayEnabled    */ true,
+            /* armorDefEnabled        */ true,
+            /* fastCooldownEnabled    */ true,
+            /* shield1500Enabled      */ true,
+            /* droneViewUltraEnabled  */ true,
+            /* hardwareMaskEnabled    */ true,
+            /* antiLogEnabled         */ true
+        );
+    }
+
+    /**
+     * Returns a 144fps profile focused only on max graphics + FPS unlock.
+     * Combat-enhancing features (aim assist, damage, tracking bullet, armor) are disabled.
+     * Intended for users who want visuals and framerate without gameplay modifications.
+     *
+     * @param gameKey one of the GAME_* constants
+     */
+    public static CompetitiveCfgProfile graphicsMaxOnly144(String gameKey) {
+        return new CompetitiveCfgProfile(
+            gameKey,
+            FPS_144,
+            /* superFastTouchEnabled  */ true,
+            /* forceWriteSystemHz     */ true,
+            /* aimAssistEnabled       */ false,
+            /* mlbbDamageScriptEnabled*/ false,
+            /* recoilControlEnabled   */ false,
+            /* trackingBulletEnabled  */ false,
+            /* gyroTuningEnabled      */ true,
+            /* touchNoDelayEnabled    */ true,
+            /* armorDefEnabled        */ false,
+            /* fastCooldownEnabled    */ false,
+            /* shield1500Enabled      */ false,
+            /* droneViewUltraEnabled  */ false,
+            /* hardwareMaskEnabled    */ false,
+            /* antiLogEnabled         */ true
+        );
+    }
+
+    /**
+     * Returns a 144fps SuperSmooth profile optimised for gyro + touch response.
+     * Max graphics enabled; combat mods disabled. Ideal for casual / ranked play
+     * where only framerate and input latency improvements are wanted.
+     *
+     * @param gameKey one of the GAME_* constants
+     */
+    public static CompetitiveCfgProfile superSmooth144(String gameKey) {
+        return new CompetitiveCfgProfile(
+            gameKey,
+            FPS_144,
+            /* superFastTouchEnabled  */ true,
+            /* forceWriteSystemHz     */ true,
+            /* aimAssistEnabled       */ false,
+            /* mlbbDamageScriptEnabled*/ false,
+            /* recoilControlEnabled   */ false,
+            /* trackingBulletEnabled  */ false,
+            /* gyroTuningEnabled      */ true,
+            /* touchNoDelayEnabled    */ true,
+            /* armorDefEnabled        */ false,
+            /* fastCooldownEnabled    */ false,
+            /* shield1500Enabled      */ false,
+            /* droneViewUltraEnabled  */ false,
+            /* hardwareMaskEnabled    */ false,
+            /* antiLogEnabled         */ true
+        );
     }
 
     // ─── Getters / Setters ───────────────────────────────────────────────────

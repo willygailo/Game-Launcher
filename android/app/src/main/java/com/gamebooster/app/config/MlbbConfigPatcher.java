@@ -28,7 +28,81 @@ public class MlbbConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to MLBB.
+     * Injects full quality and FPS keys into [Graphics] section of all config paths.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── 144fps Unlock ──
+            "HighFPSMode=1",
+            "FrameRateLevel=8",
+            "FPS=144",
+            "MaxFrameRate=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "HighFrameRate=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── Max Graphics ──
+            "GraphicsQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HDMode=1",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "SuperResolution=1",
+            "ResolutionScale=120",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "bUseHighQualityBloom=True",
+            "bUseAntiAliasing=True",
+            "bReduceLoadedMips=False",
+            "Shadow=1",
+            // ── SuperSmooth Frame Pacing ──
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "HighFreqTouchHz=144",
+            "TouchBoostHz=144",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=20.0",
+            "GyroZeroDelay=1",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "MLBB UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
 
     /**
      * Force-overwrites ALL MLBB config paths unconditionally.

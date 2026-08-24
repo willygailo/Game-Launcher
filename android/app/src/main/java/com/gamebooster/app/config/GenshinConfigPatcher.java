@@ -24,6 +24,55 @@ public class GenshinConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Genshin Impact / HSR / HoYoverse.
+     * Uses Genshin's own keys (targetFrameRate, graphicsQuality, etc.) + generic unlock keys.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "targetFrameRate=144",
+            "maxFrameRate=144",
+            "TargetFPS=144",
+            "FrameRateLimit=144",
+            "FrameRateLevel=8",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Ultra144FPS=1",
+            "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
+            "HighFPSMode=1",
+            "graphicsQuality=4",
+            "textureQuality=4",
+            "shadowQuality=2",
+            "antiAliasing=4",
+            "bloomQuality=5",
+            "maxAnisotropy=16",
+            "hdrMode=1",
+            "resolutionQuality=4",
+            "ResolutionScale=120",
+            "UltraExtreme=1", "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "vSync=0", "Vsync=0",
+            "TouchBoostHz=144", "TouchPollingRate=1000",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Genshin UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

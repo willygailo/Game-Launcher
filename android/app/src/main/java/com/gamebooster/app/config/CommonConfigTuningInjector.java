@@ -386,6 +386,83 @@ public final class CommonConfigTuningInjector {
     }
 
     /**
+     * Injects UltraExtreme max graphics quality + FPS unlock keys into all game config paths.
+     * Uses FpsUnlockTier.getGraphicsMaxFlags() as the canonical quality key set, then appends
+     * game-engine-agnostic FPS unlock and frame-pacing keys.
+     *
+     * @param packageName target game package
+     * @param targetFps   desired FPS (resolved to nearest supported tier)
+     */
+    public static void applyUltraExtremeGraphics(String packageName, int targetFps) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
+        final String[] graphicsKeys = {
+            // ── UltraExtreme Quality ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "ResolutionQuality=120",
+            "ResolutionScale=120",
+            "ScreenScale=120",
+            // ── HDR + Tone Mapping ──
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            // ── Anti-Aliasing + Bloom ──
+            "AntiAliasingQuality=4",
+            "bUseAntiAliasing=True",
+            "bUseHighQualityBloom=True",
+            "BloomQuality=5",
+            // ── Shadows + Textures ──
+            "ShadowQuality=2",
+            "ShadowDistance=3",
+            "ShadowResolution=2048",
+            "TextureQuality=4",
+            "MaxAnisotropy=16",
+            "bReduceLoadedMips=False",
+            // ── FPS Unlock ──
+            "FPS=" + tier.fps,
+            "MaxFPS=" + tier.fps,
+            "TargetFPS=" + tier.fps,
+            "FrameRateLimit=" + tier.fps,
+            "MobileFPSLimit=" + tier.fps,
+            "FrameRateLevel=" + tier.level,
+            "UnlockFPS=1",
+            "HighFPSMode=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock" + tier.fps + "FPS=1",
+            "Ultra" + tier.fps + "FPS=1",
+            // ── Frame Pacing + SuperSmooth ──
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TouchBoostHz=" + tier.fps,
+            "TouchPollingRate=1000",
+        };
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.applyUltraExtremeGraphics(path, tier.fps);
+            ConfigFileHelper.patchKeys(path, graphicsKeys, "[GraphicsUltraExtreme]");
+        }
+        Log.i(TAG, "UltraExtreme Max Graphics @ " + tier.fps + "fps applied for " + packageName);
+    }
+
+    /**
+     * Convenience shortcut: applies UltraExtreme graphics locked to the 144fps SuperSmooth tier.
+     * Use this when the user explicitly selects the "144fps SuperSmooth" preset.
+     */
+    public static void applyUltraExtreme144(String packageName) {
+        applyUltraExtremeGraphics(packageName, FpsUnlockTier.FPS_144.fps);
+    }
+
+    /**
      * Injects Unreal Engine 4/5 SystemSettings & 185 FPS unlocks into Engine.ini.
      */
     public static void applyUnrealEngineOptimization(String packageName, int targetFps) {

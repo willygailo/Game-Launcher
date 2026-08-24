@@ -28,7 +28,166 @@ public class CodmConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Force-writes 144fps SuperSmooth + UltraExtreme max graphics for CODM.
+     * Outputs correct JSON for UserSetting.json, XML for PlayerPrefs, and INI for GraphicsSettings.ini.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            String content;
+            if (path.endsWith(".json")) {
+                content = "{\n"
+                    + "  \"MaxFrameRate\": 144,\n"
+                    + "  \"TargetFPS\": 144,\n"
+                    + "  \"FPSLimit\": 144,\n"
+                    + "  \"FrameRateLimit\": 144,\n"
+                    + "  \"MobileFPSLimit\": 144,\n"
+                    + "  \"GraphicQuality\": 4,\n"
+                    + "  \"TextureQuality\": 4,\n"
+                    + "  \"ShadowQuality\": 2,\n"
+                    + "  \"ShadowResolution\": 2048,\n"
+                    + "  \"AntiAliasingQuality\": 4,\n"
+                    + "  \"BloomQuality\": 5,\n"
+                    + "  \"MaxAnisotropy\": 16,\n"
+                    + "  \"HDRMode\": 1,\n"
+                    + "  \"HDRColorMode\": 2,\n"
+                    + "  \"UltraHDMode\": 1,\n"
+                    + "  \"SuperResolution\": 1,\n"
+                    + "  \"ResolutionScale\": 120,\n"
+                    + "  \"UltraExtreme\": 1,\n"
+                    + "  \"bFramePacingEnabled\": 1,\n"
+                    + "  \"Vsync\": 0,\n"
+                    + "  \"Unlock120Hz\": 1,\n"
+                    + "  \"Unlock144Hz\": 1,\n"
+                    + "  \"Unlock165Hz\": 1,\n"
+                    + "  \"Unlock185Hz\": 1,\n"
+                    + "  \"Unlock144FPS\": 1,\n"
+                    + "  \"Ultra144FPS\": 1,\n"
+                    + "  \"TouchBoostHz\": 144,\n"
+                    + "  \"TouchPollingRate\": 1000,\n"
+                    + "  \"TouchZeroDelay\": 1,\n"
+                    + "  \"GyroSampleRate\": 1000,\n"
+                    + "  \"GyroSensitivityRatio\": 20.0,\n"
+                    + "  \"GyroZeroDelay\": 1,\n"
+                    + "  \"GyroSmoothFactor\": 1,\n"
+                    + "  \"GyroStabilization\": 1,\n"
+                    + "  \"GyroLatencyMode\": 0,\n"
+                    + "  \"FieldOfView\": 180,\n"
+                    + "  \"FPP_FOV\": 180,\n"
+                    + "  \"TPP_FOV\": 180,\n"
+                    + "  \"SprintSensitivity\": 1000,\n"
+                    + "  \"AimAssist\": 1,\n"
+                    + "  \"AimAssistStrength\": 10000,\n"
+                    + "  \"CrosshairMagnetism\": 100.00,\n"
+                    + "  \"AimMagnetism\": 100.00\n"
+                    + "}\n";
+            } else if (path.endsWith(".xml")) {
+                content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
+                    + "<map>\n"
+                    + "  <int name=\"MaxFrameRate\" value=\"144\" />\n"
+                    + "  <int name=\"TargetFPS\" value=\"144\" />\n"
+                    + "  <int name=\"FPSLimit\" value=\"144\" />\n"
+                    + "  <int name=\"FrameRateLimit\" value=\"144\" />\n"
+                    + "  <int name=\"MobileFPSLimit\" value=\"144\" />\n"
+                    + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
+                    + "  <int name=\"TextureQuality\" value=\"4\" />\n"
+                    + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
+                    + "  <int name=\"ShadowResolution\" value=\"2048\" />\n"
+                    + "  <int name=\"AntiAliasingQuality\" value=\"4\" />\n"
+                    + "  <int name=\"BloomQuality\" value=\"5\" />\n"
+                    + "  <int name=\"MaxAnisotropy\" value=\"16\" />\n"
+                    + "  <int name=\"HDRMode\" value=\"1\" />\n"
+                    + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
+                    + "  <int name=\"SuperResolution\" value=\"1\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
+                    + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
+                    + "  <int name=\"Vsync\" value=\"0\" />\n"
+                    + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock144FPS\" value=\"1\" />\n"
+                    + "  <int name=\"Ultra144FPS\" value=\"1\" />\n"
+                    + "  <int name=\"TouchBoostHz\" value=\"144\" />\n"
+                    + "  <int name=\"TouchPollingRate\" value=\"1000\" />\n"
+                    + "  <int name=\"GyroSampleRate\" value=\"1000\" />\n"
+                    + "  <float name=\"GyroSensitivityRatio\" value=\"20.0\" />\n"
+                    + "  <int name=\"GyroZeroDelay\" value=\"1\" />\n"
+                    + "  <int name=\"FieldOfView\" value=\"180\" />\n"
+                    + "  <int name=\"FPP_FOV\" value=\"180\" />\n"
+                    + "  <int name=\"TPP_FOV\" value=\"180\" />\n"
+                    + "  <int name=\"AimAssist\" value=\"1\" />\n"
+                    + "  <int name=\"AimAssistStrength\" value=\"10000\" />\n"
+                    + "  <float name=\"CrosshairMagnetism\" value=\"100.00\" />\n"
+                    + "  <float name=\"AimMagnetism\" value=\"100.00\" />\n"
+                    + "</map>\n";
+            } else {
+                content = "[Graphics]\n"
+                    + "MaxFrameRate=144\n"
+                    + "TargetFPS=144\n"
+                    + "FPSLimit=144\n"
+                    + "FrameRateLimit=144\n"
+                    + "MobileFPSLimit=144\n"
+                    + "FrameRateLevel=8\n"
+                    + "UnlockFPS=1\n"
+                    + "Unlock144FPS=1\n"
+                    + "Ultra144FPS=1\n"
+                    + "HighFPSMode=1\n"
+                    + "Unlock120Hz=1\n"
+                    + "Unlock144Hz=1\n"
+                    + "Unlock165Hz=1\n"
+                    + "Unlock185Hz=1\n"
+                    + "GraphicQuality=4\n"
+                    + "TextureQuality=4\n"
+                    + "ShadowQuality=2\n"
+                    + "ShadowResolution=2048\n"
+                    + "AntiAliasingQuality=4\n"
+                    + "BloomQuality=5\n"
+                    + "MaxAnisotropy=16\n"
+                    + "HDRMode=1\n"
+                    + "HDRColorMode=2\n"
+                    + "UltraHDMode=1\n"
+                    + "SuperResolution=1\n"
+                    + "ResolutionScale=120\n"
+                    + "UltraExtreme=1\n"
+                    + "bUseUltraExtreme=True\n"
+                    + "bFramePacingEnabled=True\n"
+                    + "Vsync=0\n"
+                    + "TouchBoostHz=144\n"
+                    + "TouchPollingRate=1000\n"
+                    + "TouchZeroDelay=1\n"
+                    + "GyroSampleRate=1000\n"
+                    + "GyroSensitivityRatio=20.0\n"
+                    + "GyroZeroDelay=1\n"
+                    + "GyroSmoothFactor=1\n"
+                    + "GyroStabilization=1\n"
+                    + "FieldOfView=180\n"
+                    + "FPP_FOV=180\n"
+                    + "TPP_FOV=180\n"
+                    + "AimAssist=1\n"
+                    + "AimAssistStrength=10000\n"
+                    + "CrosshairMagnetism=100.00\n"
+                    + "AimMagnetism=100.00\n";
+            }
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CODM UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+
 
     /**
      * Force-overwrites ALL CODM config paths unconditionally.

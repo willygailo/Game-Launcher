@@ -15,7 +15,10 @@ import java.util.List;
  * (INI, JSON, XML, UserCustom) for Mobile Legends, Call of Duty Mobile, Warzone Mobile,
  * PUBG Mobile, BGMI, Free Fire, Wild Rift, Genshin Impact, Star Rail, ZZZ, Blood Strike,
  * Standoff 2, Arena Breakout, Delta Force, CarX Street, Supercell games, Roblox,
- * Valorant Mobile, and Farlight 84 to force 185 FPS / 185Hz only.
+ * Valorant Mobile, and Farlight 84.
+ *
+ * <p>Supports SuperSmooth 144fps + UltraExtreme max graphics preset via
+ * {@link #applyUltraExtreme144Patch(Context, String)} — the highest combined quality + FPS tier.
  *
  * Uses GameConfigPathResolver to guarantee 100% path accuracy across all Android storage layouts.
  * Seamlessly integrates with DeviceSpooferEngine to inject spoofed hardware identity (Model,
@@ -47,6 +50,29 @@ public class GameConfigPatcher {
         return applyGameFpsPatch(null, packageName, targetFps);
     }
 
+    /**
+     * Convenience entry-point: applies the UltraExtreme 144fps SuperSmooth preset.
+     * Calls {@link #applyGameFpsPatch(Context, String, int)} with 144 FPS, then additionally
+     * invokes the game-specific {@code patchUltraExtreme144()} for full coverage.
+     *
+     * @param context     optional Context (used for spoof injection if enabled)
+     * @param packageName target game package name
+     * @return PatchResult indicating success / failure
+     */
+    public static PatchResult applyUltraExtreme144Patch(Context context, String packageName) {
+        PatchResult base = applyGameFpsPatch(context, packageName, 144);
+        // The per-game patchUltraExtreme144() calls are already wired inside applyGameFpsPatch
+        // when forcedFps >= 144; this method serves as the explicit user-facing entry point.
+        Log.i(TAG, "UltraExtreme144 SuperSmooth preset applied for " + packageName
+                + " — " + (base.success ? "OK" : "FAILED"));
+        return base;
+    }
+
+    /** Overload without Context. */
+    public static PatchResult applyUltraExtreme144Patch(String packageName) {
+        return applyUltraExtreme144Patch(null, packageName);
+    }
+
     public static PatchResult applyGameFpsPatch(Context context, String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) {
             return new PatchResult(false, "Invalid package name");
@@ -70,6 +96,7 @@ public class GameConfigPatcher {
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             if (MlbbConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (MlbbConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) MlbbConfigPatcher.patchUltraExtreme144(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
             MlbbConfigPatcher.applyRecoilControlConfig(pkg);
@@ -80,6 +107,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) CodmConfigPatcher.patchUltraExtreme144(pkg);
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
@@ -90,6 +118,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) PubgConfigPatcher.patchUltraExtreme144(pkg);
             PubgConfigPatcher.deployPakPatch(pkg);
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
@@ -101,6 +130,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
             if (FreeFireConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FreeFireConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) FreeFireConfigPatcher.patchUltraExtreme144(pkg);
             FreeFireConfigPatcher.applySuperFastTouch(pkg);
             FreeFireConfigPatcher.applyAimAssistConfig(pkg);
             FreeFireConfigPatcher.applyRecoilControlConfig(pkg);
@@ -111,6 +141,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) GenshinConfigPatcher.patchUltraExtreme144(pkg);
             GenshinConfigPatcher.applySuperFastTouch(pkg);
             GenshinConfigPatcher.applyAimAssistConfig(pkg);
             GenshinConfigPatcher.applyRecoilControlConfig(pkg);
@@ -121,6 +152,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("wildrift") || pkg.contains("riotgames.league")) {
             if (WildRiftConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (WildRiftConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) WildRiftConfigPatcher.patchUltraExtreme144(pkg);
             WildRiftConfigPatcher.applySuperFastTouch(pkg);
             WildRiftConfigPatcher.applyAimAssistConfig(pkg);
             WildRiftConfigPatcher.applyRecoilControlConfig(pkg);
@@ -131,6 +163,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("uamo") || pkg.contains("arenabreakout")) {
             if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) ArenaBreakoutConfigPatcher.patchUltraExtreme144(pkg);
             ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
             ArenaBreakoutConfigPatcher.applyAimAssistConfig(pkg);
             ArenaBreakoutConfigPatcher.applyRecoilControlConfig(pkg);
@@ -147,6 +180,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) HokConfigPatcher.patchUltraExtreme144(pkg);
             HokConfigPatcher.applySuperFastTouch(pkg);
             HokConfigPatcher.applyAimAssistConfig(pkg);
             HokConfigPatcher.applyRecoilControlConfig(pkg);
@@ -157,6 +191,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
             if (BloodStrikeConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (BloodStrikeConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) BloodStrikeConfigPatcher.patchUltraExtreme144(pkg);
             BloodStrikeConfigPatcher.applySuperFastTouch(pkg);
             BloodStrikeConfigPatcher.applyAimAssistConfig(pkg);
             BloodStrikeConfigPatcher.applyRecoilControlConfig(pkg);
@@ -167,6 +202,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
             if (Standoff2ConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (Standoff2ConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) Standoff2ConfigPatcher.patchUltraExtreme144(pkg);
             Standoff2ConfigPatcher.applySuperFastTouch(pkg);
             Standoff2ConfigPatcher.applyAimAssistConfig(pkg);
             Standoff2ConfigPatcher.applyRecoilControlConfig(pkg);
@@ -197,6 +233,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (RobloxConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) RobloxConfigPatcher.patchUltraExtreme144(pkg);
             RobloxConfigPatcher.applySuperFastTouch(pkg);
             RobloxConfigPatcher.applyAimAssistConfig(pkg);
             RobloxConfigPatcher.applyRecoilControlConfig(pkg);
@@ -207,6 +244,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
             if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) ValorantConfigPatcher.patchUltraExtreme144(pkg);
             ValorantConfigPatcher.applySuperFastTouch(pkg);
             ValorantConfigPatcher.applyAimAssistConfig(pkg);
             ValorantConfigPatcher.applyRecoilControlConfig(pkg);
@@ -217,6 +255,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
             if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) FarlightConfigPatcher.patchUltraExtreme144(pkg);
             FarlightConfigPatcher.applySuperFastTouch(pkg);
             FarlightConfigPatcher.applyAimAssistConfig(pkg);
             FarlightConfigPatcher.applyRecoilControlConfig(pkg);
@@ -314,9 +353,34 @@ public class GameConfigPatcher {
             "FPS=" + targetFps,
             "FrameRate=" + targetFps,
             "HighFPSMode=1",
+            "SuperHighFPS=1",
             "MaxFrameRate=" + targetFps,
             "TargetFPS=" + targetFps,
+            "FrameRateLimit=" + targetFps,
+            "MobileFPSLimit=" + targetFps,
             "UnlockFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── UltraExtreme Graphics ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "ResolutionScale=120",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TouchBoostHz=" + targetFps,
+            "TouchPollingRate=1000",
             "AimAssist=1",
             "AimAssistStrength=1000",
             "AimAssistLevel=10",
