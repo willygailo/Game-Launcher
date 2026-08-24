@@ -24,6 +24,55 @@ public class CarXConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to CarX / Asphalt racing titles.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "TargetFPS=144",
+            "MaxFPS=144",
+            "FPSLimit=0",
+            "FrameRateLimit=144",
+            "FPSLevel=8",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "UnlockHighFPS=1",
+            "Unlock120FPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "GraphicQuality=4",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "HDRMode=1",
+            "Vsync=0",
+            "ResolutionScale=1.2",
+            "ShadowQuality=2",
+            "DynamicResolution=0",
+            "TouchPollingRate=1000",
+            "TouchSlop=1",
+            "TouchZeroDelay=1",
+            "TouchBoostHz=144"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[GraphicSettings]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CarX UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

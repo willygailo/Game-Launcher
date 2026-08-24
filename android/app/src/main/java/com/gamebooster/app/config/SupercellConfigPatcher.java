@@ -23,6 +23,52 @@ public class SupercellConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
+
+    /**
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Supercell games (Brawl Stars, Clash, Squad Busters).
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme144(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "TargetFPS=144",
+            "MaxFPS=144",
+            "FPSLevel=8",
+            "FPSCap=144",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "HighRefreshRate=1",
+            "GraphicQuality=4",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "HDRMode=1",
+            "ResolutionScale=1.2",
+            "TouchPollingRate=1000",
+            "TouchSlop=1",
+            "TouchZeroDelay=1",
+            "TouchBoostHz=144"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[SupercellEngine]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Supercell UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

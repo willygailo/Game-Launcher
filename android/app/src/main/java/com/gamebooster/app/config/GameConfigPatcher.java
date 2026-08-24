@@ -174,9 +174,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("deltaforce") || pkg.contains("dfm")) {
             if (DeltaForceConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (DeltaForceConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
-        } else if (pkg.contains("wutheringwaves") || pkg.contains("kurogame")) {
-            if (WutheringWavesConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
-            if (WutheringWavesConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) DeltaForceConfigPatcher.patchUltraExtreme144(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -213,6 +211,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters")) {
             if (CarXConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CarXConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) CarXConfigPatcher.patchUltraExtreme144(pkg);
             CarXConfigPatcher.applySuperFastTouch(pkg);
             CarXConfigPatcher.applyAimAssistConfig(pkg);
             CarXConfigPatcher.applyRecoilControlConfig(pkg);
@@ -223,6 +222,7 @@ public class GameConfigPatcher {
         } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
             if (SupercellConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (SupercellConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+            if (forcedFps >= 144) SupercellConfigPatcher.patchUltraExtreme144(pkg);
             SupercellConfigPatcher.applySuperFastTouch(pkg);
             SupercellConfigPatcher.applyAimAssistConfig(pkg);
             SupercellConfigPatcher.applyRecoilControlConfig(pkg);

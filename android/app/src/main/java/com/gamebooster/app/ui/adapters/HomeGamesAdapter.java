@@ -29,6 +29,14 @@ import java.util.List;
 
 public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.GameViewHolder> {
 
+    /**
+     * Sentinel value used in the FPS radio picker to represent the
+     * "144fps UltraExtreme SuperSmooth" preset. When selected, the adapter
+     * calls {@link GameConfigPatcher#applyUltraExtreme144Patch(android.content.Context, String)}
+     * instead of the generic FPS patcher.
+     */
+    private static final int FPS_ULTRA_EXTREME_SENTINEL = -144;
+
     private final Context context;
     private final List<GameAppInfo> games = new ArrayList<>();
 
@@ -87,34 +95,68 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
 
     private void showProfilePicker(GameViewHolder holder, GameAppInfo game) {
         String pkg = game.getPackageName().toLowerCase();
-        String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                         pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
-                         pkg.contains("freefire") || pkg.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                         pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
-                         pkg.contains("wildrift") || pkg.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
-                         pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                         pkg.contains("bloodstrike") || pkg.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
-                         pkg.contains("standoff2") || pkg.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
-                         pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
-                         pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
-                         pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
-                         pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
-                         pkg.contains("projectc") || pkg.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                         pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
+
+        // ── Game key resolution ──────────────────────────────────────────────
+        String gameKey =
+            pkg.contains("mobile.legends") || pkg.contains("mobilelegends")
+                ? CompetitiveCfgProfile.GAME_MLBB :
+            pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")
+                ? CompetitiveCfgProfile.GAME_PUBGM :
+            pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")
+                ? CompetitiveCfgProfile.GAME_CODM :
+            pkg.contains("freefire") || pkg.contains("dts.freefire")
+                ? CompetitiveCfgProfile.GAME_FREEFIRE :
+            pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere")
+                || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap")
+                // Wuthering Waves shares the Genshin/HoYo patcher path
+                || pkg.contains("wutheringwaves") || pkg.contains("kurogame") || pkg.contains("kj")
+                ? CompetitiveCfgProfile.GAME_GENSHIN :
+            pkg.contains("wildrift") || pkg.contains("riotgames.league")
+                ? CompetitiveCfgProfile.GAME_WILDRIFT :
+            pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor")
+                || pkg.contains("kgtw") || pkg.contains("kgvn")
+                ? CompetitiveCfgProfile.GAME_HOK :
+            pkg.contains("bloodstrike") || pkg.contains("newspike")
+                ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
+            pkg.contains("standoff2") || pkg.contains("axlebolt")
+                ? CompetitiveCfgProfile.GAME_STANDOFF2 :
+            pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row")
+                ? CompetitiveCfgProfile.GAME_CARX :
+            pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")
+                ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
+            pkg.contains("supercell") || pkg.contains("brawlstars")
+                || pkg.contains("clashroyale") || pkg.contains("clashofclans")
+                ? CompetitiveCfgProfile.GAME_SUPERCELL :
+            pkg.contains("roblox")
+                ? CompetitiveCfgProfile.GAME_ROBLOX :
+            pkg.contains("projectc") || pkg.contains("valorant")
+                ? CompetitiveCfgProfile.GAME_VALORANT :
+            pkg.contains("farlight") || pkg.contains("solarland")
+                ? CompetitiveCfgProfile.GAME_FARLIGHT :
+            CompetitiveCfgProfile.GAME_ALL;
 
         CompetitiveCfgProfile currentCfg = CfgProfileManager.loadProfile(context, gameKey);
 
-        int[] fpsValues = FpsUnlockTier.getAllFpsValues();
-        String[] fpsOptions = FpsUnlockTier.getAllLabels();
+        // ── FPS options — prepend the UltraExtreme 144 SuperSmooth sentinel ──
+        int[] baseFpsValues    = FpsUnlockTier.getAllFpsValues();
+        String[] baseFpsLabels = FpsUnlockTier.getAllLabels();
 
+        // Build combined arrays: [UltraExtreme sentinel] + [normal tiers]
+        int[] fpsValues = new int[baseFpsValues.length + 1];
+        String[] fpsOptions = new String[baseFpsLabels.length + 1];
+        fpsValues[0]  = FPS_ULTRA_EXTREME_SENTINEL;
+        fpsOptions[0] = "⚡ 144fps UltraExtreme SuperSmooth (MAX GRAPHICS + MAX FPS)";
+        System.arraycopy(baseFpsValues, 0, fpsValues, 1, baseFpsValues.length);
+        System.arraycopy(baseFpsLabels, 0, fpsOptions, 1, baseFpsLabels.length);
+
+        // Default selection: match saved profile FPS (offset by 1); if not found, default to UltraExtreme
         int selectedIdx = 0;
-        for (int i = 0; i < fpsValues.length; i++) {
-            if (fpsValues[i] == currentCfg.getTargetFps()) selectedIdx = i;
+        for (int i = 1; i < fpsValues.length; i++) {
+            if (fpsValues[i] == currentCfg.getTargetFps()) { selectedIdx = i; break; }
         }
-        final int[] chosenFps = {currentCfg.getTargetFps()};
+        final int[] chosenFps  = {fpsValues[selectedIdx]};
         final boolean[] superTouch = {currentCfg.isSuperFastTouchEnabled()};
-        final boolean[] forceHz = {currentCfg.isForceWriteSystemHz()};
+        final boolean[] forceHz    = {currentCfg.isForceWriteSystemHz()};
 
         String[] multiOptions = {
                 "⚡ Super Fast Touch 185Hz/165Hz (HighFreqTouch / TouchBoostHz 1000Hz)",
@@ -131,20 +173,33 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                     if (which == 1) forceHz[0] = isChecked;
                 })
                 .setPositiveButton("⚡ FORCE WRITE & APPLY VIA SHIZUKU", (dialog, which) -> {
-                    final int selectedFps = chosenFps[0];
-                    CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, selectedFps, superTouch[0], forceHz[0]);
+                    final int selectedFps   = chosenFps[0];
+                    final boolean isUltraEx = (selectedFps == FPS_ULTRA_EXTREME_SENTINEL || selectedFps >= 144);
+                    // Resolve real FPS for profile saving (UltraExtreme → 144)
+                    final int realFps       = (selectedFps == FPS_ULTRA_EXTREME_SENTINEL) ? 144 : selectedFps;
+                    CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, realFps, superTouch[0], forceHz[0]);
 
-                    Toast.makeText(context, "⚡ Forcing " + selectedFps + " FPS CFG into " + game.getLabel() + " via Shizuku...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context,
+                        isUltraEx
+                            ? "⚡ Applying 144fps UltraExtreme SuperSmooth to " + game.getLabel() + " via Shizuku..."
+                            : "⚡ Forcing " + realFps + " FPS CFG into " + game.getLabel() + " via Shizuku...",
+                        Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
                         // ── Step 1: Force-stop game so cold-start picks up new configs ──
                         ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
                         try { Thread.sleep(200); } catch (InterruptedException ignored) {}
 
-                        // ── Step 2: Apply all config patchers ──
+                        // ── Step 2: Apply config patchers ──
                         int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);
-                        GameConfigPatcher.applyGameFpsPatch(context, pkg, selectedFps);
-                        GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, selectedFps);
+                        if (isUltraEx) {
+                            // Full UltraExtreme 144fps SuperSmooth path: graphics + FPS keys
+                            GameConfigPatcher.applyUltraExtreme144Patch(context, pkg);
+                        } else {
+                            // Standard FPS-only path
+                            GameConfigPatcher.applyGameFpsPatch(context, pkg, realFps);
+                        }
+                        GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, realFps);
 
                         // ── Step 3: Game Driver, ANGLE, Vulkan opt-in ──
                         ShizukuExecutor.executeShizukuCommands(
@@ -156,13 +211,13 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                         // ── Step 4: Android Game Mode API + per-app Hz override ──
                         ShizukuExecutor.executeShizukuCommands(
                             "cmd game mode performance " + pkg + " 2>/dev/null",
-                            "cmd window set-app-refresh-rate " + pkg + " " + selectedFps + " 2>/dev/null",
-                            "cmd game set --fps " + selectedFps + " " + pkg + " 2>/dev/null"
+                            "cmd window set-app-refresh-rate " + pkg + " " + realFps + " 2>/dev/null",
+                            "cmd game set --fps " + realFps + " " + pkg + " 2>/dev/null"
                         );
 
                         // ── Step 5: SurfaceFlinger direct Hz binder call (deepest level) ──
                         ShizukuExecutor.executeShizukuCommand(
-                            "service call SurfaceFlinger 1035 i32 " + selectedFps + " 2>/dev/null");
+                            "service call SurfaceFlinger 1035 i32 " + realFps + " 2>/dev/null");
 
                         // ── Step 6: Debug props for HWUI + render pipeline ──
                         ShizukuExecutor.executeShizukuCommands(
@@ -171,15 +226,29 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                             "setprop debug.sf.disable_backpressure 1"
                         );
 
+                        // ── Step 7 (UltraExtreme only): SurfaceFlinger phase-offset props ──
+                        if (isUltraEx) {
+                            ShizukuExecutor.executeShizukuCommands(
+                                "setprop debug.sf.use_phase_offsets_as_durations 1",
+                                "setprop debug.sf.late.sf.duration 10500000",
+                                "setprop debug.sf.late.app.duration 20500000",
+                                "setprop debug.sf.hw 0",
+                                "setprop debug.egl.hw 0",
+                                "setprop persist.sys.ui.hw 1"
+                            );
+                        }
+
                         AppExecutors.getInstance().postToMainThread(() -> {
                             int pos = holder.getAdapterPosition();
                             if (pos != RecyclerView.NO_POSITION && pos < games.size()) {
                                 holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
                             }
-                            Toast.makeText(context,
-                                "✅ FORCED " + selectedFps + " FPS to " + game.getLabel() +
-                                " (" + patchedCount + " files patched)! Game driver + SurfaceFlinger Hz locked via Shizuku!",
-                                Toast.LENGTH_LONG).show();
+                            String resultMsg = isUltraEx
+                                ? "✅ 144fps UltraExtreme SuperSmooth applied to " + game.getLabel()
+                                    + " (" + patchedCount + " files patched)! Game driver + SurfaceFlinger Hz locked via Shizuku!"
+                                : "✅ FORCED " + realFps + " FPS to " + game.getLabel()
+                                    + " (" + patchedCount + " files patched)! Game driver + SurfaceFlinger Hz locked via Shizuku!";
+                            Toast.makeText(context, resultMsg, Toast.LENGTH_LONG).show();
                         });
                     });
                 })
