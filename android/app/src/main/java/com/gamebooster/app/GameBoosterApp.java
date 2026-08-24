@@ -27,19 +27,12 @@ public class GameBoosterApp extends Application {
         super.onCreate();
         sInstance = this;
 
-        // 1. Global crash protection: catch unexpected exceptions and log safely
-        final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            Log.e(TAG, "Uncaught exception intercepted on thread " + thread.getName(), throwable);
-            try {
-                // Ensure critical state is saved if possible
-                ConfigBackupManager.setAppContext(getApplicationContext());
-            } catch (Throwable ignored) {}
-
-            if (defaultHandler != null) {
-                defaultHandler.uncaughtException(thread, throwable);
-            }
-        });
+        // 1. Global crash protection & logging: install CrashLog early
+        try {
+            com.gamebooster.app.diagnostics.CrashLog.install(this);
+        } catch (Throwable t) {
+            Log.w(TAG, "CrashLog install error: " + t.getMessage());
+        }
 
         // 2. Early safety initialization (App-private storage & executors)
         try {

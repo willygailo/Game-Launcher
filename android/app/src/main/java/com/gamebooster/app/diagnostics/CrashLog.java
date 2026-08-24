@@ -1,9 +1,13 @@
 package com.gamebooster.app.diagnostics;
 
+import android.app.ActivityManager;
 import android.content.Context;
+import android.os.Build;
+import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -15,14 +19,17 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Captures uncaught crashes to app-internal storage so real users can export
- * them via the Diagnostics section. Idempotent installer — safe to call from
- * every entry point.
+ * Captures uncaught crashes to app-internal storage so real users and developers can
+ * review and export them via the Diagnostics section.
+ *
+ * Safe and idempotent installer — logs full exception chains, device state,
+ * available memory, and enforces a 100KB file rotation limit to prevent unbounded storage growth.
  */
 public final class CrashLog {
 
     public static final String TAG = "CrashLog";
     public static final String FILE_NAME = "crash_log.txt";
+    private static final long MAX_FILE_BYTES = 100 * 1024; // 100 KB max
 
     private static volatile boolean installed = false;
     private static volatile Thread.UncaughtExceptionHandler previousHandler = null;
@@ -31,32 +38,43 @@ public final class CrashLog {
     }
 
     public static synchronized void install(Context context) {
-        if (installed) {
+        if (installed || context == null) {
             return;
         }
         installed = true;
+        final Context appContext = context.getApplicationContext();
         previousHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
-                appendCrash(context, thread, throwable);
+                appendCrash(appContext, thread, throwable);
             } catch (Throwable t) {
                 Log.w(TAG, "Failed to persist crash entry: " + t.getMessage());
             }
             if (previousHandler != null) {
                 previousHandler.uncaughtException(thread, throwable);
             } else {
-                android.os.Process.killProcess(android.os.Process.myPid());
+                Process.killProcess(Process.myPid());
+                System.exit(10);
             }
         });
+        Log.i(TAG, "Global CrashLog handler installed.");
     }
 
     public static void appendCrash(Context context, Thread thread, Throwable throwable) {
+        if (context == null) return;
         File file = crashFile(context);
+        rotateIfNeeded(file);
+
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
                 new FileOutputStream(file, true), StandardCharsets.UTF_8))) {
-            writer.println("=== " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-                    .format(new Date()) + " ===");
+            writer.println("==================================================");
+            writer.println("CRASH REPORT: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date()));
+            writer.println("Device: " + Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ")");
+            writer.println("Android: " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")");
+            writer.println("RAM Free: " + getAvailableMemoryMb(context) + " MB");
             writer.println(formatCrash(thread, throwable));
+            writer.println("==================================================");
+            writer.println();
         } catch (Exception e) {
             Log.w(TAG, "Cannot write crash log: " + e.getMessage());
         }
@@ -65,12 +83,27 @@ public final class CrashLog {
     public static String formatCrash(Thread thread, Throwable throwable) {
         StringBuilder sb = new StringBuilder();
         sb.append("Thread: ").append(thread != null ? thread.getName() : "unknown")
-                .append(" (id=").append(thread != null ? thread.getId() : -1).append(")\n");
-        sb.append("Exception: ").append(throwable != null ? throwable.toString() : "null").append('\n');
-        if (throwable != null) {
-            for (StackTraceElement el : throwable.getStackTrace()) {
-                sb.append("    at ").append(el).append('\n');
+                .append(" (id=").append(thread != null ? thread.getId() : -1)
+                .append(", priority=").append(thread != null ? thread.getPriority() : -1).append(")\n");
+
+        if (throwable == null) {
+            sb.append("Exception: <null throwable>\n");
+            return sb.toString();
+        }
+
+        Throwable current = throwable;
+        int depth = 0;
+        while (current != null && depth < 10) {
+            if (depth == 0) {
+                sb.append("Exception: ").append(current.getClass().getName()).append(": ").append(current.getMessage()).append('\n');
+            } else {
+                sb.append("Caused by: ").append(current.getClass().getName()).append(": ").append(current.getMessage()).append('\n');
             }
+            for (StackTraceElement el : current.getStackTrace()) {
+                sb.append("    at ").append(el.toString()).append('\n');
+            }
+            current = current.getCause();
+            depth++;
         }
         return sb.toString();
     }
@@ -80,14 +113,17 @@ public final class CrashLog {
         try {
             File file = crashFile(context);
             if (!file.exists() || file.length() == 0) return "";
-            byte[] data = new byte[(int) Math.min(file.length(), maxChars)];
-            java.io.FileInputStream in = new java.io.FileInputStream(file);
-            try {
+            long len = file.length();
+            int bytesToRead = (int) Math.min(len, maxChars);
+            byte[] data = new byte[bytesToRead];
+            try (FileInputStream in = new FileInputStream(file)) {
+                if (len > bytesToRead) {
+                    long skipped = in.skip(len - bytesToRead);
+                    if (skipped < 0) return "";
+                }
                 int read = in.read(data);
                 if (read <= 0) return "";
                 return new String(data, 0, read, StandardCharsets.UTF_8);
-            } finally {
-                in.close();
             }
         } catch (Exception e) {
             return "";
@@ -95,11 +131,55 @@ public final class CrashLog {
     }
 
     public static boolean hasCrashLog(Context context) {
-        return context != null && crashFile(context).exists();
+        if (context == null) return false;
+        File file = crashFile(context);
+        return file.exists() && file.length() > 0;
+    }
+
+    public static boolean clear(Context context) {
+        if (context == null) return false;
+        try {
+            File file = crashFile(context);
+            if (file.exists()) {
+                return file.delete();
+            }
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to clear crash log: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static long getLogSizeBytes(Context context) {
+        if (context == null) return 0L;
+        File file = crashFile(context);
+        return file.exists() ? file.length() : 0L;
     }
 
     private static File crashFile(Context context) {
         return new File(context.getFilesDir(), FILE_NAME);
+    }
+
+    private static void rotateIfNeeded(File file) {
+        if (file.exists() && file.length() > MAX_FILE_BYTES) {
+            File backup = new File(file.getParentFile(), FILE_NAME + ".old");
+            if (backup.exists()) {
+                backup.delete();
+            }
+            file.renameTo(backup);
+        }
+    }
+
+    private static long getAvailableMemoryMb(Context context) {
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(mi);
+                return mi.availMem / (1024 * 1024);
+            }
+        } catch (Throwable ignored) {}
+        return -1L;
     }
 
     public static List<String> format(int count, List<String> lines) {

@@ -14,6 +14,18 @@
 -keep class moe.shizuku.** { *; }
 -keep interface moe.shizuku.** { *; }
 -keep class rikka.shizuku.** { *; }
+-keep interface rikka.shizuku.** { *; }
+
+# Keep Shizuku UserService and AIDL interface
+-keep class com.gamebooster.app.shizuku.UserService {
+    public <init>();
+    public <init>(android.content.Context);
+    *;
+}
+-keep class com.gamebooster.app.shizuku.IUserService { *; }
+-keep class com.gamebooster.app.shizuku.IUserService$* { *; }
+-keep class com.gamebooster.app.shizuku.** { *; }
+-keep interface com.gamebooster.app.shizuku.** { *; }
 
 # Keep reflection fields (for Build & SystemProperties mutation)
 -keepclassmembers class android.os.Build { *; }

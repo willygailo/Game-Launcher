@@ -26,6 +26,11 @@ public class RishManager {
     private static File rishBinFile = null;
     private static File rishDexFile = null;
 
+    public static boolean isRishAvailable() {
+        return (isInitialized && rishBinFile != null && rishBinFile.exists()) ||
+                (rishBinFile != null && rishBinFile.exists());
+    }
+
     /**
      * Initializes and extracts rish and rish_shizuku.dex to internal app storage.
      */

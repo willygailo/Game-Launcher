@@ -66,8 +66,15 @@ public class ShizukuExecutor {
             }
         }
 
-        // Tier 1: If Shizuku is granted, execute via Shizuku reflection
+        // Tier 1: If Shizuku is granted, try fast direct AIDL UserService first
         if (hasShizukuPermission()) {
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                String aidlRes = ShizukuUserServiceConnector.getInstance().executeCommandDirect(command);
+                if (aidlRes != null) {
+                    return aidlRes;
+                }
+            }
+
             Process process = null;
             BufferedReader stdoutReader = null;
             BufferedReader stderrReader = null;

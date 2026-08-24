@@ -271,11 +271,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvDiagStatus = view.findViewById(R.id.tv_diag_status);
         Button btnDiagRefresh = view.findViewById(R.id.btn_diag_refresh);
         Button btnDiagExport = view.findViewById(R.id.btn_diag_export);
+        Button btnDiagClear = view.findViewById(R.id.btn_diag_clear);
         if (btnDiagRefresh != null) {
             btnDiagRefresh.setOnClickListener(v -> renderDiagnostics());
         }
         if (btnDiagExport != null) {
             btnDiagExport.setOnClickListener(v -> exportDiagnostics());
+        }
+        if (btnDiagClear != null) {
+            btnDiagClear.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.diagnostics.CrashLog.clear(getContext());
+                    Toast.makeText(getContext(), "🧹 Crash logs cleared", Toast.LENGTH_SHORT).show();
+                    renderDiagnostics();
+                }
+            });
         }
         renderDiagnostics();
 
@@ -1431,14 +1441,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() == null || tvDiagStatus == null) return;
         final Context ctx = getContext().getApplicationContext();
         AppExecutors.getInstance().executeCommand(() -> {
-            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
-                    com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
-                    android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
-                    android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
-                    com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(ctx),
-                    SpoofPreferences.isSpoofEnabled(ctx),
-                    SpoofPreferences.getActiveProfileId(ctx),
-                    com.gamebooster.app.diagnostics.CrashLog.readTail(ctx, 800));
+            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
             final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (isAdded() && tvDiagStatus != null) {
@@ -1451,22 +1454,26 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private void exportDiagnostics() {
         if (getContext() == null) return;
         renderDiagnostics();
-        java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(
-                com.gamebooster.app.BuildConfig.VERSION_NAME + " (code " + com.gamebooster.app.BuildConfig.VERSION_CODE + ")",
-                android.os.Build.MODEL + " (" + android.os.Build.MANUFACTURER + ")",
-                android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT,
-                com.gamebooster.app.engine.MasterOptimizationEnforcer.verifyEnforcementStatus(getContext()),
-                SpoofPreferences.isSpoofEnabled(getContext()),
-                SpoofPreferences.getActiveProfileId(getContext()),
-                com.gamebooster.app.diagnostics.CrashLog.readTail(getContext(), 800));
-        try {
-            java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(
-                    getContext(), com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
-            startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
-            Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        final Context ctx = getContext().getApplicationContext();
+        AppExecutors.getInstance().executeCommand(() -> {
+            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
+            try {
+                java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(
+                        getContext(), com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (isAdded() && getContext() != null) {
+                        startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
+                        Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (isAdded() && getContext() != null) {
+                        Toast.makeText(getContext(), "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 
     private void updateSpoofUiState() {

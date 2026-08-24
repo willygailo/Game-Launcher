@@ -66,7 +66,7 @@ public class ShizukuUserServiceConnector {
             .daemon(false)
             .processNameSuffix("service")
             .debuggable(BuildConfig.DEBUG)
-            .version(1);
+            .version(BuildConfig.VERSION_CODE);
 
     public static ShizukuUserServiceConnector getInstance() {
         return INSTANCE;
@@ -94,13 +94,20 @@ public class ShizukuUserServiceConnector {
         }
         try {
             if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Binding Shizuku UserService via AIDL...");
+                Log.d(TAG, "Binding Shizuku UserService via AIDL (processSuffix=service, version=" + BuildConfig.VERSION_CODE + ")...");
                 isBinding = true;
                 bindingStartedAt = System.currentTimeMillis();
-                Shizuku.bindUserService(serviceArgs, serviceConnection);
+                try {
+                    Shizuku.peekUserService(serviceArgs, serviceConnection);
+                } catch (Throwable ignored) {}
+                if (!isServiceConnected()) {
+                    Shizuku.bindUserService(serviceArgs, serviceConnection);
+                }
+            } else {
+                Log.d(TAG, "Shizuku not ready for bind (ping=" + (Shizuku.pingBinder()) + ")");
             }
         } catch (Throwable e) {
-            Log.e(TAG, "Failed to bind Shizuku UserService: " + e.getMessage());
+            Log.e(TAG, "Failed to bind Shizuku UserService: " + e.getMessage(), e);
             isBinding = false;
             ShizukuConnectionManager.getInstance().onBindFailure();
         }
@@ -125,10 +132,10 @@ public class ShizukuUserServiceConnector {
         if (!isServiceConnected()) {
             bindService();
             if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                int retries = 3;
+                int retries = 6;
                 while (!isServiceConnected() && retries > 0) {
                     try {
-                        Thread.sleep(40);
+                        Thread.sleep(50);
                     } catch (InterruptedException ignored) {}
                     retries--;
                 }

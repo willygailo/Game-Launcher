@@ -1,5 +1,6 @@
 package com.gamebooster.app.shizuku;
 
+import android.content.Context;
 import android.os.Process;
 import android.util.Log;
 
@@ -16,9 +17,15 @@ import java.util.List;
 public class UserService extends IUserService.Stub {
 
     private static final String TAG = "UserService";
+    private Context context;
 
     public UserService() {
         Log.i(TAG, "UserService initialized under privileged UID=" + Process.myUid());
+    }
+
+    public UserService(Context context) {
+        this.context = context;
+        Log.i(TAG, "UserService initialized with Context under privileged UID=" + Process.myUid());
     }
 
     @Override

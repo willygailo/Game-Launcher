@@ -417,6 +417,9 @@ public class MasterOptimizationEnforcer {
     public static EnforcementStatus verifyEnforcementStatus(Context context) {
         try {
             boolean shizuku = ShizukuExecutor.hasShizukuPermission();
+            if (shizuku && !ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                ShizukuUserServiceConnector.getInstance().bindService();
+            }
             boolean aidl = ShizukuUserServiceConnector.getInstance().isServiceConnected();
             int appliedCount = 0;
             List<com.gamebooster.app.tweaks.TweakItem> list = TweakManagerRepository.getAllTweaks();
