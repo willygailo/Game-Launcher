@@ -41,8 +41,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private TextView tvEngineMode;
     private TextView tvRamUsage;
     private TextView tvGamesHeader;
-    private TextView tvGmStatus;
-    private TextView tvGmSessionBadge;
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
     private HomeGamesAdapter adapter;
@@ -62,8 +60,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         tvEngineMode = view.findViewById(R.id.tv_engine_mode);
         tvRamUsage = view.findViewById(R.id.tv_ram_usage);
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
-        tvGmStatus = view.findViewById(R.id.tv_gm_status);
-        tvGmSessionBadge = view.findViewById(R.id.tv_gm_session_badge);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
 
@@ -106,68 +102,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).selectTab(1);
                 }
-            });
-        }
-
-        // Dedicated GAME-MANAGER Control Panel Setup
-        Button btnGmApplyAll = view.findViewById(R.id.btn_gm_apply_all);
-        Button btnGmMaskAll = view.findViewById(R.id.btn_gm_mask_all);
-        Button btnGmUnlockStorage = view.findViewById(R.id.btn_gm_unlock_storage);
-
-        if (btnGmApplyAll != null) {
-            btnGmApplyAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "⚡ GAME-MANAGER: Enforcing optimizations to ALL games...", Toast.LENGTH_SHORT).show();
-                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceForAllGames(getContext(),
-                        new com.gamebooster.app.engine.MasterOptimizationEnforcer.OnEnforceProgressListener() {
-                            @Override
-                            public void onProgress(String currentStep, int progressPct) {
-                                if (isAdded() && getContext() != null) {
-                                    updateStatusStrip();
-                                }
-                            }
-
-                            @Override
-                            public void onComplete(boolean success, int totalAppliedCount, String summaryMessage) {
-                                if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "✅ " + summaryMessage, Toast.LENGTH_LONG).show();
-                                    updateStatusStrip();
-                                }
-                            }
-                        });
-            });
-        }
-
-        if (btnGmMaskAll != null) {
-            btnGmMaskAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "🛡️ GAME-MANAGER: Masking ALL Applications & Android Models (13-16)...", Toast.LENGTH_SHORT).show();
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "✅ Masked " + count + " apps with Flagship Snapdragon/Vulkan identity!", Toast.LENGTH_LONG).show();
-                            updateStatusStrip();
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnGmUnlockStorage != null) {
-            btnGmUnlockStorage.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "📁 GAME-MANAGER: Unlocking internal & external storage combo paths...", Toast.LENGTH_SHORT).show();
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.config.GameConfigStorageAccessEngine.grantGlobalStorageAccess(getContext());
-                    ShizukuPermissionEnforcer.enforceAllPermissions(getContext());
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), "✅ Full Storage & Config Paths (/sdcard/Android/data & obb) UNLOCKED!", Toast.LENGTH_LONG).show();
-                            updateStatusStrip();
-                        }
-                    });
-                });
             });
         }
 
@@ -260,29 +194,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (tvRamUsage != null && getContext() != null) {
             DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
             tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
-        }
-
-        if (tvGmStatus != null) {
-            com.gamebooster.app.gamemanager.GameManagerStatus gms = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance();
-            if (gms.hasActiveSession()) {
-                tvGmStatus.setText("🎮 Active: " + gms.getActiveGamePackage() + " (" + gms.getSessionDurationSeconds() + "s)");
-            } else {
-                tvGmStatus.setText("⚡ Last Enforced: " + gms.getFormattedLastApplyTime() + " • " + gms.getMaskedAppsCount() + " apps masked");
-            }
-        }
-
-        if (tvGmSessionBadge != null) {
-            com.gamebooster.app.gamemanager.GameManagerStatus gms = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance();
-            if (gms.hasActiveSession()) {
-                tvGmSessionBadge.setText("SESSION ACTIVE");
-                tvGmSessionBadge.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-            } else if (isShizukuActive) {
-                tvGmSessionBadge.setText("SHIZUKU READY");
-                tvGmSessionBadge.setTextColor(android.graphics.Color.parseColor("#00FF66"));
-            } else {
-                tvGmSessionBadge.setText("STANDARD TIER");
-                tvGmSessionBadge.setTextColor(android.graphics.Color.parseColor("#FFCC00"));
-            }
         }
     }
 

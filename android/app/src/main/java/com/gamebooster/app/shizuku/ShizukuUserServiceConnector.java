@@ -23,7 +23,7 @@ public class ShizukuUserServiceConnector {
     private boolean isBinding = false;
     private long bindingStartedAt = 0L;
 
-    private static final long BIND_STUCK_TIMEOUT_MS = 5000;
+    private static final long BIND_STUCK_TIMEOUT_MS = 15000L;
 
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
@@ -85,11 +85,14 @@ public class ShizukuUserServiceConnector {
             return;
         }
         if (isBinding) {
-            // A bind that never resolves would wedge every retry — force rebind after timeout
+            // Give Shizuku sufficient time to launch the daemon before forcing a rebind
             if (System.currentTimeMillis() - bindingStartedAt < BIND_STUCK_TIMEOUT_MS) {
                 return;
             }
-            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms — forcing rebind");
+            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms — forcing clean rebind");
+            try {
+                Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
+            } catch (Throwable ignored) {}
             isBinding = false;
         }
         try {

@@ -46,6 +46,11 @@ public class RishManager {
             if (!shizukuDir.exists()) {
                 shizukuDir.mkdirs();
             }
+            try {
+                appContext.getFilesDir().setExecutable(true, false);
+                shizukuDir.setExecutable(true, false);
+                shizukuDir.setReadable(true, false);
+            } catch (Throwable ignored) {}
 
             rishBinFile = new File(shizukuDir, RISH_BIN_NAME);
             rishDexFile = new File(shizukuDir, RISH_DEX_NAME);
@@ -59,7 +64,8 @@ public class RishManager {
                 copyAssetToFile(appContext, DIR_NAME + "/" + RISH_DEX_NAME, rishDexFile);
             }
 
-            // Android 14+ (API 34+) requires dex loaded by app_process to be strictly read-only
+            // Android 14+ (API 34+) requires dex loaded by app_process to be strictly read-only and world-readable
+            rishDexFile.setReadable(true, false);
             if (Build.VERSION.SDK_INT >= 34) {
                 rishDexFile.setReadOnly();
             }
