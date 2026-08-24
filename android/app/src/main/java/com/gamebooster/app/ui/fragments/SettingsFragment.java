@@ -1912,12 +1912,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private void performQuickJunkScan() {
-        if (getContext() == null) return;
+        final Context ctx = getContext();
+        if (ctx == null) return;
         if (btnScanJunk != null) btnScanJunk.setEnabled(false);
         if (tvJunkCleanerStatus != null) tvJunkCleanerStatus.setText("🔍 Scanning storage caches, temp logs & residual files...");
 
-        AppExecutors.getInstance().executeCommand(() -> {
-            JunkScanResult scanResult = junkScanner.scanStorage(getContext(), null);
+        AppExecutors.getInstance().executeScan(() -> {
+            JunkScanResult scanResult = junkScanner.scanStorage(ctx, null);
             lastJunkScanResult = scanResult;
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
@@ -1937,16 +1938,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private void performQuickJunkClean() {
-        if (getContext() == null) return;
+        final Context ctx = getContext();
+        if (ctx == null) return;
         if (btnQuickCleanJunk != null) btnQuickCleanJunk.setEnabled(false);
-        Toast.makeText(getContext(), "⚡ Executing 1-Tap Storage Clean...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(ctx, "⚡ Executing 1-Tap Storage Clean...", Toast.LENGTH_SHORT).show();
 
         AppExecutors.getInstance().executeCommand(() -> {
             JunkScanResult scanToClean = lastJunkScanResult;
             if (scanToClean == null || scanToClean.getItems().isEmpty()) {
-                scanToClean = junkScanner.scanStorage(getContext(), null);
+                scanToClean = junkScanner.scanStorage(ctx, null);
             }
-            CleanResult cleanResult = junkCleanerEngine.executeClean(getContext(), scanToClean, null);
+            CleanResult cleanResult = junkCleanerEngine.executeClean(ctx, scanToClean, null);
             lastJunkScanResult = null;
 
             AppExecutors.getInstance().postToMainThread(() -> {

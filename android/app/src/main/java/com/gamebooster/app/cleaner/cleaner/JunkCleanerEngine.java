@@ -211,8 +211,9 @@ public class JunkCleanerEngine {
         try {
             File file = new File(path);
             if (file.exists()) {
-                long size = item.isDirectory() ? getFolderSize(file) : file.length();
-                if (item.isDirectory()) {
+                boolean isDir = file.isDirectory();
+                long size = isDir ? getFolderSize(file) : file.length();
+                if (isDir) {
                     deleteRecursively(file);
                     logs.add("Deleted directory: " + path);
                     return size;

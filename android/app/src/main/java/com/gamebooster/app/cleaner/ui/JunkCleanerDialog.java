@@ -96,7 +96,7 @@ public class JunkCleanerDialog {
             tvStatus.setText("🔍 Initializing storage scanner...");
             tvTotalSize.setText("0.0 MB");
 
-            AppExecutors.getInstance().executeCommand(() -> {
+            AppExecutors.getInstance().executeScan(() -> {
                 JunkScanResult scanResult = scanner.scanStorage(context, new JunkScanner.OnScanProgressListener() {
                     @Override
                     public void onScanProgress(int percent, String currentPath, long bytesFoundSoFar) {
@@ -152,6 +152,7 @@ public class JunkCleanerDialog {
             engine.cleanJunkAsync(context, currentScan[0], new JunkCleanerEngine.OnCleanProgressListener() {
                 @Override
                 public void onCleanProgress(int percent, String currentItem, long bytesFreedSoFar) {
+                    if (!dialog.isShowing()) return;
                     pbProgress.setProgress(percent);
                     tvStatus.setText(currentItem);
                     tvTotalSize.setText(JunkScanResult.formatBytes(bytesFreedSoFar) + " Freed");

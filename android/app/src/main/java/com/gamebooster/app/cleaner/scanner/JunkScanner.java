@@ -337,7 +337,7 @@ public class JunkScanner {
                             "Social Cache: " + f.getName(),
                             size,
                             JunkCategory.SOCIAL_CACHE,
-                            true
+                            f.isDirectory()
                     ));
                     notifyProgress(listener, 55, f.getAbsolutePath(), result.getTotalBytes());
                 }
@@ -562,7 +562,7 @@ public class JunkScanner {
                 scanDirectory(file, category, result, listener, progressPct);
             } else if (file.isFile()) {
                 if (ScanFilter.isDisposableJunkFile(file) || category == JunkCategory.APP_CACHE || category == JunkCategory.THUMBNAILS || category == JunkCategory.GAME_RESIDUALS) {
-                    result.addItem(new JunkItem(file.getAbsolutePath(), file.getName(), file.length(), category, true));
+                    result.addItem(new JunkItem(file.getAbsolutePath(), file.getName(), file.length(), category, false));
                     notifyProgress(listener, progressPct, file.getAbsolutePath(), result.getTotalBytes());
                 }
             }
