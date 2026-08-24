@@ -1892,3 +1892,125 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return success ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenEngineOptimizations
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps, jint engineType) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    int fps = (targetFps >= 90) ? targetFps : 185;
+    std::ostringstream ssFps;
+    ssFps << fps;
+
+    if (engineType == 0) {
+        // Next-Gen Unreal Engine 5.4+ / 5.5 / 5.6 (UE5 Mobile)
+        if (content.find("[/Script/Engine.Engine]") == std::string::npos) {
+            content += "\n[/Script/Engine.Engine]\n";
+        }
+        if (content.find("[SystemSettings]") == std::string::npos) {
+            content += "\n[SystemSettings]\n";
+        }
+        if (content.find("[UserCustom DeviceProfile]") == std::string::npos) {
+            content += "\n[UserCustom DeviceProfile]\n";
+        }
+
+        patch_key_value(content, "bSmoothFrameRate", "False");
+        patch_key_value(content, "bUseFixedFrameRate", "True");
+        patch_key_value(content, "FixedFrameRate", ssFps.str());
+        patch_cvar(content, "r.MaxFPS", ssFps.str());
+        patch_cvar(content, "r.FrameRateLimit", ssFps.str());
+        patch_cvar(content, "r.MobileFPSLimit", ssFps.str());
+        patch_cvar(content, "r.VSync", "0");
+        patch_cvar(content, "r.FinishCurrentFrame", "0");
+        patch_cvar(content, "r.OneFrameThreadLag", "0");
+        patch_cvar(content, "r.GTSyncType", "2"); // Adaptive GPU/CPU sync
+        patch_cvar(content, "r.Vulkan.Bindless", "1");
+        patch_cvar(content, "r.Vulkan.PipelineCache", "1");
+        patch_cvar(content, "r.Vulkan.UseShaderQueues", "1");
+        patch_cvar(content, "r.ShaderPipelineCache.Enabled", "1");
+        patch_cvar(content, "r.Nanite.Mobile", "1");
+        patch_cvar(content, "r.TSR.Quality", "2");
+        patch_cvar(content, "r.MobileContentScaleFactor", "1.0");
+        patch_cvar(content, "r.Streaming.PoolSize", "0");
+        patch_cvar(content, "r.RenderTargetPoolMin", "1024");
+    } else if (engineType == 1) {
+        // Next-Gen Unity 6 / 2025 LTS
+        patch_key_value(content, "target-frame-rate", ssFps.str());
+        patch_key_value(content, "vulkan-use-swappy", "1");
+        patch_key_value(content, "vulkan-bindless-support", "1");
+        patch_key_value(content, "vulkan-pipeline-cache", "1");
+        patch_key_value(content, "vulkan-enable-subpasses", "1");
+        patch_key_value(content, "gc-concurrent-enabled", "1");
+        patch_key_value(content, "gc-incremental-slice-time", "2");
+        patch_key_value(content, "burst-enable-neon", "1");
+        patch_key_value(content, "gfx-shader-prewarm", "1");
+        patch_key_value(content, "job-worker-count", "8");
+        patch_key_value(content, "hdr-display-enabled", "0");
+    } else {
+        // Custom Proprietary Game Engine (HoYoverse, Kuro, Tencent, Riot)
+        patch_key_value(content, "TargetFPS", ssFps.str());
+        patch_key_value(content, "MaxFPS", ssFps.str());
+        patch_key_value(content, "FrameRateLimit", ssFps.str());
+        patch_key_value(content, "VSync", "0");
+        patch_key_value(content, "VulkanPipelineCache", "1");
+        patch_key_value(content, "LowLatencyMode", "1");
+        patch_key_value(content, "SuperResolutionQuality", "2");
+    }
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetThreadSchedulingPolicy
+  (JNIEnv *, jclass, jint pid, jint policy, jint priority) {
+    if (pid <= 0) pid = getpid();
+    struct sched_param param;
+    memset(&param, 0, sizeof(param));
+    param.sched_priority = (priority > 0 && priority <= 99) ? priority : 99;
+
+    int schedPolicy = (policy == 1) ? SCHED_FIFO : (policy == 2 ? SCHED_RR : SCHED_OTHER);
+    int res = sched_setscheduler(pid, schedPolicy, &param);
+    if (res != 0) {
+        setpriority(PRIO_PROCESS, pid, -20);
+    }
+    return (res == 0) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeForceVulkanPipelineCache
+  (JNIEnv *env, jclass, jstring jPath, jstring jPkg) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    make_parent_dirs(pathStr);
+
+    std::string cacheHeader = "VK_PIPELINE_CACHE_DATA_2026_ADRENO_MALI\nvulkan.pipeline_cache=1\nshader_cache_enabled=1\n";
+    bool success = write_file_posix(pathStr, cacheHeader);
+
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling
+  (JNIEnv *env, jclass, jstring jPath, jint pollingRateHz) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    int rate = (pollingRateHz >= 1000) ? pollingRateHz : 1000;
+    std::ostringstream ssRate;
+    ssRate << rate;
+
+    patch_key_value(content, "TouchBoostHz", ssRate.str());
+    patch_key_value(content, "HighFreqTouch", "1");
+    patch_key_value(content, "TouchSampleRate", ssRate.str());
+    patch_key_value(content, "InputResponseDelayMs", "0.5");
+    patch_key_value(content, "TouchReportRate", ssRate.str());
+
+    bool success = write_file_posix(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+

@@ -233,6 +233,38 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUnityBootConfig
   (JNIEnv *, jclass, jstring, jint);
 
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectNextGenEngineOptimizations
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenEngineOptimizations
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeSetThreadSchedulingPolicy
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetThreadSchedulingPolicy
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeForceVulkanPipelineCache
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeForceVulkanPipelineCache
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectNextGenTouchSampling
+ * Signature: (Ljava/lang/String;I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling
+  (JNIEnv *, jclass, jstring, jint);
+
 #ifdef __cplusplus
 }
 #endif

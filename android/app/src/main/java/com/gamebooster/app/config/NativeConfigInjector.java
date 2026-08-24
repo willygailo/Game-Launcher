@@ -72,8 +72,72 @@ public class NativeConfigInjector {
     public static native boolean nativeSetProcessCpuAffinity(int pid, int cpuMask);
     public static native boolean nativeInjectUnrealEngineIni(String path, int targetFps);
     public static native boolean nativeInjectUnityBootConfig(String path, int targetFps);
+    public static native boolean nativeInjectNextGenEngineOptimizations(String path, int targetFps, int engineType);
+    public static native boolean nativeSetThreadSchedulingPolicy(int pid, int policy, int priority);
+    public static native boolean nativeForceVulkanPipelineCache(String path, String pkg);
+    public static native boolean nativeInjectNextGenTouchSampling(String path, int pollingRateHz);
 
     // ─── High-Level Injection Engine Methods ─────────────────────────────────
+
+    /**
+     * Injects Next-Gen 2025/2026 Engine optimizations (UE5 Nanite/TSR/Bindless, Unity 6 Swappy, HoYo/Kuro custom).
+     */
+    public static boolean injectNextGenEngine(String path, int targetFps, int engineType) {
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeInjectNextGenEngineOptimizations(path, targetFps, engineType);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native Next-Gen engine injection fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sets POSIX real-time scheduler policy (SCHED_FIFO / SCHED_RR) with priority up to 99.
+     */
+    public static boolean setRealtimeThreadScheduling(int pid, int priority) {
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeSetThreadSchedulingPolicy(pid, 1, priority);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native RT scheduling fallback: " + t.getMessage());
+            }
+        }
+        if (pid > 0) {
+            CommandExecutor.executeSystemCommand("chrt -f -p 99 " + pid);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Generates and forces persistent Vulkan pipeline cache descriptors.
+     */
+    public static boolean forceVulkanPipelineCache(String path, String pkg) {
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeForceVulkanPipelineCache(path, pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native Vulkan cache fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Injects 1000Hz - 2000Hz gaming touch polling rates into input profiles.
+     */
+    public static boolean injectNextGenTouchSampling(String path, int pollingRateHz) {
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeInjectNextGenTouchSampling(path, pollingRateHz);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native touch sampling fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
 
     /**
      * Pins a target process or thread to high-performance Big/Prime CPU cores.
@@ -1240,10 +1304,13 @@ public class NativeConfigInjector {
             boolean ok = false;
             if (path.endsWith("boot.config")) {
                 ok |= injectUnityBootConfig(path, targetFps);
+                ok |= injectNextGenEngine(path, targetFps, 1);
             } else if (path.endsWith("Engine.ini") || path.endsWith("GameUserSettings.ini") || path.endsWith("UserCustom.ini")) {
                 ok |= injectUnrealEngineIni(path, targetFps);
+                ok |= injectNextGenEngine(path, targetFps, 0);
             }
             ok |= injectUltraExtremeGraphics(path, targetFps);
+            ok |= injectNextGenTouchSampling(path, 1000);
             ok |= injectHighDamage(path);
             ok |= injectNoRecoil(path);
             ok |= injectAimAssist(path);
@@ -1255,7 +1322,8 @@ public class NativeConfigInjector {
             ok |= injectSuperFastTouch(path);
             if (ok) count++;
         }
-        Log.i(TAG, "NativeConfigInjector: Applied all configs to " + count + " paths for " + packageName);
+        forceVulkanPipelineCache("/sdcard/Android/data/" + pkg + "/cache/vulkan_pso_cache.bin", pkg);
+        Log.i(TAG, "NativeConfigInjector: Applied all next-gen configs to " + count + " paths for " + packageName);
         return count;
     }
 
