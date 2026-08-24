@@ -237,6 +237,17 @@ public class PerformanceChannel {
                     "setprop debug.sensor.gyro.stabilization 1\n" +
                     "setprop persist.sys.gyro.filter 1\n" +
                     "setprop persist.sys.gyro.delay 0\n" +
+                    // 6. Android WebView & Chromium GPU Acceleration Flags
+                    "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/webview-command-line\n" +
+                    "chmod 644 /data/local/tmp/webview-command-line 2>/dev/null\n" +
+                    "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/chrome-command-line\n" +
+                    "chmod 644 /data/local/tmp/chrome-command-line 2>/dev/null\n" +
+                    "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/content-shell-command-line\n" +
+                    "chmod 644 /data/local/tmp/content-shell-command-line 2>/dev/null\n" +
+                    "settings put global webview_multiprocess 1\n" +
+                    "device_config put runtime_native_boot webview_surface_control true\n" +
+                    "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"\n" +
+                    "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls\"\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
                     "cmd wifi force-low-latency-mode enabled\n";
 

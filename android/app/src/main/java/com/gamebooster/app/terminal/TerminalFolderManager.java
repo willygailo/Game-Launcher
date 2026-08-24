@@ -188,7 +188,20 @@ public class TerminalFolderManager {
                 "echo '[THERMAL SERVICE INSPECTION COMPLETED]'\n"
         );
 
-        createScriptIfNotExists("8_device_diagnostics_id.sh",
+        createScriptIfNotExists("8_webview_gpu_vulkan_boost.sh",
+                "# ==================================================\n" +
+                "# GAME BOOSTER PRO - WEBVIEW GPU & VULKAN ENGINE\n" +
+                "# ==================================================\n" +
+                "echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/webview-command-line\n" +
+                "chmod 644 /data/local/tmp/webview-command-line\n" +
+                "settings put global webview_multiprocess 1\n" +
+                "device_config put runtime_native_boot webview_surface_control true\n" +
+                "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"\n" +
+                "cat /data/local/tmp/webview-command-line\n" +
+                "echo '[WEBVIEW GPU RASTERIZATION & VULKAN SKIA APPLIED]'\n"
+        );
+
+        createScriptIfNotExists("9_device_diagnostics_id.sh",
                 "# ==================================================\n" +
                 "# GAME BOOSTER PRO - DIAGNOSTICS & IDENTITY\n" +
                 "# ==================================================\n" +

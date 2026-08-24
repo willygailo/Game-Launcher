@@ -324,7 +324,17 @@ public class UserService extends IUserService.Stub {
                      "setprop persist.sys.use_16bpp_alpha 1; " +
                      "setprop debug.egl.multithread 1; " +
                      "setprop debug.graphics.game_default_frame_rate.disabled 1; " +
-                     "setprop ro.vendor.dfps.enable 0";
+                     "setprop ro.vendor.dfps.enable 0; " +
+                     "echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/webview-command-line; " +
+                     "chmod 644 /data/local/tmp/webview-command-line 2>/dev/null; " +
+                     "echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/chrome-command-line; " +
+                     "chmod 644 /data/local/tmp/chrome-command-line 2>/dev/null; " +
+                     "echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/content-shell-command-line; " +
+                     "chmod 644 /data/local/tmp/content-shell-command-line 2>/dev/null; " +
+                     "settings put global webview_multiprocess 1; " +
+                     "device_config put runtime_native_boot webview_surface_control true; " +
+                     "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"; " +
+                     "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls\"";
         execCommand(cmd);
     }
 

@@ -475,6 +475,26 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "webview_gpu_vulkan_turbo",
+                "Android WebView GPU Rasterization, Vulkan Skia & Zero-Copy Turbo",
+                "Forces hardware-accelerated GPU rasterization, Vulkan rendering, DrDc composite decoupling, and V8 JIT flags for WebViews",
+                "echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/webview-command-line; chmod 644 /data/local/tmp/webview-command-line 2>/dev/null; echo '" + com.gamebooster.app.booster.WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/chrome-command-line; chmod 644 /data/local/tmp/chrome-command-line 2>/dev/null; setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"; setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls\"",
+                "rm -f /data/local/tmp/webview-command-line /data/local/tmp/chrome-command-line 2>/dev/null; setprop debug.chromium.flags \"\"; setprop debug.v8.flags \"\"",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "webview_multiprocess_acceleration",
+                "WebView Multi-Process Mode & SurfaceControl Acceleration",
+                "Isolates WebView rendering into dedicated high-priority threads and enables SurfaceControl rendering pipeline",
+                "settings put global webview_multiprocess 1; device_config put runtime_native_boot webview_surface_control true",
+                "settings put global webview_multiprocess 0; device_config put runtime_native_boot webview_surface_control false",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "tcp_bbr_gaming_low_latency",
                 "Linux TCP BBR Congestion Control & Nagle Bypass",
                 "Applies TCP BBR congestion algorithm and disables Nagle packet buffering for zero-jitter multiplayer gaming",

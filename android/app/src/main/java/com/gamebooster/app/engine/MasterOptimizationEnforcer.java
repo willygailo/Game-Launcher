@@ -101,12 +101,14 @@ public class MasterOptimizationEnforcer {
                 int tweaksApplied = TweakManagerRepository.applyAllSupportedTweaks(appContext);
                 totalApplied += tweaksApplied;
 
-                // 3B. CPU & GPU hardware channels
+                // 3B. CPU, GPU & WebView hardware channels
                 PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 PerformanceChannel.setGpuRenderMode(true); // Vulkan 3D
                 CpuGovernorChannel.setGovernor("extreme");
                 GpuTweaksChannel.setAngleMode(true);
                 GpuTweaksChannel.setGameDriverMode(true);
+                com.gamebooster.app.booster.WebViewBoosterChannel.applyWebViewPerformanceBoost();
+                com.gamebooster.app.utils.WebViewPerformanceTuner.prewarmWebViewProcess(appContext);
 
                 // 3C. Network & DNS optimization
                 if (listener != null) {
@@ -237,6 +239,9 @@ public class MasterOptimizationEnforcer {
 
                     report.attemptStep("Tier 1", "setCpuGpuPerformanceGovernors", () ->
                             ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors());
+
+                    report.attemptStep("Tier 1", "applyWebViewPerformanceBoost", () ->
+                            com.gamebooster.app.booster.WebViewBoosterChannel.applyWebViewPerformanceBoost());
 
                     tier1Ok = report.tierSucceededWithoutFailures("Tier 1");
                 }
