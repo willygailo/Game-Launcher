@@ -9,6 +9,7 @@ import com.gamebooster.app.booster.NetworkOptimizer;
 import com.gamebooster.app.booster.PerformanceChannel;
 import com.gamebooster.app.config.CompetitiveCfgProfile;
 import com.gamebooster.app.config.GameConfigPatcher;
+import com.gamebooster.app.config.GameConfigPathResolver;
 import com.gamebooster.app.config.GameConfigStorageAccessEngine;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.config.GameProfilePreferences;
@@ -23,22 +24,45 @@ import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 import com.gamebooster.app.spoofer.HardwareMaskEngine;
 
+import java.util.List;
+
 /**
  * GameManagerSessionEngine — Manages the lifecycle of an active game session.
  *
  * Ensures all optimizations (Shizuku, Android API, hardware masking, storage unlock,
  * high refresh rate, and CPU/GPU performance governors) are enforced when a game starts,
  * and cleanly reverted to stock baseline when the game session ends.
+ *
+ * Session pipeline (called after Phase 1 & 2 in GameManagerLauncher):
+ *  1. Capture baseline session state + target FPS
+ *  2. Grant full combo storage access (MediaStore + data dir + external)
+ *  3. Apply Android 13-16 Game Mode API flags
+ *  4. Hardware Device Masking (GPU / RAM / Model spoof via HardwareMaskEngine)
+ *  5. Force high display refresh rate (MaxHzForceChannel + HzFpsChannel + AIDL)
+ *  6. Elevate CPU/GPU governors (AIDL setCpuGpuPerformanceGovernors, thermal boost)
+ *  7. Acquire sustained performance lock + low-latency WiFi lock + ADPF session
+ *  8. Native C++ config injection — Unreal Engine .ini + Unity boot.config + Vulkan cache
+ *  9. Auto-patch game config files (GameConfigPatcher + GameProfileAutoConfigurator)
+ * 10. DND gaming mode + Network turbo optimization
+ * 11. Async post-launch CPU core pinning (Big/Prime cores) + SCHED_FIFO realtime scheduling
  */
 public final class GameManagerSessionEngine {
 
     private static final String TAG = "GameManagerSession";
+
+    /** Engine-type constants matching native_config_injector.cpp ENGINE_* defines */
+    private static final int ENGINE_UNREAL = 1;
+    private static final int ENGINE_UNITY  = 2;
+    private static final int ENGINE_HOYO   = 3;
+    private static final int ENGINE_CUSTOM = 4;
 
     private GameManagerSessionEngine() {
     }
 
     /**
      * Begins an optimized game session for the target package.
+     *
+     * Must be called on a background thread (AppExecutors.executeCommand).
      */
     public static void beginSession(Context context, String packageName) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) {
@@ -49,22 +73,22 @@ public final class GameManagerSessionEngine {
 
         Log.i(TAG, "⚡ Starting GameManager Session for: " + pkg);
 
-        // 1. Capture baseline session state
+        // ── 1. Capture baseline session state ────────────────────────────────
         int targetFps = GameProfilePreferences.getTargetHz(appContext, pkg);
         if (targetFps <= 0) targetFps = 185;
         GameSessionSettings.begin(appContext, pkg);
         GameManagerStatus.getInstance().setActiveSession(pkg);
 
-        // 2. Grant full combo storage access
+        // ── 2. Grant full combo storage access ───────────────────────────────
         GameConfigStorageAccessEngine.grantAllPathsAccess(appContext, pkg);
 
-        // 3. Apply modern Android 13-16 performance API flags
+        // ── 3. Apply modern Android 13-16 performance API flags ──────────────
         GameModeApiSupport.applyModernAndroidPerformanceFlags(pkg, targetFps);
 
-        // 4. Enforce Hardware Device Masking for target game
+        // ── 4. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
-        // 5. Force High Hardware Display Refresh Rate
+        // ── 5. Force High Hardware Display Refresh Rate ──────────────────────
         try {
             MaxHzForceChannel.forceApply(targetFps);
             HzFpsChannel.forceSetRefreshRate(appContext, targetFps);
@@ -75,7 +99,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
         }
 
-        // 6. Elevate CPU/GPU Performance Governors via AIDL/Shizuku
+        // ── 6. Elevate CPU/GPU Performance Governors via AIDL/Shizuku ────────
         try {
             if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                 ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
@@ -86,7 +110,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Performance channel warning: " + t.getMessage());
         }
 
-        // 7. Acquire Sustained Performance Lock & Low-Latency WiFi Lock
+        // ── 7. Acquire Sustained Performance Lock & Low-Latency WiFi Lock ────
         try {
             NativeFrameworkBridge.acquireSustainedPerformanceLock(appContext);
             NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext);
@@ -95,7 +119,32 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Native framework lock warning: " + t.getMessage());
         }
 
-        // 8. Auto-patch game config files if configured
+        // ── 8. Native C++ Engine Config Injection ────────────────────────────
+        // Detect engine type and inject UE .ini / Unity boot.config / HoYo via POSIX C++ layer.
+        // This ensures game engines re-read optimal settings on cold start.
+        try {
+            final int detectedEngine = detectEngineType(pkg);
+            List<String> cfgPaths = GameConfigPathResolver.getPathsForGame(pkg);
+            if (cfgPaths != null && !cfgPaths.isEmpty()) {
+                for (String path : cfgPaths) {
+                    if (path.endsWith(".ini") && detectedEngine == ENGINE_UNREAL) {
+                        NativeConfigInjector.injectUnrealEngineIni(path, targetFps);
+                    } else if (path.contains("boot.config") && detectedEngine == ENGINE_UNITY) {
+                        NativeConfigInjector.injectUnityBootConfig(path, targetFps);
+                    } else if ((path.endsWith(".ini") || path.endsWith(".json"))
+                            && (detectedEngine == ENGINE_HOYO || detectedEngine == ENGINE_CUSTOM)) {
+                        NativeConfigInjector.injectNextGenEngine(path, targetFps, detectedEngine);
+                    }
+                }
+            }
+            // Always try Vulkan pipeline cache warming for faster first-frame load
+            String vulkanCacheDir = "/data/data/" + pkg + "/cache/vulkan_shader_cache";
+            NativeConfigInjector.forceVulkanPipelineCache(vulkanCacheDir, pkg);
+        } catch (Throwable t) {
+            Log.w(TAG, "Native C++ injection warning: " + t.getMessage());
+        }
+
+        // ── 9. Auto-patch game config files if configured ────────────────────
         try {
             GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
             GameProfileAutoConfigurator.autoConfigGamePackage(appContext, pkg, targetFps);
@@ -103,7 +152,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Config patch warning: " + t.getMessage());
         }
 
-        // 9. DND & Network Turbo
+        // ── 10. DND & Network Turbo ──────────────────────────────────────────
         try {
             NetworkOptimizer.optimizeAllDataAndWifi(appContext);
             GameSpaceDndManager.setGamingDndMode(appContext, true);
@@ -111,35 +160,46 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "DND/Network warning: " + t.getMessage());
         }
 
-        // 10. Native CPU Core Pinning & Realtime Priority Scheduling
-        try {
-            com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                try {
-                    Thread.sleep(1200);
-                    String pidOut = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + pkg);
-                    if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
-                        String[] pids = pidOut.trim().split("\\s+");
-                        for (String pStr : pids) {
-                            try {
-                                int pid = Integer.parseInt(pStr);
-                                if (pid > 0) {
-                                    NativeConfigInjector.setProcessCpuAffinity(pid, 0xf0);
-                                    com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
-                                            "taskset -p f0 " + pid + " 2>/dev/null",
-                                            "renice -n -20 -p " + pid + " 2>/dev/null"
-                                    );
-                                    Log.i(TAG, "Pinned Big/Prime CPU cores for PID: " + pid);
-                                }
-                            } catch (NumberFormatException ignored) {}
-                        }
-                    }
-                } catch (Throwable ignored) {}
-            });
-        } catch (Throwable t) {
-            Log.w(TAG, "Core affinity warning: " + t.getMessage());
-        }
+        // ── 11. Async Post-Launch CPU Core Pinning & Realtime Scheduling ─────
+        // Wait 1.5s for game process to start, then pin to Big/Prime cores (mask 0xf0)
+        // and elevate to SCHED_FIFO realtime priority for zero-jitter thread scheduling.
+        final int finalFps = targetFps;
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                Thread.sleep(1500);
+                String pidOut = ShizukuExecutor.executeShizukuCommand("pidof " + pkg);
+                if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
+                    String[] pids = pidOut.trim().split("\\s+");
+                    for (String pStr : pids) {
+                        try {
+                            int pid = Integer.parseInt(pStr.trim());
+                            if (pid > 0) {
+                                // Native sched_setaffinity — pin to Big/Prime CPU cluster (bits 4-7)
+                                NativeConfigInjector.setProcessCpuAffinity(pid, 0xf0);
 
-        GameManagerStatus.getInstance().recordApply(18, "Game Session Activated for " + pkg + " @ " + targetFps + " FPS");
+                                // SCHED_FIFO realtime scheduling (policy=1, priority=50)
+                                // Ensures game render thread is never preempted by lower-prio tasks
+                                NativeConfigInjector.setRealtimeThreadScheduling(pid, 50);
+
+                                // Shell reinforcement via Shizuku (taskset + renice)
+                                ShizukuExecutor.executeShizukuCommands(
+                                    "taskset -p f0 " + pid + " 2>/dev/null",
+                                    "renice -n -20 -p " + pid + " 2>/dev/null"
+                                );
+                                Log.i(TAG, "✅ Pinned Big/Prime CPU cores (0xf0) + SCHED_FIFO for PID: " + pid);
+                            }
+                        } catch (NumberFormatException ignored) {}
+                    }
+                } else {
+                    Log.d(TAG, "PID not found for " + pkg + " (game may still be loading)");
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Async CPU affinity warning: " + t.getMessage());
+            }
+        });
+
+        GameManagerStatus.getInstance().recordApply(18, "Game Session Activated for " + pkg + " @ " + finalFps + " FPS");
+        Log.i(TAG, "✅ Game session fully initialized for: " + pkg + " @ " + finalFps + " FPS");
     }
 
     /**
@@ -160,5 +220,48 @@ public final class GameManagerSessionEngine {
     public static boolean isSessionActive(Context context) {
         if (context == null) return false;
         return GameSessionSettings.hasActiveSession(context) || GameManagerStatus.getInstance().hasActiveSession();
+    }
+
+    /**
+     * Detects the game engine type from the package name to route native C++ injection correctly.
+     *
+     * @return ENGINE_UNREAL, ENGINE_UNITY, ENGINE_HOYO, or ENGINE_CUSTOM
+     */
+    private static int detectEngineType(String pkg) {
+        if (pkg == null) return ENGINE_CUSTOM;
+        String p = pkg.toLowerCase();
+
+        // Unreal Engine games (PUBG Mobile, CoD Mobile/Warzone, Valorant Mobile,
+        // Arena Breakout, Delta Force, Blood Strike, Farlight 84, Wild Rift, HoK)
+        if (p.contains("pubg") || p.contains("tencent.ig") || p.contains("imobile")
+                || p.contains("vng.pubgmobile") || p.contains("cod") || p.contains("callofduty")
+                || p.contains("warzone") || p.contains("valorant") || p.contains("projectc")
+                || p.contains("arenabreakout") || p.contains("uamo") || p.contains("deltaforce")
+                || p.contains("bloodstrike") || p.contains("newspike")
+                || p.contains("farlight") || p.contains("solarland")
+                || p.contains("wildrift") || p.contains("riotgames.league")
+                || p.contains("sgame") || p.contains("levelinfinite")
+                || p.contains("arenaofvalor") || p.contains("kgtw")) {
+            return ENGINE_UNREAL;
+        }
+
+        // HoYoverse / Kuro Games custom engines
+        if (p.contains("genshin") || p.contains("mihoyo") || p.contains("cognosphere")
+                || p.contains("hoyoverse") || p.contains("hkrpg") || p.contains("nap")
+                || p.contains("wutheringwaves") || p.contains("kurogame")) {
+            return ENGINE_HOYO;
+        }
+
+        // Unity games (Mobile Legends, Free Fire, CarX, Roblox, Standoff 2, Supercell)
+        if (p.contains("mobile.legends") || p.contains("mobilelegends")
+                || p.contains("freefire") || p.contains("dts.freefire")
+                || p.contains("carx") || p.contains("roblox")
+                || p.contains("standoff2") || p.contains("axlebolt")
+                || p.contains("supercell") || p.contains("brawlstars")
+                || p.contains("clashroyale") || p.contains("clashofclans")) {
+            return ENGINE_UNITY;
+        }
+
+        return ENGINE_CUSTOM;
     }
 }

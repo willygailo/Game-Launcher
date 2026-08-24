@@ -131,24 +131,55 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                     if (which == 1) forceHz[0] = isChecked;
                 })
                 .setPositiveButton("⚡ FORCE WRITE & APPLY VIA SHIZUKU", (dialog, which) -> {
-                    CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, chosenFps[0], superTouch[0], forceHz[0]);
+                    final int selectedFps = chosenFps[0];
+                    CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, selectedFps, superTouch[0], forceHz[0]);
 
-                    Toast.makeText(context, "⚡ Forcing " + chosenFps[0] + " FPS CFG into " + game.getLabel() + " game files via Shizuku...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "⚡ Forcing " + selectedFps + " FPS CFG into " + game.getLabel() + " via Shizuku...", Toast.LENGTH_SHORT).show();
 
                     AppExecutors.getInstance().executeCommand(() -> {
-                        int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);
-                        GameConfigPatcher.applyGameFpsPatch(context, pkg, chosenFps[0]);
-                        GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, chosenFps[0]);
+                        // ── Step 1: Force-stop game so cold-start picks up new configs ──
+                        ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
+                        try { Thread.sleep(200); } catch (InterruptedException ignored) {}
 
-                        ShizukuExecutor.executeShizukuCommand("settings put global game_driver_opt_in_apps " + pkg);
-                        ShizukuExecutor.executeShizukuCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
+                        // ── Step 2: Apply all config patchers ──
+                        int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);
+                        GameConfigPatcher.applyGameFpsPatch(context, pkg, selectedFps);
+                        GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, selectedFps);
+
+                        // ── Step 3: Game Driver, ANGLE, Vulkan opt-in ──
+                        ShizukuExecutor.executeShizukuCommands(
+                            "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
+                            "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
+                            "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null"
+                        );
+
+                        // ── Step 4: Android Game Mode API + per-app Hz override ──
+                        ShizukuExecutor.executeShizukuCommands(
+                            "cmd game mode performance " + pkg + " 2>/dev/null",
+                            "cmd window set-app-refresh-rate " + pkg + " " + selectedFps + " 2>/dev/null",
+                            "cmd game set --fps " + selectedFps + " " + pkg + " 2>/dev/null"
+                        );
+
+                        // ── Step 5: SurfaceFlinger direct Hz binder call (deepest level) ──
+                        ShizukuExecutor.executeShizukuCommand(
+                            "service call SurfaceFlinger 1035 i32 " + selectedFps + " 2>/dev/null");
+
+                        // ── Step 6: Debug props for HWUI + render pipeline ──
+                        ShizukuExecutor.executeShizukuCommands(
+                            "setprop debug.sf.nobootanimation 1",
+                            "setprop debug.hwui.render_dirty_regions false",
+                            "setprop debug.sf.disable_backpressure 1"
+                        );
 
                         AppExecutors.getInstance().postToMainThread(() -> {
                             int pos = holder.getAdapterPosition();
                             if (pos != RecyclerView.NO_POSITION && pos < games.size()) {
                                 holder.tvProfile.setText(GameProfilePreferences.getSummary(context, pkg));
                             }
-                            Toast.makeText(context, "✅ FORCED " + chosenFps[0] + " FPS CFG TO " + game.getLabel() + " (" + patchedCount + " files updated via Shizuku)!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context,
+                                "✅ FORCED " + selectedFps + " FPS to " + game.getLabel() +
+                                " (" + patchedCount + " files patched)! Game driver + SurfaceFlinger Hz locked via Shizuku!",
+                                Toast.LENGTH_LONG).show();
                         });
                     });
                 })
