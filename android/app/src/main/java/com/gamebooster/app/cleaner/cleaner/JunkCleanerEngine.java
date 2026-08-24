@@ -195,6 +195,9 @@ public class JunkCleanerEngine {
                 ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/code_cache/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/cache/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/code_cache/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/Cache/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/GPUCache/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/Code\\ Cache/* 2>/dev/null");
             } catch (Throwable ignored) {}
         }
 
@@ -267,15 +270,15 @@ public class JunkCleanerEngine {
 
     private void executeElevatedSystemTrim(List<String> logs) {
         try {
-            logs.add("Running pm trim-caches 1000G...");
+            logs.add("Running pm trim-caches 2000M across system apps...");
             if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("pm trim-caches 1000G 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("pm trim-caches 2000M 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/local/tmp/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/anr/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/tombstones/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /data/system/dropbox/* 2>/dev/null");
             } else {
-                CommandExecutor.executeSystemCommand("pm trim-caches 1000G 2>/dev/null");
+                CommandExecutor.executeSystemCommand("pm trim-caches 2000M 2>/dev/null");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Elevated system trim exception", t);
@@ -314,8 +317,9 @@ public class JunkCleanerEngine {
         try {
             if (ShizukuFileManager.hasFullAccess()) {
                 ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("sync");
+                ShizukuExecutor.executeShizukuCommand("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null");
             } else {
                 CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null");
                 CommandExecutor.executeSystemCommand("sync");

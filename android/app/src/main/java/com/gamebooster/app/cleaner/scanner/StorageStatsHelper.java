@@ -183,6 +183,18 @@ public final class StorageStatsHelper {
         return null;
     }
 
+    @Nullable
+    public static AppStorageMetrics queryAppMetrics(@NonNull Context context, @NonNull String packageName) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            if (pm == null) return null;
+            ApplicationInfo appInfo = pm.getApplicationInfo(packageName, 0);
+            return queryAppMetrics(context, appInfo);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     /**
      * Queries exact real cache metrics for ALL installed applications and games.
      */

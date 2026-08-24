@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,8 +27,8 @@ import java.util.Set;
  *
  * Grounded in official Android Framework APIs (StorageStatsManager, StorageManager,
  * PackageManager) combined with deep Shizuku/Root storage inspection.
- * Scans real app caches, uninstalled app residuals, social media buffers,
- * game dumps, hidden thumbnails, and obsolete APKs.
+ * Scans real app caches, uninstalled app residuals (CorpseFinder), social media buffers,
+ * game dumps, hidden thumbnails, OEM gallery trashes, and obsolete APKs.
  */
 public class JunkScanner {
 
@@ -55,7 +56,7 @@ public class JunkScanner {
             scanInstalledAppCaches(context, result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 2: Leftover / Orphaned Folders from Uninstalled Apps (30% - 45%)
+            // STEP 2: Leftover / Orphaned Folders from Uninstalled Apps (CorpseFinder) (30% - 45%)
             notifyProgress(listener, 30, "Scanning orphaned folders from uninstalled apps...", result.getTotalBytes());
             scanUninstalledResiduals(context, result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
@@ -198,10 +199,10 @@ public class JunkScanner {
             Log.w(TAG, "Error querying installed applications for cache scan", t);
         }
 
-        // 3. If Shizuku / Root is available, inspect deep caches
-        if (!hasUsageStats && ShizukuFileManager.hasFullAccess()) {
+        // 3. If Shizuku / Root is available, inspect deep internal caches (/data/data/*/cache)
+        if (ShizukuFileManager.hasFullAccess()) {
             try {
-                String duCmd = "du -sk /sdcard/Android/data/*/cache /data/data/*/cache 2>/dev/null";
+                String duCmd = "du -sk /sdcard/Android/data/*/cache /data/data/*/cache /data/data/*/code_cache /data/data/*/app_webview/Default/Cache 2>/dev/null";
                 String duRes = ShizukuExecutor.executeShizukuCommand(duCmd);
                 if (duRes != null && !duRes.startsWith("ERROR:")) {
                     parseDuAppCaches(duRes, pm, processedPackages, result);
@@ -211,7 +212,7 @@ public class JunkScanner {
     }
 
     /**
-     * Identifies residual data and media folders left behind by uninstalled applications.
+     * Identifies residual data and media folders left behind by uninstalled applications (CorpseFinder).
      */
     private void scanUninstalledResiduals(Context context, JunkScanResult result, OnScanProgressListener listener) {
         if (context == null) return;
@@ -262,6 +263,28 @@ public class JunkScanner {
                 }
             }
         }
+
+        // Also scan well-known legacy junk root folders from uninstalled tools
+        String[] legacyRootJunks = new String[]{
+                "tencent", "baidu", "UCNews", "UCDownloads", "shareit", "zapya",
+                "kugou", "viber", "alibaba", "duomi", ".turing_debug", "msc", "backups/.trash"
+        };
+        for (String legacyName : legacyRootJunks) {
+            File legacyDir = new File(extStorage, legacyName);
+            if (legacyDir.exists() && legacyDir.isDirectory()) {
+                long size = getDirectorySize(legacyDir);
+                if (size > 0 && !containsPath(result, legacyDir.getAbsolutePath())) {
+                    result.addItem(new JunkItem(
+                            legacyDir.getAbsolutePath(),
+                            "Legacy App Leftover: " + legacyName,
+                            legacyName,
+                            size,
+                            JunkCategory.RESIDUAL_UNINSTALLED,
+                            true
+                    ));
+                }
+            }
+        }
     }
 
     /**
@@ -281,19 +304,26 @@ public class JunkScanner {
                 "Android/media/com.whatsapp/WhatsApp/Media/.Trash",
                 "WhatsApp/Media/.Trash",
                 "Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes/.trash",
-                // TikTok & ByteDance
+                "Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Trash",
+                // TikTok & ByteDance / CapCut
                 "Android/data/com.zhiliaoapp.musically/cache",
                 "Android/data/com.ss.android.ugc.trill/cache",
                 "Android/data/com.lemon.lvoverseas/cache", // CapCut
-                // Discord
+                // Discord & Reddit
                 "Android/data/com.discord/cache",
-                // Facebook & Instagram
+                "Android/data/com.reddit.frontpage/cache",
+                // Facebook & Instagram & Messenger
                 "Android/data/com.instagram.android/cache",
                 "Android/data/com.facebook.katana/cache",
+                "Android/data/com.facebook.orca/cache",
+                "Android/data/com.twitter.android/cache",
                 // Browsers
                 "Android/data/com.android.chrome/cache",
                 "Android/data/com.brave.browser/cache",
-                "Android/data/com.microsoft.emmx/cache"
+                "Android/data/com.microsoft.emmx/cache",
+                "Android/data/org.mozilla.firefox/cache",
+                "Android/data/com.opera.browser/cache",
+                "Android/data/com.sec.android.app.sbrowser/cache"
         };
 
         for (String rel : socialPaths) {
@@ -321,7 +351,9 @@ public class JunkScanner {
 
         String[] thumbnailPaths = {
                 "DCIM/.thumbnails",
+                "DCIM/.thumb",
                 "Pictures/.thumbnails",
+                "Pictures/.thumb",
                 "Movies/.thumbnails",
                 "Download/.thumbnails",
                 "Pictures/.trash",
@@ -329,6 +361,7 @@ public class JunkScanner {
                 "Android/data/com.miui.gallery/files/trashBin",
                 "Android/data/com.sec.android.gallery3d/cache",
                 "Android/data/com.coloros.gallery3d/cache",
+                "Android/data/com.oplus.gallery/cache",
                 "Android/data/com.google.android.apps.photos/cache"
         };
 
