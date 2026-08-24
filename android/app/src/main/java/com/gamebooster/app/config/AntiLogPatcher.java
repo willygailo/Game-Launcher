@@ -1,5 +1,6 @@
 package com.gamebooster.app.config;
 
+import android.os.Environment;
 import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -8,6 +9,7 @@ import com.gamebooster.app.shizuku.ShizukuFileManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * AntiLogPatcher — Privileged Game Anti-Log, Telemetry Suppressor & Disk I/O Optimizer.
@@ -76,7 +78,7 @@ public final class AntiLogPatcher {
      */
     public static boolean applyAntiLog(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        String pkg = packageName.toLowerCase().trim();
+        String pkg = packageName.toLowerCase(Locale.ROOT).trim();
 
         List<String> logPaths = getLogPathsForPackage(pkg);
         StringBuilder sb = new StringBuilder();
@@ -184,11 +186,14 @@ public final class AntiLogPatcher {
      */
     private static List<String> getLogPathsForPackage(String pkg) {
         List<String> paths = new ArrayList<>();
+        // Use Environment API instead of hardcoded /sdcard/ to comply with Android storage best practices
+        final String extRoot = Environment.getExternalStorageDirectory().getPath()
+                + "/Android/data/" + pkg;
 
-        // Standard /sdcard/ and /data/ paths
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Saved/Logs");
-        paths.add("/sdcard/Android/data/" + pkg + "/files/Saved/Crashes");
+        // Standard external + internal paths
+        paths.add(extRoot + "/files/Logs");
+        paths.add(extRoot + "/files/Saved/Logs");
+        paths.add(extRoot + "/files/Saved/Crashes");
         paths.add("/data/data/" + pkg + "/files/Logs");
         paths.add("/data/data/" + pkg + "/files/tlog");
         paths.add("/data/data/" + pkg + "/files/apm_logs");
@@ -197,66 +202,66 @@ public final class AntiLogPatcher {
 
         // Game specific paths
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/log");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/commlog");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/assets_log");
+            paths.add(extRoot + "/files/dragon2017/assets/UI/android/log");
+            paths.add(extRoot + "/files/dragon2017/assets/UI/android/commlog");
+            paths.add(extRoot + "/files/dragon2017/assets/UI/android/assets_log");
             paths.add("/data/data/" + pkg + "/files/crash_log");
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/StatEvents");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/PufferTmpDir");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/StatEvents");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/PufferTmpDir");
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/callofduty/logs");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs");
+            paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes");
+            paths.add(extRoot + "/files/callofduty/logs");
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/report");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Garena/FreeFire/log");
+            paths.add(extRoot + "/files/report");
+            paths.add(extRoot + "/files/Garena/FreeFire/log");
             paths.add("/data/data/" + pkg + "/files/report");
         } else if (pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("genshin") || pkg.contains("hoyoverse")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/crashes");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/output_log.txt");
+            paths.add(extRoot + "/files/crashes");
+            paths.add(extRoot + "/files/output_log.txt");
         } else if (pkg.contains("bloodstrike") || pkg.contains("netease")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/netease/logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/netease/crash");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
+            paths.add(extRoot + "/files/netease/logs");
+            paths.add(extRoot + "/files/netease/crash");
+            paths.add(extRoot + "/files/Unity/logs");
         } else if (pkg.contains("arena") || pkg.contains("breakout") || pkg.contains("deltaforce") || pkg.contains("proximabeta")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/UAGame/UAGame/Saved/Logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/UAGame/UAGame/Saved/Crashes");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/cloudgame_log");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/tlog");
+            paths.add(extRoot + "/files/UE4Game/UAGame/UAGame/Saved/Logs");
+            paths.add(extRoot + "/files/UE4Game/UAGame/UAGame/Saved/Crashes");
+            paths.add(extRoot + "/files/cloudgame_log");
+            paths.add(extRoot + "/files/tlog");
         } else if (pkg.contains("farlight") || pkg.contains("miracle")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/Solarland/Solarland/Saved/Crashes");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Solarland/Logs");
+            paths.add(extRoot + "/files/UE4Game/Solarland/Solarland/Saved/Logs");
+            paths.add(extRoot + "/files/UE4Game/Solarland/Solarland/Saved/Crashes");
+            paths.add(extRoot + "/files/Solarland/Logs");
         } else if (pkg.contains("sgame") || pkg.contains("hok") || pkg.contains("arenaofvalor") || pkg.contains("kgtw")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/tencent/tlog");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/tlog");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/apm_logs");
+            paths.add(extRoot + "/files/tencent/tlog");
+            paths.add(extRoot + "/files/tlog");
+            paths.add(extRoot + "/files/apm_logs");
             paths.add("/data/data/" + pkg + "/files/tencent");
         } else if (pkg.contains("wildrift") || pkg.contains("league")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/r3dlogs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+            paths.add(extRoot + "/files/r3dlogs");
+            paths.add(extRoot + "/files/Logs");
             paths.add("/data/data/" + pkg + "/files/r3dlogs");
         } else if (pkg.contains("standoff") || pkg.contains("axlebolt")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+            paths.add(extRoot + "/files/Unity/logs");
+            paths.add(extRoot + "/files/Logs");
             paths.add("/data/data/" + pkg + "/files/Unity");
         } else if (pkg.contains("carx") || pkg.contains("glofta") || pkg.contains("ea.games.r3")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Unity/logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/Logs");
+            paths.add(extRoot + "/files/Unity/logs");
+            paths.add(extRoot + "/files/Logs");
         } else if (pkg.contains("roblox")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/logs");
+            paths.add(extRoot + "/files/logs");
             paths.add("/data/data/" + pkg + "/files/logs");
         } else if (pkg.contains("valorant") || pkg.contains("projectc")) {
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/UE4Game/ProjectC/ProjectC/Saved/Crashes");
+            paths.add(extRoot + "/files/UE4Game/ProjectC/ProjectC/Saved/Logs");
+            paths.add(extRoot + "/files/UE4Game/ProjectC/ProjectC/Saved/Crashes");
         } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clash")) {
             paths.add("/data/data/" + pkg + "/files/analytics");
             paths.add("/data/data/" + pkg + "/files/logs");
-            paths.add("/sdcard/Android/data/" + pkg + "/files/analytics");
+            paths.add(extRoot + "/files/analytics");
         }
 
         return paths;

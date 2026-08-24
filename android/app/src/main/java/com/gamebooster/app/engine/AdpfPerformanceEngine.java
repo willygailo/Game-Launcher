@@ -36,11 +36,9 @@ public class AdpfPerformanceEngine {
 
     /**
      * Checks if ADPF is supported on this Android device (Android 12+ / API 31+).
+     * Note: minSdk >= 33 so SDK_INT is always >= S; guard removed per lint ObsoleteSdkInt.
      */
     public boolean isSupported(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return false;
-        }
         ensureInitialized(context);
         return hintManager != null;
     }
