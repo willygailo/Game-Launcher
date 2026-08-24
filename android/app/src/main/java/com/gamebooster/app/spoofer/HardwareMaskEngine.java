@@ -272,6 +272,7 @@ public class HardwareMaskEngine {
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
                 ShizukuExecutor.executeShizukuCommands(
+                        "am force-stop " + pkg + " 2>/dev/null",
                         "settings put global game_driver_all_apps 0",
                         "settings put global updatable_driver_all_apps 0",
                         "settings put global game_driver_opt_in_apps \"" + pkg + "\"",
@@ -585,8 +586,15 @@ public class HardwareMaskEngine {
      * Masks ALL installed applications and games on the device across Android 13, 14, 15, and 16.
      */
     public static int maskAllInstalledApplications(Context context) {
-        if (context == null) return 0;
         SpoofProfile profile = DeviceSpooferEngine.getActiveProfile();
+        if (profile == null) {
+            profile = DeviceSpooferEngine.getDefaultProfile();
+        }
+        return maskAllInstalledApplications(context, profile);
+    }
+
+    public static int maskAllInstalledApplications(Context context, SpoofProfile profile) {
+        if (context == null) return 0;
         if (profile == null) {
             profile = DeviceSpooferEngine.getDefaultProfile();
         }
@@ -599,6 +607,8 @@ public class HardwareMaskEngine {
 
             StringBuilder gameDriverApps = new StringBuilder();
             StringBuilder angleDriverApps = new StringBuilder();
+
+            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
             for (com.gamebooster.app.games.GameAppInfo app : allApps) {
                 if (app == null || app.getPackageName() == null) continue;
@@ -614,9 +624,9 @@ public class HardwareMaskEngine {
 
                 // 2. Android 13-16 GameMode & Overlay
                 batchCmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
-                batchCmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
-                batchCmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");
-                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+                batchCmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
+                batchCmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
+                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
 
                 // 3. Inject hardware profile
                 injectTailoredGameHardwareConfigs(pkg, profile);
@@ -625,8 +635,10 @@ public class HardwareMaskEngine {
 
             // Global Android Driver Enforcements
             if (gameDriverApps.length() > 0) {
-                batchCmds.add("settings put global game_driver_opt_in_apps " + gameDriverApps.toString());
-                batchCmds.add("settings put global updatable_driver_production_opt_in_apps " + gameDriverApps.toString());
+                batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverApps.toString() + "\"");
+                batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverApps.toString() + "\"");
+                batchCmds.add("settings put global angle_gl_driver_selection_pkgs \"" + angleDriverApps.toString() + "\"");
+                batchCmds.add("settings put global angle_gl_driver_selection_values angle");
             }
 
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -635,6 +647,13 @@ public class HardwareMaskEngine {
 
             // Global Build reflection
             applyInAppReflectionMask(profile);
+
+            // Staged procfs mock payloads
+            exportMockProcfsPayloads(profile);
+
+            SpoofPreferences.setSpoofEnabled(context, true);
+            SpoofPreferences.setActiveProfileId(context, profile.id);
+            SpoofPreferences.setSpoofAllApps(context, true);
 
             com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().setMaskedAppsCount(count);
             Log.i(TAG, "⚡ Masked " + count + " applications with profile: " + profile.displayName);

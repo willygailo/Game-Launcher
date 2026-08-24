@@ -267,6 +267,39 @@ public class DeviceSpooferEngine {
         return anySuccess;
     }
 
+    /**
+     * Forcefully applies a specific spoof profile ID to a target package.
+     */
+    public static boolean forceApplySpoof(Context context, String profileId, String packageName) {
+        if (profileId == null || profileId.trim().isEmpty()) return false;
+        SpoofProfile profile = getProfileById(profileId.trim());
+        if (profile == null) return false;
+        if (context != null) {
+            SpoofPreferences.setSpoofEnabled(context, true);
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                SpoofPreferences.setProfileIdForPackage(context, packageName.trim(), profile.id);
+            } else {
+                SpoofPreferences.setActiveProfileId(context, profile.id);
+            }
+        }
+        return applyProfile(context, profile, packageName);
+    }
+
+    /**
+     * Forcefully applies a specific spoof profile ID across ALL installed apps and games.
+     */
+    public static int forceApplyGlobalSpoof(Context context, String profileId) {
+        if (profileId == null || profileId.trim().isEmpty()) return 0;
+        SpoofProfile profile = getProfileById(profileId.trim());
+        if (profile == null) return 0;
+        if (context != null) {
+            SpoofPreferences.setSpoofEnabled(context, true);
+            SpoofPreferences.setActiveProfileId(context, profile.id);
+            SpoofPreferences.setSpoofAllApps(context, true);
+        }
+        return HardwareMaskEngine.maskAllInstalledApplications(context, profile);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Reset
     // ─────────────────────────────────────────────────────────────────────────

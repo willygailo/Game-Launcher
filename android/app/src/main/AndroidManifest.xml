@@ -53,6 +53,8 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -93,9 +95,11 @@
         <package android:name="com.pubg.krmobile" />
         <package android:name="com.vng.pubgmobile" />
         <package android:name="com.pubg.newstate" />
+        <package android:name="com.krafton.bgmi" />
         <package android:name="com.dts.freefireth" />
         <package android:name="com.dts.freefiremax" />
         <package android:name="com.riotgames.league.wildrift" />
+        <package android:name="com.riotgames.league.teamfighttactics" />
         <package android:name="com.levelinfinite.sgameGlobal" />
         <package android:name="com.tencent.tmgp.sgame" />
         <package android:name="com.garena.game.kgtw" />
@@ -111,6 +115,7 @@
         <package android:name="com.miracle.farlight84" />
         <package android:name="com.proximabeta.mf.uamo" />
         <package android:name="com.levelinfinite.deltaforce" />
+        <package android:name="com.tencent.tmgp.dfm" />
         <package android:name="com.activision.callofduty.warzone" />
         <package android:name="com.h20.carxstreet" />
         <package android:name="com.gameloft.anmp.android.glofta9hm" />
@@ -120,6 +125,10 @@
         <package android:name="com.supercell.clashofclans" />
         <package android:name="com.supercell.squad" />
         <package android:name="com.kurogame.wutheringwaves.global" />
+        <package android:name="com.kurogame.kj" />
+        <package android:name="com.levelinfinite.hotta.gp" />
+        <package android:name="com.netease.lztgglobal" />
+        <package android:name="com.YoStar.AetherGazer" />
         <package android:name="com.tencent.tmgp.projectc" />
         <package android:name="com.riotgames.valorantmobile" />
         <!-- Third-Party Gaming Platforms & App Stores -->
@@ -146,6 +155,7 @@
         android:isGame="true"
         android:appCategory="game"
         android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true">
 
         <!-- Display & Gaming Engine Metadata -->
@@ -241,7 +251,9 @@
             android:name="com.gamebooster.app.ui.activities.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -253,6 +265,7 @@
             android:exported="false"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:label="Shizuku Core Console" />
 
     </application>
