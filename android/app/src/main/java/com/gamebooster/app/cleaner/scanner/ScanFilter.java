@@ -48,9 +48,15 @@ public class ScanFilter {
     }
 
     public static boolean isDisposableJunkFile(File file) {
-        if (file == null || !file.exists() || file.isDirectory()) return false;
-        String name = file.getName().toLowerCase(Locale.ROOT);
-        String path = file.getAbsolutePath().toLowerCase(Locale.ROOT);
+        if (file == null || (file.exists() && file.isDirectory())) return false;
+        return isDisposableJunkPath(file.getAbsolutePath());
+    }
+
+    public static boolean isDisposableJunkPath(String filePath) {
+        if (filePath == null || filePath.isEmpty()) return false;
+        String path = filePath.toLowerCase(Locale.ROOT);
+        int lastSlash = path.lastIndexOf('/');
+        String name = lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
 
         // Check if explicitly protected
         String ext = getFileExtension(name);
@@ -83,14 +89,14 @@ public class ScanFilter {
     }
 
     public static boolean isObsoleteApkFile(File file) {
-        if (file == null || !file.isFile()) return false;
+        if (file == null || (file.exists() && file.isDirectory())) return false;
         String name = file.getName().toLowerCase(Locale.ROOT);
         String path = file.getAbsolutePath().toLowerCase(Locale.ROOT);
         return name.endsWith(".apk") && (path.contains("/download") || path.contains("/temp") || path.contains("/tmp"));
     }
 
     public static boolean isGameLogOrResidual(File file) {
-        if (file == null || !file.isFile()) return false;
+        if (file == null || (file.exists() && file.isDirectory())) return false;
         String name = file.getName().toLowerCase(Locale.ROOT);
         String path = file.getAbsolutePath().toLowerCase(Locale.ROOT);
 

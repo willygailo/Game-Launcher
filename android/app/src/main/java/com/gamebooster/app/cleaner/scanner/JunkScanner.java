@@ -16,15 +16,18 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * JunkScanner — 100% Real, Grounded Storage & Cache Scanner for Android.
+ * JunkScanner — Real, Deep Storage & Cache Scanner for Android 13, 14, 15, and 16.
  *
- * Utilizes official Android StorageStatsManager, PackageArchiveInfo, and File APIs.
- * Eliminates all fake constants, mocked numbers, and synthetic sizes.
+ * Grounded in official Android Framework APIs (StorageStatsManager, StorageManager,
+ * PackageManager) combined with deep Shizuku/Root storage inspection.
+ * Scans real app caches, uninstalled app residuals, social media buffers,
+ * game dumps, hidden thumbnails, and obsolete APKs.
  */
 public class JunkScanner {
 
@@ -47,32 +50,42 @@ public class JunkScanner {
         JunkScanResult result = new JunkScanResult();
 
         try {
-            // STEP 1: All Installed Applications Caches (0% - 40%)
-            notifyProgress(listener, 5, "Scanning application & game caches via StorageStats...", result.getTotalBytes());
+            // STEP 1: All Installed Application Caches (0% - 30%)
+            notifyProgress(listener, 5, "Scanning application & game caches...", result.getTotalBytes());
             scanInstalledAppCaches(context, result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 2: Media Thumbnails & Gallery Cache (40% - 55%)
-            notifyProgress(listener, 40, "Scanning thumbnail caches (.thumbnails)...", result.getTotalBytes());
+            // STEP 2: Leftover / Orphaned Folders from Uninstalled Apps (30% - 45%)
+            notifyProgress(listener, 30, "Scanning orphaned folders from uninstalled apps...", result.getTotalBytes());
+            scanUninstalledResiduals(context, result, listener);
+            if (isCancelled) return finishResult(result, startTime, listener);
+
+            // STEP 3: Messaging & Social Media Caches (45% - 60%)
+            notifyProgress(listener, 45, "Scanning WhatsApp, Telegram & social media caches...", result.getTotalBytes());
+            scanSocialMediaCaches(context, result, listener);
+            if (isCancelled) return finishResult(result, startTime, listener);
+
+            // STEP 4: Media Thumbnails & Gallery Trash (60% - 70%)
+            notifyProgress(listener, 60, "Scanning thumbnail caches & gallery trash (.thumbnails)...", result.getTotalBytes());
             scanThumbnails(result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 3: Obsolete APK Installers (55% - 70%)
-            notifyProgress(listener, 55, "Inspecting obsolete & duplicate APKs...", result.getTotalBytes());
+            // STEP 5: Obsolete APK Installers & Partial Downloads (70% - 80%)
+            notifyProgress(listener, 70, "Inspecting obsolete APKs & stale downloads...", result.getTotalBytes());
             scanObsoleteApks(context, result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 4: Temp Files, ANR & Crash Logs (70% - 85%)
-            notifyProgress(listener, 70, "Scanning temp buffers & crash dumps...", result.getTotalBytes());
+            // STEP 6: Temp Files, Crash Logs & Game Shader Dumps (80% - 90%)
+            notifyProgress(listener, 80, "Scanning temp logs, crash dumps & game residuals...", result.getTotalBytes());
             scanTempAndLogs(context, result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 5: Empty & Orphaned Folders (85% - 95%)
-            notifyProgress(listener, 85, "Scanning empty directories...", result.getTotalBytes());
+            // STEP 7: Empty Directories (90% - 95%)
+            notifyProgress(listener, 90, "Scanning empty directory trees...", result.getTotalBytes());
             scanEmptyFolders(result, listener);
             if (isCancelled) return finishResult(result, startTime, listener);
 
-            // STEP 6: Real System Reclaimable Storage Buffer (95% - 100%)
+            // STEP 8: OS System Reclaimable Cache Buffer (95% - 100%)
             notifyProgress(listener, 95, "Querying OS system reclaimable cache quota...", result.getTotalBytes());
             scanSystemAllocatable(context, result, listener);
 
@@ -146,7 +159,7 @@ public class JunkScanner {
                 CharSequence labelSeq = pm.getApplicationLabel(appInfo);
                 String appLabel = labelSeq != null ? labelSeq.toString() : pkg;
 
-                int progressPct = 5 + (int) (((i + 1) / (float) totalApps) * 35);
+                int progressPct = 5 + (int) (((i + 1) / (float) totalApps) * 25);
                 notifyProgress(listener, progressPct, "Scanning: " + appLabel, result.getTotalBytes());
 
                 long appCacheBytes = 0;
@@ -159,7 +172,7 @@ public class JunkScanner {
                     }
                 }
 
-                // If StorageStats was not available, check accessible external cache folder
+                // If StorageStats was not available or reported 0, check accessible external cache folder
                 if (appCacheBytes == 0 && extStorage != null) {
                     File extAppCache = new File(extStorage, "Android/data/" + pkg + "/cache");
                     if (extAppCache.exists() && extAppCache.canRead()) {
@@ -185,7 +198,7 @@ public class JunkScanner {
             Log.w(TAG, "Error querying installed applications for cache scan", t);
         }
 
-        // 3. If Shizuku / Root is available and UsageStats was not active, run single batch du
+        // 3. If Shizuku / Root is available, inspect deep caches
         if (!hasUsageStats && ShizukuFileManager.hasFullAccess()) {
             try {
                 String duCmd = "du -sk /sdcard/Android/data/*/cache /data/data/*/cache 2>/dev/null";
@@ -195,6 +208,348 @@ public class JunkScanner {
                 }
             } catch (Throwable ignored) {}
         }
+    }
+
+    /**
+     * Identifies residual data and media folders left behind by uninstalled applications.
+     */
+    private void scanUninstalledResiduals(Context context, JunkScanResult result, OnScanProgressListener listener) {
+        if (context == null) return;
+        PackageManager pm = context.getPackageManager();
+        if (pm == null) return;
+
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage == null) return;
+
+        String[] targetRoots = new String[]{
+                "Android/data",
+                "Android/media",
+                "Android/obb"
+        };
+
+        for (String rootRel : targetRoots) {
+            File rootDir = new File(extStorage, rootRel);
+            if (!rootDir.exists() || !rootDir.isDirectory()) continue;
+
+            File[] subDirs = rootDir.listFiles();
+            if (subDirs == null) continue;
+
+            for (File subDir : subDirs) {
+                if (isCancelled) return;
+                if (!subDir.isDirectory()) continue;
+
+                String dirName = subDir.getName();
+                // A valid Android package contains at least one dot (e.g. com.example.app)
+                if (dirName.contains(".") && !dirName.startsWith(".")) {
+                    try {
+                        pm.getPackageInfo(dirName, 0);
+                        // App is installed, not a residual
+                    } catch (PackageManager.NameNotFoundException e) {
+                        // App is NOT installed! This is an orphaned leftover folder
+                        long size = getDirectorySize(subDir);
+                        if (size > 0) {
+                            result.addItem(new JunkItem(
+                                    subDir.getAbsolutePath(),
+                                    "Uninstalled App Residual: " + dirName,
+                                    dirName,
+                                    size,
+                                    JunkCategory.RESIDUAL_UNINSTALLED,
+                                    true
+                            ));
+                            notifyProgress(listener, 40, "Residual: " + dirName, result.getTotalBytes());
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+        }
+    }
+
+    /**
+     * Scans social media, messaging, and web browser temporary buffers.
+     */
+    private void scanSocialMediaCaches(Context context, JunkScanResult result, OnScanProgressListener listener) {
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage == null) return;
+
+        String[] socialPaths = new String[]{
+                // Telegram
+                "Telegram/Telegram Images/.nomedia",
+                "Telegram/Telegram Video/.nomedia",
+                "Android/data/org.telegram.messenger/cache",
+                "Android/data/org.thunderdog.challegram/cache",
+                // WhatsApp
+                "Android/media/com.whatsapp/WhatsApp/Media/.Trash",
+                "WhatsApp/Media/.Trash",
+                "Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes/.trash",
+                // TikTok & ByteDance
+                "Android/data/com.zhiliaoapp.musically/cache",
+                "Android/data/com.ss.android.ugc.trill/cache",
+                "Android/data/com.lemon.lvoverseas/cache", // CapCut
+                // Discord
+                "Android/data/com.discord/cache",
+                // Facebook & Instagram
+                "Android/data/com.instagram.android/cache",
+                "Android/data/com.facebook.katana/cache",
+                // Browsers
+                "Android/data/com.android.chrome/cache",
+                "Android/data/com.brave.browser/cache",
+                "Android/data/com.microsoft.emmx/cache"
+        };
+
+        for (String rel : socialPaths) {
+            if (isCancelled) return;
+            File f = new File(extStorage, rel);
+            if (f.exists()) {
+                long size = f.isDirectory() ? getDirectorySize(f) : f.length();
+                if (size > 0 && !containsPath(result, f.getAbsolutePath())) {
+                    result.addItem(new JunkItem(
+                            f.getAbsolutePath(),
+                            "Social Cache: " + f.getName(),
+                            size,
+                            JunkCategory.SOCIAL_CACHE,
+                            true
+                    ));
+                    notifyProgress(listener, 55, f.getAbsolutePath(), result.getTotalBytes());
+                }
+            }
+        }
+    }
+
+    private void scanThumbnails(JunkScanResult result, OnScanProgressListener listener) {
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage == null) return;
+
+        String[] thumbnailPaths = {
+                "DCIM/.thumbnails",
+                "Pictures/.thumbnails",
+                "Movies/.thumbnails",
+                "Download/.thumbnails",
+                "Pictures/.trash",
+                "DCIM/.trash",
+                "Android/data/com.miui.gallery/files/trashBin",
+                "Android/data/com.sec.android.gallery3d/cache",
+                "Android/data/com.coloros.gallery3d/cache",
+                "Android/data/com.google.android.apps.photos/cache"
+        };
+
+        for (String relativePath : thumbnailPaths) {
+            if (isCancelled) return;
+            File thumbDir = new File(extStorage, relativePath);
+            if (thumbDir.exists()) {
+                scanDirectory(thumbDir, JunkCategory.THUMBNAILS, result, listener, 65);
+            }
+        }
+    }
+
+    private void scanObsoleteApks(Context context, JunkScanResult result, OnScanProgressListener listener) {
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage == null || context == null) return;
+
+        PackageManager pm = context.getPackageManager();
+        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (downloadDir != null && downloadDir.exists()) {
+            scanApksInFolder(context, pm, downloadDir, result, listener, 0);
+        }
+
+        File customDownload = new File(extStorage, "Download");
+        if (customDownload.exists() && !customDownload.equals(downloadDir)) {
+            scanApksInFolder(context, pm, customDownload, result, listener, 0);
+        }
+
+        File telegramDocs = new File(extStorage, "Telegram/Telegram Documents");
+        if (telegramDocs.exists()) {
+            scanApksInFolder(context, pm, telegramDocs, result, listener, 0);
+        }
+    }
+
+    private void scanApksInFolder(Context context, PackageManager pm, File dir, JunkScanResult result, OnScanProgressListener listener, int depth) {
+        if (dir == null || !dir.exists() || depth > 2 || isCancelled) return;
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        for (File f : files) {
+            if (isCancelled) return;
+            if (f.isDirectory() && !f.getName().startsWith(".")) {
+                scanApksInFolder(context, pm, f, result, listener, depth + 1);
+            } else if (f.isFile() && f.getName().toLowerCase().endsWith(".apk")) {
+                inspectAndAddApk(pm, f, result, listener);
+            }
+        }
+    }
+
+    private void inspectAndAddApk(PackageManager pm, File apkFile, JunkScanResult result, OnScanProgressListener listener) {
+        try {
+            PackageInfo archiveInfo = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
+            if (archiveInfo != null) {
+                String apkPkg = archiveInfo.packageName;
+                long apkVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                        ? archiveInfo.getLongVersionCode()
+                        : archiveInfo.versionCode;
+
+                String displayName = apkFile.getName();
+
+                try {
+                    PackageInfo installedInfo = pm.getPackageInfo(apkPkg, 0);
+                    if (installedInfo != null) {
+                        long installedVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                                ? installedInfo.getLongVersionCode()
+                                : installedInfo.versionCode;
+
+                        if (installedVersion >= apkVersion) {
+                            displayName = "Obsolete: " + apkFile.getName() + " (Installed: v" + installedInfo.versionName + ")";
+                        } else {
+                            displayName = "Update APK: " + apkFile.getName() + " (v" + archiveInfo.versionName + ")";
+                        }
+                    }
+                } catch (PackageManager.NameNotFoundException ignored) {
+                    displayName = "Installer: " + apkFile.getName() + " (v" + archiveInfo.versionName + ")";
+                }
+
+                result.addItem(new JunkItem(apkFile.getAbsolutePath(), displayName, apkPkg, apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
+                notifyProgress(listener, 75, apkFile.getAbsolutePath(), result.getTotalBytes());
+            } else {
+                result.addItem(new JunkItem(apkFile.getAbsolutePath(), "Corrupted APK: " + apkFile.getName(), apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
+            }
+        } catch (Throwable t) {
+            result.addItem(new JunkItem(apkFile.getAbsolutePath(), apkFile.getName(), apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
+        }
+    }
+
+    private void scanTempAndLogs(Context context, JunkScanResult result, OnScanProgressListener listener) {
+        if (context != null) {
+            File appDir = context.getFilesDir();
+            if (appDir != null) {
+                File[] files = appDir.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        if (ScanFilter.isDisposableJunkFile(f)) {
+                            result.addItem(new JunkItem(f.getAbsolutePath(), f.getName(), f.length(), JunkCategory.TEMP_FILES, false));
+                        }
+                    }
+                }
+            }
+        }
+
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage != null) {
+            File[] rootFiles = extStorage.listFiles();
+            if (rootFiles != null) {
+                for (File f : rootFiles) {
+                    if (isCancelled) return;
+                    if (f.isFile() && ScanFilter.isDisposableJunkFile(f)) {
+                        result.addItem(new JunkItem(f.getAbsolutePath(), f.getName(), f.length(), JunkCategory.TEMP_FILES, false));
+                    }
+                }
+            }
+
+            // Game Crash & Log Folders
+            String[] gameLogPaths = {
+                    "Android/data/com.dts.freefireth/files/FF_Log",
+                    "Android/data/com.dts.freefiremax/files/FF_Log",
+                    "Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
+                    "Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes",
+                    "Android/data/com.levelinfinite.deltaforce/files/UE4Game/DeltaForce/DeltaForce/Saved/Logs",
+                    "Android/data/com.mobile.legends/files/dragon2017/assets/UI/Logs"
+            };
+            for (String gl : gameLogPaths) {
+                File gDir = new File(extStorage, gl);
+                if (gDir.exists()) {
+                    scanDirectory(gDir, JunkCategory.GAME_RESIDUALS, result, listener, 85);
+                }
+            }
+        }
+
+        // Privileged temp batch scan
+        if (ShizukuFileManager.hasFullAccess()) {
+            try {
+                String duRes = ShizukuExecutor.executeShizukuCommand("du -sk /data/local/tmp /data/anr /data/tombstones /data/system/dropbox 2>/dev/null");
+                if (duRes != null && !duRes.startsWith("ERROR:")) {
+                    parseDuOutput(duRes, JunkCategory.TEMP_FILES, result);
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    private void scanEmptyFolders(JunkScanResult result, OnScanProgressListener listener) {
+        File extStorage = Environment.getExternalStorageDirectory();
+        if (extStorage == null) return;
+
+        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (downloadDir != null && downloadDir.exists()) {
+            findEmptyDirs(downloadDir, result, 0);
+        }
+
+        File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        if (documentsDir != null && documentsDir.exists()) {
+            findEmptyDirs(documentsDir, result, 0);
+        }
+    }
+
+    private void findEmptyDirs(File dir, JunkScanResult result, int depth) {
+        if (dir == null || !dir.exists() || !dir.isDirectory() || depth > 3 || isCancelled) return;
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        if (files.length == 0 && !dir.getName().startsWith(".")) {
+            result.addItem(new JunkItem(dir.getAbsolutePath(), "Empty Directory: " + dir.getName(), 0L, JunkCategory.EMPTY_FOLDERS, true));
+            return;
+        }
+
+        for (File f : files) {
+            if (f.isDirectory() && !f.getName().startsWith(".")) {
+                findEmptyDirs(f, result, depth + 1);
+            }
+        }
+    }
+
+    private void scanSystemAllocatable(Context context, JunkScanResult result, OnScanProgressListener listener) {
+        if (context == null) return;
+        long allocatableBytes = StorageStatsHelper.getAllocatableBytes(context);
+        if (allocatableBytes > 0) {
+            result.addItem(new JunkItem(
+                    "SYSTEM_ALLOCATABLE_TRIM",
+                    "Android OS System Reclaimable Cache Buffer",
+                    allocatableBytes,
+                    JunkCategory.SYSTEM_CACHE,
+                    true
+            ));
+        }
+    }
+
+    private void scanDirectory(File dir, JunkCategory category, JunkScanResult result, OnScanProgressListener listener, int progressPct) {
+        if (dir == null || !dir.exists() || isCancelled) return;
+        if (!ScanFilter.isSafeToScan(dir)) return;
+
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            if (isCancelled) return;
+            if (file.isDirectory()) {
+                scanDirectory(file, category, result, listener, progressPct);
+            } else if (file.isFile()) {
+                if (ScanFilter.isDisposableJunkFile(file) || category == JunkCategory.APP_CACHE || category == JunkCategory.THUMBNAILS || category == JunkCategory.GAME_RESIDUALS) {
+                    result.addItem(new JunkItem(file.getAbsolutePath(), file.getName(), file.length(), category, true));
+                    notifyProgress(listener, progressPct, file.getAbsolutePath(), result.getTotalBytes());
+                }
+            }
+        }
+    }
+
+    private long getDirectorySize(File dir) {
+        if (dir == null || !dir.exists()) return 0;
+        long size = 0;
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    size += getDirectorySize(f);
+                } else {
+                    size += f.length();
+                }
+            }
+        }
+        return size;
     }
 
     private void parseDuAppCaches(String duOutput, PackageManager pm, Set<String> processed, JunkScanResult result) {
@@ -241,225 +596,6 @@ public class JunkScanner {
             return end > start ? path.substring(start, end) : path.substring(start);
         }
         return null;
-    }
-
-    private void scanThumbnails(JunkScanResult result, OnScanProgressListener listener) {
-        File extStorage = Environment.getExternalStorageDirectory();
-        if (extStorage == null) return;
-
-        String[] thumbnailPaths = {
-                "DCIM/.thumbnails",
-                "Pictures/.thumbnails",
-                "Movies/.thumbnails",
-                "Download/.thumbnails",
-                "Pictures/.trash",
-                "DCIM/.trash"
-        };
-
-        for (String relativePath : thumbnailPaths) {
-            if (isCancelled) return;
-            File thumbDir = new File(extStorage, relativePath);
-            if (thumbDir.exists()) {
-                scanDirectory(thumbDir, JunkCategory.THUMBNAILS, result, listener, 45);
-            }
-        }
-    }
-
-    private void scanObsoleteApks(Context context, JunkScanResult result, OnScanProgressListener listener) {
-        File extStorage = Environment.getExternalStorageDirectory();
-        if (extStorage == null || context == null) return;
-
-        PackageManager pm = context.getPackageManager();
-        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (downloadDir != null && downloadDir.exists()) {
-            scanApksInFolder(context, pm, downloadDir, result, listener, 0);
-        }
-
-        // Also check root download directory
-        File customDownload = new File(extStorage, "Download");
-        if (customDownload.exists() && !customDownload.equals(downloadDir)) {
-            scanApksInFolder(context, pm, customDownload, result, listener, 0);
-        }
-    }
-
-    private void scanApksInFolder(Context context, PackageManager pm, File dir, JunkScanResult result, OnScanProgressListener listener, int depth) {
-        if (dir == null || !dir.exists() || depth > 2 || isCancelled) return;
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File f : files) {
-            if (isCancelled) return;
-            if (f.isDirectory() && !f.getName().startsWith(".")) {
-                scanApksInFolder(context, pm, f, result, listener, depth + 1);
-            } else if (f.isFile() && f.getName().toLowerCase().endsWith(".apk")) {
-                inspectAndAddApk(pm, f, result, listener);
-            }
-        }
-    }
-
-    private void inspectAndAddApk(PackageManager pm, File apkFile, JunkScanResult result, OnScanProgressListener listener) {
-        try {
-            PackageInfo archiveInfo = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
-            if (archiveInfo != null) {
-                String apkPkg = archiveInfo.packageName;
-                long apkVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                        ? archiveInfo.getLongVersionCode()
-                        : archiveInfo.versionCode;
-
-                boolean isObsolete = false;
-                String displayName = apkFile.getName();
-
-                try {
-                    PackageInfo installedInfo = pm.getPackageInfo(apkPkg, 0);
-                    if (installedInfo != null) {
-                        long installedVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                                ? installedInfo.getLongVersionCode()
-                                : installedInfo.versionCode;
-
-                        if (installedVersion >= apkVersion) {
-                            isObsolete = true;
-                            displayName = "Obsolete: " + apkFile.getName() + " (Installed: v" + installedInfo.versionName + ")";
-                        } else {
-                            displayName = "Update APK: " + apkFile.getName() + " (v" + archiveInfo.versionName + ")";
-                        }
-                    }
-                } catch (PackageManager.NameNotFoundException ignored) {
-                    displayName = "Installer: " + apkFile.getName() + " (v" + archiveInfo.versionName + ")";
-                }
-
-                result.addItem(new JunkItem(apkFile.getAbsolutePath(), displayName, apkPkg, apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
-                notifyProgress(listener, 65, apkFile.getAbsolutePath(), result.getTotalBytes());
-            } else {
-                // Corrupted or invalid APK
-                result.addItem(new JunkItem(apkFile.getAbsolutePath(), "Corrupted APK: " + apkFile.getName(), apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
-            }
-        } catch (Throwable t) {
-            result.addItem(new JunkItem(apkFile.getAbsolutePath(), apkFile.getName(), apkFile.length(), JunkCategory.OBSOLETE_APKS, false));
-        }
-    }
-
-    private void scanTempAndLogs(Context context, JunkScanResult result, OnScanProgressListener listener) {
-        if (context != null) {
-            File appDir = context.getFilesDir();
-            if (appDir != null) {
-                File[] files = appDir.listFiles();
-                if (files != null) {
-                    for (File f : files) {
-                        if (ScanFilter.isDisposableJunkFile(f)) {
-                            result.addItem(new JunkItem(f.getAbsolutePath(), f.getName(), f.length(), JunkCategory.TEMP_FILES, false));
-                        }
-                    }
-                }
-            }
-        }
-
-        File extStorage = Environment.getExternalStorageDirectory();
-        if (extStorage != null) {
-            File[] rootFiles = extStorage.listFiles();
-            if (rootFiles != null) {
-                for (File f : rootFiles) {
-                    if (isCancelled) return;
-                    if (f.isFile() && ScanFilter.isDisposableJunkFile(f)) {
-                        result.addItem(new JunkItem(f.getAbsolutePath(), f.getName(), f.length(), JunkCategory.TEMP_FILES, false));
-                    }
-                }
-            }
-        }
-
-        // Privileged temp batch scan
-        if (ShizukuFileManager.hasFullAccess()) {
-            try {
-                String duRes = ShizukuExecutor.executeShizukuCommand("du -sk /data/local/tmp /data/anr /data/tombstones 2>/dev/null");
-                if (duRes != null && !duRes.startsWith("ERROR:")) {
-                    parseDuOutput(duRes, JunkCategory.TEMP_FILES, result);
-                }
-            } catch (Throwable ignored) {}
-        }
-    }
-
-    private void scanEmptyFolders(JunkScanResult result, OnScanProgressListener listener) {
-        File extStorage = Environment.getExternalStorageDirectory();
-        if (extStorage == null) return;
-
-        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (downloadDir != null && downloadDir.exists()) {
-            findEmptyDirs(downloadDir, result, 0);
-        }
-
-        File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        if (documentsDir != null && documentsDir.exists()) {
-            findEmptyDirs(documentsDir, result, 0);
-        }
-    }
-
-    private void findEmptyDirs(File dir, JunkScanResult result, int depth) {
-        if (dir == null || !dir.exists() || !dir.isDirectory() || depth > 3 || isCancelled) return;
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        if (files.length == 0 && !dir.getName().startsWith(".")) {
-            // Real empty directory payload size is 0 bytes (no fake 4KB added)
-            result.addItem(new JunkItem(dir.getAbsolutePath(), "Empty Folder: " + dir.getName(), 0L, JunkCategory.EMPTY_FOLDERS, true));
-            return;
-        }
-
-        for (File f : files) {
-            if (f.isDirectory() && !f.getName().startsWith(".")) {
-                findEmptyDirs(f, result, depth + 1);
-            }
-        }
-    }
-
-    private void scanSystemAllocatable(Context context, JunkScanResult result, OnScanProgressListener listener) {
-        if (context == null) return;
-
-        // Query real allocatable cache bytes that Android OS is ready to trim
-        long allocatableBytes = StorageStatsHelper.getAllocatableBytes(context);
-        if (allocatableBytes > 0) {
-            result.addItem(new JunkItem(
-                    "SYSTEM_ALLOCATABLE_TRIM",
-                    "Android System Reclaimable Cache Buffer",
-                    allocatableBytes,
-                    JunkCategory.SYSTEM_CACHE,
-                    false
-            ));
-        }
-    }
-
-    private void scanDirectory(File dir, JunkCategory category, JunkScanResult result, OnScanProgressListener listener, int progressPct) {
-        if (dir == null || !dir.exists() || isCancelled) return;
-        if (!ScanFilter.isSafeToScan(dir)) return;
-
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
-            if (isCancelled) return;
-            if (file.isDirectory()) {
-                scanDirectory(file, category, result, listener, progressPct);
-            } else if (file.isFile()) {
-                if (ScanFilter.isDisposableJunkFile(file) || category == JunkCategory.APP_CACHE || category == JunkCategory.THUMBNAILS) {
-                    result.addItem(new JunkItem(file.getAbsolutePath(), file.getName(), file.length(), category, false));
-                    notifyProgress(listener, progressPct, file.getAbsolutePath(), result.getTotalBytes());
-                }
-            }
-        }
-    }
-
-    private long getDirectorySize(File dir) {
-        if (dir == null || !dir.exists()) return 0;
-        long size = 0;
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    size += getDirectorySize(f);
-                } else {
-                    size += f.length();
-                }
-            }
-        }
-        return size;
     }
 
     private void parseDuOutput(String duOutput, JunkCategory category, JunkScanResult result) {

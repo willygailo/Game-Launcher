@@ -39,8 +39,8 @@ public enum JunkCategory {
             true
     ),
     EMPTY_FOLDERS(
-            "Empty & Orphaned Folders",
-            "Stale empty directory trees left behind by uninstalled applications",
+            "Empty Directories",
+            "Stale empty directory trees left behind in storage",
             "📁",
             R.color.accent_ml_blue,
             true
@@ -50,6 +50,20 @@ public enum JunkCategory {
             "Diagnostic logs, debug traces, and telemetry dumps inside game directories",
             "🎮",
             R.color.accent_pubg_orange,
+            true
+    ),
+    RESIDUAL_UNINSTALLED(
+            "Uninstalled App Residuals",
+            "Leftover data and media directories from uninstalled apps",
+            "🗑️",
+            R.color.accent_red,
+            true
+    ),
+    SOCIAL_CACHE(
+            "Messaging & Social Cache",
+            "WhatsApp, Telegram, TikTok & browser temp caches and media previews",
+            "💬",
+            R.color.accent_ml_blue,
             true
     );
 
