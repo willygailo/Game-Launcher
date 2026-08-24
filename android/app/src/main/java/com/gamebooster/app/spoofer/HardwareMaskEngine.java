@@ -82,6 +82,7 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.product.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.device \"" + profile.device + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.name \"" + profile.productName + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.board \"" + profile.board + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.vendor.model \"" + profile.model + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.vendor.brand \"" + profile.brand + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.vendor.name \"" + profile.productName + "\" 2>/dev/null");
@@ -102,7 +103,12 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.soc.manufacturer \"" + profile.socManufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.hardware \"" + profile.hardware + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.board.platform \"" + profile.platform + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.hardware.platform \"" + profile.platform + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.chipname \"" + profile.chipname + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.baseband \"" + profile.board + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.baseband \"" + profile.board + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n gsm.version.baseband \"" + profile.baseband + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n gsm.version.baseband1 \"" + profile.baseband + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.display.id \"" + profile.displayId + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.release \"" + profile.androidVersion + "\" 2>/dev/null");
@@ -122,13 +128,19 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.hardware.egl \"" + eglVendor + "\" 2>/dev/null");
 
             // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 1: CPU / SOC MASKING
+            //  LAYER 1: CPU / SOC & BASEBAND MASKING
             // ═══════════════════════════════════════════════════════════════════
             batchCommands.add("setprop ro.soc.model \"" + profile.socModel + "\"");
             batchCommands.add("setprop ro.soc.manufacturer \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop ro.board.platform \"" + profile.platform + "\"");
+            batchCommands.add("setprop ro.hardware.platform \"" + profile.platform + "\"");
+            batchCommands.add("setprop ro.product.board \"" + profile.board + "\"");
             batchCommands.add("setprop ro.hardware \"" + profile.hardware + "\"");
             batchCommands.add("setprop ro.chipname \"" + profile.chipname + "\"");
+            batchCommands.add("setprop ro.baseband \"" + profile.board + "\"");
+            batchCommands.add("setprop ro.boot.baseband \"" + profile.board + "\"");
+            batchCommands.add("setprop gsm.version.baseband \"" + profile.baseband + "\"");
+            batchCommands.add("setprop gsm.version.baseband1 \"" + profile.baseband + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
@@ -326,6 +338,8 @@ public class HardwareMaskEngine {
             setStaticField(android.os.Build.class, "PRODUCT", profile.productName);
             setStaticField(android.os.Build.class, "HARDWARE", profile.hardware);
             setStaticField(android.os.Build.class, "BOARD", profile.board);
+            setStaticField(android.os.Build.class, "BOOTLOADER", profile.board);
+            setStaticField(android.os.Build.class, "RADIO", profile.baseband);
             setStaticField(android.os.Build.class, "FINGERPRINT", profile.fingerprint);
             setStaticField(android.os.Build.class, "DISPLAY", profile.displayId);
             setStaticField(android.os.Build.class, "SERIAL", "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL));
@@ -336,6 +350,7 @@ public class HardwareMaskEngine {
                 setStaticField(android.os.Build.VERSION.class, "RELEASE", profile.androidVersion);
                 setStaticField(android.os.Build.VERSION.class, "SDK_INT", profile.sdkInt);
                 setStaticField(android.os.Build.VERSION.class, "SECURITY_PATCH", profile.securityPatch);
+                setStaticField(android.os.Build.VERSION.class, "INCREMENTAL", profile.displayId);
             } catch (Throwable ignored) {}
 
             try {
@@ -343,7 +358,7 @@ public class HardwareMaskEngine {
                 setStaticField(android.os.Build.class, "SOC_MANUFACTURER", profile.socManufacturer);
             } catch (Throwable ignored) {}
 
-            Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ")");
+            Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ") Baseband: " + profile.baseband);
         } catch (Throwable t) {
             Log.w(TAG, "applyInAppReflectionMask non-fatal: " + t.getMessage());
         }

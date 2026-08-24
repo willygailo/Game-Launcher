@@ -39,6 +39,7 @@ public class SpoofProfile {
     public final int cpuMaxFreqKhz;
     public final String cpuArchitecture;
     public final String cpuFeatures;
+    public final String baseband;
 
     // ── Build Identity & OS Version ──
     public final String fingerprint;
@@ -62,7 +63,7 @@ public class SpoofProfile {
     public final int maxRefreshRateHz;
 
     /**
-     * Primary full-spectrum constructor.
+     * Primary full-spectrum constructor (with baseband).
      */
     public SpoofProfile(String id, String displayName, String brandLabel,
                         String model, String brand, String manufacturer,
@@ -71,6 +72,7 @@ public class SpoofProfile {
                         String board, String chipname,
                         String socManufacturer, int cpuCores, int cpuMaxFreqKhz,
                         String cpuArchitecture, String cpuFeatures,
+                        String baseband,
                         String fingerprint, String displayId,
                         String androidVersion, int sdkInt, String securityPatch,
                         String glRenderer, String glVendor, String glVersion,
@@ -96,6 +98,7 @@ public class SpoofProfile {
         this.cpuMaxFreqKhz = cpuMaxFreqKhz > 0 ? cpuMaxFreqKhz : 4320000;
         this.cpuArchitecture = cpuArchitecture != null ? cpuArchitecture : "ARM64-v9.2-A";
         this.cpuFeatures = cpuFeatures != null ? cpuFeatures : "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp";
+        this.baseband = baseband != null ? baseband : inferBaseband(board, platform, model, displayId);
         this.fingerprint = fingerprint;
         this.displayId = displayId;
         this.androidVersion = androidVersion != null ? androidVersion : "15";
@@ -109,6 +112,38 @@ public class SpoofProfile {
         this.ramTotalMb = ramTotalMb > 0 ? ramTotalMb : 16384;
         this.ramAvailableMb = ramAvailableMb > 0 ? ramAvailableMb : (int) (this.ramTotalMb * 0.75);
         this.maxRefreshRateHz = maxRefreshRateHz > 0 ? maxRefreshRateHz : 185;
+    }
+
+    /**
+     * Overloaded constructor without explicit baseband (auto-infers baseband).
+     */
+    public SpoofProfile(String id, String displayName, String brandLabel,
+                        String model, String brand, String manufacturer,
+                        String device, String productName, String buildProduct,
+                        String hardware, String platform, String socModel,
+                        String board, String chipname,
+                        String socManufacturer, int cpuCores, int cpuMaxFreqKhz,
+                        String cpuArchitecture, String cpuFeatures,
+                        String fingerprint, String displayId,
+                        String androidVersion, int sdkInt, String securityPatch,
+                        String glRenderer, String glVendor, String glVersion,
+                        String vulkanVersion, String vulkanDriverVersion,
+                        int ramTotalMb, int ramAvailableMb,
+                        int maxRefreshRateHz) {
+        this(id, displayName, brandLabel,
+             model, brand, manufacturer,
+             device, productName, buildProduct,
+             hardware, platform, socModel,
+             board, chipname,
+             socManufacturer, cpuCores, cpuMaxFreqKhz,
+             cpuArchitecture, cpuFeatures,
+             inferBaseband(board, platform, model, displayId),
+             fingerprint, displayId,
+             androidVersion, sdkInt, securityPatch,
+             glRenderer, glVendor, glVersion,
+             vulkanVersion, vulkanDriverVersion,
+             ramTotalMb, ramAvailableMb,
+             maxRefreshRateHz);
     }
 
     /**
@@ -129,6 +164,7 @@ public class SpoofProfile {
              inferSocManufacturer(socModel, brand),
              8, 4320000, "ARM64-v9.2-A",
              "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp",
+             inferBaseband(board, platform, model, displayId),
              fingerprint, displayId,
              "15", 35, "2025-01-01",
              glRenderer, inferVendor(glRenderer),
@@ -136,6 +172,14 @@ public class SpoofProfile {
              "1.3.280", "512.615.0",
              16384, 12288,
              185);
+    }
+
+    private static String inferBaseband(String board, String platform, String model, String displayId) {
+        if (displayId != null && displayId.contains(".")) {
+            return displayId.substring(displayId.lastIndexOf('.') + 1);
+        }
+        String base = (platform != null && !platform.isEmpty()) ? platform : (board != null ? board : (model != null ? model : "generic"));
+        return base.toUpperCase().replace(" ", "_") + "_MODEM_V1.0";
     }
 
     private static String inferSocManufacturer(String socModel, String brand) {
@@ -251,13 +295,21 @@ public class SpoofProfile {
         props.put("ro.product.product.name", productName);
         props.put("ro.product.product.device", device);
 
-        // Hardware / SoC
+        // Hardware / SoC & Board
         props.put("ro.hardware", hardware);
         props.put("ro.board.platform", platform);
+        props.put("ro.hardware.platform", platform);
         props.put("ro.soc.model", socModel);
         props.put("ro.soc.manufacturer", socManufacturer);
         props.put("ro.chipname", chipname);
         props.put("ro.hardware.chipname", chipname);
+
+        // Baseband / Modem / Radio Identity
+        props.put("gsm.version.baseband", baseband);
+        props.put("gsm.version.baseband1", baseband);
+        props.put("ro.baseband", board != null ? board : platform);
+        props.put("ro.boot.baseband", board != null ? board : platform);
+        props.put("gsm.network.type", "LTE,5G");
 
         // Build / Fingerprint / OS
         props.put("ro.build.fingerprint", fingerprint);
