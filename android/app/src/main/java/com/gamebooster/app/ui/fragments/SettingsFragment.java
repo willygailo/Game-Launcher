@@ -1024,11 +1024,38 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             }
         };
 
+        Button btnOpenSpoofModal = view.findViewById(R.id.btn_settings_open_spoof_modal);
+        if (btnOpenSpoofModal != null) {
+            btnOpenSpoofModal.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                SpoofBrandSelectorDialog.show(getContext(), selectedProfile -> {
+                    if (selectedProfile != null) {
+                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(selectedProfile.id);
+                        updateSpoofUiState();
+                    }
+                });
+            });
+        }
+        if (tvSpoofActiveProfile != null) {
+            tvSpoofActiveProfile.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                SpoofBrandSelectorDialog.show(getContext(), selectedProfile -> {
+                    if (selectedProfile != null) {
+                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(selectedProfile.id);
+                        updateSpoofUiState();
+                    }
+                });
+            });
+        }
+
         if (btnBrandAll != null) {
             btnBrandAll.setOnClickListener(v -> {
                 resetBrandChips.run();
                 btnBrandAll.setBackgroundResource(R.drawable.btn_cyber_cyan);
                 btnBrandAll.setTextColor(0xFF000000);
+                if (rvSpoofProfiles != null) {
+                    rvSpoofProfiles.setVisibility(View.VISIBLE);
+                }
                 if (spoofProfileAdapter != null) {
                     spoofProfileAdapter.updateProfiles(new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values()));
                 }
@@ -1036,12 +1063,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     rvSpoofProfiles.scrollToPosition(0);
                 }
                 if (tvSettingsSpoofBrandInfo != null) {
+                    tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
                     tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: 🌐 ALL (11 Gaming Brands • " + SpoofProfileRegistry.getTotalCount() + " devices)");
                 }
             });
         }
 
-        setupSettingsBrandFilter(btnBrandRog, "Asus ROG", "⚡ ASUS ROG (165Hz Gaming Flagships)", settingsBrandButtons, resetBrandChips);
+        setupSettingsBrandFilter(btnBrandRog, "ASUS ROG", "⚡ ASUS ROG (185Hz / 165Hz Gaming Flagships)", settingsBrandButtons, resetBrandChips);
         setupSettingsBrandFilter(btnBrandSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Lineup)", settingsBrandButtons, resetBrandChips);
         setupSettingsBrandFilter(btnBrandNubia, "Nubia", "🎮 NUBIA RedMagic (165Hz eSports Flagships)", settingsBrandButtons, resetBrandChips);
         setupSettingsBrandFilter(btnBrandXiaomi, "Xiaomi", "🚀 XIAOMI & POCO (Snapdragon 8 Series)", settingsBrandButtons, resetBrandChips);
@@ -1486,6 +1514,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btn.setBackgroundResource(R.drawable.btn_cyber_cyan);
             btn.setTextColor(0xFF000000);
             List<SpoofProfile> brandProfiles = SpoofProfileRegistry.getByBrand(brandLabel);
+            if (rvSpoofProfiles != null) {
+                rvSpoofProfiles.setVisibility(View.VISIBLE);
+            }
             if (spoofProfileAdapter != null) {
                 spoofProfileAdapter.updateProfiles(brandProfiles);
             }
@@ -1493,6 +1524,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 rvSpoofProfiles.scrollToPosition(0);
             }
             if (tvSettingsSpoofBrandInfo != null) {
+                tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
                 tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: " + description + " (" + brandProfiles.size() + " models)");
             }
         });

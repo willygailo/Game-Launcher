@@ -147,7 +147,7 @@ public class SpoofBrandSelectorDialog {
             });
         }
 
-        bindBrandFilter(btnRog, "Asus ROG", "⚡ ASUS ROG Phone (165Hz Gaming Flagships)", allButtons, adapter, rvProfiles, tvSubtitle, context);
+        bindBrandFilter(btnRog, "ASUS ROG", "⚡ ASUS ROG Phone (185Hz / 165Hz Gaming Flagships)", allButtons, adapter, rvProfiles, tvSubtitle, context);
         bindBrandFilter(btnSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Gaming Lineup)", allButtons, adapter, rvProfiles, tvSubtitle, context);
         bindBrandFilter(btnNubia, "Nubia", "🎮 NUBIA RedMagic (165Hz eSports Lineup)", allButtons, adapter, rvProfiles, tvSubtitle, context);
         bindBrandFilter(btnXiaomi, "Xiaomi", "🚀 XIAOMI & POCO (Snapdragon 8 Series)", allButtons, adapter, rvProfiles, tvSubtitle, context);

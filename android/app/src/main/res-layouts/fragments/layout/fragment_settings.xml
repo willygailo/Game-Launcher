@@ -971,6 +971,17 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
+                <Button
+                    android:id="@+id/btn_settings_open_spoof_modal"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="🎭 BROWSE ALL BRANDS &amp; MODELS (POPUP)"
+                    android:textColor="#000000"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
 
 
                 <TextView

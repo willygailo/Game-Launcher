@@ -64,12 +64,52 @@ public class SpoofProfileRegistry {
     }
 
     /**
-     * Get all profiles for a given brand label (e.g. "Samsung", "Realme").
+     * Get all profiles for a given brand label (e.g. "ASUS ROG", "Samsung", "Realme").
+     * Supports exact matches, case-insensitive matches, and substring/alias matching.
      * @return unmodifiable list, or empty list if brand not found.
      */
     public static List<SpoofProfile> getByBrand(String brandLabel) {
-        List<SpoofProfile> result = ALL_BY_BRAND.get(brandLabel);
-        return result != null ? Collections.unmodifiableList(result) : Collections.emptyList();
+        if (brandLabel == null || brandLabel.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        String trimmed = brandLabel.trim();
+
+        // 1. Direct Map Lookup
+        List<SpoofProfile> result = ALL_BY_BRAND.get(trimmed);
+        if (result != null && !result.isEmpty()) {
+            return Collections.unmodifiableList(result);
+        }
+
+        // 2. Case-Insensitive Key Matching
+        for (Map.Entry<String, List<SpoofProfile>> entry : ALL_BY_BRAND.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(trimmed)) {
+                return Collections.unmodifiableList(entry.getValue());
+            }
+        }
+
+        // 3. Substring & Alias Matching (e.g. "rog" -> "ASUS ROG", "asus" -> "ASUS ROG")
+        String query = trimmed.toLowerCase();
+        for (Map.Entry<String, List<SpoofProfile>> entry : ALL_BY_BRAND.entrySet()) {
+            String keyLower = entry.getKey().toLowerCase();
+            if (keyLower.contains(query) || query.contains(keyLower) ||
+                    (query.contains("rog") && keyLower.contains("asus")) ||
+                    (query.contains("asus") && keyLower.contains("rog"))) {
+                return Collections.unmodifiableList(entry.getValue());
+            }
+        }
+
+        // 4. Per-profile fallback inspection
+        List<SpoofProfile> matches = new ArrayList<>();
+        for (SpoofProfile p : ALL_BY_ID.values()) {
+            if ((p.brandLabel != null && p.brandLabel.toLowerCase().contains(query)) ||
+                    (p.brand != null && p.brand.toLowerCase().contains(query)) ||
+                    (p.displayName != null && p.displayName.toLowerCase().contains(query)) ||
+                    (p.model != null && p.model.toLowerCase().contains(query))) {
+                matches.add(p);
+            }
+        }
+
+        return Collections.unmodifiableList(matches);
     }
 
     /**
