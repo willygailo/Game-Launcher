@@ -195,7 +195,7 @@
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
-                android:text="⚡ 0.5x UI Speed"
+                android:text="⚡ 0.0x Zero Anim"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />

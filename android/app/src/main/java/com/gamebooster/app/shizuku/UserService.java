@@ -234,21 +234,115 @@ public class UserService extends IUserService.Stub {
 
     @Override
     public void setCpuGpuPerformanceGovernors() {
-        String cmd = "for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > \"$cpu\" 2>/dev/null; done; " +
+        String targetGamesCsv = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+        String cmd = "settings put global window_animation_scale 0.0; " +
+                     "settings put global transition_animation_scale 0.0; " +
+                     "settings put global animator_duration_scale 0.0; " +
+                     "settings put system window_animation_scale 0.0; " +
+                     "settings put system transition_animation_scale 0.0; " +
+                     "settings put system animator_duration_scale 0.0; " +
+                     "cmd activity update-configuration --anim-scale 0.0; " +
+                     "settings put global game_driver_all_apps 0; " +
+                     "settings put global updatable_driver_all_apps 0; " +
+                     "settings put global game_driver_opt_in_apps " + targetGamesCsv + "; " +
+                     "settings put global updatable_driver_production_opt_in_apps " + targetGamesCsv + "; " +
+                     "setprop dalvik.vm.execution-mode int:jit; " +
+                     "setprop dalvik.vm.usejit true; " +
+                     "setprop dalvik.vm.usejitprofiles true; " +
+                     "setprop dalvik.vm.heapgrowthlimit 512m; " +
+                     "setprop dalvik.vm.heapsize 1024m; " +
+                     "setprop dalvik.vm.heaptargetutilization 0.75; " +
+                     "setprop dalvik.vm.jitthreshold 100; " +
+                     "setprop dalvik.vm.dex2oat-filter speed; " +
+                     "setprop pm.dexopt.boot speed-profile; " +
+                     "setprop pm.dexopt.install speed; " +
+                     "setprop pm.dexopt.bg-dexopt speed; " +
+                     "echo 0-15 > /dev/cpuset/top-app/cpus 2>/dev/null; " +
+                     "echo 0-15 > /dev/cpuset/foreground/cpus 2>/dev/null; " +
+                     "echo 0-3 > /dev/cpuset/background/cpus 2>/dev/null; " +
+                     "echo 0-3 > /dev/cpuset/system-background/cpus 2>/dev/null; " +
+                     "echo 0-15 > /dev/cpuset/restricted/cpus 2>/dev/null; " +
+                     "for p in /sys/devices/system/cpu/cpufreq/policy*; do " +
+                     "echo performance > \"$p/scaling_governor\" 2>/dev/null; " +
+                     "if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; " +
+                     "done; " +
+                     "setprop sys.games.cpu_affinity 1; " +
+                     "setprop sys.use_fifo 1; " +
+                     "setprop sys.perf.sched_uclamp_min 1024; " +
+                     "setprop sys.perf.sched_uclamp_min_rt 1024; " +
+                     "setprop sys.perf.sched_min_granularity_ns 250000; " +
+                     "setprop sys.perf.sched_latency_ns 1000000; " +
+                     "setprop sys.perf.sched_boost 1; " +
+                     "cmd power set-fixed-performance-mode-enabled true; " +
+                     "cmd power set-mode 0 1; " +
+                     "cmd power set-mode 2 1; " +
                      "for gpu in /sys/class/kgsl/kgsl-3d0/devfreq/governor /sys/class/devfreq/*gpu*/governor; do echo performance > \"$gpu\" 2>/dev/null; done; " +
+                     "echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null; " +
+                     "echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; " +
+                     "echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; " +
+                     "echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null; " +
+                     "echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; " +
+                     "echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null; " +
+                     "echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null; " +
+                     "echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null; " +
+                     "echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; " +
+                     "echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null; " +
                      "setprop debug.adreno.turbo 1; " +
+                     "setprop debug.adreno.perf_level 0; " +
+                     "setprop debug.qualcomm.sns.hal 0; " +
+                     "setprop vendor.perf.gestureFlingBoost 1; " +
+                     "setprop persist.vendor.qti.games.gt.enable 1; " +
+                     "setprop vendor.gpu.power_mode 1; " +
                      "setprop debug.mali.sched.priority -20; " +
-                     "setprop debug.hwui.render_thread_priority -20";
+                     "setprop debug.mali.force_gpu_boost 1; " +
+                     "setprop debug.mali.realtime 1; " +
+                     "setprop persist.vendor.ged.boost 1; " +
+                     "setprop persist.vendor.dpt.enable 1; " +
+                     "setprop vendor.ppt.boost 1; " +
+                     "setprop debug.tensor.gpu.boost 1; " +
+                     "setprop debug.exynos.performance.mode 1; " +
+                     "setprop debug.xclipse.gpu.boost 1; " +
+                     "setprop debug.hwui.renderer vulkan; " +
+                     "setprop debug.renderengine.backend vulkan; " +
+                     "setprop debug.renderengine.skia_pipeline true; " +
+                     "setprop debug.hwui.use_gpu_pixel_buffers true; " +
+                     "setprop debug.hwui.render_thread_priority -20; " +
+                     "setprop debug.hwui.skip_empty_damage true; " +
+                     "setprop debug.sf.hw 1; " +
+                     "setprop debug.sf.latch_unsignaled 1; " +
+                     "setprop debug.sf.disable_backpressure 1; " +
+                     "setprop debug.sf.enable_gl_backpressure 0; " +
+                     "setprop debug.sf.predict_hwc_composition_strategy 1; " +
+                     "setprop debug.sf.enable_adpf_cpu_hint true; " +
+                     "setprop debug.hwui.use_hint_manager true; " +
+                     "setprop persist.sys.adpf.enable 1; " +
+                     "setprop debug.adpf.hint.enabled 1; " +
+                     "setprop debug.adpf.cpu.boost 1; " +
+                     "setprop debug.adpf.gpu.boost 1; " +
+                     "setprop debug.egl.force_msaa 1; " +
+                     "setprop debug.egl.buffcount 3; " +
+                     "setprop persist.sys.use_16bpp_alpha 1; " +
+                     "setprop debug.egl.multithread 1; " +
+                     "setprop debug.graphics.game_default_frame_rate.disabled 1; " +
+                     "setprop ro.vendor.dfps.enable 0";
         execCommand(cmd);
     }
 
     @Override
     public void restoreCpuGpuGovernors() {
-        String cmd = "for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > \"$cpu\" 2>/dev/null; done; " +
+        String cmd = "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; " +
                      "for gpu in /sys/class/kgsl/kgsl-3d0/devfreq/governor /sys/class/devfreq/*gpu*/governor; do echo simple_ondemand > \"$gpu\" 2>/dev/null; done; " +
+                     "echo 1 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; " +
+                     "setprop sys.games.cpu_affinity 0; " +
+                     "setprop sys.use_fifo 0; " +
+                     "setprop sys.perf.sched_uclamp_min 0; " +
+                     "setprop sys.perf.sched_boost 0; " +
                      "setprop debug.adreno.turbo 0; " +
                      "setprop debug.mali.sched.priority 0; " +
+                     "setprop debug.mali.force_gpu_boost 0; " +
+                     "setprop persist.vendor.ged.boost 0; " +
                      "setprop debug.hwui.render_thread_priority 0; " +
+                     "cmd power set-fixed-performance-mode-enabled false; " +
                      "cmd power set-mode 2 0; " +
                      "cmd power set-mode 0 0";
         execCommand(cmd);

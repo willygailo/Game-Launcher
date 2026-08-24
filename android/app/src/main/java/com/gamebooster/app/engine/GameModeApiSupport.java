@@ -87,18 +87,49 @@ public final class GameModeApiSupport {
         commands.add("cmd power set-mode 0 1");
         commands.add("cmd power set-mode 2 1");
 
-        // 2. Android 13-16 DeviceConfig Persistent Override (Prevents sync reversion)
+        // 2. Zero-Latency Animation Scale (0.0x Instant)
+        commands.add("settings put global window_animation_scale 0.0");
+        commands.add("settings put global transition_animation_scale 0.0");
+        commands.add("settings put global animator_duration_scale 0.0");
+        commands.add("settings put system window_animation_scale 0.0");
+        commands.add("settings put system transition_animation_scale 0.0");
+        commands.add("settings put system animator_duration_scale 0.0");
+        commands.add("cmd activity update-configuration --anim-scale 0.0");
+
+        // 3. JVM / Dalvik Runtime Performance Flags
+        commands.add("setprop dalvik.vm.execution-mode int:jit");
+        commands.add("setprop dalvik.vm.usejit true");
+        commands.add("setprop dalvik.vm.usejitprofiles true");
+        commands.add("setprop dalvik.vm.heapgrowthlimit 512m");
+        commands.add("setprop dalvik.vm.heapsize 1024m");
+        commands.add("setprop dalvik.vm.heaptargetutilization 0.75");
+        commands.add("setprop dalvik.vm.jitthreshold 100");
+        commands.add("setprop dalvik.vm.dex2oat-filter speed");
+        commands.add("setprop pm.dexopt.boot speed-profile");
+        commands.add("setprop pm.dexopt.install speed");
+        commands.add("setprop pm.dexopt.bg-dexopt speed");
+
+        // 4. Multi-Core CPU Scheduling & uclamp Boost (8/12/16+ cores)
+        commands.add("setprop sys.games.cpu_affinity 1");
+        commands.add("setprop sys.use_fifo 1");
+        commands.add("setprop sys.perf.sched_uclamp_min 1024");
+        commands.add("setprop sys.perf.sched_uclamp_min_rt 1024");
+        commands.add("setprop sys.perf.sched_min_granularity_ns 250000");
+        commands.add("setprop sys.perf.sched_latency_ns 1000000");
+        commands.add("setprop sys.perf.sched_boost 1");
+
+        // 5. Android 13-16 DeviceConfig Persistent Override (Prevents sync reversion)
         commands.add("cmd device_config set_sync_disabled_for_tests persistent");
         commands.add("device_config put runtime_native_boot use_app_image_startup_cache true");
         commands.add("device_config put runtime_native_boot pin_app_image_startup_cache true");
         commands.add("device_config put runtime_native_boot boost_sched_priority true");
 
-        // 3. Android 12-16 Phantom Process Killer & Background Freezer Bypass
+        // 6. Android 12-16 Phantom Process Killer & Background Freezer Bypass
         commands.add("device_config put activity_manager max_phantom_processes 2147483647");
         commands.add("settings put global settings_enable_monitor_phantom_procs false");
         commands.add("settings put global cached_apps_freezer enabled");
 
-        // 4. Android 13-16 ADPF & SurfaceFlinger Phase Acceleration
+        // 7. Android 13-16 ADPF & SurfaceFlinger Phase Acceleration
         commands.add("setprop debug.sf.enable_adpf_cpu_hint true");
         commands.add("setprop debug.hwui.use_hint_manager true");
         commands.add("setprop persist.sys.adpf.enable 1");
@@ -113,15 +144,25 @@ public final class GameModeApiSupport {
         commands.add("setprop debug.sf.high_fps_early_phase_offset_ns 0");
         commands.add("setprop debug.sf.high_fps_early_gl_phase_offset_ns 0");
 
-        // 5. Per-Game Intervention (Android 13, 14, 15, 16)
+        // 8. Targeted Application Opt-in (Target Game ONLY)
         if (packageName != null && !packageName.trim().isEmpty()) {
             String pkg = packageName.trim();
+            commands.add("settings put global game_driver_all_apps 0");
+            commands.add("settings put global updatable_driver_all_apps 0");
+            commands.add("settings put global game_driver_opt_in_apps " + pkg);
+            commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
             commands.add("cmd game mode performance " + pkg);
             commands.add("cmd game mode 2 " + pkg);
             commands.add("cmd game set --fps " + fps + " " + pkg);
             commands.add("cmd window set-app-refresh-rate " + pkg + " " + fps);
+            commands.add("cmd package compile -m speed -f " + pkg);
             commands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
         } else {
+            String targetCsv = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+            commands.add("settings put global game_driver_all_apps 0");
+            commands.add("settings put global updatable_driver_all_apps 0");
+            commands.add("settings put global game_driver_opt_in_apps " + targetCsv);
+            commands.add("settings put global updatable_driver_production_opt_in_apps " + targetCsv);
             commands.add("cmd game mode performance global");
             commands.add("cmd game set --fps " + fps + " global");
             commands.add("cmd window set-app-refresh-rate global " + fps);

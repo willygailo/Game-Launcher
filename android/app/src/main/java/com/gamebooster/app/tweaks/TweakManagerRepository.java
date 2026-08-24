@@ -220,10 +220,10 @@ public class TweakManagerRepository {
         // =========================================================================
         TWEAKS.add(new TweakItem(
                 "shizuku_fast_anim",
-                "0.5x UI Speed Animations",
-                "Reduces system window and transition duration scale to 0.5x for snappy OS response",
-                "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5",
-                "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0",
+                "0.0x Instant UI Speed Animations (Zero Latency)",
+                "Disables system window, transition, and animator duration scales to 0.0x for instant rendering and zero input delay",
+                "settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put system window_animation_scale 0.0; settings put system transition_animation_scale 0.0; settings put system animator_duration_scale 0.0; cmd activity update-configuration --anim-scale 0.0",
+                "settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0; settings put system window_animation_scale 1.0; settings put system transition_animation_scale 1.0; settings put system animator_duration_scale 1.0; cmd activity update-configuration --anim-scale 1.0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -416,10 +416,50 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "angle_vulkan_driver_preference",
-                "Updatable Game Driver & ANGLE Vulkan Driver Selection",
-                "Forces Android system-wide Updatable Game Driver and sets ANGLE backend preference for low CPU driver overhead",
-                "settings put global game_driver_all_apps 1; settings put global updatable_driver_all_apps 1; setprop debug.angle.backend 2",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; setprop debug.angle.backend 0",
+                "Targeted Game Driver & ANGLE Vulkan 3D Selection",
+                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver and ANGLE Vulkan 3D driver without forcing global apps",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global angle_gl_driver_all_angle 0; settings put global angle_enabled_pkgs 1; settings put global angle_gl_driver_selection_pkgs " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; setprop debug.angle.backend 2",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings put global angle_enabled_pkgs 0; settings put global angle_gl_driver_selection_pkgs \"\"; setprop debug.angle.backend 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "dalvik_art_jit_turbo",
+                "Dalvik / ART JIT Turbo & Hot Method Optimization",
+                "Forces JIT compilation mode, lowers compilation thresholds, expands code caches to 64MB, and maximizes execution throughput",
+                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.usejitprofiles true; setprop dalvik.vm.jitcodecachesize 64m; setprop dalvik.vm.jitinitialsize 16m; setprop dalvik.vm.jitthreshold 100; setprop dalvik.vm.dex2oat-filter speed",
+                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.dex2oat-filter speed-profile",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "dalvik_heap_gaming_optimization",
+                "Dalvik Heap 1024MB Max Size & GC Tuning",
+                "Expands heap growth limit to 512MB and max heap to 1024MB with 0.75 target utilization to eliminate in-game garbage collection lag",
+                "setprop dalvik.vm.heapgrowthlimit 512m; setprop dalvik.vm.heapsize 1024m; setprop dalvik.vm.heaptargetutilization 0.75; setprop dalvik.vm.heapminfree 8m; setprop dalvik.vm.heapmaxfree 32m; setprop dalvik.vm.heapstartsize 32m",
+                "setprop dalvik.vm.heapgrowthlimit 256m; setprop dalvik.vm.heapsize 512m; setprop dalvik.vm.heaptargetutilization 0.75",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "cpu_multicore_topology_sched",
+                "8 / 12 / 16-Core CPU Topology & Top-App CPUSet Isolation",
+                "Allocates all CPU cores to top-app game processes, isolates background tasks to efficiency cores 0-3, and equalizes scaling frequencies",
+                "echo 0-15 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 0-15 > /dev/cpuset/foreground/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/background/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/system-background/cpus 2>/dev/null; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; setprop sys.perf.sched_uclamp_min 1024; setprop sys.perf.sched_uclamp_min_rt 1024; setprop sys.perf.sched_min_granularity_ns 250000; setprop sys.perf.sched_latency_ns 1000000; setprop sys.perf.sched_boost 1; cmd power set-fixed-performance-mode-enabled true",
+                "cmd power set-fixed-performance-mode-enabled false; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; setprop sys.perf.sched_uclamp_min 0; setprop sys.perf.sched_boost 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "gpu_mediatek_ged_boost",
+                "MediaTek Dimensity GED Game Mode & Mali Real-Time GPU Engine",
+                "Activates MediaTek GPU Engine Driver (GED) kernel game mode, top-app PID booster, DPT/PPT performance, and Mali -20 scheduler priority",
+                "setprop debug.mali.sched.priority -20; setprop debug.mali.force_gpu_boost 1; setprop debug.mali.realtime 1; setprop persist.vendor.ged.boost 1; setprop persist.vendor.dpt.enable 1; setprop vendor.ppt.boost 1; echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null; echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null; echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null; echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; for g in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$g\" 2>/dev/null; done",
+                "setprop debug.mali.sched.priority 0; setprop debug.mali.force_gpu_boost 0; setprop persist.vendor.ged.boost 0; for g in /sys/class/devfreq/*gpu*/governor; do echo simple_ondemand > \"$g\" 2>/dev/null; done",
                 TweakCategory.CPU_GPU,
                 true
         ));

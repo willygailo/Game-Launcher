@@ -204,7 +204,9 @@ public class MasterOptimizationEnforcer {
                 if (shizukuAvailable) {
                     tier1Ok = true;
                     List<String> tier1Commands = new ArrayList<>();
-                    // Settings-global driver opt-ins work on every Android version.
+                    // Targeted Game Driver opt-in (Strictly disabled for all apps)
+                    tier1Commands.add("settings put global game_driver_all_apps 0");
+                    tier1Commands.add("settings put global updatable_driver_all_apps 0");
                     tier1Commands.add("settings put global game_driver_opt_in_apps " + pkg);
                     tier1Commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
                     // Android 13-16 GameMode & Refresh Rate Enforcements (Zero Fallback)

@@ -58,14 +58,56 @@ public class GpuTweaksChannel {
         boolean ok = true;
         ok &= CommandExecutor.setSystemProperty("debug.adreno.turbo", "1");
         ok &= CommandExecutor.setSystemProperty("debug.adreno.perf_level", "0");
-        ok &= CommandExecutor.setSystemProperty("debug.qualcomm.sns.hal", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.qualcomm.sns.hal", "0");
+        ok &= CommandExecutor.setSystemProperty("vendor.perf.gestureFlingBoost", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.qti.games.gt.enable", "1");
+        ok &= CommandExecutor.setSystemProperty("vendor.gpu.power_mode", "1");
+
+        // Sysfs GPU devfreq clock and power rail locks for Adreno (Snapdragon)
+        CommandExecutor.executeSystemCommand(
+                "echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null; " +
+                "echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null; " +
+                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; " +
+                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; " +
+                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null"
+        );
         return ok;
     }
 
-    public static boolean enableMaliBoost() {
+    public static boolean enableMediaTekGedBoost() {
         boolean ok = true;
         ok &= CommandExecutor.setSystemProperty("debug.mali.sched.priority", "-20");
         ok &= CommandExecutor.setSystemProperty("debug.mali.force_gpu_boost", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.mali.realtime", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.ged.boost", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.dpt.enable", "1");
+        ok &= CommandExecutor.setSystemProperty("vendor.ppt.boost", "1");
+
+        // MediaTek GPU Engine Driver (GED) kernel game mode & PID boost
+        CommandExecutor.executeSystemCommand(
+                "echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; " +
+                "echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null; " +
+                "echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null; " +
+                "echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null; " +
+                "echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; " +
+                "for g in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$g\" 2>/dev/null; done"
+        );
+        return ok;
+    }
+
+    public static boolean enableTensorBoost() {
+        boolean ok = true;
+        ok &= CommandExecutor.setSystemProperty("debug.tensor.gpu.boost", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
+        return ok;
+    }
+
+    public static boolean enableExynosXclipseBoost() {
+        boolean ok = true;
+        ok &= CommandExecutor.setSystemProperty("debug.exynos.performance.mode", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.xclipse.gpu.boost", "1");
+        CommandExecutor.executeSystemCommand("echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null");
         return ok;
     }
 
@@ -76,7 +118,9 @@ public class GpuTweaksChannel {
     public static boolean setGpuMaxPerformance() {
         boolean ok = enableVulkanRenderer();
         ok &= enableAdrenoTurbo();
-        ok &= enableMaliBoost();
+        ok &= enableMediaTekGedBoost();
+        ok &= enableTensorBoost();
+        ok &= enableExynosXclipseBoost();
         ok &= enableForceMsaa();
         return ok;
     }

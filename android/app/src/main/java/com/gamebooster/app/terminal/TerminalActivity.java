@@ -311,7 +311,7 @@ public class TerminalActivity extends AppCompatActivity {
             btnScriptTempDir.setOnClickListener(v -> runPresetCommand("ls -la /data/local/tmp"));
         }
         if (btnScriptAnimScale != null) {
-            btnScriptAnimScale.setOnClickListener(v -> runPresetCommand("settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5"));
+            btnScriptAnimScale.setOnClickListener(v -> runPresetCommand("settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put system window_animation_scale 0.0; settings put system transition_animation_scale 0.0; settings put system animator_duration_scale 0.0; cmd activity update-configuration --anim-scale 0.0"));
         }
         if (btnScriptFpsDiag != null) {
             btnScriptFpsDiag.setOnClickListener(v -> runPresetCommand("dumpsys SurfaceFlinger --latency; getprop debug.sf.fps_limit; getprop persist.sys.NV_FPSLIMIT; settings get system peak_refresh_rate"));

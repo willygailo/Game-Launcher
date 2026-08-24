@@ -78,33 +78,124 @@ public class PerformanceChannel {
     public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
         final int hz = targetHz > 0 ? targetHz : 185;
         try {
+            String targetGamesCsv = GpuTweaksChannel.getTargetGamesCsv();
+            int coreCount = CpuGovernorChannel.detectCpuCoreCount();
+            int maxCore = Math.max(7, coreCount - 1);
+            int bgCore = Math.min(3, maxCore / 2);
+
             String scriptPath = "/data/local/tmp/gamebooster_tweaks.sh";
             String scriptContent = "#!/system/bin/sh\n" +
                     "sync; echo 3 > /proc/sys/vm/drop_caches\n" +
+                    // 1. Zero Animation Scale (0.0x Instant UI Speed)
+                    "settings put global window_animation_scale 0.0\n" +
+                    "settings put global transition_animation_scale 0.0\n" +
+                    "settings put global animator_duration_scale 0.0\n" +
+                    "settings put system window_animation_scale 0.0\n" +
+                    "settings put system transition_animation_scale 0.0\n" +
+                    "settings put system animator_duration_scale 0.0\n" +
+                    "cmd activity update-configuration --anim-scale 0.0\n" +
+                    // 2. Targeted Game Driver & ANGLE Driver (Target Games ONLY)
+                    "settings put global game_driver_all_apps 0\n" +
+                    "settings put global updatable_driver_all_apps 0\n" +
+                    "settings put global game_driver_opt_in_apps " + targetGamesCsv + "\n" +
+                    "settings put global game_driver_prerelease_opt_in_apps " + targetGamesCsv + "\n" +
+                    "settings put global updatable_driver_production_opt_in_apps " + targetGamesCsv + "\n" +
+                    "settings put global angle_gl_driver_all_angle 0\n" +
+                    "settings put global angle_enabled_pkgs 1\n" +
+                    "settings put global angle_gl_driver_selection_pkgs " + targetGamesCsv + "\n" +
+                    // 3. JVM / Dalvik / ART Runtime Performance Turbo
+                    "setprop dalvik.vm.execution-mode int:jit\n" +
+                    "setprop dalvik.vm.usejit true\n" +
+                    "setprop dalvik.vm.usejitprofiles true\n" +
+                    "setprop dalvik.vm.heapgrowthlimit 512m\n" +
+                    "setprop dalvik.vm.heapsize 1024m\n" +
+                    "setprop dalvik.vm.heaptargetutilization 0.75\n" +
+                    "setprop dalvik.vm.heapminfree 8m\n" +
+                    "setprop dalvik.vm.heapmaxfree 32m\n" +
+                    "setprop dalvik.vm.heapstartsize 32m\n" +
+                    "setprop dalvik.vm.jitcodecachesize 64m\n" +
+                    "setprop dalvik.vm.jitinitialsize 16m\n" +
+                    "setprop dalvik.vm.jitthreshold 100\n" +
+                    "setprop dalvik.vm.dex2oat-filter speed\n" +
+                    "setprop pm.dexopt.boot speed-profile\n" +
+                    "setprop pm.dexopt.install speed\n" +
+                    "setprop pm.dexopt.bg-dexopt speed\n" +
+                    // 4. Multi-Core Processor Architecture Tuning (8-core, 12-core, 16-core+)
+                    "echo 0-" + maxCore + " > /dev/cpuset/top-app/cpus 2>/dev/null\n" +
+                    "echo 0-" + maxCore + " > /dev/cpuset/foreground/cpus 2>/dev/null\n" +
+                    "echo 0-" + bgCore + " > /dev/cpuset/background/cpus 2>/dev/null\n" +
+                    "echo 0-" + bgCore + " > /dev/cpuset/system-background/cpus 2>/dev/null\n" +
+                    "echo 0-" + maxCore + " > /dev/cpuset/restricted/cpus 2>/dev/null\n" +
+                    "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done\n" +
+                    "setprop sys.games.cpu_affinity 1\n" +
+                    "setprop sys.use_fifo 1\n" +
+                    "setprop sys.perf.sched_uclamp_min 1024\n" +
+                    "setprop sys.perf.sched_uclamp_min_rt 1024\n" +
+                    "setprop sys.perf.sched_min_granularity_ns 250000\n" +
+                    "setprop sys.perf.sched_latency_ns 1000000\n" +
+                    "setprop sys.perf.sched_wakeup_granularity_ns 500000\n" +
+                    "setprop sys.perf.sched_boost 1\n" +
+                    "cmd power set-fixed-performance-mode-enabled true\n" +
+                    // 5. Universal & Chipset GPU Graphics Processing (Snapdragon, MediaTek, Tensor, Exynos)
                     "setprop debug.sf.hw 1\n" +
                     "setprop debug.hwui.renderer vulkan\n" +
                     "setprop debug.renderengine.backend vulkan\n" +
                     "setprop debug.renderengine.skia_pipeline true\n" +
-                    "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
+                    "setprop debug.hwui.use_gpu_pixel_buffers true\n" +
+                    "setprop debug.hwui.render_thread_priority -20\n" +
+                    "setprop debug.hwui.skip_empty_damage true\n" +
+                    "setprop debug.sf.latch_unsignaled 1\n" +
+                    "setprop debug.sf.disable_backpressure 1\n" +
+                    "setprop debug.sf.enable_gl_backpressure 0\n" +
+                    "setprop debug.sf.predict_hwc_composition_strategy 1\n" +
+                    "setprop debug.sf.enable_adpf_cpu_hint true\n" +
+                    "setprop debug.hwui.use_hint_manager true\n" +
+                    "setprop persist.sys.adpf.enable 1\n" +
+                    "setprop debug.adpf.hint.enabled 1\n" +
+                    "setprop debug.adpf.cpu.boost 1\n" +
+                    "setprop debug.adpf.gpu.boost 1\n" +
+                    "setprop debug.adreno.turbo 1\n" +
+                    "setprop debug.adreno.perf_level 0\n" +
+                    "setprop debug.qualcomm.sns.hal 0\n" +
+                    "setprop vendor.perf.gestureFlingBoost 1\n" +
+                    "setprop persist.vendor.qti.games.gt.enable 1\n" +
+                    "setprop vendor.gpu.power_mode 1\n" +
+                    "echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null\n" +
+                    "echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null\n" +
+                    "echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null\n" +
+                    "echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null\n" +
+                    "echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null\n" +
+                    "setprop debug.mali.sched.priority -20\n" +
+                    "setprop debug.mali.force_gpu_boost 1\n" +
+                    "setprop debug.mali.realtime 1\n" +
+                    "setprop persist.vendor.ged.boost 1\n" +
+                    "setprop persist.vendor.dpt.enable 1\n" +
+                    "setprop vendor.ppt.boost 1\n" +
+                    "echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null\n" +
+                    "echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null\n" +
+                    "echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null\n" +
+                    "echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null\n" +
+                    "echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null\n" +
+                    "setprop debug.tensor.gpu.boost 1\n" +
+                    "setprop debug.exynos.performance.mode 1\n" +
+                    "setprop debug.xclipse.gpu.boost 1\n" +
+                    "echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null\n" +
+                    "setprop debug.egl.force_msaa 1\n" +
+                    "setprop debug.egl.buffcount 3\n" +
+                    "setprop persist.sys.use_16bpp_alpha 1\n" +
+                    "setprop debug.egl.multithread 1\n" +
+                    "setprop debug.graphics.game_default_frame_rate.disabled 1\n" +
+                    "setprop ro.vendor.dfps.enable 0\n" +
+                    "setprop vendor.display.enable_default_fps_switch 0\n" +
+                    "setprop persist.vendor.display.vrr.disable 1\n" +
+                    "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
+                    "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
                     "setprop debug.sf.fps_limit " + hz + "\n" +
                     "setprop persist.sys.NV_FPSLIMIT " + hz + "\n" +
                     "setprop persist.sys.game.fps " + hz + "\n" +
                     "setprop persist.sys.game.rate " + hz + "\n" +
                     "setprop persist.sys.fps " + hz + "\n" +
                     "setprop debug.cpurend.fps " + hz + "\n" +
-                    "setprop persist.vendor.power.dfps.level " + hz + "\n" +
-                    "setprop persist.vendor.display.vrr.disable 1\n" +
-                    "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
-                    "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
-                    "setprop ro.vendor.dfps.enable 0\n" +
-                    "setprop vendor.display.enable_default_fps_switch 0\n" +
-                    "setprop debug.hwui.fps_divisor 1\n" +
-                    "setprop persist.sys.NV_POWERMODE 1\n" +
-                    "setprop debug.gr.swapinterval 0\n" +
-                    "setprop debug.egl.swapinterval 0\n" +
-                    "setprop debug.sf.disable_backpressure 1\n" +
-                    "setprop debug.sf.latch_unsignaled 1\n" +
-                    "setprop debug.graphics.game_default_frame_rate.disabled 1\n" +
                     "settings put system match_content_frame_rate 0\n" +
                     "settings put secure match_content_frame_rate_preference 0\n" +
                     "settings put system peak_refresh_rate " + hz + ".0\n" +
@@ -138,7 +229,6 @@ public class PerformanceChannel {
                     "cmd thermal override-status 0\n" +
                     "setprop debug.thermal.throttle.disable 1\n" +
                     "setprop view.touch_slop 0\n" +
-                    "setprop sys.use_fifo 1\n" +
                     "setprop debug.input.max_events_per_sec 1000\n" +
                     "setprop persist.sys.touch.report_rate 1000\n" +
                     "setprop persist.vendor.touch.sampling_rate 1000\n" +
@@ -147,11 +237,6 @@ public class PerformanceChannel {
                     "setprop debug.sensor.gyro.stabilization 1\n" +
                     "setprop persist.sys.gyro.filter 1\n" +
                     "setprop persist.sys.gyro.delay 0\n" +
-                    "setprop debug.adreno.turbo 1\n" +
-                    "setprop debug.adreno.perf_level 0\n" +
-                    "setprop debug.mali.sched.priority -20\n" +
-                    "setprop debug.hwui.use_gpu_pixel_buffers true\n" +
-                    "setprop debug.hwui.render_thread_priority -20\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
                     "cmd wifi force-low-latency-mode enabled\n";
 
