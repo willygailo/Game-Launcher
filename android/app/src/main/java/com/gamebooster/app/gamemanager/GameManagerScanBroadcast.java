@@ -36,11 +36,12 @@ public class GameManagerScanBroadcast extends BroadcastReceiver {
             Log.i(TAG, "New or updated package detected: " + packageName);
 
             AppExecutors.getInstance().executeCommand(() -> {
+                String pkgLower = packageName.toLowerCase(java.util.Locale.ROOT);
                 boolean isGame = GamePackageRegistry.isKnownGame(packageName)
-                        || packageName.toLowerCase().contains("game")
-                        || packageName.toLowerCase().contains("pubg")
-                        || packageName.toLowerCase().contains("cod")
-                        || packageName.toLowerCase().contains("mobilelegends");
+                        || pkgLower.contains("game")
+                        || pkgLower.contains("pubg")
+                        || pkgLower.contains("cod")
+                        || pkgLower.contains("mobilelegends");
 
                 if (isGame) {
                     Log.i(TAG, "⚡ Auto-configuring newly installed game: " + packageName);

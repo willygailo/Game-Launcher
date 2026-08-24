@@ -91,7 +91,6 @@ public class GameConfigPatcher {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             PubgConfigPatcher.deployPakPatch(pkg);
-            PubgConfigPatcher.purgeGameCacheAndLogs(pkg);
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);
             PubgConfigPatcher.applyRecoilControlConfig(pkg);

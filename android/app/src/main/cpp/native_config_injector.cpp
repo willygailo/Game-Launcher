@@ -1985,8 +1985,12 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string pathStr(path);
     make_parent_dirs(pathStr);
 
-    std::string cacheHeader = "VK_PIPELINE_CACHE_DATA_2026_ADRENO_MALI\nvulkan.pipeline_cache=1\nshader_cache_enabled=1\n";
-    bool success = write_file_posix(pathStr, cacheHeader);
+    std::string existing = read_file_posix(pathStr);
+    bool success = true;
+    if (existing.empty()) {
+        std::string cacheHeader = "VK_PIPELINE_CACHE_DATA_2026_ADRENO_MALI\nvulkan.pipeline_cache=1\nshader_cache_enabled=1\n";
+        success = write_file_posix(pathStr, cacheHeader);
+    }
 
     env->ReleaseStringUTFChars(jPath, path);
     return success ? JNI_TRUE : JNI_FALSE;

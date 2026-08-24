@@ -47,82 +47,82 @@ public class PubgConfigPatcher {
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(forcedFps);
         final int pubgFpsLevel = tier.level;
 
-        String content = "[UserCustom DeviceProfile]\n" +
-                "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel + "\n" +
-                "+CVars=r.PUBGMaxFPS=" + forcedFps + "\n" +
-                "+CVars=r.PUBGFrameRateLimit=" + forcedFps + "\n" +
-                "+CVars=r.MobileFPSLimit=" + forcedFps + "\n" +
-                "+CVars=r.FrameRateLimit=" + forcedFps + "\n" +
-                "+CVars=r.PUBGHDRMode=1\n" +
-                "+CVars=r.MobileHDR=1\n" +
-                "+CVars=r.PUBGQualityLevel=4\n" +
-                "+CVars=r.PUBGSDKQualityLevel=4\n" +
-                "+CVars=r.Tonemapper.Quality=4\n" +
-                "+CVars=r.HDR.Display.OutputDevice=1\n" +
-                "+CVars=r.MobileContentScaleFactor=1.0\n" +
-                "+CVars=r.MobileTonemapperFilm=1\n" +
-                "+CVars=r.PUBGTPPViewRange=100.00\n" +
-                "+CVars=r.PUBGFPPViewRange=150.00\n" +
-                "+CVars=r.SprintSensitivity=150\n" +
-                "+CVars=r.Vsync=0\n" +
-                "+CVars=r.Unlock120Hz=1\n" +
-                "+CVars=r.Unlock144Hz=1\n" +
-                "+CVars=r.Unlock165Hz=1\n" +
-                "+CVars=r.Unlock185Hz=1\n" +
-                "+CVars=r.SuppressLogs=1\n" +
-                "+CVars=r.DisableDebugLog=1\n" +
-                "+CVars=r.EnableCrashReporting=0\n" +
-                "+CVars=r.Telemetry=0\n" +
-                "+CVars=a.DisableAnalytics=1\n" +
-                "+CVars=r.LogFilter=0\n" +
-                "+CVars=r.TouchBoostHz=" + forcedFps + "\n" +
-                "+CVars=r.MobileTouchBoostRate=" + forcedFps + "\n" +
-                "+CVars=r.GyroSampleRate=1000\n" +
-                "+CVars=r.GyroSensitivityRatio=2.5\n" +
-                "+CVars=r.GyroZeroDelay=1\n" +
-                "+CVars=r.GyroLatencyMode=0\n" +
-                "+CVars=r.GyroSmoothFactor=1\n" +
-                "+CVars=r.GyroStabilization=1\n" +
-                "FrameRateLevel=" + pubgFpsLevel + "\n" +
-                "FPS=" + forcedFps + "\n" +
-                "TargetFPS=" + forcedFps + "\n" +
-                "MaxFPS=" + forcedFps + "\n" +
-                "UnlockFPS=1\n" +
-                "Unlock120FPS=1\n" +
-                "Unlock144FPS=1\n" +
-                "Unlock165FPS=1\n" +
-                "Unlock185FPS=1\n" +
-                "Ultra144FPS=1\n" +
-                "Ultra165FPS=1\n" +
-                "Ultra185FPS=1\n" +
-                "UltraExtreme=1\n" +
-                "bUseUltraExtreme=True\n" +
-                "GraphicsQuality=5\n" +
-                "GraphicQuality=4\n" +
-                "HDRMode=1\n" +
-                "UltraHDMode=1\n" +
-                "SuperResolution=1\n" +
-                "bUseHDRMode=True\n" +
-                "bUseHighQualityBloom=True\n" +
-                "bUseAntiAliasing=True\n" +
-                "bDisableAnalytics=True\n" +
-                "bDisableBugReporting=True\n" +
-                "SprintSensitivity=150\n" +
-                "TPPFieldOfView=100\n" +
-                "FPPFieldOfView=150\n";
+        String[] keys = new String[] {
+                "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel,
+                "+CVars=r.PUBGMaxFPS=" + forcedFps,
+                "+CVars=r.PUBGFrameRateLimit=" + forcedFps,
+                "+CVars=r.MobileFPSLimit=" + forcedFps,
+                "+CVars=r.FrameRateLimit=" + forcedFps,
+                "+CVars=r.PUBGHDRMode=1",
+                "+CVars=r.MobileHDR=1",
+                "+CVars=r.PUBGQualityLevel=4",
+                "+CVars=r.PUBGSDKQualityLevel=4",
+                "+CVars=r.Tonemapper.Quality=4",
+                "+CVars=r.HDR.Display.OutputDevice=1",
+                "+CVars=r.MobileContentScaleFactor=1.0",
+                "+CVars=r.MobileTonemapperFilm=1",
+                "+CVars=r.PUBGTPPViewRange=100.00",
+                "+CVars=r.PUBGFPPViewRange=150.00",
+                "+CVars=r.SprintSensitivity=150",
+                "+CVars=r.Vsync=0",
+                "+CVars=r.Unlock120Hz=1",
+                "+CVars=r.Unlock144Hz=1",
+                "+CVars=r.Unlock165Hz=1",
+                "+CVars=r.Unlock185Hz=1",
+                "+CVars=r.SuppressLogs=1",
+                "+CVars=r.DisableDebugLog=1",
+                "+CVars=r.EnableCrashReporting=0",
+                "+CVars=r.Telemetry=0",
+                "+CVars=a.DisableAnalytics=1",
+                "+CVars=r.LogFilter=0",
+                "+CVars=r.TouchBoostHz=" + forcedFps,
+                "+CVars=r.MobileTouchBoostRate=" + forcedFps,
+                "+CVars=r.GyroSampleRate=1000",
+                "+CVars=r.GyroSensitivityRatio=2.5",
+                "+CVars=r.GyroZeroDelay=1",
+                "+CVars=r.GyroLatencyMode=0",
+                "+CVars=r.GyroSmoothFactor=1",
+                "+CVars=r.GyroStabilization=1",
+                "FrameRateLevel=" + pubgFpsLevel,
+                "FPS=" + forcedFps,
+                "TargetFPS=" + forcedFps,
+                "MaxFPS=" + forcedFps,
+                "UnlockFPS=1",
+                "Unlock120FPS=1",
+                "Unlock144FPS=1",
+                "Unlock165FPS=1",
+                "Unlock185FPS=1",
+                "Ultra144FPS=1",
+                "Ultra165FPS=1",
+                "Ultra185FPS=1",
+                "UltraExtreme=1",
+                "bUseUltraExtreme=True",
+                "GraphicsQuality=5",
+                "GraphicQuality=4",
+                "HDRMode=1",
+                "UltraHDMode=1",
+                "SuperResolution=1",
+                "bUseHDRMode=True",
+                "bUseHighQualityBloom=True",
+                "bUseAntiAliasing=True",
+                "bDisableAnalytics=True",
+                "bDisableBugReporting=True",
+                "SprintSensitivity=150",
+                "TPPFieldOfView=100",
+                "FPPFieldOfView=150"
+        };
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
                 written++;
             }
         }
         patchActiveSavBinary(packageName, forcedFps);
         deployPakPatch(packageName);
-        purgeGameCacheAndLogs(packageName);
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS non-destructive in-place merge: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -183,25 +183,7 @@ public class PubgConfigPatcher {
         return deployed;
     }
 
-    /**
-     * Purges temporary conflict caches and logs so new config / pak applies cleanly.
-     */
-    public static void purgeGameCacheAndLogs(String pkg) {
-        if (pkg == null) return;
-        String[] cleanCmds = {
-            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs/* 2>/dev/null",
-            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/* 2>/dev/null",
-            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/light_data/* 2>/dev/null",
-            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/UpdateInfo/* 2>/dev/null",
-            "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/TGPA/* 2>/dev/null",
-            "rm -rf /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs/* 2>/dev/null",
-            "rm -rf /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/* 2>/dev/null",
-            "rm -rf /sdcard/Android/data/" + pkg + "/files/TGPA/* 2>/dev/null"
-        };
-        for (String cmd : cleanCmds) {
-            CommandExecutor.executeSystemCommand(cmd);
-        }
-    }
+
 
     // ─── Delegated Common Tuning Injectors ───────────────────────────────────
 

@@ -156,9 +156,6 @@
             android:name="android.supports_size_changes"
             android:value="true" />
         <meta-data
-            android:name="com.google.android.gms.games.APP_ID"
-            android:value="@string/app_name" />
-        <meta-data
             android:name="android.game_service"
             android:value="true" />
 

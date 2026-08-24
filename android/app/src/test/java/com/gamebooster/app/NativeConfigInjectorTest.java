@@ -43,4 +43,38 @@ public class NativeConfigInjectorTest {
         assertEquals("r.MaxFPS", NativeConfigInjector.extractKey("r.MaxFPS=185"));
         assertEquals("+CVars=r.PUBGMaxFPS", NativeConfigInjector.extractKey("+CVars=r.PUBGMaxFPS=185"));
     }
+
+    @Test
+    public void testNonDestructiveInPlaceMerging() {
+        String existingUserConfig = "[UserCustom DeviceProfile]\n" +
+                "CustomHudButtonLayout=SavedLayout_3Finger\n" +
+                "PlayerSensitivityLook=145\n" +
+                "GyroscopeOverallSensitivity=280\n" +
+                "+CVars=r.PUBGDeviceFPS=5\n" +
+                "FPS=60\n";
+
+        String[] newKeys = new String[]{
+                "+CVars=r.PUBGDeviceFPS=10",
+                "+CVars=r.PUBGMaxFPS=185",
+                "FPS=185",
+                "Unlock185FPS=1"
+        };
+
+        String merged = com.gamebooster.app.config.ConfigFileHelper.patchIniContent(
+                existingUserConfig,
+                newKeys,
+                "[UserCustom DeviceProfile]"
+        );
+
+        // Verify that original player HUD and sensitivity settings are 100% preserved
+        assertTrue(merged.contains("CustomHudButtonLayout=SavedLayout_3Finger"));
+        assertTrue(merged.contains("PlayerSensitivityLook=145"));
+        assertTrue(merged.contains("GyroscopeOverallSensitivity=280"));
+
+        // Verify that target FPS keys are successfully updated/added
+        assertTrue(merged.contains("+CVars=r.PUBGDeviceFPS=10"));
+        assertTrue(merged.contains("+CVars=r.PUBGMaxFPS=185"));
+        assertTrue(merged.contains("FPS=185"));
+        assertTrue(merged.contains("Unlock185FPS=1"));
+    }
 }
