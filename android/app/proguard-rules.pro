@@ -41,6 +41,14 @@
     public *;
 }
 
+# Keep Data & Configuration Models
+-keep class com.gamebooster.app.cleaner.model.** { *; }
+-keep class com.gamebooster.app.games.** { *; }
+-keep class com.gamebooster.app.tweaks.** { *; }
+-keep class com.gamebooster.app.diagnostics.** { *; }
+-keep class com.gamebooster.app.config.** { *; }
+-keep class com.gamebooster.app.device.** { *; }
+
 # Don't warn about internal packages
 -dontwarn moe.shizuku.**
 -dontwarn rikka.shizuku.**
