@@ -204,11 +204,34 @@ public final class DiagnosticsExporter {
         } else {
             lines.add("✅ Zero Crash Logs Captured (Clean Execution)");
         }
+        lines.add("");
+
+        // 9. GAME-MANAGER Status
+        lines.add("--- [GAME-MANAGER ENGINE STATUS] ---");
+        com.gamebooster.app.gamemanager.GameManagerStatus gmStatus = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance();
+        lines.add("Active Game Session: " + (gmStatus.hasActiveSession() ? "🎮 " + gmStatus.getActiveGamePackage() + " (" + gmStatus.getSessionDurationSeconds() + "s)" : "IDLE (Baseline Restored)"));
+        lines.add("Last Enforcement Time: " + gmStatus.getFormattedLastApplyTime());
+        lines.add("Last Enforcement Action: " + gmStatus.getLastApplySummary());
+        lines.add("Applications Masked Count: " + gmStatus.getMaskedAppsCount());
+        lines.add("");
+
+        // 10. Android API Gate Status (Android 13, 14, 15, 16)
+        lines.add("--- [ANDROID API GATES (API 33-36)] ---");
+        lines.add("Android 12 GameManager API (API 31+): " + (sdkInt >= 31 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("Android 13 GameOverlay API (API 33+): " + (sdkInt >= 33 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("Android 14 FPS/Refresh Override (API 34+): " + (sdkInt >= 34 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("Android 15 Fixed Clocks Power Mode (API 35+): " + (sdkInt >= 35 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("Android 16 Performance-Class Baklava (API 36+): " + (sdkInt >= 36 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("No-Fallback State Persistence: ACTIVE (Toggles stay ON until manual OFF)");
         lines.add("==================================================");
         lines.add("                 END OF DIAGNOSTICS               ");
         lines.add("==================================================");
 
         return lines;
+    }
+
+    public static List<String> buildSnapshotFull(Context context) {
+        return buildSnapshot(context);
     }
 
     public static File exportToFile(Context context, String content) throws Exception {

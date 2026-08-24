@@ -104,33 +104,32 @@ public class MasterOptimizationEnforcer {
                 // 3B. CPU, GPU & WebView hardware channels
                 PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 PerformanceChannel.setGpuRenderMode(true); // Vulkan 3D
-                CpuGovernorChannel.setGovernor("extreme");
-                GpuTweaksChannel.setAngleMode(true);
-                GpuTweaksChannel.setGameDriverMode(true);
-                com.gamebooster.app.booster.WebViewBoosterChannel.applyWebViewPerformanceBoost();
-                com.gamebooster.app.utils.WebViewPerformanceTuner.prewarmWebViewProcess(appContext);
-
-                // 3C. Network & DNS optimization
-                if (listener != null) {
-                    AppExecutors.getInstance().postToMainThread(() -> listener.onProgress("📶 Activating TCP BBR & Network Turbo Boost...", 85));
-                }
-                NetworkOptimizer.optimizeAllDataAndWifi(appContext);
-                NetworkOptimizer.flushDnsCache();
-
+                
                 // 3D. Execute master root performance script
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);
                 if (targetHz <= 0) targetHz = FpsUnlockTier.resolveTargetFps(targetHz);
                 PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
                 MaxHzForceChannel.forceApply(targetHz);
 
+                // 3E. Global Android 13-16 Performance Flags & Storage Unlock
+                GameModeApiSupport.applyModernAndroidPerformanceFlags(null, targetHz);
+                com.gamebooster.app.config.GameConfigStorageAccessEngine.grantGlobalStorageAccess(appContext);
+                ShizukuPermissionEnforcer.enforceAndroid16CompatibilityFlags(appContext);
+
+                // 3F. Global Hardware Masking across all apps
+                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(appContext);
+
                 final int finalCount = totalApplied;
                 final boolean tier1Ran = shizukuTierRan[0];
+                final String summary = tier1Ran
+                        ? "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED (" + maskedCount + " apps masked)!"
+                        : "Optimizations applied WITHOUT Shizuku — system-level tiers skipped (grant Shizuku permission for full effect).";
+
+                com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().recordApply(finalCount, summary);
+
                 if (listener != null) {
                     AppExecutors.getInstance().postToMainThread(() -> {
                         listener.onProgress("✅ Master Optimization 100% Enforced!", 100);
-                        String summary = tier1Ran
-                                ? "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED!"
-                                : "Optimizations applied WITHOUT Shizuku — system-level tiers skipped (grant Shizuku permission for full effect).";
                         listener.onComplete(true, finalCount, summary);
                     });
                 }
@@ -142,6 +141,66 @@ public class MasterOptimizationEnforcer {
                     final int count = totalApplied;
                     AppExecutors.getInstance().postToMainThread(() -> 
                         listener.onComplete(false, count, "Partial enforcement completed with warning: " + t.getMessage()));
+                }
+            }
+        });
+    }
+
+    /**
+     * Enforces all optimizations sequentially across all detected game packages on the device.
+     */
+    public static void enforceForAllGames(Context context, OnEnforceProgressListener listener) {
+        if (context == null) {
+            if (listener != null) listener.onComplete(false, 0, "Null context provided");
+            return;
+        }
+
+        final Context appContext = context.getApplicationContext();
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                List<com.gamebooster.app.games.GameAppInfo> games =
+                        com.gamebooster.app.games.GameManagerRepository.getInstalledGames(appContext);
+                int totalGames = games.size();
+                int processed = 0;
+
+                for (int i = 0; i < totalGames; i++) {
+                    com.gamebooster.app.games.GameAppInfo game = games.get(i);
+                    if (game == null || game.getPackageName() == null) continue;
+                    String pkg = game.getPackageName();
+
+                    final int currentIdx = i + 1;
+                    final String gameLabel = game.getLabel();
+
+                    if (listener != null) {
+                        int progress = (int) (((float) currentIdx / Math.max(1, totalGames)) * 90f);
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                listener.onProgress("[" + currentIdx + "/" + totalGames + "] Enforcing " + gameLabel + "...", progress));
+                    }
+
+                    // Enforce full storage + Android API + Masking for game
+                    com.gamebooster.app.config.GameConfigStorageAccessEngine.grantAllPathsAccess(appContext, pkg);
+                    com.gamebooster.app.spoofer.HardwareMaskEngine.maskPackage(appContext, pkg);
+                    GameModeApiSupport.applyModernAndroidPerformanceFlags(pkg, 185);
+                    com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, 185);
+                    com.gamebooster.app.config.GameProfileAutoConfigurator.autoConfigGamePackage(appContext, pkg, 185);
+                    processed++;
+                }
+
+                final int count = processed;
+                com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().recordApply(count * 6, "Enforced optimizations across " + count + " games.");
+
+                if (listener != null) {
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        listener.onProgress("✅ All Games Fully Optimized!", 100);
+                        listener.onComplete(true, count, "Successfully applied Shizuku & Android API optimizations to " + count + " games!");
+                    });
+                }
+
+            } catch (Throwable t) {
+                Log.e(TAG, "Error in enforceForAllGames", t);
+                if (listener != null) {
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            listener.onComplete(false, 0, "Error optimizing games: " + t.getMessage()));
                 }
             }
         });

@@ -139,7 +139,7 @@ public final class DisplayCapabilitiesDetector {
 
     private static DisplayCaps empty() {
         return new DisplayCaps(
-            List.of(90, 120, 144, 165, 185), 185, 90, 185,
+            Arrays.asList(90, 120, 144, 165, 185), 185, 90, 185,
             false, false, false, false,
             new Display.Mode[0], 0, 0, 1f, 160,
             false, false, ""

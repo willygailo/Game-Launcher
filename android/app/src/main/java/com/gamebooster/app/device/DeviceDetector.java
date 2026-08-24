@@ -40,12 +40,12 @@ public class DeviceDetector {
         ChipsetVendor vendor = detectChipsetVendor();
         String chipsetName = getChipsetName();
         return new DeviceSpecModel(
-                Build.MANUFACTURER,
-                Build.MODEL,
-                Build.BOARD,
-                Build.HARDWARE,
-                Build.VERSION.RELEASE,
-                Build.VERSION.SDK_INT,
+                Build.MANUFACTURER != null ? Build.MANUFACTURER : "Generic",
+                Build.MODEL != null ? Build.MODEL : "Android Device",
+                Build.BOARD != null ? Build.BOARD : "universal",
+                Build.HARDWARE != null ? Build.HARDWARE : "android",
+                Build.VERSION.RELEASE != null ? Build.VERSION.RELEASE : "16",
+                Build.VERSION.SDK_INT > 0 ? Build.VERSION.SDK_INT : 36,
                 chipsetName,
                 vendor
         );
@@ -106,31 +106,36 @@ public class DeviceDetector {
         String board = Build.BOARD != null ? Build.BOARD.toLowerCase() : "";
         String soc = socModelOrEmpty();
 
-        if (hardware.contains("qcom") || board.contains("sm8") || board.contains("sm7") || board.contains("sm6") || board.contains("sdm") || soc.contains("sm")) {
-            if (board.contains("sm8750") || soc.contains("sm8750")) return "Snapdragon 8 Elite (Gen 4)";
-            if (board.contains("sm8650") || soc.contains("sm8650")) return "Snapdragon 8 Gen 3";
-            if (board.contains("sm8550") || soc.contains("sm8550")) return "Snapdragon 8 Gen 2";
-            if (board.contains("sm8450") || board.contains("sm8475")) return "Snapdragon 8/8+ Gen 1";
-            return "Qualcomm Snapdragon";
-        } else if (hardware.contains("mt") || board.contains("mt") || soc.contains("dimensity")) {
-            if (board.contains("mt6991") || soc.contains("9400")) return "MediaTek Dimensity 9400";
-            if (board.contains("mt6989") || soc.contains("9300")) return "MediaTek Dimensity 9300";
-            if (board.contains("mt6985") || soc.contains("9200")) return "MediaTek Dimensity 9200";
-            if (board.contains("mt6983") || soc.contains("9000")) return "MediaTek Dimensity 9000";
-            return "MediaTek Dimensity";
+        if (hardware.contains("qcom") || board.contains("sm8") || board.contains("sm7") || board.contains("sm6") || board.contains("sdm") || soc.contains("sm") || soc.contains("qcom") || soc.contains("qualcomm")) {
+            if (board.contains("sm8750") || soc.contains("sm8750") || hardware.contains("sm8750")) return "Snapdragon 8 Elite (Gen 4)";
+            if (board.contains("sm8650") || soc.contains("sm8650") || hardware.contains("sm8650")) return "Snapdragon 8 Gen 3";
+            if (board.contains("sm8550") || soc.contains("sm8550") || hardware.contains("sm8550")) return "Snapdragon 8 Gen 2";
+            if (board.contains("sm8450") || board.contains("sm8475") || soc.contains("sm8450") || soc.contains("sm8475")) return "Snapdragon 8/8+ Gen 1";
+            if (board.contains("sm7675") || soc.contains("sm7675")) return "Snapdragon 7+ Gen 3";
+            if (board.contains("sm8350") || soc.contains("sm8350")) return "Snapdragon 888/888+";
+            return "Qualcomm Snapdragon (High-Perf Adreno)";
+        } else if (hardware.contains("mt") || board.contains("mt") || soc.contains("dimensity") || soc.contains("mtk")) {
+            if (board.contains("mt6991") || soc.contains("9400") || hardware.contains("mt6991")) return "MediaTek Dimensity 9400 (Immortalis-G925)";
+            if (board.contains("mt6989") || soc.contains("9300") || hardware.contains("mt6989")) return "MediaTek Dimensity 9300+ (Immortalis-G720)";
+            if (board.contains("mt6985") || soc.contains("9200") || hardware.contains("mt6985")) return "MediaTek Dimensity 9200+ (Immortalis-G715)";
+            if (board.contains("mt6983") || soc.contains("9000") || hardware.contains("mt6983")) return "MediaTek Dimensity 9000+ (Mali-G710)";
+            if (board.contains("mt6895") || soc.contains("8100") || soc.contains("8200")) return "MediaTek Dimensity 8100/8200";
+            return "MediaTek Dimensity (Extreme Gaming)";
         } else if (hardware.contains("exynos") || board.contains("universal") || board.contains("s5e")) {
-            if (board.contains("s5e9945")) return "Samsung Exynos 2400";
-            if (board.contains("s5e9925")) return "Samsung Exynos 2200";
-            return "Samsung Exynos";
+            if (board.contains("s5e9955") || soc.contains("2500")) return "Samsung Exynos 2500 (Xclipse 950)";
+            if (board.contains("s5e9945") || soc.contains("2400")) return "Samsung Exynos 2400 (Xclipse 940)";
+            if (board.contains("s5e9925") || soc.contains("2200")) return "Samsung Exynos 2200 (Xclipse 920)";
+            return "Samsung Exynos (AMD RDNA)";
         } else if (hardware.contains("ums") || board.contains("sp") || board.contains("t820") || board.contains("t760")) {
-            return "Unisoc T-Series (Tiger)";
+            return "Unisoc T-Series (Tiger High-Perf)";
         } else if (hardware.contains("gs") || board.contains("slider") || board.contains("zuma") || board.contains("ripcurrent")) {
-            if (board.contains("zuma")) return "Google Tensor G3/G4";
+            if (board.contains("zuma") || soc.contains("zuma")) return "Google Tensor G3/G4 (Titan M2)";
             return "Google Tensor";
         } else if (hardware.contains("kirin") || board.contains("hi")) {
+            if (board.contains("9000") || soc.contains("9000")) return "HiSilicon Kirin 9000/9010 (Maleoon 910)";
             return "HiSilicon Kirin";
         } else {
-            return Build.HARDWARE != null ? Build.HARDWARE : "Android System";
+            return Build.HARDWARE != null ? Build.HARDWARE : "Android Performance System";
         }
     }
 

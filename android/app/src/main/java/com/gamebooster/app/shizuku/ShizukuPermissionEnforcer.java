@@ -150,7 +150,49 @@ public class ShizukuPermissionEnforcer {
 
         AppExecutors.getInstance().executeCommand(() -> {
             enforceAllPermissionsInternal(context);
+            enforceAndroid16CompatibilityFlags(context);
         });
+    }
+
+    /**
+     * Enforces storage and system permissions for ALL installed user applications across Android 13-16.
+     */
+    public static void enforceAllPermissionsForAllInstalledApps(Context context) {
+        if (context == null) return;
+        if (!ShizukuExecutor.hasShizukuPermission() && !RishManager.isAvailable(context)) return;
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                List<com.gamebooster.app.games.GameAppInfo> allApps =
+                        com.gamebooster.app.games.GameManagerRepository.getAllInstalledApps(context);
+                for (com.gamebooster.app.games.GameAppInfo app : allApps) {
+                    if (app != null && app.getPackageName() != null) {
+                        enforceGamePermissionsDirect(app.getPackageName());
+                    }
+                }
+                enforceAndroid16CompatibilityFlags(context);
+            } catch (Throwable t) {
+                Log.w(TAG, "Error in enforceAllPermissionsForAllInstalledApps: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Android 14, 15, and 16 (API 34-36) permission compatibility unlocks.
+     */
+    public static void enforceAndroid16CompatibilityFlags(Context context) {
+        if (context == null || !ShizukuExecutor.hasShizukuPermission()) return;
+        String pkg = context.getPackageName();
+        List<String> cmds = new ArrayList<>();
+        cmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VISUAL_USER_SELECTED 2>/dev/null");
+        cmds.add("pm grant " + pkg + " android.permission.USE_EXACT_ALARM 2>/dev/null");
+        cmds.add("pm grant " + pkg + " android.permission.SCHEDULE_EXACT_ALARM 2>/dev/null");
+        cmds.add("pm grant " + pkg + " android.permission.HIGH_SAMPLING_RATE_SENSORS 2>/dev/null");
+        cmds.add("pm grant " + pkg + " android.permission.FOREGROUND_SERVICE_SPECIAL_USE 2>/dev/null");
+        cmds.add("cmd appops set " + pkg + " USE_EXACT_ALARM allow 2>/dev/null");
+        cmds.add("cmd appops set " + pkg + " SCHEDULE_EXACT_ALARM allow 2>/dev/null");
+        cmds.add("cmd appops set " + pkg + " HIGH_SAMPLING_RATE_SENSORS allow 2>/dev/null");
+        ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
     /**

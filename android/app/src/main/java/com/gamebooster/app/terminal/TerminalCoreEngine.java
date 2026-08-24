@@ -406,6 +406,27 @@ public class TerminalCoreEngine {
                 "Queries active DNS resolver and tests Google / Cloudflare ping",
                 "getprop net.dns1; ping -c 3 1.1.1.1"
         ));
+
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_mask",
+                "🛡️ Hardware Mask & Flagship Identity",
+                "Verifies device model, brand, SoC, and GPU vendor spoofing properties",
+                "getprop ro.product.model; getprop ro.product.manufacturer; getprop ro.product.brand; getprop ro.soc.model; getprop ro.hardware.egl"
+        ));
+
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_storage",
+                "📁 Unlock Combo /sdcard/Android/data & obb",
+                "Applies full read/write permissions (chmod 777) across all internal and external game paths",
+                "chmod -R 777 /sdcard/Android/data /sdcard/Android/obb 2>/dev/null; ls -ld /sdcard/Android/data /sdcard/Android/obb"
+        ));
+
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_android16",
+                "🚀 Android 13-16 GameMode & Performance HAL",
+                "Queries active GameMode, 185 FPS Game Overlays, and ADPF power hints",
+                "cmd game mode get com.mobile.legends 2>/dev/null; device_config get game_overlay 2>/dev/null; getprop debug.sf.showfps"
+        ));
     }
 
     /**

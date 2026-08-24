@@ -173,4 +173,44 @@ public final class GameModeApiSupport {
             com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
         }
     }
+
+    /**
+     * Applies performance flags strictly validated for the current device's Android SDK level.
+     */
+    public static void applyForCurrentSdk(String packageName, int targetFps) {
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        int fps = targetFps > 0 ? targetFps : 185;
+        String pkg = packageName != null ? packageName.trim() : "";
+
+        java.util.List<String> cmds = new java.util.ArrayList<>();
+
+        if (sdk >= MIN_GAME_MODE_API && !pkg.isEmpty()) {
+            cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
+        }
+        if (sdk >= MIN_GAME_OVERLAY_API && !pkg.isEmpty()) {
+            cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+        }
+        if (sdk >= MIN_APP_REFRESH_RATE_API && !pkg.isEmpty()) {
+            cmds.add("cmd game set --fps " + fps + " " + pkg + " 2>/dev/null");
+            cmds.add("cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null");
+        }
+        if (sdk >= ANDROID_15_API) {
+            cmds.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+        }
+        if (sdk >= ANDROID_16_API && !pkg.isEmpty()) {
+            cmds.add("cmd game set --performance-class 3 " + pkg + " 2>/dev/null");
+        }
+
+        for (String cmd : cmds) {
+            com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
+        }
+    }
+
+    /**
+     * Global FPS unlock applied system-wide.
+     */
+    public static void applyGlobalFpsUnlock(int targetFps) {
+        int fps = targetFps > 0 ? targetFps : 185;
+        applyModernAndroidPerformanceFlags(null, fps);
+    }
 }

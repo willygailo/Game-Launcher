@@ -229,6 +229,17 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name="com.gamebooster.app.gamemanager.GameManagerScanBroadcast"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name="com.gamebooster.app.ui.activities.MainActivity"
             android:exported="true"

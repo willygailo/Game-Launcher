@@ -569,6 +569,124 @@ public class HardwareMaskEngine {
         }
     }
 
+    /**
+     * Masks a single game or application package using the currently active spoof profile.
+     */
+    public static boolean maskPackage(Context context, String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        SpoofProfile profile = DeviceSpooferEngine.getActiveProfile();
+        if (profile == null) {
+            profile = DeviceSpooferEngine.getDefaultProfile();
+        }
+        return applyFullHardwareMask(context, profile, packageName.trim());
+    }
+
+    /**
+     * Masks ALL installed applications and games on the device across Android 13, 14, 15, and 16.
+     */
+    public static int maskAllInstalledApplications(Context context) {
+        if (context == null) return 0;
+        SpoofProfile profile = DeviceSpooferEngine.getActiveProfile();
+        if (profile == null) {
+            profile = DeviceSpooferEngine.getDefaultProfile();
+        }
+
+        int count = 0;
+        try {
+            List<com.gamebooster.app.games.GameAppInfo> allApps =
+                    com.gamebooster.app.games.GameManagerRepository.getAllInstalledApps(context);
+            List<String> batchCmds = new ArrayList<>();
+
+            StringBuilder gameDriverApps = new StringBuilder();
+            StringBuilder angleDriverApps = new StringBuilder();
+
+            for (com.gamebooster.app.games.GameAppInfo app : allApps) {
+                if (app == null || app.getPackageName() == null) continue;
+                String pkg = app.getPackageName();
+                if (pkg.equalsIgnoreCase(context.getPackageName())) continue;
+
+                // 1. Android Game Driver / ANGLE Opt-in
+                if (gameDriverApps.length() > 0) gameDriverApps.append(",");
+                gameDriverApps.append(pkg);
+
+                if (angleDriverApps.length() > 0) angleDriverApps.append(",");
+                angleDriverApps.append(pkg);
+
+                // 2. Android 13-16 GameMode & Overlay
+                batchCmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
+                batchCmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
+                batchCmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");
+                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+
+                // 3. Inject hardware profile
+                injectTailoredGameHardwareConfigs(pkg, profile);
+                count++;
+            }
+
+            // Global Android Driver Enforcements
+            if (gameDriverApps.length() > 0) {
+                batchCmds.add("settings put global game_driver_opt_in_apps " + gameDriverApps.toString());
+                batchCmds.add("settings put global updatable_driver_production_opt_in_apps " + gameDriverApps.toString());
+            }
+
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommands(batchCmds);
+            }
+
+            // Global Build reflection
+            applyInAppReflectionMask(profile);
+
+            com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().setMaskedAppsCount(count);
+            Log.i(TAG, "⚡ Masked " + count + " applications with profile: " + profile.displayName);
+
+        } catch (Throwable t) {
+            Log.e(TAG, "Error masking all applications", t);
+        }
+        return count;
+    }
+
+    /**
+     * Applies full multi-generational Android 13, 14, 15, and 16 hardware mask flags.
+     */
+    public static void maskAllAndroidVersions(Context context, String packageName) {
+        if (packageName == null) return;
+        maskForAndroid13(packageName);
+        maskForAndroid14(packageName);
+        maskForAndroid15(packageName);
+        maskForAndroid16(packageName);
+    }
+
+    public static void maskForAndroid13(String pkg) {
+        List<String> cmds = new ArrayList<>();
+        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
+        cmds.add("cmd appops set " + pkg + " MANAGE_GAME_MODE allow 2>/dev/null");
+        if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
+    }
+
+    public static void maskForAndroid14(String pkg) {
+        List<String> cmds = new ArrayList<>();
+        cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
+        cmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
+        cmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");
+        if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
+    }
+
+    public static void maskForAndroid15(String pkg) {
+        List<String> cmds = new ArrayList<>();
+        cmds.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+        cmds.add("cmd power set-mode 0 1 2>/dev/null");
+        cmds.add("cmd power set-mode 2 1 2>/dev/null");
+        if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
+    }
+
+    public static void maskForAndroid16(String pkg) {
+        List<String> cmds = new ArrayList<>();
+        cmds.add("cmd game set --performance-class 3 " + pkg + " 2>/dev/null");
+        cmds.add("device_config put runtime_native_boot use_app_image_startup_cache true 2>/dev/null");
+        cmds.add("device_config put runtime_native_boot boost_sched_priority true 2>/dev/null");
+        if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
+    }
+
     public static String generateMacAddress(SpoofProfile profile) {
         long seed = (long) (profile != null ? profile.id : "default").hashCode() & 0xFFFFFFFFL;
         java.util.Random rand = new java.util.Random(seed);

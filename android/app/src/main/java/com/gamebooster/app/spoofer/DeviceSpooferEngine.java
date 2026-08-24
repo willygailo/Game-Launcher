@@ -75,6 +75,17 @@ public class DeviceSpooferEngine {
         return activeProfileId != null ? getProfileById(activeProfileId) : null;
     }
 
+    public static SpoofProfile getDefaultProfile() {
+        SpoofProfile p = SpoofProfileRegistry.getById("samsung_s26_ultra");
+        if (p == null) p = SpoofProfileRegistry.getById("asus_rog9_pro_edition");
+        if (p == null) p = SpoofProfileRegistry.getById("blackshark_5_pro");
+        if (p == null) {
+            Map<String, SpoofProfile> all = SpoofProfileRegistry.getAllProfiles();
+            if (!all.isEmpty()) return all.values().iterator().next();
+        }
+        return p;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Smart profile recommendation per game package
     // ─────────────────────────────────────────────────────────────────────────

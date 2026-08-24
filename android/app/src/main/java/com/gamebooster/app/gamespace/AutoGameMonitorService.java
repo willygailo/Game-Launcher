@@ -108,70 +108,33 @@ public class AutoGameMonitorService extends Service {
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
                 lastActiveGamePackage = currentPackage;
-                GameSessionSettings.begin(getApplicationContext(), currentPackage);
-                GameProfilePreferences.Profile profile = GameProfilePreferences.getProfile(
-                        getApplicationContext(), currentPackage);
-                int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                if (targetHz <= 0) targetHz = 185;
-                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Applying "
-                        + profile.label + " @ " + targetHz + "Hz (Zero Fallback)");
+                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
-                // 1. Hardware Identity Spoofing (Shizuku)
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(getApplicationContext(), currentPackage);
+                // Execute full GameManager Session Engine
+                com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
 
-                // 1.5. Auto-apply saved per-game Competitive CFG Profile
-                // (competitive force-write via per-game patcher — e.g. PubgConfigPatcher
-                // injected immediately for PUBGM when it is launched)
-                try {
-                    String gameKey = CfgProfileManager.resolveGameKey(currentPackage);
-                    CompetitiveCfgProfile cfgProfile = CfgProfileManager.loadProfile(
-                            getApplicationContext(), gameKey);
-                    int patched = CfgProfileManager.applyProfile(
-                            getApplicationContext(), gameKey, cfgProfile);
-                    Log.i(TAG, "Competitive CFG auto-injected for " + currentPackage
-                            + " [" + gameKey + "] -> " + patched + " package(s)");
-                } catch (Throwable t) {
-                    Log.w(TAG, "Competitive CFG auto-inject failed for "
-                            + currentPackage + ": " + t.getMessage());
-                }
-
-                // 2. Direct Game Config Patching (120-185 FPS, Damage Multiplier, Zero Recoil, 1000Hz Touch)
-                com.gamebooster.app.config.GameConfigPatcher.patchGame(getApplicationContext(), currentPackage, targetHz);
-                
-                // 3. Multi-layer display refresh rate force
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
-                com.gamebooster.app.booster.HzFpsChannel.forceSetRefreshRate(getApplicationContext(), targetHz);
-                ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(targetHz);
-                
-                // 4. Extreme Performance & Tweaks Script
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
-                GameSpaceDndManager.setGamingDndMode(getApplicationContext(), profile.enableDnd);
-                
-                // 5. Auto-Start Floating Gaming HUD & Bind Real FPS Target
+                // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                 com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
                 if (!FloatingOverlayService.isOverlayRunning()) {
                     FloatingOverlayService.startOverlay(getApplicationContext());
                 }
 
-                final int finalTargetHz = targetHz;
                 AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 " + profile.label
-                                + " active (" + finalTargetHz + " FPS & " + finalTargetHz + "Hz Locked)", android.widget.Toast.LENGTH_LONG).show());
+                        android.widget.Toast.makeText(getApplicationContext(), "🎮 GAME-MANAGER: " + currentPackage
+                                + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
 
             } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — reverting to baseline system state");
+                Log.i(TAG, "Game exited — ending GameManager Session for: " + lastActiveGamePackage);
+                String exitingPkg = lastActiveGamePackage;
                 lastActiveGamePackage = null;
                 com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(null);
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing();
-                GameStateReverter.RevertReport revertReport =
-                        GameStateReverter.revertToBaseline(getApplicationContext());
-                Log.i(TAG, "Revert report: " + revertReport.message);
 
-                final String revertMessage = revertReport.message;
+                // End GameManager Session and revert to baseline
+                com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
+
                 AppExecutors.getInstance().postToMainThread(() ->
                         android.widget.Toast.makeText(getApplicationContext(),
-                                "↩ System reverted — " + revertMessage,
+                                "↩ Stock Baseline Restored (Game Exited)",
                                 android.widget.Toast.LENGTH_SHORT).show());
             }
         });

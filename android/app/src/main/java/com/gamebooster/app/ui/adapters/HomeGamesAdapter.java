@@ -76,7 +76,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             holder.layoutCardBg.setBackgroundResource(game.getCardBgRes());
         }
 
-        holder.btnLaunch.setOnClickListener(v -> GameLauncherHelper.launchGameWithAutoBoost(context, game));
+        holder.btnLaunch.setOnClickListener(v -> com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game));
         holder.btnConfig.setOnClickListener(v -> showProfilePicker(holder, game));
     }
 

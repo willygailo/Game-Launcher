@@ -182,11 +182,35 @@ public final class CrashLog {
         return -1L;
     }
 
-    public static List<String> format(int count, List<String> lines) {
+    public static float getLogSizeKb(Context context) {
+        return getLogSizeBytes(context) / 1024f;
+    }
+
+    public static String exportToShareableString(Context context) {
+        if (context == null) return "No context";
+        return readTail(context, 100000);
+    }
+
+    public static List<String> getHead(List<String> lines, int count) {
         List<String> head = new ArrayList<>(count);
+        if (lines == null) return head;
         for (int i = 0; i < count && i < lines.size(); i++) {
             head.add(lines.get(i));
         }
         return head;
+    }
+
+    public static List<String> getTail(List<String> lines, int count) {
+        List<String> tail = new ArrayList<>(count);
+        if (lines == null) return tail;
+        int start = Math.max(0, lines.size() - count);
+        for (int i = start; i < lines.size(); i++) {
+            tail.add(lines.get(i));
+        }
+        return tail;
+    }
+
+    public static List<String> format(int count, List<String> lines) {
+        return getHead(lines, count);
     }
 }

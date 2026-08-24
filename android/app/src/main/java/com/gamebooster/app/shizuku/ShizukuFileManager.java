@@ -558,5 +558,13 @@ public final class ShizukuFileManager {
     public static void grantAllStoragePermissions(Context context) {
         if (context == null || !hasFullAccess()) return;
         ShizukuPermissionEnforcer.enforceAllPermissions(context);
+        com.gamebooster.app.config.GameConfigStorageAccessEngine.grantGlobalStorageAccess(context);
+    }
+
+    /**
+     * Grants full internal and external storage path combo access for a specific game package.
+     */
+    public static boolean grantFullStoragePathAccess(Context context, String packageName) {
+        return com.gamebooster.app.config.GameConfigStorageAccessEngine.grantAllPathsAccess(context, packageName);
     }
 }

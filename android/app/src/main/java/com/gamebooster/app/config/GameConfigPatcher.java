@@ -129,7 +129,7 @@ public class GameConfigPatcher {
             WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
             WildRiftConfigPatcher.applyArmorDefConfig(pkg);
             WildRiftConfigPatcher.applySpeedBoostConfig(pkg);
-        } else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
+        } else if (pkg.contains("uamo") || pkg.contains("arenabreakout")) {
             if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             ArenaBreakoutConfigPatcher.applySuperFastTouch(pkg);
@@ -139,6 +139,12 @@ public class GameConfigPatcher {
             ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
             ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
             ArenaBreakoutConfigPatcher.applySpeedBoostConfig(pkg);
+        } else if (pkg.contains("deltaforce") || pkg.contains("dfm")) {
+            if (DeltaForceConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (DeltaForceConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
+        } else if (pkg.contains("wutheringwaves") || pkg.contains("kurogame")) {
+            if (WutheringWavesConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
+            if (WutheringWavesConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
