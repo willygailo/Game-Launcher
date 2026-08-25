@@ -264,8 +264,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                                     + " (" + patchedCount + " files patched)! Game driver + SurfaceFlinger Hz locked via Shizuku!";
                             Toast.makeText(context, resultMsg, Toast.LENGTH_LONG).show();
                         });
-                    });
-                })
+                    })
                 .setNegativeButton("Cancel", null);
 
         if (ConfigBackupManager.hasBackups(context, pkg)) {

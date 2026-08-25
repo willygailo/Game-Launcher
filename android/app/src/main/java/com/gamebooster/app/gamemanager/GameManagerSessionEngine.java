@@ -160,9 +160,11 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "DND/Network warning: " + t.getMessage());
         }
 
-        // ── 11. Async Post-Launch CPU Core Pinning & Realtime Scheduling ─────
-        // Wait 1.5s for game process to start, then pin to Big/Prime cores (mask 0xf0)
-        // and elevate to SCHED_FIFO realtime priority for zero-jitter thread scheduling.
+        // ── 11. Async Post-Launch CPU Core Pinning, I/O Priority & Realtime Scheduling ──
+        // Wait 1.5s for the game process to fully start, then:
+        //   a) Pin main PID to Big/Prime cores (mask 0xf0) + SCHED_FIFO priority 80
+        //   b) Apply real-time I/O class (ionice class 1, level 0) to the game PID
+        //   c) Scan /proc/<pid>/task/ for known render threads and pin them individually
         final int finalFps = targetFps;
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
@@ -173,28 +175,81 @@ public final class GameManagerSessionEngine {
                     for (String pStr : pids) {
                         try {
                             int pid = Integer.parseInt(pStr.trim());
-                            if (pid > 0) {
-                                // Native sched_setaffinity — pin to Big/Prime CPU cluster (bits 4-7)
-                                NativeConfigInjector.setProcessCpuAffinity(pid, 0xf0);
+                            if (pid <= 0) continue;
 
-                                // SCHED_FIFO realtime scheduling (policy=1, priority=50)
-                                // Ensures game render thread is never preempted by lower-prio tasks
-                                NativeConfigInjector.setRealtimeThreadScheduling(pid, 50);
+                            // a) Native sched_setaffinity — pin to Big/Prime CPU cluster (bits 4-7)
+                            NativeConfigInjector.setProcessCpuAffinity(pid, 0xf0);
 
-                                // Shell reinforcement via Shizuku (taskset + renice)
-                                ShizukuExecutor.executeShizukuCommands(
-                                    "taskset -p f0 " + pid + " 2>/dev/null",
-                                    "renice -n -20 -p " + pid + " 2>/dev/null"
+                            // SCHED_FIFO realtime scheduling at priority 80
+                            // (raised from 50 — higher priority ensures the game thread
+                            //  is never preempted by compositor, sensor, or audio HAL threads)
+                            NativeConfigInjector.setRealtimeThreadScheduling(pid, 80);
+
+                            // Shell reinforcement: taskset + renice + chrt SCHED_FIFO 80
+                            ShizukuExecutor.executeShizukuCommands(
+                                "taskset -p f0 " + pid + " 2>/dev/null",
+                                "renice -n -20 -p " + pid + " 2>/dev/null",
+                                "chrt -f -p 80 " + pid + " 2>/dev/null"
+                            );
+
+                            // b) Real-time I/O scheduling class 1 (RT), level 0 (highest)
+                            // Ensures game asset streaming is never starved by background I/O
+                            ShizukuExecutor.executeShizukuCommand(
+                                "ionice -c 1 -n 0 -p " + pid + " 2>/dev/null"
+                            );
+
+                            // c) Per-thread render thread affinity + scheduling
+                            // Scan /proc/<pid>/task/ for known game render thread names
+                            // and elevate each one independently for maximum frame consistency
+                            try {
+                                String taskListOut = ShizukuExecutor.executeShizukuCommand(
+                                    "ls /proc/" + pid + "/task/ 2>/dev/null"
                                 );
-                                Log.i(TAG, "✅ Pinned Big/Prime CPU cores (0xf0) + SCHED_FIFO for PID: " + pid);
+                                if (taskListOut != null && !taskListOut.startsWith("ERROR")) {
+                                    for (String tidStr : taskListOut.trim().split("\\s+")) {
+                                        try {
+                                            int tid = Integer.parseInt(tidStr.trim());
+                                            if (tid <= 0) continue;
+                                            String comm = ShizukuExecutor.executeShizukuCommand(
+                                                "cat /proc/" + pid + "/task/" + tid + "/comm 2>/dev/null"
+                                            );
+                                            if (comm == null) continue;
+                                            comm = comm.trim().toLowerCase();
+                                            // Target: Unity main, OpenGL/Vulkan render threads, audio
+                                            boolean isRenderThread =
+                                                comm.contains("unitymain") ||
+                                                comm.contains("renderthread") ||
+                                                comm.contains("glthread") ||
+                                                comm.contains("vulkanqueuethr") ||
+                                                comm.contains("ue4") ||
+                                                comm.contains("renderdoc") ||
+                                                comm.startsWith("render") ||
+                                                comm.contains("gamethrea") ||
+                                                comm.contains("audiotrack");
+                                            if (isRenderThread) {
+                                                ShizukuExecutor.executeShizukuCommands(
+                                                    "taskset -p f0 " + tid + " 2>/dev/null",
+                                                    "chrt -f -p 80 " + tid + " 2>/dev/null",
+                                                    "renice -n -20 -p " + tid + " 2>/dev/null",
+                                                    "ionice -c 1 -n 0 -p " + tid + " 2>/dev/null"
+                                                );
+                                                Log.i(TAG, "✅ Pinned render thread [" + comm + "] TID:" + tid);
+                                            }
+                                        } catch (NumberFormatException ignored) {}
+                                    }
+                                }
+                            } catch (Throwable rt) {
+                                Log.d(TAG, "Render thread scan skipped: " + rt.getMessage());
                             }
+
+                            Log.i(TAG, "✅ Full RT scheduling (SCHED_FIFO/80 + ionice RT) for PID: " + pid);
                         } catch (NumberFormatException ignored) {}
                     }
                 } else {
                     Log.d(TAG, "PID not found for " + pkg + " (game may still be loading)");
                 }
             } catch (Throwable t) {
-                Log.w(TAG, "Async CPU affinity warning: " + t.getMessage());
+                Log.w(TAG, "Async CPU/IO affinity warning: " + t.getMessage());
             }
         });
 

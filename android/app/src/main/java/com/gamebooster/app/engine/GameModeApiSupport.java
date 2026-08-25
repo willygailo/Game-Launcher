@@ -172,6 +172,9 @@ public final class GameModeApiSupport {
         for (String cmd : commands) {
             com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
         }
+
+        // Second pass: apply SDK-gated commands (Android 12-16) on top of the base set
+        applyForCurrentSdk(packageName, fps);
     }
 
     /**
@@ -196,9 +199,28 @@ public final class GameModeApiSupport {
         }
         if (sdk >= ANDROID_15_API) {
             cmds.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+            // Android 15: disable battery-mode constraints for game package
+            if (!pkg.isEmpty()) {
+                cmds.add("cmd game set --battery-mode 0 " + pkg + " 2>/dev/null");
+                // Android 15: prevent Game Mode from reducing render resolution
+                cmds.add("cmd game set --allow-downscale false " + pkg + " 2>/dev/null");
+            }
         }
         if (sdk >= ANDROID_16_API && !pkg.isEmpty()) {
+            // Android 16: set game to EXTREME performance class (highest tier)
             cmds.add("cmd game set --performance-class 3 " + pkg + " 2>/dev/null");
+        }
+
+        // Android 13+ game_manager device_config flags
+        if (sdk >= MIN_GAME_OVERLAY_API) {
+            // Disable power throttling inside GameManager — lets GPU/CPU stay at ceiling
+            cmds.add("device_config put game_manager game_power_optimization_enabled false 2>/dev/null");
+            // Disable battery optimization inside GameManager sessions
+            cmds.add("device_config put game_manager game_battery_optimization_enabled false 2>/dev/null");
+            // Instant game mode switching (no delay between standard → performance mode)
+            cmds.add("device_config put game_manager max_game_mode_switching_delay_ms 0 2>/dev/null");
+            // Keep up to 256 processes cached — prevents GC jank on game re-entry
+            cmds.add("device_config put activity_manager max_cached_processes 256 2>/dev/null");
         }
 
         for (String cmd : cmds) {

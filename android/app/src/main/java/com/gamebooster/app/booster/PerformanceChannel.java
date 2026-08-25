@@ -60,6 +60,7 @@ public class PerformanceChannel {
         NetworkTweaksChannel.enableLowLatencyNetwork();
         ThermalChannel.setThermalOverride(true);
         RamZramChannel.trimMemoryAndCleanCache(context);
+        RamZramChannel.applyIOAndMemoryFlags();
         writeAndExecuteRootTweaksScript(targetHz);
 
         return new ProfileResult(true, targetHz, "⚡ " + profile.title + " Locked @ " + targetHz + "Hz");
@@ -255,7 +256,34 @@ public class PerformanceChannel {
                     "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context\"\n" +
                     "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
-                    "cmd wifi force-low-latency-mode enabled\n";
+                    "cmd wifi force-low-latency-mode enabled\n" +
+                    // 7. SurfaceFlinger display pipeline — missing flags
+                    // Stop SF from down-clocking refresh rate when detecting "static" game content
+                    "setprop debug.sf.use_content_detection_for_refresh_rate false\n" +
+                    // Disable HWC virtual display — forces direct composition path
+                    "setprop debug.sf.enable_hwc_vds 0\n" +
+                    // Disable SF layer caching (can cause stale frame presentation)
+                    "setprop debug.sf.layer_caching_enabled 0\n" +
+                    // Disable SF transaction tracing on Android 14+ (reduces SF CPU load)
+                    "setprop debug.sf.enable_transaction_tracing false\n" +
+                    // Disable debug frame event dumping — reduces SurfaceFlinger CPU overhead
+                    "setprop debug.sf.dump_frame_events 0\n" +
+                    // Force native color mode — avoids color transform overhead in game frames
+                    "setprop persist.sys.sf.color_mode 0\n" +
+                    // SurfaceFlinger setTransactionFlags (1008): force immediate frame composition
+                    "service call SurfaceFlinger 1008 2>/dev/null\n" +
+                    // Disable SF idle timer — prevents refresh rate drops between game frames
+                    "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
+                    "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
+                    // 8. Extended vendor-specific display FPS keys
+                    "settings put system nubia_display_refresh_rate " + hz + "\n" +
+                    "settings put system iqoo_ultra_refresh_rate " + hz + "\n" +
+                    "settings put system blackshark_display_fps " + hz + "\n" +
+                    "settings put system legion_display_rate " + hz + "\n" +
+                    "settings put system vivo_refresh_rate " + hz + "\n" +
+                    "settings put system xiaomi_display_fps " + hz + "\n" +
+                    "settings put global honor_screen_refresh_rate " + hz + "\n" +
+                    "settings put global tecno_display_refresh_rate " + hz + "\n";
 
             String cmd = String.format("printf '%s' > %s && chmod 755 %s && sh %s",
                     scriptContent.replace("'", "'\\''"), scriptPath, scriptPath, scriptPath);

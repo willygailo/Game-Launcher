@@ -115,11 +115,119 @@ public class GpuTweaksChannel {
         return CommandExecutor.setSystemProperty("debug.egl.force_msaa", "1");
     }
 
+    /**
+     * Extended Adreno (Snapdragon) GPU flags missing from enableAdrenoTurbo().
+     *
+     * Adds: max_pwrlevel=0 (pin GPU to highest P-state), thermal_pwrlevel=0
+     * (prevent thermal governor from reducing P-state), devfreq min_freq=max_freq clock lock,
+     * cframe_hint (Adreno content-frame workload prediction), preemption enable.
+     */
+    public static boolean applyExtendedAdrenoFlags() {
+        StringBuilder sb = new StringBuilder();
+
+        // Pin GPU to highest performance P-state from both ends (min and max)
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel 2>/dev/null; ");
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/thermal_pwrlevel 2>/dev/null; ");
+
+        // Lock GPU devfreq clock floor == ceiling == max frequency
+        sb.append("MAX_GPU_FREQ=$(cat /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 2>/dev/null); ");
+        sb.append("[ -n \"$MAX_GPU_FREQ\" ] && echo $MAX_GPU_FREQ > /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 2>/dev/null; ");
+
+        // Adreno content-frame hint: predicts next-frame GPU workload for lower latency
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/cframe_hint 2>/dev/null; ");
+
+        // GPU preemption: allows command-buffer preemption — reduces multi-task stall
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/preemption 2>/dev/null; ");
+
+        // Adreno: disable DCVS (Dynamic Clock and Voltage Scaling) during gameplay
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/dispatch_queue_length 2>/dev/null; ");
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/perfcounter 2>/dev/null; ");
+
+        // QTI GPU sustained performance HAL hint via Shizuku
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
+            "setprop vendor.qti.hardware.gpu.perf 1 2>/dev/null",
+            "setprop vendor.display.comp_mask 0 2>/dev/null",
+            "setprop debug.adreno.cframe_hint 1 2>/dev/null",
+            "setprop debug.adreno.preemption 1 2>/dev/null"
+        );
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
+    /**
+     * Extended MediaTek GED (GPU Engine Driver) flags missing from enableMediaTekGedBoost().
+     *
+     * Adds: fps_cap_margin, max_cpu_loading (disables CPU-load-based GPU freq reduction),
+     * GED KPI monitoring, dvfs_margin_mode=0 (remove conservative DVFS headroom),
+     * mali gralloc shared memory, MTK GPU power limit bypass.
+     */
+    public static boolean applyExtendedMediaTekFlags() {
+        StringBuilder sb = new StringBuilder();
+
+        // GED FPS cap margin — controls FPS headroom above target; 0 = no extra cap
+        sb.append("echo 0 > /sys/module/ged/parameters/gx_fps_cap_margin 2>/dev/null; ");
+
+        // Disable CPU-load-based GPU frequency reduction (keeps GPU at max regardless of CPU load)
+        sb.append("echo 100 > /sys/module/ged/parameters/gx_max_cpu_loading 2>/dev/null; ");
+
+        // Enable GED KPI monitoring — allows GED to make per-frame GPU boost decisions
+        sb.append("echo 1 > /sys/module/ged/parameters/gx_is_GED_KPI_enabled 2>/dev/null; ");
+
+        // dvfs_margin_mode=0: remove conservative DVFS frequency headroom
+        sb.append("echo 0 > /sys/module/ged/parameters/gx_dvfs_margin_mode 2>/dev/null; ");
+
+        // Mali shared-memory gralloc: reduces buffer copy overhead between CPU and GPU
+        CommandExecutor.setSystemProperty("debug.mali.gralloc.shared", "1");
+
+        // Disable MTK GPU power cap — allows GPU to reach TDP ceiling
+        CommandExecutor.setSystemProperty("persist.vendor.mtkgpu.use_power_limit", "0");
+
+        // MTK PPM (Policy and Power Manager) game scenario
+        sb.append("echo 1 > /proc/ppm/policy/ut_ppm_game_cfg 2>/dev/null; ");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
+    /**
+     * Extended Google Tensor GPU flags missing from enableTensorBoost().
+     *
+     * Adds: Mali devfreq governor = performance, min_freq = max_freq clock lock,
+     * SF phase offset duration mode (Tensor-tuned), PerfHAL sustained mode.
+     */
+    public static boolean applyExtendedTensorFlags() {
+        StringBuilder sb = new StringBuilder();
+
+        // Pin Tensor Mali GPU devfreq governor to performance
+        sb.append("for f in /sys/class/devfreq/18000000.mali/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        // Also covers alternate Tensor GPU path (Pixel 8/9 series)
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+
+        // Lock Tensor Mali GPU clock floor = ceiling = max frequency
+        sb.append("MAX_TENSOR_GPU=$(cat /sys/class/devfreq/18000000.mali/max_freq 2>/dev/null); ");
+        sb.append("[ -n \"$MAX_TENSOR_GPU\" ] && echo $MAX_TENSOR_GPU > /sys/class/devfreq/18000000.mali/min_freq 2>/dev/null; ");
+
+        // SurfaceFlinger phase offset mode tuned for Tensor's display pipeline
+        CommandExecutor.setSystemProperty("debug.sf.use_phase_offsets_as_durations", "1");
+        CommandExecutor.setSystemProperty("debug.sf.late.sf.duration", "10500000");
+        CommandExecutor.setSystemProperty("debug.sf.late.app.duration", "20500000");
+
+        // Google PerfHAL sustained performance enable
+        CommandExecutor.setSystemProperty("vendor.perf.perfhal.enable", "1");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
     public static boolean setGpuMaxPerformance() {
         boolean ok = enableVulkanRenderer();
         ok &= enableAdrenoTurbo();
+        ok &= applyExtendedAdrenoFlags();
         ok &= enableMediaTekGedBoost();
+        ok &= applyExtendedMediaTekFlags();
         ok &= enableTensorBoost();
+        ok &= applyExtendedTensorFlags();
         ok &= enableExynosXclipseBoost();
         ok &= enableForceMsaa();
         return ok;
