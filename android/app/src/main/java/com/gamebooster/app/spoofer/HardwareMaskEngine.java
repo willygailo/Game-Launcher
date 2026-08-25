@@ -130,17 +130,6 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 1: CPU / SOC & BASEBAND MASKING
             // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop ro.soc.model \"" + profile.socModel + "\"");
-            batchCommands.add("setprop ro.soc.manufacturer \"" + profile.socManufacturer + "\"");
-            batchCommands.add("setprop ro.board.platform \"" + profile.platform + "\"");
-            batchCommands.add("setprop ro.hardware.platform \"" + profile.platform + "\"");
-            batchCommands.add("setprop ro.product.board \"" + profile.board + "\"");
-            batchCommands.add("setprop ro.hardware \"" + profile.hardware + "\"");
-            batchCommands.add("setprop ro.chipname \"" + profile.chipname + "\"");
-            batchCommands.add("setprop ro.baseband \"" + profile.board + "\"");
-            batchCommands.add("setprop ro.boot.baseband \"" + profile.board + "\"");
-            batchCommands.add("setprop gsm.version.baseband \"" + profile.baseband + "\"");
-            batchCommands.add("setprop gsm.version.baseband1 \"" + profile.baseband + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
@@ -150,7 +139,6 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 2: GPU / GRAPHICS & VULKAN MASKING
             // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop ro.hardware.egl " + eglVendor);
             batchCommands.add("setprop debug.hwui.renderer vulkan");
             batchCommands.add("setprop debug.renderengine.backend vulkan");
             batchCommands.add("setprop debug.game.spoofed_gpu \"" + profile.glRenderer + "\"");
@@ -166,6 +154,7 @@ public class HardwareMaskEngine {
             batchCommands.add("settings put global game_driver_opt_in_apps " + targetGames);
             batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + targetGames);
             batchCommands.add("settings put global angle_gl_driver_selection_pkgs " + targetGames);
+            batchCommands.add("settings put global angle_gl_driver_selection_values angle");
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 3: RAM & MEMORY MASKING
@@ -183,10 +172,6 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             batchCommands.add("setprop ro.serialno \"" + serialNo + "\" 2>/dev/null");
             batchCommands.add("setprop ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.product.vendor.model \"" + profile.model + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.product.vendor.brand \"" + profile.brand + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.product.system.model \"" + profile.model + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.product.system.brand \"" + profile.brand + "\" 2>/dev/null");
             batchCommands.add("setprop ro.build.tags release-keys 2>/dev/null");
             batchCommands.add("setprop ro.build.type user 2>/dev/null");
             batchCommands.add("setprop ro.debuggable 0 2>/dev/null");
@@ -197,11 +182,6 @@ public class HardwareMaskEngine {
             for (Map.Entry<String, String> entry : profile.generateSystemProperties().entrySet()) {
                 batchCommands.add("setprop " + entry.getKey() + " \"" + entry.getValue() + "\"");
             }
-            batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");
-            batchCommands.add("setprop dalvik.vm.heapsize 1024m");
-            batchCommands.add("setprop dalvik.vm.heaptargetutilization 0.75");
-            batchCommands.add("setprop dalvik.vm.heapminfree 8m");
-            batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
 
             // Determine Target Refresh Rate from profile field (no more string parsing hack)
             int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
@@ -272,14 +252,7 @@ public class HardwareMaskEngine {
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
                 ShizukuExecutor.executeShizukuCommands(
-                        "am force-stop " + pkg + " 2>/dev/null",
-                        "settings put global game_driver_all_apps 0",
-                        "settings put global updatable_driver_all_apps 0",
-                        "settings put global game_driver_opt_in_apps \"" + pkg + "\"",
-                        "settings put global updatable_driver_production_opt_in_apps \"" + pkg + "\"",
-                        "settings put global angle_gl_driver_all_angle 0",
-                        "settings put global angle_gl_driver_selection_pkgs \"" + pkg + "\"",
-                        "settings put global angle_gl_driver_selection_values angle"
+                        "am force-stop " + pkg + " 2>/dev/null"
                 );
                 com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(pkg);
             }
