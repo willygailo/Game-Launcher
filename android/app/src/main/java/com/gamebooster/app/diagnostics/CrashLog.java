@@ -7,6 +7,7 @@ import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -19,10 +20,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Captures uncaught crashes to app-internal storage so real users and developers can
- * review and export them via the Diagnostics section.
+ * Captures uncaught crashes and non-fatal exceptions to app-internal storage so real users
+ * and developers can review and export them via the Diagnostics section.
  *
- * Safe and idempotent installer — logs full exception chains, device state,
+ * Thread-safe and idempotent installer — logs full exception chains, device state,
  * available memory, and enforces a 100KB file rotation limit to prevent unbounded storage growth.
  */
 public final class CrashLog {
@@ -30,6 +31,7 @@ public final class CrashLog {
     public static final String TAG = "CrashLog";
     public static final String FILE_NAME = "crash_log.txt";
     private static final long MAX_FILE_BYTES = 100 * 1024; // 100 KB max
+    private static final Object FILE_LOCK = new Object();
 
     private static volatile boolean installed = false;
     private static volatile Thread.UncaughtExceptionHandler previousHandler = null;
@@ -62,22 +64,44 @@ public final class CrashLog {
 
     public static void appendCrash(Context context, Thread thread, Throwable throwable) {
         if (context == null) return;
-        File file = crashFile(context);
-        ensureParentDir(file);
-        rotateIfNeeded(file);
+        synchronized (FILE_LOCK) {
+            File file = crashFile(context);
+            ensureParentDir(file);
+            rotateIfNeeded(file);
 
-        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
-                new FileOutputStream(file, true), StandardCharsets.UTF_8))) {
-            writer.println("==================================================");
-            writer.println("CRASH REPORT: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date()));
-            writer.println("Device: " + Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ")");
-            writer.println("Android: " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")");
-            writer.println("RAM Free: " + getAvailableMemoryMb(context) + " MB");
-            writer.println(formatCrash(thread, throwable));
-            writer.println("==================================================");
-            writer.println();
-        } catch (Exception e) {
-            Log.w(TAG, "Cannot write crash log: " + e.getMessage());
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
+                    new FileOutputStream(file, true), StandardCharsets.UTF_8))) {
+                writer.println("==================================================");
+                writer.println("CRASH REPORT: " + getFormattedTimestamp());
+                writer.println("Device: " + Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ")");
+                writer.println("Android: " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")");
+                writer.println("RAM Free: " + getAvailableMemoryMb(context) + " MB");
+                writer.println(formatCrash(thread, throwable));
+                writer.println("==================================================");
+                writer.println();
+            } catch (Exception e) {
+                Log.w(TAG, "Cannot write crash log: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void logException(Context context, String tag, Throwable throwable) {
+        if (context == null || throwable == null) return;
+        synchronized (FILE_LOCK) {
+            File file = crashFile(context);
+            ensureParentDir(file);
+            rotateIfNeeded(file);
+
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
+                    new FileOutputStream(file, true), StandardCharsets.UTF_8))) {
+                writer.println("--------------------------------------------------");
+                writer.println("HANDLED EXCEPTION [" + (tag != null ? tag : "APP") + "]: " + getFormattedTimestamp());
+                writer.println(formatCrash(Thread.currentThread(), throwable));
+                writer.println("--------------------------------------------------");
+                writer.println();
+            } catch (Exception e) {
+                Log.w(TAG, "Cannot write non-fatal exception log: " + e.getMessage());
+            }
         }
     }
 
@@ -110,60 +134,76 @@ public final class CrashLog {
     }
 
     /**
-     * Reads the tail (last N characters) of the crash log file using RandomAccessFile for zero-copy reliability.
+     * Reads the tail (last N characters) of the crash log file with UTF-8 boundary protection.
      */
     public static String readTail(Context context, int maxChars) {
         if (context == null) return "";
-        try {
-            File file = crashFile(context);
-            if (!file.exists() || file.length() == 0) return "";
-            long len = file.length();
-            int bytesToRead = (int) Math.min(len, maxChars);
-            byte[] data = new byte[bytesToRead];
-            
-            try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-                if (len > bytesToRead) {
-                    raf.seek(len - bytesToRead);
+        synchronized (FILE_LOCK) {
+            try {
+                File file = crashFile(context);
+                if (!file.exists() || file.length() == 0) return "";
+                long len = file.length();
+                int bytesToRead = (int) Math.min(len, maxChars);
+                byte[] data = new byte[bytesToRead];
+
+                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+                    if (len > bytesToRead) {
+                        raf.seek(len - bytesToRead);
+                    }
+                    int read = raf.read(data);
+                    if (read <= 0) return "";
+
+                    // Skip partial UTF-8 continuation bytes at start of sliced buffer
+                    int offset = 0;
+                    if (len > bytesToRead) {
+                        while (offset < read && (data[offset] & 0xC0) == 0x80) {
+                            offset++;
+                        }
+                    }
+                    return new String(data, offset, read - offset, StandardCharsets.UTF_8);
                 }
-                int read = raf.read(data);
-                if (read <= 0) return "";
-                return new String(data, 0, read, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                Log.w(TAG, "readTail error: " + e.getMessage());
+                return "";
             }
-        } catch (Exception e) {
-            Log.w(TAG, "readTail error: " + e.getMessage());
-            return "";
         }
     }
 
     public static boolean hasCrashLog(Context context) {
         if (context == null) return false;
-        File file = crashFile(context);
-        return file.exists() && file.length() > 0;
+        synchronized (FILE_LOCK) {
+            File file = crashFile(context);
+            return file.exists() && file.length() > 0;
+        }
     }
 
     public static boolean clear(Context context) {
         if (context == null) return false;
-        try {
-            File file = crashFile(context);
-            if (file.exists()) {
-                boolean del1 = file.delete();
+        synchronized (FILE_LOCK) {
+            try {
+                File file = crashFile(context);
+                boolean del1 = true;
+                if (file.exists()) {
+                    del1 = file.delete();
+                }
                 File backup = new File(file.getParentFile(), FILE_NAME + ".old");
                 if (backup.exists()) {
                     backup.delete();
                 }
                 return del1;
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to clear crash log: " + e.getMessage());
+                return false;
             }
-            return true;
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to clear crash log: " + e.getMessage());
-            return false;
         }
     }
 
     public static long getLogSizeBytes(Context context) {
         if (context == null) return 0L;
-        File file = crashFile(context);
-        return file.exists() ? file.length() : 0L;
+        synchronized (FILE_LOCK) {
+            File file = crashFile(context);
+            return file.exists() ? file.length() : 0L;
+        }
     }
 
     private static File crashFile(Context context) {
@@ -177,13 +217,30 @@ public final class CrashLog {
     }
 
     private static void rotateIfNeeded(File file) {
-        if (file.exists() && file.length() > MAX_FILE_BYTES) {
+        if (file != null && file.exists() && file.length() > MAX_FILE_BYTES) {
             File backup = new File(file.getParentFile(), FILE_NAME + ".old");
             if (backup.exists()) {
                 backup.delete();
             }
-            file.renameTo(backup);
+            if (!file.renameTo(backup)) {
+                // Fallback: copy and truncate if renameTo fails
+                try {
+                    try (FileInputStream in = new FileInputStream(file);
+                         FileOutputStream out = new FileOutputStream(backup)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = in.read(buffer)) > 0) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                    }
+                    new FileOutputStream(file, false).close(); // truncate
+                } catch (Throwable ignored) {}
+            }
         }
+    }
+
+    private static String getFormattedTimestamp() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date());
     }
 
     private static long getAvailableMemoryMb(Context context) {

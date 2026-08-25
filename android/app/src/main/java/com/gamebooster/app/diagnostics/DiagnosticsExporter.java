@@ -1,12 +1,14 @@
 package com.gamebooster.app.diagnostics;
 
 import android.app.ActivityManager;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -48,8 +50,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import rikka.shizuku.Shizuku;
 
@@ -59,7 +63,7 @@ import rikka.shizuku.Shizuku;
  * Root / Magisk / KSU indicators, Shizuku / AIDL / Rish privilege bridges,
  * Battery & Thermal metrics, Display Hz metrics, Active Tweaks,
  * Installed Games & 144fps Patcher status, Device Identity Spoofing state,
- * Storage / Network metrics, and captured Crash Logs.
+ * Storage / Network metrics, Memory & Swap/ZRAM stats, and captured Crash Logs.
  */
 public final class DiagnosticsExporter {
 
@@ -144,6 +148,14 @@ public final class DiagnosticsExporter {
                 int pct = totalMb > 0 ? (int) ((usedMb * 100) / totalMb) : 0;
                 lines.add("RAM Usage: " + pct + "% (" + usedMb + " / " + totalMb + " MB, Free: " + availMb + " MB)");
             }
+            Map<String, Long> memInfo = readMemInfo();
+            if (memInfo.containsKey("SwapTotal") && memInfo.get("SwapTotal") > 0) {
+                long swapTotalMb = memInfo.get("SwapTotal") / 1024;
+                long swapFreeMb = memInfo.containsKey("SwapFree") ? memInfo.get("SwapFree") / 1024 : 0;
+                long swapUsedMb = swapTotalMb - swapFreeMb;
+                int swapPct = swapTotalMb > 0 ? (int) ((swapUsedMb * 100) / swapTotalMb) : 0;
+                lines.add("Swap / ZRAM: " + swapPct + "% (" + swapUsedMb + " / " + swapTotalMb + " MB used)");
+            }
         }
         lines.add("");
 
@@ -165,6 +177,12 @@ public final class DiagnosticsExporter {
         lines.add("--- [4. ROOT, SU & SECURITY ENVIRONMENT] ---");
         boolean hasSu = checkRootSuBinary();
         lines.add("Root Binary (su): " + (hasSu ? "✅ DETECTED (Root Access Ready)" : "❌ NOT FOUND (Non-Root/Shizuku Engine)"));
+        if (context != null) {
+            String rootManager = detectRootManager(context);
+            if (rootManager != null) {
+                lines.add("Root Manager: " + rootManager);
+            }
+        }
         String selinux = getSELinuxStatus();
         lines.add("SELinux State: " + selinux);
         lines.add("");
@@ -202,12 +220,12 @@ public final class DiagnosticsExporter {
                     int temp = batteryIntent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
                     int statusBat = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
                     int plugged = batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-                    
+
                     int batPct = (level >= 0 && scale > 0) ? (level * 100 / scale) : -1;
                     float tempC = temp > 0 ? (temp / 10.0f) : -1f;
-                    
+
                     String charging = statusBat == BatteryManager.BATTERY_STATUS_CHARGING ? "⚡ Charging" :
-                                      statusBat == BatteryManager.BATTERY_STATUS_FULL ? "🔋 Full" : "🔋 Discharging";
+                            statusBat == BatteryManager.BATTERY_STATUS_FULL ? "🔋 Full" : "🔋 Discharging";
                     if (plugged > 0) charging += " (AC/USB/Wireless)";
 
                     lines.add("Battery Level: " + batPct + "% | Status: " + charging);
@@ -217,7 +235,17 @@ public final class DiagnosticsExporter {
                 if (pm != null) {
                     lines.add("Power Save Mode: " + (pm.isPowerSaveMode() ? "⚠️ ON (Performance Throttled)" : "✅ OFF (Full Performance)"));
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        lines.add("Thermal Headroom / Throttling: Level " + pm.getCurrentThermalStatus());
+                        int thermalStatus = pm.getCurrentThermalStatus();
+                        lines.add("Thermal Status: " + formatThermalStatus(thermalStatus));
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        try {
+                            float headroom = pm.getThermalHeadroom(30);
+                            if (!Float.isNaN(headroom) && headroom >= 0) {
+                                int headroomPct = Math.min(100, (int) (headroom * 100));
+                                lines.add("Thermal Headroom (30s forecast): " + headroomPct + "%" + (headroom >= 1.0f ? " (Throttling Alert)" : " (Nominal)"));
+                            }
+                        } catch (Throwable ignored) {}
                     }
                 }
             } catch (Throwable ignored) {}
@@ -235,6 +263,7 @@ public final class DiagnosticsExporter {
                 if (!caps.supportedRefreshRates.isEmpty()) {
                     lines.add("Supported Rates: " + caps.supportedRefreshRates + " Hz");
                 }
+                lines.add("HDR Support: " + (caps.supportsHdr ? "✅ YES" : "❌ NO") + " | Wide Color Gamut: " + (caps.supportsWideColorGamut ? "✅ YES" : "❌ NO"));
             } catch (Throwable ignored) {}
         }
         lines.add("SurfaceFlinger 144Hz Uncap: READY (Binder Call 1035 Supported)");
@@ -256,26 +285,10 @@ public final class DiagnosticsExporter {
             } catch (Throwable ignored) {}
 
             try {
-                ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                if (cm != null) {
-                    NetworkInfo activeNet = cm.getActiveNetworkInfo();
-                    if (activeNet != null && activeNet.isConnected()) {
-                        String typeName = activeNet.getTypeName();
-                        lines.add("Active Network: " + typeName + " (" + activeNet.getSubtypeName() + ")");
-                        if (activeNet.getType() == ConnectivityManager.TYPE_WIFI) {
-                            WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                            if (wm != null) {
-                                WifiInfo winfo = wm.getConnectionInfo();
-                                if (winfo != null) {
-                                    lines.add("Wi-Fi Link Speed: " + winfo.getLinkSpeed() + " " + WifiInfo.LINK_SPEED_UNITS + " (Signal: " + winfo.getRssi() + " dBm)");
-                                }
-                            }
-                        }
-                    } else {
-                        lines.add("Active Network: Offline / Disconnected");
-                    }
-                }
-            } catch (Throwable ignored) {}
+                lines.add(getNetworkTelemetry(context));
+            } catch (Throwable ignored) {
+                lines.add("Active Network: Telemetry unavailable");
+            }
         }
         lines.add("");
 
@@ -347,6 +360,7 @@ public final class DiagnosticsExporter {
         // 14. Android API Gates
         lines.add("--- [14. ANDROID API GATES (API 31-36)] ---");
         lines.add("Android 12 GameManager API (API 31+): " + (sdkInt >= 31 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("Android 12 ADPF PerformanceHintManager (API 31+): " + (sdkInt >= 31 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 13 GameOverlay API (API 33+): " + (sdkInt >= 33 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 14 FPS/Refresh Override (API 34+): " + (sdkInt >= 34 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 15 Fixed Clocks Power Mode (API 35+): " + (sdkInt >= 35 ? "✅ OPEN" : "❌ LOCKED"));
@@ -383,7 +397,7 @@ public final class DiagnosticsExporter {
     }
 
     /**
-     * Creates a share intent with complete FileProvider URI permissions granted across all target apps.
+     * Creates a share intent with universal FileProvider URI permissions granted across all target apps.
      */
     public static Intent shareSnapshot(Context context, File file) {
         if (context == null || file == null) return new Intent();
@@ -394,19 +408,27 @@ public final class DiagnosticsExporter {
         share.putExtra(Intent.EXTRA_STREAM, uri);
         share.putExtra(Intent.EXTRA_SUBJECT, "⚡ Game Booster PRO Diagnostics Report");
         share.putExtra(Intent.EXTRA_TEXT, "Attached is the Game Booster PRO Diagnostics Snapshot (" + file.getName() + ").");
+        share.setClipData(ClipData.newRawUri("diagnostics", uri));
         share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         share.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-        // Grant URI permission explicitly to all matching handler packages (needed on Android 11+)
-        PackageManager pm = context.getPackageManager();
-        List<ResolveInfo> resInfoList = pm.queryIntentActivities(share, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolveInfo : resInfoList) {
-            String packageName = resolveInfo.activityInfo.packageName;
-            context.grantUriPermission(packageName, uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
+        // Grant URI permission explicitly to all matching handler packages
+        try {
+            PackageManager pm = context.getPackageManager();
+            List<ResolveInfo> resInfoList = pm.queryIntentActivities(share, PackageManager.MATCH_DEFAULT_ONLY);
+            if (resInfoList != null) {
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    if (resolveInfo.activityInfo != null) {
+                        String packageName = resolveInfo.activityInfo.packageName;
+                        context.grantUriPermission(packageName, uri,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
 
         Intent chooser = Intent.createChooser(share, "Share Diagnostics Report");
+        chooser.setClipData(ClipData.newRawUri("diagnostics", uri));
         chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return chooser;
@@ -424,6 +446,80 @@ public final class DiagnosticsExporter {
 
     private static String safe(String value) {
         return value != null ? value : "unknown";
+    }
+
+    private static String formatThermalStatus(int status) {
+        switch (status) {
+            case PowerManager.THERMAL_STATUS_NONE:
+                return "Level 0: NOMINAL (Cool / Full Gaming Performance)";
+            case PowerManager.THERMAL_STATUS_LIGHT:
+                return "Level 1: LIGHT (Slight Throttle Warning)";
+            case PowerManager.THERMAL_STATUS_MODERATE:
+                return "Level 2: MODERATE (Moderate Throttling)";
+            case PowerManager.THERMAL_STATUS_SEVERE:
+                return "Level 3: SEVERE (Heavy Throttling Active)";
+            case PowerManager.THERMAL_STATUS_CRITICAL:
+                return "Level 4: CRITICAL (Dropping Frames / Stutters Expected)";
+            case PowerManager.THERMAL_STATUS_EMERGENCY:
+                return "Level 5: EMERGENCY (Thermal Shutdown Protection)";
+            case PowerManager.THERMAL_STATUS_SHUTDOWN:
+                return "Level 6: SHUTDOWN";
+            default:
+                return "Level " + status + " (Custom OEM Level)";
+        }
+    }
+
+    private static String getNetworkTelemetry(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return "Active Network: Unavailable";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network activeNet = cm.getActiveNetwork();
+            if (activeNet != null) {
+                NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
+                if (caps != null) {
+                    StringBuilder sb = new StringBuilder();
+                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        sb.append("Active Network: Wi-Fi");
+                        WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                        if (wm != null) {
+                            try {
+                                WifiInfo winfo = wm.getConnectionInfo();
+                                if (winfo != null && winfo.getLinkSpeed() > 0) {
+                                    sb.append(" (").append(winfo.getLinkSpeed()).append(" Mbps, RSSI: ").append(winfo.getRssi()).append(" dBm)");
+                                }
+                            } catch (Throwable ignored) {}
+                        }
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        sb.append("Active Network: Cellular Mobile Data");
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                        sb.append("Active Network: Ethernet LAN");
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        sb.append("Active Network: VPN Tunnel");
+                    } else {
+                        sb.append("Active Network: Connected");
+                    }
+
+                    int downKbps = caps.getLinkDownstreamBandwidthKbps();
+                    int upKbps = caps.getLinkUpstreamBandwidthKbps();
+                    if (downKbps > 0 || upKbps > 0) {
+                        sb.append(" | Bandwidth: ↓").append(downKbps / 1000).append(" Mbps / ↑").append(upKbps / 1000).append(" Mbps");
+                    }
+                    if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED)) {
+                        sb.append(" [Low Congestion]");
+                    }
+                    return sb.toString();
+                }
+            }
+            return "Active Network: Offline / Disconnected";
+        } else {
+            @SuppressWarnings("deprecation")
+            NetworkInfo activeNet = cm.getActiveNetworkInfo();
+            if (activeNet != null && activeNet.isConnected()) {
+                return "Active Network: " + activeNet.getTypeName() + " (" + activeNet.getSubtypeName() + ")";
+            }
+            return "Active Network: Offline / Disconnected";
+        }
     }
 
     private static String readKernelVersion() {
@@ -449,7 +545,38 @@ public final class DiagnosticsExporter {
         return false;
     }
 
+    private static String detectRootManager(Context context) {
+        String[] packages = {
+                "com.topjohnwu.magisk:Magisk",
+                "io.github.tiann.kernelsu:KernelSU",
+                "me.bmax.apatch:APatch",
+                "com.sukisu.ultra:KernelSU Next",
+                "com.koushikdutta.superuser:Superuser",
+                "eu.chainfire.supersu:SuperSU"
+        };
+        PackageManager pm = context.getPackageManager();
+        for (String entry : packages) {
+            String[] parts = entry.split(":");
+            try {
+                pm.getPackageInfo(parts[0], 0);
+                return "✅ " + parts[1] + " App Installed (" + parts[0] + ")";
+            } catch (Throwable ignored) {}
+        }
+        return null;
+    }
+
     private static String getSELinuxStatus() {
+        // First try privileged execution via Shizuku if active
+        try {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                String privileged = ShizukuExecutor.executeShizukuCommand("getenforce");
+                if (privileged != null && !privileged.trim().isEmpty()) {
+                    return privileged.trim() + " (Privileged Query)";
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // Fallback to standard process exec
         try {
             java.lang.Process p = Runtime.getRuntime().exec("getenforce");
             try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
@@ -472,5 +599,23 @@ public final class DiagnosticsExporter {
             }
         } catch (Throwable ignored) {}
         return new long[]{-1L, -1L};
+    }
+
+    private static Map<String, Long> readMemInfo() {
+        Map<String, Long> map = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("/proc/meminfo"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length >= 2) {
+                    String key = parts[0].trim();
+                    String valStr = parts[1].trim().split("\\s+")[0];
+                    try {
+                        map.put(key, Long.parseLong(valStr));
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+        return map;
     }
 }
