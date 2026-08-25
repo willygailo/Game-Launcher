@@ -45,6 +45,9 @@ public class AutoGameMonitorService extends Service {
     private Handler handler;
     private Runnable monitorRunnable;
     private String lastActiveGamePackage = null;
+    /** Timestamp of the last game session end. Used to debounce rapid back+return cycles. */
+    private long lastSessionEndTimeMs = 0;
+    private static final long SESSION_RESTART_COOLDOWN_MS = 5_000; // 5 seconds
 
     public static boolean isRunning() {
         return isRunning;
@@ -111,6 +114,14 @@ public class AutoGameMonitorService extends Service {
                     || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
 
             if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
+                long now = System.currentTimeMillis();
+                // Debounce: if the game was just exited < 5s ago (e.g. brief back press),
+                // don't re-trigger a full beginSession — let the game resume naturally.
+                if (now - lastSessionEndTimeMs < SESSION_RESTART_COOLDOWN_MS) {
+                    Log.d(TAG, "Session cooldown active — skipping re-trigger for: " + currentPackage);
+                    lastActiveGamePackage = currentPackage; // still update so we track it
+                    return;
+                }
                 lastActiveGamePackage = currentPackage;
                 Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
@@ -131,6 +142,7 @@ public class AutoGameMonitorService extends Service {
                 Log.i(TAG, "Game exited — ending GameManager Session for: " + lastActiveGamePackage);
                 String exitingPkg = lastActiveGamePackage;
                 lastActiveGamePackage = null;
+                lastSessionEndTimeMs = System.currentTimeMillis(); // record exit time for cooldown
                 com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(null);
 
                 // End GameManager Session and revert to baseline

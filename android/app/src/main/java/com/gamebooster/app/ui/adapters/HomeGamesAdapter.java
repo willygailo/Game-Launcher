@@ -190,10 +190,19 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
                             : "⚡ Forcing " + realFps + " FPS CFG into " + game.getLabel() + " via Shizuku...",
                         Toast.LENGTH_SHORT).show();
 
-                    AppExecutors.getInstance().executeCommand(() -> {
-                        // ── Step 1: Force-stop game so cold-start picks up new configs ──
-                        ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
-                        try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                        // ── Step 1: Force-stop game ONLY if it is currently running,
+                        // so cold-start picks up new configs without killing an already-exited game ──
+                        try {
+                            String pidCheck = ShizukuExecutor.executeShizukuCommand("pidof " + pkg + " 2>/dev/null");
+                            boolean gameCurrentlyRunning = pidCheck != null && !pidCheck.trim().isEmpty()
+                                    && !pidCheck.startsWith("ERROR");
+                            if (gameCurrentlyRunning) {
+                                ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
+                                // Give the process time to fully die before config injection
+                                try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+                            }
+                        } catch (Throwable ignored) {}
+
 
                         // ── Step 2: Apply config patchers ──
                         int patchedCount = CfgProfileManager.applyProfile(context, gameKey, profile);

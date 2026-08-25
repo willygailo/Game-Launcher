@@ -128,9 +128,8 @@ public final class GameManagerLauncher {
         boolean launchedImmediately = false;
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
                     | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+
 
             try {
                 context.startActivity(targetIntent);
