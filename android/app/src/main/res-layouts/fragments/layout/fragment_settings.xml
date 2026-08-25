@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Looping Settings Background Video (Pinterest 617837642704273011) -->
+    <!-- Looping Settings Background Video (Pinterest 617837642704273680) -->
     <com.gamebooster.app.ui.views.LoopingVideoBackgroundView
         android:id="@+id/video_settings_bg"
         android:layout_width="match_parent"
