@@ -31,7 +31,8 @@ public final class WebViewBoosterChannel {
     public static final String[] WEBVIEW_FLAG_FILES = {
             "/data/local/tmp/webview-command-line",
             "/data/local/tmp/chrome-command-line",
-            "/data/local/tmp/content-shell-command-line"
+            "/data/local/tmp/content-shell-command-line",
+            "/data/local/tmp/android-webview-command-line"
     };
 
     private WebViewBoosterChannel() {
@@ -51,7 +52,19 @@ public final class WebViewBoosterChannel {
                 "--enable-native-gpu-memory-buffers " +
                 "--enable-accelerated-2d-canvas " +
                 "--enable-accelerated-video-decode " +
-                "--enable-features=Vulkan,UseSkiaRenderer,DefaultAngleVulkan,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator " +
+                "--enable-accelerated-mjpeg-decode " +
+                "--enable-oop-rasterization " +
+                "--enable-raw-draw " +
+                "--enable-low-latency-webgl " +
+                "--enable-webgl2-compute-context " +
+                "--enable-unsafe-webgpu " +
+                "--enable-gpu-async-worker-context " +
+                "--canvas-2d-layers " +
+                "--enable-surface-synchronization " +
+                "--enable-quic " +
+                "--enable-tcp-fastopen " +
+                "--enable-fast-unload " +
+                "--enable-features=Vulkan,UseSkiaRenderer,DefaultAngleVulkan,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,VulkanFromANGLE,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebGPU " +
                 "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading " +
                 "--num-raster-threads=" + rasterThreads + " " +
                 "--enable-drdc " +
@@ -59,10 +72,11 @@ public final class WebViewBoosterChannel {
                 "--enable-webgl-developer-extensions " +
                 "--enable-webgl-draft-extensions " +
                 "--enable-webassembly-simd " +
+                "--enable-webassembly-tiering " +
                 "--disable-frame-rate-limit " +
                 "--disable-gpu-vsync " +
                 "--max-gum-fps=185 " +
-                "--js-flags=\"--max-semi-space-size=64 --max-old-space-size=1024 --opt --always-opt --turbo-fast-api-calls\"";
+                "--js-flags=\"--max-semi-space-size=128 --max-old-space-size=2048 --opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-tier-up --expose-wasm --wasm-simd --harmony-simd\"";
     }
 
     /**
@@ -83,10 +97,15 @@ public final class WebViewBoosterChannel {
             // 2. Add System Properties & DeviceConfig optimizations for WebView
             sb.append("settings put global webview_multiprocess 1; ");
             sb.append("device_config put runtime_native_boot webview_surface_control true; ");
-            sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"; ");
+            sb.append("device_config put runtime_native_boot webview_zero_copy true; ");
+            sb.append("device_config put runtime_native_boot webview_gpu_raster true; ");
+            sb.append("device_config put runtime_native_boot webview_skia_vulkan true; ");
+            sb.append("device_config put runtime_native_boot webview_drdc true; ");
+            sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context\"; ");
             sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
             sb.append("setprop debug.hwui.renderer vulkan; ");
-            sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls\"");
+            sb.append("setprop debug.hwui.fps_limit 0; ");
+            sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"");
 
             String fullCmd = sb.toString();
 

@@ -244,10 +244,16 @@ public class PerformanceChannel {
                     "chmod 644 /data/local/tmp/chrome-command-line 2>/dev/null\n" +
                     "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/content-shell-command-line\n" +
                     "chmod 644 /data/local/tmp/content-shell-command-line 2>/dev/null\n" +
+                    "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/android-webview-command-line\n" +
+                    "chmod 644 /data/local/tmp/android-webview-command-line 2>/dev/null\n" +
                     "settings put global webview_multiprocess 1\n" +
                     "device_config put runtime_native_boot webview_surface_control true\n" +
-                    "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist\"\n" +
-                    "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls\"\n" +
+                    "device_config put runtime_native_boot webview_zero_copy true\n" +
+                    "device_config put runtime_native_boot webview_gpu_raster true\n" +
+                    "device_config put runtime_native_boot webview_skia_vulkan true\n" +
+                    "device_config put runtime_native_boot webview_drdc true\n" +
+                    "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context\"\n" +
+                    "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
                     "cmd wifi force-low-latency-mode enabled\n";
 
