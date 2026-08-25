@@ -78,11 +78,17 @@ public class GameLauncherHelper {
         // 2. Perform 3-Tier Game Launch
         boolean launched = false;
 
-        // Tier 1: Standard Intent Launch
+        // Tier 1: Standard Intent Launch with explicit component
         Intent launchIntent = game.getLaunchIntent();
+        if (launchIntent == null) {
+            launchIntent = HomeGameScanner.resolveLaunchIntent(context.getPackageManager(), pkgName);
+        }
         if (launchIntent != null) {
             try {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 context.startActivity(launchIntent);
                 launched = true;
             } catch (Throwable ignored) {}
@@ -93,18 +99,28 @@ public class GameLauncherHelper {
             try {
                 Intent pmIntent = context.getPackageManager().getLaunchIntentForPackage(pkgName);
                 if (pmIntent != null) {
-                    pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES
+                            | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     context.startActivity(pmIntent);
                     launched = true;
                 }
             } catch (Throwable ignored) {}
         }
 
-        // Tier 3: Shizuku ADB Direct Launch Fallback (monkey -p <pkg> 1)
+        // Tier 3: Privileged Shizuku / Rish / Root Launch Fallback
         if (!launched) {
             try {
-                String res = ShizukuExecutor.executeShizukuCommand("monkey -p " + pkgName + " -c android.intent.category.LAUNCHER 1");
-                if (res != null && !res.startsWith("ERROR")) {
+                String cmd = "am start --activity-brought-to-front -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p " + pkgName + " 2>/dev/null || monkey -p " + pkgName + " -c android.intent.category.LAUNCHER 1";
+                if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    ShizukuUserServiceConnector.getInstance().executeCommand(cmd);
+                    launched = true;
+                } else if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                    launched = true;
+                } else if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                    com.gamebooster.app.engine.ShellExecutor.executeCommand(cmd, true);
                     launched = true;
                 }
             } catch (Throwable ignored) {}

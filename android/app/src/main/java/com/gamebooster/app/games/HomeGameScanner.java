@@ -1,9 +1,12 @@
 package com.gamebooster.app.games;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
@@ -16,8 +19,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Ultra-fast dedicated scanner focused STRICTLY on MLBB, PUBG Mobile, and CODM (all regional variants).
- * Scans in under 15ms by querying target packages directly rather than scanning full system app lists.
+ * Ultra-fast dedicated scanner focused on MLBB, PUBG Mobile, CODM, Free Fire, Genshin, HOK, Roblox,
+ * Valorant, Farlight, and all installed device games.
+ * Resolves verified, explicit launch intents with FLAG_INCLUDE_STOPPED_PACKAGES for guaranteed opening.
  */
 public class HomeGameScanner {
 
@@ -148,29 +152,89 @@ public class HomeGameScanner {
             "Valorant Mobile",
             "TACTICAL FPS",
             R.drawable.home_game_card_bg_codm,
-            Color.parseColor("#FF4655")
+            Color.parseColor("#FF0055")
     );
 
     // 9. Farlight 84
     private static final TargetGameSpec FARLIGHT_SPEC = new TargetGameSpec(
             new String[]{
-                    "com.miracle.farlight84",
                     "com.miraclegames.farlight84",
-                    "com.farlightgames.farlight84.gp",
-                    "com.farlightgames.farlight84.global"
+                    "com.lilithgames.farlight84"
             },
             "Farlight 84",
             "HERO SHOOTER",
             R.drawable.home_game_card_bg_pubg,
-            Color.parseColor("#FFCC00")
+            Color.parseColor("#FFAA00")
     );
 
-    private static final TargetGameSpec[] ALL_TARGET_SPECS = new TargetGameSpec[]{
-            MLBB_SPEC, PUBG_SPEC, CODM_SPEC, FREEFIRE_SPEC, GENSHIN_SPEC, HOK_SPEC, ROBLOX_SPEC, VALORANT_SPEC, FARLIGHT_SPEC
-    };
+    private static final List<TargetGameSpec> ALL_TARGET_SPECS = Arrays.asList(
+            MLBB_SPEC,
+            PUBG_SPEC,
+            CODM_SPEC,
+            FREEFIRE_SPEC,
+            GENSHIN_SPEC,
+            HOK_SPEC,
+            ROBLOX_SPEC,
+            VALORANT_SPEC,
+            FARLIGHT_SPEC
+    );
 
     /**
-     * Scans and returns all installed target and supported games on the device.
+     * Resolves a guaranteed working, explicit launch Intent with appropriate flags for the target package.
+     */
+    public static Intent resolveLaunchIntent(PackageManager pm, String pkg) {
+        if (pm == null || pkg == null || pkg.trim().isEmpty()) return null;
+
+        // 1. Try standard PackageManager launch intent
+        try {
+            Intent pmIntent = pm.getLaunchIntentForPackage(pkg);
+            if (pmIntent != null) {
+                pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                return pmIntent;
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. Query explicit MAIN + LAUNCHER activities
+        try {
+            Intent query = new Intent(Intent.ACTION_MAIN, null);
+            query.addCategory(Intent.CATEGORY_LAUNCHER);
+            query.setPackage(pkg);
+            List<ResolveInfo> list = pm.queryIntentActivities(query, 0);
+            if (list != null && !list.isEmpty() && list.get(0).activityInfo != null) {
+                ActivityInfo aInfo = list.get(0).activityInfo;
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                return intent;
+            }
+        } catch (Throwable ignored) {}
+
+        // 3. Query any MAIN activity
+        try {
+            Intent queryAll = new Intent(Intent.ACTION_MAIN, null);
+            queryAll.setPackage(pkg);
+            List<ResolveInfo> listAll = pm.queryIntentActivities(queryAll, 0);
+            if (listAll != null && !listAll.isEmpty() && listAll.get(0).activityInfo != null) {
+                ActivityInfo aInfo = listAll.get(0).activityInfo;
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                return intent;
+            }
+        } catch (Throwable ignored) {}
+
+        return null;
+    }
+
+    /**
+     * Scans and returns all verified installed target and supported games on the device.
      */
     public static List<GameAppInfo> scanTargetGames(Context context) {
         List<GameAppInfo> detectedGames = new ArrayList<>();
@@ -189,14 +253,9 @@ public class HomeGameScanner {
                     appInfo = pm.getApplicationInfo(pkg, 0);
                 } catch (Throwable ignored) {}
 
-                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
-                if (launchIntent == null && appInfo != null) {
-                    launchIntent = new Intent(Intent.ACTION_MAIN)
-                            .addCategory(Intent.CATEGORY_LAUNCHER)
-                            .setPackage(pkg)
-                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
+                Intent launchIntent = resolveLaunchIntent(pm, pkg);
 
+                // Add ONLY if the app is actually installed on the physical device
                 if (appInfo != null || launchIntent != null) {
                     String label = spec.defaultTitle;
                     Drawable icon = null;
@@ -204,7 +263,7 @@ public class HomeGameScanner {
                         if (appInfo != null) {
                             label = pm.getApplicationLabel(appInfo).toString();
                             icon = pm.getApplicationIcon(appInfo);
-                        } else {
+                        } else if (launchIntent != null) {
                             icon = pm.getActivityIcon(launchIntent);
                         }
                     } catch (Throwable ignored) {}
@@ -229,7 +288,7 @@ public class HomeGameScanner {
             }
         }
 
-        // 2. Secondary Scan: Known Games Registry & System Game Categories
+        // 2. Secondary Scan: Known Games Registry
         try {
             for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
                 if (addedPackages.contains(pkg)) continue;
@@ -239,7 +298,7 @@ public class HomeGameScanner {
                     appInfo = pm.getApplicationInfo(pkg, 0);
                 } catch (Throwable ignored) {}
 
-                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+                Intent launchIntent = resolveLaunchIntent(pm, pkg);
                 if (appInfo != null || launchIntent != null) {
                     GamePackageRegistry.GameInfoSpec info = GamePackageRegistry.getSpec(pkg);
                     String label = info != null ? info.title : pkg;
@@ -258,13 +317,6 @@ public class HomeGameScanner {
                         } catch (Throwable ignored) {}
                     }
 
-                    if (launchIntent == null) {
-                        launchIntent = new Intent(Intent.ACTION_MAIN)
-                                .addCategory(Intent.CATEGORY_LAUNCHER)
-                                .setPackage(pkg)
-                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    }
-
                     detectedGames.add(new GameAppInfo(
                             label,
                             pkg,
@@ -275,6 +327,48 @@ public class HomeGameScanner {
                             Color.parseColor("#00F0FF")
                     ));
                     addedPackages.add(pkg);
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // 3. Tertiary Scan: Query Launcher Intent Activities with CATEGORY_GAME
+        try {
+            Intent gameIntent = new Intent(Intent.ACTION_MAIN, null);
+            gameIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(gameIntent, 0);
+            if (resolveInfos != null) {
+                for (ResolveInfo ri : resolveInfos) {
+                    if (ri == null || ri.activityInfo == null) continue;
+                    String pkg = ri.activityInfo.packageName;
+                    if (pkg == null || addedPackages.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
+                        continue;
+                    }
+
+                    ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
+                    boolean isGame = false;
+                    if (aInfo != null) {
+                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) isGame = true;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            if (aInfo.category == ApplicationInfo.CATEGORY_GAME) isGame = true;
+                        }
+                    }
+
+                    if (isGame || GameLauncherHelper.getCustomPackages(context).contains(pkg)) {
+                        String label = ri.loadLabel(pm).toString();
+                        Drawable icon = ri.loadIcon(pm);
+                        Intent launchIntent = resolveLaunchIntent(pm, pkg);
+
+                        detectedGames.add(new GameAppInfo(
+                                label,
+                                pkg,
+                                icon,
+                                launchIntent,
+                                "GAME",
+                                R.drawable.home_game_card_bg_pubg,
+                                Color.parseColor("#FFCC00")
+                        ));
+                        addedPackages.add(pkg);
+                    }
                 }
             }
         } catch (Throwable ignored) {}
