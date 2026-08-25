@@ -5,13 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Background Image (omni.jpeg) -->
-    <ImageView
+    <!-- Looping Settings Background Video (Pinterest 617837642704273011) -->
+    <com.gamebooster.app.ui.views.LoopingVideoBackgroundView
+        android:id="@+id/video_settings_bg"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/omni"
-        android:scaleType="centerCrop"
-        android:contentDescription="Settings Background" />
+        android:layout_height="match_parent" />
 
     <!-- Translucent glass scrim overlay (Crystal Glassmorphism) -->
     <View

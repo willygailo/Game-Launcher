@@ -71,6 +71,7 @@ import com.gamebooster.app.spoofer.SpoofProfileRegistry;
 import com.gamebooster.app.spoofer.ui.PerAppSpoofDialog;
 import com.gamebooster.app.spoofer.ui.SpoofInspectorDialog;
 import com.gamebooster.app.ui.dialogs.SpoofBrandSelectorDialog;
+import com.gamebooster.app.ui.views.LoopingVideoBackgroundView;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,6 +81,7 @@ import java.util.Locale;
 
 public class SettingsFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
+    private LoopingVideoBackgroundView videoSettingsBg;
     private TextView tvEngineStatus;
     private TextView tvRootStatus;
     private TextView tvTweaksStatus;
@@ -189,6 +191,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() != null) {
             precisionSettingsManager = new SettingsManager(getContext());
             precisionProfileManager = new ProfileManager(getContext());
+        }
+
+        // Settings Background Looping Video
+        videoSettingsBg = view.findViewById(R.id.video_settings_bg);
+        if (videoSettingsBg != null) {
+            videoSettingsBg.setVideoRawResource(R.raw.settings_bg_video);
         }
 
         // Card 1: Shizuku & System Permissions
@@ -1318,15 +1326,34 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     @Override
     public void onResume() {
         super.onResume();
+        if (videoSettingsBg != null) videoSettingsBg.play();
         refreshAllStatuses();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (videoSettingsBg != null) videoSettingsBg.pause();
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (hidden) {
+            if (videoSettingsBg != null) videoSettingsBg.pause();
+        } else {
+            if (videoSettingsBg != null) videoSettingsBg.play();
             refreshAllStatuses();
             renderDiagnostics();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (videoSettingsBg != null) {
+            videoSettingsBg.release();
+            videoSettingsBg = null;
         }
     }
 

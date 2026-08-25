@@ -35,6 +35,7 @@ import android.widget.Toast;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
+import com.gamebooster.app.ui.views.LoopingVideoBackgroundView;
 
 public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
@@ -44,6 +45,8 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
     private HomeGamesAdapter adapter;
+    private LoopingVideoBackgroundView videoHomeBg;
+    private LoopingVideoBackgroundView videoHeroBanner;
     private final List<GameAppInfo> gameList = new ArrayList<>();
     private final com.gamebooster.app.shizuku.ShizukuConnectionManager.ConnectionListener connListener =
             state -> {
@@ -63,15 +66,25 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
 
+        // Background Looping Video
+        videoHomeBg = view.findViewById(R.id.video_home_bg);
+        if (videoHomeBg != null) {
+            videoHomeBg.setVideoRawResource(R.raw.home_bg_video);
+        }
+
+        // Hero Hardware Banner Looping Video
+        videoHeroBanner = view.findViewById(R.id.video_hero_banner);
+        if (videoHeroBanner != null) {
+            videoHeroBanner.setVideoRawResource(R.raw.banner_video);
+        }
+
         View chipEngineMode = view.findViewById(R.id.chip_engine_mode);
         if (chipEngineMode != null) {
             chipEngineMode.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (ShizukuExecutor.hasShizukuPermission() || ShizukuManager.isShizukuRunningAndGranted()) {
-                    Toast.makeText(getContext(), "⚡ Shizuku API Full Access is Active & Privileged!", Toast.LENGTH_SHORT).show();
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    Toast.makeText(getContext(), "⚡ Shizuku API is active and fully functioning!", Toast.LENGTH_SHORT).show();
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        ShizukuPermissionEnforcer.enforceAllPermissionsForAllApps(getContext().getApplicationContext());
-                        ShizukuExecutor.grantAppPermissionsViaShizuku(getContext().getApplicationContext());
                         ShizukuFileManager.grantAllStoragePermissions(getContext().getApplicationContext());
                     });
                 } else if (ShizukuExecutor.isShizukuAvailable()) {
@@ -82,18 +95,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 }
                 updateStatusStrip();
             });
-        }
-
-        ImageView ivHeroBanner = view.findViewById(R.id.iv_hero_banner);
-        if (ivHeroBanner != null && getContext() != null && isAdded()) {
-            try {
-                Glide.with(this)
-                        .load(R.drawable.hero_banner)
-                        .error(R.drawable.home_bg_new)
-                        .into(ivHeroBanner);
-            } catch (Throwable t) {
-                ivHeroBanner.setImageResource(R.drawable.home_bg_new);
-            }
         }
 
         Button btnSettings = view.findViewById(R.id.btn_open_settings);
@@ -128,14 +129,28 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         super.onResume();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         ShizukuManager.addStateListener(this);
+        if (videoHomeBg != null) videoHomeBg.play();
+        if (videoHeroBanner != null) videoHeroBanner.play();
         updateStatusStrip();
         loadAndScanGamesZeroDelay();
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (videoHomeBg != null) videoHomeBg.pause();
+        if (videoHeroBanner != null) videoHeroBanner.pause();
+    }
+
+    @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (hidden) {
+            if (videoHomeBg != null) videoHomeBg.pause();
+            if (videoHeroBanner != null) videoHeroBanner.pause();
+        } else {
+            if (videoHomeBg != null) videoHomeBg.play();
+            if (videoHeroBanner != null) videoHeroBanner.play();
             updateStatusStrip();
             loadAndScanGamesZeroDelay();
         }
@@ -146,6 +161,14 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         super.onDestroyView();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().removeConnectionListener(connListener);
         ShizukuManager.removeStateListener(this);
+        if (videoHomeBg != null) {
+            videoHomeBg.release();
+            videoHomeBg = null;
+        }
+        if (videoHeroBanner != null) {
+            videoHeroBanner.release();
+            videoHeroBanner = null;
+        }
     }
 
     @Override

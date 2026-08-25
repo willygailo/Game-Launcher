@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:overScrollMode="never"
-    android:clipToPadding="false"
-    android:scrollbars="vertical"
-    android:scrollbarThumbVertical="@drawable/badge_neon_cyan"
-    android:paddingBottom="120dp">
+    android:layout_height="match_parent">
+
+    <!-- Looping Home Background Video (Pinterest 1131670212648065534) -->
+    <com.gamebooster.app.ui.views.LoopingVideoBackgroundView
+        android:id="@+id/video_home_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Translucent crystal glass scrim with deep cyber tint -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#55080B12" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@drawable/badge_neon_cyan"
+        android:paddingBottom="120dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -162,13 +178,10 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/card_glass_shape">
 
-                <ImageView
-                    android:id="@+id/iv_hero_banner"
+                <com.gamebooster.app.ui.views.LoopingVideoBackgroundView
+                    android:id="@+id/video_hero_banner"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/hero_banner"
-                    android:contentDescription="Hero banner" />
+                    android:layout_height="match_parent" />
 
                 <!-- Translucent cyber gradient scrim -->
                 <View
@@ -294,3 +307,4 @@
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
+</RelativeLayout>
