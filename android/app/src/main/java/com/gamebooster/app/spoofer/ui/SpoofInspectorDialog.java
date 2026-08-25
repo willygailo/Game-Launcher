@@ -9,6 +9,7 @@ import android.os.Build;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -42,7 +43,7 @@ public class SpoofInspectorDialog {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_spoof_inspector, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_spoof_inspector, (ViewGroup) null, false);
         dialog.setContentView(view);
 
         Window window = dialog.getWindow();
@@ -88,15 +89,13 @@ public class SpoofInspectorDialog {
                 sb.append("   • Brand       : ").append(Build.BRAND).append("\n");
                 sb.append("   • Manufacturer: ").append(Build.MANUFACTURER).append("\n");
                 sb.append("   • Hardware    : ").append(Build.HARDWARE).append("\n");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    sb.append("   • SoC Model   : ").append(Build.SOC_MODEL).append("\n");
-                }
+                sb.append("   • SoC Model   : ").append(Build.SOC_MODEL).append("\n");
                 sb.append("   • Fingerprint : ").append(Build.FINGERPRINT).append("\n\n");
 
                 sb.append("4. LIVE DISPLAY SUBSYSTEM:\n");
                 try {
                     Display display = activity.getWindowManager().getDefaultDisplay();
-                    if (display != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (display != null) {
                         Display.Mode mode = display.getMode();
                         sb.append("   • Active Refresh Rate: ").append(mode.getRefreshRate()).append(" Hz\n");
                         sb.append("   • Screen Resolution  : ").append(mode.getPhysicalWidth()).append("x").append(mode.getPhysicalHeight()).append("\n");

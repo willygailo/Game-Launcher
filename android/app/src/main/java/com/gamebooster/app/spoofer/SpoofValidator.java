@@ -87,12 +87,8 @@ public class SpoofValidator {
         result.hardwareMatch = check("HARDWARE", Build.HARDWARE, profile.hardware, result);
         // Fingerprint
         result.fingerprintMatch = check("FINGERPRINT", Build.FINGERPRINT, profile.fingerprint, result);
-        // SoC Model (API 31+)
-        if (android.os.Build.VERSION.SDK_INT >= 31) {
-            result.socModelMatch = check("SOC_MODEL", Build.SOC_MODEL, profile.socModel, result);
-        } else {
-            result.socModelMatch = true; // Not verifiable on older APIs
-        }
+        // SoC Model
+        result.socModelMatch = check("SOC_MODEL", Build.SOC_MODEL, profile.socModel, result);
         // Android Version
         result.androidVersionMatch = check("VERSION.RELEASE", Build.VERSION.RELEASE, profile.androidVersion, result);
 

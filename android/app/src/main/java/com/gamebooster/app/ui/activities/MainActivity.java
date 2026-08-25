@@ -95,11 +95,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
 
-        // Request runtime notification permission on Android 13+ (API 33+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
-            }
+        // Request runtime notification permission
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
         }
 
         // Android 13-16 Predictive Back / OnBackPressed Handling

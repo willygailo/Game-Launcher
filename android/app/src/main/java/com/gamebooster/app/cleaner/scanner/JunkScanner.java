@@ -415,18 +415,14 @@ public class JunkScanner {
             PackageInfo archiveInfo = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
             if (archiveInfo != null) {
                 String apkPkg = archiveInfo.packageName;
-                long apkVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                        ? archiveInfo.getLongVersionCode()
-                        : archiveInfo.versionCode;
+                long apkVersion = archiveInfo.getLongVersionCode();
 
                 String displayName = apkFile.getName();
 
                 try {
                     PackageInfo installedInfo = pm.getPackageInfo(apkPkg, 0);
                     if (installedInfo != null) {
-                        long installedVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                                ? installedInfo.getLongVersionCode()
-                                : installedInfo.versionCode;
+                        long installedVersion = installedInfo.getLongVersionCode();
 
                         if (installedVersion >= apkVersion) {
                             displayName = "Obsolete: " + apkFile.getName() + " (Installed: v" + installedInfo.versionName + ")";

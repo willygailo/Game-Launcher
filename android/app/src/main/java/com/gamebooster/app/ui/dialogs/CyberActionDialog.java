@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -59,7 +60,7 @@ public class CyberActionDialog {
                 Dialog dialog = new Dialog(act);
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-                View view = LayoutInflater.from(targetContext).inflate(R.layout.dialog_cyber_action, null);
+                View view = LayoutInflater.from(targetContext).inflate(R.layout.dialog_cyber_action, (ViewGroup) null, false);
                 dialog.setContentView(view);
 
                 Window window = dialog.getWindow();

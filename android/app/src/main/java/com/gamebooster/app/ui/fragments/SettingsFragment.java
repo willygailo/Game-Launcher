@@ -310,7 +310,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             isProgrammaticToggle = false;
             switchOverlayHud.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                if (!Settings.canDrawOverlays(getContext())) {
                     isProgrammaticToggle = true;
                     switchOverlayHud.setChecked(false);
                     isProgrammaticToggle = false;
@@ -467,7 +467,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchCrosshairOverlay != null) {
             switchCrosshairOverlay.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (getContext() == null) return;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
+                if (!Settings.canDrawOverlays(getContext())) {
                     switchCrosshairOverlay.setChecked(false);
                     Toast.makeText(getContext(), "Overlay Permission Required", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));

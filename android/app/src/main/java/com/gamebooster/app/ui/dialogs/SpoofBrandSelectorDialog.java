@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -47,7 +48,7 @@ public class SpoofBrandSelectorDialog {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_spoof_brand_selector, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_spoof_brand_selector, (ViewGroup) null, false);
         dialog.setContentView(view);
 
         Window window = dialog.getWindow();

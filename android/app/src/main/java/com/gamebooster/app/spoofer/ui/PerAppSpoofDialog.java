@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -48,7 +49,7 @@ public class PerAppSpoofDialog {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_per_app_spoof, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_per_app_spoof, (ViewGroup) null, false);
         dialog.setContentView(view);
 
         Window window = dialog.getWindow();
@@ -109,10 +110,7 @@ public class PerAppSpoofDialog {
                 // Check if known game or non-system app
                 boolean isKnownGame = GamePackageRegistry.isKnownGame(ai.packageName);
                 boolean isUserApp = (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
-                boolean isGameCategory = false;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME);
-                }
+                boolean isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME);
 
                 if (isKnownGame || isUserApp || isGameCategory) {
                     CharSequence label = pm.getApplicationLabel(ai);

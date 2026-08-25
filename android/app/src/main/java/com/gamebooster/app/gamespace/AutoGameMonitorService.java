@@ -56,11 +56,7 @@ public class AutoGameMonitorService extends Service {
     public static void start(Context context) {
         if (context == null || isRunning) return;
         Intent intent = new Intent(context, AutoGameMonitorService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        context.startForegroundService(intent);
     }
 
     public static void stop(Context context) {
@@ -158,21 +154,19 @@ public class AutoGameMonitorService extends Service {
 
     private String getForegroundPackage() {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-                long time = System.currentTimeMillis();
-                UsageEvents events = usm != null ? usm.queryEvents(time - 10000, time) : null;
-                if (events != null) {
-                    UsageEvents.Event event = new UsageEvents.Event();
-                    String lastPkg = null;
-                    while (events.hasNextEvent()) {
-                        events.getNextEvent(event);
-                        if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                            lastPkg = event.getPackageName();
-                        }
+            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            UsageEvents events = usm != null ? usm.queryEvents(time - 10000, time) : null;
+            if (events != null) {
+                UsageEvents.Event event = new UsageEvents.Event();
+                String lastPkg = null;
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event);
+                    if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        lastPkg = event.getPackageName();
                     }
-                    if (lastPkg != null) return lastPkg;
                 }
+                if (lastPkg != null) return lastPkg;
             }
         } catch (Exception ignored) {}
 
@@ -225,16 +219,14 @@ public class AutoGameMonitorService extends Service {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Auto Game Monitor Active",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) {
-                nm.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "Auto Game Monitor Active",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager nm = getSystemService(NotificationManager.class);
+        if (nm != null) {
+            nm.createNotificationChannel(channel);
         }
     }
 

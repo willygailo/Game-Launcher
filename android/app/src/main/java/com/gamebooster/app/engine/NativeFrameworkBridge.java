@@ -42,20 +42,18 @@ public class NativeFrameworkBridge {
     public static boolean setGameModePerformance(Context context, String packageName) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                Object gameManager = context.getSystemService(Context.GAME_SERVICE);
-                if (gameManager != null) {
-                    Class<?> gmClass = gameManager.getClass();
-                    java.lang.reflect.Method setGameModeMethod = gmClass.getMethod("setGameMode", String.class, int.class);
-                    // 2 = GameManager.GAME_MODE_PERFORMANCE
-                    setGameModeMethod.invoke(gameManager, packageName.trim(), 2);
-                    Log.i(TAG, "Native GameManager API: GAME_MODE_PERFORMANCE enforced on " + packageName);
-                    return true;
-                }
-            } catch (Throwable t) {
-                Log.d(TAG, "GameManager API reflection call fallback to cmd: " + t.getMessage());
+        try {
+            Object gameManager = context.getSystemService(Context.GAME_SERVICE);
+            if (gameManager != null) {
+                Class<?> gmClass = gameManager.getClass();
+                java.lang.reflect.Method setGameModeMethod = gmClass.getMethod("setGameMode", String.class, int.class);
+                // 2 = GameManager.GAME_MODE_PERFORMANCE
+                setGameModeMethod.invoke(gameManager, packageName.trim(), 2);
+                Log.i(TAG, "Native GameManager API: GAME_MODE_PERFORMANCE enforced on " + packageName);
+                return true;
             }
+        } catch (Throwable t) {
+            Log.d(TAG, "GameManager API reflection call fallback to cmd: " + t.getMessage());
         }
         return false;
     }
@@ -85,7 +83,7 @@ public class NativeFrameworkBridge {
      * Registers a real-time Thermal Status Listener (Android 10+ / API 29+).
      */
     public static void registerThermalListener(Context context, ThermalListener listener) {
-        if (context == null || listener == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
+        if (context == null || listener == null) return;
         try {
             PowerManager pm = (PowerManager) context.getApplicationContext().getSystemService(Context.POWER_SERVICE);
             if (pm != null && thermalListener == null) {
@@ -132,11 +130,7 @@ public class NativeFrameworkBridge {
             WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wm != null) {
                 if (wifiLowLatencyLock == null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        wifiLowLatencyLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "GameSpaceLowLatencyWifi");
-                    } else {
-                        wifiLowLatencyLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "GameSpaceHiPerfWifi");
-                    }
+                    wifiLowLatencyLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "GameSpaceLowLatencyWifi");
                     wifiLowLatencyLock.setReferenceCounted(false);
                 }
                 if (!wifiLowLatencyLock.isHeld()) {
@@ -202,7 +196,7 @@ public class NativeFrameworkBridge {
         if (context == null) return;
         try {
             ConnectivityManager cm = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (cm != null) {
                 NetworkRequest request = new NetworkRequest.Builder()
                         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
@@ -212,12 +206,10 @@ public class NativeFrameworkBridge {
                     @Override
                     public void onAvailable(Network network) {
                         super.onAvailable(network);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            try {
-                                cm.bindProcessToNetwork(network);
-                                Log.i(TAG, "Process successfully bound to high-priority gaming network.");
-                            } catch (Throwable ignored) {}
-                        }
+                        try {
+                            cm.bindProcessToNetwork(network);
+                            Log.i(TAG, "Process successfully bound to high-priority gaming network.");
+                        } catch (Throwable ignored) {}
                     }
                 });
             }
@@ -234,9 +226,7 @@ public class NativeFrameworkBridge {
         try {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             window.addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                window.setColorMode(android.content.pm.ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT);
-            }
+            window.setColorMode(android.content.pm.ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT);
         } catch (Throwable ignored) {}
     }
 
@@ -248,11 +238,9 @@ public class NativeFrameworkBridge {
         try {
             WindowManager.LayoutParams params = window.getAttributes();
             if (params != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    params.preferredRefreshRate = targetHz;
-                    window.setAttributes(params);
-                    Log.i(TAG, "Window preferredRefreshRate set to: " + targetHz + " Hz");
-                }
+                params.preferredRefreshRate = targetHz;
+                window.setAttributes(params);
+                Log.i(TAG, "Window preferredRefreshRate set to: " + targetHz + " Hz");
             }
         } catch (Throwable t) {
             Log.d(TAG, "Could not set window preferredRefreshRate: " + t.getMessage());

@@ -24,6 +24,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -145,13 +146,9 @@ public class FloatingOverlayService extends Service {
 
     public static void startOverlay(Context context) {
         if (context == null || isRunning) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) return;
+        if (!Settings.canDrawOverlays(context)) return;
         Intent intent = new Intent(context, FloatingOverlayService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        context.startForegroundService(intent);
     }
 
     public static void stopOverlay(Context context) {
@@ -186,17 +183,12 @@ public class FloatingOverlayService extends Service {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         if (inflater == null) return false;
 
-        overlayView = inflater.inflate(R.layout.floating_hud_layout, null);
+        overlayView = inflater.inflate(R.layout.floating_hud_layout, (ViewGroup) null, false);
 
         bindViews();
         setupActionButtons();
 
-        int layoutFlag;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            layoutFlag = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        } else {
-            layoutFlag = WindowManager.LayoutParams.TYPE_PHONE;
-        }
+        int layoutFlag = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
         // FLAG_NOT_FOCUSABLE with WRAP_CONTENT allows touches on the overlay while touches outside pass through to the game
         int windowFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -213,7 +205,7 @@ public class FloatingOverlayService extends Service {
         // Hardware refresh rate request (up to 185Hz)
         try {
             params.preferredRefreshRate = 185.0f;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && windowManager != null) {
+            if (windowManager != null) {
                 android.view.Display display = windowManager.getDefaultDisplay();
                 if (display != null) {
                     android.view.Display.Mode[] modes = display.getSupportedModes();
@@ -711,14 +703,12 @@ public class FloatingOverlayService extends Service {
         try {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    NetworkCapabilities caps = cm.getNetworkCapabilities(cm.getActiveNetwork());
-                    if (caps != null) {
-                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                            return "Wi-Fi";
-                        } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                            return "5G/LTE";
-                        }
+                NetworkCapabilities caps = cm.getNetworkCapabilities(cm.getActiveNetwork());
+                if (caps != null) {
+                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        return "Wi-Fi";
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        return "5G/LTE";
                     }
                 }
             }
@@ -846,11 +836,7 @@ public class FloatingOverlayService extends Service {
             }
             Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
             if (v != null && v.hasVibrator()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(18, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                    v.vibrate(18);
-                }
+                v.vibrate(VibrationEffect.createOneShot(18, VibrationEffect.DEFAULT_AMPLITUDE));
             }
         } catch (Throwable ignored) {}
     }
@@ -887,16 +873,14 @@ public class FloatingOverlayService extends Service {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Game Booster Performance Overlay",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) {
-                nm.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "Game Booster Performance Overlay",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager nm = getSystemService(NotificationManager.class);
+        if (nm != null) {
+            nm.createNotificationChannel(channel);
         }
     }
 

@@ -84,14 +84,11 @@ public final class StorageStatsHelper {
      * Checks whether MANAGE_EXTERNAL_STORAGE (All Files Access) is granted.
      */
     public static boolean hasAllFilesAccess() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                return Environment.isExternalStorageManager();
-            } catch (Throwable ignored) {
-                return false;
-            }
+        try {
+            return Environment.isExternalStorageManager();
+        } catch (Throwable ignored) {
+            return false;
         }
-        return true;
     }
 
     /**
@@ -103,9 +100,7 @@ public final class StorageStatsHelper {
             String pkg = context.getPackageName();
             ShizukuExecutor.executeShizukuCommand("pm grant " + pkg + " android.permission.PACKAGE_USAGE_STATS 2>/dev/null");
             ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " GET_USAGE_STATS allow 2>/dev/null");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null");
-            }
+            ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null");
             Log.i(TAG, "Auto-granted storage & usage permissions via Shizuku");
             return true;
         } catch (Throwable t) {
@@ -120,9 +115,7 @@ public final class StorageStatsHelper {
     @NonNull
     public static Intent createUsageAccessSettingsIntent(@NonNull Context context) {
         Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            intent.setData(Uri.fromParts("package", context.getPackageName(), null));
-        }
+        intent.setData(Uri.fromParts("package", context.getPackageName(), null));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
@@ -132,13 +125,7 @@ public final class StorageStatsHelper {
      */
     @NonNull
     public static Intent createAllFilesAccessSettingsIntent(@NonNull Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            intent.setData(Uri.fromParts("package", context.getPackageName(), null));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            return intent;
-        }
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
         intent.setData(Uri.fromParts("package", context.getPackageName(), null));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
@@ -149,9 +136,6 @@ public final class StorageStatsHelper {
      */
     @Nullable
     public static AppStorageMetrics queryAppMetrics(@NonNull Context context, @NonNull ApplicationInfo appInfo) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return null;
-        }
 
         try {
             StorageStatsManager statsManager = (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
@@ -201,9 +185,6 @@ public final class StorageStatsHelper {
     @NonNull
     public static Map<String, AppStorageMetrics> queryAllInstalledAppMetrics(@NonNull Context context) {
         Map<String, AppStorageMetrics> results = new HashMap<>();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return results;
-        }
 
         if (!hasUsageStatsPermission(context)) {
             // Try auto-grant if Shizuku is active
@@ -234,15 +215,13 @@ public final class StorageStatsHelper {
      * by clearing cache files across apps.
      */
     public static long getAllocatableBytes(@NonNull Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
-                if (sm != null) {
-                    return sm.getAllocatableBytes(StorageManager.UUID_DEFAULT);
-                }
-            } catch (Throwable t) {
-                Log.w(TAG, "getAllocatableBytes exception", t);
+        try {
+            StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            if (sm != null) {
+                return sm.getAllocatableBytes(StorageManager.UUID_DEFAULT);
             }
+        } catch (Throwable t) {
+            Log.w(TAG, "getAllocatableBytes exception", t);
         }
         return 0;
     }
@@ -253,23 +232,19 @@ public final class StorageStatsHelper {
      */
     public static boolean allocateBytes(@NonNull Context context, long bytesToReclaim) {
         if (bytesToReclaim <= 0) return true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
-                if (sm != null) {
-                    long allocatable = sm.getAllocatableBytes(StorageManager.UUID_DEFAULT);
-                    long targetBytes = Math.min(bytesToReclaim, allocatable);
-                    if (targetBytes > 0) {
-                        sm.allocateBytes(StorageManager.UUID_DEFAULT, targetBytes);
-                        Log.i(TAG, "Successfully requested StorageManager.allocateBytes: " + targetBytes);
-                        return true;
-                    }
+        try {
+            StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            if (sm != null) {
+                long allocatable = sm.getAllocatableBytes(StorageManager.UUID_DEFAULT);
+                long targetBytes = Math.min(bytesToReclaim, allocatable);
+                if (targetBytes > 0) {
+                    sm.allocateBytes(StorageManager.UUID_DEFAULT, targetBytes);
+                    Log.i(TAG, "Successfully requested StorageManager.allocateBytes: " + targetBytes);
+                    return true;
                 }
-            } catch (IOException e) {
-                Log.w(TAG, "StorageManager.allocateBytes IOException: " + e.getMessage());
-            } catch (Throwable t) {
-                Log.w(TAG, "StorageManager.allocateBytes error", t);
             }
+        } catch (Throwable t) {
+            Log.w(TAG, "allocateBytes exception", t);
         }
         return false;
     }

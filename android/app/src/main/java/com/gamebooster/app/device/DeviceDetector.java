@@ -97,8 +97,7 @@ public class DeviceDetector {
     }
 
     private static String socModelOrEmpty() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL != null
-                ? Build.SOC_MODEL.toLowerCase() : "";
+        return Build.SOC_MODEL != null ? Build.SOC_MODEL.toLowerCase() : "";
     }
 
     private static String getChipsetName() {

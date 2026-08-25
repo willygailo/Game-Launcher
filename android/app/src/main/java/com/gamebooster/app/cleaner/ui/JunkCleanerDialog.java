@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -51,7 +52,7 @@ public class JunkCleanerDialog {
         Dialog dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_junk_cleaner, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_junk_cleaner, (ViewGroup) null, false);
         dialog.setContentView(view);
 
         Window window = dialog.getWindow();

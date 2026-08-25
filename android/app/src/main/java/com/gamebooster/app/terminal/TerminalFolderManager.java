@@ -333,9 +333,7 @@ public class TerminalFolderManager {
                 fos.write(content.getBytes(StandardCharsets.UTF_8));
                 fos.flush();
             }
-            targetFile.setReadable(true, false);
-            targetFile.setWritable(true, false);
-            targetFile.setExecutable(true, false);
+            targetFile.setExecutable(true, true);
             return true;
         } catch (Throwable t) {
             Log.e(TAG, "Error saving script: " + fileName, t);

@@ -210,10 +210,7 @@ public class HomeGameScanner {
             Intent query = new Intent(Intent.ACTION_MAIN, null);
             query.addCategory(Intent.CATEGORY_LAUNCHER);
             query.setPackage(pkg);
-            int matchFlags = 0;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                matchFlags = PackageManager.MATCH_ALL;
-            }
+            int matchFlags = PackageManager.MATCH_ALL;
             List<ResolveInfo> list = pm.queryIntentActivities(query, matchFlags);
             if ((list == null || list.isEmpty()) && matchFlags != 0) {
                 list = pm.queryIntentActivities(query, 0);
@@ -388,9 +385,8 @@ public class HomeGameScanner {
                     ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
                     boolean isGame = false;
                     if (aInfo != null) {
-                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) isGame = true;
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            if (aInfo.category == ApplicationInfo.CATEGORY_GAME) isGame = true;
+                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0 || aInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                            isGame = true;
                         }
                     }
 

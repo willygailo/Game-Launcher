@@ -36,7 +36,7 @@ public class GameSpaceDndManager {
         // Toggle system DND if permission granted
         try {
             NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (nm != null) {
                 if (nm.isNotificationPolicyAccessGranted()) {
                     nm.setInterruptionFilter(enable ? NotificationManager.INTERRUPTION_FILTER_PRIORITY : NotificationManager.INTERRUPTION_FILTER_ALL);
                 }

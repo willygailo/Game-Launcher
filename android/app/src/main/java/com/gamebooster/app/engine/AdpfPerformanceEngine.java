@@ -46,11 +46,9 @@ public class AdpfPerformanceEngine {
     private synchronized void ensureInitialized(Context context) {
         if (isInitialized || context == null) return;
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                hintManager = context.getApplicationContext().getSystemService(android.os.PerformanceHintManager.class);
-                if (hintManager != null) {
-                    Log.i(TAG, "ADPF PerformanceHintManager initialized successfully (Android " + Build.VERSION.RELEASE + " / API " + Build.VERSION.SDK_INT + ").");
-                }
+            hintManager = context.getApplicationContext().getSystemService(android.os.PerformanceHintManager.class);
+            if (hintManager != null) {
+                Log.i(TAG, "ADPF PerformanceHintManager initialized successfully (Android " + Build.VERSION.RELEASE + " / API " + Build.VERSION.SDK_INT + ").");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Failed to initialize PerformanceHintManager: " + t.getMessage());
@@ -127,7 +125,7 @@ public class AdpfPerformanceEngine {
      * @return 0.0 (cold) to 1.0 (throttling threshold), or Float.NaN if unsupported
      */
     public static float getThermalHeadroom(Context context, int forecastSeconds) {
-        if (context == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        if (context == null) {
             return Float.NaN;
         }
         try {

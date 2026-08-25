@@ -161,6 +161,7 @@ public final class WebViewBoosterChannel {
     /**
      * Attempts writing locally to app files directory for internal WebView inspection.
      */
+    @android.annotation.SuppressLint("SetWorldReadable")
     private static void writeLocalWebViewFlagsFallback(String flags) {
         try {
             File tmpDir = new File("/data/local/tmp");

@@ -239,12 +239,7 @@ public class GameManagerRepository {
 
         // Check Android system game flags/categories
         if (appInfo != null) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
-                    return true;
-                }
-            }
-            if ((appInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
+            if (appInfo.category == ApplicationInfo.CATEGORY_GAME || (appInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
                 return true;
             }
         }

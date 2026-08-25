@@ -57,21 +57,17 @@ public final class WebViewPerformanceTuner {
             } catch (Throwable ignored) {
             }
 
-            // Android 5.0+ Offscreen Pre-Rasterization (Eliminates checkerboarding & frame drops)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                try {
-                    settings.setOffscreenPreRaster(true);
-                    CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
-                } catch (Throwable ignored) {
-                }
+            // Offscreen Pre-Rasterization (Eliminates checkerboarding & frame drops)
+            try {
+                settings.setOffscreenPreRaster(true);
+                CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+            } catch (Throwable ignored) {
             }
 
-            // Android 8.0+ Safe Browsing Control (Reduces network latency for verified game assets)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                try {
-                    settings.setSafeBrowsingEnabled(false);
-                } catch (Throwable ignored) {
-                }
+            // Safe Browsing Control (Reduces network latency for verified game assets)
+            try {
+                settings.setSafeBrowsingEnabled(false);
+            } catch (Throwable ignored) {
             }
         }
     }

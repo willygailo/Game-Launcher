@@ -169,11 +169,9 @@ public final class DiagnosticsExporter {
         lines.add("Brand / Manufacturer: " + Build.BRAND + " / " + Build.MANUFACTURER);
         lines.add("Product / Board: " + Build.PRODUCT + " / " + Build.BOARD);
         lines.add("Hardware Platform: " + Build.HARDWARE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                lines.add("SoC Model: " + Build.SOC_MODEL + " (" + Build.SOC_MANUFACTURER + ")");
-            } catch (Throwable ignored) {}
-        }
+        try {
+            lines.add("SoC Model: " + Build.SOC_MODEL + " (" + Build.SOC_MANUFACTURER + ")");
+        } catch (Throwable ignored) {}
         lines.add("CPU Cores: " + Runtime.getRuntime().availableProcessors() + " Cores");
         lines.add("Supported ABIs: " + Arrays.toString(Build.SUPPORTED_ABIS));
         if (context != null) {
@@ -202,11 +200,9 @@ public final class DiagnosticsExporter {
         lines.add("--- [3. ANDROID OS & KERNEL RUNTIME] ---");
         lines.add("Android Version: " + safe(androidRelease) + " (API Level " + sdkInt + ")");
         lines.add("Build ID / Display: " + Build.DISPLAY);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                lines.add("Security Patch Level: " + Build.VERSION.SECURITY_PATCH);
-            } catch (Throwable ignored) {}
-        }
+        try {
+            lines.add("Security Patch Level: " + Build.VERSION.SECURITY_PATCH);
+        } catch (Throwable ignored) {}
         lines.add("Dalvik Heap Limit: " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + " MB");
         String kernelVer = readKernelVersion();
         lines.add("Kernel Version: " + kernelVer);
@@ -280,19 +276,15 @@ public final class DiagnosticsExporter {
                 PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
                 if (pm != null) {
                     lines.add("Power Save Mode: " + (pm.isPowerSaveMode() ? "⚠️ ON (Performance Throttled)" : "✅ OFF (Full Performance)"));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        int thermalStatus = pm.getCurrentThermalStatus();
-                        lines.add("Thermal Status: " + formatThermalStatus(thermalStatus));
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        try {
-                            float headroom = pm.getThermalHeadroom(30);
-                            if (!Float.isNaN(headroom) && headroom >= 0) {
-                                int headroomPct = Math.min(100, (int) (headroom * 100));
-                                lines.add("Thermal Headroom (30s forecast): " + headroomPct + "%" + (headroom >= 1.0f ? " (Throttling Alert)" : " (Nominal)"));
-                            }
-                        } catch (Throwable ignored) {}
-                    }
+                    int thermalStatus = pm.getCurrentThermalStatus();
+                    lines.add("Thermal Status: " + formatThermalStatus(thermalStatus));
+                    try {
+                        float headroom = pm.getThermalHeadroom(30);
+                        if (!Float.isNaN(headroom) && headroom >= 0) {
+                            int headroomPct = Math.min(100, (int) (headroom * 100));
+                            lines.add("Thermal Headroom (30s forecast): " + headroomPct + "%" + (headroom >= 1.0f ? " (Throttling Alert)" : " (Nominal)"));
+                        }
+                    } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
         }
@@ -528,53 +520,44 @@ public final class DiagnosticsExporter {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return "Active Network: Unavailable";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Network activeNet = cm.getActiveNetwork();
-            if (activeNet != null) {
-                NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
-                if (caps != null) {
-                    StringBuilder sb = new StringBuilder();
-                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                        sb.append("Active Network: Wi-Fi");
-                        WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                        if (wm != null) {
-                            try {
-                                WifiInfo winfo = wm.getConnectionInfo();
-                                if (winfo != null && winfo.getLinkSpeed() > 0) {
-                                    sb.append(" (").append(winfo.getLinkSpeed()).append(" Mbps, RSSI: ").append(winfo.getRssi()).append(" dBm)");
-                                }
-                            } catch (Throwable ignored) {}
-                        }
-                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                        sb.append("Active Network: Cellular Mobile Data");
-                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                        sb.append("Active Network: Ethernet LAN");
-                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                        sb.append("Active Network: VPN Tunnel");
-                    } else {
-                        sb.append("Active Network: Connected");
+        Network activeNet = cm.getActiveNetwork();
+        if (activeNet != null) {
+            NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
+            if (caps != null) {
+                StringBuilder sb = new StringBuilder();
+                if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    sb.append("Active Network: Wi-Fi");
+                    WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    if (wm != null) {
+                        try {
+                            WifiInfo winfo = wm.getConnectionInfo();
+                            if (winfo != null && winfo.getLinkSpeed() > 0) {
+                                sb.append(" (").append(winfo.getLinkSpeed()).append(" Mbps, RSSI: ").append(winfo.getRssi()).append(" dBm)");
+                            }
+                        } catch (Throwable ignored) {}
                     }
-
-                    int downKbps = caps.getLinkDownstreamBandwidthKbps();
-                    int upKbps = caps.getLinkUpstreamBandwidthKbps();
-                    if (downKbps > 0 || upKbps > 0) {
-                        sb.append(" | Bandwidth: ↓").append(downKbps / 1000).append(" Mbps / ↑").append(upKbps / 1000).append(" Mbps");
-                    }
-                    if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED)) {
-                        sb.append(" [Low Congestion]");
-                    }
-                    return sb.toString();
+                } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                    sb.append("Active Network: Cellular Mobile Data");
+                } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                    sb.append("Active Network: Ethernet LAN");
+                } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                    sb.append("Active Network: VPN Tunnel");
+                } else {
+                    sb.append("Active Network: Connected");
                 }
+
+                int downKbps = caps.getLinkDownstreamBandwidthKbps();
+                int upKbps = caps.getLinkUpstreamBandwidthKbps();
+                if (downKbps > 0 || upKbps > 0) {
+                    sb.append(" | Bandwidth: ↓").append(downKbps / 1000).append(" Mbps / ↑").append(upKbps / 1000).append(" Mbps");
+                }
+                if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED)) {
+                    sb.append(" [Low Congestion]");
+                }
+                return sb.toString();
             }
-            return "Active Network: Offline / Disconnected";
-        } else {
-            @SuppressWarnings("deprecation")
-            NetworkInfo activeNet = cm.getActiveNetworkInfo();
-            if (activeNet != null && activeNet.isConnected()) {
-                return "Active Network: " + activeNet.getTypeName() + " (" + activeNet.getSubtypeName() + ")";
-            }
-            return "Active Network: Offline / Disconnected";
         }
+        return "Active Network: Offline / Disconnected";
     }
 
     private static String readKernelVersion() {
@@ -719,8 +702,7 @@ public final class DiagnosticsExporter {
                     ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
                     boolean isGame = false;
                     if (aInfo != null) {
-                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) isGame = true;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0 || aInfo.category == ApplicationInfo.CATEGORY_GAME) {
                             isGame = true;
                         }
                     }

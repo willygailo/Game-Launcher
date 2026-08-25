@@ -170,9 +170,7 @@ public class GameBoosterService extends Service {
     }
 
     private Notification buildNotification(int targetHz) {
-        int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-                : PendingIntent.FLAG_UPDATE_CURRENT;
+        int flag = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
 
         Intent lock185Intent = new Intent(this, GameBoosterService.class).setAction(ACTION_LOCK_185HZ);
         PendingIntent p185 = PendingIntent.getService(this, 1, lock185Intent, flag);
@@ -202,16 +200,14 @@ public class GameBoosterService extends Service {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Game Booster Active Service",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) {
-                nm.createNotificationChannel(channel);
-            }
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "Game Booster Active Service",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager nm = getSystemService(NotificationManager.class);
+        if (nm != null) {
+            nm.createNotificationChannel(channel);
         }
     }
 }

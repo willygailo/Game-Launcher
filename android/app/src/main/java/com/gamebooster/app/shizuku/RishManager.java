@@ -34,6 +34,7 @@ public class RishManager {
     /**
      * Initializes and extracts rish and rish_shizuku.dex to internal app storage.
      */
+    @android.annotation.SuppressLint({"SetWorldReadable", "SetWorldWritable"})
     public static synchronized boolean initialize(Context context) {
         if (context == null) return false;
         if (isInitialized && rishBinFile != null && rishBinFile.exists() && rishDexFile != null && rishDexFile.exists()) {
