@@ -32,17 +32,17 @@ android {
         }
     }
 
-    ndkVersion '27.0.12077973'
+    // ndkVersion '27.0.12077973'
 
-    externalNativeBuild {
-        cmake {
-            path file('src/main/cpp/CMakeLists.txt')
-        }
-    }
+    // externalNativeBuild {
+    //     cmake {
+    //         path file('src/main/cpp/CMakeLists.txt')
+    //     }
+    // }
 
     buildFeatures {
-        aidl true
-        buildConfig true
+        aidl = true
+        buildConfig = true
     }
 
     signingConfigs {
@@ -90,7 +90,7 @@ android {
 
     buildTypes {
         debug {
-            // Per-build version identity: 16.4.0-PRO-debug-<git sha>
+            // Per-build version identity: 16.7.0-PRO-debug-<git sha>
             def gitSha = ''
             try {
                 gitSha = 'git rev-parse --short HEAD'.execute(null, rootProject.projectDir).text.trim()
@@ -101,9 +101,9 @@ android {
             }
         }
         release {
-            signingConfig (hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug)
-            minifyEnabled true
-            shrinkResources true
+            signingConfig = (hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug)
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -128,6 +128,7 @@ android {
         jniLibs {
             useLegacyPackaging = false
             pickFirsts += ['**/libgamebooster_native.so']
+            keepDebugSymbols += ['**/libgamebooster_native.so']
         }
     }
 
@@ -175,8 +176,8 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
         html.required = true
     }
     def excluded = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/*$*.class', '**/Manifest*']
-    def javaClasses = fileTree(dir: "$buildDir/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: excluded)
+    def javaClasses = fileTree(dir: layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes"), excludes: excluded)
     classDirectories.setFrom(files(javaClasses))
     sourceDirectories.setFrom(files("$projectDir/src/main/java"))
-    executionData.setFrom(fileTree(dir: "$buildDir/jacoco", includes: ['**/*.exec']))
+    executionData.setFrom(fileTree(dir: layout.buildDirectory.dir("jacoco"), includes: ['**/*.exec']))
 }
