@@ -179,21 +179,6 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (holder.isUpdatingProgrammatically) return;
 
-                // Elevated Privilege Gate: verify Shizuku, Rish, or Root access
-                boolean privileged = ShizukuManager.isShizukuRunningAndGranted()
-                        || RishManager.isRishAvailable()
-                        || ShellExecutor.isRootSuAvailable();
-
-                if (isChecked && !privileged) {
-                    holder.isUpdatingProgrammatically = true;
-                    buttonView.setChecked(false);
-                    targetItem.setApplied(false);
-                    TweakPreferences.saveTweakState(context, targetItem.getId(), false);
-                    holder.isUpdatingProgrammatically = false;
-                    ShizukuManager.showShizukuPermissionDialog(context, targetItem.getTitle());
-                    return;
-                }
-
                 // 1. Immediately persist state in memory & storage
                 targetItem.setApplied(isChecked);
                 TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);

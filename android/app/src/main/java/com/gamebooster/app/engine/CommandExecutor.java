@@ -33,8 +33,9 @@ public class CommandExecutor {
             if (res != null) return res;
         }
 
-        // 3. Fallback to Local Shell Execution
-        ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, false);
+        // 3. Fallback to Root SU / Local Shell Execution
+        boolean preferRoot = ShellExecutor.isRootSuAvailable();
+        ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, preferRoot);
         if (!shellRes.isSuccess()) {
             return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
         }
@@ -61,9 +62,13 @@ public class CommandExecutor {
                 return Collections.singletonList("ERROR: no output");
             }
             return Collections.singletonList(result);
+        } else {
+            List<String> results = new java.util.ArrayList<>();
+            for (String cmd : commands) {
+                results.add(executeSystemCommand(cmd));
+            }
+            return results;
         }
-
-        return Collections.emptyList();
     }
 
     public static boolean setSystemProperty(String key, String value) {

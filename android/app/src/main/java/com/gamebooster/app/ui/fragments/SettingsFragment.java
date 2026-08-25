@@ -308,7 +308,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     return;
                 }
                 if (isChecked) {
-                    if (!requireShizukuForToggle(buttonView, "Performance HUD Overlay")) return;
                     com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(getContext());
                     Toast.makeText(getContext(), "⚡ Performance HUD Overlay Enabled", Toast.LENGTH_SHORT).show();
                 } else {
@@ -324,9 +323,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             isProgrammaticToggle = false;
             switchGamingDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Gaming DND & Call Suppressor")) return;
                 com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getContext(), isChecked);
-                Toast.makeText(getContext(), isChecked ? "🔕 Gaming DND Enabled" : "Gaming DND Disabled", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), isChecked ? "🔕 Gaming DND & Call Suppressor Enabled" : "Gaming DND Disabled", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -337,7 +335,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchAutoGameBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
                 if (isChecked) {
-                    if (!requireShizukuForToggle(buttonView, "Auto Game Launch Monitor")) return;
                     com.gamebooster.app.gamespace.AutoGameMonitorService.start(getContext());
                     Toast.makeText(getContext(), "🚀 Auto Game Launch Monitor Enabled", Toast.LENGTH_SHORT).show();
                 } else {
@@ -353,7 +350,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             isProgrammaticToggle = false;
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Esports Footstep Audio Boost")) return;
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
                 Toast.makeText(getContext(), isChecked ? "🎧 Esports Footstep Audio Boost Enabled" : "Esports Audio Disabled", Toast.LENGTH_SHORT).show();
             });
@@ -370,7 +366,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             }
             switchAntiLog.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Anti-Log & Telemetry Blocker")) return;
                 ManualSettingsPreferences.setAntiLogEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     if (isChecked) {
@@ -530,13 +525,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchAngleMode != null) {
             switchAngleMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Google ANGLE Vulkan 3D Driver")) return;
                 ManualSettingsPreferences.setAngleMode(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     GpuTweaksChannel.setAngleMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ ANGLE Vulkan Driver Applied for Supported Games" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Google ANGLE Vulkan Driver Applied" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -546,13 +540,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGameDriver != null) {
             switchGameDriver.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "System Game Graphics Driver")) return;
                 ManualSettingsPreferences.setGameDriverEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     GpuTweaksChannel.setGameDriverMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Driver Applied for Supported Games" : "Game Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Graphics Driver Applied" : "Game Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -562,13 +555,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchGpuMode != null) {
             switchGpuMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "GPU Render Engine: Vulkan 3D")) return;
                 ManualSettingsPreferences.setGpuMode(getContext(), isChecked ? "vulkan" : "skia");
                 AppExecutors.getInstance().executeCommand(() -> {
                     PerformanceChannel.setGpuRenderMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Vulkan 3D HWUI & Overlays Applied for Supported Games" : "Default OpenGL Engine Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Vulkan 3D HWUI & Skia Pipeline Applied" : "Default OpenGL Engine Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -578,13 +570,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchCpuMode != null) {
             switchCpuMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "CPU Governor: Performance Extreme")) return;
                 ManualSettingsPreferences.setCpuMode(getContext(), isChecked ? "performance" : "schedutil");
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.CpuGovernorChannel.setGovernor(isChecked ? "extreme" : "schedutil");
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Per-Game CPU Extreme Governor & ADPF Boost Locked" : "CPU Schedutil Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ CPU Extreme Governor & ADPF Boost Locked" : "CPU Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -718,7 +709,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "5G / 6G NR Data Accelerator")) return;
                 ManualSettingsPreferences.set5g6gDataEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimize5gAnd6gDataNetwork(isChecked);
@@ -734,7 +724,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchWifiLowLatency != null) {
             switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Wi-Fi 6/7 Low-Latency Anti-Lag")) return;
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimizeWifi6and7LowLatency(isChecked);
@@ -750,7 +739,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchDualDataWifi != null) {
             switchDualDataWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Dual Data + Wi-Fi Aggregation")) return;
                 ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setDualDataAndWifiAcceleration(isChecked);
@@ -810,7 +798,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchTetheringHw != null) {
             switchTetheringHw.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Tethering Hardware Offload")) return;
                 ManualSettingsPreferences.setTetherHwEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setTetheringHwAcceleration(isChecked);
@@ -826,7 +813,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchForceGnss != null) {
             switchForceGnss.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Force Full GNSS Raw Measurements")) return;
                 ManualSettingsPreferences.setForceGnssEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.setForceFullGnss(isChecked);
@@ -950,7 +936,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
                 if (getContext() == null || profile == null) return;
-                if (!requireShizukuForAction("Device Identity Spoofer")) return;
 
                 // Capture prior state so a blocked apply can be cleanly reverted
                 boolean wasEnabled = SpoofPreferences.isSpoofEnabled(getContext());
@@ -1093,8 +1078,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchDeviceSpoof != null) {
             switchDeviceSpoof.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !requireShizukuForToggle(buttonView, "Device Identity Spoofer")) return;
-
                 SpoofPreferences.setSpoofEnabled(getContext(), isChecked);
 
                 if (!isChecked) {
