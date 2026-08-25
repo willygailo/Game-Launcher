@@ -191,17 +191,37 @@ public class HomeGameScanner {
             if (pmIntent != null) {
                 pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return pmIntent;
             }
         } catch (Throwable ignored) {}
 
-        // 2. Query explicit MAIN + LAUNCHER activities
+        // 2. Try Leanback (Android TV / Shield / Box games)
+        try {
+            Intent leanback = pm.getLeanbackLaunchIntentForPackage(pkg);
+            if (leanback != null) {
+                leanback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                return leanback;
+            }
+        } catch (Throwable ignored) {}
+
+        // 3. Query explicit MAIN + LAUNCHER activities with MATCH_ALL
         try {
             Intent query = new Intent(Intent.ACTION_MAIN, null);
             query.addCategory(Intent.CATEGORY_LAUNCHER);
             query.setPackage(pkg);
-            List<ResolveInfo> list = pm.queryIntentActivities(query, 0);
+            int matchFlags = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                matchFlags = PackageManager.MATCH_ALL;
+            }
+            List<ResolveInfo> list = pm.queryIntentActivities(query, matchFlags);
+            if ((list == null || list.isEmpty()) && matchFlags != 0) {
+                list = pm.queryIntentActivities(query, 0);
+            }
             if (list != null && !list.isEmpty() && list.get(0).activityInfo != null) {
                 ActivityInfo aInfo = list.get(0).activityInfo;
                 Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -209,24 +229,57 @@ public class HomeGameScanner {
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return intent;
             }
         } catch (Throwable ignored) {}
 
-        // 3. Query any MAIN activity
+        // 4. Query CATEGORY_INFO activities
         try {
-            Intent queryAll = new Intent(Intent.ACTION_MAIN, null);
-            queryAll.setPackage(pkg);
-            List<ResolveInfo> listAll = pm.queryIntentActivities(queryAll, 0);
-            if (listAll != null && !listAll.isEmpty() && listAll.get(0).activityInfo != null) {
-                ActivityInfo aInfo = listAll.get(0).activityInfo;
+            Intent queryInfo = new Intent(Intent.ACTION_MAIN, null);
+            queryInfo.addCategory(Intent.CATEGORY_INFO);
+            queryInfo.setPackage(pkg);
+            List<ResolveInfo> listInfo = pm.queryIntentActivities(queryInfo, 0);
+            if (listInfo != null && !listInfo.isEmpty() && listInfo.get(0).activityInfo != null) {
+                ActivityInfo aInfo = listInfo.get(0).activityInfo;
                 Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_INFO);
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return intent;
+            }
+        } catch (Throwable ignored) {}
+
+        // 5. Query any exported Activity declared in PackageInfo
+        try {
+            android.content.pm.PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_ACTIVITIES);
+            if (pi != null && pi.activities != null && pi.activities.length > 0) {
+                for (ActivityInfo ai : pi.activities) {
+                    if (ai != null && ai.exported && ai.name != null) {
+                        Intent intent = new Intent(Intent.ACTION_MAIN);
+                        intent.setComponent(new ComponentName(pkg, ai.name));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                                | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        return intent;
+                    }
+                }
+                // If none explicitly exported, use the first activity
+                ActivityInfo firstAi = pi.activities[0];
+                if (firstAi != null && firstAi.name != null) {
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.setComponent(new ComponentName(pkg, firstAi.name));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                            | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    return intent;
+                }
             }
         } catch (Throwable ignored) {}
 

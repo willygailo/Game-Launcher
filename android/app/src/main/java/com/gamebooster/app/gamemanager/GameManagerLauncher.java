@@ -91,7 +91,7 @@ public final class GameManagerLauncher {
     }
 
     /**
-     * Full asynchronous 4-phase launch pipeline with multi-tier fallback.
+     * Instant launch pipeline with zero UI latency and parallel background optimization.
      */
     public static void launchGame(Context context, String packageName, Intent launchIntent,
                                   String label, OnGameLaunchListener listener) {
@@ -104,204 +104,166 @@ public final class GameManagerLauncher {
         final String pkg = packageName.trim();
         final String gameTitle = (label != null && !label.isEmpty()) ? label : pkg;
 
-        Toast.makeText(appContext, "🚀 Launching " + gameTitle + " via GAME-MANAGER...", Toast.LENGTH_SHORT).show();
+        int targetFps = GameProfilePreferences.getTargetHz(appContext, pkg);
+        if (targetFps <= 0) targetFps = 185;
+        final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 1: RESOLVE BEST LAUNCH INTENT
+        // ═══════════════════════════════════════════════════════════
+        PackageManager pm = appContext.getPackageManager();
+        Intent targetIntent = launchIntent;
+        if (targetIntent == null) {
+            targetIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
+        }
+        if (targetIntent == null) {
+            try {
+                targetIntent = pm.getLaunchIntentForPackage(pkg);
+            } catch (Throwable ignored) {}
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 2: INSTANT DIRECT DISPATCH (0ms Latency on UI Thread)
+        // ═══════════════════════════════════════════════════════════
+        boolean launchedImmediately = false;
+        if (targetIntent != null) {
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+
+            try {
+                context.startActivity(targetIntent);
+                launchedImmediately = true;
+            } catch (Throwable t1) {
+                try {
+                    appContext.startActivity(targetIntent);
+                    launchedImmediately = true;
+                } catch (Throwable t2) {
+                    Log.w(TAG, "Direct startActivity failed for " + pkg + ": " + t2.getMessage());
+                }
+            }
+        }
+
+        if (launchedImmediately) {
+            Toast.makeText(appContext, "🚀 Turbo Launching " + gameTitle + " @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
+            if (listener != null) listener.onLaunchSuccess(pkg);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 3: ASYNC BOOSTS & ELEVATED SHELL LAUNCH FALLBACK
+        // ═══════════════════════════════════════════════════════════
+        final boolean directSuccess = launchedImmediately;
+        final Intent resolvedIntent = targetIntent;
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                // ═══════════════════════════════════════════════════════════
-                // PHASE 1 — PURGE & COLD START (Guaranteed fresh config reload)
-                // ═══════════════════════════════════════════════════════════
-                if (listener != null) {
-                    AppExecutors.getInstance().postToMainThread(
-                        () -> listener.onPreLaunchProgress("Phase 1: Purging RAM & Cold-Starting " + gameTitle + "..."));
-                }
-                try {
-                    // Drop OS page cache for maximum free RAM
-                    CommandExecutor.executeSystemCommand("sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
+                // If direct framework launch failed, execute elevated shell dispatch immediately
+                if (!directSuccess) {
+                    boolean elevatedSuccess = false;
+                    ComponentName component = resolvedIntent != null ? resolvedIntent.getComponent() : null;
+                    String componentStr = component != null ? component.flattenToShortString() : null;
 
-                    if (ShizukuExecutor.hasShizukuPermission()) {
-                        ShizukuExecutor.executeShizukuCommand("am kill-all 2>/dev/null");
-                        ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
-                        try { Thread.sleep(200); } catch (InterruptedException ignored) {}
-                    } else if (ShellExecutor.isRootSuAvailable()) {
-                        ShellExecutor.executeCommand("am force-stop " + pkg + " 2>/dev/null", true);
+                    String startCmd = (componentStr != null ? "cmd activity start-activity -W -n " + componentStr + " 2>/dev/null || am start -n " + componentStr + " 2>/dev/null || " : "")
+                            + "monkey -p " + pkg + " -c android.intent.category.LAUNCHER 1 2>/dev/null || am start --activity-brought-to-front -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p " + pkg + " 2>/dev/null";
+
+                    // 1. Shizuku UserService
+                    if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                        String out = ShizukuUserServiceConnector.getInstance().executeCommand(startCmd);
+                        if (out != null && !out.contains("Error") && !out.contains("Exception")) {
+                            elevatedSuccess = true;
+                        }
                     }
-                } catch (Throwable t) {
-                    Log.w(TAG, "Phase 1 purge warning: " + t.getMessage());
+
+                    // 2. Shizuku reflection
+                    if (!elevatedSuccess && ShizukuExecutor.hasShizukuPermission()) {
+                        String out = ShizukuExecutor.executeShizukuCommand(startCmd);
+                        if (out != null && !out.startsWith("ERROR")) {
+                            elevatedSuccess = true;
+                        }
+                    }
+
+                    // 3. Rish
+                    if (!elevatedSuccess && RishManager.isRishAvailable()) {
+                        String out = RishManager.executeRishCommand(null, startCmd);
+                        if (out != null && !out.startsWith("ERROR")) {
+                            elevatedSuccess = true;
+                        }
+                    }
+
+                    // 4. Root su
+                    if (!elevatedSuccess && ShellExecutor.isRootSuAvailable()) {
+                        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(startCmd, true);
+                        if (cr.isSuccess()) {
+                            elevatedSuccess = true;
+                        }
+                    }
+
+                    // 5. Normal sh fallback
+                    if (!elevatedSuccess) {
+                        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(startCmd, false);
+                        if (cr.isSuccess()) {
+                            elevatedSuccess = true;
+                        }
+                    }
+
+                    if (elevatedSuccess) {
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            Toast.makeText(appContext, "🚀 Privileged Elevated Launch: " + gameTitle + " @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
+                            if (listener != null) listener.onLaunchSuccess(pkg);
+                        });
+                    } else {
+                        // Fallback: Redirect to Play Store if package is truly not installed
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            try {
+                                Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg));
+                                marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                context.startActivity(marketIntent);
+                            } catch (Throwable e) {
+                                try {
+                                    Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg));
+                                    webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    context.startActivity(webIntent);
+                                } catch (Throwable ignored) {}
+                            }
+                        });
+                    }
                 }
 
                 // ═══════════════════════════════════════════════════════════
-                // PHASE 2 — FRAMEWORK DRIVER & SURFACEFLINGER Hz FORCING
+                // STEP 4: APPLY HARDWARE, DRIVER & DISPLAY REFRESH BOOSTS
                 // ═══════════════════════════════════════════════════════════
-                if (listener != null) {
-                    AppExecutors.getInstance().postToMainThread(
-                        () -> listener.onPreLaunchProgress("Phase 2: Forcing GPU Driver & SurfaceFlinger Hz..."));
-                }
-
-                int targetFps = GameProfilePreferences.getTargetHz(appContext, pkg);
-                if (targetFps <= 0) targetFps = 185;
-                final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
-
                 try {
                     if (ShizukuExecutor.hasShizukuPermission()) {
-                        // 2a. Game Driver opt-in (Vulkan / ANGLE / GLES)
+                        // Game Driver (Vulkan/ANGLE) & Android Game Mode API
                         ShizukuExecutor.executeShizukuCommands(
                             "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
                             "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
-                            "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null"
-                        );
-
-                        // 2b. Android Game Mode API (API 33+)
-                        ShizukuExecutor.executeShizukuCommands(
+                            "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null",
                             "cmd game mode performance " + pkg + " 2>/dev/null",
                             "cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null",
-                            "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null"
-                        );
-
-                        // 2c. SurfaceFlinger direct override (deepest Hz lock path)
-                        ShizukuExecutor.executeShizukuCommand(
-                            "service call SurfaceFlinger 1035 i32 " + fps + " 2>/dev/null");
-
-                        // 2d. Suppress debug jank
-                        ShizukuExecutor.executeShizukuCommands(
+                            "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null",
+                            "service call SurfaceFlinger 1035 i32 " + fps + " 2>/dev/null",
                             "setprop debug.sf.nobootanimation 1",
                             "setprop debug.sf.disable_backpressure 1",
                             "setprop debug.hwui.render_dirty_regions false"
                         );
                     }
                 } catch (Throwable t) {
-                    Log.w(TAG, "Phase 2 driver/Hz forcing warning: " + t.getMessage());
+                    Log.w(TAG, "Hardware Hz/Driver warning: " + t.getMessage());
                 }
 
                 // ═══════════════════════════════════════════════════════════
-                // PHASE 3 — FULL GAME SESSION (Shizuku AIDL + Native Injection)
+                // STEP 5: FULL GAME SESSION (Governors, Masking, locks, C++ config)
                 // ═══════════════════════════════════════════════════════════
-                if (listener != null) {
-                    AppExecutors.getInstance().postToMainThread(
-                        () -> listener.onPreLaunchProgress("Phase 3: Applying Shizuku & Android API Boosts..."));
-                }
-
                 try {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                 } catch (Throwable t) {
-                    Log.w(TAG, "Phase 3 session engine warning: " + t.getMessage());
+                    Log.w(TAG, "Session engine warning: " + t.getMessage());
                 }
-
-                // ═══════════════════════════════════════════════════════════
-                // PHASE 4 — ROBUST INTENT & ELEVATED DISPATCH
-                // ═══════════════════════════════════════════════════════════
-                PackageManager pm = appContext.getPackageManager();
-                Intent finalIntent = launchIntent;
-                if (finalIntent == null) {
-                    finalIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
-                }
-
-                if (finalIntent == null) {
-                    finalIntent = pm.getLaunchIntentForPackage(pkg);
-                }
-
-                if (finalIntent == null) {
-                    finalIntent = new Intent(Intent.ACTION_MAIN)
-                            .addCategory(Intent.CATEGORY_LAUNCHER)
-                            .setPackage(pkg);
-                }
-
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES
-                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-                final Intent targetIntent = finalIntent;
-                final ComponentName component = targetIntent.getComponent();
-
-                AppExecutors.getInstance().postToMainThread(() -> {
-                    boolean launched = false;
-
-                    // Tier 1: Direct Framework startActivity
-                    try {
-                        context.startActivity(targetIntent);
-                        launched = true;
-                    } catch (Throwable t1) {
-                        try {
-                            appContext.startActivity(targetIntent);
-                            launched = true;
-                        } catch (Throwable t2) {
-                            Log.w(TAG, "Standard startActivity failed for " + pkg + ": " + t2.getMessage());
-                        }
-                    }
-
-                    // Tier 2: Privileged Elevated Shell Launch (Shizuku / AIDL / Rish / Root)
-                    if (!launched) {
-                        final String componentStr = component != null ? component.flattenToShortString() : null;
-                        AppExecutors.getInstance().executeCommand(() -> {
-                            boolean elevatedSuccess = false;
-
-                            String startCmd = componentStr != null
-                                    ? "cmd activity start-activity -W -n " + componentStr + " 2>/dev/null || am start -n " + componentStr + " 2>/dev/null"
-                                    : "am start --activity-brought-to-front -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p " + pkg + " 2>/dev/null || monkey -p " + pkg + " -c android.intent.category.LAUNCHER 1";
-
-                            // Try Shizuku UserService
-                            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                                String out = ShizukuUserServiceConnector.getInstance().executeCommand(startCmd);
-                                if (out != null && !out.contains("Error") && !out.contains("Exception")) {
-                                    elevatedSuccess = true;
-                                }
-                            }
-
-                            // Try Shizuku reflection
-                            if (!elevatedSuccess && ShizukuExecutor.hasShizukuPermission()) {
-                                String out = ShizukuExecutor.executeShizukuCommand(startCmd);
-                                if (out != null && !out.startsWith("ERROR")) {
-                                    elevatedSuccess = true;
-                                }
-                            }
-
-                            // Try Rish
-                            if (!elevatedSuccess && RishManager.isRishAvailable()) {
-                                String out = RishManager.executeRishCommand(null, startCmd);
-                                if (out != null && !out.startsWith("ERROR")) {
-                                    elevatedSuccess = true;
-                                }
-                            }
-
-                            // Try Root su
-                            if (!elevatedSuccess && ShellExecutor.isRootSuAvailable()) {
-                                ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(startCmd, true);
-                                if (cr.isSuccess()) {
-                                    elevatedSuccess = true;
-                                }
-                            }
-
-                            // Tier 3: Play Store fallback if app is completely missing
-                            if (!elevatedSuccess) {
-                                AppExecutors.getInstance().postToMainThread(() -> {
-                                    try {
-                                        Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg));
-                                        marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        context.startActivity(marketIntent);
-                                    } catch (Throwable e) {
-                                        try {
-                                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg));
-                                            webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            context.startActivity(webIntent);
-                                        } catch (Throwable ignored) {}
-                                    }
-                                });
-                            }
-                        });
-                        launched = true;
-                    }
-
-                    if (launched) {
-                        Toast.makeText(appContext, "⚡ " + gameTitle + " is Running in Boosted Mode @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
-                        if (listener != null) listener.onLaunchSuccess(pkg);
-                    } else {
-                        if (listener != null) listener.onLaunchFailed(pkg, "Failed to dispatch intent");
-                    }
-                });
 
             } catch (Throwable t) {
-                Log.e(TAG, "Launch error for " + pkg, t);
+                Log.e(TAG, "Async launch optimization error for " + pkg, t);
                 if (listener != null) {
                     AppExecutors.getInstance().postToMainThread(() -> listener.onLaunchFailed(pkg, t.getMessage()));
                 }
