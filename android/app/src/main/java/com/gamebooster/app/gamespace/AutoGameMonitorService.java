@@ -13,8 +13,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
+import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -40,6 +41,7 @@ public class AutoGameMonitorService extends Service {
     private static final int NOTIF_ID = 777;
 
     private static boolean isRunning = false;
+    private HandlerThread monitorThread;
     private Handler handler;
     private Runnable monitorRunnable;
     private String lastActiveGamePackage = null;
@@ -79,7 +81,9 @@ public class AutoGameMonitorService extends Service {
     }
 
     private void setupMonitorLoop() {
-        handler = new Handler(Looper.getMainLooper());
+        monitorThread = new HandlerThread("AutoGameMonitor", Process.THREAD_PRIORITY_BACKGROUND);
+        monitorThread.start();
+        handler = new Handler(monitorThread.getLooper());
         monitorRunnable = new Runnable() {
             @Override
             public void run() {
@@ -195,6 +199,10 @@ public class AutoGameMonitorService extends Service {
         isRunning = false;
         if (handler != null && monitorRunnable != null) {
             handler.removeCallbacks(monitorRunnable);
+        }
+        if (monitorThread != null) {
+            monitorThread.quitSafely();
+            monitorThread = null;
         }
     }
 

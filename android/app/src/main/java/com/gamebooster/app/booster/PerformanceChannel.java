@@ -14,9 +14,9 @@ public class PerformanceChannel {
     private static final String TAG = "PerformanceChannel";
 
     public enum Profile {
-        EXTREME_PERFORMANCE("Extreme Performance (185 FPS/Hz)"),
-        PERFORMANCE("High Performance (185 FPS/Hz)"),
-        BALANCED("Balanced Gaming (185 FPS/Hz)");
+        EXTREME_PERFORMANCE("Extreme Performance"),
+        PERFORMANCE("High Performance"),
+        BALANCED("Balanced");
 
         public final String title;
         Profile(String title) { this.title = title; }

@@ -61,13 +61,22 @@ public class NetworkOptimizer {
 
     public static boolean applyGamingDns(Context context, DnsMode mode) {
         if (mode == DnsMode.SYSTEM_DEFAULT) {
-            CommandExecutor.executeSystemCommand("settings put global private_dns_mode off");
+            if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                Log.w(TAG, "Shizuku not available — cannot modify private DNS settings");
+                return false;
+            }
+            ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_mode off");
             return true;
         }
 
         // Set private DNS mode to opportunistic / hostname DoT (DNS-over-TLS)
-        CommandExecutor.executeSystemCommand("settings put global private_dns_mode hostname");
-        CommandExecutor.executeSystemCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
+        // These require WRITE_SECURE_SETTINGS — must go through Shizuku privileged shell
+        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            Log.w(TAG, "Shizuku not available — cannot modify private DNS settings");
+            return false;
+        }
+        ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_mode hostname");
+        ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
 
         // System property DNS fallback
         CommandExecutor.executeSystemCommand("setprop net.dns1 " + mode.primary);

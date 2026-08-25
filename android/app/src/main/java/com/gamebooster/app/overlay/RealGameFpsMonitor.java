@@ -6,6 +6,8 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.util.Log;
 import android.view.Choreographer;
+import android.view.Display;
+import android.view.WindowManager;
 
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -77,6 +79,18 @@ public class RealGameFpsMonitor {
             }
             this.listener = listener;
             this.isRunning = true;
+
+            // Query the device's actual display refresh rate for the fallback
+            try {
+                WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null) {
+                    Display display = wm.getDefaultDisplay();
+                    float deviceRefreshRate = display.getRefreshRate();
+                    if (deviceRefreshRate > 0) {
+                        fallbackFps = Math.round(deviceRefreshRate);
+                    }
+                }
+            } catch (Exception ignored) {}
 
             monitorThread = new HandlerThread("GB_FpsTelemetry");
             monitorThread.start();
@@ -315,10 +329,11 @@ public class RealGameFpsMonitor {
         try {
             refreshPeriodNanos = Long.parseLong(lines[0].trim());
         } catch (Exception e) {
-            refreshPeriodNanos = 6944444L; // Default 144Hz (~6.94ms)
+            // Default to 185Hz (~5.405ms) — the app's flagship target refresh rate
+            refreshPeriodNanos = 5_405_405L;
         }
 
-        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 6944444L;
+        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 5_405_405L; // 185Hz fallback
 
         List<Long> presentTimes = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {

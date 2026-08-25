@@ -233,7 +233,9 @@ public final class CrashLog {
                             out.write(buffer, 0, bytesRead);
                         }
                     }
-                    new FileOutputStream(file, false).close(); // truncate
+                    try (FileOutputStream truncate = new FileOutputStream(file, false)) {
+                        // truncate by opening and immediately closing
+                    }
                 } catch (Throwable ignored) {}
             }
         }

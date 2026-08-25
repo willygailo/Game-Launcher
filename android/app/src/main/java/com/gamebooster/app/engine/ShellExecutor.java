@@ -3,6 +3,7 @@ package com.gamebooster.app.engine;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 public class ShellExecutor {
 
@@ -76,7 +77,13 @@ public class ShellExecutor {
                 stderr.append(line).append("\n");
             }
 
-            int exitCode = process.waitFor();
+            int exitCode;
+            boolean finished = process.waitFor(5, TimeUnit.SECONDS);
+            if (!finished) {
+                process.destroyForcibly();
+                return new CommandResult(-1, "", "Command timed out after 5s");
+            }
+            exitCode = process.exitValue();
             return new CommandResult(exitCode, stdout.toString().trim(), stderr.toString().trim());
 
         } catch (Exception e) {
