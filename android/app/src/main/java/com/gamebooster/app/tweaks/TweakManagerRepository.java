@@ -547,6 +547,86 @@ public class TweakManagerRepository {
         }
     }
 
+    public static int getTotalCount() {
+        return TWEAKS.size();
+    }
+
+    public static int getAppliedCount(Context context) {
+        if (context == null) {
+            int count = 0;
+            for (TweakItem t : TWEAKS) {
+                if (t.isApplied()) count++;
+            }
+            return count;
+        }
+        return TweakPreferences.getAppliedTweakIds(context).size();
+    }
+
+    /**
+     * Executes a single command using the best available privileged channel.
+     */
+    private static String executePrivilegedCommand(String command) {
+        if (command == null || command.trim().isEmpty()) return "SUCCESS";
+
+        // Tier 1: Direct Shizuku AIDL UserService
+        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            String res = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(command);
+            if (res != null) return res;
+        }
+
+        // Tier 1 Fallback: Shizuku reflection / newProcess
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            String res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(command);
+            if (res != null) return res;
+        }
+
+        // Tier 2: Standalone Rish
+        if (com.gamebooster.app.shizuku.RishManager.isRishAvailable()) {
+            try {
+                String rishOut = com.gamebooster.app.shizuku.RishManager.executeRishCommand(null, command);
+                if (rishOut != null && !rishOut.startsWith("ERROR")) {
+                    return rishOut;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Tier 2/3: Root su execution
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            com.gamebooster.app.engine.ShellExecutor.CommandResult rootRes =
+                    com.gamebooster.app.engine.ShellExecutor.executeCommand(command, true);
+            if (rootRes.isSuccess()) {
+                return rootRes.stdout.isEmpty() ? "SUCCESS" : rootRes.stdout;
+            }
+        }
+
+        // Tier 3: Standard CommandExecutor fallback
+        return CommandExecutor.executeSystemCommand(command);
+    }
+
+    /**
+     * Executes a list of commands using the best available privileged channel.
+     */
+    private static void executePrivilegedBatch(List<String> commands) {
+        if (commands == null || commands.isEmpty()) return;
+
+        // Tier 1: Direct Shizuku AIDL UserService
+        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeBatchCommands(commands);
+            return;
+        }
+
+        // Tier 1 Fallback: ShizukuExecutor list execution
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(commands);
+            return;
+        }
+
+        // Tier 2/3: Rish, Root su, or sequential execution
+        for (String cmd : commands) {
+            executePrivilegedCommand(cmd);
+        }
+    }
+
     public static boolean applyTweak(TweakItem tweak) {
         return applyTweak(null, tweak);
     }
@@ -554,14 +634,7 @@ public class TweakManagerRepository {
     public static boolean applyTweak(Context context, TweakItem tweak) {
         if (tweak == null) return false;
 
-        String res;
-        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            res = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(tweak.getApplyCommand());
-        } else if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getApplyCommand());
-        } else {
-            res = CommandExecutor.executeSystemCommand(tweak.getApplyCommand());
-        }
+        executePrivilegedCommand(tweak.getApplyCommand());
 
         tweak.setApplied(true);
         if (context != null) {
@@ -577,14 +650,7 @@ public class TweakManagerRepository {
     public static boolean revertTweak(Context context, TweakItem tweak) {
         if (tweak == null) return false;
 
-        String res;
-        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            res = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(tweak.getRevertCommand());
-        } else if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(tweak.getRevertCommand());
-        } else {
-            res = CommandExecutor.executeSystemCommand(tweak.getRevertCommand());
-        }
+        executePrivilegedCommand(tweak.getRevertCommand());
 
         tweak.setApplied(false);
         if (context != null) {
@@ -610,15 +676,13 @@ public class TweakManagerRepository {
             appliedCount++;
         }
 
-        // Fast atomic execution via Shizuku AIDL
-        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().execBatchCommands(batchCmds);
-        } else if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(String.join("; ", batchCmds));
-        }
+        // Execute batch through multi-tier engine
+        executePrivilegedBatch(batchCmds);
 
         // Execute master root performance tweaks script for 185Hz
-        com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+        try {
+            com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+        } catch (Throwable ignored) {}
 
         return appliedCount;
     }
@@ -638,19 +702,49 @@ public class TweakManagerRepository {
         });
     }
 
+    public static int revertAllTweaks(Context context) {
+        int revertedCount = 0;
+        List<String> batchCmds = new ArrayList<>();
+        for (TweakItem tweak : TWEAKS) {
+            batchCmds.add(tweak.getRevertCommand());
+            tweak.setApplied(false);
+            if (context != null) {
+                TweakPreferences.saveTweakState(context, tweak.getId(), false);
+            }
+            revertedCount++;
+        }
+
+        executePrivilegedBatch(batchCmds);
+        return revertedCount;
+    }
+
+    public static void revertAllTweaksAsync(Context context, OnBatchCompleteListener listener) {
+        AppExecutors.getInstance().executeCommand(() -> {
+            int revertedCount = revertAllTweaks(context);
+            if (listener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(revertedCount));
+            }
+        });
+    }
+
     public static void restoreAppliedTweaksAsync(Context context) {
         if (context == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
             EngineMode mode = CommandExecutor.getActiveEngineMode();
-            if (mode == EngineMode.READ_ONLY) return;
+            if (mode == EngineMode.READ_ONLY && !com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) return;
 
             // 1. Re-apply all enabled Shizuku ADB system tweaks
+            List<String> savedCmds = new ArrayList<>();
             for (TweakItem tweak : TWEAKS) {
                 boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
                 if (wasSavedApplied) {
-                    if (tweak.isRequiresShizuku() && mode != EngineMode.SHIZUKU) continue;
-                    applyTweak(context, tweak);
+                    tweak.setApplied(true);
+                    savedCmds.add(tweak.getApplyCommand());
                 }
+            }
+
+            if (!savedCmds.isEmpty()) {
+                executePrivilegedBatch(savedCmds);
             }
 
             // 2. Re-apply manual hardware engine settings permanently (Zero Auto-Off)
@@ -683,7 +777,9 @@ public class TweakManagerRepository {
             }
 
             // 3. Execute master root performance script for 185Hz
-            com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+            try {
+                com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+            } catch (Throwable ignored) {}
         });
     }
 }

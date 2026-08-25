@@ -864,7 +864,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             rvTweaks.setHasFixedSize(true);
             rvTweaks.setNestedScrollingEnabled(false);
             tweaksAdapter = new TweaksAdapter(getContext(), TweakManagerRepository.getAllTweaks());
+            tweaksAdapter.setOnTweakStateChangeListener((item, isApplied, totalAppliedCount) -> {
+                if (tvTweaksStatus != null) {
+                    tvTweaksStatus.setText("ACTIVE: " + totalAppliedCount + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
+                }
+            });
             rvTweaks.setAdapter(tweaksAdapter);
+            if (tvTweaksStatus != null) {
+                tvTweaksStatus.setText("ACTIVE: " + TweakManagerRepository.getAppliedCount(getContext()) + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
+            }
         }
 
         final TweakCategory[] selectedCategory = {TweakCategory.ALL};
@@ -1350,7 +1358,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private void refreshAllStatuses() {
         try {
             EngineUIHelper.refreshEngineStatus(tvEngineStatus);
-            EngineUIHelper.refreshEngineStatus(tvTweaksStatus);
+            if (tvTweaksStatus != null && getContext() != null) {
+                tvTweaksStatus.setText("ACTIVE: " + TweakManagerRepository.getAppliedCount(getContext()) + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
+            }
             updateSystemSettingsStatus();
             updateSpoofUiState();
             updatePrecisionAimStatus();

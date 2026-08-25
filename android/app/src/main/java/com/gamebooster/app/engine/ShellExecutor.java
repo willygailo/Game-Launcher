@@ -1,6 +1,7 @@
 package com.gamebooster.app.engine;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 
 public class ShellExecutor {
@@ -21,17 +22,45 @@ public class ShellExecutor {
         }
     }
 
-    public static CommandResult executeCommand(String command, boolean unused) {
+    private static Boolean sHasSu = null;
+
+    public static boolean isRootSuAvailable() {
+        if (sHasSu != null) return sHasSu;
+        String[] paths = {"/system/bin/su", "/system/xbin/su", "/sbin/su", "/data/local/xbin/su",
+                "/data/local/bin/su", "/system/sd/xbin/su", "/system/bin/failsafe/su", "/data/local/su"};
+        for (String p : paths) {
+            try {
+                if (new File(p).exists()) {
+                    sHasSu = true;
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+        sHasSu = false;
+        return false;
+    }
+
+    public static CommandResult executeCommand(String command, boolean preferRoot) {
+        if (preferRoot && isRootSuAvailable()) {
+            CommandResult suRes = executeInternal("su", command);
+            if (suRes.isSuccess()) {
+                return suRes;
+            }
+        }
         return executeCommand(command);
     }
 
     public static CommandResult executeCommand(String command) {
+        return executeInternal("sh", command);
+    }
+
+    private static CommandResult executeInternal(String shellBinary, String command) {
         Process process = null;
         BufferedReader isReader = null;
         BufferedReader esReader = null;
 
         try {
-            process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+            process = Runtime.getRuntime().exec(new String[]{shellBinary, "-c", command});
 
             StringBuilder stdout = new StringBuilder();
             StringBuilder stderr = new StringBuilder();
