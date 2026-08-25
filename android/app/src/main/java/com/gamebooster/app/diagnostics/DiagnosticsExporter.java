@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
@@ -28,8 +29,7 @@ import com.gamebooster.app.config.ConfigBackupManager;
 import com.gamebooster.app.config.GameConfigPathResolver;
 import com.gamebooster.app.device.DisplayCapabilitiesDetector;
 import com.gamebooster.app.engine.MasterOptimizationEnforcer;
-import com.gamebooster.app.games.GameAppInfo;
-import com.gamebooster.app.games.HomeGameScanner;
+import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.shizuku.RishManager;
 import com.gamebooster.app.shizuku.ShizukuConnectionManager;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -51,9 +51,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import rikka.shizuku.Shizuku;
 
@@ -75,26 +77,61 @@ public final class DiagnosticsExporter {
     }
 
     public static List<String> buildSnapshot(Context context) {
-        if (context == null) return new ArrayList<>();
+        if (context == null) return fallbackSnapshot("Null context provided");
         Context appCtx = context.getApplicationContext();
 
-        MasterOptimizationEnforcer.EnforcementStatus status =
-                MasterOptimizationEnforcer.verifyEnforcementStatus(appCtx);
-        boolean spoofEnabled = SpoofPreferences.isSpoofEnabled(appCtx);
-        String spoofProfileId = SpoofPreferences.getActiveProfileId(appCtx);
-        String crashTail = CrashLog.readTail(appCtx, 2500);
+        try {
+            MasterOptimizationEnforcer.EnforcementStatus status = null;
+            try {
+                status = MasterOptimizationEnforcer.verifyEnforcementStatus(appCtx);
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to verify enforcement status: " + t.getMessage());
+            }
 
-        return buildSnapshot(
-                BuildConfig.VERSION_NAME + " (code " + BuildConfig.VERSION_CODE + ", " + (BuildConfig.DEBUG ? "DEBUG" : "RELEASE") + ")",
-                Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ")",
-                Build.VERSION.RELEASE,
-                Build.VERSION.SDK_INT,
-                status,
-                spoofEnabled,
-                spoofProfileId,
-                crashTail,
-                appCtx
-        );
+            boolean spoofEnabled = false;
+            String spoofProfileId = "";
+            try {
+                spoofEnabled = SpoofPreferences.isSpoofEnabled(appCtx);
+                spoofProfileId = SpoofPreferences.getActiveProfileId(appCtx);
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to read spoof preferences: " + t.getMessage());
+            }
+
+            String crashTail = "";
+            try {
+                crashTail = CrashLog.readTail(appCtx, 2500);
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to read crash tail: " + t.getMessage());
+            }
+
+            return buildSnapshot(
+                    BuildConfig.VERSION_NAME + " (code " + BuildConfig.VERSION_CODE + ", " + (BuildConfig.DEBUG ? "DEBUG" : "RELEASE") + ")",
+                    Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ")",
+                    Build.VERSION.RELEASE,
+                    Build.VERSION.SDK_INT,
+                    status,
+                    spoofEnabled,
+                    spoofProfileId,
+                    crashTail,
+                    appCtx
+            );
+        } catch (Throwable t) {
+            Log.e(TAG, "Fatal error building diagnostics snapshot: " + t.getMessage(), t);
+            return fallbackSnapshot("Exception in buildSnapshot: " + t.getMessage());
+        }
+    }
+
+    private static List<String> fallbackSnapshot(String reason) {
+        List<String> lines = new ArrayList<>();
+        lines.add("==================================================");
+        lines.add("       ⚡ GAME BOOSTER PRO SYSTEM DIAGNOSTICS ⚡   ");
+        lines.add("==================================================");
+        lines.add("Generated: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date()));
+        lines.add("Status: " + reason);
+        lines.add("App Version: " + BuildConfig.VERSION_NAME + " (code " + BuildConfig.VERSION_CODE + ")");
+        lines.add("Device: " + Build.MANUFACTURER + " " + Build.MODEL + " (Android " + Build.VERSION.RELEASE + ", SDK " + Build.VERSION.SDK_INT + ")");
+        lines.add("==================================================");
+        return lines;
     }
 
     public static List<String> buildSnapshot(String appVersion, String deviceModel,
@@ -140,22 +177,24 @@ public final class DiagnosticsExporter {
         lines.add("CPU Cores: " + Runtime.getRuntime().availableProcessors() + " Cores");
         lines.add("Supported ABIs: " + Arrays.toString(Build.SUPPORTED_ABIS));
         if (context != null) {
-            long[] ram = getMemoryInfo(context);
-            if (ram[0] > 0) {
-                long totalMb = ram[0] / (1024 * 1024);
-                long availMb = ram[1] / (1024 * 1024);
-                long usedMb = totalMb - availMb;
-                int pct = totalMb > 0 ? (int) ((usedMb * 100) / totalMb) : 0;
-                lines.add("RAM Usage: " + pct + "% (" + usedMb + " / " + totalMb + " MB, Free: " + availMb + " MB)");
-            }
-            Map<String, Long> memInfo = readMemInfo();
-            if (memInfo.containsKey("SwapTotal") && memInfo.get("SwapTotal") > 0) {
-                long swapTotalMb = memInfo.get("SwapTotal") / 1024;
-                long swapFreeMb = memInfo.containsKey("SwapFree") ? memInfo.get("SwapFree") / 1024 : 0;
-                long swapUsedMb = swapTotalMb - swapFreeMb;
-                int swapPct = swapTotalMb > 0 ? (int) ((swapUsedMb * 100) / swapTotalMb) : 0;
-                lines.add("Swap / ZRAM: " + swapPct + "% (" + swapUsedMb + " / " + swapTotalMb + " MB used)");
-            }
+            try {
+                long[] ram = getMemoryInfo(context);
+                if (ram[0] > 0) {
+                    long totalMb = ram[0] / (1024 * 1024);
+                    long availMb = ram[1] / (1024 * 1024);
+                    long usedMb = totalMb - availMb;
+                    int pct = totalMb > 0 ? (int) ((usedMb * 100) / totalMb) : 0;
+                    lines.add("RAM Usage: " + pct + "% (" + usedMb + " / " + totalMb + " MB, Free: " + availMb + " MB)");
+                }
+                Map<String, Long> memInfo = readMemInfo();
+                if (memInfo.containsKey("SwapTotal") && memInfo.get("SwapTotal") > 0) {
+                    long swapTotalMb = memInfo.get("SwapTotal") / 1024;
+                    long swapFreeMb = memInfo.containsKey("SwapFree") ? memInfo.get("SwapFree") / 1024 : 0;
+                    long swapUsedMb = swapTotalMb - swapFreeMb;
+                    int swapPct = swapTotalMb > 0 ? (int) ((swapUsedMb * 100) / swapTotalMb) : 0;
+                    lines.add("Swap / ZRAM: " + swapPct + "% (" + swapUsedMb + " / " + swapTotalMb + " MB used)");
+                }
+            } catch (Throwable ignored) {}
         }
         lines.add("");
 
@@ -178,10 +217,12 @@ public final class DiagnosticsExporter {
         boolean hasSu = checkRootSuBinary();
         lines.add("Root Binary (su): " + (hasSu ? "✅ DETECTED (Root Access Ready)" : "❌ NOT FOUND (Non-Root/Shizuku Engine)"));
         if (context != null) {
-            String rootManager = detectRootManager(context);
-            if (rootManager != null) {
-                lines.add("Root Manager: " + rootManager);
-            }
+            try {
+                String rootManager = detectRootManager(context);
+                if (rootManager != null) {
+                    lines.add("Root Manager: " + rootManager);
+                }
+            } catch (Throwable ignored) {}
         }
         String selinux = getSELinuxStatus();
         lines.add("SELinux State: " + selinux);
@@ -203,10 +244,15 @@ public final class DiagnosticsExporter {
                 lines.add("Shizuku UID / Version: UID=" + Shizuku.getUid() + " / v" + Shizuku.getVersion());
             } catch (Throwable ignored) {}
         }
-        boolean aidlConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+        boolean aidlConnected = false;
+        try {
+            aidlConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+        } catch (Throwable ignored) {}
         lines.add("AIDL UserService Connected: " + (aidlConnected ? "✅ TRUE (Direct Binder IPC Active)" : "⚠️ FALSE (Connecting/Idle)"));
         lines.add("Rish Embedded Executable: " + (RishManager.isRishAvailable() ? "✅ READY" : "⚠️ STANDBY"));
-        lines.add("Shizuku Connection Manager State: " + ShizukuConnectionManager.getInstance().getState());
+        try {
+            lines.add("Shizuku Connection Manager State: " + ShizukuConnectionManager.getInstance().getState());
+        } catch (Throwable ignored) {}
         lines.add("");
 
         // 6. Battery & Thermal Status
@@ -302,17 +348,17 @@ public final class DiagnosticsExporter {
         }
         lines.add("");
 
-        // 10. Installed Games & 144fps Patcher Status
+        // 10. Installed Games & 144fps Patcher Status (Fast Lightweight Query without heavy drawable loading)
         lines.add("--- [10. INSTALLED GAMES & 144FPS PATCH STATUS] ---");
         if (context != null) {
             try {
-                List<GameAppInfo> installedGames = HomeGameScanner.scanTargetGames(context);
+                List<InstalledGameQuickInfo> installedGames = scanInstalledGamesFast(context);
                 lines.add("Installed Supported Games Detected: " + installedGames.size());
-                for (GameAppInfo g : installedGames) {
-                    int backups = ConfigBackupManager.getBackupCount(context, g.getPackageName());
-                    List<String> paths = GameConfigPathResolver.getPathsForGame(g.getPackageName());
+                for (InstalledGameQuickInfo g : installedGames) {
+                    int backups = ConfigBackupManager.getBackupCount(context, g.packageName);
+                    List<String> paths = GameConfigPathResolver.getPathsForGame(g.packageName);
                     int pathCount = paths != null ? paths.size() : 0;
-                    lines.add("  🎮 " + g.getLabel() + " (" + g.getPackageName() + "): "
+                    lines.add("  🎮 " + g.label + " (" + g.packageName + "): "
                             + pathCount + " config paths, " + backups + " backups active [144fps UltraExtreme Capable]");
                 }
             } catch (Throwable ignored) {
@@ -325,13 +371,17 @@ public final class DiagnosticsExporter {
         lines.add("--- [11. HARDWARE DEVICE IDENTITY SPOOFER] ---");
         lines.add("Spoofing Enabled: " + (spoofEnabled ? "✅ ACTIVE" : "❌ DISABLED"));
         if (spoofEnabled && spoofProfileId != null && !spoofProfileId.isEmpty()) {
-            SpoofProfile prof = DeviceSpooferEngine.getProfileById(spoofProfileId);
-            if (prof != null) {
-                lines.add("Active Profile: " + prof.displayName + " (" + prof.model + ")");
-                lines.add("Spoofed Brand / Model: " + prof.brand + " / " + prof.model);
-                lines.add("Fingerprint: " + prof.fingerprint);
-            } else {
-                lines.add("Active Profile ID: " + spoofProfileId + " (Custom)");
+            try {
+                SpoofProfile prof = DeviceSpooferEngine.getProfileById(spoofProfileId);
+                if (prof != null) {
+                    lines.add("Active Profile: " + prof.displayName + " (" + prof.model + ")");
+                    lines.add("Spoofed Brand / Model: " + prof.brand + " / " + prof.model);
+                    lines.add("Fingerprint: " + prof.fingerprint);
+                } else {
+                    lines.add("Active Profile ID: " + spoofProfileId + " (Custom)");
+                }
+            } catch (Throwable ignored) {
+                lines.add("Active Profile ID: " + spoofProfileId);
             }
         } else {
             lines.add("Active Profile: None (Original Device Identity)");
@@ -340,11 +390,15 @@ public final class DiagnosticsExporter {
 
         // 12. GAME-MANAGER Status
         lines.add("--- [12. GAME-MANAGER ENGINE STATUS] ---");
-        com.gamebooster.app.gamemanager.GameManagerStatus gmStatus = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance();
-        lines.add("Active Game Session: " + (gmStatus.hasActiveSession() ? "🎮 " + gmStatus.getActiveGamePackage() + " (" + gmStatus.getSessionDurationSeconds() + "s)" : "IDLE (Baseline Restored)"));
-        lines.add("Last Enforcement Time: " + gmStatus.getFormattedLastApplyTime());
-        lines.add("Last Enforcement Action: " + gmStatus.getLastApplySummary());
-        lines.add("Applications Masked Count: " + gmStatus.getMaskedAppsCount());
+        try {
+            com.gamebooster.app.gamemanager.GameManagerStatus gmStatus = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance();
+            lines.add("Active Game Session: " + (gmStatus.hasActiveSession() ? "🎮 " + gmStatus.getActiveGamePackage() + " (" + gmStatus.getSessionDurationSeconds() + "s)" : "IDLE (Baseline Restored)"));
+            lines.add("Last Enforcement Time: " + gmStatus.getFormattedLastApplyTime());
+            lines.add("Last Enforcement Action: " + gmStatus.getLastApplySummary());
+            lines.add("Applications Masked Count: " + gmStatus.getMaskedAppsCount());
+        } catch (Throwable ignored) {
+            lines.add("Active Game Session: IDLE (Baseline Restored)");
+        }
         lines.add("");
 
         // 13. Crash Logs & Stability
@@ -391,6 +445,7 @@ public final class DiagnosticsExporter {
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
                 new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.print(content);
+            writer.flush();
         }
         Log.i(TAG, "Exported diagnostics to " + file.getAbsolutePath());
         return file;
@@ -617,5 +672,68 @@ public final class DiagnosticsExporter {
             }
         } catch (Throwable ignored) {}
         return map;
+    }
+
+    private static class InstalledGameQuickInfo {
+        final String packageName;
+        final String label;
+
+        InstalledGameQuickInfo(String packageName, String label) {
+            this.packageName = packageName;
+            this.label = label;
+        }
+    }
+
+    private static List<InstalledGameQuickInfo> scanInstalledGamesFast(Context context) {
+        List<InstalledGameQuickInfo> list = new ArrayList<>();
+        if (context == null) return list;
+        PackageManager pm = context.getPackageManager();
+        Set<String> added = new HashSet<>();
+
+        // 1. Check known supported game package names directly (ultra fast, zero drawable overhead)
+        for (Map.Entry<String, GamePackageRegistry.GameInfoSpec> entry : GamePackageRegistry.getAllKnownGames().entrySet()) {
+            String pkg = entry.getKey();
+            if (added.contains(pkg)) continue;
+            try {
+                ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                if (appInfo != null) {
+                    String label = entry.getValue() != null ? entry.getValue().title : pkg;
+                    list.add(new InstalledGameQuickInfo(pkg, label));
+                    added.add(pkg);
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // 2. Query Launcher category games
+        try {
+            Intent gameIntent = new Intent(Intent.ACTION_MAIN, null);
+            gameIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(gameIntent, 0);
+            if (resolveInfos != null) {
+                for (ResolveInfo ri : resolveInfos) {
+                    if (ri == null || ri.activityInfo == null) continue;
+                    String pkg = ri.activityInfo.packageName;
+                    if (pkg == null || added.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
+                        continue;
+                    }
+                    ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
+                    boolean isGame = false;
+                    if (aInfo != null) {
+                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) isGame = true;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                            isGame = true;
+                        }
+                    }
+                    if (isGame) {
+                        CharSequence labelSeq = ri.loadLabel(pm);
+                        String label = labelSeq != null ? labelSeq.toString() : pkg;
+                        list.add(new InstalledGameQuickInfo(pkg, label));
+                        added.add(pkg);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        return list;
     }
 }

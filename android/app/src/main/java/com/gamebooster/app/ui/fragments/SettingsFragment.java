@@ -277,7 +277,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnDiagExport = view.findViewById(R.id.btn_diag_export);
         Button btnDiagClear = view.findViewById(R.id.btn_diag_clear);
         if (btnDiagRefresh != null) {
-            btnDiagRefresh.setOnClickListener(v -> renderDiagnostics());
+            btnDiagRefresh.setOnClickListener(v -> {
+                renderDiagnostics();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "🔄 Refreshing diagnostics...", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         if (btnDiagExport != null) {
             btnDiagExport.setOnClickListener(v -> exportDiagnostics());
@@ -1429,32 +1434,46 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private void renderDiagnostics() {
-        if (getContext() == null || tvDiagStatus == null) return;
-        final Context ctx = getContext().getApplicationContext();
-        AppExecutors.getInstance().executeCommand(() -> {
-            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
-            final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
-            AppExecutors.getInstance().postToMainThread(() -> {
-                if (isAdded() && tvDiagStatus != null) {
-                    tvDiagStatus.setText(text);
-                }
-            });
+        if (tvDiagStatus == null) return;
+        final Context ctx = getContext() != null ? getContext().getApplicationContext() : null;
+        if (ctx == null) return;
+
+        AppExecutors.getInstance().executeScan(() -> {
+            try {
+                java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
+                final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (tvDiagStatus != null) {
+                        tvDiagStatus.setText(text);
+                    }
+                });
+            } catch (Throwable t) {
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    if (tvDiagStatus != null) {
+                        tvDiagStatus.setText("⚠️ Diagnostics Query Error: " + t.getMessage());
+                    }
+                });
+            }
         });
     }
 
     private void exportDiagnostics() {
         if (getContext() == null) return;
         final Context ctx = getContext().getApplicationContext();
-        renderDiagnostics();
-        AppExecutors.getInstance().executeCommand(() -> {
-            java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
+        Toast.makeText(getContext(), "⏳ Generating diagnostics report...", Toast.LENGTH_SHORT).show();
+        AppExecutors.getInstance().executeScan(() -> {
             try {
-                java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(
-                        ctx, com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+                java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
+                final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
+                java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(ctx, text);
                 AppExecutors.getInstance().postToMainThread(() -> {
-                    if (isAdded() && getContext() != null) {
+                    if (tvDiagStatus != null) {
+                        tvDiagStatus.setText(text);
+                    }
+                    if (getContext() != null) {
                         try {
-                            startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
+                            Intent shareIntent = com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file);
+                            startActivity(shareIntent);
                             Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
                         } catch (Exception ex) {
                             Toast.makeText(getContext(), "Share failed: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
@@ -1463,7 +1482,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 });
             } catch (Exception e) {
                 AppExecutors.getInstance().postToMainThread(() -> {
-                    if (isAdded() && getContext() != null) {
+                    if (getContext() != null) {
                         Toast.makeText(getContext(), "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
