@@ -7,10 +7,10 @@ import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,6 +63,7 @@ public final class CrashLog {
     public static void appendCrash(Context context, Thread thread, Throwable throwable) {
         if (context == null) return;
         File file = crashFile(context);
+        ensureParentDir(file);
         rotateIfNeeded(file);
 
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
@@ -108,6 +109,9 @@ public final class CrashLog {
         return sb.toString();
     }
 
+    /**
+     * Reads the tail (last N characters) of the crash log file using RandomAccessFile for zero-copy reliability.
+     */
     public static String readTail(Context context, int maxChars) {
         if (context == null) return "";
         try {
@@ -116,16 +120,17 @@ public final class CrashLog {
             long len = file.length();
             int bytesToRead = (int) Math.min(len, maxChars);
             byte[] data = new byte[bytesToRead];
-            try (FileInputStream in = new FileInputStream(file)) {
+            
+            try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
                 if (len > bytesToRead) {
-                    long skipped = in.skip(len - bytesToRead);
-                    if (skipped < 0) return "";
+                    raf.seek(len - bytesToRead);
                 }
-                int read = in.read(data);
+                int read = raf.read(data);
                 if (read <= 0) return "";
                 return new String(data, 0, read, StandardCharsets.UTF_8);
             }
         } catch (Exception e) {
+            Log.w(TAG, "readTail error: " + e.getMessage());
             return "";
         }
     }
@@ -141,7 +146,12 @@ public final class CrashLog {
         try {
             File file = crashFile(context);
             if (file.exists()) {
-                return file.delete();
+                boolean del1 = file.delete();
+                File backup = new File(file.getParentFile(), FILE_NAME + ".old");
+                if (backup.exists()) {
+                    backup.delete();
+                }
+                return del1;
             }
             return true;
         } catch (Exception e) {
@@ -158,6 +168,12 @@ public final class CrashLog {
 
     private static File crashFile(Context context) {
         return new File(context.getFilesDir(), FILE_NAME);
+    }
+
+    private static void ensureParentDir(File file) {
+        if (file != null && file.getParentFile() != null && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
     }
 
     private static void rotateIfNeeded(File file) {

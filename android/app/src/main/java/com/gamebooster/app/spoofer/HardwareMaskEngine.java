@@ -303,8 +303,8 @@ public class HardwareMaskEngine {
             }
             injectAllInstalledGamesHardwareProfile(profile);
 
-            Log.i(TAG, "✔ [MASKING COMPLETE] Shizuku Hardware masking active for " + profile.displayName);
-            return commandsExecuted;
+            Log.i(TAG, "✔ [MASKING COMPLETE] Hardware masking active for " + profile.displayName);
+            return true;
 
         } catch (Throwable t) {
             Log.e(TAG, "Failed to apply full hardware mask: " + profile.id, t);

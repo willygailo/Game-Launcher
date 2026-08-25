@@ -122,6 +122,9 @@ public class PerAppSpoofAdapter extends RecyclerView.Adapter<PerAppSpoofAdapter.
                         SpoofPreferences.setProfileIdForPackage(context, item.packageName, chosen.id);
                         notifyDataSetChanged();
                         if (listener != null) listener.onProfileAssigned(item.packageName, chosen.id);
+                        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                            DeviceSpooferEngine.applyProfile(context.getApplicationContext(), chosen, item.packageName);
+                        });
                     }
                 })
                 .setNegativeButton("CANCEL", null)

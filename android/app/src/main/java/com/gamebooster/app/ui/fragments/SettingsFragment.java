@@ -1108,7 +1108,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 } else {
                     String activeId = SpoofPreferences.getActiveProfileId(getContext());
                     if (activeId == null || activeId.trim().isEmpty()) {
-                        activeId = "black_shark_5_pro";
+                        activeId = "samsung_s26_ultra";
                         SpoofPreferences.setActiveProfileId(getContext(), activeId);
                     }
                     SpoofProfile prof = DeviceSpooferEngine.getProfileById(activeId);
@@ -1116,7 +1116,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         prof = DeviceSpooferEngine.getDefaultProfile();
                     }
                     final SpoofProfile finalProf = prof;
-                    if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
+                    if (spoofProfileAdapter != null && finalProf != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
                     updateSpoofUiState();
                     AppExecutors.getInstance().executeCommand(() -> {
                         boolean applied = DeviceSpooferEngine.applyProfile(getContext(), finalProf, null);
@@ -1428,17 +1428,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void exportDiagnostics() {
         if (getContext() == null) return;
-        renderDiagnostics();
         final Context ctx = getContext().getApplicationContext();
+        renderDiagnostics();
         AppExecutors.getInstance().executeCommand(() -> {
             java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
             try {
                 java.io.File file = com.gamebooster.app.diagnostics.DiagnosticsExporter.exportToFile(
-                        getContext(), com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
+                        ctx, com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines));
                 AppExecutors.getInstance().postToMainThread(() -> {
                     if (isAdded() && getContext() != null) {
-                        startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
-                        Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
+                        try {
+                            startActivity(com.gamebooster.app.diagnostics.DiagnosticsExporter.shareSnapshot(getContext(), file));
+                            Toast.makeText(getContext(), "🩺 Diagnostics exported", Toast.LENGTH_SHORT).show();
+                        } catch (Exception ex) {
+                            Toast.makeText(getContext(), "Share failed: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             } catch (Exception e) {
