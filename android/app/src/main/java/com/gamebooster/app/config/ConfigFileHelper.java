@@ -202,39 +202,7 @@ public final class ConfigFileHelper {
 
     public static String patchJsonContent(String content, String[] keyValues) {
         if (keyValues == null || keyValues.length == 0) return content != null ? content : "{}";
-
-        // Try standard org.json.JSONObject first for guaranteed structural correctness
-        try {
-            JSONObject json = (content != null && content.trim().startsWith("{"))
-                    ? new JSONObject(content)
-                    : new JSONObject();
-
-            for (String kv : keyValues) {
-                if (kv == null || kv.trim().isEmpty()) continue;
-                int eq = kv.indexOf('=');
-                if (eq <= 0) continue;
-                String k = kv.substring(0, eq).trim();
-                String v = kv.substring(eq + 1).trim();
-
-                if (v.equalsIgnoreCase("true")) {
-                    json.put(k, true);
-                } else if (v.equalsIgnoreCase("false")) {
-                    json.put(k, false);
-                } else if (isInteger(v)) {
-                    json.put(k, Long.parseLong(v));
-                } else if (isFloat(v)) {
-                    json.put(k, Double.parseDouble(v));
-                } else {
-                    json.put(k, v);
-                }
-            }
-            return json.toString(2) + "\n";
-        } catch (Throwable t) {
-            Log.d(TAG, "JSON object parsing fallback to regex: " + t.getMessage());
-        }
-
-        // Fallback: Regex-based JSON patcher for comments or non-strict JSON files
-        String updated = content;
+        String updated = (content != null && !content.trim().isEmpty()) ? content : "{}";
         List<String> unmappedKeys = new ArrayList<>();
 
         for (String kv : keyValues) {
@@ -255,11 +223,22 @@ public final class ConfigFileHelper {
         }
 
         if (!unmappedKeys.isEmpty()) {
-            StringBuilder insertion = new StringBuilder("{\n");
-            for (String unmapped : unmappedKeys) {
-                insertion.append(unmapped).append(",\n");
+            if (updated.contains("{")) {
+                StringBuilder insertion = new StringBuilder("{\n");
+                for (String unmapped : unmappedKeys) {
+                    insertion.append(unmapped).append(",\n");
+                }
+                updated = updated.replaceFirst("\\{", Matcher.quoteReplacement(insertion.toString()));
+            } else {
+                StringBuilder sb = new StringBuilder("{\n");
+                for (int i = 0; i < unmappedKeys.size(); i++) {
+                    sb.append(unmappedKeys.get(i));
+                    if (i < unmappedKeys.size() - 1) sb.append(",");
+                    sb.append("\n");
+                }
+                sb.append("}\n");
+                updated = sb.toString();
             }
-            updated = updated.replaceFirst("\\{", Matcher.quoteReplacement(insertion.toString()));
         }
 
         return updated;

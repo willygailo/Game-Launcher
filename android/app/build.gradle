@@ -45,6 +45,10 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     signingConfigs {
         debug {
             storeFile rootProject.file('debug.keystore')
