@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -211,8 +212,10 @@ public class JunkScanner {
         }
     }
 
-    /**
+    /*    /**
      * Identifies residual data and media folders left behind by uninstalled applications (CorpseFinder).
+     * Strictly verifies package absence against both getInstalledPackages and getInstalledApplications
+     * while protecting all system and OEM packages.
      */
     private void scanUninstalledResiduals(Context context, JunkScanResult result, OnScanProgressListener listener) {
         if (context == null) return;
@@ -221,6 +224,29 @@ public class JunkScanner {
 
         File extStorage = Environment.getExternalStorageDirectory();
         if (extStorage == null) return;
+
+        // Build robust cache of installed packages to avoid false positives on Android 11-16
+        Set<String> installedPackages = new HashSet<>();
+        try {
+            List<PackageInfo> pkgs = pm.getInstalledPackages(0);
+            if (pkgs != null) {
+                for (PackageInfo pi : pkgs) {
+                    if (pi != null && pi.packageName != null) {
+                        installedPackages.add(pi.packageName.toLowerCase(Locale.ROOT));
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        try {
+            List<ApplicationInfo> apps = pm.getInstalledApplications(0);
+            if (apps != null) {
+                for (ApplicationInfo ai : apps) {
+                    if (ai != null && ai.packageName != null) {
+                        installedPackages.add(ai.packageName.toLowerCase(Locale.ROOT));
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
 
         String[] targetRoots = new String[]{
                 "Android/data",
@@ -240,15 +266,28 @@ public class JunkScanner {
                 if (!subDir.isDirectory()) continue;
 
                 String dirName = subDir.getName();
+                String dirNameLower = dirName.toLowerCase(Locale.ROOT);
+
                 // A valid Android package contains at least one dot (e.g. com.example.app)
                 if (dirName.contains(".") && !dirName.startsWith(".")) {
+                    // Strictly protect system and OEM packages
+                    if (isSystemOrProtectedPackagePrefix(dirNameLower)) {
+                        continue;
+                    }
+
+                    // Check if package is installed in our verified set
+                    if (installedPackages.contains(dirNameLower)) {
+                        continue; // Active app, do not touch!
+                    }
+
+                    // Secondary check via package manager
                     try {
                         pm.getPackageInfo(dirName, 0);
-                        // App is installed, not a residual
+                        continue; // Installed!
                     } catch (PackageManager.NameNotFoundException e) {
-                        // App is NOT installed! This is an orphaned leftover folder
+                        // Confirmed uninstalled leftover folder
                         long size = getDirectorySize(subDir);
-                        if (size > 0) {
+                        if (size > 0 && !containsPath(result, subDir.getAbsolutePath())) {
                             result.addItem(new JunkItem(
                                     subDir.getAbsolutePath(),
                                     "Uninstalled App Residual: " + dirName,
@@ -287,8 +326,20 @@ public class JunkScanner {
         }
     }
 
+    private static boolean isSystemOrProtectedPackagePrefix(String pkg) {
+        if (pkg == null) return true;
+        return pkg.startsWith("android.") || pkg.startsWith("com.android.")
+                || pkg.startsWith("com.google.") || pkg.startsWith("com.sec.")
+                || pkg.startsWith("com.samsung.") || pkg.startsWith("com.miui.")
+                || pkg.startsWith("com.xiaomi.") || pkg.startsWith("com.oppo.")
+                || pkg.startsWith("com.vivo.") || pkg.startsWith("com.huawei.")
+                || pkg.startsWith("com.transsion.") || pkg.startsWith("com.qualcomm.")
+                || pkg.startsWith("com.mediatek.");
+    }
+
     /**
-     * Scans social media, messaging, and web browser temporary buffers.
+     * Scans social media, messaging, and web browser temporary buffers and trashes.
+     * Never touches user documents, received photos, videos, or active voice notes.
      */
     private void scanSocialMediaCaches(Context context, JunkScanResult result, OnScanProgressListener listener) {
         File extStorage = Environment.getExternalStorageDirectory();
@@ -296,11 +347,9 @@ public class JunkScanner {
 
         String[] socialPaths = new String[]{
                 // Telegram
-                "Telegram/Telegram Images/.nomedia",
-                "Telegram/Telegram Video/.nomedia",
                 "Android/data/org.telegram.messenger/cache",
                 "Android/data/org.thunderdog.challegram/cache",
-                // WhatsApp
+                // WhatsApp Trashes
                 "Android/media/com.whatsapp/WhatsApp/Media/.Trash",
                 "WhatsApp/Media/.Trash",
                 "Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes/.trash",

@@ -36,14 +36,14 @@ public enum JunkCategory {
             "Already-installed or stale APK package installation files in storage",
             "📦",
             R.color.accent_orange,
-            true
+            false
     ),
     EMPTY_FOLDERS(
             "Empty Directories",
             "Stale empty directory trees left behind in storage",
             "📁",
             R.color.accent_ml_blue,
-            true
+            false
     ),
     GAME_RESIDUALS(
             "Game Residuals & Log Dumps",
@@ -57,7 +57,7 @@ public enum JunkCategory {
             "Leftover data and media directories from uninstalled apps",
             "🗑️",
             R.color.accent_red,
-            true
+            false
     ),
     SOCIAL_CACHE(
             "Messaging & Social Cache",

@@ -22,7 +22,8 @@ public class ScanFilter {
             "mp4", "mkv", "mov", "avi", "flv", "webm", "3gp",
             "mp3", "flac", "wav", "m4a", "ogg", "aac", "opus",
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv",
-            "obb", "key", "pem", "p12", "keystore", "jks", "crt", "cer", "json", "xml"
+            "obb", "key", "pem", "p12", "keystore", "jks", "crt", "cer", "json", "xml",
+            "ini", "cfg", "conf", "lua", "pak", "bundle", "unity3d", "res", "properties", "yaml", "yml"
     ));
 
     // Safe extensions specifically recognized as disposable junk
@@ -33,10 +34,11 @@ public class ScanFilter {
             "dex.tmp", "apk.tmp", "apk.part"
     ));
 
-    // Protected system directories that should never be traversed or deleted
+    // Protected user & system directories that should never be scanned for deletion
     private static final Set<String> PROTECTED_PATH_SEGMENTS = new HashSet<>(Arrays.asList(
             "/system", "/vendor", "/product", "/system_ext", "/apex",
-            "/dcim/camera", "/pictures/screenshots", "/documents", "/music"
+            "/dcim/camera", "/pictures/screenshots", "/pictures/whatsapp",
+            "/documents", "/music", "/podcasts", "/ringtones", "/alarms", "/notifications"
     ));
 
     public static boolean isSafeToScan(File file) {
@@ -66,11 +68,24 @@ public class ScanFilter {
         int lastSlash = path.lastIndexOf('/');
         String name = lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
 
-        // Never delete protected user extensions unless explicitly in cache/temp
+        // Strictly protect critical system paths
+        if (path.startsWith("/system/") || path.startsWith("/vendor/") || path.startsWith("/apex/")) {
+            return false;
+        }
+
+        // Never delete files inside user document/camera roots unless explicitly in .thumbnails
+        if ((path.contains("/documents/") || path.contains("/dcim/camera/")) && !path.contains("/.thumbnails")) {
+            return false;
+        }
+
+        // Never delete protected user extensions unless explicitly in cache/temp/log directories
         String ext = getFileExtension(name);
         boolean inExplicitCacheFolder = path.contains("/cache/") || path.contains("/code_cache/") 
                 || path.contains("/.thumbnails/") || path.contains("/app_webview/default/cache/")
-                || path.contains("/app_webview/cache/") || path.contains("/gpu_cache/");
+                || path.contains("/app_webview/cache/") || path.contains("/gpu_cache/")
+                || path.contains("/data/anr/") || path.contains("/data/tombstones/")
+                || path.contains("/data/local/tmp/") || path.contains("/data/system/dropbox/")
+                || path.contains("/saved/logs/") || path.contains("/saved/crashes/");
 
         if (PROTECTED_EXTENSIONS.contains(ext) && !inExplicitCacheFolder) {
             return false;

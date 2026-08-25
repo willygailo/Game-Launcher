@@ -189,7 +189,7 @@ public class JunkCleanerEngine {
         }
 
         // 3. Privileged deletion if Shizuku is available
-        if (ShizukuFileManager.hasFullAccess() && packageName != null) {
+        if (ShizukuFileManager.hasFullAccess() && packageName != null && packageName.matches("^[a-zA-Z0-9_.]+$")) {
             try {
                 ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/code_cache/* 2>/dev/null");
@@ -207,6 +207,12 @@ public class JunkCleanerEngine {
     private long deleteJunkItem(JunkItem item, List<String> logs) {
         String path = item.getPath();
         if (path == null || path.isEmpty()) return 0;
+
+        // Safety Guard: Verify path is not critical system/user root
+        if (path.startsWith("/system") || path.startsWith("/vendor") || path.equals("/sdcard") || path.equals("/storage/emulated/0")) {
+            logs.add("Blocked unsafe path deletion: " + path);
+            return 0;
+        }
 
         try {
             File file = new File(path);
@@ -233,8 +239,11 @@ public class JunkCleanerEngine {
                     logs.add("Deleted via Shizuku: " + path);
                     return item.getSizeBytes();
                 } else {
-                    ShizukuExecutor.executeShizukuCommand("rm -rf '" + path + "' 2>/dev/null");
-                    return item.getSizeBytes();
+                    // Prevent arbitrary command injection by validating path
+                    if (!path.contains("'") && !path.contains(";") && !path.contains("&")) {
+                        ShizukuExecutor.executeShizukuCommand("rm -rf '" + path + "' 2>/dev/null");
+                        return item.getSizeBytes();
+                    }
                 }
             }
         } catch (Throwable t) {
