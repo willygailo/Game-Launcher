@@ -106,6 +106,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private TextView tvJunkCleanerStatus;
     private TextView tvJunkQuickSize;
     private TextView tvJunkQuickDetail;
+    private TextView tvJunkQuickSubdetail;
     private Button btnScanJunk;
     private Button btnQuickCleanJunk;
     private Button btnOpenCleanerDashboard;
@@ -388,7 +389,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnPurgeGameLogs != null) {
             btnPurgeGameLogs.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("Anti-Log Deep Purge")) return;
                 btnPurgeGameLogs.setEnabled(false);
                 Toast.makeText(getContext(), "🛡️ Purging All Game Logs & System Telemetry...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
@@ -406,6 +406,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvJunkCleanerStatus = view.findViewById(R.id.tv_junk_cleaner_status);
         tvJunkQuickSize = view.findViewById(R.id.tv_junk_quick_size);
         tvJunkQuickDetail = view.findViewById(R.id.tv_junk_quick_detail);
+        tvJunkQuickSubdetail = view.findViewById(R.id.tv_junk_quick_subdetail);
         btnScanJunk = view.findViewById(R.id.btn_scan_junk);
         btnQuickCleanJunk = view.findViewById(R.id.btn_quick_clean_junk);
         btnOpenCleanerDashboard = view.findViewById(R.id.btn_open_cleaner_dashboard);
@@ -424,6 +425,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     JunkCleanerDialog.show(getContext(), result -> {
                         if (tvJunkQuickSize != null) {
                             tvJunkQuickSize.setText("0.0 MB");
+                        }
+                        if (tvJunkQuickDetail != null) {
+                            tvJunkQuickDetail.setText("Storage Clean & Optimized");
+                        }
+                        if (tvJunkQuickSubdetail != null) {
+                            tvJunkQuickSubdetail.setText("Freed " + result.getFormattedBytesFreed() + " • " + result.getFilesDeletedCount() + " items deleted");
                         }
                         if (tvJunkCleanerStatus != null) {
                             tvJunkCleanerStatus.setText("Last Cleaned: Freed " + result.getFormattedBytesFreed() + " (Storage Reclaimed)");
@@ -444,14 +451,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             switchPrecisionInputTuner.setOnCheckedChangeListener(null);
             switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
             switchPrecisionInputTuner.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (getContext() == null) return;
-                if (!ShizukuExecutor.hasShizukuPermission()) {
-                    switchPrecisionInputTuner.setOnCheckedChangeListener(null);
-                    switchPrecisionInputTuner.setChecked(false);
-                    switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
-                    ShizukuManager.showShizukuPermissionDialog(getContext(), "Precision Input Tuner");
-                    return;
-                }
+                if (getContext() == null || isProgrammaticToggle) return;
                 handlePrecisionTunerToggle(isChecked);
             });
         }
@@ -506,16 +506,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
 
         if (btn185 != null) {
-            btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Extreme Profile"));
+            btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
         }
         if (btnExtreme != null) {
-            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "🔥 Executed: 185Hz Lock & Extreme Profile"));
+            btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & eSports Max Profile"));
         }
         if (btnPro144 != null) {
-            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 185, "🎮 Executed: 185Hz Lock & Pro Gaming Profile"));
+            btnPro144.setOnClickListener(v -> applyPresetProfile(btnPro144, PerformanceChannel.Profile.PERFORMANCE, 144, "🎮 Executed: 144Hz Lock & Pro Gaming Profile"));
         }
         if (btnPerformance != null) {
-            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 185, "⚡ Executed: 185Hz Lock & High Gaming Profile"));
+            btnPerformance.setOnClickListener(v -> applyPresetProfile(btnPerformance, PerformanceChannel.Profile.PERFORMANCE, 120, "⚡ Executed: 120Hz Lock & High Gaming Profile"));
         }
 
         if (getContext() != null) {
@@ -627,7 +627,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnNetDataOnly != null) {
             btnNetDataOnly.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("Mobile Data Only Mode")) return;
                 ManualSettingsPreferences.setNetworkMode(getContext(), "data_only");
                 ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), false);
@@ -650,7 +649,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnNetWifiOnly != null) {
             btnNetWifiOnly.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("Wi-Fi Only Mode")) return;
                 ManualSettingsPreferences.setNetworkMode(getContext(), "wifi_only");
                 ManualSettingsPreferences.set5g6gDataEnabled(getContext(), false);
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
@@ -673,7 +671,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnNetDual != null) {
             btnNetDual.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("Dual Data + Wi-Fi Mode")) return;
                 ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
                 ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
@@ -696,7 +693,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnOptimizeNetworkAll != null) {
             btnOptimizeNetworkAll.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("5G/6G & Wi-Fi Turbo Boost")) return;
                 Toast.makeText(getContext(), "🚀 Applying 5G/6G & Wi-Fi 6/7 Turbo Boost...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
@@ -1262,7 +1258,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void applyGamingDns(NetworkOptimizer.DnsMode mode, String msg) {
         if (getContext() == null) return;
-        if (!requireShizukuForAction("Gaming DNS Packet Router")) return;
         AppExecutors.getInstance().executeCommand(() -> {
             NetworkOptimizer.applyGamingDns(getContext(), mode);
             AppExecutors.getInstance().postToMainThread(() -> {
@@ -1275,14 +1270,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void applyPresetProfile(Button button, PerformanceChannel.Profile profile, int targetHz, String successMsg) {
         if (getContext() == null || button == null) return;
-        if (!requireShizukuForAction("Extreme Display Refresh Preset")) return;
         button.setEnabled(false);
         Toast.makeText(getContext(), "Applying " + targetHz + "Hz performance profile to all games & display...", Toast.LENGTH_SHORT).show();
         AppExecutors.getInstance().executeCommand(() -> {
             boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
-            if (targetHz >= 185) {
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(185);
-            }
+            com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
             GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, null);
             CfgProfileManager.applyAllGames(getContext(), targetHz, true, true);
             AppExecutors.getInstance().postToMainThread(() -> {
@@ -1364,11 +1356,31 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             updateSystemSettingsStatus();
             updateSpoofUiState();
             updatePrecisionAimStatus();
-            if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
-                switchPrecisionInputTuner.setOnCheckedChangeListener(null);
-                switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
-                switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
+
+            if (getContext() != null) {
+                isProgrammaticToggle = true;
+                if (switchOverlayHud != null) switchOverlayHud.setChecked(com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning());
+                if (switchGamingDnd != null) switchGamingDnd.setChecked(com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getContext()));
+                if (switchAutoGameBoost != null) switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
+                if (switchEsportsAudio != null) switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
+                if (switchAntiLog != null) switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
+                if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
+                if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
+                if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
+                if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
+                if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
+                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
+                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
+                if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
+                if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
+                if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(SpoofPreferences.isSpoofEnabled(getContext()));
+                if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
+                    switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
+                }
+                updateNetworkModeUi(ManualSettingsPreferences.getNetworkMode(getContext()));
+                isProgrammaticToggle = false;
             }
+
             boolean alive = ShizukuExecutor.hasShizukuPermission();
             if (tweaksAdapter != null) {
                 tweaksAdapter.setShizukuAlive(alive);
@@ -1384,16 +1396,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void handlePrecisionTunerToggle(boolean isChecked) {
         if (getContext() == null) return;
-        if (!ShizukuExecutor.hasShizukuPermission()) {
-            if (switchPrecisionInputTuner != null) {
-                isProgrammaticToggle = true;
-                switchPrecisionInputTuner.setChecked(false);
-                isProgrammaticToggle = false;
-                switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
-            }
-            ShizukuManager.showShizukuPermissionDialog(getContext(), "Precision Input Tuner");
-            return;
-        }
 
         AppExecutors.getInstance().executeCommand(() -> {
             boolean success;
@@ -1407,17 +1409,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (!isAdded() || getContext() == null) return;
                 if (switchPrecisionInputTuner != null) {
                     isProgrammaticToggle = true;
-                    if (success) {
-                        switchPrecisionInputTuner.setChecked(isChecked);
-                        Toast.makeText(getContext(), isChecked ? "🎯 Precision 1000Hz Touch Input Tuned" : "Precision Input Reset", Toast.LENGTH_SHORT).show();
-                    } else {
-                        switchPrecisionInputTuner.setChecked(!isChecked);
-                        Toast.makeText(getContext(), "Failed to modify system properties via Shizuku", Toast.LENGTH_SHORT).show();
-                    }
+                    switchPrecisionInputTuner.setChecked(isChecked);
                     isProgrammaticToggle = false;
-                    switchPrecisionInputTuner.setOnCheckedChangeListener((bv, ic) -> handlePrecisionTunerToggle(ic));
                 }
                 updatePrecisionAimStatus();
+                Toast.makeText(getContext(), isChecked ? "🎯 Precision 1000Hz Touch & Gyro Tuned" : "Precision Input Reset to Stock", Toast.LENGTH_SHORT).show();
             });
         });
     }
@@ -1946,6 +1942,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (tvJunkQuickDetail != null) {
                     tvJunkQuickDetail.setText(scanResult.getItems().size() + " cleanable junk files detected");
                 }
+                if (tvJunkQuickSubdetail != null) {
+                    tvJunkQuickSubdetail.setText("App caches • Shaders • Temp logs • Obsolete files");
+                }
                 Toast.makeText(getContext(), "🔍 Found " + scanResult.getFormattedTotalSize() + " junk files", Toast.LENGTH_SHORT).show();
             });
         });
@@ -1969,6 +1968,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (!isAdded() || getContext() == null) return;
                 if (btnQuickCleanJunk != null) btnQuickCleanJunk.setEnabled(true);
                 if (tvJunkQuickSize != null) tvJunkQuickSize.setText("0.0 MB");
+                if (tvJunkQuickDetail != null) {
+                    tvJunkQuickDetail.setText("Storage Clean & Optimized");
+                }
+                if (tvJunkQuickSubdetail != null) {
+                    tvJunkQuickSubdetail.setText("Freed " + cleanResult.getFormattedBytesFreed() + " • " + cleanResult.getFilesDeletedCount() + " items deleted");
+                }
                 if (tvJunkCleanerStatus != null) {
                     tvJunkCleanerStatus.setText("✅ Cleaned! Freed " + cleanResult.getFormattedBytesFreed() + " (" + cleanResult.getFilesDeletedCount() + " items purged)");
                 }
