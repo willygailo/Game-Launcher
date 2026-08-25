@@ -105,6 +105,7 @@ public final class CrashLog {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static String formatCrash(Thread thread, Throwable throwable) {
         StringBuilder sb = new StringBuilder();
         sb.append("Thread: ").append(thread != null ? thread.getName() : "unknown")

@@ -1026,7 +1026,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             for (Button b : settingsBrandButtons) {
                 if (b != null && getContext() != null) {
                     b.setBackgroundResource(R.drawable.btn_cyber_dark);
-                    b.setTextColor(getResources().getColor(R.color.accent_cyan));
+                    b.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.accent_cyan));
                 }
             }
         };

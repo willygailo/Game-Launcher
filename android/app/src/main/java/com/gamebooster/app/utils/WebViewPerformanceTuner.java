@@ -23,6 +23,7 @@ public final class WebViewPerformanceTuner {
      * Programmatically optimizes a WebView instance for maximum FPS, hardware-accelerated
      * rendering, smooth scrolling, and lowest CPU/GPU latency.
      */
+    @SuppressWarnings("deprecation")
     @SuppressLint("SetJavaScriptEnabled")
     public static void optimize(WebView webView) {
         if (webView == null) return;

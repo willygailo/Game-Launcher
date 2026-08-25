@@ -530,6 +530,7 @@ public final class DiagnosticsExporter {
                     WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                     if (wm != null) {
                         try {
+                            @SuppressWarnings("deprecation")
                             WifiInfo winfo = wm.getConnectionInfo();
                             if (winfo != null && winfo.getLinkSpeed() > 0) {
                                 sb.append(" (").append(winfo.getLinkSpeed()).append(" Mbps, RSSI: ").append(winfo.getRssi()).append(" dBm)");
@@ -702,7 +703,7 @@ public final class DiagnosticsExporter {
                     ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
                     boolean isGame = false;
                     if (aInfo != null) {
-                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0 || aInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                        if (aInfo.category == ApplicationInfo.CATEGORY_GAME) {
                             isGame = true;
                         }
                     }

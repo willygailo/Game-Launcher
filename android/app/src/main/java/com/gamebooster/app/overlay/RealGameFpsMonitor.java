@@ -80,11 +80,9 @@ public class RealGameFpsMonitor {
             this.listener = listener;
             this.isRunning = true;
 
-            // Query the device's actual display refresh rate for the fallback
             try {
-                WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                if (wm != null) {
-                    Display display = wm.getDefaultDisplay();
+                Display display = context.getDisplay();
+                if (display != null) {
                     float deviceRefreshRate = display.getRefreshRate();
                     if (deviceRefreshRate > 0) {
                         fallbackFps = Math.round(deviceRefreshRate);

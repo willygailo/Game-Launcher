@@ -94,7 +94,7 @@ public class SpoofInspectorDialog {
 
                 sb.append("4. LIVE DISPLAY SUBSYSTEM:\n");
                 try {
-                    Display display = activity.getWindowManager().getDefaultDisplay();
+                    Display display = activity.getDisplay();
                     if (display != null) {
                         Display.Mode mode = display.getMode();
                         sb.append("   • Active Refresh Rate: ").append(mode.getRefreshRate()).append(" Hz\n");

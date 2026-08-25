@@ -176,6 +176,7 @@ public class FloatingOverlayService extends Service {
         setupTelemetryEngine();
     }
 
+    @SuppressWarnings("deprecation")
     private boolean setupFloatingView() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (windowManager == null) return false;
@@ -834,7 +835,8 @@ public class FloatingOverlayService extends Service {
             if (overlayView != null) {
                 overlayView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
             }
-            Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            android.os.VibratorManager vm = getSystemService(android.os.VibratorManager.class);
+            Vibrator v = vm != null ? vm.getDefaultVibrator() : null;
             if (v != null && v.hasVibrator()) {
                 v.vibrate(VibrationEffect.createOneShot(18, VibrationEffect.DEFAULT_AMPLITUDE));
             }

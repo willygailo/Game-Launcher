@@ -162,7 +162,7 @@ public class AutoGameMonitorService extends Service {
                 String lastPkg = null;
                 while (events.hasNextEvent()) {
                     events.getNextEvent(event);
-                    if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                    if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
                         lastPkg = event.getPackageName();
                     }
                 }

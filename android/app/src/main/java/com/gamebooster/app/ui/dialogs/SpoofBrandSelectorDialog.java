@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -131,7 +132,7 @@ public class SpoofBrandSelectorDialog {
             for (Button b : allButtons) {
                 if (b != null) {
                     b.setBackgroundResource(R.drawable.btn_cyber_dark);
-                    b.setTextColor(context.getResources().getColor(R.color.accent_cyan));
+                    b.setTextColor(ContextCompat.getColor(context, R.color.accent_cyan));
                 }
             }
         };
@@ -197,7 +198,7 @@ public class SpoofBrandSelectorDialog {
             for (Button b : allButtons) {
                 if (b != null) {
                     b.setBackgroundResource(R.drawable.btn_cyber_dark);
-                    b.setTextColor(context.getResources().getColor(R.color.accent_cyan));
+                    b.setTextColor(ContextCompat.getColor(context, R.color.accent_cyan));
                 }
             }
             btn.setBackgroundResource(R.drawable.btn_cyber_cyan);

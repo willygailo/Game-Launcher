@@ -385,7 +385,7 @@ public class HomeGameScanner {
                     ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
                     boolean isGame = false;
                     if (aInfo != null) {
-                        if ((aInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0 || aInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                        if (aInfo.category == ApplicationInfo.CATEGORY_GAME) {
                             isGame = true;
                         }
                     }
