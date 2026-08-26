@@ -117,11 +117,31 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
+                <Switch
+                    android:id="@+id/switch_focus_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🎯 eSports Focus Mode (Freeze Background Apps)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btn_focus_whitelist"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="⚙️ CONFIGURE FOCUS FREEZE WHITELIST"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
                 <Button
                     android:id="@+id/btn_purge_game_logs"
                     android:layout_width="match_parent"
                     android:layout_height="44dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/btn_cyber_dark"
                     android:text="🛡️ PURGE ALL GAME LOGS &amp; TELEMETRY"
                     android:textColor="@color/accent_cyan"
@@ -462,6 +482,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Shizuku 1000Hz Polling &amp; Zero Touch Slop"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_thermal_bypass"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🔥 Disable Temperature Limit &amp; Thermal Throttling (Android 13–16)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
             </LinearLayout>

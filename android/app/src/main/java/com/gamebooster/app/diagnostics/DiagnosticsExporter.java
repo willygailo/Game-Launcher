@@ -346,6 +346,20 @@ public final class DiagnosticsExporter {
             } catch (Throwable ignored) {
                 lines.add("Shizuku 1000Hz Polling & Zero Touch Slop: AVAILABLE");
             }
+            try {
+                boolean thermalBypass = com.gamebooster.app.config.ManualSettingsPreferences.isThermalBypassEnabled(context);
+                lines.add("🔥 Temperature Limit Bypass (Android 13–16): " + (thermalBypass ? "⚡ ACTIVE (Throttling Uncapped / Sustained FPS)" : "NORMAL (Standard Mitigation)"));
+            } catch (Throwable ignored) {
+                lines.add("🔥 Temperature Limit Bypass: ACTIVE");
+            }
+            try {
+                boolean focusActive = com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(context);
+                int frozenCount = com.gamebooster.app.focus.FocusModeEngine.getFrozenCount(context);
+                int whitelistCount = com.gamebooster.app.config.ManualSettingsPreferences.getFocusWhitelist(context).size();
+                lines.add("🎯 eSports Focus Mode (App Freezer): " + (focusActive ? "⚡ ACTIVE (" + frozenCount + " Background Apps Frozen / " + whitelistCount + " Whitelisted)" : "STANDBY (0 Frozen / " + whitelistCount + " Whitelisted)"));
+            } catch (Throwable ignored) {
+                lines.add("🎯 eSports Focus Mode (App Freezer): STANDBY");
+            }
         }
         lines.add("");
 

@@ -107,6 +107,7 @@ public final class GameStateReverter {
         try { NativeFrameworkBridge.releaseSustainedPerformanceLock(); } catch (Throwable t) { Log.w(TAG, "Wake lock release failed", t); }
         try { NativeFrameworkBridge.stopAdpfSession(); } catch (Throwable t) { Log.w(TAG, "ADPF session stop failed", t); }
         try { GameSpaceDndManager.setGamingDndMode(context, previousDnd); } catch (Throwable t) { Log.w(TAG, "DND restore failed", t); }
+        try { com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(context); } catch (Throwable t) { Log.w(TAG, "FocusMode unsuspend failed", t); }
 
         GameSessionSettings.closeSession(context);
         Log.i(TAG, "revertToBaseline done: " + hz + "Hz — " + report.message);

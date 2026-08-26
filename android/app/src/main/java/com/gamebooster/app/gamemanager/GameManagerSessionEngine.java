@@ -248,8 +248,14 @@ public final class GameManagerSessionEngine {
                 } else {
                     Log.d(TAG, "PID not found for " + pkg + " (game may still be loading)");
                 }
+
+                // Focus Mode (Deep App Freezer) for the active game session
+                if (com.gamebooster.app.config.ManualSettingsPreferences.isFocusModeEnabled(appContext)) {
+                    int frozen = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(appContext, pkg);
+                    Log.i(TAG, "🎯 Focus Mode Engine: " + frozen + " background apps frozen for " + pkg);
+                }
             } catch (Throwable t) {
-                Log.w(TAG, "Async CPU/IO affinity warning: " + t.getMessage());
+                Log.w(TAG, "Async CPU/IO affinity & focus mode warning: " + t.getMessage());
             }
         });
 

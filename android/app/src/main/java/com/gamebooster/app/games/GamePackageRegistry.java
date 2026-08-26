@@ -106,6 +106,10 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.supercell.squad", new GameInfoSpec("Squad Busters", "Action", 185));
     }
 
+    public static boolean isSupportedGame(String packageName) {
+        return isKnownGame(packageName);
+    }
+
     public static boolean isKnownGame(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         String pkg = packageName.toLowerCase().trim();

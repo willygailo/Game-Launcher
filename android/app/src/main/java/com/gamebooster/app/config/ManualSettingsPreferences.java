@@ -88,6 +88,40 @@ public class ManualSettingsPreferences {
     private static final String KEY_DUAL_DATA_WIFI = "pref_dual_data_wifi";
     private static final String KEY_NETWORK_MODE = "pref_network_mode"; // "data_only", "wifi_only", "dual", "default"
     private static final String KEY_ANTI_LOG = "pref_anti_log";
+    private static final String KEY_THERMAL_BYPASS = "pref_thermal_bypass";
+    private static final String KEY_FOCUS_MODE = "pref_focus_mode";
+    private static final String KEY_FOCUS_WHITELIST = "pref_focus_whitelist";
+
+    public static void setFocusModeEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_FOCUS_MODE, enabled).apply();
+    }
+
+    public static boolean isFocusModeEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_FOCUS_MODE, false);
+    }
+
+    public static void setFocusWhitelist(Context context, java.util.Set<String> whitelist) {
+        if (context == null) return;
+        getPrefs(context).edit().putStringSet(KEY_FOCUS_WHITELIST, whitelist != null ? whitelist : new java.util.HashSet<>()).apply();
+    }
+
+    public static java.util.Set<String> getFocusWhitelist(Context context) {
+        if (context == null) return new java.util.HashSet<>();
+        java.util.Set<String> set = getPrefs(context).getStringSet(KEY_FOCUS_WHITELIST, null);
+        return set != null ? new java.util.HashSet<>(set) : new java.util.HashSet<>();
+    }
+
+    public static void setThermalBypassEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_THERMAL_BYPASS, enabled).apply();
+    }
+
+    public static boolean isThermalBypassEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_THERMAL_BYPASS, true);
+    }
 
     public static void setNetworkMode(Context context, String mode) {
         if (context == null) return;
@@ -179,6 +213,9 @@ public class ManualSettingsPreferences {
             String cpuMode = getCpuMode(context);
             if ("performance".equalsIgnoreCase(cpuMode)) {
                 executeCmd("for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > $g 2>/dev/null; done");
+            }
+            if (isThermalBypassEnabled(context)) {
+                com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
             }
 
             // 4. ANGLE Graphics Backend (Per-Application only — never all apps)

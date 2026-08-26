@@ -119,6 +119,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchGameDriver;
     private Switch switchGpuMode;
     private Switch switchCpuMode;
+    private Switch switchThermalBypass;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switch5g6gData;
@@ -129,6 +130,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchAutoGameBoost;
     private Switch switchEsportsAudio;
     private Switch switchAntiLog;
+    private Switch switchFocusMode;
+    private Button btnFocusWhitelist;
 
     // Network Mode UI
     private TextView tvNetworkActiveMode;
@@ -338,6 +341,48 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        // Focus Mode (App Freezer & Deep Suspend)
+        switchFocusMode = view.findViewById(R.id.switch_focus_mode);
+        btnFocusWhitelist = view.findViewById(R.id.btn_focus_whitelist);
+
+        if (switchFocusMode != null && getContext() != null) {
+            isProgrammaticToggle = true;
+            switchFocusMode.setChecked(ManualSettingsPreferences.isFocusModeEnabled(getContext()) || com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(getContext()));
+            isProgrammaticToggle = false;
+
+            switchFocusMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                ManualSettingsPreferences.setFocusModeEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    int count;
+                    if (isChecked) {
+                        count = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(getContext(), null);
+                    } else {
+                        count = com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(getContext());
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            if (isChecked) {
+                                Toast.makeText(getContext(), "🎯 Focus Mode Active: " + count + " Background Apps Frozen! (100% CPU & RAM Dedicated to Gaming)", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getContext(), "🔄 Focus Mode Disabled: " + count + " Apps Restored to Normal", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnFocusWhitelist != null) {
+            btnFocusWhitelist.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.focus.FocusAppSelectorDialog.show(getContext(), count -> {
+                        // Whitelist updated callback
+                    });
+                }
+            });
+        }
+
         // Card 2.2: Junk Files & Storage Cache Cleaner
         tvJunkCleanerStatus = view.findViewById(R.id.tv_junk_cleaner_status);
         tvJunkQuickSize = view.findViewById(R.id.tv_junk_quick_size);
@@ -440,6 +485,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
+        switchThermalBypass = view.findViewById(R.id.switch_thermal_bypass);
 
         if (btn185 != null) {
             btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
@@ -460,6 +506,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
+            if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
             isProgrammaticToggle = false;
         }
 
@@ -517,6 +564,23 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             Toast.makeText(getContext(), isChecked ? "⚡ CPU Extreme Governor & ADPF Boost Locked" : "CPU Dynamic Governor Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchThermalBypass != null) {
+            switchThermalBypass.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                ManualSettingsPreferences.setThermalBypassEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.ThermalChannel.setThermalOverride(isChecked);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked
+                                    ? "🔥 Temperature Limit Disabled: Full Android 13–16 Thermal Bypass Active!"
+                                    : "Thermal Throttling Normal Mitigation Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1238,10 +1302,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchAutoGameBoost != null) switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
                 if (switchEsportsAudio != null) switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
                 if (switchAntiLog != null) switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
+                if (switchFocusMode != null) switchFocusMode.setChecked(ManualSettingsPreferences.isFocusModeEnabled(getContext()) || com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(getContext()));
                 if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
                 if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
                 if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
+                if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
                 if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
                 if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
                 if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
