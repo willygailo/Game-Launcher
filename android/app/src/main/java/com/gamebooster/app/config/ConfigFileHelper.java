@@ -213,22 +213,44 @@ public final class ConfigFileHelper {
             String v = kv.substring(eq + 1).trim();
             String jsonVal = formatJsonValue(v);
 
-            Pattern keyPattern = Pattern.compile("(\"" + Pattern.quote(k) + "\"\\s*:\\s*)([^,\\n}]+)");
+            // Match the key anywhere in the JSON, replacing its value
+            Pattern keyPattern = Pattern.compile(
+                    "(\"" + Pattern.quote(k) + "\"\\s*:\\s*)(\"[^\"]*\"|[^,\\n}\\]]+)");
             Matcher matcher = keyPattern.matcher(updated);
             if (matcher.find()) {
-                updated = matcher.replaceAll("$1" + Matcher.quoteReplacement(jsonVal));
+                updated = matcher.replaceFirst("$1" + Matcher.quoteReplacement(jsonVal));
             } else {
                 unmappedKeys.add("  \"" + k + "\": " + jsonVal);
             }
         }
 
         if (!unmappedKeys.isEmpty()) {
-            if (updated.contains("{")) {
-                StringBuilder insertion = new StringBuilder("{\n");
-                for (String unmapped : unmappedKeys) {
-                    insertion.append(unmapped).append(",\n");
+            // Build the new entries string with trailing commas
+            StringBuilder newEntries = new StringBuilder();
+            for (String entry : unmappedKeys) {
+                newEntries.append(entry).append(",\n");
+            }
+            // Insert after the opening '{' so existing keys remain comma-correct
+            int openBrace = updated.indexOf('{');
+            if (openBrace != -1) {
+                // Determine if there's content after '{' that needs a comma gap
+                String afterBrace = updated.substring(openBrace + 1).trim();
+                if (afterBrace.startsWith("}")) {
+                    // Empty object — replace with new content (no trailing comma on last entry)
+                    StringBuilder sb = new StringBuilder("{\n");
+                    for (int i = 0; i < unmappedKeys.size(); i++) {
+                        sb.append(unmappedKeys.get(i));
+                        if (i < unmappedKeys.size() - 1) sb.append(",");
+                        sb.append("\n");
+                    }
+                    sb.append("}\n");
+                    updated = sb.toString();
+                } else {
+                    // Non-empty object — insert new entries right after '{\n'
+                    updated = updated.substring(0, openBrace + 1) + "\n"
+                            + newEntries
+                            + updated.substring(openBrace + 1);
                 }
-                updated = updated.replaceFirst("\\{", Matcher.quoteReplacement(insertion.toString()));
             } else {
                 StringBuilder sb = new StringBuilder("{\n");
                 for (int i = 0; i < unmappedKeys.size(); i++) {

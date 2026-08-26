@@ -250,15 +250,21 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
 
-        // 7. Arena Breakout / Delta Force Mobile (Checked before HoK to avoid levelinfinite collision)
-        else if (pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce")) {
+        // 7a. Arena Breakout
+        else if (pkg.contains("uamo") || pkg.contains("arenabreakout")) {
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/UAGame/UAGame/Saved/Paks/");
+            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+        }
+
+        // 7b. Delta Force Mobile
+        else if (pkg.contains("deltaforce") || pkg.contains("dfm")) {
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/UAGame/UAGame/Saved/Paks/");
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Paks/");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");

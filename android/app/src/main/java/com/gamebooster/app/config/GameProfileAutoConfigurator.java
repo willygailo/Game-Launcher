@@ -117,9 +117,13 @@ public class GameProfileAutoConfigurator {
                          packageName.contains("projectc") || packageName.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
                          packageName.contains("farlight") || packageName.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
         
-        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz, true, true, true, true, true, true, true, true, true, true, true);
+        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, forcedFpsHz,
+                true, true, true, true, true, true, true, true, true, true, true, true, true, true);
         if (context != null) {
-            CfgProfileManager.applyProfile(context, gameKey, profile);
+            // Save the profile to SharedPreferences for persistence
+            CfgProfileManager.saveProfile(context, profile);
+            // Apply tunings only to this specific package — not all variants for the game key
+            CommonConfigTuningInjector.applyAllEnabledTunings(packageName, profile);
             DeviceSpooferEngine.applySpoofing(context, packageName);
         }
 

@@ -267,18 +267,18 @@ public class GameConfigPatcher {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;
             }
-            NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
         } else {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;
             }
-            NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
         }
 
-        // Apply Ultra Extreme Graphics & Max FPS unlock across all resolved game paths
-        NativeConfigInjector.applyUltraExtremeGraphics(pkg, forcedFps);
+        // Apply Ultra Extreme Graphics & Max FPS unlock across all resolved game paths.
+        // injectAllConfigsForPackage runs first; applyUltraExtremeGraphics runs once after
+        // to avoid double-writing the same keys and leaving files in a partial state.
         int nativeInjected = NativeConfigInjector.injectAllConfigsForPackage(pkg, forcedFps);
         if (nativeInjected > 0) patchedFiles += nativeInjected;
+        NativeConfigInjector.applyUltraExtremeGraphics(pkg, forcedFps);
 
         // Apply Anti-Log, Telemetry suppression, and cache purge for this game
         AntiLogPatcher.applyAntiLog(pkg);
