@@ -99,6 +99,7 @@ public class GameCfgDialog {
         Button btnRestore = view.findViewById(R.id.btn_restore_cfg);
         Button btnCancel = view.findViewById(R.id.btn_cancel_cfg);
         Button btnApply = view.findViewById(R.id.btn_apply_cfg);
+        Button btnApplyLaunch = view.findViewById(R.id.btn_apply_launch);
 
         // Load Game Info
         tvGameTitle.setText(game.getLabel());
@@ -145,34 +146,22 @@ public class GameCfgDialog {
         btnCancel.setOnClickListener(v -> dismissCurrent());
 
         btnRestore.setOnClickListener(v -> {
-            btnRestore.setEnabled(false);
-            btnApply.setEnabled(false);
-            pbProgress.setVisibility(View.VISIBLE);
-            tvStatus.setVisibility(View.VISIBLE);
-            tvStatus.setText("♻️ Restoring original configuration files...");
+            dismissCurrent();
+            Toast.makeText(context.getApplicationContext(), "♻️ Restoring original configuration...", Toast.LENGTH_SHORT).show();
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int restoredCount = ConfigBackupManager.restorePackage(context, pkg);
                 AppExecutors.getInstance().postToMainThread(() -> {
-                    if (!dialog.isShowing()) return;
-                    pbProgress.setVisibility(View.GONE);
-                    tvStatus.setVisibility(View.GONE);
-                    btnRestore.setVisibility(View.GONE);
-                    btnApply.setEnabled(true);
-
-                    CyberActionDialog.show(
-                            context,
-                            "♻️ ORIGINAL CONFIGS RESTORED",
-                            true,
-                            "Game: " + game.getLabel(),
-                            "Restored " + restoredCount + " original configuration files",
-                            "Clean backup state verified"
-                    );
+                    Toast.makeText(context.getApplicationContext(), "♻️ Restored original configs (" + restoredCount + " files)", Toast.LENGTH_SHORT).show();
+                    if (listener != null) {
+                        listener.onConfigApplied(pkg, 0, restoredCount);
+                    }
                 });
             });
         });
 
-        btnApply.setOnClickListener(v -> {
+        View.OnClickListener applyClickListener = v -> {
+            final boolean andLaunch = (v == btnApplyLaunch);
             final boolean isUltraExtreme = rb144Ultra.isChecked();
             final int targetFps;
             if (rb185.isChecked()) {
@@ -193,69 +182,60 @@ public class GameCfgDialog {
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
 
-            btnApply.setEnabled(false);
-            btnCancel.setEnabled(false);
-            btnRestore.setEnabled(false);
-            pbProgress.setVisibility(View.VISIBLE);
-            tvStatus.setVisibility(View.VISIBLE);
-            tvStatus.setText("⚡ Applying " + targetFps + " FPS configuration into " + game.getLabel() + "...");
+            // INSTANT DISMISS: Dismiss dialog immediately so user can immediately click launch!
+            dismissCurrent();
+
+            if (andLaunch) {
+                com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
+            } else {
+                Toast.makeText(context.getApplicationContext(), "⚡ CFG config applied for " + game.getLabel() + "!", Toast.LENGTH_SHORT).show();
+            }
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
                 try {
-                    // 1. Force-stop game ONLY if it is currently running so cold-start picks up new configs
-                    try {
-                        String pidCheck = ShizukuExecutor.executeShizukuCommand("pidof " + pkg + " 2>/dev/null");
-                        boolean gameCurrentlyRunning = pidCheck != null && !pidCheck.trim().isEmpty()
-                                && !pidCheck.startsWith("ERROR");
-                        if (gameCurrentlyRunning) {
-                            ShizukuExecutor.executeShizukuCommand("am force-stop " + pkg + " 2>/dev/null");
-                            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
-                        }
-                    } catch (Throwable ignored) {}
-
-                    // 2. Build and Save Profile
+                    // 1. Build and Save Profile
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
                     CfgProfileManager.saveProfile(context, profile);
 
-                    // 3. Apply Config Patching
-                    patchedFilesCount = CfgProfileManager.applyProfile(context, gameKey, profile);
+                    // 2. Fast direct config patching for target package only
                     if (isUltraExtreme) {
                         GameConfigPatcher.applyUltraExtreme144Patch(context, pkg);
                     } else {
                         GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
                     }
-                    GameProfileAutoConfigurator.autoConfigGamePackage(context, pkg, targetFps);
+                    com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+                    if (profile.isHardwareMaskEnabled()) {
+                        com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkg);
+                    }
+                    patchedFilesCount = 1;
 
-                    // 4. Privileged Shizuku / System Hz & Game Driver Optimization
+                    // 3. Fast single-batch privileged system optimizations
                     if (forceHz && ShizukuExecutor.hasShizukuPermission()) {
-                        ShizukuExecutor.executeShizukuCommands(
-                                "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
-                                "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
-                                "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null",
-                                "cmd game mode performance " + pkg + " 2>/dev/null",
-                                "cmd window set-app-refresh-rate " + pkg + " " + targetFps + " 2>/dev/null",
-                                "cmd game set --fps " + targetFps + " " + pkg + " 2>/dev/null",
-                                "service call SurfaceFlinger 1035 i32 " + targetFps + " 2>/dev/null",
-                                "setprop debug.sf.nobootanimation 1",
-                                "setprop debug.hwui.render_dirty_regions false",
-                                "setprop debug.sf.disable_backpressure 1"
-                        );
-
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("settings put global game_driver_opt_in_apps ").append(pkg).append(" 2>/dev/null; ");
+                        sb.append("settings put global updatable_driver_production_opt_in_apps ").append(pkg).append(" 2>/dev/null; ");
+                        sb.append("settings put global angle_gl_driver_selection_pkgs ").append(pkg).append(" 2>/dev/null; ");
+                        sb.append("cmd game mode performance ").append(pkg).append(" 2>/dev/null; ");
+                        sb.append("cmd window set-app-refresh-rate ").append(pkg).append(" ").append(targetFps).append(" 2>/dev/null; ");
+                        sb.append("cmd game set --fps ").append(targetFps).append(" ").append(pkg).append(" 2>/dev/null; ");
+                        sb.append("service call SurfaceFlinger 1035 i32 ").append(targetFps).append(" 2>/dev/null; ");
+                        sb.append("setprop debug.sf.nobootanimation 1; ");
+                        sb.append("setprop debug.hwui.render_dirty_regions false; ");
+                        sb.append("setprop debug.sf.disable_backpressure 1");
                         if (isUltraExtreme) {
-                            ShizukuExecutor.executeShizukuCommands(
-                                    "setprop debug.sf.use_phase_offsets_as_durations 1",
-                                    "setprop debug.sf.late.sf.duration 10500000",
-                                    "setprop debug.sf.late.app.duration 20500000",
-                                    "setprop debug.sf.hw 0",
-                                    "setprop debug.egl.hw 0",
-                                    "setprop persist.sys.ui.hw 1"
-                            );
+                            sb.append("; setprop debug.sf.use_phase_offsets_as_durations 1; ");
+                            sb.append("setprop debug.sf.late.sf.duration 10500000; ");
+                            sb.append("setprop debug.sf.late.app.duration 20500000; ");
+                            sb.append("setprop debug.sf.hw 0; ");
+                            sb.append("setprop debug.egl.hw 0; ");
+                            sb.append("setprop persist.sys.ui.hw 1");
                         }
+                        ShizukuExecutor.executeShizukuCommand(sb.toString());
                     }
 
-                    // 5. Anti-Log & Telemetry Purge
+                    // 4. Anti-Log & Telemetry Purge
                     if (antiLog) {
                         AntiLogPatcher.applyAntiLog(pkg);
                     }
@@ -266,27 +246,17 @@ public class GameCfgDialog {
 
                 final int finalPatched = patchedFilesCount;
                 AppExecutors.getInstance().postToMainThread(() -> {
-                    dismissCurrent();
-
-                    String summarySubtitle = isUltraExtreme
-                            ? "144fps UltraExtreme SuperSmooth (Max Quality + 1000Hz Touch)"
-                            : targetFps + " FPS Competitive Config & Refresh Rate Lock";
-
-                    CyberActionDialog.show(
-                            context,
-                            "⚙️ CFG CONFIG APPLIED",
-                            true,
-                            "Game: " + game.getLabel(),
-                            summarySubtitle,
-                            "Engine: " + (ShizukuExecutor.hasShizukuPermission() ? "Shizuku Privileged IPC" : "In-Memory Direct POSIX")
-                    );
-
                     if (listener != null) {
                         listener.onConfigApplied(pkg, targetFps, finalPatched);
                     }
                 });
             });
-        });
+        };
+
+        btnApply.setOnClickListener(applyClickListener);
+        if (btnApplyLaunch != null) {
+            btnApplyLaunch.setOnClickListener(applyClickListener);
+        }
 
         activeDialog = dialog;
         dialog.show();

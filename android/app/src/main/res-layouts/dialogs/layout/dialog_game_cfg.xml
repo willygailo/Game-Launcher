@@ -355,9 +355,9 @@
         <Button
             android:id="@+id/btn_restore_cfg"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="10dp"
             android:text="♻️ RESTORE"
             android:textColor="@color/accent_amber"
             android:textSize="11sp"
@@ -372,9 +372,9 @@
         <Button
             android:id="@+id/btn_cancel_cfg"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="14dp"
+            android:paddingHorizontal="12dp"
             android:text="CANCEL"
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
@@ -383,11 +383,23 @@
         <Button
             android:id="@+id/btn_apply_cfg"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
-            android:layout_marginStart="8dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:paddingHorizontal="12dp"
+            android:text="⚡ APPLY"
+            android:textColor="@color/accent_cyan"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_apply_launch"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="6dp"
             android:background="@drawable/btn_cyber_cyan"
-            android:paddingHorizontal="16dp"
-            android:text="⚡ APPLY CONFIG"
+            android:paddingHorizontal="14dp"
+            android:text="🚀 APPLY &amp; LAUNCH"
             android:textColor="@color/bg_dark_pure"
             android:textSize="11sp"
             android:textStyle="bold" />
