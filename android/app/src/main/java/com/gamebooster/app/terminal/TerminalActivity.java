@@ -667,6 +667,7 @@ public class TerminalActivity extends AppCompatActivity {
                     }
                 }
                 updatePromptPrefix();
+                updateStatusBanner();
                 scrollToBottom();
             });
         });

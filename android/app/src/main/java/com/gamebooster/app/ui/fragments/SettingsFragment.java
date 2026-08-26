@@ -963,26 +963,32 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 } else {
                     String activeId = SpoofPreferences.getActiveProfileId(getContext());
                     if (activeId == null || activeId.trim().isEmpty()) {
-                        activeId = "samsung_s26_ultra";
-                        SpoofPreferences.setActiveProfileId(getContext(), activeId);
+                        // User has not selected any spoof profile yet - do NOT blind activate
+                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
+                        updateSpoofUiState();
+                        Toast.makeText(getContext(), "📱 Device Spoofing ON: Select a gaming device model below to activate spoofing.", Toast.LENGTH_LONG).show();
+                    } else {
+                        SpoofProfile prof = DeviceSpooferEngine.getProfileById(activeId);
+                        if (prof == null) {
+                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
+                            updateSpoofUiState();
+                            Toast.makeText(getContext(), "📱 Please select a gaming device model below to activate spoofing.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            final SpoofProfile finalProf = prof;
+                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
+                            updateSpoofUiState();
+                            AppExecutors.getInstance().executeCommand(() -> {
+                                boolean applied = DeviceSpooferEngine.applyProfile(getContext(), finalProf, null);
+                                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
+                                AppExecutors.getInstance().postToMainThread(() -> {
+                                    if (isAdded() && getContext() != null) {
+                                        updateSpoofUiState();
+                                        Toast.makeText(getContext(), "✅ Masked " + maskedCount + " Apps with " + finalProf.displayName + " (" + finalProf.model + ")", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                        }
                     }
-                    SpoofProfile prof = DeviceSpooferEngine.getProfileById(activeId);
-                    if (prof == null) {
-                        prof = DeviceSpooferEngine.getDefaultProfile();
-                    }
-                    final SpoofProfile finalProf = prof;
-                    if (spoofProfileAdapter != null && finalProf != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
-                    updateSpoofUiState();
-                    AppExecutors.getInstance().executeCommand(() -> {
-                        boolean applied = DeviceSpooferEngine.applyProfile(getContext(), finalProf, null);
-                        int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            if (isAdded() && getContext() != null) {
-                                updateSpoofUiState();
-                                Toast.makeText(getContext(), "✅ Masked " + maskedCount + " Apps with " + finalProf.displayName + " (Android 13-16 Compatible)!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    });
                 }
             });
         }
@@ -1349,13 +1355,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         String activeId = SpoofPreferences.getActiveProfileId(getContext());
 
         if (tvSpoofActiveProfile != null) {
-            if (enabled && activeId != null) {
-                SpoofProfile activeProf = DeviceSpooferEngine.getProfileById(activeId);
-                if (activeProf != null) {
-                    tvSpoofActiveProfile.setText("Active Spoof Profile: " + activeProf.displayName + " (" + activeProf.model + ")");
-                    tvSpoofActiveProfile.setTextColor(0xFF00FF66);
+            if (enabled) {
+                if (activeId != null && !activeId.trim().isEmpty()) {
+                    SpoofProfile activeProf = DeviceSpooferEngine.getProfileById(activeId);
+                    if (activeProf != null) {
+                        tvSpoofActiveProfile.setText("Active Spoof Profile: ⚡ " + activeProf.displayName + " (" + activeProf.model + ")");
+                        tvSpoofActiveProfile.setTextColor(0xFF00FF66);
+                    } else {
+                        tvSpoofActiveProfile.setText("Active Spoof Profile: ⚠️ ENABLED (No Device Selected - Choose Below)");
+                        tvSpoofActiveProfile.setTextColor(0xFFFFB800);
+                    }
                 } else {
-                    tvSpoofActiveProfile.setText("Active Spoof Profile: ENABLED (No profile selected)");
+                    tvSpoofActiveProfile.setText("Active Spoof Profile: ⚠️ ENABLED (No Device Selected - Choose Below)");
                     tvSpoofActiveProfile.setTextColor(0xFFFFB800);
                 }
             } else {

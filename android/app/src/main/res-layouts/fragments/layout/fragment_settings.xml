@@ -294,19 +294,10 @@
                     android:textSize="12sp" />
 
                 <Switch
-                    android:id="@+id/switch_precision_input_tuner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Shizuku 1000Hz Polling &amp; Zero Touch Slop"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
-
-                <Switch
                     android:id="@+id/switch_crosshair_overlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:text="Hardware Crosshair Target Overlay"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
@@ -462,6 +453,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Per-Game CPU Performance Governor &amp; ADPF Boost"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_precision_input_tuner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Shizuku 1000Hz Polling &amp; Zero Touch Slop"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
             </LinearLayout>
