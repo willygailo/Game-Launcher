@@ -97,7 +97,6 @@ public class GameCfgDialog {
         ProgressBar pbProgress = view.findViewById(R.id.pb_cfg_progress);
         TextView tvStatus = view.findViewById(R.id.tv_cfg_status);
         Button btnRestore = view.findViewById(R.id.btn_restore_cfg);
-        Button btnCancel = view.findViewById(R.id.btn_cancel_cfg);
         Button btnApply = view.findViewById(R.id.btn_apply_cfg);
 
         // Load Game Info
@@ -139,8 +138,6 @@ public class GameCfgDialog {
             }
         }
 
-        btnCancel.setOnClickListener(v -> dismissCurrent());
-
         btnRestore.setOnClickListener(v -> {
             dismissCurrent();
             Toast.makeText(context.getApplicationContext(), "♻️ Restoring original configuration...", Toast.LENGTH_SHORT).show();
@@ -178,18 +175,11 @@ public class GameCfgDialog {
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
 
-            // INSTANT AUTO-EXIT: Dismiss dialog immediately so user can click launch on Home screen
+            // INSTANT AUTO-EXIT: Immediately dismiss without any blocking confirmation modals
             dismissCurrent();
 
-            // POPUP FORCING WRITE CONFIRMATION
-            CyberActionDialog.show(
-                    context,
-                    "⚡ FORCING WRITE APPLIED",
-                    true,
-                    "Target: " + game.getLabel() + " (" + targetFps + " FPS Tier)",
-                    "CFG config & SurfaceFlinger injected directly to storage",
-                    "Ready to play! Tap LAUNCH button on Home screen"
-            );
+            // Direct non-blocking notification
+            Toast.makeText(context.getApplicationContext(), "⚡ Force Applied: CFG injected for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
@@ -250,6 +240,8 @@ public class GameCfgDialog {
         });
 
         activeDialog = dialog;
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(true);
         dialog.show();
     }
 

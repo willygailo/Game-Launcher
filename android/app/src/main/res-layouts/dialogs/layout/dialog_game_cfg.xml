@@ -345,7 +345,7 @@
         android:textSize="11sp"
         android:visibility="gone" />
 
-    <!-- Action Buttons Row (Strictly RESTORE, CANCEL, APPLY) -->
+    <!-- Action Buttons Row (RESTORE & FORCE APPLY - No Cancel / No Confirmation Dialog) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -356,12 +356,12 @@
         <Button
             android:id="@+id/btn_restore_cfg"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="42dp"
             android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="14dp"
             android:text="♻️ RESTORE"
             android:textColor="@color/accent_amber"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <View
@@ -370,26 +370,15 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/btn_cancel_cfg"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="14dp"
-            android:text="CANCEL"
-            android:textColor="@color/text_secondary"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-        <Button
             android:id="@+id/btn_apply_cfg"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="42dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/btn_cyber_cyan"
-            android:paddingHorizontal="16dp"
-            android:text="⚡ APPLY"
+            android:paddingHorizontal="20dp"
+            android:text="⚡ FORCE APPLY"
             android:textColor="@color/bg_dark_pure"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
 
