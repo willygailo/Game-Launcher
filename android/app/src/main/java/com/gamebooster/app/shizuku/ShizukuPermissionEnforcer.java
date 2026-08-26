@@ -47,10 +47,20 @@ public class ShizukuPermissionEnforcer {
 
             // 1. Android 13-16 Scoped Storage & Granular Media Permissions
             batchCmds.add("pm grant " + pkg + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_IMAGES 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VIDEO 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_AUDIO 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VISUAL_USER_SELECTED 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.POST_NOTIFICATIONS 2>/dev/null");
+
+            // 2. Android 14, 15, and 16 Foreground Service & Alarm Permissions
+            batchCmds.add("pm grant " + pkg + " android.permission.FOREGROUND_SERVICE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.FOREGROUND_SERVICE_SPECIAL_USE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.SCHEDULE_EXACT_ALARM 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.USE_EXACT_ALARM 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.HIGH_SAMPLING_RATE_SENSORS 2>/dev/null");
 
             // 3. System Tuning, Secure Settings & UI Control
             batchCmds.add("pm grant " + pkg + " android.permission.WRITE_SECURE_SETTINGS 2>/dev/null");
@@ -62,13 +72,15 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("pm grant " + pkg + " android.permission.OVERRIDE_WIFI_CONFIG 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.CHANGE_COMPONENT_ENABLED_STATE 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.CHANGE_NETWORK_STATE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.CHANGE_WIFI_STATE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.CHANGE_WIFI_MULTICAST_STATE 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.MODIFY_AUDIO_SETTINGS 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.FORCE_STOP_PACKAGES 2>/dev/null");
+            batchCmds.add("pm grant " + pkg + " android.permission.KILL_BACKGROUND_PROCESSES 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.CLEAR_APP_CACHE 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.REAL_GET_TASKS 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.SET_PROCESS_LIMIT 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.ACCESS_NOTIFICATION_POLICY 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.SCHEDULE_EXACT_ALARM 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.USE_EXACT_ALARM 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.SYSTEM_ALERT_WINDOW 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.REQUEST_INSTALL_PACKAGES 2>/dev/null");
@@ -78,7 +90,6 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("pm grant " + pkg + " android.permission.DISABLE_KEYGUARD 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.REORDER_TASKS 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.EXPAND_STATUS_BAR 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.HIGH_SAMPLING_RATE_SENSORS 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.STATUS_BAR 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.INTERACT_ACROSS_USERS 2>/dev/null");
 
@@ -108,21 +119,22 @@ public class ShizukuPermissionEnforcer {
                     "CHANGE_WIFI_STATE",
                     "REQUEST_INSTALL_PACKAGES",
                     "WAKE_LOCK",
-                    "START_FOREGROUND"
+                    "START_FOREGROUND",
+                    "HIGH_SAMPLING_RATE_SENSORS"
             };
 
             for (String op : allAppOps) {
                 batchCmds.add("cmd appops set " + pkg + " " + op + " allow 2>/dev/null");
             }
 
-            // 5. Battery Optimization / Doze Mode Bypass
+            // 5. Battery Optimization & Doze Mode Bypass
             batchCmds.add("dumpsys deviceidle whitelist +" + pkg + " 2>/dev/null");
             batchCmds.add("cmd deviceidle whitelist +" + pkg + " 2>/dev/null");
 
-            // 6. Fast Single-Batch Execution
+            // 6. Fast Single-Batch Execution via Shizuku
             ShizukuExecutor.executeShizukuCommands(batchCmds);
 
-            // 7. Enforce permissions across detected target game packages
+            // 7. Enforce storage permissions and AppOps across ALL installed games
             List<GameAppInfo> detected = HomeGameScanner.scanTargetGames(context);
             for (GameAppInfo g : detected) {
                 if (g != null && g.getPackageName() != null) {
@@ -130,7 +142,7 @@ public class ShizukuPermissionEnforcer {
                 }
             }
 
-            Log.i(TAG, "All Shizuku system & storage privileges enforced successfully!");
+            Log.i(TAG, "All Shizuku system & storage privileges auto-granted successfully!");
 
         } catch (Throwable t) {
             Log.e(TAG, "Error enforcing Shizuku permissions", t);
