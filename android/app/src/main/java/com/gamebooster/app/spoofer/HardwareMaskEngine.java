@@ -216,8 +216,9 @@ public class HardwareMaskEngine {
             }
 
             // ═══════════════════════════════════════════════════════════════════
-            //  NETWORK / IDENTITY SPOOFING: Wi-Fi Hostname + Bluetooth + Privacy
+            //  NETWORK / IDENTITY SPOOFING & FULL PRIVACY SHIELD FOR GAMES & APPS
             // ═══════════════════════════════════════════════════════════════════
+            // 1. Android ID, Device Name & Bluetooth Masking
             batchCommands.add("settings put secure android_id " + spoofedAndroidId);
             batchCommands.add("settings put global device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system device_name \"" + profile.model + "\"");
@@ -227,10 +228,30 @@ public class HardwareMaskEngine {
             batchCommands.add("settings put global randomized_mac_support 1");
             batchCommands.add("settings put global randomized_mac_connected_mac_randomization 1");
             batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
+
+            // 2. Advertising ID (AAID) Zeroing & Anti-Tracking
+            batchCommands.add("settings put secure limit_ad_tracking 1");
+            batchCommands.add("settings put secure ad_id \"00000000-0000-0000-0000-000000000000\"");
+            batchCommands.add("settings put secure advertising_id \"00000000-0000-0000-0000-000000000000\"");
+            batchCommands.add("device_config put privacy privacy_sandbox_enabled false 2>/dev/null");
+
+            // 3. Telemetry, Crash Analytics & Usage Reporting Deactivation
+            batchCommands.add("settings put global usage_reporting_enabled 0");
+            batchCommands.add("settings put secure usage_and_diagnostics_enabled 0");
+            batchCommands.add("settings put secure upload_apk_enable 0");
+            batchCommands.add("settings put secure send_action_app_error 0");
+            batchCommands.add("settings put global send_action_app_error 0");
+
+            // 4. AppOps Privacy & Device Identifier Shield (Hides IMEI, Serial, Phone State, Usage Stats, AAID)
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
-                batchCommands.add("cmd appops set " + pkg + " READ_DEVICE_IDENTIFIERS ignore 2>/dev/null");
-                batchCommands.add("cmd appops set " + pkg + " GET_USAGE_STATS ignore 2>/dev/null");
+                applyAppOpsShieldForPackage(batchCommands, pkg);
+            }
+            // Also enforce on all known games to prevent cross-app fingerprinting
+            for (String gamePkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
+                if (gamePkg != null && !gamePkg.equals(packageName)) {
+                    applyAppOpsShieldForPackage(batchCommands, gamePkg);
+                }
             }
 
             // Execute all elevated commands via Shizuku
@@ -691,6 +712,21 @@ public class HardwareMaskEngine {
             sb.append(String.format("%02X", b));
         }
         return sb.toString();
+    }
+
+    /**
+     * Applies full AppOps privacy & identity shield to block games and apps from querying
+     * sensitive hardware identifiers (IMEI, MEID, SIM serial, IMSI, Phone number, AAID, Usage stats).
+     */
+    public static void applyAppOpsShieldForPackage(List<String> batchCommands, String pkg) {
+        if (pkg == null || pkg.trim().isEmpty() || batchCommands == null) return;
+        String p = pkg.trim();
+        batchCommands.add("cmd appops set " + p + " READ_DEVICE_IDENTIFIERS ignore 2>/dev/null");
+        batchCommands.add("cmd appops set " + p + " GET_USAGE_STATS ignore 2>/dev/null");
+        batchCommands.add("cmd appops set " + p + " ACCESS_AD_ID ignore 2>/dev/null");
+        batchCommands.add("cmd appops set " + p + " READ_PHONE_STATE ignore 2>/dev/null");
+        batchCommands.add("cmd appops set " + p + " READ_PRIVILEGED_PHONE_STATE ignore 2>/dev/null");
+        batchCommands.add("cmd appops set " + p + " ACTIVITY_RECOGNITION ignore 2>/dev/null");
     }
 
     private static void setStaticField(Class<?> clazz, String fieldName, Object value) {

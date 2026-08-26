@@ -110,22 +110,19 @@ public class GameConfigPathResolver {
      */
     public static List<String> generateBasePaths(String pkg) {
         List<String> roots = new ArrayList<>();
-        String[] storageRoots = {
-            "/sdcard/Android/data/",
-            "/storage/emulated/0/Android/data/",
-            "/storage/emulated/10/Android/data/",
-            "/storage/emulated/11/Android/data/",
-            "/storage/emulated/999/Android/data/",
-            "/data/data/",
-            "/data/user/0/",
-            "/data/user/10/",
-            "/data/user/11/",
-            "/data/user/999/",
-            "/sdcard/Android/media/",
-            "/storage/emulated/0/Android/media/"
-        };
-        for (String root : storageRoots) {
-            roots.add(root + pkg);
+        // Android 13, 14, 15, and 16 Multi-User / Private Space user IDs
+        int[] userIds = {0, 10, 11, 12, 13, 14, 15, 999};
+
+        // Primary /sdcard legacy alias
+        roots.add("/sdcard/Android/data/" + pkg);
+        roots.add("/sdcard/Android/media/" + pkg);
+        roots.add("/data/data/" + pkg);
+
+        // Multi-profile / Private Space roots
+        for (int u : userIds) {
+            roots.add("/storage/emulated/" + u + "/Android/data/" + pkg);
+            roots.add("/data/user/" + u + "/" + pkg);
+            roots.add("/storage/emulated/" + u + "/Android/media/" + pkg);
         }
         return roots;
     }
