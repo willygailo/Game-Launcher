@@ -59,6 +59,10 @@ public class GenshinConfigPatcher {
             "bFramePacingEnabled=True",
             "vSync=0", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
+            // ── Action RPG Combat Scaling ──
+            "DamageMultiplier=1000.00", "PhysicalDamageBoost=1000.00", "MagicDamageBoost=1000.00",
+            "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99", "MovementSpeedMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00", "ShieldMultiplier=1500.00", "ShieldCapacity=1500.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

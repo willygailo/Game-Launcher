@@ -380,7 +380,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"AssassinDamageMultiplier", "10.00"},
         {"MageDamageMultiplier", "10.00"},
         {"MarksmanDamageMultiplier", "10.00"},
-        {"SupportDamageMultiplier", "10.00"}
+        {"SupportDamageMultiplier", "10.00"},
+        {"BurstDamageMultiplier", ssMult.str()},
+        {"CritDamageMultiplier", ssHead.str()},
+        {"WeakpointDamageMultiplier", ssHead.str()},
+        {"ArmorPiercingRatio", "100.00"},
+        {"WeaponBaseDamageMultiplier", ssMult.str()},
+        {"HeavyAttackDamageScale", ssMult.str()},
+        {"LightAttackDamageScale", ssMult.str()},
+        {"ComboDamageMultiplier", ssMult.str()},
+        {"JungleClearSpeedMultiplier", ssMult.str()}
     };
 
     if (isXml) {
@@ -404,6 +413,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.BulletDamageScale", ssMult.str());
         patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
         patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
+        patch_cvar(content, "r.BurstDamageMultiplier", ssMult.str());
+        patch_cvar(content, "r.WeakpointMultiplier", ssHead.str());
+        patch_cvar(content, "r.ArmorPiercingRatio", "50.00");
         patch_cvar(content, "r.CriticalHitRate", "1.00");
         patch_cvar(content, "r.HitboxExpansion", "10.00");
         patch_cvar(content, "r.BulletVelocityScale", "50.00");
@@ -489,7 +501,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HitboxExpansion", "10.00"},
         {"MinionDamageBoost", "100.00"},
         {"MonsterDamageBoost", ssMult.str()},
-        {"TurretDamageReduction", "0.01"}
+        {"TurretDamageReduction", "0.01"},
+        {"BurstDamageMultiplier", ssMult.str()},
+        {"CritDamageMultiplier", "10.00"},
+        {"WeakpointDamageMultiplier", ssHead.str()},
+        {"ArmorPiercingRatio", "100.00"},
+        {"WeaponBaseDamageMultiplier", ssMult.str()},
+        {"HeavyAttackDamageScale", ssMult.str()},
+        {"LightAttackDamageScale", ssMult.str()},
+        {"ComboDamageMultiplier", ssMult.str()},
+        {"JungleClearSpeedMultiplier", ssMult.str()}
     };
 
     if (isXml) {
@@ -512,6 +533,12 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.PhysicalDamageScale", ssMult.str());
         patch_cvar(content, "r.MagicDamageScale", ssMult.str());
         patch_cvar(content, "r.TrueDamageScale", ssMult.str());
+        patch_cvar(content, "r.BulletDamageScale", ssMult.str());
+        patch_cvar(content, "r.HeadshotMultiplier", ssHead.str());
+        patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
+        patch_cvar(content, "r.BurstDamageMultiplier", ssMult.str());
+        patch_cvar(content, "r.WeakpointMultiplier", ssHead.str());
+        patch_cvar(content, "r.ArmorPiercingRatio", "50.00");
     }
 
     bool success = write_file_posix(pathStr, content);
@@ -605,6 +632,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         }
 
         // Unreal Engine 4/5 CVars — Full Zero Recoil
+        patch_cvar(content, "r.PUBGZeroRecoil", "1");
+        patch_cvar(content, "r.RecoilScale", ssRecoil.str());
         patch_cvar(content, "r.WeaponRecoilScale", ssRecoil.str());
         patch_cvar(content, "r.VerticalRecoilMultiplier", ssRecoil.str());
         patch_cvar(content, "r.HorizontalRecoilMultiplier", ssRecoil.str());
@@ -797,6 +826,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.GyroSensitivityRatio", "10.00");
         patch_cvar(content, "r.GyroStabilization", "1");
         patch_cvar(content, "r.GyroAimAssist", "1");
+        patch_cvar(content, "r.BulletMagnetism", "100.00");
+        patch_cvar(content, "r.ScopeAimAssist", "1");
+        patch_cvar(content, "r.RedDotAimAssist", "1");
         patch_cvar(content, "r.SniperAimAssist", "1");
     }
 

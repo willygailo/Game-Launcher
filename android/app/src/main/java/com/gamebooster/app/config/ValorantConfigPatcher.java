@@ -89,6 +89,21 @@ public class ValorantConfigPatcher {
             "TouchPollingRate=1000",
             "GyroSampleRate=1000",
             "GyroZeroDelay=1",
+            // ── Zero Recoil & Aim Assist CVars & Keys ──
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.BulletMagnetism=100.00",
+            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1", "RecoilScale=0.00",
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

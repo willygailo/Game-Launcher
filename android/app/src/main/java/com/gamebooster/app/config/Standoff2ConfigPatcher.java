@@ -51,6 +51,13 @@ public class Standoff2ConfigPatcher {
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
             "GyroSampleRate=1000", "GyroZeroDelay=1",
+            // Zero Recoil & Aim Assist
+            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1", "RecoilScale=0.00",
+            "VerticalRecoil=0.00", "HorizontalRecoil=0.00", "RecoilReduction=1.00",
+            "WeaponStability=1000", "BulletSpread=0.00", "FirstBulletAccuracy=1",
+            "AimAssist=1", "AimAssistStrength=10000", "AimAssistLevel=10", "AimPrecision=100",
+            "CrosshairMagnetism=100.00", "AimSnapStrength=100.00", "AimMagnetism=100.00",
+            "TrackingBullet=1", "BulletTracking=1", "BulletMagnetism=100.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

@@ -64,6 +64,25 @@ public class ArenaBreakoutConfigPatcher {
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
             "GyroSampleRate=1000", "GyroZeroDelay=1",
+            // ── Zero Recoil & Weapon Stability ──
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.ScopeStability=10.00",
+            // ── Aim Assist & Tracking ──
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssist.Magnetism=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.AimSnapStrength=100.00",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.HitboxExpansion=100.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

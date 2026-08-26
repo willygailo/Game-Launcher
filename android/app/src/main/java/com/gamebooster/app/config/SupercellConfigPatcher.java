@@ -54,7 +54,11 @@ public class SupercellConfigPatcher {
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
-            "TouchBoostHz=144"
+            "TouchBoostHz=144",
+            // ── Smart Aim Lock & Combat Agility ──
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
+            "AutoAim=1", "AimTracking=1", "TargetLock=1", "ZeroInputLag=1",
+            "DamageMultiplier=1000.00", "MovementSpeedMultiplier=15.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

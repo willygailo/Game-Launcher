@@ -50,6 +50,9 @@ public class RobloxConfigPatcher {
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1",
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
+            "ZeroRecoil=1", "RecoilControl=1", "MovementSpeedMultiplier=15.00"
         };
 
         List<String> paths = getConfigPaths(packageName);

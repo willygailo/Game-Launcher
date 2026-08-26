@@ -175,6 +175,13 @@ public class GameConfigPatcher {
             if (DeltaForceConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (DeltaForceConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 144) DeltaForceConfigPatcher.patchUltraExtreme144(pkg);
+            DeltaForceConfigPatcher.applySuperFastTouch(pkg);
+            DeltaForceConfigPatcher.applyAimAssistConfig(pkg);
+            DeltaForceConfigPatcher.applyRecoilControlConfig(pkg);
+            DeltaForceConfigPatcher.applyDamageScriptConfig(pkg);
+            DeltaForceConfigPatcher.applyTrackingBulletConfig(pkg);
+            DeltaForceConfigPatcher.applyArmorDefConfig(pkg);
+            DeltaForceConfigPatcher.applySpeedBoostConfig(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;

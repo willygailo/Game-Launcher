@@ -61,10 +61,14 @@ public class HokConfigPatcher {
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
-            "TouchBoostHz=144",
-            "TouchPollingRate=1000",
-            "GyroSampleRate=1000",
-            "GyroZeroDelay=1",
+            "TouchBoostHz=144", "TouchPollingRate=1000",
+            "GyroSampleRate=1000", "GyroZeroDelay=1",
+            // ── MOBA Combat & Skill Assist ──
+            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
+            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
+            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
+            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
+            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
         };
 
         List<String> paths = getConfigPaths(packageName);

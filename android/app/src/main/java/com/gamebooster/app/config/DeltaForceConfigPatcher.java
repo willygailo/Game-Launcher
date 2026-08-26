@@ -132,6 +132,19 @@ public class DeltaForceConfigPatcher {
             "+CVars=r.TouchBoostHz=144",
             "+CVars=r.TouchPollingRate=1000",
             "+CVars=r.GyroSampleRate=1000",
+            // Zero Recoil & Aim Assist
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.BulletTracking=1"
         };
 
         // ── Raw renderer keys for Engine.ini / Scalability.ini ──────────────
@@ -184,5 +197,33 @@ public class DeltaForceConfigPatcher {
                 "r.FrameRateLimit=" + forcedFps
         };
         return ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]");
+    }
+
+    public static void applySuperFastTouch(String packageName) {
+        CommonConfigTuningInjector.applySuperFastTouch(packageName);
+    }
+
+    public static void applyAimAssistConfig(String packageName) {
+        CommonConfigTuningInjector.applyAimAssistConfig(packageName);
+    }
+
+    public static void applyRecoilControlConfig(String packageName) {
+        CommonConfigTuningInjector.applyRecoilControlConfig(packageName);
+    }
+
+    public static void applyDamageScriptConfig(String packageName) {
+        CommonConfigTuningInjector.applyDamageScriptConfig(packageName);
+    }
+
+    public static void applyTrackingBulletConfig(String packageName) {
+        CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
+    }
+
+    public static void applyArmorDefConfig(String packageName) {
+        CommonConfigTuningInjector.applyArmorDefConfig(packageName);
+    }
+
+    public static void applySpeedBoostConfig(String packageName) {
+        CommonConfigTuningInjector.applySpeedBoostConfig(packageName);
     }
 }

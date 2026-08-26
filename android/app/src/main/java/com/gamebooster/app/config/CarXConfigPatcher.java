@@ -58,7 +58,11 @@ public class CarXConfigPatcher {
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
-            "TouchBoostHz=144"
+            "TouchBoostHz=144",
+            // ── Racing Engine & Speed Agility ──
+            "MovementSpeedMultiplier=15.00", "SprintSpeedMultiplier=15.00",
+            "AgilityMultiplier=15.00", "ZeroInputLag=1", "SteeringResponseRate=1000",
+            "ZeroDeadzone=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
