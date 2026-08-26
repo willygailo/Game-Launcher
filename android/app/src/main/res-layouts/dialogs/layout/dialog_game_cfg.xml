@@ -116,18 +116,6 @@
                 android:padding="8dp">
 
                 <RadioButton
-                    android:id="@+id/rb_fps_144_ultra"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:buttonTint="@color/accent_neon_green"
-                    android:checked="true"
-                    android:paddingVertical="4dp"
-                    android:text="⚡ 144fps UltraExtreme (Max Quality + Smoothness)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <RadioButton
                     android:id="@+id/rb_fps_185"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -135,7 +123,8 @@
                     android:paddingVertical="4dp"
                     android:text="🚀 185 FPS (Maximum Esports Tier)"
                     android:textColor="@color/text_primary"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <RadioButton
                     android:id="@+id/rb_fps_165"
@@ -151,11 +140,13 @@
                     android:id="@+id/rb_fps_144"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/accent_cyan"
+                    android:buttonTint="@color/accent_neon_green"
+                    android:checked="true"
                     android:paddingVertical="4dp"
-                    android:text="🚀 144 FPS (Standard 144Hz Smooth)"
+                    android:text="⚡ 144 FPS (UltraExtreme Smooth Tier)"
                     android:textColor="@color/text_primary"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <RadioButton
                     android:id="@+id/rb_fps_120"
@@ -174,6 +165,16 @@
                     android:buttonTint="@color/accent_cyan"
                     android:paddingVertical="4dp"
                     android:text="🎮 90 FPS (Balanced Esports Tier)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_fps_60"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_cyan"
+                    android:paddingVertical="4dp"
+                    android:text="🔋 60 FPS (Battery Saver Tier)"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp" />
             </RadioGroup>
@@ -344,7 +345,7 @@
         android:textSize="11sp"
         android:visibility="gone" />
 
-    <!-- Action Buttons Row -->
+    <!-- Action Buttons Row (Strictly RESTORE, CANCEL, APPLY) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -357,12 +358,11 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="12dp"
             android:text="♻️ RESTORE"
             android:textColor="@color/accent_amber"
             android:textSize="11sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
+            android:textStyle="bold" />
 
         <View
             android:layout_width="0dp"
@@ -374,7 +374,7 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="14dp"
             android:text="CANCEL"
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
@@ -384,22 +384,10 @@
             android:id="@+id/btn_apply_cfg"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:background="@drawable/btn_cyber_dark"
-            android:paddingHorizontal="12dp"
-            android:text="⚡ APPLY"
-            android:textColor="@color/accent_cyan"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btn_apply_launch"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="8dp"
             android:background="@drawable/btn_cyber_cyan"
-            android:paddingHorizontal="14dp"
-            android:text="🚀 APPLY &amp; LAUNCH"
+            android:paddingHorizontal="16dp"
+            android:text="⚡ APPLY"
             android:textColor="@color/bg_dark_pure"
             android:textSize="11sp"
             android:textStyle="bold" />

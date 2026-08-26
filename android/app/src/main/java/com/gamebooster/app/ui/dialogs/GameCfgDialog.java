@@ -83,12 +83,12 @@ public class GameCfgDialog {
         TextView tvGamePkg = view.findViewById(R.id.tv_cfg_game_pkg);
 
         RadioGroup rgFps = view.findViewById(R.id.rg_target_fps);
-        RadioButton rb144Ultra = view.findViewById(R.id.rb_fps_144_ultra);
         RadioButton rb185 = view.findViewById(R.id.rb_fps_185);
         RadioButton rb165 = view.findViewById(R.id.rb_fps_165);
         RadioButton rb144 = view.findViewById(R.id.rb_fps_144);
         RadioButton rb120 = view.findViewById(R.id.rb_fps_120);
         RadioButton rb90 = view.findViewById(R.id.rb_fps_90);
+        RadioButton rb60 = view.findViewById(R.id.rb_fps_60);
 
         SwitchCompat switchSuperTouch = view.findViewById(R.id.switch_super_touch);
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
@@ -99,7 +99,6 @@ public class GameCfgDialog {
         Button btnRestore = view.findViewById(R.id.btn_restore_cfg);
         Button btnCancel = view.findViewById(R.id.btn_cancel_cfg);
         Button btnApply = view.findViewById(R.id.btn_apply_cfg);
-        Button btnApplyLaunch = view.findViewById(R.id.btn_apply_launch);
 
         // Load Game Info
         tvGameTitle.setText(game.getLabel());
@@ -125,22 +124,19 @@ public class GameCfgDialog {
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
 
             int currentFps = currentCfg.getTargetFps();
-            if (currentFps == 185) {
+            if (currentFps == 185 && rb185 != null) {
                 rb185.setChecked(true);
-            } else if (currentFps == 165) {
+            } else if (currentFps == 165 && rb165 != null) {
                 rb165.setChecked(true);
-            } else if (currentFps == 120) {
+            } else if (currentFps == 120 && rb120 != null) {
                 rb120.setChecked(true);
-            } else if (currentFps == 90) {
+            } else if (currentFps == 90 && rb90 != null) {
                 rb90.setChecked(true);
-            } else {
-                rb144Ultra.setChecked(true);
+            } else if (currentFps == 60 && rb60 != null) {
+                rb60.setChecked(true);
+            } else if (rb144 != null) {
+                rb144.setChecked(true);
             }
-        }
-
-        // Check Backups Availability
-        if (ConfigBackupManager.hasBackups(context, pkg)) {
-            btnRestore.setVisibility(View.VISIBLE);
         }
 
         btnCancel.setOnClickListener(v -> dismissCurrent());
@@ -160,20 +156,20 @@ public class GameCfgDialog {
             });
         });
 
-        View.OnClickListener applyClickListener = v -> {
-            final boolean andLaunch = (v == btnApplyLaunch);
-            final boolean isUltraExtreme = rb144Ultra.isChecked();
+        btnApply.setOnClickListener(v -> {
             final int targetFps;
-            if (rb185.isChecked()) {
+            if (rb185 != null && rb185.isChecked()) {
                 targetFps = 185;
-            } else if (rb165.isChecked()) {
+            } else if (rb165 != null && rb165.isChecked()) {
                 targetFps = 165;
-            } else if (rb144.isChecked() || isUltraExtreme) {
+            } else if (rb144 != null && rb144.isChecked()) {
                 targetFps = 144;
-            } else if (rb120.isChecked()) {
+            } else if (rb120 != null && rb120.isChecked()) {
                 targetFps = 120;
-            } else if (rb90.isChecked()) {
+            } else if (rb90 != null && rb90.isChecked()) {
                 targetFps = 90;
+            } else if (rb60 != null && rb60.isChecked()) {
+                targetFps = 60;
             } else {
                 targetFps = 144;
             }
@@ -182,14 +178,18 @@ public class GameCfgDialog {
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
 
-            // INSTANT DISMISS: Dismiss dialog immediately so user can immediately click launch!
+            // INSTANT AUTO-EXIT: Dismiss dialog immediately so user can click launch on Home screen
             dismissCurrent();
 
-            if (andLaunch) {
-                com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
-            } else {
-                Toast.makeText(context.getApplicationContext(), "⚡ CFG config applied for " + game.getLabel() + "!", Toast.LENGTH_SHORT).show();
-            }
+            // POPUP FORCING WRITE CONFIRMATION
+            CyberActionDialog.show(
+                    context,
+                    "⚡ FORCING WRITE APPLIED",
+                    true,
+                    "Target: " + game.getLabel() + " (" + targetFps + " FPS Tier)",
+                    "CFG config & SurfaceFlinger injected directly to storage",
+                    "Ready to play! Tap LAUNCH button on Home screen"
+            );
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
@@ -200,11 +200,7 @@ public class GameCfgDialog {
                     CfgProfileManager.saveProfile(context, profile);
 
                     // 2. Fast direct config patching for target package only
-                    if (isUltraExtreme) {
-                        GameConfigPatcher.applyUltraExtreme144Patch(context, pkg);
-                    } else {
-                        GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
-                    }
+                    GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
                     com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
                     if (profile.isHardwareMaskEnabled()) {
                         com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkg);
@@ -224,7 +220,7 @@ public class GameCfgDialog {
                         sb.append("setprop debug.sf.nobootanimation 1; ");
                         sb.append("setprop debug.hwui.render_dirty_regions false; ");
                         sb.append("setprop debug.sf.disable_backpressure 1");
-                        if (isUltraExtreme) {
+                        if (targetFps >= 144) {
                             sb.append("; setprop debug.sf.use_phase_offsets_as_durations 1; ");
                             sb.append("setprop debug.sf.late.sf.duration 10500000; ");
                             sb.append("setprop debug.sf.late.app.duration 20500000; ");
@@ -251,12 +247,7 @@ public class GameCfgDialog {
                     }
                 });
             });
-        };
-
-        btnApply.setOnClickListener(applyClickListener);
-        if (btnApplyLaunch != null) {
-            btnApplyLaunch.setOnClickListener(applyClickListener);
-        }
+        });
 
         activeDialog = dialog;
         dialog.show();

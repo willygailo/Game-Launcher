@@ -61,9 +61,16 @@ public class TerminalActivity extends AppCompatActivity {
     private Button btnHistoryNext;
 
     // Quick Modifier Toolbar Buttons (Termux-style)
+    private Button btnKeyEsc;
     private Button btnKeyTab;
     private Button btnKeyCtrlC;
     private Button btnKeyCtrlL;
+    private Button btnKeyArrowUp;
+    private Button btnKeyArrowDown;
+    private Button btnKeyArrowLeft;
+    private Button btnKeyArrowRight;
+    private Button btnKeyPgUp;
+    private Button btnKeyPgDn;
     private Button btnKeySlash;
     private Button btnKeyDash;
     private Button btnKeyTilde;
@@ -138,10 +145,17 @@ public class TerminalActivity extends AppCompatActivity {
         btnHistoryPrev = findViewById(R.id.btn_terminal_history_prev);
         btnHistoryNext = findViewById(R.id.btn_terminal_history_next);
 
-        // Modifier Toolbar
+        // Modifier Toolbar (Termux Extra Keys)
+        btnKeyEsc = findViewById(R.id.btn_key_esc);
         btnKeyTab = findViewById(R.id.btn_key_tab);
         btnKeyCtrlC = findViewById(R.id.btn_key_ctrl_c);
         btnKeyCtrlL = findViewById(R.id.btn_key_ctrl_l);
+        btnKeyArrowUp = findViewById(R.id.btn_key_arrow_up);
+        btnKeyArrowDown = findViewById(R.id.btn_key_arrow_down);
+        btnKeyArrowLeft = findViewById(R.id.btn_key_arrow_left);
+        btnKeyArrowRight = findViewById(R.id.btn_key_arrow_right);
+        btnKeyPgUp = findViewById(R.id.btn_key_pgup);
+        btnKeyPgDn = findViewById(R.id.btn_key_pgdn);
         btnKeySlash = findViewById(R.id.btn_key_slash);
         btnKeyDash = findViewById(R.id.btn_key_dash);
         btnKeyTilde = findViewById(R.id.btn_key_tilde);
@@ -171,12 +185,14 @@ public class TerminalActivity extends AppCompatActivity {
 
     private void updateStatusBanner() {
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
-        String androidVer = "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
+        String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
+        String pwd = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
+        String displayDir = pwd.equals("/data/local/tmp") ? "~" : pwd;
         if (hasShizuku) {
-            tvTerminalStatus.setText("UID: 2000 (shell) • Shizuku PTY Active • " + androidVer);
-            tvTerminalStatus.setTextColor(0xFF00FF66);
+            tvTerminalStatus.setText(user + ":" + displayDir + " $ [PTY Shell]");
+            tvTerminalStatus.setTextColor(0xFF4ADE80);
         } else {
-            tvTerminalStatus.setText("Local Shell (Fallback) • " + androidVer);
+            tvTerminalStatus.setText(user + ":" + displayDir + " $ [Standard Shell]");
             tvTerminalStatus.setTextColor(0xFFFFB800);
         }
     }
@@ -190,12 +206,20 @@ public class TerminalActivity extends AppCompatActivity {
 
     private void showWelcomeBanner() {
         String folderPath = TerminalFolderManager.getInstance(getApplicationContext()).getTerminalDirPath();
-        appendSpannedText("====================================================\n", 0xFF00F0FF);
-        appendSpannedText("  GAME BOOSTER PRO — REAL INTERACTIVE SHELL EMULATOR\n", 0xFF00FF66);
-        appendSpannedText("  POSIX Shell: /system/bin/sh | ANSI Color 256 Support\n", 0xFF00F0FF);
-        appendSpannedText("  Scripts Folder: " + folderPath + "\n", 0xFFFFB800);
-        appendSpannedText("====================================================\n", 0xFF00F0FF);
-        appendSpannedText("Type 'help' for built-ins, TAB for auto-completion, CTRL+C to cancel.\n\n", 0xFF94A3B8);
+        boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
+        String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
+
+        appendSpannedText("Welcome to Termux (Shizuku Privileged Shell)!\n\n", 0xFF4ADE80);
+        appendSpannedText("Community:       https://termux.dev/community\n", 0xFF94A3B8);
+        appendSpannedText("Gitter chat:     https://gitter.im/termux/termux\n", 0xFF94A3B8);
+        appendSpannedText("Scripts Folder:  " + folderPath + "\n\n", 0xFFFFD700);
+        appendSpannedText("Working with packages:\n", 0xFF38BDF8);
+        appendSpannedText(" * Search packages:   pkg search <query>\n", 0xFF94A3B8);
+        appendSpannedText(" * Package info:       pkg info <package>\n", 0xFF94A3B8);
+        appendSpannedText(" * Trim caches:        pkg trim\n", 0xFF94A3B8);
+        appendSpannedText(" * System diagnostics: neofetch / top / id\n\n", 0xFF94A3B8);
+        appendSpannedText("Shell Status: " + (hasShizuku ? "UID 2000 (Shell) • Shizuku Active" : "Local App Shell") + "\n", 0xFF00FF66);
+        appendSpannedText("Type 'help' for built-ins, TAB for autocompletion, CTRL+C to cancel.\n\n", 0xFF64748B);
     }
 
     private void setupListeners() {
@@ -240,35 +264,79 @@ public class TerminalActivity extends AppCompatActivity {
             });
         }
 
-        // History Navigation
-        if (btnHistoryPrev != null) {
-            btnHistoryPrev.setOnClickListener(v -> {
-                if (commandHistory.isEmpty()) return;
-                if (historyIndex == -1) {
-                    historyIndex = commandHistory.size() - 1;
-                } else if (historyIndex > 0) {
-                    historyIndex--;
-                }
+        // History Navigation & Arrow Keys
+        View.OnClickListener historyPrevAction = v -> {
+            if (commandHistory.isEmpty()) return;
+            if (historyIndex == -1) {
+                historyIndex = commandHistory.size() - 1;
+            } else if (historyIndex > 0) {
+                historyIndex--;
+            }
+            etTerminalCommand.setText(commandHistory.get(historyIndex));
+            etTerminalCommand.setSelection(etTerminalCommand.getText().length());
+        };
+
+        View.OnClickListener historyNextAction = v -> {
+            if (commandHistory.isEmpty() || historyIndex == -1) return;
+            if (historyIndex < commandHistory.size() - 1) {
+                historyIndex++;
                 etTerminalCommand.setText(commandHistory.get(historyIndex));
                 etTerminalCommand.setSelection(etTerminalCommand.getText().length());
+            } else {
+                historyIndex = -1;
+                etTerminalCommand.setText("");
+            }
+        };
+
+        if (btnHistoryPrev != null) btnHistoryPrev.setOnClickListener(historyPrevAction);
+        if (btnHistoryNext != null) btnHistoryNext.setOnClickListener(historyNextAction);
+        if (btnKeyArrowUp != null) btnKeyArrowUp.setOnClickListener(historyPrevAction);
+        if (btnKeyArrowDown != null) btnKeyArrowDown.setOnClickListener(historyNextAction);
+
+        if (btnKeyArrowLeft != null) {
+            btnKeyArrowLeft.setOnClickListener(v -> {
+                if (etTerminalCommand == null) return;
+                int pos = etTerminalCommand.getSelectionStart();
+                if (pos > 0) {
+                    etTerminalCommand.setSelection(pos - 1);
+                }
             });
         }
 
-        if (btnHistoryNext != null) {
-            btnHistoryNext.setOnClickListener(v -> {
-                if (commandHistory.isEmpty() || historyIndex == -1) return;
-                if (historyIndex < commandHistory.size() - 1) {
-                    historyIndex++;
-                    etTerminalCommand.setText(commandHistory.get(historyIndex));
-                    etTerminalCommand.setSelection(etTerminalCommand.getText().length());
-                } else {
-                    historyIndex = -1;
-                    etTerminalCommand.setText("");
+        if (btnKeyArrowRight != null) {
+            btnKeyArrowRight.setOnClickListener(v -> {
+                if (etTerminalCommand == null) return;
+                int pos = etTerminalCommand.getSelectionStart();
+                if (pos < etTerminalCommand.getText().length()) {
+                    etTerminalCommand.setSelection(pos + 1);
+                }
+            });
+        }
+
+        if (btnKeyPgUp != null) {
+            btnKeyPgUp.setOnClickListener(v -> {
+                if (scrollTerminalOutput != null) {
+                    scrollTerminalOutput.pageScroll(View.FOCUS_UP);
+                }
+            });
+        }
+
+        if (btnKeyPgDn != null) {
+            btnKeyPgDn.setOnClickListener(v -> {
+                if (scrollTerminalOutput != null) {
+                    scrollTerminalOutput.pageScroll(View.FOCUS_DOWN);
                 }
             });
         }
 
         // Modifier Toolbar Handlers
+        if (btnKeyEsc != null) {
+            btnKeyEsc.setOnClickListener(v -> {
+                if (etTerminalCommand != null) {
+                    etTerminalCommand.setText("");
+                }
+            });
+        }
         if (btnKeyTab != null) {
             btnKeyTab.setOnClickListener(v -> handleTabCompletion());
         }
@@ -293,7 +361,7 @@ public class TerminalActivity extends AppCompatActivity {
 
         // Quick Preset Scripts & Storage Tools
         if (btnScriptWhoami != null) {
-            btnScriptWhoami.setOnClickListener(v -> runPresetCommand("id; whoami; pm get-install-location; getprop ro.build.version.release"));
+            btnScriptWhoami.setOnClickListener(v -> runPresetCommand("neofetch"));
         }
         if (btnScriptFixStorage != null) {
             btnScriptFixStorage.setOnClickListener(v -> {
@@ -605,14 +673,14 @@ public class TerminalActivity extends AppCompatActivity {
     }
 
     private void appendCommandPrompt(String command) {
-        String timestamp = new SimpleDateFormat("HH:mm:ss", Locale.US).format(new Date());
         String userPrefix = TerminalCoreEngine.getInstance().getPromptUserPrefix();
         String currentDir = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
+        String displayDir = currentDir.equals("/data/local/tmp") ? "~" : currentDir;
         String symbol = TerminalCoreEngine.getInstance().getPromptSymbol();
 
-        appendSpannedText("[" + timestamp + "] ", 0xFF64748B);
-        appendSpannedText(userPrefix, 0xFF00F0FF);
-        appendSpannedText(":" + currentDir + symbol + " ", 0xFF00FF66);
+        appendSpannedText(userPrefix + " ", 0xFF4ADE80); // Termux Light Green
+        appendSpannedText(displayDir, 0xFF38BDF8);       // Termux Cyan Path
+        appendSpannedText(" " + symbol + " ", 0xFFF1F5F9); // White prompt
         appendSpannedText(command + "\n", 0xFFFFFFFF);
         scrollToBottom();
     }

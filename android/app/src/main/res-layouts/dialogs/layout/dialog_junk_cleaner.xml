@@ -119,7 +119,7 @@
         android:layout_height="220dp"
         android:overScrollMode="never" />
 
-    <!-- Action Buttons Row -->
+    <!-- Action Buttons Row: Only SCAN and TAP TO CLEAN -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -127,38 +127,28 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_rescan_junk"
+            android:id="@+id/btn_scan_junk"
             android:layout_width="0dp"
-            android:layout_height="44dp"
+            android:layout_height="46dp"
             android:layout_weight="1"
             android:layout_marginEnd="6dp"
             android:background="@drawable/btn_cyber_dark"
-            android:text="🔍 RESCAN"
+            android:text="🔍 SCAN"
             android:textColor="@color/accent_cyan"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/btn_execute_clean"
             android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="2"
+            android:layout_height="46dp"
+            android:layout_weight="1.4"
             android:layout_marginStart="6dp"
             android:background="@drawable/btn_cyber_green"
-            android:text="🚀 CLEAN NOW"
+            android:text="🧹 TAP TO CLEAN"
             android:textColor="#080B11"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btn_cleaner_close"
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/btn_cyber_dark"
-        android:text="CLOSE"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp" />
 
 </LinearLayout>

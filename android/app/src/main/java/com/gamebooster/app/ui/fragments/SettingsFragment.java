@@ -82,8 +82,6 @@ import java.util.Locale;
 public class SettingsFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
     private LoopingVideoBackgroundView videoSettingsBg;
-    private TextView tvEngineStatus;
-    private TextView tvRootStatus;
     private TextView tvTweaksStatus;
     private View bannerDisconnect;
     private TweaksAdapter tweaksAdapter;
@@ -141,7 +139,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
-    private TextView tvSpoofFrameworkStatus;
     private TextView tvSettingsSpoofBrandInfo;
     private View hsvSettingsSpoofBrands;
     private RecyclerView rvSpoofProfiles;
@@ -197,75 +194,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         videoSettingsBg = view.findViewById(R.id.video_settings_bg);
         if (videoSettingsBg != null) {
             videoSettingsBg.setVideoRawResource(R.raw.settings_bg_video);
-        }
-
-        // Card 1: Shizuku & System Permissions
-        tvEngineStatus = view.findViewById(R.id.tv_engine_status);
-        tvRootStatus = view.findViewById(R.id.tv_storage_access_status);
-        Button btnGrantShizuku = view.findViewById(R.id.btn_grant_shizuku);
-        Button btnGrantStorage = view.findViewById(R.id.btn_grant_storage_access);
-        Button btnOpenSettings = view.findViewById(R.id.btn_open_settings);
-
-        if (btnGrantShizuku != null) {
-            btnGrantShizuku.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    if (ShizukuExecutor.hasShizukuPermission()) {
-                        Toast.makeText(getContext(), "🚀 Master Enforcing All Optimizations (Shizuku Root + Android API + APK Engine)...", Toast.LENGTH_SHORT).show();
-                        com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceAllOptimizationsAsync(getContext(), new com.gamebooster.app.engine.MasterOptimizationEnforcer.OnEnforceProgressListener() {
-                            @Override
-                            public void onProgress(String currentStep, int progressPct) {}
-
-                            @Override
-                            public void onComplete(boolean success, int totalAppliedCount, String summaryMessage) {
-                                if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "✅ " + summaryMessage, Toast.LENGTH_LONG).show();
-                                    refreshAllStatuses();
-                                }
-                            }
-                        });
-                    } else {
-                        ShizukuManager.openOrInstallShizukuManager(getContext());
-                    }
-                }
-            });
-        }
-
-        if (btnGrantStorage != null) {
-            btnGrantStorage.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    if (ShizukuFileManager.hasFullAccess()) {
-                        AppExecutors.getInstance().executeCommand(() -> {
-                            ShizukuFileManager.grantAllStoragePermissions(getContext());
-                            AppExecutors.getInstance().postToMainThread(() -> {
-                                if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "📁 Full Game Data & Storage Control UNLOCKED!", Toast.LENGTH_SHORT).show();
-                                    refreshAllStatuses();
-                                }
-                            });
-                        });
-                    } else {
-                        ShizukuManager.openOrInstallShizukuManager(getContext());
-                    }
-                }
-            });
-        }
-
-        if (btnOpenSettings != null) {
-            btnOpenSettings.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                try {
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } catch (Exception e) {
-                    try {
-                        Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                    } catch (Exception ignored) {}
-                }
-            });
         }
 
         // Card 1b: Diagnostics — shareable crash + settings snapshot
@@ -846,13 +774,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         EditText etSearchTweaks = view.findViewById(R.id.et_search_tweaks);
         ImageView ivClearSearch = view.findViewById(R.id.iv_clear_search);
 
-        Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
         Button btnFilterNetwork = view.findViewById(R.id.btn_filter_network);
 
         TweakManagerRepository.initializeStates(getContext());
+
+        final TweakCategory[] selectedCategory = {TweakCategory.CPU_GPU};
 
         if (rvTweaks != null) {
             rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -864,13 +793,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     tvTweaksStatus.setText("ACTIVE: " + totalAppliedCount + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
                 }
             });
+            tweaksAdapter.setCategoryFilter(TweakCategory.CPU_GPU);
             rvTweaks.setAdapter(tweaksAdapter);
             if (tvTweaksStatus != null) {
                 tvTweaksStatus.setText("ACTIVE: " + TweakManagerRepository.getAppliedCount(getContext()) + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
             }
         }
-
-        final TweakCategory[] selectedCategory = {TweakCategory.ALL};
 
         if (etSearchTweaks != null) {
             etSearchTweaks.addTextChangedListener(new TextWatcher() {
@@ -897,8 +825,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             ivClearSearch.setOnClickListener(v -> etSearchTweaks.setText(""));
         }
 
-        Button[] filterButtons = {btnFilterAll, btnFilterCpuGpu, btnFilterTouch, btnFilterShizuku, btnFilterNetwork};
-        TweakCategory[] categories = {TweakCategory.ALL, TweakCategory.CPU_GPU, TweakCategory.TOUCH_DISPLAY, TweakCategory.SHIZUKU_SYSTEM, TweakCategory.NETWORK_LATENCY};
+        Button[] filterButtons = {btnFilterCpuGpu, btnFilterTouch, btnFilterShizuku, btnFilterNetwork};
+        TweakCategory[] categories = {TweakCategory.CPU_GPU, TweakCategory.TOUCH_DISPLAY, TweakCategory.SHIZUKU_SYSTEM, TweakCategory.NETWORK_LATENCY};
 
         for (int i = 0; i < filterButtons.length; i++) {
             final int index = i;
@@ -922,7 +850,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Card Spoof: Hardware Device Spoofing
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
         tvSpoofActiveProfile = view.findViewById(R.id.tv_spoof_active_profile);
-        tvSpoofFrameworkStatus = view.findViewById(R.id.tv_spoof_framework_status);
         tvSettingsSpoofBrandInfo = view.findViewById(R.id.tv_settings_spoof_brand_info);
         hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
@@ -946,64 +873,37 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             rvSpoofProfiles.setHasFixedSize(false);
             rvSpoofProfiles.setNestedScrollingEnabled(false);
             rvSpoofProfiles.setVisibility(View.VISIBLE);
-            List<SpoofProfile> profileList = new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values());
-            spoofProfileAdapter = new SpoofProfileAdapter(getContext(), profileList, profile -> {
+            List<SpoofProfile> initialProfiles = SpoofProfileRegistry.getByBrand("ASUS ROG");
+            spoofProfileAdapter = new SpoofProfileAdapter(getContext(), initialProfiles, profile -> {
                 if (getContext() == null || profile == null) return;
 
-                // Capture prior state so a blocked apply can be cleanly reverted
-                boolean wasEnabled = SpoofPreferences.isSpoofEnabled(getContext());
-                String previousProfileId = SpoofPreferences.getActiveProfileId(getContext());
-
-                // 1. Immediately activate in preferences & UI (optimistic)
-                SpoofPreferences.setSpoofEnabled(getContext(), true);
+                // 1. Persist selected profile ID
                 SpoofPreferences.setActiveProfileId(getContext(), profile.id);
-                isProgrammaticToggle = true;
-                if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(true);
-                isProgrammaticToggle = false;
-                if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(View.VISIBLE);
-                if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(View.VISIBLE);
-                if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
                 if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(profile.id);
                 updateSpoofUiState();
-                Toast.makeText(getContext(), "⚡ Activating Brand: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand) + " • " + profile.displayName, Toast.LENGTH_SHORT).show();
 
-                // 2. Perform background real-world hardware & game file injection
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean applied = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        String blockReason = DeviceSpooferEngine.getLastSanityBlockReason();
-                        if (!applied && blockReason != null) {
-                            SpoofPreferences.setSpoofEnabled(getContext(), wasEnabled);
-                            SpoofPreferences.setActiveProfileId(getContext(), previousProfileId);
-                            isProgrammaticToggle = true;
-                            if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(wasEnabled);
-                            isProgrammaticToggle = false;
-                            if (rvSpoofProfiles != null) rvSpoofProfiles.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
-                            if (hsvSettingsSpoofBrands != null) hsvSettingsSpoofBrands.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
-                            if (tvSettingsSpoofBrandInfo != null) tvSettingsSpoofBrandInfo.setVisibility(wasEnabled ? View.VISIBLE : View.GONE);
-                            if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(previousProfileId);
+                boolean isEnabled = SpoofPreferences.isSpoofEnabled(getContext());
+                if (isEnabled) {
+                    Toast.makeText(getContext(), "⚡ Applying Spoof: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand) + " • " + profile.displayName, Toast.LENGTH_SHORT).show();
+
+                    // 2. Perform background real-world hardware & game file injection
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        boolean applied = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
+                        com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (!isAdded() || getContext() == null) return;
                             updateSpoofUiState();
-                            Toast.makeText(getContext(), "🚫 Spoof blocked — " + blockReason, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        updateSpoofUiState();
-                        CyberActionDialog.show(
-                                getContext(),
-                                "🎭 BRAND & DEVICE IDENTITY ACTIVE",
-                                true,
-                                "Brand: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand),
-                                "Model: " + profile.displayName + " (" + profile.model + ")",
-                                "GPU: " + profile.glRenderer + " (165Hz Max FPS Ready)"
-                        );
+                            Toast.makeText(getContext(), "✅ Spoofed as " + profile.displayName + " (" + profile.model + ")", Toast.LENGTH_SHORT).show();
+                        });
                     });
-                });
+                } else {
+                    Toast.makeText(getContext(), "📱 Selected: " + profile.displayName + "\n(Turn ON Switch to Activate)", Toast.LENGTH_SHORT).show();
+                }
             });
             rvSpoofProfiles.setAdapter(spoofProfileAdapter);
         }
 
         // Setup Brand Filter Buttons in Card Spoof
-        Button btnBrandAll = view.findViewById(R.id.btn_brand_all);
         Button btnBrandRog = view.findViewById(R.id.btn_brand_rog);
         Button btnBrandSamsung = view.findViewById(R.id.btn_brand_samsung);
         Button btnBrandNubia = view.findViewById(R.id.btn_brand_nubia);
@@ -1017,7 +917,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnBrandLenovo = view.findViewById(R.id.btn_brand_lenovo);
 
         Button[] settingsBrandButtons = new Button[]{
-                btnBrandAll, btnBrandRog, btnBrandSamsung, btnBrandNubia,
+                btnBrandRog, btnBrandSamsung, btnBrandNubia,
                 btnBrandXiaomi, btnBrandRealme, btnBrandOneplus, btnBrandBlackshark,
                 btnBrandApple, btnBrandVivo, btnBrandOppo, btnBrandLenovo
         };
@@ -1030,51 +930,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 }
             }
         };
-
-        Button btnOpenSpoofModal = view.findViewById(R.id.btn_settings_open_spoof_modal);
-        if (btnOpenSpoofModal != null) {
-            btnOpenSpoofModal.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                SpoofBrandSelectorDialog.show(getContext(), selectedProfile -> {
-                    if (selectedProfile != null) {
-                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(selectedProfile.id);
-                        updateSpoofUiState();
-                    }
-                });
-            });
-        }
-        if (tvSpoofActiveProfile != null) {
-            tvSpoofActiveProfile.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                SpoofBrandSelectorDialog.show(getContext(), selectedProfile -> {
-                    if (selectedProfile != null) {
-                        if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(selectedProfile.id);
-                        updateSpoofUiState();
-                    }
-                });
-            });
-        }
-
-        if (btnBrandAll != null) {
-            btnBrandAll.setOnClickListener(v -> {
-                resetBrandChips.run();
-                btnBrandAll.setBackgroundResource(R.drawable.btn_cyber_cyan);
-                btnBrandAll.setTextColor(0xFF000000);
-                if (rvSpoofProfiles != null) {
-                    rvSpoofProfiles.setVisibility(View.VISIBLE);
-                }
-                if (spoofProfileAdapter != null) {
-                    spoofProfileAdapter.updateProfiles(new ArrayList<>(DeviceSpooferEngine.getAllProfiles().values()));
-                }
-                if (rvSpoofProfiles != null) {
-                    rvSpoofProfiles.scrollToPosition(0);
-                }
-                if (tvSettingsSpoofBrandInfo != null) {
-                    tvSettingsSpoofBrandInfo.setVisibility(View.VISIBLE);
-                    tvSettingsSpoofBrandInfo.setText("🏷️ Brand Filter: 🌐 ALL (11 Gaming Brands • " + SpoofProfileRegistry.getTotalCount() + " devices)");
-                }
-            });
-        }
 
         setupSettingsBrandFilter(btnBrandRog, "ASUS ROG", "⚡ ASUS ROG (185Hz / 165Hz Gaming Flagships)", settingsBrandButtons, resetBrandChips);
         setupSettingsBrandFilter(btnBrandSamsung, "Samsung", "📱 SAMSUNG Galaxy (Ultra Lineup)", settingsBrandButtons, resetBrandChips);
@@ -1364,11 +1219,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void refreshAllStatuses() {
         try {
-            EngineUIHelper.refreshEngineStatus(tvEngineStatus);
             if (tvTweaksStatus != null && getContext() != null) {
                 tvTweaksStatus.setText("ACTIVE: " + TweakManagerRepository.getAppliedCount(getContext()) + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
             }
-            updateSystemSettingsStatus();
             updateSpoofUiState();
             updatePrecisionAimStatus();
 
@@ -1514,17 +1367,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (spoofProfileAdapter != null) {
             spoofProfileAdapter.setActiveProfileId(enabled ? activeId : null);
         }
-
-        if (tvSpoofFrameworkStatus != null) {
-            boolean shizukuActive = ShizukuExecutor.hasShizukuPermission();
-            if (shizukuActive) {
-                tvSpoofFrameworkStatus.setText("⚡ Shizuku Elevated Shell: Active (UID 2000 Non-Root)");
-                tvSpoofFrameworkStatus.setTextColor(0xFF00FF66);
-            } else {
-                tvSpoofFrameworkStatus.setText("⚠️ Shizuku API: Disconnected (Open Shizuku to Grant)");
-                tvSpoofFrameworkStatus.setTextColor(0xFFFFB800);
-            }
-        }
     }
 
     private void setupSettingsBrandFilter(Button btn, String brandLabel, String description, Button[] allButtons, Runnable resetBrandChips) {
@@ -1583,17 +1425,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
     }
 
-    private void updateSystemSettingsStatus() {
-        if (tvRootStatus == null || getContext() == null) return;
-        boolean hasAccess = ShizukuFileManager.hasFullAccess();
-        if (hasAccess) {
-            tvRootStatus.setText("📁 Shizuku File & Data Control: FULL ACCESS (UNLOCKED)");
-            tvRootStatus.setTextColor(0xFF00FF66);
-        } else {
-            tvRootStatus.setText("📁 Shizuku File & Data Control: DISCONNECTED");
-            tvRootStatus.setTextColor(0xFFFFB800);
-        }
-    }
 
     private void updatePrecisionAimStatus() {
         if (tvPrecisionAimStatus == null || precisionSettingsManager == null) return;
@@ -1703,11 +1534,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private void updateTerminalStatusInSettings() {
         if (tvSettingsTerminalUid != null) {
             boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
+            String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
             if (hasShizuku) {
-                tvSettingsTerminalUid.setText("UID: 2000 (shell)");
-                tvSettingsTerminalUid.setTextColor(0xFF00FF66);
+                tvSettingsTerminalUid.setText(user + " (UID 2000)");
+                tvSettingsTerminalUid.setTextColor(0xFF4ADE80);
             } else {
-                tvSettingsTerminalUid.setText("UID: Local Shell");
+                tvSettingsTerminalUid.setText(user + " (Local)");
                 tvSettingsTerminalUid.setTextColor(0xFFFFB800);
             }
         }
@@ -1715,9 +1547,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void initSettingsTerminalBanner() {
         if (tvSettingsTerminalOutput == null) return;
-        appendSettingsTerminalText("=== PURE CYBER TERMINAL v2.0 ===\n", 0xFF00F0FF);
-        appendSettingsTerminalText("Type any shell command or tap a quick script.\n", 0xFF94A3B8);
-        appendSettingsTerminalText("Ready for execution.\n\n", 0xFF00FF66);
+        appendSettingsTerminalText("Welcome to Termux (Shizuku Privileged Shell)!\n", 0xFF4ADE80);
+        appendSettingsTerminalText("Type 'help', 'neofetch', or any shell command.\n\n", 0xFF94A3B8);
     }
 
     private void runSettingsTerminalQuickCmd(String cmd) {
@@ -1807,10 +1638,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private void appendSettingsTerminalPrompt(String command) {
-        String timestamp = new SimpleDateFormat("HH:mm:ss", Locale.US).format(new Date());
-        appendSettingsTerminalText("[" + timestamp + "] ", 0xFF64748B);
-        appendSettingsTerminalText("shizuku@android", 0xFF00F0FF);
-        appendSettingsTerminalText(":$ ", 0xFF00FF66);
+        String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
+        String currentDir = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
+        String displayDir = currentDir.equals("/data/local/tmp") ? "~" : currentDir;
+        appendSettingsTerminalText(user + " ", 0xFF4ADE80);
+        appendSettingsTerminalText(displayDir, 0xFF38BDF8);
+        appendSettingsTerminalText(" $ ", 0xFFF1F5F9);
         appendSettingsTerminalText(command + "\n", 0xFFFFFFFF);
         scrollSettingsTerminalToBottom();
     }

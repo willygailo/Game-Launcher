@@ -45,7 +45,8 @@ public class TerminalCoreEngine {
             "service", "top", "ps", "df", "free", "uptime", "logcat", "ping", "ip",
             "ifconfig", "netstat", "clear", "cls", "help", "scripts", "run", "echo",
             "grep", "sed", "awk", "find", "kill", "killall", "pkill", "whoami", "id",
-            "uname", "dmesg", "sync", "sleep", "which", "stat", "head", "tail", "tar", "gzip"
+            "uname", "dmesg", "sync", "sleep", "which", "stat", "head", "tail", "tar", "gzip",
+            "neofetch", "fastfetch", "termux-info", "pkg", "apt", "su", "shizuku"
     );
 
     private TerminalCoreEngine() {
@@ -78,20 +79,17 @@ public class TerminalCoreEngine {
     }
 
     /**
-     * Returns the dynamic bash-like user prompt string.
+     * Returns the dynamic bash-like user prompt string in Termux format.
      */
     public String getPromptUserPrefix() {
         if (ShizukuExecutor.hasShizukuPermission()) {
-            return "shell@android";
+            return "shizuku@localhost";
         }
         int uid = Process.myUid();
-        return "u0_a" + (uid % 100000) + "@android";
+        return "u0_a" + (uid % 100000) + "@localhost";
     }
 
     public String getPromptSymbol() {
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            return "$";
-        }
         return "$";
     }
 
@@ -105,31 +103,81 @@ public class TerminalCoreEngine {
         }
         String trimmed = command.trim();
 
-        // 1. Built-in help command
+        // 1. Built-in help command (Termux Style)
         if ("help".equalsIgnoreCase(trimmed) || "?".equals(trimmed)) {
-            String helpText = "\u001B[1;36m══════════════════════════════════════════════════════\u001B[0m\n" +
-                    "\u001B[1;32m  ⚡ GAME LAUNCHER PRO — REAL CYBER TERMINAL EMULATOR ⚡\u001B[0m\n" +
-                    "\u001B[1;36m══════════════════════════════════════════════════════\u001B[0m\n" +
-                    "\u001B[1;33mSHELL BUILT-INS & COMMANDS:\u001B[0m\n" +
-                    "  • \u001B[32mpwd\u001B[0m                  - Print current working directory\n" +
-                    "  • \u001B[32mcd <dir>\u001B[0m             - Change directory (e.g. cd /sdcard/Android/data)\n" +
-                    "  • \u001B[32mls [-la]\u001B[0m             - List files in current directory\n" +
-                    "  • \u001B[32mcat <file>\u001B[0m           - Display contents of a file\n" +
-                    "  • \u001B[32mid / whoami\u001B[0m          - Show current user and elevated shell UID\n" +
-                    "  • \u001B[32mclear / cls\u001B[0m          - Clear terminal screen buffer\n" +
-                    "  • \u001B[32msh <file.sh>\u001B[0m         - Run any .sh script from terminal folder\n" +
-                    "  • \u001B[32mgetprop <prop>\u001B[0m       - Read system property (e.g. getprop ro.product.model)\n" +
-                    "  • \u001B[32msetprop <prop> <v>\u001B[0m   - Set elevated system property via Shizuku\n" +
-                    "  • \u001B[32msettings <get/put>\u001B[0m   - Manage system/global settings\n" +
-                    "  • \u001B[32mdumpsys <service>\u001B[0m    - Query Android system service state\n" +
-                    "  • \u001B[32mam / pm\u001B[0m              - Control activities, packages, and memory\n" +
-                    "\u001B[1;36m══════════════════════════════════════════════════════\u001B[0m\n" +
-                    "\u001B[35m📁 PWD: " + currentWorkingDir + "\u001B[0m\n" +
-                    "\u001B[1;36m══════════════════════════════════════════════════════\u001B[0m";
+            String helpText = "\u001B[1;32mWelcome to Termux (Shizuku Privileged Shell)!\u001B[0m\n\n" +
+                    "\u001B[1;36mSHELL BUILT-INS & TOOLS:\u001B[0m\n" +
+                    "  • \u001B[32mpkg <list|search|info|trim>\u001B[0m - Termux package management subsystem\n" +
+                    "  • \u001B[32mneofetch / fastfetch\u001B[0m        - Display ASCII system & hardware specs\n" +
+                    "  • \u001B[32mpwd\u001B[0m                         - Print current working directory\n" +
+                    "  • \u001B[32mcd <dir>\u001B[0m                    - Change directory (e.g. cd /sdcard/Android/data)\n" +
+                    "  • \u001B[32mls [-la]\u001B[0m                    - List files and directories\n" +
+                    "  • \u001B[32mcat <file>\u001B[0m                  - Output file contents\n" +
+                    "  • \u001B[32mid / whoami\u001B[0m                 - Show current shell UID and groups\n" +
+                    "  • \u001B[32mclear / cls\u001B[0m                 - Clear terminal screen buffer\n" +
+                    "  • \u001B[32msh <script.sh>\u001B[0m              - Run shell scripts directly\n" +
+                    "  • \u001B[32mgetprop <prop>\u001B[0m              - Read Android system property\n" +
+                    "  • \u001B[32msetprop <prop> <v>\u001B[0m          - Set system property (Elevated Shizuku)\n" +
+                    "  • \u001B[32msettings <get|put>\u001B[0m          - Query/Modify global, system, secure settings\n" +
+                    "  • \u001B[32mdumpsys <service>\u001B[0m           - Dump Android system service state\n" +
+                    "  • \u001B[32mam / pm\u001B[0m                     - Activity / Package manager commands\n" +
+                    "  • \u001B[32mtop / ps\u001B[0m                    - Monitor processes and CPU load\n\n" +
+                    "\u001B[33mUse TAB for path/command autocompletion, Extra-Keys for modifiers.\u001B[0m";
             return new TerminalResult(helpText, 0, currentWorkingDir);
         }
 
-        // 2. Resolve script execution if script name is typed directly
+        // 2. Built-in neofetch / fastfetch / termux-info
+        if ("neofetch".equalsIgnoreCase(trimmed) || "fastfetch".equalsIgnoreCase(trimmed) || "termux-info".equalsIgnoreCase(trimmed)) {
+            String banner = generateNeofetchBanner();
+            return new TerminalResult(banner, 0, currentWorkingDir);
+        }
+
+        // 3. Built-in pkg / apt command for Termux compatibility
+        if (trimmed.startsWith("pkg") || trimmed.startsWith("apt")) {
+            String[] parts = trimmed.split("\\s+");
+            String subCmd = parts.length > 1 ? parts[1].toLowerCase() : "help";
+            if ("help".equals(subCmd)) {
+                String pkgHelp = "\u001B[1;36mTermux Package Helper (Android System Integration):\u001B[0m\n" +
+                        "  • \u001B[32mpkg list [-3|-s|-d]\u001B[0m     - List packages (3rd-party, system, disabled)\n" +
+                        "  • \u001B[32mpkg search <query>\u001B[0m      - Search installed application packages\n" +
+                        "  • \u001B[32mpkg info <package>\u001B[0m      - Inspect package details and permissions\n" +
+                        "  • \u001B[32mpkg trim\u001B[0m                - Trim all app caches (Reclaim NAND storage)\n" +
+                        "  • \u001B[32mpkg install <apk_path>\u001B[0m  - Install APK via elevated package manager\n" +
+                        "  • \u001B[32mpkg uninstall <pkg>\u001B[0m     - Uninstall application for user 0\n";
+                return new TerminalResult(pkgHelp, 0, currentWorkingDir);
+            } else if ("list".equals(subCmd)) {
+                String flag = parts.length > 2 ? parts[2] : "";
+                return executeCommand("pm list packages " + flag);
+            } else if ("search".equals(subCmd)) {
+                if (parts.length > 2) {
+                    return executeCommand("pm list packages | grep -i " + parts[2]);
+                } else {
+                    return new TerminalResult("\u001B[31mUsage: pkg search <keyword>\u001B[0m", 1, currentWorkingDir);
+                }
+            } else if ("info".equals(subCmd)) {
+                if (parts.length > 2) {
+                    return executeCommand("dumpsys package " + parts[2]);
+                } else {
+                    return new TerminalResult("\u001B[31mUsage: pkg info <package_name>\u001B[0m", 1, currentWorkingDir);
+                }
+            } else if ("trim".equals(subCmd)) {
+                return executeCommand("pm trim-caches 999999999999; echo '[NAND & App Caches Trimmed Successfully]'");
+            } else if ("install".equals(subCmd)) {
+                if (parts.length > 2) {
+                    return executeCommand("pm install -r -d " + parts[2]);
+                } else {
+                    return new TerminalResult("\u001B[31mUsage: pkg install <apk_file_path>\u001B[0m", 1, currentWorkingDir);
+                }
+            } else if ("uninstall".equals(subCmd)) {
+                if (parts.length > 2) {
+                    return executeCommand("pm uninstall --user 0 " + parts[2]);
+                } else {
+                    return new TerminalResult("\u001B[31mUsage: pkg uninstall <package_name>\u001B[0m", 1, currentWorkingDir);
+                }
+            }
+        }
+
+        // 4. Resolve script execution if script name is typed directly
         String execCommandStr = trimmed;
         if (trimmed.endsWith(".sh")) {
             String scriptName = trimmed.startsWith("./") ? trimmed.substring(2) : trimmed;
@@ -427,6 +475,57 @@ public class TerminalCoreEngine {
                 "Queries active GameMode, 185 FPS Game Overlays, and ADPF power hints",
                 "cmd game mode get com.mobile.legends 2>/dev/null; device_config get game_overlay 2>/dev/null; getprop debug.sf.showfps"
         ));
+    }
+
+    private String generateNeofetchBanner() {
+        StringBuilder sb = new StringBuilder();
+        String user = getPromptUserPrefix();
+        String osVer = "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
+        String device = Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
+        String hardware = Build.HARDWARE + " (" + Build.BOARD + ")";
+        String kernel = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
+        String uptime = getUptimeFormatted();
+        String memory = getMemoryFormatted();
+        boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
+        String shellPriv = hasShizuku ? "UID 2000 (Shell Elevated - Shizuku PTY)" : "UID " + Process.myUid() + " (Standard App Shell)";
+
+        sb.append("\u001B[1;32m       /\\       \u001B[1;36m").append(user).append("\u001B[0m\n");
+        sb.append("\u001B[1;32m      /  \\      \u001B[1;37m---------------------------------------\u001B[0m\n");
+        sb.append("\u001B[1;32m     / /\\ \\     \u001B[1;33mOS:        \u001B[0m").append(osVer).append("\n");
+        sb.append("\u001B[1;32m    / /  \\ \\    \u001B[1;33mHost:      \u001B[0m").append(device).append("\n");
+        sb.append("\u001B[1;32m   / / /\\ \\ \\   \u001B[1;33mKernel:    \u001B[0m").append(kernel).append("\n");
+        sb.append("\u001B[1;32m  / / /  \\ \\ \\  \u001B[1;33mSoC/Board: \u001B[0m").append(hardware).append("\n");
+        sb.append("\u001B[1;32m /_/_/    \\_\\_\\ \u001B[1;33mShell:     \u001B[0m/system/bin/sh (xterm-256color)\n");
+        sb.append("\u001B[1;32m                \u001B[1;33mAccess:    \u001B[0m").append(shellPriv).append("\n");
+        sb.append("\u001B[1;32m                \u001B[1;33mUptime:    \u001B[0m").append(uptime).append("\n");
+        sb.append("\u001B[1;32m                \u001B[1;33mMemory:    \u001B[0m").append(memory).append("\n");
+        sb.append("\u001B[1;32m                \u001B[1;33mHome:      \u001B[0m").append(currentWorkingDir).append("\n\n");
+        sb.append("\u001B[40m   \u001B[41m   \u001B[42m   \u001B[43m   \u001B[44m   \u001B[45m   \u001B[46m   \u001B[47m   \u001B[0m\n");
+        sb.append("\u001B[100m   \u001B[101m   \u001B[102m   \u001B[103m   \u001B[104m   \u001B[105m   \u001B[106m   \u001B[107m   \u001B[0m\n");
+
+        return sb.toString();
+    }
+
+    private String getUptimeFormatted() {
+        long uptimeMs = android.os.SystemClock.elapsedRealtime();
+        long seconds = uptimeMs / 1000;
+        long mins = (seconds / 60) % 60;
+        long hours = (seconds / 3600) % 24;
+        long days = seconds / 86400;
+        if (days > 0) {
+            return days + " days, " + hours + " hours, " + mins + " mins";
+        } else if (hours > 0) {
+            return hours + " hours, " + mins + " mins";
+        } else {
+            return mins + " mins, " + (seconds % 60) + " secs";
+        }
+    }
+
+    private String getMemoryFormatted() {
+        Runtime runtime = Runtime.getRuntime();
+        long usedMem = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
+        long maxMem = runtime.maxMemory() / (1024 * 1024);
+        return usedMem + "MB / " + maxMem + "MB (JVM Heap)";
     }
 
     /**

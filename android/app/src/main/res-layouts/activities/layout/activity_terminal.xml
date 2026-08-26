@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#D906090F">
 
-    <!-- 1. TOP: Terminal Header Toolbar (Translucent Cyber Toolbar) -->
+    <!-- 1. TOP: Terminal Header Toolbar (Termux Toolbar) -->
     <LinearLayout
         android:id="@+id/terminal_header_bar"
         android:layout_width="0dp"
@@ -43,7 +43,7 @@
                 android:fontFamily="monospace"
                 android:letterSpacing="0.04"
                 android:singleLine="true"
-                android:text="PURE CYBER TERMINAL"
+                android:text="TERMUX CYBER TERMINAL"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="@dimen/terminal_header_title_size"
                 android:textStyle="bold" />
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
                 android:singleLine="true"
-                android:text="UID: 2000 (shell) • Shizuku Active"
+                android:text="shizuku@localhost:~/data/local/tmp $"
                 android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/terminal_status_size" />
         </LinearLayout>
@@ -123,7 +123,7 @@
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
-                android:text="📂 Open Terminal Folder"
+                android:text="📂 Open Scripts Folder"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />
@@ -135,7 +135,7 @@
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:paddingHorizontal="8dp"
-                android:text="⚡ whoami / id"
+                android:text="⚡ neofetch / id"
                 android:textColor="@color/accent_cyan"
                 android:textSize="@dimen/terminal_button_text_size"
                 android:textStyle="bold" />
@@ -284,10 +284,10 @@
             android:textIsSelectable="true"
             android:textColor="#00FF66"
             android:textSize="@dimen/terminal_output_text_size"
-            tools:text="GameBooster Cyber-Terminal v2.0\nType 'help' or execute any shell tweak.\nshizuku@android:~$ id\nuid=2000(shell) gid=2000(shell)\nshizuku@android:~$ " />
+            tools:text="Welcome to Termux (Shizuku Privileged Shell)\nshizuku@localhost:~$ " />
     </ScrollView>
 
-    <!-- 3.5. QUICK MODIFIER KEYS BAR (Termux-Style Quick Toolbar) -->
+    <!-- 3.5. QUICK MODIFIER KEYS BAR (Termux-Style Extra Keys Toolbar) -->
     <HorizontalScrollView
         android:id="@+id/terminal_modifier_bar"
         android:layout_width="0dp"
@@ -305,6 +305,19 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_key_esc"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="40dp"
+                android:paddingHorizontal="5dp"
+                android:text="ESC"
+                android:textColor="@color/accent_orange"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_key_tab"
@@ -343,6 +356,76 @@
                 android:text="CLEAR"
                 android:textColor="@color/accent_cyan"
                 android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_up"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▲"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_down"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▼"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_left"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="◀"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_right"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▶"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_pgup"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="4dp"
+                android:text="PGUP"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_pgdn"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="4dp"
+                android:text="PGDN"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <Button

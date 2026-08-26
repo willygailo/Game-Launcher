@@ -52,86 +52,6 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-            <!-- CARD 1: SHIZUKU ADB & PRIVILEGED PERMISSIONS -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/card_glass_shape"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔒 SHIZUKU ADB &amp; SYSTEM PERMISSIONS"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.03" />
-
-                <TextView
-                    android:id="@+id/tv_engine_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Active Engine: Checking..."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/tv_storage_access_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="📁 Shizuku File &amp; Data Control: Checking..."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_grant_shizuku"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="5dp"
-                        android:background="@drawable/btn_cyber_cyan"
-                        android:padding="0dp"
-                        android:text="⚡ 1-TAP ALL PERMISSIONS"
-                        android:textColor="#000000"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_grant_storage_access"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="5dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="📁 UNLOCK GAME DATA"
-                        android:textColor="@color/accent_neon_green"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btn_open_settings"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:padding="0dp"
-                    android:text="⚙️ SYSTEM APP SETTINGS"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
-            </LinearLayout>
 
 
             <!-- CARD 2: ESPORTS GAMING CONTROLS -->
@@ -838,7 +758,7 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
-                <!-- Tweak Filter Buttons -->
+                <!-- Tweak Filter Buttons: CPU/GPU, TOUCH, SHIZUKU, NETWORK -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -851,23 +771,14 @@
                         android:orientation="horizontal">
 
                         <Button
-                            android:id="@+id/btn_filter_all"
-                            style="?android:attr/buttonBarButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="34dp"
-                            android:text="ALL"
-                            android:textColor="@color/accent_cyan"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <Button
                             android:id="@+id/btn_filter_cpugpu"
                             style="?android:attr/buttonBarButtonStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="34dp"
                             android:text="CPU/GPU"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
 
                         <Button
                             android:id="@+id/btn_filter_touch"
@@ -960,34 +871,11 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tv_spoof_framework_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="⚡ Engine: Shizuku Elevated Shell (UID 2000 Non-Root)"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_settings_open_spoof_modal"
-                    android:layout_width="match_parent"
-                    android:layout_height="38dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="🎭 BROWSE ALL BRANDS &amp; MODELS (POPUP)"
-                    android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-
-
-                <TextView
                     android:id="@+id/tv_settings_spoof_brand_info"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="🏷️ Brand Filter: 🌐 ALL (11 Gaming Brands)"
+                    android:text="🏷️ Brand Filter: ⚡ ASUS ROG (185Hz / 165Hz Gaming Flagships)"
                     android:textColor="@color/accent_cyan"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -1007,28 +895,15 @@
                         android:orientation="horizontal">
 
                         <Button
-                            android:id="@+id/btn_brand_all"
+                            android:id="@+id/btn_brand_rog"
                             android:layout_width="wrap_content"
                             android:layout_height="34dp"
                             android:layout_marginEnd="5dp"
                             android:background="@drawable/btn_cyber_cyan"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="0dp"
-                            android:text="🌐 ALL"
-                            android:textColor="#000000"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-
-                        <Button
-                            android:id="@+id/btn_brand_rog"
-                            android:layout_width="wrap_content"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="5dp"
-                            android:background="@drawable/btn_cyber_dark"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="0dp"
                             android:text="⚡ ASUS ROG"
-                            android:textColor="@color/accent_cyan"
+                            android:textColor="#000000"
                             android:textSize="10sp"
                             android:textStyle="bold" />
 

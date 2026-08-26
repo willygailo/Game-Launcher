@@ -67,9 +67,8 @@ public class JunkCleanerDialog {
         TextView tvStatus = view.findViewById(R.id.tv_cleaner_status);
         ProgressBar pbProgress = view.findViewById(R.id.pb_cleaner_progress);
         RecyclerView rvCategories = view.findViewById(R.id.rv_junk_categories);
-        Button btnRescan = view.findViewById(R.id.btn_rescan_junk);
+        Button btnScan = view.findViewById(R.id.btn_scan_junk);
         Button btnCleanNow = view.findViewById(R.id.btn_execute_clean);
-        Button btnClose = view.findViewById(R.id.btn_cleaner_close);
 
         rvCategories.setLayoutManager(new LinearLayoutManager(context));
 
@@ -91,10 +90,11 @@ public class JunkCleanerDialog {
         final JunkScanResult[] currentScan = new JunkScanResult[1];
 
         Runnable startScan = () -> {
-            btnRescan.setEnabled(false);
+            btnScan.setEnabled(false);
             btnCleanNow.setEnabled(false);
+            btnCleanNow.setText("🧹 TAP TO CLEAN");
             pbProgress.setProgress(0);
-            tvStatus.setText("🔍 Initializing storage scanner...");
+            tvStatus.setText("🔍 Scanning storage cache & residuals...");
             tvTotalSize.setText("0.0 MB");
 
             AppExecutors.getInstance().executeScan(() -> {
@@ -118,14 +118,14 @@ public class JunkCleanerDialog {
                             currentScan[0] = result;
                             pbProgress.setProgress(100);
                             tvTotalSize.setText(result.getFormattedTotalSize());
-                            tvStatus.setText("Scan complete! " + result.getItems().size() + " items found in " + result.getScanDurationMs() + "ms.");
-                            btnRescan.setEnabled(true);
+                            tvStatus.setText("Scan complete! Found " + result.getItems().size() + " items (" + result.getScanDurationMs() + "ms).");
+                            btnScan.setEnabled(true);
                             btnCleanNow.setEnabled(result.getTotalBytes() > 0);
-                            btnCleanNow.setText("🚀 CLEAN (" + result.getFormattedSelectedSize() + ")");
+                            btnCleanNow.setText("🧹 TAP TO CLEAN (" + result.getFormattedSelectedSize() + ")");
 
                             JunkCategoryAdapter adapter = new JunkCategoryAdapter(context, result, () -> {
                                 tvTotalSize.setText(result.getFormattedSelectedSize());
-                                btnCleanNow.setText("🚀 CLEAN (" + result.getFormattedSelectedSize() + ")");
+                                btnCleanNow.setText("🧹 TAP TO CLEAN (" + result.getFormattedSelectedSize() + ")");
                                 btnCleanNow.setEnabled(result.getSelectedBytes() > 0);
                             });
                             rvCategories.setAdapter(adapter);
@@ -135,7 +135,7 @@ public class JunkCleanerDialog {
             });
         };
 
-        btnRescan.setOnClickListener(v -> startScan.run());
+        btnScan.setOnClickListener(v -> startScan.run());
 
         btnCleanNow.setOnClickListener(v -> {
             if (currentScan[0] == null || currentScan[0].getSelectedBytes() == 0) {
@@ -143,9 +143,9 @@ public class JunkCleanerDialog {
                 return;
             }
 
-            btnRescan.setEnabled(false);
+            btnScan.setEnabled(false);
             btnCleanNow.setEnabled(false);
-            btnClose.setEnabled(false);
+            btnCleanNow.setText("🧹 CLEANING...");
             pbProgress.setProgress(0);
 
             tvStatus.setText("🧹 Cleaning storage cache & files...");
@@ -163,21 +163,14 @@ public class JunkCleanerDialog {
                 public void onCleanComplete(CleanResult result) {
                     if (!dialog.isShowing()) return;
 
-                    btnRescan.setEnabled(true);
-                    btnClose.setEnabled(true);
+                    btnScan.setEnabled(true);
                     btnCleanNow.setEnabled(false);
                     btnCleanNow.setText("✅ CLEANED");
-                    tvTotalSize.setText(result.getFormattedBytesFreed());
-                    tvStatus.setText("Purged " + result.getFilesDeletedCount() + " items in " + result.getDurationMs() + "ms!");
+                    pbProgress.setProgress(100);
+                    tvTotalSize.setText("0.0 MB");
+                    tvStatus.setText("✅ Purged " + result.getFilesDeletedCount() + " items (" + result.getFormattedBytesFreed() + " freed)!");
 
-                    CyberActionDialog.show(
-                            context,
-                            "🧹 STORAGE & CACHE CLEANED",
-                            true,
-                            "Total Space Freed: " + result.getFormattedBytesFreed(),
-                            "Cleaned " + result.getFilesDeletedCount() + " files & buffers",
-                            "NAND Flash Storage Optimized (fstrim)"
-                    );
+                    Toast.makeText(context.getApplicationContext(), "🧹 Cleaned " + result.getFormattedBytesFreed() + " junk & storage cache!", Toast.LENGTH_SHORT).show();
 
                     if (listener != null) {
                         listener.onCleanFinished(result);
@@ -186,7 +179,7 @@ public class JunkCleanerDialog {
             });
         });
 
-        btnClose.setOnClickListener(v -> dismissCurrent());
+        dialog.setCanceledOnTouchOutside(true);
 
         activeDialog = dialog;
         dialog.show();
