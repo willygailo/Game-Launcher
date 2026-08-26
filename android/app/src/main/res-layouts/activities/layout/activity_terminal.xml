@@ -95,172 +95,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 2. QUICK ACTIONS: Horizontal Action Bar (Pure Terminal Chip Strip) -->
-    <HorizontalScrollView
-        android:id="@+id/terminal_chips_scroll"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="#99060A12"
-        android:fadingEdge="horizontal"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="6dp"
-        android:requiresFadingEdge="horizontal"
-        android:scrollbars="none"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/terminal_header_bar">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_script_folder_action"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="📂 Open Scripts Folder"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_whoami"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="⚡ neofetch / id"
-                android:textColor="@color/accent_cyan"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_fix_storage"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="🔓 Mount RW Storage"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_data_dir"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="📁 /Android/data"
-                android:textColor="@color/accent_ml_blue"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_obb_dir"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="📁 /Android/obb"
-                android:textColor="@color/accent_purple"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_temp_dir"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="📂 /data/local/tmp"
-                android:textColor="@color/accent_amber"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_anim_scale"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="⚡ 0.0x Zero Anim"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_fps_diag"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="🎮 FPS &amp; 120Hz"
-                android:textColor="@color/accent_neon_green"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_ram_trim"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="🧹 Deep RAM Trim"
-                android:textColor="@color/accent_amber"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_touch_diag"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="🎯 Touch Slop 1ms"
-                android:textColor="@color/accent_ml_blue"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_gpu_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/btn_cyber_dark"
-                android:paddingHorizontal="8dp"
-                android:text="🚀 Game Driver ANGLE"
-                android:textColor="@color/accent_purple"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_script_thermal_bypass"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/terminal_button_height"
-                android:paddingHorizontal="8dp"
-                android:text="🛡️ Thermal Status"
-                android:textColor="@color/accent_orange"
-                android:textSize="@dimen/terminal_button_text_size"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </HorizontalScrollView>
-
-    <!-- 3. MIDDLE: Terminal Output Scroll (Pure Dark Terminal Monitor) -->
+    <!-- 2. MIDDLE: Terminal Output Scroll (Full-Screen Pure Dark Terminal Monitor) -->
     <ScrollView
         android:id="@+id/scroll_terminal_output"
         android:layout_width="0dp"
@@ -272,7 +107,7 @@
         app:layout_constraintBottom_toTopOf="@id/terminal_modifier_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/terminal_chips_scroll">
+        app:layout_constraintTop_toBottomOf="@id/terminal_header_bar">
 
         <TextView
             android:id="@+id/tv_terminal_output"
@@ -284,10 +119,10 @@
             android:textIsSelectable="true"
             android:textColor="#00FF66"
             android:textSize="@dimen/terminal_output_text_size"
-            tools:text="Welcome to Termux (Shizuku Privileged Shell)\nshizuku@localhost:~$ " />
+            tools:text="Welcome to Termux (Shizuku Privileged Shell)\nshizuku@localhost:/sdcard $ " />
     </ScrollView>
 
-    <!-- 3.5. QUICK MODIFIER KEYS BAR (Termux-Style Extra Keys Toolbar) -->
+    <!-- 3. QUICK MODIFIER KEYS BAR (Termux-Style Extra Keys Toolbar) -->
     <HorizontalScrollView
         android:id="@+id/terminal_modifier_bar"
         android:layout_width="0dp"
@@ -553,7 +388,7 @@
             android:maxLines="3"
             android:background="@drawable/card_glass_shape"
             android:fontFamily="monospace"
-            android:hint="Type command (e.g. ls, settings put, setprop, chmod, run script.sh)..."
+            android:hint="Type command (e.g. ls, cd /sdcard, pwd, pm, settings, cat)..."
             android:imeOptions="actionSend"
             android:inputType="textMultiLine|textNoSuggestions"
             android:paddingHorizontal="8dp"
@@ -561,26 +396,6 @@
             android:textColor="@color/text_primary"
             android:textColorHint="#4A5568"
             android:textSize="@dimen/terminal_input_text_size" />
-
-        <Button
-            android:id="@+id/btn_terminal_history_prev"
-            android:layout_width="32dp"
-            android:layout_height="@dimen/terminal_input_min_height"
-            android:layout_marginStart="3dp"
-            android:background="@drawable/btn_cyber_dark"
-            android:text="▲"
-            android:textColor="@color/accent_cyan"
-            android:textSize="11sp" />
-
-        <Button
-            android:id="@+id/btn_terminal_history_next"
-            android:layout_width="32dp"
-            android:layout_height="@dimen/terminal_input_min_height"
-            android:layout_marginStart="3dp"
-            android:background="@drawable/btn_cyber_dark"
-            android:text="▼"
-            android:textColor="@color/accent_cyan"
-            android:textSize="11sp" />
 
         <Button
             android:id="@+id/btn_terminal_run"

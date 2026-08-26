@@ -169,6 +169,7 @@ public class MlbbConfigPatcher {
                 "MageDamageMultiplier=50.00\n" +
                 "MarksmanDamageMultiplier=50.00\n" +
                 "SupportDamageMultiplier=50.00\n" +
+                "BurstDamageMultiplier=1000.00\n" +
                 "CriticalDamageRate=100\n" +
                 "CriticalDamage=10000\n" +
                 "CriticalDamageMultiplier=50.00\n" +
@@ -179,6 +180,18 @@ public class MlbbConfigPatcher {
                 "SmiteTrueDamage=999999\n" +
                 "RetributionDamageThreshold=999999\n" +
                 "ExecuteThreshold=999999\n" +
+                "ExecuteTrueDamageThreshold=999999\n" +
+                "JungleMonsterSmiteEfficiency=100.00\n" +
+                "TurretArmorBypass=100.00\n" +
+                "MinionWaveClearMultiplier=100.00\n" +
+                "ElementalDamageMultiplier=1000.00\n" +
+                "FireDamageMultiplier=1000.00\n" +
+                "IceDamageMultiplier=1000.00\n" +
+                "LightningDamageMultiplier=1000.00\n" +
+                "PoisonDamageMultiplier=1000.00\n" +
+                "TrueDamagePenetration=100.00\n" +
+                "LethalityBoost=1000\n" +
+                "ArmorShredRatio=100.00\n" +
                 "HeadshotDamageMultiplier=1000.00\n" +
                 // ── Fast Cooldown & Instant Cast ──
                 "SkillCoolDownReduceMode=1\n" +

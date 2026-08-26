@@ -57,9 +57,6 @@ public class TerminalActivity extends AppCompatActivity {
     private Button btnTerminalFolder;
     private ImageButton btnTerminalBack;
 
-    private Button btnHistoryPrev;
-    private Button btnHistoryNext;
-
     // Quick Modifier Toolbar Buttons (Termux-style)
     private Button btnKeyEsc;
     private Button btnKeyTab;
@@ -79,20 +76,6 @@ public class TerminalActivity extends AppCompatActivity {
     private Button btnKeyDollar;
     private Button btnKeyAmp;
     private Button btnKeySemicolon;
-
-    // Preset Buttons
-    private Button btnScriptFolderAction;
-    private Button btnScriptWhoami;
-    private Button btnScriptFixStorage;
-    private Button btnScriptDataDir;
-    private Button btnScriptObbDir;
-    private Button btnScriptTempDir;
-    private Button btnScriptAnimScale;
-    private Button btnScriptFpsDiag;
-    private Button btnScriptRamTrim;
-    private Button btnScriptTouchDiag;
-    private Button btnScriptGpuMode;
-    private Button btnScriptThermalBypass;
 
     private final List<String> commandHistory = new ArrayList<>();
     private int historyIndex = -1;
@@ -142,9 +125,6 @@ public class TerminalActivity extends AppCompatActivity {
         btnTerminalFolder = findViewById(R.id.btn_terminal_folder);
         btnTerminalBack = findViewById(R.id.btn_terminal_back);
 
-        btnHistoryPrev = findViewById(R.id.btn_terminal_history_prev);
-        btnHistoryNext = findViewById(R.id.btn_terminal_history_next);
-
         // Modifier Toolbar (Termux Extra Keys)
         btnKeyEsc = findViewById(R.id.btn_key_esc);
         btnKeyTab = findViewById(R.id.btn_key_tab);
@@ -165,20 +145,6 @@ public class TerminalActivity extends AppCompatActivity {
         btnKeyAmp = findViewById(R.id.btn_key_amp);
         btnKeySemicolon = findViewById(R.id.btn_key_semicolon);
 
-        // Preset Script Buttons
-        btnScriptFolderAction = findViewById(R.id.btn_script_folder_action);
-        btnScriptWhoami = findViewById(R.id.btn_script_whoami);
-        btnScriptFixStorage = findViewById(R.id.btn_script_fix_storage);
-        btnScriptDataDir = findViewById(R.id.btn_script_data_dir);
-        btnScriptObbDir = findViewById(R.id.btn_script_obb_dir);
-        btnScriptTempDir = findViewById(R.id.btn_script_temp_dir);
-        btnScriptAnimScale = findViewById(R.id.btn_script_anim_scale);
-        btnScriptFpsDiag = findViewById(R.id.btn_script_fps_diag);
-        btnScriptRamTrim = findViewById(R.id.btn_script_ram_trim);
-        btnScriptTouchDiag = findViewById(R.id.btn_script_touch_diag);
-        btnScriptGpuMode = findViewById(R.id.btn_script_gpu_mode);
-        btnScriptThermalBypass = findViewById(R.id.btn_script_thermal_bypass);
-
         updateStatusBanner();
         updatePromptPrefix();
     }
@@ -187,7 +153,7 @@ public class TerminalActivity extends AppCompatActivity {
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
         String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
         String pwd = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
-        String displayDir = pwd.equals("/data/local/tmp") ? "~" : pwd;
+        String displayDir = pwd.replace("/storage/emulated/0", "/sdcard");
         if (hasShizuku) {
             tvTerminalStatus.setText(user + ":" + displayDir + " $ [PTY Shell]");
             tvTerminalStatus.setTextColor(0xFF4ADE80);
@@ -208,17 +174,18 @@ public class TerminalActivity extends AppCompatActivity {
         String folderPath = TerminalFolderManager.getInstance(getApplicationContext()).getTerminalDirPath();
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
         String user = TerminalCoreEngine.getInstance().getPromptUserPrefix();
+        String currentDir = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
 
         appendSpannedText("Welcome to Termux (Shizuku Privileged Shell)!\n\n", 0xFF4ADE80);
-        appendSpannedText("Community:       https://termux.dev/community\n", 0xFF94A3B8);
-        appendSpannedText("Gitter chat:     https://gitter.im/termux/termux\n", 0xFF94A3B8);
+        appendSpannedText("Current Path:    " + currentDir + " (Internal Storage)\n", 0xFF38BDF8);
         appendSpannedText("Scripts Folder:  " + folderPath + "\n\n", 0xFFFFD700);
-        appendSpannedText("Working with packages:\n", 0xFF38BDF8);
-        appendSpannedText(" * Search packages:   pkg search <query>\n", 0xFF94A3B8);
-        appendSpannedText(" * Package info:       pkg info <package>\n", 0xFF94A3B8);
-        appendSpannedText(" * Trim caches:        pkg trim\n", 0xFF94A3B8);
-        appendSpannedText(" * System diagnostics: neofetch / top / id\n\n", 0xFF94A3B8);
-        appendSpannedText("Shell Status: " + (hasShizuku ? "UID 2000 (Shell) • Shizuku Active" : "Local App Shell") + "\n", 0xFF00FF66);
+        appendSpannedText("Common Commands:\n", 0xFF38BDF8);
+        appendSpannedText(" • ls [-la]              List files & directories with color & details\n", 0xFF94A3B8);
+        appendSpannedText(" • cd <folder>           Navigate to folder (e.g. cd Download, cd ..)\n", 0xFF94A3B8);
+        appendSpannedText(" • pkg list / search     Query installed game packages\n", 0xFF94A3B8);
+        appendSpannedText(" • neofetch              System hardware & Android info\n", 0xFF94A3B8);
+        appendSpannedText(" • scripts               Open terminal script manager\n\n", 0xFF94A3B8);
+        appendSpannedText("Shell Status: " + (hasShizuku ? "UID 2000 (Shell) • Elevated Shizuku Active" : "Local App Shell") + "\n", 0xFF00FF66);
         appendSpannedText("Type 'help' for built-ins, TAB for autocompletion, CTRL+C to cancel.\n\n", 0xFF64748B);
     }
 
@@ -229,10 +196,6 @@ public class TerminalActivity extends AppCompatActivity {
 
         if (btnTerminalFolder != null) {
             btnTerminalFolder.setOnClickListener(v -> showTerminalFolderDialog());
-        }
-
-        if (btnScriptFolderAction != null) {
-            btnScriptFolderAction.setOnClickListener(v -> showTerminalFolderDialog());
         }
 
         if (btnClearTerminal != null) {
@@ -288,8 +251,6 @@ public class TerminalActivity extends AppCompatActivity {
             }
         };
 
-        if (btnHistoryPrev != null) btnHistoryPrev.setOnClickListener(historyPrevAction);
-        if (btnHistoryNext != null) btnHistoryNext.setOnClickListener(historyNextAction);
         if (btnKeyArrowUp != null) btnKeyArrowUp.setOnClickListener(historyPrevAction);
         if (btnKeyArrowDown != null) btnKeyArrowDown.setOnClickListener(historyNextAction);
 
@@ -358,44 +319,6 @@ public class TerminalActivity extends AppCompatActivity {
         if (btnKeyDollar != null) btnKeyDollar.setOnClickListener(v -> insertSymbolAtCursor("$"));
         if (btnKeyAmp != null) btnKeyAmp.setOnClickListener(v -> insertSymbolAtCursor("&"));
         if (btnKeySemicolon != null) btnKeySemicolon.setOnClickListener(v -> insertSymbolAtCursor(";"));
-
-        // Quick Preset Scripts & Storage Tools
-        if (btnScriptWhoami != null) {
-            btnScriptWhoami.setOnClickListener(v -> runPresetCommand("neofetch"));
-        }
-        if (btnScriptFixStorage != null) {
-            btnScriptFixStorage.setOnClickListener(v -> {
-                ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                runPresetCommand("chmod -R 777 /sdcard/Android/data /sdcard/Android/obb; cmd appops set " + getPackageName() + " MANAGE_EXTERNAL_STORAGE allow; echo '[STORAGE PERMISSIONS & DIRECTORIES UNLOCKED]'");
-            });
-        }
-        if (btnScriptDataDir != null) {
-            btnScriptDataDir.setOnClickListener(v -> runPresetCommand("ls -la /sdcard/Android/data"));
-        }
-        if (btnScriptObbDir != null) {
-            btnScriptObbDir.setOnClickListener(v -> runPresetCommand("ls -la /sdcard/Android/obb"));
-        }
-        if (btnScriptTempDir != null) {
-            btnScriptTempDir.setOnClickListener(v -> runPresetCommand("ls -la /data/local/tmp"));
-        }
-        if (btnScriptAnimScale != null) {
-            btnScriptAnimScale.setOnClickListener(v -> runPresetCommand("settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put system window_animation_scale 0.0; settings put system transition_animation_scale 0.0; settings put system animator_duration_scale 0.0; cmd activity update-configuration --anim-scale 0.0"));
-        }
-        if (btnScriptFpsDiag != null) {
-            btnScriptFpsDiag.setOnClickListener(v -> runPresetCommand("dumpsys SurfaceFlinger --latency; getprop debug.sf.fps_limit; getprop persist.sys.NV_FPSLIMIT; settings get system peak_refresh_rate"));
-        }
-        if (btnScriptRamTrim != null) {
-            btnScriptRamTrim.setOnClickListener(v -> runPresetCommand("pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"));
-        }
-        if (btnScriptTouchDiag != null) {
-            btnScriptTouchDiag.setOnClickListener(v -> runPresetCommand("getprop view.touch_slop; settings get system touch_slop_reduction; getprop debug.input.max_events_per_sec; getprop sys.use_fifo; getprop persist.sys.touch.pressure.scale"));
-        }
-        if (btnScriptGpuMode != null) {
-            btnScriptGpuMode.setOnClickListener(v -> runPresetCommand("settings get global game_driver_all_apps; settings get global angle_gl_driver_all_angle; getprop debug.hwui.renderer"));
-        }
-        if (btnScriptThermalBypass != null) {
-            btnScriptThermalBypass.setOnClickListener(v -> runPresetCommand("dumpsys thermalservice; dumpsys battery"));
-        }
     }
 
     private void clearTerminalBuffer() {
@@ -409,7 +332,6 @@ public class TerminalActivity extends AppCompatActivity {
         int start = Math.max(etTerminalCommand.getSelectionStart(), 0);
         int end = Math.max(etTerminalCommand.getSelectionEnd(), 0);
         etTerminalCommand.getText().replace(Math.min(start, end), Math.max(start, end), symbol, 0, symbol.length());
-        etTerminalCommand.setSelection(Math.min(start, end) + symbol.length());
     }
 
     private void handleTabCompletion() {
@@ -443,11 +365,6 @@ public class TerminalActivity extends AppCompatActivity {
             appendAnsiText(sb.toString() + "\n");
             scrollToBottom();
         }
-    }
-
-    private void runPresetCommand(String cmd) {
-        etTerminalCommand.setText(cmd);
-        executeCurrentCommand();
     }
 
     public void showTerminalFolderDialog() {
@@ -653,9 +570,7 @@ public class TerminalActivity extends AppCompatActivity {
             AppExecutors.getInstance().postToMainThread(() -> {
                 String outText = finalRes.output;
                 if (outText == null || outText.isEmpty()) {
-                    if (finalRes.exitCode == 0) {
-                        // Silent success in Unix style or minimal indicator
-                    } else {
+                    if (finalRes.exitCode != 0) {
                         appendSpannedText("[Exit Code " + finalRes.exitCode + "]\n\n", 0xFFFF3366);
                     }
                 } else {
@@ -676,7 +591,7 @@ public class TerminalActivity extends AppCompatActivity {
     private void appendCommandPrompt(String command) {
         String userPrefix = TerminalCoreEngine.getInstance().getPromptUserPrefix();
         String currentDir = TerminalCoreEngine.getInstance().getCurrentWorkingDir();
-        String displayDir = currentDir.equals("/data/local/tmp") ? "~" : currentDir;
+        String displayDir = currentDir.replace("/storage/emulated/0", "/sdcard");
         String symbol = TerminalCoreEngine.getInstance().getPromptSymbol();
 
         appendSpannedText(userPrefix + " ", 0xFF4ADE80); // Termux Light Green

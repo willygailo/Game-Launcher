@@ -339,6 +339,13 @@ public class CodmConfigPatcher {
                         "  \"CriticalHitRate\": 100,\n" +
                         "  \"CriticalDamage\": 10000,\n" +
                         "  \"ArmorPenetration\": 10000,\n" +
+                        "  \"BulletPenetrationDepthMultiplier\": 50.00,\n" +
+                        "  \"WallbangDamageMultiplier\": 100.00,\n" +
+                        "  \"LimbShotDamageMultiplier\": 50.00,\n" +
+                        "  \"NoDamageDropoff\": 1,\n" +
+                        "  \"HitRegistrationSync\": 1,\n" +
+                        "  \"TickRate\": 128,\n" +
+                        "  \"LagCompensationMode\": 1,\n" +
                         "  \"GyroSampleRate\": 1000,\n" +
                         "  \"GyroSensitivityRatio\": 20.0,\n" +
                         "  \"GyroZeroDelay\": 1,\n" +

@@ -547,6 +547,9 @@ public class HardwareMaskEngine {
     /**
      * Resets hardware masking and returns system properties to defaults.
      */
+    /**
+     * Resets hardware masking and returns system properties and settings to defaults.
+     */
     public static void resetHardwareMask() {
         try {
             List<String> resetCmds = new ArrayList<>();
@@ -557,6 +560,12 @@ public class HardwareMaskEngine {
             resetCmds.add("setprop debug.game.spoofed_soc \"\"");
             resetCmds.add("setprop debug.game.spoofed_ram \"\"");
             resetCmds.add("setprop debug.game.spoofed_android_ver \"\"");
+            resetCmds.add("settings put global device_name \"" + android.os.Build.MODEL + "\" 2>/dev/null");
+            resetCmds.add("settings put system device_name \"" + android.os.Build.MODEL + "\" 2>/dev/null");
+            resetCmds.add("settings put global game_driver_opt_in_apps \"\" 2>/dev/null");
+            resetCmds.add("settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null");
+            resetCmds.add("settings put global angle_gl_driver_selection_pkgs \"\" 2>/dev/null");
+            resetCmds.add("settings put secure limit_ad_tracking 0 2>/dev/null");
             ShizukuExecutor.executeShizukuCommands(resetCmds);
             Log.i(TAG, "Hardware mask reset completed.");
         } catch (Throwable t) {
@@ -566,12 +575,22 @@ public class HardwareMaskEngine {
 
     /**
      * Masks a single game or application package using the currently active spoof profile.
+     * Respects user toggle: if user did not enable spoofing or select a profile, does nothing.
      */
     public static boolean maskPackage(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        SpoofProfile profile = DeviceSpooferEngine.getActiveProfile();
+        if (context != null && !SpoofPreferences.isSpoofEnabled(context)) {
+            Log.d(TAG, "Device spoofing is disabled by user preference. Skipping maskPackage.");
+            return false;
+        }
+        String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
+        if (activeId == null || activeId.trim().isEmpty()) {
+            Log.d(TAG, "No spoof profile selected by user. Skipping maskPackage.");
+            return false;
+        }
+        SpoofProfile profile = DeviceSpooferEngine.getProfileById(activeId);
         if (profile == null) {
-            profile = DeviceSpooferEngine.getDefaultProfile();
+            return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
     }
@@ -662,29 +681,35 @@ public class HardwareMaskEngine {
      * Applies full multi-generational Android 13, 14, 15, and 16 hardware mask flags.
      */
     public static void maskAllAndroidVersions(Context context, String packageName) {
-        if (packageName == null) return;
-        maskForAndroid13(packageName);
-        maskForAndroid14(packageName);
-        maskForAndroid15(packageName);
-        maskForAndroid16(packageName);
+        maskAllAndroidVersions(context, packageName, 185);
     }
 
-    public static void maskForAndroid13(String pkg) {
+    public static void maskAllAndroidVersions(Context context, String packageName, int targetHz) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim();
+        int hz = targetHz > 0 ? targetHz : 185;
+        maskForAndroid13(pkg, hz);
+        maskForAndroid14(pkg, hz);
+        maskForAndroid15(pkg, hz);
+        maskForAndroid16(pkg, hz);
+    }
+
+    public static void maskForAndroid13(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
+        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
         cmds.add("cmd appops set " + pkg + " MANAGE_GAME_MODE allow 2>/dev/null");
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
-    public static void maskForAndroid14(String pkg) {
+    public static void maskForAndroid14(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
         cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
-        cmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
-        cmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");
+        cmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
+        cmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
-    public static void maskForAndroid15(String pkg) {
+    public static void maskForAndroid15(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
         cmds.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
         cmds.add("cmd power set-mode 0 1 2>/dev/null");
@@ -692,7 +717,7 @@ public class HardwareMaskEngine {
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
-    public static void maskForAndroid16(String pkg) {
+    public static void maskForAndroid16(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
         cmds.add("cmd game set --performance-class 3 " + pkg + " 2>/dev/null");
         cmds.add("device_config put runtime_native_boot use_app_image_startup_cache true 2>/dev/null");

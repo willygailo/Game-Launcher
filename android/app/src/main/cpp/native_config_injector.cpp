@@ -498,19 +498,47 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"SprintSpeedMultiplier", "10.00"},
         {"CooldownReductionBoost", "0.80"},
         {"SkillCoolDownReduceMode", "1"},
-        {"HitboxExpansion", "10.00"},
-        {"MinionDamageBoost", "100.00"},
+        {"HitboxExpansion", "100.00"},
+        {"MinionDamageBoost", "1000.00"},
         {"MonsterDamageBoost", ssMult.str()},
-        {"TurretDamageReduction", "0.01"},
+        {"TurretDamageReduction", "0.001"},
         {"BurstDamageMultiplier", ssMult.str()},
-        {"CritDamageMultiplier", "10.00"},
+        {"CritDamageMultiplier", "50.00"},
         {"WeakpointDamageMultiplier", ssHead.str()},
         {"ArmorPiercingRatio", "100.00"},
         {"WeaponBaseDamageMultiplier", ssMult.str()},
         {"HeavyAttackDamageScale", ssMult.str()},
         {"LightAttackDamageScale", ssMult.str()},
         {"ComboDamageMultiplier", ssMult.str()},
-        {"JungleClearSpeedMultiplier", ssMult.str()}
+        {"JungleClearSpeedMultiplier", ssMult.str()},
+        // ── Elemental & Lethality Overdrive ──
+        {"ElementalDamageMultiplier", ssMult.str()},
+        {"FireDamageMultiplier", ssMult.str()},
+        {"IceDamageMultiplier", ssMult.str()},
+        {"LightningDamageMultiplier", ssMult.str()},
+        {"PoisonDamageMultiplier", ssMult.str()},
+        {"TrueDamagePenetration", "100.00"},
+        {"LethalityBoost", "1000"},
+        {"ArmorShredRatio", "100.00"},
+        // ── Execution & Smite Scaling ──
+        {"ExecuteTrueDamageThreshold", "999999"},
+        {"JungleMonsterSmiteEfficiency", "100.00"},
+        {"TurretArmorBypass", "100.00"},
+        {"MinionWaveClearMultiplier", "100.00"},
+        // ── FPS / Tactical Penetration & Wallbang ──
+        {"BulletPenetrationDepthMultiplier", "50.00"},
+        {"WallbangDamageMultiplier", "100.00"},
+        {"LimbShotDamageMultiplier", "50.00"},
+        {"VehicleDamageMultiplier", "50.00"},
+        {"NoDamageDropoff", "1"},
+        {"DamageDropoffRangeScale", "100.00"},
+        {"BulletVelocityMultiplier", "200.00"},
+        // ── Hit Registration & Desync Compensation ──
+        {"HitRegistrationSync", "1"},
+        {"TickRate", "128"},
+        {"LagCompensationMode", "1"},
+        {"ClientPredictionAccuracy", "100.00"},
+        {"HitboxExpansionRadius", "100.00"}
     };
 
     if (isXml) {
@@ -529,7 +557,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             patch_key_value(content, kv.first, kv.second);
         }
         patch_cvar(content, "r.DamageMultiplier", ssMult.str());
-        patch_cvar(content, "r.HeroDamageMultiplier", "10.00");
+        patch_cvar(content, "r.HeroDamageMultiplier", "50.00");
         patch_cvar(content, "r.PhysicalDamageScale", ssMult.str());
         patch_cvar(content, "r.MagicDamageScale", ssMult.str());
         patch_cvar(content, "r.TrueDamageScale", ssMult.str());
@@ -538,7 +566,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_cvar(content, "r.WeaponDamageScale", ssMult.str());
         patch_cvar(content, "r.BurstDamageMultiplier", ssMult.str());
         patch_cvar(content, "r.WeakpointMultiplier", ssHead.str());
-        patch_cvar(content, "r.ArmorPiercingRatio", "50.00");
+        patch_cvar(content, "r.ArmorPiercingRatio", "100.00");
+        patch_cvar(content, "r.BulletPenetrationDepth", "50.00");
+        patch_cvar(content, "r.HitRegistrationRate", "128");
     }
 
     bool success = write_file_posix(pathStr, content);

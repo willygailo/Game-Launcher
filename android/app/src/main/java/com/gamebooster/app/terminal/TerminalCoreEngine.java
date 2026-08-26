@@ -2,6 +2,7 @@ package com.gamebooster.app.terminal;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Process;
 import android.util.Base64;
 import android.util.Log;
@@ -12,21 +13,26 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * TerminalCoreEngine — True Interactive POSIX Shell Engine for Android 13-16.
  *
  * Features:
- * 1. Persistent Working Directory tracking across subshells via __PWD__ sync.
- * 2. Full POSIX environment setup: PATH, HOME, TERM=xterm-256color, ANDROID_DATA, etc.
- * 3. Real interactive tab auto-completion for binary commands, built-ins, and filesystem paths.
- * 4. Process cancellation / Ctrl+C interrupt support.
- * 5. Elevated execution via Shizuku (shell UID 2000) or Root (UID 0) with standard local shell fallback.
+ * 1. Defaults working directory to Internal Storage (/sdcard or /storage/emulated/0).
+ * 2. Persistent Working Directory tracking across subshells via __PWD__ sync.
+ * 3. Rich ANSI color formatting for `ls` and `cd` with folder indicators and file sizes.
+ * 4. Full POSIX environment setup: PATH, HOME=/sdcard, TERM=xterm-256color, EXTERNAL_STORAGE.
+ * 5. Interactive tab auto-completion for binary commands, built-ins, and filesystem paths.
+ * 6. Process cancellation / Ctrl+C interrupt support.
+ * 7. Elevated execution via Shizuku (shell UID 2000) or Root (UID 0) with standard local shell fallback.
  */
 public class TerminalCoreEngine {
 
@@ -35,7 +41,7 @@ public class TerminalCoreEngine {
     private static volatile TerminalCoreEngine instance;
 
     private final List<TerminalScriptPreset> presetScripts = new ArrayList<>();
-    private volatile String currentWorkingDir = "/data/local/tmp";
+    private volatile String currentWorkingDir = resolveInitialDirectory();
     private final AtomicReference<java.lang.Process> activeLocalProcess = new AtomicReference<>(null);
 
     // Standard shell commands for tab completion
@@ -66,6 +72,24 @@ public class TerminalCoreEngine {
             }
         }
         return instance;
+    }
+
+    public static String resolveInitialDirectory() {
+        File sdcard = new File("/sdcard");
+        if (sdcard.exists() && sdcard.canRead()) {
+            return "/sdcard";
+        }
+        File emulated = new File("/storage/emulated/0");
+        if (emulated.exists()) {
+            return "/storage/emulated/0";
+        }
+        try {
+            File ext = Environment.getExternalStorageDirectory();
+            if (ext != null && ext.exists()) {
+                return ext.getAbsolutePath();
+            }
+        } catch (Throwable ignored) {}
+        return "/sdcard";
     }
 
     public String getCurrentWorkingDir() {
@@ -110,8 +134,8 @@ public class TerminalCoreEngine {
                     "  • \u001B[32mpkg <list|search|info|trim>\u001B[0m - Termux package management subsystem\n" +
                     "  • \u001B[32mneofetch / fastfetch\u001B[0m        - Display ASCII system & hardware specs\n" +
                     "  • \u001B[32mpwd\u001B[0m                         - Print current working directory\n" +
-                    "  • \u001B[32mcd <dir>\u001B[0m                    - Change directory (e.g. cd /sdcard/Android/data)\n" +
-                    "  • \u001B[32mls [-la]\u001B[0m                    - List files and directories\n" +
+                    "  • \u001B[32mcd <dir>\u001B[0m                    - Change directory (e.g. cd /sdcard, cd Download, cd ..)\n" +
+                    "  • \u001B[32mls [-la]\u001B[0m                    - List files and directories with folder info & colors\n" +
                     "  • \u001B[32mcat <file>\u001B[0m                  - Output file contents\n" +
                     "  • \u001B[32mid / whoami\u001B[0m                 - Show current shell UID and groups\n" +
                     "  • \u001B[32mclear / cls\u001B[0m                 - Clear terminal screen buffer\n" +
@@ -177,7 +201,21 @@ public class TerminalCoreEngine {
             }
         }
 
-        // 4. Resolve script execution if script name is typed directly
+        // 4. Handle cd command (Fast path resolution & validation)
+        if (trimmed.equals("cd") || trimmed.equals("cd ~") || trimmed.equals("cd $HOME")) {
+            currentWorkingDir = resolveInitialDirectory();
+            return new TerminalResult("", 0, currentWorkingDir);
+        }
+
+        // 5. Intercept simple 'ls' or 'dir' commands to provide rich directory & file metadata
+        if (trimmed.equals("ls") || trimmed.startsWith("ls ") || trimmed.equals("dir") || trimmed.startsWith("dir ")) {
+            TerminalResult customLs = handleEnhancedLs(trimmed);
+            if (customLs != null) {
+                return customLs;
+            }
+        }
+
+        // 6. Resolve script execution if script name is typed directly
         String execCommandStr = trimmed;
         if (trimmed.endsWith(".sh")) {
             String scriptName = trimmed.startsWith("./") ? trimmed.substring(2) : trimmed;
@@ -192,7 +230,7 @@ public class TerminalCoreEngine {
 
         // Build POSIX environment script wrapper
         String shellScript = "export PATH=/system/bin:/system/xbin:/vendor/bin:/data/local/tmp:$PATH; " +
-                "export HOME=/data/local/tmp; " +
+                "export HOME=/sdcard; " +
                 "export TERM=xterm-256color; " +
                 "export ANDROID_DATA=/data; " +
                 "export ANDROID_ROOT=/system; " +
@@ -216,6 +254,152 @@ public class TerminalCoreEngine {
 
         // Fallback: Local Shell Process Execution
         return executeLocalShell(shellScript);
+    }
+
+    /**
+     * Enhanced Directory & File Listing with rich Cyberpunk ANSI colors,
+     * permissions, sizes, folder indicators, and fallback support for Android Internal Storage.
+     */
+    private TerminalResult handleEnhancedLs(String cmd) {
+        String targetPath = currentWorkingDir;
+        boolean detailed = cmd.contains("-l") || cmd.contains("-a") || cmd.contains("-la") || cmd.contains("-al");
+
+        String[] parts = cmd.split("\\s+");
+        for (int i = 1; i < parts.length; i++) {
+            String p = parts[i].trim();
+            if (!p.startsWith("-")) {
+                if (p.startsWith("/")) {
+                    targetPath = p;
+                } else if (p.startsWith("~")) {
+                    targetPath = p.replace("~", "/sdcard");
+                } else {
+                    targetPath = currentWorkingDir.endsWith("/") ? currentWorkingDir + p : currentWorkingDir + "/" + p;
+                }
+            }
+        }
+
+        File dir = new File(targetPath);
+
+        // Try elevated shell listing first if Shizuku is granted
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String shellLsCmd = "export PATH=/system/bin:/system/xbin:$PATH; cd \"" + currentWorkingDir + "\"; " + cmd + "; echo \"__PWD__:$PWD\"; echo \"__EXIT__:$?\"";
+                String rawOutput = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(shellLsCmd);
+                if (rawOutput != null && !rawOutput.trim().isEmpty() && !rawOutput.contains("No such file or directory") && !rawOutput.contains("Permission denied")) {
+                    TerminalResult parsed = parseShellOutput(rawOutput);
+                    if (parsed.output != null && !parsed.output.trim().isEmpty()) {
+                        String formatted = colorizeLsOutput(parsed.output, targetPath);
+                        return new TerminalResult(formatted, parsed.exitCode, parsed.workingDirectory);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Fallback: Native Java File exploration if directory exists
+        if (dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files == null || files.length == 0) {
+                return new TerminalResult("\u001B[33m📁 Directory is empty: " + targetPath + "\u001B[0m", 0, currentWorkingDir);
+            }
+
+            // Sort directories first, then alphabetical
+            List<File> fileList = new ArrayList<>(Arrays.asList(files));
+            fileList.sort((f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) return -1;
+                if (!f1.isDirectory() && f2.isDirectory()) return 1;
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            });
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("\u001B[1;36m📂 Directory: ").append(targetPath).append("\u001B[0m\n");
+            sb.append("\u001B[90m--------------------------------------------------\u001B[0m\n");
+
+            int dirCount = 0;
+            int fileCount = 0;
+            long totalBytes = 0;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+
+            for (File f : fileList) {
+                String name = f.getName();
+                boolean isHidden = name.startsWith(".");
+                if (isHidden && !detailed) continue;
+
+                String dateStr = sdf.format(new Date(f.lastModified()));
+                if (f.isDirectory()) {
+                    dirCount++;
+                    sb.append(String.format(Locale.US, "\u001B[1;36m📁 [DIR]  %-28s \u001B[90m%-16s \u001B[33m<DIR>\u001B[0m\n", name + "/", dateStr));
+                } else {
+                    fileCount++;
+                    long len = f.length();
+                    totalBytes += len;
+                    String sizeStr = formatFileSize(len);
+                    String icon = getFileIcon(name);
+                    String color = getFileColor(name);
+                    sb.append(String.format(Locale.US, "%s %-4s %s%-28s \u001B[90m%-16s \u001B[32m%s\u001B[0m\n", color, icon, color, name, dateStr, sizeStr));
+                }
+            }
+
+            sb.append("\u001B[90m--------------------------------------------------\u001B[0m\n");
+            sb.append("\u001B[1;32mTotal: ").append(dirCount).append(" Directories, ")
+                    .append(fileCount).append(" Files (").append(formatFileSize(totalBytes)).append(")\u001B[0m");
+
+            return new TerminalResult(sb.toString(), 0, currentWorkingDir);
+        }
+
+        return null; // Fall through to standard shell execution
+    }
+
+    private String colorizeLsOutput(String rawOutput, String path) {
+        if (rawOutput == null) return "";
+        String[] lines = rawOutput.split("\n");
+        StringBuilder sb = new StringBuilder();
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
+
+            if (trimmed.startsWith("d") || trimmed.endsWith("/")) {
+                sb.append("\u001B[1;36m📁 ").append(line).append("\u001B[0m\n");
+            } else if (trimmed.endsWith(".sh") || trimmed.endsWith(".apk") || trimmed.endsWith(".bin") || trimmed.startsWith("-rwx")) {
+                sb.append("\u001B[1;32m⚡ ").append(line).append("\u001B[0m\n");
+            } else if (trimmed.endsWith(".zip") || trimmed.endsWith(".tar") || trimmed.endsWith(".obb") || trimmed.endsWith(".gz") || trimmed.endsWith(".7z")) {
+                sb.append("\u001B[1;35m📦 ").append(line).append("\u001B[0m\n");
+            } else if (trimmed.endsWith(".mp4") || trimmed.endsWith(".jpg") || trimmed.endsWith(".png") || trimmed.endsWith(".mp3")) {
+                sb.append("\u001B[1;33m🎬 ").append(line).append("\u001B[0m\n");
+            } else {
+                sb.append("\u001B[0;37m📄 ").append(line).append("\u001B[0m\n");
+            }
+        }
+
+        String result = sb.toString();
+        if (result.endsWith("\n")) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result;
+    }
+
+    private static String getFileIcon(String name) {
+        String lower = name.toLowerCase(Locale.US);
+        if (lower.endsWith(".sh") || lower.endsWith(".bin") || lower.endsWith(".so")) return "[EXE]";
+        if (lower.endsWith(".apk")) return "[APK]";
+        if (lower.endsWith(".zip") || lower.endsWith(".tar") || lower.endsWith(".gz") || lower.endsWith(".obb") || lower.endsWith(".7z")) return "[ARCH]";
+        if (lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".mp4") || lower.endsWith(".mp3")) return "[MEDIA]";
+        return "[FILE]";
+    }
+
+    private static String getFileColor(String name) {
+        String lower = name.toLowerCase(Locale.US);
+        if (lower.endsWith(".sh") || lower.endsWith(".bin") || lower.endsWith(".so") || lower.endsWith(".apk")) return "\u001B[1;32m";
+        if (lower.endsWith(".zip") || lower.endsWith(".tar") || lower.endsWith(".gz") || lower.endsWith(".obb") || lower.endsWith(".7z")) return "\u001B[1;35m";
+        if (lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".mp4") || lower.endsWith(".mp3")) return "\u001B[1;33m";
+        return "\u001B[0;37m";
+    }
+
+    private static String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format(Locale.US, "%.1f KB", bytes / 1024.0);
+        if (bytes < 1024 * 1024 * 1024) return String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0));
+        return String.format(Locale.US, "%.2f GB", bytes / (1024.0 * 1024.0 * 1024.0));
     }
 
     private TerminalResult executeLocalShell(String shellScript) {
@@ -447,99 +631,45 @@ public class TerminalCoreEngine {
                 "Forces 185Hz refresh rate via SurfaceFlinger and system display settings",
                 "settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; service call SurfaceFlinger 1035 i32 185; service call SurfaceFlinger 1036 i32 185; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185"
         ));
-
-        presetScripts.add(new TerminalScriptPreset(
-                "diag_net",
-                "🌐 Ultra-Low Ping DNS Diagnostic",
-                "Queries active DNS resolver and tests Google / Cloudflare ping",
-                "getprop net.dns1; ping -c 3 1.1.1.1"
-        ));
-
-        presetScripts.add(new TerminalScriptPreset(
-                "tweak_mask",
-                "🛡️ Hardware Mask & Flagship Identity",
-                "Verifies device model, brand, SoC, and GPU vendor spoofing properties",
-                "getprop ro.product.model; getprop ro.product.manufacturer; getprop ro.product.brand; getprop ro.soc.model; getprop ro.hardware.egl"
-        ));
-
-        presetScripts.add(new TerminalScriptPreset(
-                "tweak_storage",
-                "📁 Unlock Combo /sdcard/Android/data & obb",
-                "Applies full read/write permissions (chmod 777) across all internal and external game paths",
-                "chmod -R 777 /sdcard/Android/data /sdcard/Android/obb 2>/dev/null; ls -ld /sdcard/Android/data /sdcard/Android/obb"
-        ));
-
-        presetScripts.add(new TerminalScriptPreset(
-                "tweak_android16",
-                "🚀 Android 13-16 GameMode & Performance HAL",
-                "Queries active GameMode, 185 FPS Game Overlays, and ADPF power hints",
-                "cmd game mode get com.mobile.legends 2>/dev/null; device_config get game_overlay 2>/dev/null; getprop debug.sf.showfps"
-        ));
     }
 
     private String generateNeofetchBanner() {
-        StringBuilder sb = new StringBuilder();
         String user = getPromptUserPrefix();
-        String osVer = "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
-        String device = Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
-        String hardware = Build.HARDWARE + " (" + Build.BOARD + ")";
-        String kernel = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
-        String uptime = getUptimeFormatted();
-        String memory = getMemoryFormatted();
-        boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
-        String shellPriv = hasShizuku ? "UID 2000 (Shell Elevated - Shizuku PTY)" : "UID " + Process.myUid() + " (Standard App Shell)";
+        String model = Build.MANUFACTURER + " " + Build.MODEL;
+        String soc = Build.HARDWARE + " (" + Build.BOARD + ")";
+        String androidVer = "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";
+        String kernel = System.getProperty("os.version", "Linux 5.x");
+        String arch = Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "arm64-v8a";
+        String uptimeStr = "Uptime: " + (android.os.SystemClock.elapsedRealtime() / 1000 / 60) + " mins";
 
-        sb.append("\u001B[1;32m       /\\       \u001B[1;36m").append(user).append("\u001B[0m\n");
-        sb.append("\u001B[1;32m      /  \\      \u001B[1;37m---------------------------------------\u001B[0m\n");
-        sb.append("\u001B[1;32m     / /\\ \\     \u001B[1;33mOS:        \u001B[0m").append(osVer).append("\n");
-        sb.append("\u001B[1;32m    / /  \\ \\    \u001B[1;33mHost:      \u001B[0m").append(device).append("\n");
-        sb.append("\u001B[1;32m   / / /\\ \\ \\   \u001B[1;33mKernel:    \u001B[0m").append(kernel).append("\n");
-        sb.append("\u001B[1;32m  / / /  \\ \\ \\  \u001B[1;33mSoC/Board: \u001B[0m").append(hardware).append("\n");
-        sb.append("\u001B[1;32m /_/_/    \\_\\_\\ \u001B[1;33mShell:     \u001B[0m/system/bin/sh (xterm-256color)\n");
-        sb.append("\u001B[1;32m                \u001B[1;33mAccess:    \u001B[0m").append(shellPriv).append("\n");
-        sb.append("\u001B[1;32m                \u001B[1;33mUptime:    \u001B[0m").append(uptime).append("\n");
-        sb.append("\u001B[1;32m                \u001B[1;33mMemory:    \u001B[0m").append(memory).append("\n");
-        sb.append("\u001B[1;32m                \u001B[1;33mHome:      \u001B[0m").append(currentWorkingDir).append("\n\n");
-        sb.append("\u001B[40m   \u001B[41m   \u001B[42m   \u001B[43m   \u001B[44m   \u001B[45m   \u001B[46m   \u001B[47m   \u001B[0m\n");
-        sb.append("\u001B[100m   \u001B[101m   \u001B[102m   \u001B[103m   \u001B[104m   \u001B[105m   \u001B[106m   \u001B[107m   \u001B[0m\n");
-
-        return sb.toString();
+        return "\u001B[1;36m   ____                      ____                   _\u001B[0m\n" +
+                "\u001B[1;36m  / ___| __ _ _ __ ___   ___| __ )  ___   ___  ___| |_ ___ _ __\u001B[0m\n" +
+                "\u001B[1;36m | |  _ / _` | '_ ` _ \\ / _ \\  _ \\ / _ \\ / _ \\/ __| __/ _ \\ '__|\u001B[0m\n" +
+                "\u001B[1;36m | |_| | (_| | | | | | |  __/ |_) | (_) | (_) \\__ \\ ||  __/ |\u001B[0m\n" +
+                "\u001B[1;36m  \\____|\\__,_|_| |_| |_|\\___|____/ \\___/ \\___/|___/\\__\\___|_|\u001B[0m\n\n" +
+                "\u001B[1;32m" + user + "\u001B[0m\n" +
+                "\u001B[90m--------------------------------------------------\u001B[0m\n" +
+                "\u001B[1;34mOS:\u001B[0m      " + androidVer + "\n" +
+                "\u001B[1;34mHost:\u001B[0m    " + model + "\n" +
+                "\u001B[1;34mKernel:\u001B[0m  " + kernel + "\n" +
+                "\u001B[1;34mArch:\u001B[0m    " + arch + "\n" +
+                "\u001B[1;34mHardware:\u001B[0m" + soc + "\n" +
+                "\u001B[1;34mShell:\u001B[0m   " + (ShizukuExecutor.hasShizukuPermission() ? "Shizuku Shell (UID 2000)" : "App Process (UID " + Process.myUid() + ")") + "\n" +
+                "\u001B[1;34mMemory:\u001B[0m  " + (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + "MB / " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + "MB Heap\n" +
+                "\u001B[1;34mStatus:\u001B[0m  " + uptimeStr + "\n" +
+                "\u001B[90m--------------------------------------------------\u001B[0m\n" +
+                "\u001B[40m   \u001B[41m   \u001B[42m   \u001B[43m   \u001B[44m   \u001B[45m   \u001B[46m   \u001B[47m   \u001B[0m\n";
     }
 
-    private String getUptimeFormatted() {
-        long uptimeMs = android.os.SystemClock.elapsedRealtime();
-        long seconds = uptimeMs / 1000;
-        long mins = (seconds / 60) % 60;
-        long hours = (seconds / 3600) % 24;
-        long days = seconds / 86400;
-        if (days > 0) {
-            return days + " days, " + hours + " hours, " + mins + " mins";
-        } else if (hours > 0) {
-            return hours + " hours, " + mins + " mins";
-        } else {
-            return mins + " mins, " + (seconds % 60) + " secs";
-        }
-    }
-
-    private String getMemoryFormatted() {
-        Runtime runtime = Runtime.getRuntime();
-        long usedMem = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
-        long maxMem = runtime.maxMemory() / (1024 * 1024);
-        return usedMem + "MB / " + maxMem + "MB (JVM Heap)";
-    }
-
-    /**
-     * Data class holding command output, exit code, and active working directory.
-     */
-    public static final class TerminalResult {
+    public static class TerminalResult {
         public final String output;
         public final int exitCode;
-        public final String currentDir;
+        public final String workingDirectory;
 
-        public TerminalResult(String output, int exitCode, String currentDir) {
-            this.output = output != null ? output : "";
+        public TerminalResult(String output, int exitCode, String workingDirectory) {
+            this.output = output;
             this.exitCode = exitCode;
-            this.currentDir = currentDir != null ? currentDir : "/data/local/tmp";
+            this.workingDirectory = workingDirectory;
         }
     }
 }
