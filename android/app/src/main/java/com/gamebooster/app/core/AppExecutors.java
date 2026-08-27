@@ -72,4 +72,15 @@ public class AppExecutors {
             }
         });
     }
+
+    public void postDelayed(Runnable runnable, long delayMillis) {
+        if (runnable == null) return;
+        mainThread.postDelayed(() -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                Log.e(TAG, "Main thread delayed execution error: " + t.getMessage(), t);
+            }
+        }, delayMillis);
+    }
 }

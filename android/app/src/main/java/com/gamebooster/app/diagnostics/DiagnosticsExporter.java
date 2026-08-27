@@ -242,7 +242,7 @@ public final class DiagnosticsExporter {
         }
         boolean aidlConnected = false;
         try {
-            aidlConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+            aidlConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected(400);
         } catch (Throwable ignored) {}
         lines.add("AIDL UserService Connected: " + (aidlConnected ? "✅ TRUE (Direct Binder IPC Active)" : "⚠️ FALSE (Connecting/Idle)"));
         lines.add("Rish Embedded Executable: " + (RishManager.isRishAvailable() ? "✅ READY" : "⚠️ STANDBY"));

@@ -177,30 +177,25 @@ public final class GameManagerSessionEngine {
                             int pid = Integer.parseInt(pStr.trim());
                             if (pid <= 0) continue;
 
-                            // a) Native sched_setaffinity — pin to Big/Prime CPU cluster (bits 4-7)
-                            NativeConfigInjector.setProcessCpuAffinity(pid, 0xf0);
+                            // Dynamic CPU core topology detection
+                            int totalCores = Runtime.getRuntime().availableProcessors();
+                            if (totalCores <= 0) totalCores = 8;
+                            int cpuMask = (totalCores >= 8) ? 0xf0 : ((totalCores >= 6) ? 0x38 : ((1 << totalCores) - 1));
+                            String maskHex = Integer.toHexString(cpuMask);
 
-                            // SCHED_FIFO realtime scheduling at priority 80
-                            // (raised from 50 — higher priority ensures the game thread
-                            //  is never preempted by compositor, sensor, or audio HAL threads)
-                            NativeConfigInjector.setRealtimeThreadScheduling(pid, 80);
+                            // a) Native sched_setaffinity — pin to Big/Prime CPU cluster safely
+                            NativeConfigInjector.setProcessCpuAffinity(pid, cpuMask);
 
-                            // Shell reinforcement: taskset + renice + chrt SCHED_FIFO 80
+                            // b) Safe Linux CFS High-Priority renice (-20) & taskset (avoids dangerous RT watchdog SIGKILL)
                             ShizukuExecutor.executeShizukuCommands(
-                                "taskset -p f0 " + pid + " 2>/dev/null",
+                                "taskset -p " + maskHex + " " + pid + " 2>/dev/null",
                                 "renice -n -20 -p " + pid + " 2>/dev/null",
-                                "chrt -f -p 80 " + pid + " 2>/dev/null"
+                                "ionice -c 2 -n 0 -p " + pid + " 2>/dev/null"
                             );
 
-                            // b) Real-time I/O scheduling class 1 (RT), level 0 (highest)
-                            // Ensures game asset streaming is never starved by background I/O
-                            ShizukuExecutor.executeShizukuCommand(
-                                "ionice -c 1 -n 0 -p " + pid + " 2>/dev/null"
-                            );
-
-                            // c) Per-thread render thread affinity + scheduling
+                            // c) Per-thread render thread affinity + high priority
                             // Scan /proc/<pid>/task/ for known game render thread names
-                            // and elevate each one independently for maximum frame consistency
+                            // and elevate each one for maximum frame consistency without watchdog starvation
                             try {
                                 String taskListOut = ShizukuExecutor.executeShizukuCommand(
                                     "ls /proc/" + pid + "/task/ 2>/dev/null"
@@ -215,7 +210,7 @@ public final class GameManagerSessionEngine {
                                             );
                                             if (comm == null) continue;
                                             comm = comm.trim().toLowerCase();
-                                            // Target: Unity main, OpenGL/Vulkan render threads, audio
+                                            // Target: Unity main, OpenGL/Vulkan render threads, game threads
                                             boolean isRenderThread =
                                                 comm.contains("unitymain") ||
                                                 comm.contains("renderthread") ||
@@ -224,16 +219,14 @@ public final class GameManagerSessionEngine {
                                                 comm.contains("ue4") ||
                                                 comm.contains("renderdoc") ||
                                                 comm.startsWith("render") ||
-                                                comm.contains("gamethrea") ||
-                                                comm.contains("audiotrack");
+                                                comm.contains("gamethrea");
                                             if (isRenderThread) {
                                                 ShizukuExecutor.executeShizukuCommands(
-                                                    "taskset -p f0 " + tid + " 2>/dev/null",
-                                                    "chrt -f -p 80 " + tid + " 2>/dev/null",
+                                                    "taskset -p " + maskHex + " " + tid + " 2>/dev/null",
                                                     "renice -n -20 -p " + tid + " 2>/dev/null",
-                                                    "ionice -c 1 -n 0 -p " + tid + " 2>/dev/null"
+                                                    "ionice -c 2 -n 0 -p " + tid + " 2>/dev/null"
                                                 );
-                                                Log.i(TAG, "✅ Pinned render thread [" + comm + "] TID:" + tid);
+                                                Log.i(TAG, "✅ Optimized render thread [" + comm + "] TID:" + tid);
                                             }
                                         } catch (NumberFormatException ignored) {}
                                     }
@@ -242,7 +235,7 @@ public final class GameManagerSessionEngine {
                                 Log.d(TAG, "Render thread scan skipped: " + rt.getMessage());
                             }
 
-                            Log.i(TAG, "✅ Full RT scheduling (SCHED_FIFO/80 + ionice RT) for PID: " + pid);
+                            Log.i(TAG, "✅ Safe high-priority scheduling & core pinning (" + maskHex + ") for PID: " + pid);
                         } catch (NumberFormatException ignored) {}
                     }
                 } else {

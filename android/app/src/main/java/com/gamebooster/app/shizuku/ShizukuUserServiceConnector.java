@@ -63,7 +63,7 @@ public class ShizukuUserServiceConnector {
 
     private final Shizuku.UserServiceArgs serviceArgs = new Shizuku.UserServiceArgs(
             new ComponentName(BuildConfig.APPLICATION_ID, UserService.class.getName()))
-            .daemon(false)
+            .daemon(true)
             .processNameSuffix("service")
             .debuggable(BuildConfig.DEBUG)
             .version(BuildConfig.VERSION_CODE);
@@ -78,6 +78,25 @@ public class ShizukuUserServiceConnector {
         } catch (Throwable t) {
             return false;
         }
+    }
+
+    public boolean isServiceConnected(long waitTimeoutMs) {
+        if (isServiceConnected()) {
+            return true;
+        }
+        if (waitTimeoutMs <= 0 || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            return isServiceConnected();
+        }
+        long deadline = System.currentTimeMillis() + waitTimeoutMs;
+        while (System.currentTimeMillis() < deadline) {
+            if (isServiceConnected()) {
+                return true;
+            }
+            try {
+                Thread.sleep(40);
+            } catch (InterruptedException ignored) {}
+        }
+        return isServiceConnected();
     }
 
     public synchronized void bindService() {
@@ -97,7 +116,7 @@ public class ShizukuUserServiceConnector {
         }
         try {
             if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Binding Shizuku UserService via AIDL (processSuffix=service, version=" + BuildConfig.VERSION_CODE + ")...");
+                Log.d(TAG, "Binding Shizuku UserService via AIDL (processSuffix=service, daemon=true, version=" + BuildConfig.VERSION_CODE + ")...");
                 isBinding = true;
                 bindingStartedAt = System.currentTimeMillis();
                 try {
@@ -135,7 +154,7 @@ public class ShizukuUserServiceConnector {
         if (!isServiceConnected()) {
             bindService();
             if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                int retries = 6;
+                int retries = 8;
                 while (!isServiceConnected() && retries > 0) {
                     try {
                         Thread.sleep(50);

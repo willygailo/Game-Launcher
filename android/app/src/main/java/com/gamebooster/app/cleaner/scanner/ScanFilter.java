@@ -18,12 +18,13 @@ public class ScanFilter {
     // Critical extensions that must NEVER be deleted
     private static final Set<String> PROTECTED_EXTENSIONS = new HashSet<>(Arrays.asList(
             "sav", "save", "dat", "db", "sqlite", "sqlite3", "realm",
-            "jpg", "jpeg", "png", "heic", "dng", "webp", "gif",
+            "jpg", "jpeg", "png", "heic", "dng", "webp", "gif", "svg",
             "mp4", "mkv", "mov", "avi", "flv", "webm", "3gp",
             "mp3", "flac", "wav", "m4a", "ogg", "aac", "opus",
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv",
             "obb", "key", "pem", "p12", "keystore", "jks", "crt", "cer", "json", "xml",
-            "ini", "cfg", "conf", "lua", "pak", "bundle", "unity3d", "res", "properties", "yaml", "yml"
+            "ini", "cfg", "conf", "lua", "pak", "bundle", "unity3d", "res", "properties", "yaml", "yml",
+            "nomedia"
     ));
 
     // Safe extensions specifically recognized as disposable junk
@@ -38,12 +39,35 @@ public class ScanFilter {
     private static final Set<String> PROTECTED_PATH_SEGMENTS = new HashSet<>(Arrays.asList(
             "/system", "/vendor", "/product", "/system_ext", "/apex",
             "/dcim/camera", "/pictures/screenshots", "/pictures/whatsapp",
-            "/documents", "/music", "/podcasts", "/ringtones", "/alarms", "/notifications"
+            "/documents", "/music", "/podcasts", "/ringtones", "/alarms", "/notifications",
+            "/android/obb"
     ));
+
+    // Forbidden roots that can NEVER be deleted
+    private static final Set<String> BLOCKED_ROOT_PATHS = new HashSet<>(Arrays.asList(
+            "/", "/system", "/vendor", "/product", "/system_ext", "/apex",
+            "/sdcard", "/sdcard/", "/storage", "/storage/",
+            "/storage/emulated", "/storage/emulated/",
+            "/storage/emulated/0", "/storage/emulated/0/",
+            "/data", "/data/", "/data/data", "/data/data/",
+            "/data/user", "/data/user/0", "/data/app",
+            "/mnt", "/mnt/sdcard", "/mnt/runtime"
+    ));
+
+    public static boolean isBlockedRootPath(String rawPath) {
+        if (rawPath == null || rawPath.trim().isEmpty()) return true;
+        String normalized = rawPath.trim().toLowerCase(Locale.ROOT);
+        while (normalized.endsWith("/") && normalized.length() > 1) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return BLOCKED_ROOT_PATHS.contains(normalized);
+    }
 
     public static boolean isSafeToScan(File file) {
         if (file == null) return false;
         String path = file.getAbsolutePath().toLowerCase(Locale.ROOT);
+
+        if (isBlockedRootPath(path)) return false;
 
         for (String protectedSegment : PROTECTED_PATH_SEGMENTS) {
             if (path.contains(protectedSegment)) {
@@ -65,16 +89,23 @@ public class ScanFilter {
     public static boolean isDisposableJunkPath(String filePath) {
         if (filePath == null || filePath.isEmpty()) return false;
         String path = filePath.toLowerCase(Locale.ROOT);
+        if (isBlockedRootPath(path)) return false;
+
         int lastSlash = path.lastIndexOf('/');
         String name = lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
 
         // Strictly protect critical system paths
-        if (path.startsWith("/system/") || path.startsWith("/vendor/") || path.startsWith("/apex/")) {
+        if (path.startsWith("/system/") || path.startsWith("/vendor/") || path.startsWith("/apex/") || path.startsWith("/product/")) {
             return false;
         }
 
         // Never delete files inside user document/camera roots unless explicitly in .thumbnails
         if ((path.contains("/documents/") || path.contains("/dcim/camera/")) && !path.contains("/.thumbnails")) {
+            return false;
+        }
+
+        // Do not touch .nomedia files anywhere
+        if (name.equals(".nomedia")) {
             return false;
         }
 

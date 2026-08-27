@@ -250,8 +250,7 @@ public class JunkScanner {
 
         String[] targetRoots = new String[]{
                 "Android/data",
-                "Android/media",
-                "Android/obb"
+                "Android/media"
         };
 
         for (String rootRel : targetRoots) {

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.gamebooster.app.config.ManualSettingsPreferences;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -32,6 +33,11 @@ public class FocusModeEngine {
     private static final String KEY_FROZEN_PACKAGES = "frozen_packages_set";
     private static final String KEY_FOCUS_ACTIVE = "focus_mode_active";
 
+    public interface OnFreezeOperationListener {
+        void onProgress(int current, int total, String appName);
+        void onComplete(int totalProcessed, boolean isFrozen);
+    }
+
     // System-critical packages that MUST NEVER be frozen
     private static final Set<String> SYSTEM_CRITICAL_PACKAGES = new HashSet<>(Arrays.asList(
             "android",
@@ -48,6 +54,10 @@ public class FocusModeEngine {
             "com.sohu.inputmethod.sogou",
             "com.google.android.gms",
             "com.google.android.gsf",
+            "com.google.android.gsf.login",
+            "com.google.android.play.games",
+            "com.google.android.webview",
+            "com.android.webview",
             "com.android.vending",
             "com.gamebooster.app",
             "moe.shizuku.privileged.api",
@@ -86,6 +96,11 @@ public class FocusModeEngine {
         return set != null ? new HashSet<>(set) : new HashSet<>();
     }
 
+    public static boolean isPackageFrozen(Context context, String packageName) {
+        if (context == null || packageName == null) return false;
+        return getFrozenPackages(context).contains(packageName);
+    }
+
     /**
      * Retrieves all installed applications that can safely be suspended/frozen.
      */
@@ -96,6 +111,7 @@ public class FocusModeEngine {
         PackageManager pm = context.getPackageManager();
         List<ApplicationInfo> installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         Set<String> userWhitelist = ManualSettingsPreferences.getFocusWhitelist(context);
+        Set<String> currentlyFrozen = getFrozenPackages(context);
 
         for (ApplicationInfo appInfo : installedApps) {
             String pkg = appInfo.packageName;
@@ -114,7 +130,11 @@ public class FocusModeEngine {
 
             try {
                 String label = pm.getApplicationLabel(appInfo).toString();
-                result.add(new FocusAppModel(pkg, label, appInfo.loadIcon(pm), userWhitelist.contains(pkg)));
+                boolean isWhitelisted = userWhitelist.contains(pkg);
+                boolean isFrozen = currentlyFrozen.contains(pkg);
+                // By default, if not explicitly whitelisted, it's a target to freeze
+                boolean selectedToFreeze = !isWhitelisted;
+                result.add(new FocusAppModel(pkg, label, appInfo.loadIcon(pm), selectedToFreeze, isFrozen));
             } catch (Throwable ignored) {}
         }
 
@@ -124,7 +144,130 @@ public class FocusModeEngine {
     }
 
     /**
-     * Freezes and suspends all non-whitelisted background applications.
+     * Freezes a specific set of target packages asynchronously with real-time progress callbacks.
+     */
+    public static void freezeSpecificAppsAsync(Context context, Set<String> packagesToFreeze, OnFreezeOperationListener listener) {
+        if (context == null) {
+            if (listener != null) listener.onComplete(0, true);
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            Set<String> validatedPackages = new HashSet<>();
+            List<String> commands = new ArrayList<>();
+
+            int total = packagesToFreeze != null ? packagesToFreeze.size() : 0;
+            int current = 0;
+
+            if (packagesToFreeze != null) {
+                for (String pkg : packagesToFreeze) {
+                    if (pkg == null || SYSTEM_CRITICAL_PACKAGES.contains(pkg) || pkg.equals(context.getPackageName())) {
+                        continue;
+                    }
+                    if (!pkg.matches("^[a-zA-Z0-9_.]+$")) {
+                        continue;
+                    }
+
+                    validatedPackages.add(pkg);
+                    current++;
+                    if (listener != null) {
+                        final int c = current;
+                        AppExecutors.getInstance().postToMainThread(() -> listener.onProgress(c, total, pkg));
+                    }
+
+                    // 1. Terminate running process
+                    commands.add("am force-stop " + pkg);
+
+                    // 2. Suspend package via Android PM
+                    commands.add("pm suspend --user 0 " + pkg);
+
+                    // 3. Deny background execution rights
+                    commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND ignore 2>/dev/null");
+                    commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null");
+                    commands.add("am set-standby-bucket " + pkg + " restricted 2>/dev/null");
+                }
+            }
+
+            if (!commands.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (String c : commands) {
+                    sb.append(c).append("; ");
+                }
+                executeShellBatch(sb.toString());
+            }
+
+            // Persist frozen set
+            getPrefs(context).edit()
+                    .putBoolean(KEY_FOCUS_ACTIVE, !validatedPackages.isEmpty())
+                    .putStringSet(KEY_FROZEN_PACKAGES, validatedPackages)
+                    .apply();
+
+            ManualSettingsPreferences.setFocusModeEnabled(context, !validatedPackages.isEmpty());
+
+            final int count = validatedPackages.size();
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (listener != null) {
+                    listener.onComplete(count, true);
+                }
+            });
+        });
+    }
+
+    /**
+     * Unsuspends and restores all frozen applications asynchronously.
+     */
+    public static void unfreezeAllAppsAsync(Context context, OnFreezeOperationListener listener) {
+        if (context == null) {
+            if (listener != null) listener.onComplete(0, false);
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            Set<String> frozen = getFrozenPackages(context);
+            int total = frozen.size();
+            int current = 0;
+
+            List<String> commands = new ArrayList<>();
+            for (String pkg : frozen) {
+                if (pkg == null || !pkg.matches("^[a-zA-Z0-9_.]+$")) continue;
+                current++;
+                if (listener != null) {
+                    final int c = current;
+                    AppExecutors.getInstance().postToMainThread(() -> listener.onProgress(c, total, pkg));
+                }
+
+                commands.add("pm unsuspend --user 0 " + pkg);
+                commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
+                commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
+                commands.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
+            }
+
+            if (!commands.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (String c : commands) {
+                    sb.append(c).append("; ");
+                }
+                executeShellBatch(sb.toString());
+            }
+
+            getPrefs(context).edit()
+                    .putBoolean(KEY_FOCUS_ACTIVE, false)
+                    .remove(KEY_FROZEN_PACKAGES)
+                    .apply();
+
+            ManualSettingsPreferences.setFocusModeEnabled(context, false);
+
+            final int count = total;
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (listener != null) {
+                    listener.onComplete(count, false);
+                }
+            });
+        });
+    }
+
+    /**
+     * Freezes and suspends all non-whitelisted background applications synchronously.
      */
     public static int enableFocusMode(Context context, String activeGamePackage) {
         if (context == null) return 0;
@@ -148,7 +291,7 @@ public class FocusModeEngine {
             // 1. Terminate running process to reclaim active RAM
             commands.add("am force-stop " + pkg);
 
-            // 2. Suspend package via Android Package Manager (Stops background broadcasts, alarms, sync)
+            // 2. Suspend package via Android Package Manager
             commands.add("pm suspend --user 0 " + pkg);
 
             // 3. Deny background execution rights
@@ -183,7 +326,7 @@ public class FocusModeEngine {
     }
 
     /**
-     * Unsuspends and restores all previously frozen applications.
+     * Unsuspends and restores all previously frozen applications synchronously.
      */
     public static int disableFocusMode(Context context) {
         if (context == null) return 0;

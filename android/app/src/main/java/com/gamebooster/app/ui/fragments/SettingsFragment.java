@@ -376,8 +376,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnFocusWhitelist != null) {
             btnFocusWhitelist.setOnClickListener(v -> {
                 if (getContext() != null) {
-                    com.gamebooster.app.focus.FocusAppSelectorDialog.show(getContext(), count -> {
-                        // Whitelist updated callback
+                    com.gamebooster.app.focus.FocusAppSelectorDialog.show(getContext(), (frozenCount, isFrozen) -> {
+                        if (switchFocusMode != null && isAdded()) {
+                            isProgrammaticToggle = true;
+                            switchFocusMode.setChecked(isFrozen && frozenCount > 0);
+                            isProgrammaticToggle = false;
+                        }
                     });
                 }
             });

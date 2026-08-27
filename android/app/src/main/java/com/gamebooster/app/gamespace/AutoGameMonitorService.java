@@ -49,6 +49,8 @@ public class AutoGameMonitorService extends Service {
     private long lastSessionEndTimeMs = 0;
     private static final long SESSION_RESTART_COOLDOWN_MS = 5_000; // 5 seconds
 
+    private int consecutiveUnfocusedCount = 0;
+
     public static boolean isRunning() {
         return isRunning;
     }
@@ -109,35 +111,63 @@ public class AutoGameMonitorService extends Service {
             boolean isGameActive = gamePackages.contains(currentPackage)
                     || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage);
 
-            if (isGameActive && !currentPackage.equals(lastActiveGamePackage)) {
-                long now = System.currentTimeMillis();
-                // Debounce: if the game was just exited < 5s ago (e.g. brief back press),
-                // don't re-trigger a full beginSession — let the game resume naturally.
-                if (now - lastSessionEndTimeMs < SESSION_RESTART_COOLDOWN_MS) {
-                    Log.d(TAG, "Session cooldown active — skipping re-trigger for: " + currentPackage);
-                    lastActiveGamePackage = currentPackage; // still update so we track it
+            if (isGameActive) {
+                consecutiveUnfocusedCount = 0;
+                if (!currentPackage.equals(lastActiveGamePackage)) {
+                    long now = System.currentTimeMillis();
+                    // Debounce: if the game was just exited < 5s ago (e.g. brief back press),
+                    // don't re-trigger a full beginSession — let the game resume naturally.
+                    if (now - lastSessionEndTimeMs < SESSION_RESTART_COOLDOWN_MS) {
+                        Log.d(TAG, "Session cooldown active — skipping re-trigger for: " + currentPackage);
+                        lastActiveGamePackage = currentPackage; // still update so we track it
+                        return;
+                    }
+                    lastActiveGamePackage = currentPackage;
+                    Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
+
+                    // Execute full GameManager Session Engine
+                    com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
+
+                    // Auto-Start Floating Gaming HUD & Bind Real FPS Target
+                    com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
+                    if (!FloatingOverlayService.isOverlayRunning()) {
+                        FloatingOverlayService.startOverlay(getApplicationContext());
+                    }
+
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            android.widget.Toast.makeText(getApplicationContext(), "🎮 GAME-MANAGER: " + currentPackage
+                                    + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
+                }
+            } else if (lastActiveGamePackage != null) {
+                // Ignore transient system packages (in-game overlays, keyboards, Google Play login, dialogs)
+                boolean isTransientSystemPackage = currentPackage.equals("com.android.systemui")
+                        || currentPackage.equals("com.google.android.gms")
+                        || currentPackage.equals("com.android.vending")
+                        || currentPackage.equals("android")
+                        || currentPackage.equals(getPackageName())
+                        || currentPackage.contains("inputmethod")
+                        || currentPackage.contains("permissioncontroller")
+                        || currentPackage.contains("auth");
+
+                if (isTransientSystemPackage) {
                     return;
                 }
-                lastActiveGamePackage = currentPackage;
-                Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
-                // Execute full GameManager Session Engine
-                com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
-
-                // Auto-Start Floating Gaming HUD & Bind Real FPS Target
-                com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
-                if (!FloatingOverlayService.isOverlayRunning()) {
-                    FloatingOverlayService.startOverlay(getApplicationContext());
+                // Debounce exit: verify game process liveness before resetting refresh rates & governors
+                consecutiveUnfocusedCount++;
+                if (consecutiveUnfocusedCount < 2) {
+                    // Check if process is still alive via pidof
+                    String pid = ShizukuExecutor.executeShizukuCommand("pidof " + lastActiveGamePackage);
+                    if (pid != null && !pid.trim().isEmpty() && !pid.startsWith("ERROR")) {
+                        Log.d(TAG, "Game PID still active, holding session for: " + lastActiveGamePackage);
+                        return;
+                    }
                 }
 
-                AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(), "🎮 GAME-MANAGER: " + currentPackage
-                                + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
-
-            } else if (!isGameActive && lastActiveGamePackage != null) {
-                Log.i(TAG, "Game exited — ending GameManager Session for: " + lastActiveGamePackage);
+                Log.i(TAG, "Game confirmed exited — ending GameManager Session for: " + lastActiveGamePackage);
                 String exitingPkg = lastActiveGamePackage;
                 lastActiveGamePackage = null;
+                consecutiveUnfocusedCount = 0;
                 lastSessionEndTimeMs = System.currentTimeMillis(); // record exit time for cooldown
                 com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(null);
 

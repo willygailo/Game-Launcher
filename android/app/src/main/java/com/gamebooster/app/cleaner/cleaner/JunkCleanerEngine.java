@@ -9,6 +9,8 @@ import com.gamebooster.app.cleaner.model.CleanResult;
 import com.gamebooster.app.cleaner.model.JunkCategory;
 import com.gamebooster.app.cleaner.model.JunkItem;
 import com.gamebooster.app.cleaner.model.JunkScanResult;
+import com.gamebooster.app.cleaner.scanner.JunkScanner;
+import com.gamebooster.app.cleaner.scanner.ScanFilter;
 import com.gamebooster.app.cleaner.scanner.StorageStatsHelper;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
@@ -25,7 +27,7 @@ import java.util.List;
  * Implements:
  * 1. Physical unlinking of cache files, thumbnail dumps, obsolete APKs, and orphaned app folders.
  * 2. Android Framework native cache eviction (StorageManager.allocateBytes).
- * 3. Elevated Package Manager Cache Trim (pm trim-caches 1000G).
+ * 3. Elevated Package Manager Cache Trim (pm trim-caches 2000M).
  * 4. System Crash / ANR / Tombstone / Dropbox log purging.
  * 5. NAND Flash Storage TRIM (fstrim -v /data) and pagecache flush (drop_caches).
  * 6. StatFs delta verification to measure 100% genuine physical storage freed.
@@ -43,6 +45,31 @@ public class JunkCleanerEngine {
 
     public boolean isCleaning() {
         return isCleaning;
+    }
+
+    /**
+     * Executes an instant safe scan and immediate safe purge ("delet agad") in one flow.
+     */
+    public void quickScanAndCleanAsync(Context context, OnCleanProgressListener listener) {
+        if (isCleaning) {
+            Log.w(TAG, "Cleaning is already in progress!");
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            notifyProgress(listener, 10, "Scanning safe storage caches...", 0);
+            JunkScanner scanner = new JunkScanner();
+            JunkScanResult scanResult = scanner.scanStorage(context, null);
+
+            notifyProgress(listener, 30, "Purging discovered junk...", 0);
+            CleanResult result = executeClean(context, scanResult, listener);
+
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (listener != null) {
+                    listener.onCleanComplete(result);
+                }
+            });
+        });
     }
 
     public void cleanJunkAsync(Context context, JunkScanResult scanResult, OnCleanProgressListener listener) {
@@ -178,7 +205,7 @@ public class JunkCleanerEngine {
         }
 
         // 2. Clean accessible external cache directory
-        if (path != null && !path.isEmpty()) {
+        if (path != null && !path.isEmpty() && !ScanFilter.isBlockedRootPath(path)) {
             File cacheDir = new File(path);
             if (cacheDir.exists() && cacheDir.canWrite()) {
                 long size = getFolderSize(cacheDir);
@@ -206,10 +233,16 @@ public class JunkCleanerEngine {
 
     private long deleteJunkItem(JunkItem item, List<String> logs) {
         String path = item.getPath();
-        if (path == null || path.isEmpty()) return 0;
+        if (path == null || path.trim().isEmpty()) return 0;
 
         // Safety Guard: Verify path is not critical system/user root
-        if (path.startsWith("/system") || path.startsWith("/vendor") || path.equals("/sdcard") || path.equals("/storage/emulated/0")) {
+        if (ScanFilter.isBlockedRootPath(path)
+                || path.startsWith("/system")
+                || path.startsWith("/vendor")
+                || path.startsWith("/apex")
+                || path.startsWith("/product")
+                || path.equals("/sdcard")
+                || path.equals("/storage/emulated/0")) {
             logs.add("Blocked unsafe path deletion: " + path);
             return 0;
         }
@@ -239,9 +272,10 @@ public class JunkCleanerEngine {
                     logs.add("Deleted via Shizuku: " + path);
                     return item.getSizeBytes();
                 } else {
-                    // Prevent arbitrary command injection by validating path
-                    if (!path.contains("'") && !path.contains(";") && !path.contains("&")) {
-                        ShizukuExecutor.executeShizukuCommand("rm -rf '" + path + "' 2>/dev/null");
+                    // Prevent arbitrary command injection by validating path and escaping
+                    if (!path.contains(";") && !path.contains("&") && !path.contains("|") && !path.contains("`")) {
+                        String escapedPath = path.replace("'", "'\\''");
+                        ShizukuExecutor.executeShizukuCommand("rm -rf '" + escapedPath + "' 2>/dev/null");
                         return item.getSizeBytes();
                     }
                 }
