@@ -21,12 +21,16 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:deprecation"
+    }
+
     defaultConfig {
         applicationId "com.gamebooster.app"
         minSdk 33
         targetSdk 36
-        versionCode 16080
-        versionName "16.8.0-PRO"
+        versionCode 16090
+        versionName "16.9.0-PRO"
         ndk {
             abiFilters "arm64-v8a", "armeabi-v7a", "x86_64"
         }

@@ -112,16 +112,17 @@ public final class ResolutionScalerEngine {
             }
         }
 
-        // 2. Fallback to DisplayMetrics if shell parsing returned 0
+        // 2. Fallback to WindowMetrics if shell parsing returned 0
         if (context != null && (sNativeWidth <= 0 || sNativeHeight <= 0 || sNativeDensity <= 0)) {
             try {
                 WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
                 if (wm != null) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    wm.getDefaultDisplay().getRealMetrics(dm);
-                    if (sNativeWidth <= 0) sNativeWidth = dm.widthPixels;
-                    if (sNativeHeight <= 0) sNativeHeight = dm.heightPixels;
-                    if (sNativeDensity <= 0) sNativeDensity = dm.densityDpi;
+                    android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+                    if (sNativeWidth <= 0) sNativeWidth = Math.min(bounds.width(), bounds.height());
+                    if (sNativeHeight <= 0) sNativeHeight = Math.max(bounds.width(), bounds.height());
+                    if (sNativeDensity <= 0) {
+                        sNativeDensity = context.getResources().getConfiguration().densityDpi;
+                    }
                 }
             } catch (Exception ignored) {}
         }

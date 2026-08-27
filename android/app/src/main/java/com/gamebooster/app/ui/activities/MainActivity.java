@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     private void checkAndShowPostGameReport(Intent intent) {
         if (intent != null && intent.hasExtra("EXTRA_SHOW_POST_GAME_REPORT")) {
             com.gamebooster.app.overlay.GameSessionReport report =
-                    (com.gamebooster.app.overlay.GameSessionReport) intent.getSerializableExtra("EXTRA_SHOW_POST_GAME_REPORT");
+                    intent.getSerializableExtra("EXTRA_SHOW_POST_GAME_REPORT", com.gamebooster.app.overlay.GameSessionReport.class);
             if (report != null) {
                 com.gamebooster.app.ui.dialogs.PostGameReportDialog.show(this, report);
             }
