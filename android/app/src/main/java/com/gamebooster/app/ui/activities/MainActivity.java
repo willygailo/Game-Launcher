@@ -1,6 +1,7 @@
 package com.gamebooster.app.ui.activities;
 import com.gamebooster.app.config.*;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -195,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 showFragmentForTab(currentTabIndex);
             }
         }
+
+        checkAndShowPostGameReport(getIntent());
     }
 
     private void updateTabStyles(TabLayout tabLayout, int selectedIndex) {
@@ -266,6 +269,23 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             transaction.commitAllowingStateLoss();
         } catch (Throwable t) {
             Log.e("MainActivity", "Error switching tab fragment", t);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        checkAndShowPostGameReport(intent);
+    }
+
+    private void checkAndShowPostGameReport(Intent intent) {
+        if (intent != null && intent.hasExtra("EXTRA_SHOW_POST_GAME_REPORT")) {
+            com.gamebooster.app.overlay.GameSessionReport report =
+                    (com.gamebooster.app.overlay.GameSessionReport) intent.getSerializableExtra("EXTRA_SHOW_POST_GAME_REPORT");
+            if (report != null) {
+                com.gamebooster.app.ui.dialogs.PostGameReportDialog.show(this, report);
+            }
         }
     }
 

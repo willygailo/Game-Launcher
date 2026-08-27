@@ -173,6 +173,9 @@ public class RealGameFpsMonitor {
                 }
             });
 
+            // Record telemetry for post-game match scorecard
+            GameSessionRecorder.getInstance().recordFpsSample(finalFps, finalLow);
+
             if (monitorHandler != null && isRunning) {
                 monitorHandler.postDelayed(this, SAMPLE_INTERVAL_MS);
             }

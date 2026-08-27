@@ -100,6 +100,20 @@ public class GameCfgDialog {
         RadioButton rbDriverAngle = view.findViewById(R.id.rb_driver_angle);
         RadioButton rbDriverDefault = view.findViewById(R.id.rb_driver_default);
 
+        // Resolution Scaler RadioGroup
+        RadioGroup rgResolution = view.findViewById(R.id.rg_resolution_scaler);
+        RadioButton rbResNative = view.findViewById(R.id.rb_res_native);
+        RadioButton rbRes900p = view.findViewById(R.id.rb_res_900p);
+        RadioButton rbRes720p = view.findViewById(R.id.rb_res_720p);
+        RadioButton rbRes540p = view.findViewById(R.id.rb_res_540p);
+
+        // Visual Clarity Filter RadioGroup
+        RadioGroup rgFilter = view.findViewById(R.id.rg_visual_filter);
+        RadioButton rbFilterOff = view.findViewById(R.id.rb_filter_off);
+        RadioButton rbFilterSniper = view.findViewById(R.id.rb_filter_sniper);
+        RadioButton rbFilterVibrant = view.findViewById(R.id.rb_filter_vibrant);
+        RadioButton rbFilterNight = view.findViewById(R.id.rb_filter_night);
+
         // ART Compiler Section
         TextView tvArtStatusLabel = view.findViewById(R.id.tv_art_status_label);
         Button btnTriggerArtCompile = view.findViewById(R.id.btn_trigger_art_compile);
@@ -237,6 +251,36 @@ public class GameCfgDialog {
             } else {
                 driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.GAME_DRIVER;
             }
+
+            final float targetScale;
+            if (rbRes900p != null && rbRes900p.isChecked()) {
+                targetScale = com.gamebooster.app.engine.ResolutionScalerEngine.ScalePreset.HIGH_900P.scaleFactor;
+            } else if (rbRes720p != null && rbRes720p.isChecked()) {
+                targetScale = com.gamebooster.app.engine.ResolutionScalerEngine.ScalePreset.ESPORTS_720P.scaleFactor;
+            } else if (rbRes540p != null && rbRes540p.isChecked()) {
+                targetScale = com.gamebooster.app.engine.ResolutionScalerEngine.ScalePreset.EXTREME_540P.scaleFactor;
+            } else {
+                targetScale = com.gamebooster.app.engine.ResolutionScalerEngine.ScalePreset.NATIVE_100.scaleFactor;
+            }
+
+            final com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType targetFilter;
+            if (rbFilterSniper != null && rbFilterSniper.isChecked()) {
+                targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.SNIPER_SHADOW_BOOST;
+            } else if (rbFilterVibrant != null && rbFilterVibrant.isChecked()) {
+                targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.VIBRANT_SATURATION;
+            } else if (rbFilterNight != null && rbFilterNight.isChecked()) {
+                targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.NIGHT_ANTI_GLARE;
+            } else {
+                targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF;
+            }
+
+            // Apply resolution scaling and visual filter immediately
+            if (targetScale < 0.99f) {
+                com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
+            } else {
+                com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
+            }
+            com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(context, targetFilter);
 
             // INSTANT AUTO-EXIT: Immediately dismiss without any blocking confirmation modals
             dismissCurrent();

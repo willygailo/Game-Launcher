@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_turbo_edge_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- Edge Trigger Handle (Always Visible on Edge) -->
+    <LinearLayout
+        android:id="@+id/view_edge_trigger_tab"
+        android:layout_width="16dp"
+        android:layout_height="80dp"
+        android:layout_gravity="start|center_vertical"
+        android:background="@drawable/badge_neon_cyan"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="32dp"
+            android:background="@color/bg_dark_pure" />
+    </LinearLayout>
+
+    <!-- Slide-Out Drawer Panel (Revealed on Swipe / Tap) -->
+    <LinearLayout
+        android:id="@+id/layout_edge_drawer_panel"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:background="@drawable/dialog_cyber_bg"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <!-- Top Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_neon_cyan"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="⚡ GAME TURBO"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_drawer_fps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="185 FPS"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/btn_close_drawer"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="✕"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Quick Action Grid -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <!-- RAM Boost Button -->
+            <Button
+                android:id="@+id/btn_drawer_ram_boost"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🚀 BOOST"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <!-- DND Lock Button -->
+            <Button
+                android:id="@+id/btn_drawer_dnd"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginHorizontal="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🔕 DND"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <!-- Visual Filter Button -->
+            <Button
+                android:id="@+id/btn_drawer_filter"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="👁️ FILTER"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <!-- Screenshot Button -->
+            <Button
+                android:id="@+id/btn_drawer_screenshot"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="📸 SHOT"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <!-- Touch Lock Button -->
+            <Button
+                android:id="@+id/btn_drawer_touch_lock"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginHorizontal="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🔒 LOCK"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <!-- Resolution Scaler Button -->
+            <Button
+                android:id="@+id/btn_drawer_resolution"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🖥️ SCALE"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Quick Hz Switcher -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="QUICK REFRESH RATE (HZ):"
+            android:textColor="@color/text_muted"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_edge_hz_60"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="60"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/btn_edge_hz_90"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="90"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/btn_edge_hz_120"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="120"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_edge_hz_144"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="144"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_edge_hz_185"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_cyan"
+                android:text="185"
+                android:textColor="@color/bg_dark_pure"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

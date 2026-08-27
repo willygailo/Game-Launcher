@@ -435,6 +435,128 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- Resolution & DPI Scaler Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="🖥️ IN-GAME RESOLUTION &amp; DPI SCALER:"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rg_resolution_scaler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/card_glass_shape"
+                android:padding="8dp">
+
+                <RadioButton
+                    android:id="@+id/rb_res_native"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_cyan"
+                    android:checked="true"
+                    android:paddingVertical="3dp"
+                    android:text="🖥️ 100% Native Resolution (Default)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/rb_res_900p"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_cyan"
+                    android:paddingVertical="3dp"
+                    android:text="⚡ 900p High-FPS Boost (~83% Scale)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_res_720p"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_neon_green"
+                    android:paddingVertical="3dp"
+                    android:text="🚀 720p Esports Turbo (~67% Scale, +35 FPS)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_res_540p"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_amber"
+                    android:paddingVertical="3dp"
+                    android:text="🔋 540p Extreme Cool &amp; Battery (~50% Scale)"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp" />
+            </RadioGroup>
+
+            <!-- Visual Clarity & Night Vision Filter Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="👁️ VISUAL CLARITY &amp; SHADOW BOOST:"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rg_visual_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/card_glass_shape"
+                android:padding="8dp">
+
+                <RadioButton
+                    android:id="@+id/rb_filter_off"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_cyan"
+                    android:checked="true"
+                    android:paddingVertical="3dp"
+                    android:text="Off (Standard Game Visuals)"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_filter_sniper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_neon_green"
+                    android:paddingVertical="3dp"
+                    android:text="🎯 Sniper Shadow Boost (High Contrast for PUBG/Warzone)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/rb_filter_vibrant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_cyan"
+                    android:paddingVertical="3dp"
+                    android:text="🌈 Vibrant Saturation (Vivid MOBA for MLBB/HOK)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_filter_night"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/accent_amber"
+                    android:paddingVertical="3dp"
+                    android:text="🌙 Night Eye Guard (Anti-Glare &amp; Warm Tint)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+            </RadioGroup>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -173,11 +173,27 @@ public class AutoGameMonitorService extends Service {
 
                 // End GameManager Session and revert to baseline
                 com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
+                com.gamebooster.app.overlay.GameTurboEdgeService.stop(getApplicationContext());
+                com.gamebooster.app.overlay.VisualFilterOverlayService.stopFilter(getApplicationContext());
+                com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
 
-                AppExecutors.getInstance().postToMainThread(() ->
-                        android.widget.Toast.makeText(getApplicationContext(),
-                                "↩ Stock Baseline Restored (Game Exited)",
-                                android.widget.Toast.LENGTH_SHORT).show());
+                final com.gamebooster.app.overlay.GameSessionReport report =
+                        com.gamebooster.app.overlay.GameSessionRecorder.getInstance().endSession(getApplicationContext());
+
+                AppExecutors.getInstance().postToMainThread(() -> {
+                    android.widget.Toast.makeText(getApplicationContext(),
+                            "↩ Stock Baseline Restored (Game Exited)",
+                            android.widget.Toast.LENGTH_SHORT).show();
+
+                    if (report != null && report.getPlaytimeSeconds() >= 5) {
+                        try {
+                            Intent reportIntent = new Intent(getApplicationContext(), com.gamebooster.app.ui.activities.MainActivity.class);
+                            reportIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            reportIntent.putExtra("EXTRA_SHOW_POST_GAME_REPORT", report);
+                            getApplicationContext().startActivity(reportIntent);
+                        } catch (Exception ignored) {}
+                    }
+                });
             }
         });
     }

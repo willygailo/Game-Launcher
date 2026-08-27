@@ -259,6 +259,8 @@ public final class GameManagerLauncher {
                 // ═══════════════════════════════════════════════════════════
                 try {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
+                    com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
+                    com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
                 } catch (Throwable t) {
                     Log.w(TAG, "Session engine warning: " + t.getMessage());
                 }

@@ -243,6 +243,26 @@
                 android:value="Game space automatic game detection service" />
         </service>
 
+        <service
+            android:name="com.gamebooster.app.overlay.VisualFilterOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Hardware Visual Clarity GPU filter shader" />
+        </service>
+
+        <service
+            android:name="com.gamebooster.app.overlay.GameTurboEdgeService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="In-game slide-out gaming edge drawer" />
+        </service>
+
         <receiver
             android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"
