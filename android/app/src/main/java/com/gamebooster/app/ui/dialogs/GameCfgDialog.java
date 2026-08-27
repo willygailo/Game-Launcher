@@ -94,6 +94,16 @@ public class GameCfgDialog {
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
         SwitchCompat switchAntiLog = view.findViewById(R.id.switch_anti_log);
 
+        // Graphics Driver RadioGroup
+        RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
+        RadioButton rbDriverGame = view.findViewById(R.id.rb_driver_game_driver);
+        RadioButton rbDriverAngle = view.findViewById(R.id.rb_driver_angle);
+        RadioButton rbDriverDefault = view.findViewById(R.id.rb_driver_default);
+
+        // ART Compiler Section
+        TextView tvArtStatusLabel = view.findViewById(R.id.tv_art_status_label);
+        Button btnTriggerArtCompile = view.findViewById(R.id.btn_trigger_art_compile);
+
         ProgressBar pbProgress = view.findViewById(R.id.pb_cfg_progress);
         TextView tvStatus = view.findViewById(R.id.tv_cfg_status);
         Button btnRestore = view.findViewById(R.id.btn_restore_cfg);
@@ -104,6 +114,49 @@ public class GameCfgDialog {
         tvGamePkg.setText(pkg);
         if (game.getIcon() != null) {
             Glide.with(context).load(game.getIcon()).into(ivGameIcon);
+        }
+
+        // Check ART Dexopt Status Async
+        AppExecutors.getInstance().executeCommand(() -> {
+            String status = com.gamebooster.app.engine.ArtCompilerEngine.getCompilationStatus(pkg);
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (tvArtStatusLabel != null) {
+                    tvArtStatusLabel.setText("DEXOPT: " + status);
+                }
+            });
+        });
+
+        // Trigger ART AOT Speed Compile
+        if (btnTriggerArtCompile != null) {
+            btnTriggerArtCompile.setOnClickListener(v -> {
+                if (!com.gamebooster.app.engine.ArtCompilerEngine.isCompilerAvailable()) {
+                    Toast.makeText(context.getApplicationContext(), "⚠️ Shizuku or elevated access required for ART compiler!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                btnTriggerArtCompile.setEnabled(false);
+                btnTriggerArtCompile.setText("⏳ COMPILING...");
+                if (tvArtStatusLabel != null) {
+                    tvArtStatusLabel.setText("DEXOPT: ⚡ Compiling Ahead-Of-Time (speed)...");
+                }
+                Toast.makeText(context.getApplicationContext(), "⚡ Compiling " + game.getLabel() + " via ART dex2oat...", Toast.LENGTH_SHORT).show();
+
+                com.gamebooster.app.engine.ArtCompilerEngine.compilePackageAsync(pkg, com.gamebooster.app.engine.ArtCompilerEngine.CompileFilter.SPEED, new com.gamebooster.app.engine.ArtCompilerEngine.CompileCallback() {
+                    @Override
+                    public void onProgress(String message) {
+                        if (tvArtStatusLabel != null) tvArtStatusLabel.setText(message);
+                    }
+
+                    @Override
+                    public void onComplete(boolean success, String details) {
+                        btnTriggerArtCompile.setEnabled(true);
+                        btnTriggerArtCompile.setText("⚡ COMPILE");
+                        if (tvArtStatusLabel != null) {
+                            tvArtStatusLabel.setText("DEXOPT: " + (success ? "⚡ Speed (Fully Native AOT)" : "⚠️ Compilation Finished"));
+                        }
+                        Toast.makeText(context.getApplicationContext(), (success ? "✅ AOT Speed Compilation Succeeded!" : "ℹ️ Compilation command dispatched."), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
         }
 
         // Engine Status Badge
@@ -144,6 +197,7 @@ public class GameCfgDialog {
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int restoredCount = ConfigBackupManager.restorePackage(context, pkg);
+                com.gamebooster.app.booster.GpuTweaksChannel.setTargetGameDriver(pkg, com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT);
                 AppExecutors.getInstance().postToMainThread(() -> {
                     Toast.makeText(context.getApplicationContext(), "♻️ Restored original configs (" + restoredCount + " files)", Toast.LENGTH_SHORT).show();
                     if (listener != null) {
@@ -175,6 +229,15 @@ public class GameCfgDialog {
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
 
+            final com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType driverType;
+            if (rbDriverAngle != null && rbDriverAngle.isChecked()) {
+                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.ANGLE_VULKAN;
+            } else if (rbDriverDefault != null && rbDriverDefault.isChecked()) {
+                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT;
+            } else {
+                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.GAME_DRIVER;
+            }
+
             // INSTANT AUTO-EXIT: Immediately dismiss without any blocking confirmation modals
             dismissCurrent();
 
@@ -197,12 +260,14 @@ public class GameCfgDialog {
                     }
                     patchedFilesCount = 1;
 
-                    // 3. Fast single-batch privileged system optimizations
+                    // 3. Apply Targeted Graphics Driver (Protected: 0 impact on global apps)
+                    if (ShizukuExecutor.hasShizukuPermission()) {
+                        com.gamebooster.app.booster.GpuTweaksChannel.setTargetGameDriver(pkg, driverType);
+                    }
+
+                    // 4. Fast single-batch privileged system optimizations
                     if (forceHz && ShizukuExecutor.hasShizukuPermission()) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("settings put global game_driver_opt_in_apps ").append(pkg).append(" 2>/dev/null; ");
-                        sb.append("settings put global updatable_driver_production_opt_in_apps ").append(pkg).append(" 2>/dev/null; ");
-                        sb.append("settings put global angle_gl_driver_selection_pkgs ").append(pkg).append(" 2>/dev/null; ");
                         sb.append("cmd game mode performance ").append(pkg).append(" 2>/dev/null; ");
                         sb.append("cmd window set-app-refresh-rate ").append(pkg).append(" ").append(targetFps).append(" 2>/dev/null; ");
                         sb.append("cmd game set --fps ").append(targetFps).append(" ").append(pkg).append(" 2>/dev/null; ");
@@ -221,7 +286,7 @@ public class GameCfgDialog {
                         ShizukuExecutor.executeShizukuCommand(sb.toString());
                     }
 
-                    // 4. Anti-Log & Telemetry Purge
+                    // 5. Anti-Log & Telemetry Purge
                     if (antiLog) {
                         AntiLogPatcher.applyAntiLog(pkg);
                     }

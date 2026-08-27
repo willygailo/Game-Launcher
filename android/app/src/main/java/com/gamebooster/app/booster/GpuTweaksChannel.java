@@ -220,6 +220,17 @@ public class GpuTweaksChannel {
         return true;
     }
 
+    public enum GraphicsDriverType {
+        DEFAULT("Default System Driver"),
+        GAME_DRIVER("Vulkan Game Driver (Hardware Accelerated)"),
+        ANGLE_VULKAN("ANGLE (OpenGL over Vulkan)");
+
+        public final String label;
+        GraphicsDriverType(String label) {
+            this.label = label;
+        }
+    }
+
     public static boolean setGpuMaxPerformance() {
         boolean ok = enableVulkanRenderer();
         ok &= enableAdrenoTurbo();
@@ -233,10 +244,45 @@ public class GpuTweaksChannel {
         return ok;
     }
 
+    /**
+     * Applies graphics driver for a single target game package without affecting global applications.
+     */
+    public static boolean setTargetGameDriver(String packageName, GraphicsDriverType driverType) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.trim();
+
+        // Always guarantee global switches are 0 to protect system and normal apps
+        CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
+        CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
+
+        if (driverType == GraphicsDriverType.GAME_DRIVER) {
+            CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + pkg);
+            CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + pkg);
+            CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
+            return true;
+        } else if (driverType == GraphicsDriverType.ANGLE_VULKAN) {
+            CommandExecutor.setSystemProperty("debug.angle.backend", "2");
+            CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 1");
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs " + pkg);
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values angle");
+            return true;
+        } else {
+            // Revert back to default
+            CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");
+            CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs \"\"");
+            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values \"\"");
+            return true;
+        }
+    }
+
     public static boolean setAngleMode(boolean enabled) {
         String targetCsv = getTargetGamesCsv();
+        // Never allow global all angle to prevent crashing system apps
+        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
+
         if (enabled) {
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
             CommandExecutor.setSystemProperty("debug.angle.backend", "2");
             CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 1");
             CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs " + targetCsv);
@@ -250,7 +296,6 @@ public class GpuTweaksChannel {
             String res = CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values " + values.toString());
             return CommandExecutor.isSuccessOutput(res);
         } else {
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
             CommandExecutor.setSystemProperty("debug.angle.backend", "0");
             CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 0");
             CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs \"\"");
@@ -261,16 +306,16 @@ public class GpuTweaksChannel {
 
     public static boolean setGameDriverMode(boolean enabled) {
         String targetCsv = getTargetGamesCsv();
+        // Never allow global game driver to prevent crashing system apps
+        CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
+        CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
+
         if (enabled) {
-            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
-            CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + targetCsv);
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + targetCsv);
             String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + targetCsv);
             return CommandExecutor.isSuccessOutput(res);
         } else {
-            CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
-            CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps \"\"");
             String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");

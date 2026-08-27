@@ -234,8 +234,10 @@ public final class GameManagerLauncher {
                 // ═══════════════════════════════════════════════════════════
                 try {
                     if (ShizukuExecutor.hasShizukuPermission()) {
-                        // Game Driver (Vulkan/ANGLE) & Android Game Mode API
+                        // Game Driver (Vulkan/ANGLE) & Android Game Mode API (Strictly per-game; global is 0)
                         ShizukuExecutor.executeShizukuCommands(
+                            "settings put global game_driver_all_apps 0 2>/dev/null",
+                            "settings put global angle_gl_driver_all_angle 0 2>/dev/null",
                             "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
                             "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
                             "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null",

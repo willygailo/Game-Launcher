@@ -341,6 +341,46 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        Button btnArtBatchCompile = view.findViewById(R.id.btn_art_batch_compile);
+        if (btnArtBatchCompile != null) {
+            btnArtBatchCompile.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!com.gamebooster.app.engine.ArtCompilerEngine.isCompilerAvailable()) {
+                    Toast.makeText(getContext(), "⚠️ Shizuku or elevated access required for ART compiler!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                btnArtBatchCompile.setEnabled(false);
+                btnArtBatchCompile.setText("⏳ COMPILING GAMES (AOT)...");
+                Toast.makeText(getContext(), "⚡ Starting ART Speed-Profile compilation for all games...", Toast.LENGTH_SHORT).show();
+
+                com.gamebooster.app.engine.ArtCompilerEngine.compileAllInstalledGamesAsync(
+                        getContext(),
+                        com.gamebooster.app.engine.ArtCompilerEngine.CompileFilter.SPEED,
+                        new com.gamebooster.app.engine.ArtCompilerEngine.BatchCompileCallback() {
+                            @Override
+                            public void onGameStarted(String packageName, String gameLabel, int currentIndex, int totalGames) {
+                                if (isAdded() && getContext() != null) {
+                                    Toast.makeText(getContext(), "⚡ Compiling [" + currentIndex + "/" + totalGames + "]: " + gameLabel, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onGameFinished(String packageName, boolean success) {
+                                // Game compilation step finished
+                            }
+
+                            @Override
+                            public void onAllFinished(int successCount, int totalGames) {
+                                if (!isAdded() || getContext() == null) return;
+                                btnArtBatchCompile.setEnabled(true);
+                                btnArtBatchCompile.setText("⚡ ART SPEED-COMPILE ALL GAMES (AOT)");
+                                Toast.makeText(getContext(), "✅ ART AOT Speed Compilation Complete: " + successCount + "/" + totalGames + " games compiled!", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+            });
+        }
+
         // Focus Mode (App Freezer & Deep Suspend)
         switchFocusMode = view.findViewById(R.id.switch_focus_mode);
         btnFocusWhitelist = view.findViewById(R.id.btn_focus_whitelist);

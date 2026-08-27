@@ -4,7 +4,22 @@
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-# 1. ANDROID CORE COMPONENTS & APPLICATION LIFECYCLE
+# 1. GENERAL OPTIMIZATIONS & COMPILER SETTINGS
+# ----------------------------------------------------------------------------
+-repackageclasses ''
+-allowaccessmodification
+-dontusemixedcaseclassnames
+-verbose
+
+# Suppress warnings from hidden Android framework APIs and build tools
+-dontwarn android.os.SystemProperties
+-dontwarn android.view.IWindowManager
+-dontwarn android.app.IActivityManager
+-dontwarn android.content.pm.IPackageManager
+-dontwarn sun.misc.Unsafe
+
+# ----------------------------------------------------------------------------
+# 2. ANDROID CORE COMPONENTS & APPLICATION LIFECYCLE
 # ----------------------------------------------------------------------------
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -15,8 +30,29 @@
 -keep public class * extends android.preference.Preference
 -keep public class * extends androidx.fragment.app.Fragment
 
+# Keep Parcelable & Serializable implementations
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+    <fields>;
+    <methods>;
+}
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+# Keep Enums values & valueOf methods
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
 # ----------------------------------------------------------------------------
-# 2. C++ NATIVE JNI METHODS & BINDINGS (cpp / libgamebooster_native.so)
+# 3. C++ NATIVE JNI METHODS & BINDINGS (cpp / libgamebooster_native.so)
 # ----------------------------------------------------------------------------
 -keepclasseswithmembernames class * {
     native <methods>;
@@ -31,37 +67,7 @@
 }
 
 # ----------------------------------------------------------------------------
-# 3. GAME CONFIGURATION & ENGINE PATCHERS (com.gamebooster.app.config.**)
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.config.** { *; }
--keep interface com.gamebooster.app.config.** { *; }
-
-# ----------------------------------------------------------------------------
-# 4. HARDWARE & PERFORMANCE BOOSTERS (com.gamebooster.app.booster.**)
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.booster.** { *; }
--keep interface com.gamebooster.app.booster.** { *; }
-
-# ----------------------------------------------------------------------------
-# 5. STORAGE & JUNK CLEANER ENGINE (com.gamebooster.app.cleaner.**)
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.cleaner.** { *; }
--keep interface com.gamebooster.app.cleaner.** { *; }
-
-# ----------------------------------------------------------------------------
-# 6. SYSTEM OPTIMIZATION ENGINES & COMMAND EXECUTORS (com.gamebooster.app.engine.**)
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.engine.** { *; }
--keep interface com.gamebooster.app.engine.** { *; }
-
-# ----------------------------------------------------------------------------
-# 7. DIAGNOSTICS & CRASHLOG TELEMETRY (com.gamebooster.app.diagnostics.**)
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.diagnostics.** { *; }
--keep interface com.gamebooster.app.diagnostics.** { *; }
-
-# ----------------------------------------------------------------------------
-# 8. SHIZUKU API, BINDER IPC & AIDL USER SERVICES (rikka / moe / shizuku)
+# 4. SHIZUKU API, BINDER IPC & AIDL USER SERVICES (rikka / moe / shizuku)
 # ----------------------------------------------------------------------------
 -dontwarn rikka.shizuku.**
 -keep class rikka.shizuku.** { *; }
@@ -71,66 +77,108 @@
 -keep class com.gamebooster.app.shizuku.** { *; }
 -keep interface com.gamebooster.app.shizuku.** { *; }
 
+# Keep AIDL interfaces and stubs
+-keep interface com.gamebooster.app.shizuku.IUserService { *; }
+-keep class com.gamebooster.app.shizuku.IUserService$Stub { *; }
+-keep class com.gamebooster.app.shizuku.IUserService$Stub$Proxy { *; }
+-keep class com.gamebooster.app.shizuku.UserService { *; }
+
 # ----------------------------------------------------------------------------
-# 9. HARDWARE DEVICE IDENTITY SPOOFER (com.gamebooster.app.spoofer.**)
+# 5. HARDWARE DEVICE IDENTITY SPOOFER & REFLECTION RULES
 # ----------------------------------------------------------------------------
 -keep class com.gamebooster.app.spoofer.** { *; }
 -keep interface com.gamebooster.app.spoofer.** { *; }
 
+# Preserve android.os.Build fields for HardwareMaskEngine reflection spoofing
+-keepclassmembers class android.os.Build {
+    public static java.lang.String MODEL;
+    public static java.lang.String BRAND;
+    public static java.lang.String MANUFACTURER;
+    public static java.lang.String DEVICE;
+    public static java.lang.String PRODUCT;
+    public static java.lang.String BOARD;
+    public static java.lang.String HARDWARE;
+    public static java.lang.String FINGERPRINT;
+    public static java.lang.String DISPLAY;
+    public static java.lang.String ID;
+    public static java.lang.String TAGS;
+    public static java.lang.String TYPE;
+    public static java.lang.String HOST;
+    public static java.lang.String USER;
+}
+-keepclassmembers class android.os.Build$VERSION {
+    public static java.lang.String INCREMENTAL;
+    public static java.lang.String RELEASE;
+    public static int SDK_INT;
+}
+
 # ----------------------------------------------------------------------------
-# 10. GAME MANAGER, GAMESPACE & SESSION ENGINES
+# 6. ALL INTERNAL SUBSYSTEMS & MODULES (com.gamebooster.app.**)
 # ----------------------------------------------------------------------------
+-keep class com.gamebooster.app.booster.** { *; }
+-keep class com.gamebooster.app.cleaner.** { *; }
+-keep class com.gamebooster.app.config.** { *; }
+-keep class com.gamebooster.app.core.** { *; }
+-keep class com.gamebooster.app.device.** { *; }
+-keep class com.gamebooster.app.diagnostics.** { *; }
+-keep class com.gamebooster.app.engine.** { *; }
+-keep class com.gamebooster.app.focus.** { *; }
 -keep class com.gamebooster.app.gamemanager.** { *; }
--keep class com.gamebooster.app.gamespace.** { *; }
 -keep class com.gamebooster.app.games.** { *; }
-
-# ----------------------------------------------------------------------------
-# 11. OVERLAY HUD & REAL-TIME FPS MONITORS (com.gamebooster.app.overlay.**)
-# ----------------------------------------------------------------------------
+-keep class com.gamebooster.app.gamespace.** { *; }
 -keep class com.gamebooster.app.overlay.** { *; }
--keep interface com.gamebooster.app.overlay.** { *; }
-
-# ----------------------------------------------------------------------------
-# 12. CYBER TERMINAL & TWEAKS CONSOLE (com.gamebooster.app.terminal.**)
-# ----------------------------------------------------------------------------
+-keep class com.gamebooster.app.search.** { *; }
+-keep class com.gamebooster.app.services.** { *; }
 -keep class com.gamebooster.app.terminal.** { *; }
 -keep class com.gamebooster.app.tweaks.** { *; }
-
-# ----------------------------------------------------------------------------
-# 13. DEVICE HARDWARE, DISPLAY & CORE SYSTEM MANAGERS
-# ----------------------------------------------------------------------------
--keep class com.gamebooster.app.device.** { *; }
--keep class com.gamebooster.app.core.** { *; }
--keep class com.gamebooster.app.services.** { *; }
--keep class com.gamebooster.app.search.** { *; }
+-keep class com.gamebooster.app.ui.** { *; }
 -keep class com.gamebooster.app.utils.** { *; }
 
 # ----------------------------------------------------------------------------
-# 14. UI COMPONENTS, ADAPTERS, DIALOGS, FRAGMENTS & CUSTOM VIEWS
+# 7. UI CUSTOM VIEWS, XML INFLATION & LAYOUT ANIMATIONS
 # ----------------------------------------------------------------------------
--keep class com.gamebooster.app.ui.** { *; }
 -keep class com.gamebooster.app.ui.views.** { *; }
 
 # Keep View constructors for XML layout inflation
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context);
+}
 -keepclasseswithmembers class * {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
 -keepclasseswithmembers class * {
     public <init>(android.content.Context, android.util.AttributeSet, int);
 }
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context, android.util.AttributeSet, int, int);
+}
+
+# Keep onClick callback methods in Activities
+-keepclassmembers class * extends android.app.Activity {
+    public void *(android.view.View);
+}
 
 # ----------------------------------------------------------------------------
-# 15. THIRD-PARTY LIBRARIES & FILE PROVIDER
+# 8. ANDROIDX & THIRD-PARTY LIBRARIES
 # ----------------------------------------------------------------------------
 # FileProvider for diagnostics share/export intents
 -keep class androidx.core.content.FileProvider { *; }
+
+# AndroidX Lifecycle & ViewModel
+-keep class androidx.lifecycle.** { *; }
+-dontwarn androidx.lifecycle.**
+
+# Google Material Components
+-keep class com.google.android.material.** { *; }
+-dontwarn com.google.android.material.**
 
 # Glide Image & GIF Loading
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public class * extends com.bumptech.glide.module.AppGlideModule
 -keep class com.bumptech.glide.** { *; }
 -dontwarn com.bumptech.glide.**
-
-# AndroidX Lifecycle & ViewModel
--keep class androidx.lifecycle.** { *; }
--dontwarn androidx.lifecycle.**
+-keep public class * extends com.bumptech.glide.annotation.compiler.Index
+-keepclassmembers class * {
+    @com.bumptech.glide.annotation.GlideOption <methods>;
+    @com.bumptech.glide.annotation.GlideExtension <methods>;
+}
