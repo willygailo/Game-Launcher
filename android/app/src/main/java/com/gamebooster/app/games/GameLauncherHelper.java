@@ -30,7 +30,11 @@ public class GameLauncherHelper {
 
     public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
-        com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
+        if (context instanceof android.app.Activity) {
+            com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(context, game);
+        } else {
+            com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
+        }
     }
 
     private static int targetFpsForToast(Context context, String packageName) {

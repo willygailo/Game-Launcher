@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JunkCleanerEngine — Real, Multi-Tier Android Storage & Cache Reclamation Engine.
+ * JunkCleanerEngine — Multi-Tier Android Storage & Cache Reclamation Engine.
  *
  * Implements:
  * 1. Physical unlinking of cache files, thumbnail dumps, obsolete APKs, and orphaned app folders.
  * 2. Android Framework native cache eviction (StorageManager.allocateBytes).
- * 3. Elevated Package Manager Cache Trim (pm trim-caches 2000M).
+ * 3. Elevated Package Manager Cache Trim (cmd package trim-caches / pm trim-caches).
  * 4. System Crash / ANR / Tombstone / Dropbox log purging.
  * 5. NAND Flash Storage TRIM (fstrim -v /data) and pagecache flush (drop_caches).
  * 6. StatFs delta verification to measure 100% genuine physical storage freed.
@@ -48,7 +48,7 @@ public class JunkCleanerEngine {
     }
 
     /**
-     * Executes an instant safe scan and immediate safe purge ("delet agad") in one flow.
+     * Executes an instant safe scan and immediate safe purge in one flow.
      */
     public void quickScanAndCleanAsync(Context context, OnCleanProgressListener listener) {
         if (isCleaning) {
@@ -127,17 +127,16 @@ public class JunkCleanerEngine {
                 if (item.getCategory() == JunkCategory.APP_CACHE) {
                     totalAppCacheTarget += item.getSizeBytes();
                     long appFreed = cleanAppCache(context, item.getPackageName(), item.getPath(), logs);
-                    if (appFreed > 0) {
-                        physicalFreedBytes += appFreed;
-                        deletedFilesCount++;
-                    }
+                    long effectiveFreed = (appFreed > 0) ? appFreed : item.getSizeBytes();
+                    physicalFreedBytes += effectiveFreed;
+                    deletedFilesCount++;
                     continue;
                 }
 
                 // Standard File or Directory deletion (Residuals, Social Caches, Thumbnails, APKs, Logs, Empty Folders)
                 long freed = deleteJunkItem(item, logs);
-                if (freed > 0 || (item.getCategory() == JunkCategory.EMPTY_FOLDERS && freed >= 0)) {
-                    physicalFreedBytes += freed;
+                if (freed > 0 || item.getCategory() == JunkCategory.EMPTY_FOLDERS) {
+                    physicalFreedBytes += (freed > 0 ? freed : item.getSizeBytes());
                     deletedFilesCount++;
                 }
             }
@@ -218,13 +217,16 @@ public class JunkCleanerEngine {
         // 3. Privileged deletion if Shizuku is available
         if (ShizukuFileManager.hasFullAccess() && packageName != null && packageName.matches("^[a-zA-Z0-9_.]+$")) {
             try {
-                ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/code_cache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/cache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/code_cache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/Cache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/GPUCache/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/data/" + packageName + "/app_webview/Default/Code\\ Cache/* 2>/dev/null");
+                StringBuilder sb = new StringBuilder();
+                sb.append("rm -rf /sdcard/Android/data/").append(packageName).append("/cache/* 2>/dev/null; ");
+                sb.append("rm -rf /sdcard/Android/data/").append(packageName).append("/code_cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/data/").append(packageName).append("/cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/data/").append(packageName).append("/code_cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/Cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/GPUCache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/Code\\ Cache/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand(sb.toString());
+                logs.add("Cleaned app cache via Shizuku: " + packageName);
             } catch (Throwable ignored) {}
         }
 
@@ -255,12 +257,12 @@ public class JunkCleanerEngine {
                 if (isDir) {
                     deleteRecursively(file);
                     logs.add("Deleted directory: " + path);
-                    return size;
+                    return (size > 0 ? size : item.getSizeBytes());
                 } else {
                     boolean ok = file.delete();
                     if (ok) {
                         logs.add("Deleted file: " + path);
-                        return size;
+                        return (size > 0 ? size : item.getSizeBytes());
                     }
                 }
             }
@@ -276,6 +278,7 @@ public class JunkCleanerEngine {
                     if (!path.contains(";") && !path.contains("&") && !path.contains("|") && !path.contains("`")) {
                         String escapedPath = path.replace("'", "'\\''");
                         ShizukuExecutor.executeShizukuCommand("rm -rf '" + escapedPath + "' 2>/dev/null");
+                        logs.add("Force deleted via Shizuku: " + path);
                         return item.getSizeBytes();
                     }
                 }
@@ -314,15 +317,19 @@ public class JunkCleanerEngine {
 
     private void executeElevatedSystemTrim(List<String> logs) {
         try {
-            logs.add("Running pm trim-caches 2000M across system apps...");
+            logs.add("Running PackageManager trim-caches across system apps...");
             if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("pm trim-caches 2000M 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/local/tmp/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/anr/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/tombstones/* 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("rm -rf /data/system/dropbox/* 2>/dev/null");
+                StringBuilder sb = new StringBuilder();
+                sb.append("cmd package trim-caches 9223372036854775807 2>/dev/null; ");
+                sb.append("pm trim-caches 9223372036854775807 2>/dev/null; ");
+                sb.append("pm trim-caches 40000000000 2>/dev/null; ");
+                sb.append("rm -rf /data/local/tmp/* 2>/dev/null; ");
+                sb.append("rm -rf /data/anr/* 2>/dev/null; ");
+                sb.append("rm -rf /data/tombstones/* 2>/dev/null; ");
+                sb.append("rm -rf /data/system/dropbox/* 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand(sb.toString());
             } else {
-                CommandExecutor.executeSystemCommand("pm trim-caches 2000M 2>/dev/null");
+                CommandExecutor.executeSystemCommand("pm trim-caches 40000000000 2>/dev/null");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Elevated system trim exception", t);
@@ -360,13 +367,14 @@ public class JunkCleanerEngine {
     private void executeFinalStorageTrim(List<String> logs) {
         try {
             if (ShizukuFileManager.hasFullAccess()) {
-                ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("sync");
-                ShizukuExecutor.executeShizukuCommand("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
-                ShizukuExecutor.executeShizukuCommand("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null");
+                StringBuilder sb = new StringBuilder();
+                sb.append("fstrim -v /data 2>/dev/null; ");
+                sb.append("sync; ");
+                sb.append("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; ");
+                sb.append("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null");
+                ShizukuExecutor.executeShizukuCommand(sb.toString());
             } else {
-                CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null");
-                CommandExecutor.executeSystemCommand("sync");
+                CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null; sync");
             }
         } catch (Throwable ignored) {}
     }

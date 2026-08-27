@@ -12,15 +12,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.games.GameAppInfo;
-import com.gamebooster.app.games.GameLauncherHelper;
-import com.gamebooster.app.ui.dialogs.GameCfgDialog;
 import com.gamebooster.app.config.GameProfilePreferences;
-
+import com.gamebooster.app.games.GameAppInfo;
+import com.gamebooster.app.ui.dialogs.PreLaunchGameDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,27 +71,18 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             holder.layoutCardBg.setBackgroundResource(game.getCardBgRes());
         }
 
-        View.OnClickListener launchListener = v -> com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
+        View.OnClickListener launchListener = v -> PreLaunchGameDialog.show(context, game);
         holder.btnLaunch.setOnClickListener(launchListener);
         if (holder.layoutCardBg != null) {
             holder.layoutCardBg.setOnClickListener(launchListener);
         }
         holder.itemView.setOnClickListener(launchListener);
-        holder.btnConfig.setOnClickListener(v ->
-                GameCfgDialog.show(context, game, (pkg, fps, count) -> {
-                    int pos = holder.getAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION && pos < games.size()) {
-                        notifyItemChanged(pos);
-                    }
-                })
-        );
     }
 
     @Override
     public int getItemCount() {
         return games.size();
     }
-
 
     public static class GameViewHolder extends RecyclerView.ViewHolder {
         LinearLayout layoutCardBg;
@@ -104,7 +92,6 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         TextView tvBadge;
         TextView tvProfile;
         Button btnLaunch;
-        Button btnConfig;
 
         public GameViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -115,7 +102,6 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             tvBadge = itemView.findViewById(R.id.tv_game_badge);
             tvProfile = itemView.findViewById(R.id.tv_game_profile);
             btnLaunch = itemView.findViewById(R.id.btn_launch_game);
-            btnConfig = itemView.findViewById(R.id.btn_config_game);
         }
     }
 }

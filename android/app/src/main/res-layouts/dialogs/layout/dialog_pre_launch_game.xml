@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginHorizontal="16dp"
+    android:background="@drawable/dialog_cyber_bg"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Top Badge Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_pre_launch_top_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/badge_neon_cyan"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="3dp"
+            android:text="🚀 INSTANT PRE-LAUNCH BOOST"
+            android:textColor="@color/accent_cyan"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/tv_pre_launch_engine_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[SHIZUKU ACTIVE]"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Game Identity Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_pre_launch_game_icon"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:contentDescription="Game Icon"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_pre_launch_game_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Game Title"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_pre_launch_game_pkg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="com.example.game"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_pre_launch_game_engine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="🎮 Unreal Engine 4 • Auto-Patch Ready"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Detected Display Hardware Refresh Rate Banner -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/card_glass_shape"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🖥️"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_pre_launch_display_hz"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Detected Display: Up to 144Hz Native Refresh Rate"
+            android:textColor="@color/accent_cyan"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Target FPS / Refresh Rate Selection Section -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="SELECT TARGET FPS &amp; REFRESH RATE (Auto-Filtered by Hardware Max Hz):"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/rg_pre_launch_fps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="vertical">
+
+        <!-- 185 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_185"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:layout_marginBottom="4dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 185 FPS / Hz — Extreme ROG / RedMagic Overclock"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- 165 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_165"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:layout_marginBottom="4dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 165 FPS / Hz — eSports Tournament Standard"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- 144 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_144"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:layout_marginBottom="4dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 144 FPS / Hz — Ultra High Refresh Rate"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- 120 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_120"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:layout_marginBottom="4dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 120 FPS / Hz — Flagship Pro Gaming"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- 90 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_90"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:layout_marginBottom="4dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 90 FPS / Hz — Smooth Competitive Balance"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- 60 FPS / Hz -->
+        <RadioButton
+            android:id="@+id/rb_pre_fps_60"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_glass_shape"
+            android:buttonTint="@color/accent_neon_green"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="10dp"
+            android:text="⚡ 60 FPS / Hz — Power Saving / Low Heat"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RadioGroup>
+
+    <!-- Auto-Applied Features Checklist Box -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/card_glass_shape"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AUTOMATIC IN-FLIGHT CONFIG INJECTIONS:"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_pre_launch_auto_features"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:lineSpacingExtra="3dp"
+            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ Focus Freeze: suspend background apps for 100% CPU/RAM\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted ANGLE / Vulkan Game Driver isolation\n✔ Anti-Log &amp; crash telemetry cleaner"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Action Buttons Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_pre_launch_cancel"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_cyber_dark"
+            android:text="✖ CANCEL"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_pre_launch_start"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="2"
+            android:background="@drawable/btn_cyber_green"
+            android:text="🚀 BOOST &amp; LAUNCH"
+            android:textColor="#0B0E14"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

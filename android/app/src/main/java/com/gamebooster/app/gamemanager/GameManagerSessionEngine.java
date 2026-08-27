@@ -243,7 +243,10 @@ public final class GameManagerSessionEngine {
                 }
 
                 // Focus Mode (Deep App Freezer) for the active game session
-                if (com.gamebooster.app.config.ManualSettingsPreferences.isFocusModeEnabled(appContext)) {
+                String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+                com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+                boolean shouldFreeze = (profile != null && profile.isFocusFreezeEnabled()) || com.gamebooster.app.config.ManualSettingsPreferences.isFocusModeEnabled(appContext);
+                if (shouldFreeze) {
                     int frozen = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(appContext, pkg);
                     Log.i(TAG, "🎯 Focus Mode Engine: " + frozen + " background apps frozen for " + pkg);
                 }

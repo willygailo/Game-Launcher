@@ -8,10 +8,8 @@ import android.util.Log;
 
 import com.gamebooster.app.config.ManualSettingsPreferences;
 import com.gamebooster.app.core.AppExecutors;
-import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +20,8 @@ import java.util.Set;
 /**
  * FocusModeEngine — eSports Deep App Freezer & Background Suspension Engine.
  *
- * Implements Android package suspension (pm suspend) and process termination (am force-stop)
+ * Implements privileged multi-layer Android package suspension (pm suspend / cmd package suspend),
+ * appops background restriction, standby bucket restriction, and process termination (am force-stop)
  * to freeze non-gaming background applications, dedicating 100% of device CPU, GPU,
  * RAM, and network bandwidth to the active game.
  */
@@ -123,16 +122,19 @@ public class FocusModeEngine {
             // Skip known game packages so games are not frozen
             if (GamePackageRegistry.isSupportedGame(pkg)) continue;
 
-            // Skip system pre-installed apps without updates unless they are user-facing
+            // Allow if user-installed OR has a launcher activity (e.g. YouTube, Chrome, Social apps)
             boolean isSystem = (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
             boolean isUpdatedSystem = (appInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
-            if (isSystem && !isUpdatedSystem) continue;
+            boolean hasLaunchIntent = pm.getLaunchIntentForPackage(pkg) != null;
+
+            if (isSystem && !isUpdatedSystem && !hasLaunchIntent) {
+                continue;
+            }
 
             try {
                 String label = pm.getApplicationLabel(appInfo).toString();
                 boolean isWhitelisted = userWhitelist.contains(pkg);
                 boolean isFrozen = currentlyFrozen.contains(pkg);
-                // By default, if not explicitly whitelisted, it's a target to freeze
                 boolean selectedToFreeze = !isWhitelisted;
                 result.add(new FocusAppModel(pkg, label, appInfo.loadIcon(pm), selectedToFreeze, isFrozen));
             } catch (Throwable ignored) {}
@@ -178,13 +180,15 @@ public class FocusModeEngine {
                     // 1. Terminate running process
                     commands.add("am force-stop " + pkg);
 
-                    // 2. Suspend package via Android PM
-                    commands.add("pm suspend --user 0 " + pkg);
+                    // 2. Suspend package via Android PM & cmd
+                    commands.add("pm suspend --user 0 " + pkg + " 2>/dev/null");
+                    commands.add("cmd package suspend --user 0 " + pkg + " 2>/dev/null");
 
-                    // 3. Deny background execution rights
+                    // 3. Deny background execution rights & restrict standby bucket
                     commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND ignore 2>/dev/null");
                     commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null");
                     commands.add("am set-standby-bucket " + pkg + " restricted 2>/dev/null");
+                    commands.add("am set-standby-bucket " + pkg + " 45 2>/dev/null");
                 }
             }
 
@@ -236,10 +240,15 @@ public class FocusModeEngine {
                     AppExecutors.getInstance().postToMainThread(() -> listener.onProgress(c, total, pkg));
                 }
 
-                commands.add("pm unsuspend --user 0 " + pkg);
+                // 1. Unsuspend package
+                commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
+                commands.add("cmd package unsuspend --user 0 " + pkg + " 2>/dev/null");
+
+                // 2. Restore normal background permissions & active standby bucket
                 commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
                 commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
                 commands.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
+                commands.add("am set-standby-bucket " + pkg + " 10 2>/dev/null");
             }
 
             if (!commands.isEmpty()) {
@@ -291,24 +300,24 @@ public class FocusModeEngine {
             // 1. Terminate running process to reclaim active RAM
             commands.add("am force-stop " + pkg);
 
-            // 2. Suspend package via Android Package Manager
-            commands.add("pm suspend --user 0 " + pkg);
+            // 2. Suspend package via Android Package Manager & cmd
+            commands.add("pm suspend --user 0 " + pkg + " 2>/dev/null");
+            commands.add("cmd package suspend --user 0 " + pkg + " 2>/dev/null");
 
-            // 3. Deny background execution rights
+            // 3. Deny background execution rights & restrict standby bucket
             commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND ignore 2>/dev/null");
             commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null");
             commands.add("am set-standby-bucket " + pkg + " restricted 2>/dev/null");
+            commands.add("am set-standby-bucket " + pkg + " 45 2>/dev/null");
         }
 
         if (packagesToFreeze.isEmpty()) {
             Log.i(TAG, "No candidate applications found to freeze.");
-            getPrefs(context).edit().putBoolean(KEY_FOCUS_ACTIVE, true).putStringSet(KEY_FROZEN_PACKAGES, new HashSet<>()).apply();
             return 0;
         }
 
-        Log.i(TAG, "Freezing " + packagesToFreeze.size() + " background apps for Focus Mode.");
+        Log.i(TAG, "Suspending and freezing " + packagesToFreeze.size() + " background apps for focus mode.");
 
-        // Execute batch command
         StringBuilder sb = new StringBuilder();
         for (String c : commands) {
             sb.append(c).append("; ");
@@ -316,17 +325,18 @@ public class FocusModeEngine {
 
         executeShellBatch(sb.toString());
 
-        // Persist state
         getPrefs(context).edit()
                 .putBoolean(KEY_FOCUS_ACTIVE, true)
                 .putStringSet(KEY_FROZEN_PACKAGES, packagesToFreeze)
                 .apply();
 
+        ManualSettingsPreferences.setFocusModeEnabled(context, true);
+
         return packagesToFreeze.size();
     }
 
     /**
-     * Unsuspends and restores all previously frozen applications synchronously.
+     * Unsuspends all currently frozen applications and restores baseline state synchronously.
      */
     public static int disableFocusMode(Context context) {
         if (context == null) return 0;
@@ -342,12 +352,14 @@ public class FocusModeEngine {
         List<String> commands = new ArrayList<>();
         for (String pkg : frozen) {
             // 1. Unsuspend package
-            commands.add("pm unsuspend --user 0 " + pkg);
+            commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
+            commands.add("cmd package unsuspend --user 0 " + pkg + " 2>/dev/null");
 
-            // 2. Restore normal background permissions
+            // 2. Restore normal background permissions & active standby bucket
             commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
             commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
             commands.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
+            commands.add("am set-standby-bucket " + pkg + " 10 2>/dev/null");
         }
 
         StringBuilder sb = new StringBuilder();
@@ -368,14 +380,9 @@ public class FocusModeEngine {
 
     private static void executeShellBatch(String script) {
         try {
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuUserServiceConnector.getInstance().executeCommand(script);
-            } else {
-                CommandExecutor.executeSystemCommand(script);
-            }
+            ShizukuExecutor.executeShizukuCommand(script);
         } catch (Throwable t) {
-            Log.w(TAG, "FocusMode batch execution fallback: " + t.getMessage());
-            CommandExecutor.executeSystemCommand(script);
+            Log.w(TAG, "FocusMode batch execution error: " + t.getMessage());
         }
     }
 }

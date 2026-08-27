@@ -93,6 +93,7 @@ public class GameCfgDialog {
         SwitchCompat switchSuperTouch = view.findViewById(R.id.switch_super_touch);
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
         SwitchCompat switchAntiLog = view.findViewById(R.id.switch_anti_log);
+        SwitchCompat switchFocusFreeze = view.findViewById(R.id.switch_focus_freeze);
 
         // Graphics Driver RadioGroup
         RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
@@ -117,10 +118,10 @@ public class GameCfgDialog {
         // ART Compiler Section
         TextView tvArtStatusLabel = view.findViewById(R.id.tv_art_status_label);
         Button btnTriggerArtCompile = view.findViewById(R.id.btn_trigger_art_compile);
-
         ProgressBar pbProgress = view.findViewById(R.id.pb_cfg_progress);
         TextView tvStatus = view.findViewById(R.id.tv_cfg_status);
         Button btnRestore = view.findViewById(R.id.btn_restore_cfg);
+        Button btnCancel = view.findViewById(R.id.btn_cancel_cfg);
         Button btnApply = view.findViewById(R.id.btn_apply_cfg);
 
         // Load Game Info
@@ -178,8 +179,8 @@ public class GameCfgDialog {
             tvEngineBadge.setText("[SHIZUKU ACTIVE]");
             tvEngineBadge.setTextColor(Color.parseColor("#00FF66"));
         } else {
-            tvEngineBadge.setText("[STANDALONE ENGINE]");
-            tvEngineBadge.setTextColor(Color.parseColor("#00F0FF"));
+            tvEngineBadge.setText("[LIMITED / ROOTLESS]");
+            tvEngineBadge.setTextColor(Color.parseColor("#FFAA00"));
         }
 
         // Load Existing Config Profile
@@ -188,6 +189,9 @@ public class GameCfgDialog {
             switchSuperTouch.setChecked(currentCfg.isSuperFastTouchEnabled());
             switchForceHz.setChecked(currentCfg.isForceWriteSystemHz());
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
+            if (switchFocusFreeze != null) {
+                switchFocusFreeze.setChecked(currentCfg.isFocusFreezeEnabled());
+            }
 
             int currentFps = currentCfg.getTargetFps();
             if (currentFps == 185 && rb185 != null) {
@@ -205,13 +209,24 @@ public class GameCfgDialog {
             }
         }
 
+        // ACTION: CANCEL (Dismiss without applying any changes)
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dismissCurrent());
+        }
+
+        // ACTION: RESTORE (Revert configs, driver, scaler, filters to default)
         btnRestore.setOnClickListener(v -> {
             dismissCurrent();
-            Toast.makeText(context.getApplicationContext(), "♻️ Restoring original configuration...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context.getApplicationContext(), "♻️ Restoring original configuration for " + game.getLabel() + "...", Toast.LENGTH_SHORT).show();
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int restoredCount = ConfigBackupManager.restorePackage(context, pkg);
                 com.gamebooster.app.booster.GpuTweaksChannel.setTargetGameDriver(pkg, com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT);
+                com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
+                com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(context, com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF);
+                CfgProfileManager.saveProfile(context, CompetitiveCfgProfile.defaultCompetitive(gameKey));
+                com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(context);
+
                 AppExecutors.getInstance().postToMainThread(() -> {
                     Toast.makeText(context.getApplicationContext(), "♻️ Restored original configs (" + restoredCount + " files)", Toast.LENGTH_SHORT).show();
                     if (listener != null) {
@@ -242,6 +257,7 @@ public class GameCfgDialog {
             final boolean superTouch = switchSuperTouch.isChecked();
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
+            final boolean focusFreeze = switchFocusFreeze != null && switchFocusFreeze.isChecked();
 
             final com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType driverType;
             if (rbDriverAngle != null && rbDriverAngle.isChecked()) {
@@ -286,7 +302,7 @@ public class GameCfgDialog {
             dismissCurrent();
 
             // Direct non-blocking notification
-            Toast.makeText(context.getApplicationContext(), "⚡ Force Applied: CFG injected for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context.getApplicationContext(), "⚡ DONE: CFG Applied for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
@@ -294,6 +310,7 @@ public class GameCfgDialog {
                     // 1. Build and Save Profile
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
+                    profile.setFocusFreezeEnabled(focusFreeze);
                     CfgProfileManager.saveProfile(context, profile);
 
                     // 2. Fast direct config patching for target package only
@@ -333,6 +350,11 @@ public class GameCfgDialog {
                     // 5. Anti-Log & Telemetry Purge
                     if (antiLog) {
                         AntiLogPatcher.applyAntiLog(pkg);
+                    }
+
+                    // 6. Deep Focus Freeze (Suspend All Background Apps)
+                    if (focusFreeze) {
+                        com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(context, pkg);
                     }
 
                 } catch (Throwable t) {

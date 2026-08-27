@@ -962,6 +962,65 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
 
+        Button btnForceApplySpoof = view.findViewById(R.id.btn_force_apply_spoof);
+        Button btnOpenPerAppSpoof = view.findViewById(R.id.btn_open_per_app_spoof);
+        Button btnOpenSpoofInspector = view.findViewById(R.id.btn_open_spoof_inspector);
+
+        if (btnForceApplySpoof != null) {
+            btnForceApplySpoof.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                String activeId = SpoofPreferences.getActiveProfileId(getContext());
+                SpoofProfile targetProf = (activeId != null && !activeId.isEmpty())
+                        ? DeviceSpooferEngine.getProfileById(activeId)
+                        : DeviceSpooferEngine.getDefaultProfile();
+                if (targetProf == null) {
+                    Toast.makeText(getContext(), "⚠️ Please select a spoof profile below first!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                SpoofPreferences.setSpoofEnabled(getContext(), true);
+                SpoofPreferences.setActiveProfileId(getContext(), targetProf.id);
+                if (switchDeviceSpoof != null) {
+                    isProgrammaticToggle = true;
+                    switchDeviceSpoof.setChecked(true);
+                    isProgrammaticToggle = false;
+                }
+                if (spoofProfileAdapter != null) {
+                    spoofProfileAdapter.setActiveProfileId(targetProf.id);
+                }
+                updateSpoofUiState();
+
+                Toast.makeText(getContext(), "⚡ Force-Applying Spoof via Shizuku API: " + targetProf.displayName + "...", Toast.LENGTH_SHORT).show();
+
+                final SpoofProfile profileToApply = targetProf;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean success = DeviceSpooferEngine.applyProfile(getContext(), profileToApply, null);
+                    int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), profileToApply);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        updateSpoofUiState();
+                        Toast.makeText(getContext(), "✅ Force-Applied Spoof via Shizuku: " + profileToApply.displayName + " (" + count + " apps masked)", Toast.LENGTH_LONG).show();
+                    });
+                });
+            });
+        }
+
+        if (btnOpenPerAppSpoof != null) {
+            btnOpenPerAppSpoof.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    PerAppSpoofDialog.show(getContext());
+                }
+            });
+        }
+
+        if (btnOpenSpoofInspector != null) {
+            btnOpenSpoofInspector.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    SpoofInspectorDialog.show(getContext());
+                }
+            });
+        }
+
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
             isProgrammaticToggle = true;

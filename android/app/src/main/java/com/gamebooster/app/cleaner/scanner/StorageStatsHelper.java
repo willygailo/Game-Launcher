@@ -98,9 +98,16 @@ public final class StorageStatsHelper {
         if (context == null || !ShizukuExecutor.hasShizukuPermission()) return false;
         try {
             String pkg = context.getPackageName();
-            ShizukuExecutor.executeShizukuCommand("pm grant " + pkg + " android.permission.PACKAGE_USAGE_STATS 2>/dev/null");
-            ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " GET_USAGE_STATS allow 2>/dev/null");
-            ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null");
+            StringBuilder sb = new StringBuilder();
+            sb.append("pm grant ").append(pkg).append(" android.permission.PACKAGE_USAGE_STATS 2>/dev/null; ");
+            sb.append("pm grant ").append(pkg).append(" android.permission.READ_EXTERNAL_STORAGE 2>/dev/null; ");
+            sb.append("pm grant ").append(pkg).append(" android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null; ");
+            sb.append("appops set ").append(pkg).append(" GET_USAGE_STATS allow 2>/dev/null; ");
+            sb.append("appops set ").append(pkg).append(" android:get_usage_stats allow 2>/dev/null; ");
+            sb.append("appops set ").append(pkg).append(" MANAGE_EXTERNAL_STORAGE allow 2>/dev/null; ");
+            sb.append("appops set ").append(pkg).append(" android:manage_external_storage allow 2>/dev/null; ");
+            sb.append("appops set ").append(pkg).append(" ACCESS_RESTRICTED_SETTINGS allow 2>/dev/null");
+            ShizukuExecutor.executeShizukuCommand(sb.toString());
             Log.i(TAG, "Auto-granted storage & usage permissions via Shizuku");
             return true;
         } catch (Throwable t) {
