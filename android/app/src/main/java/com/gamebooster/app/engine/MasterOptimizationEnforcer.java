@@ -104,6 +104,10 @@ public class MasterOptimizationEnforcer {
                 // 3B. CPU, GPU & WebView hardware channels
                 PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 PerformanceChannel.setGpuRenderMode(true); // Vulkan 3D
+
+                // 3C. Touch, Precision Gyro & Network Turbo
+                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+                com.gamebooster.app.booster.NetworkOptimizer.optimizeAllDataAndWifi(appContext);
                 
                 // 3D. Execute master root performance script
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);

@@ -27,12 +27,13 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * Features:
  * 1. Defaults working directory to Internal Storage (/sdcard or /storage/emulated/0).
- * 2. Persistent Working Directory tracking across subshells via __PWD__ sync.
- * 3. Rich ANSI color formatting for `ls` and `cd` with folder indicators and file sizes.
- * 4. Full POSIX environment setup: PATH, HOME=/sdcard, TERM=xterm-256color, EXTERNAL_STORAGE.
- * 5. Interactive tab auto-completion for binary commands, built-ins, and filesystem paths.
- * 6. Process cancellation / Ctrl+C interrupt support.
- * 7. Elevated execution via Shizuku (shell UID 2000) or Root (UID 0) with standard local shell fallback.
+ * 2. Elevated Root & Shizuku directory navigation: allows full `cd /`, `cd /data`, `cd /system`, `cd /data/local/tmp`.
+ * 3. Persistent Working Directory tracking across subshells via __PWD__ sync.
+ * 4. Rich ANSI color formatting for `ls` and `cd` with folder indicators and file sizes.
+ * 5. Full POSIX environment setup: PATH, HOME=/sdcard, TERM=xterm-256color, EXTERNAL_STORAGE.
+ * 6. Interactive tab auto-completion for binary commands, built-ins, and filesystem paths (including root paths).
+ * 7. Process cancellation / Ctrl+C interrupt support.
+ * 8. Elevated execution via Shizuku (shell UID 2000) or Root (UID 0) with standard local shell fallback.
  */
 public class TerminalCoreEngine {
 
@@ -52,7 +53,7 @@ public class TerminalCoreEngine {
             "ifconfig", "netstat", "clear", "cls", "help", "scripts", "run", "echo",
             "grep", "sed", "awk", "find", "kill", "killall", "pkill", "whoami", "id",
             "uname", "dmesg", "sync", "sleep", "which", "stat", "head", "tail", "tar", "gzip",
-            "neofetch", "fastfetch", "termux-info", "pkg", "apt", "su", "shizuku"
+            "neofetch", "fastfetch", "termux-info", "pkg", "apt", "su", "shizuku", "root"
     );
 
     private TerminalCoreEngine() {
@@ -131,10 +132,10 @@ public class TerminalCoreEngine {
         if ("help".equalsIgnoreCase(trimmed) || "?".equals(trimmed)) {
             String helpText = "\u001B[1;32mWelcome to Termux (Shizuku Privileged Shell)!\u001B[0m\n\n" +
                     "\u001B[1;36mSHELL BUILT-INS & TOOLS:\u001B[0m\n" +
+                    "  • \u001B[32mcd / | cd /data | cd /system | cd /sdcard\u001B[0m - Full ROOT & storage filesystem navigation\n" +
                     "  • \u001B[32mpkg <list|search|info|trim>\u001B[0m - Termux package management subsystem\n" +
                     "  • \u001B[32mneofetch / fastfetch\u001B[0m        - Display ASCII system & hardware specs\n" +
                     "  • \u001B[32mpwd\u001B[0m                         - Print current working directory\n" +
-                    "  • \u001B[32mcd <dir>\u001B[0m                    - Change directory (e.g. cd /sdcard, cd Download, cd ..)\n" +
                     "  • \u001B[32mls [-la]\u001B[0m                    - List files and directories with folder info & colors\n" +
                     "  • \u001B[32mcat <file>\u001B[0m                  - Output file contents\n" +
                     "  • \u001B[32mid / whoami\u001B[0m                 - Show current shell UID and groups\n" +
@@ -207,6 +208,11 @@ public class TerminalCoreEngine {
             return new TerminalResult("", 0, currentWorkingDir);
         }
 
+        if (trimmed.equals("cd /") || trimmed.equals("cd /root")) {
+            currentWorkingDir = "/";
+            return new TerminalResult("", 0, currentWorkingDir);
+        }
+
         // 5. Intercept simple 'ls' or 'dir' commands to provide rich directory & file metadata
         if (trimmed.equals("ls") || trimmed.startsWith("ls ") || trimmed.equals("dir") || trimmed.startsWith("dir ")) {
             TerminalResult customLs = handleEnhancedLs(trimmed);
@@ -235,16 +241,16 @@ public class TerminalCoreEngine {
                 "export ANDROID_DATA=/data; " +
                 "export ANDROID_ROOT=/system; " +
                 "export EXTERNAL_STORAGE=/sdcard; " +
-                "cd \"" + currentWorkingDir + "\" 2>/dev/null; " +
+                "cd \"" + currentWorkingDir + "\" 2>/dev/null || cd /; " +
                 execCommandStr + "; " +
                 "echo \"__PWD__:$PWD\"; " +
                 "echo \"__EXIT__:$?\"";
 
-        // Try Elevated Shizuku AIDL / Process Execution
+        // Try Elevated Shizuku Multi-Tier Execution (UserService / Shizuku.newProcess / rish)
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String rawOutput = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(shellScript);
-                if (rawOutput != null) {
+                String rawOutput = ShizukuExecutor.executeShizukuCommand(shellScript);
+                if (rawOutput != null && !rawOutput.startsWith("ERROR: Shizuku")) {
                     return parseShellOutput(rawOutput);
                 }
             } catch (Throwable t) {
@@ -258,7 +264,7 @@ public class TerminalCoreEngine {
 
     /**
      * Enhanced Directory & File Listing with rich Cyberpunk ANSI colors,
-     * permissions, sizes, folder indicators, and fallback support for Android Internal Storage.
+     * permissions, sizes, folder indicators, and fallback support for Android Internal Storage & Root.
      */
     private TerminalResult handleEnhancedLs(String cmd) {
         String targetPath = currentWorkingDir;
@@ -278,14 +284,12 @@ public class TerminalCoreEngine {
             }
         }
 
-        File dir = new File(targetPath);
-
-        // Try elevated shell listing first if Shizuku is granted
+        // Try elevated Shizuku shell listing first (vital for / , /data, /system, /vendor, /data/local/tmp)
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String shellLsCmd = "export PATH=/system/bin:/system/xbin:$PATH; cd \"" + currentWorkingDir + "\"; " + cmd + "; echo \"__PWD__:$PWD\"; echo \"__EXIT__:$?\"";
-                String rawOutput = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(shellLsCmd);
-                if (rawOutput != null && !rawOutput.trim().isEmpty() && !rawOutput.contains("No such file or directory") && !rawOutput.contains("Permission denied")) {
+                String shellLsCmd = "export PATH=/system/bin:/system/xbin:/vendor/bin:/data/local/tmp:$PATH; cd \"" + currentWorkingDir + "\" 2>/dev/null || cd /; " + cmd + "; echo \"__PWD__:$PWD\"; echo \"__EXIT__:$?\"";
+                String rawOutput = ShizukuExecutor.executeShizukuCommand(shellLsCmd);
+                if (rawOutput != null && !rawOutput.trim().isEmpty() && !rawOutput.startsWith("ERROR:")) {
                     TerminalResult parsed = parseShellOutput(rawOutput);
                     if (parsed.output != null && !parsed.output.trim().isEmpty()) {
                         String formatted = colorizeLsOutput(parsed.output, targetPath);
@@ -295,11 +299,13 @@ public class TerminalCoreEngine {
             } catch (Throwable ignored) {}
         }
 
+        File dir = new File(targetPath);
+
         // Fallback: Native Java File exploration if directory exists
         if (dir.exists() && dir.isDirectory()) {
             File[] files = dir.listFiles();
             if (files == null || files.length == 0) {
-                return new TerminalResult("\u001B[33m📁 Directory is empty: " + targetPath + "\u001B[0m", 0, currentWorkingDir);
+                return new TerminalResult("\u001B[33m📁 Directory is empty or restricted: " + targetPath + "\u001B[0m", 0, currentWorkingDir);
             }
 
             // Sort directories first, then alphabetical
@@ -358,7 +364,7 @@ public class TerminalCoreEngine {
             String trimmed = line.trim();
             if (trimmed.isEmpty()) continue;
 
-            if (trimmed.startsWith("d") || trimmed.endsWith("/")) {
+            if (trimmed.startsWith("d") || trimmed.endsWith("/") || trimmed.contains("<DIR>")) {
                 sb.append("\u001B[1;36m📁 ").append(line).append("\u001B[0m\n");
             } else if (trimmed.endsWith(".sh") || trimmed.endsWith(".apk") || trimmed.endsWith(".bin") || trimmed.startsWith("-rwx")) {
                 sb.append("\u001B[1;32m⚡ ").append(line).append("\u001B[0m\n");
@@ -473,6 +479,7 @@ public class TerminalCoreEngine {
 
     /**
      * Resolves Tab Auto-Completion suggestions based on current input text.
+     * Supports commands as well as elevated root/sdcard directory path resolution.
      */
     public List<String> getCompletions(String input) {
         List<String> completions = new ArrayList<>();
@@ -499,28 +506,62 @@ public class TerminalCoreEngine {
             }
         }
 
-        // 2. Search local filesystem files/directories in current working dir
+        // 2. Search filesystem files/directories (Root & SDCard supported)
         try {
-            File searchDir = new File(currentWorkingDir);
-            String filePrefix = lastToken;
-            if (lastToken.contains("/")) {
+            if (lastToken.startsWith("/")) {
                 int slashIndex = lastToken.lastIndexOf('/');
-                String parentPath = lastToken.substring(0, slashIndex);
-                filePrefix = lastToken.substring(slashIndex + 1);
-                searchDir = parentPath.startsWith("/") ? new File(parentPath) : new File(currentWorkingDir, parentPath);
-            }
+                String parentPath = slashIndex == 0 ? "/" : lastToken.substring(0, slashIndex);
+                String filePrefix = lastToken.substring(slashIndex + 1);
 
-            if (searchDir.exists() && searchDir.isDirectory()) {
-                File[] files = searchDir.listFiles();
-                if (files != null) {
-                    for (File f : files) {
-                        if (f.getName().startsWith(filePrefix)) {
-                            String name = f.getName() + (f.isDirectory() ? "/" : "");
-                            if (lastToken.contains("/")) {
-                                int slashIndex = lastToken.lastIndexOf('/');
-                                name = lastToken.substring(0, slashIndex + 1) + name;
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    String listOut = ShizukuExecutor.executeShizukuCommand("ls -1p \"" + parentPath + "\" 2>/dev/null");
+                    if (listOut != null && !listOut.startsWith("ERROR")) {
+                        for (String line : listOut.split("\n")) {
+                            String name = line.trim();
+                            if (name.isEmpty()) continue;
+                            if (name.startsWith(filePrefix)) {
+                                String fullMatch = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
+                                completions.add(fullMatch);
                             }
-                            completions.add(name);
+                        }
+                    }
+                } else {
+                    File searchDir = new File(parentPath);
+                    if (searchDir.exists() && searchDir.isDirectory()) {
+                        File[] files = searchDir.listFiles();
+                        if (files != null) {
+                            for (File f : files) {
+                                if (f.getName().startsWith(filePrefix)) {
+                                    String name = f.getName() + (f.isDirectory() ? "/" : "");
+                                    String fullMatch = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
+                                    completions.add(fullMatch);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                File searchDir = new File(currentWorkingDir);
+                String filePrefix = lastToken;
+                if (lastToken.contains("/")) {
+                    int slashIndex = lastToken.lastIndexOf('/');
+                    String parentPath = lastToken.substring(0, slashIndex);
+                    filePrefix = lastToken.substring(slashIndex + 1);
+                    searchDir = new File(currentWorkingDir, parentPath);
+                }
+
+                if (searchDir.exists() && searchDir.isDirectory()) {
+                    File[] files = searchDir.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            if (f.getName().startsWith(filePrefix)) {
+                                String name = f.getName() + (f.isDirectory() ? "/" : "");
+                                if (lastToken.contains("/")) {
+                                    int slashIndex = lastToken.lastIndexOf('/');
+                                    name = lastToken.substring(0, slashIndex + 1) + name;
+                                }
+                                completions.add(name);
+                            }
                         }
                     }
                 }

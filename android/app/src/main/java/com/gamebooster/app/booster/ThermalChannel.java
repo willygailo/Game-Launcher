@@ -106,11 +106,11 @@ public class ThermalChannel {
 
         try {
             if (ShizukuExecutor.hasShizukuPermission()) {
-                String out = ShizukuUserServiceConnector.getInstance().executeCommand(joined.toString());
+                String out = ShizukuExecutor.executeShizukuCommand(joined.toString());
                 if (out != null) ok = true;
             }
         } catch (Throwable t) {
-            Log.w(TAG, "Shizuku AIDL thermal execution failed: " + t.getMessage());
+            Log.w(TAG, "Shizuku thermal execution failed: " + t.getMessage());
         }
 
         // Always ensure system properties and core framework commands execute locally / ADB

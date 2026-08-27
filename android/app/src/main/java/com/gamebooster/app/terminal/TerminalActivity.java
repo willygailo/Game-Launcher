@@ -76,6 +76,9 @@ public class TerminalActivity extends AppCompatActivity {
     private Button btnKeyDollar;
     private Button btnKeyAmp;
     private Button btnKeySemicolon;
+    private Button btnKeyRoot;
+    private Button btnKeyTmp;
+    private Button btnKeySdcard;
 
     private final List<String> commandHistory = new ArrayList<>();
     private int historyIndex = -1;
@@ -144,6 +147,9 @@ public class TerminalActivity extends AppCompatActivity {
         btnKeyDollar = findViewById(R.id.btn_key_dollar);
         btnKeyAmp = findViewById(R.id.btn_key_amp);
         btnKeySemicolon = findViewById(R.id.btn_key_semicolon);
+        btnKeyRoot = findViewById(R.id.btn_key_root);
+        btnKeyTmp = findViewById(R.id.btn_key_tmp);
+        btnKeySdcard = findViewById(R.id.btn_key_sdcard);
 
         updateStatusBanner();
         updatePromptPrefix();
@@ -319,6 +325,30 @@ public class TerminalActivity extends AppCompatActivity {
         if (btnKeyDollar != null) btnKeyDollar.setOnClickListener(v -> insertSymbolAtCursor("$"));
         if (btnKeyAmp != null) btnKeyAmp.setOnClickListener(v -> insertSymbolAtCursor("&"));
         if (btnKeySemicolon != null) btnKeySemicolon.setOnClickListener(v -> insertSymbolAtCursor(";"));
+        if (btnKeyRoot != null) {
+            btnKeyRoot.setOnClickListener(v -> {
+                if (etTerminalCommand != null) {
+                    etTerminalCommand.setText("cd /");
+                    executeCurrentCommand();
+                }
+            });
+        }
+        if (btnKeyTmp != null) {
+            btnKeyTmp.setOnClickListener(v -> {
+                if (etTerminalCommand != null) {
+                    etTerminalCommand.setText("cd /data/local/tmp");
+                    executeCurrentCommand();
+                }
+            });
+        }
+        if (btnKeySdcard != null) {
+            btnKeySdcard.setOnClickListener(v -> {
+                if (etTerminalCommand != null) {
+                    etTerminalCommand.setText("cd /sdcard");
+                    executeCurrentCommand();
+                }
+            });
+        }
     }
 
     private void clearTerminalBuffer() {

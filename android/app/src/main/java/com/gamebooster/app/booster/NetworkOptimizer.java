@@ -61,22 +61,25 @@ public class NetworkOptimizer {
 
     public static boolean applyGamingDns(Context context, DnsMode mode) {
         if (mode == DnsMode.SYSTEM_DEFAULT) {
-            if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                Log.w(TAG, "Shizuku not available — cannot modify private DNS settings");
-                return false;
+            CommandExecutor.setSystemSetting("global", "private_dns_mode", "off");
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand("settings put global private_dns_mode off");
             }
-            ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_mode off");
             return true;
         }
 
         // Set private DNS mode to opportunistic / hostname DoT (DNS-over-TLS)
-        // These require WRITE_SECURE_SETTINGS — must go through Shizuku privileged shell
-        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            Log.w(TAG, "Shizuku not available — cannot modify private DNS settings");
-            return false;
+        CommandExecutor.setSystemSetting("global", "private_dns_mode", "hostname");
+        CommandExecutor.setSystemSetting("global", "private_dns_specifier", mode.privateDnsHost);
+
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            ShizukuExecutor.executeShizukuCommands(
+                "settings put global private_dns_mode hostname",
+                "settings put global private_dns_specifier " + mode.privateDnsHost,
+                "setprop net.dns1 " + mode.primary,
+                "setprop net.dns2 " + mode.secondary
+            );
         }
-        ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_mode hostname");
-        ShizukuUserServiceConnector.getInstance().executeCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
 
         // System property DNS fallback
         CommandExecutor.executeSystemCommand("setprop net.dns1 " + mode.primary);
