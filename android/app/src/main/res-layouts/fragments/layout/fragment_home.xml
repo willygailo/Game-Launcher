@@ -257,6 +257,29 @@
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.05" />
+
+            <Button
+                android:id="@+id/btn_home_add_game"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/btn_cyber_cyan"
+                android:paddingHorizontal="10dp"
+                android:text="➕ ADD GAME"
+                android:textColor="#080B11"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_home_apk_manager"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="10dp"
+                android:text="📦 APKS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Games RecyclerView -->
@@ -275,7 +298,7 @@
             android:gravity="center"
             android:background="@drawable/card_glass_shape"
             android:paddingHorizontal="20dp"
-            android:paddingVertical="40dp"
+            android:paddingVertical="32dp"
             android:layout_marginTop="8dp"
             android:visibility="gone">
 
@@ -298,11 +321,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Install MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, or Farlight\nand they will appear here with 1-Tap 120/144/165/185 FPS Turbo Boost."
+                android:text="Install MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, or Farlight\nor add any installed game or APK to boost."
                 android:textColor="@color/empty_state_text"
                 android:textSize="12sp"
                 android:gravity="center"
                 android:lineSpacingExtra="3dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_empty_add_game"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="➕ ADD INSTALLED GAME"
+                    android:textColor="#080B11"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_empty_scan_apks"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="📦 SCAN &amp; INSTALL APKS"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

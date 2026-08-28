@@ -69,12 +69,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         // Background Looping Video
         videoHomeBg = view.findViewById(R.id.video_home_bg);
         if (videoHomeBg != null) {
+            videoHomeBg.setMuted(true);
             videoHomeBg.setVideoRawResource(R.raw.home_bg_video);
         }
 
-        // Hero Hardware Banner Looping Video
+        // Hero Hardware Banner Looping Video (With Audio Enabled)
         videoHeroBanner = view.findViewById(R.id.video_hero_banner);
         if (videoHeroBanner != null) {
+            videoHeroBanner.setMuted(false);
+            videoHeroBanner.setVolume(1.0f, 1.0f);
             videoHeroBanner.setVideoRawResource(R.raw.banner_video);
         }
 
@@ -105,6 +108,29 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 }
             });
         }
+
+        // Header & Empty State Action Buttons
+        Button btnHomeAddGame = view.findViewById(R.id.btn_home_add_game);
+        Button btnHomeApkManager = view.findViewById(R.id.btn_home_apk_manager);
+        Button btnEmptyAddGame = view.findViewById(R.id.btn_empty_add_game);
+        Button btnEmptyScanApks = view.findViewById(R.id.btn_empty_scan_apks);
+
+        View.OnClickListener openAddGameAction = v -> {
+            if (getContext() != null) {
+                com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), this::loadAndScanGamesZeroDelay);
+            }
+        };
+
+        View.OnClickListener openApkManagerAction = v -> {
+            if (getContext() != null) {
+                com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), this::loadAndScanGamesZeroDelay);
+            }
+        };
+
+        if (btnHomeAddGame != null) btnHomeAddGame.setOnClickListener(openAddGameAction);
+        if (btnEmptyAddGame != null) btnEmptyAddGame.setOnClickListener(openAddGameAction);
+        if (btnHomeApkManager != null) btnHomeApkManager.setOnClickListener(openApkManagerAction);
+        if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));

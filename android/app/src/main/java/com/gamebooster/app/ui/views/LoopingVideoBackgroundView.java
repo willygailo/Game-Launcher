@@ -35,6 +35,9 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
     private int videoHeight = 0;
     private boolean isPrepared = false;
     private boolean shouldPlayWhenReady = true;
+    private float leftVolume = 1.0f;
+    private float rightVolume = 1.0f;
+    private boolean isMuted = false;
 
     public LoopingVideoBackgroundView(@NonNull Context context) {
         super(context);
@@ -53,6 +56,30 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
 
     private void init() {
         setSurfaceTextureListener(this);
+    }
+
+    public void setMuted(boolean muted) {
+        this.isMuted = muted;
+        if (mediaPlayer != null) {
+            try {
+                if (muted) {
+                    mediaPlayer.setVolume(0f, 0f);
+                } else {
+                    mediaPlayer.setVolume(leftVolume, rightVolume);
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public void setVolume(float left, float right) {
+        this.leftVolume = left;
+        this.rightVolume = right;
+        this.isMuted = false;
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.setVolume(left, right);
+            } catch (Throwable ignored) {}
+        }
     }
 
     public void setVideoRawResource(@RawRes int rawResId) {
@@ -77,7 +104,11 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setSurface(surface);
             mediaPlayer.setDataSource(getContext().getApplicationContext(), videoUri);
-            mediaPlayer.setVolume(0f, 0f); // Muted audio for background visuals
+            if (isMuted) {
+                mediaPlayer.setVolume(0f, 0f);
+            } else {
+                mediaPlayer.setVolume(leftVolume, rightVolume);
+            }
             mediaPlayer.setLooping(true);
 
             mediaPlayer.setOnPreparedListener(mp -> {
