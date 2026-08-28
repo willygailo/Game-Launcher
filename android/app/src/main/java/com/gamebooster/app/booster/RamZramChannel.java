@@ -12,10 +12,10 @@ public class RamZramChannel {
 
     public static boolean trimMemoryAndCleanCache(Context context) {
         boolean ok = true;
-        // Kill cached background processes via Shizuku (not our own app)
-        CommandExecutor.executeSystemCommand("am kill-all");
+        // Trim memory and reclaim page cache safely without killing the running game
         CommandExecutor.executeSystemCommand("cmd activity trim-memory --mode COMPLETE");
         CommandExecutor.executeSystemCommand("cmd activity compact full");
+        CommandExecutor.executeSystemCommand("sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true");
         return ok;
     }
 

@@ -139,29 +139,16 @@ public class AutoGameMonitorService extends Service {
                                     + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
                 }
             } else if (lastActiveGamePackage != null) {
-                // Ignore transient system packages (in-game overlays, keyboards, Google Play login, dialogs)
-                boolean isTransientSystemPackage = currentPackage.equals("com.android.systemui")
-                        || currentPackage.equals("com.google.android.gms")
-                        || currentPackage.equals("com.android.vending")
-                        || currentPackage.equals("android")
-                        || currentPackage.equals(getPackageName())
-                        || currentPackage.contains("inputmethod")
-                        || currentPackage.contains("permissioncontroller")
-                        || currentPackage.contains("auth");
-
-                if (isTransientSystemPackage) {
+                // Ignore transient system packages (in-game overlays, keyboards, Google Play login, dialogs, webviews)
+                if (isTransientPackage(currentPackage)) {
                     return;
                 }
 
                 // Debounce exit: verify game process liveness before resetting refresh rates & governors
                 consecutiveUnfocusedCount++;
-                if (consecutiveUnfocusedCount < 2) {
-                    // Check if process is still alive via pidof
-                    String pid = ShizukuExecutor.executeShizukuCommand("pidof " + lastActiveGamePackage);
-                    if (pid != null && !pid.trim().isEmpty() && !pid.startsWith("ERROR")) {
-                        Log.d(TAG, "Game PID still active, holding session for: " + lastActiveGamePackage);
-                        return;
-                    }
+                if (consecutiveUnfocusedCount < 4 || isProcessAlive(lastActiveGamePackage)) {
+                    Log.d(TAG, "Game PID/Process still active or debouncing (" + consecutiveUnfocusedCount + "/4) for: " + lastActiveGamePackage);
+                    return;
                 }
 
                 Log.i(TAG, "Game confirmed exited — ending GameManager Session for: " + lastActiveGamePackage);
@@ -182,20 +169,94 @@ public class AutoGameMonitorService extends Service {
 
                 AppExecutors.getInstance().postToMainThread(() -> {
                     android.widget.Toast.makeText(getApplicationContext(),
-                            "↩ Stock Baseline Restored (Game Exited)",
+                            "↩ Stock Baseline Restored",
                             android.widget.Toast.LENGTH_SHORT).show();
 
                     if (report != null && report.getPlaytimeSeconds() >= 5) {
                         try {
                             Intent reportIntent = new Intent(getApplicationContext(), com.gamebooster.app.ui.activities.MainActivity.class);
-                            reportIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            reportIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             reportIntent.putExtra("EXTRA_SHOW_POST_GAME_REPORT", report);
-                            getApplicationContext().startActivity(reportIntent);
+                            android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
+                                    getApplicationContext(),
+                                    2002,
+                                    reportIntent,
+                                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+                            );
+
+                            NotificationManager nm = getSystemService(NotificationManager.class);
+                            if (nm != null) {
+                                Notification notif = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                                        .setContentTitle("🎮 Game Session Complete (" + (report.gameTitle != null ? report.gameTitle : exitingPkg) + ")")
+                                        .setContentText("Avg FPS: " + report.averageFps + " | Tap to view session stats")
+                                        .setSmallIcon(R.mipmap.ic_launcher)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true)
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .build();
+                                nm.notify(2002, notif);
+                            }
                         } catch (Exception ignored) {}
                     }
                 });
             }
         });
+    }
+
+    private boolean isTransientPackage(String pkg) {
+        if (pkg == null || pkg.isEmpty()) return true;
+        if (pkg.equals("com.android.systemui")
+                || pkg.equals("com.google.android.gms")
+                || pkg.equals("com.google.android.play.games")
+                || pkg.equals("com.android.vending")
+                || pkg.equals("android")
+                || pkg.equals(getPackageName())) {
+            return true;
+        }
+        String lower = pkg.toLowerCase(java.util.Locale.US);
+        return lower.contains("inputmethod")
+                || lower.contains("permissioncontroller")
+                || lower.contains("auth")
+                || lower.contains("login")
+                || lower.contains("dialog")
+                || lower.contains("overlay")
+                || lower.contains("webview")
+                || lower.contains("browser")
+                || lower.contains("chrome")
+                || lower.contains("discord")
+                || lower.contains("facebook")
+                || lower.contains("tencent")
+                || lower.contains("garena")
+                || lower.contains("hoyoverse")
+                || lower.contains("epicgames")
+                || lower.contains("admob")
+                || lower.contains("ads");
+    }
+
+    private boolean isProcessAlive(String packageName) {
+        if (packageName == null || packageName.isEmpty()) return false;
+        try {
+            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                String pid = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + packageName);
+                if (pid != null && !pid.trim().isEmpty() && !pid.startsWith("ERROR")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {}
+        try {
+            android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am.getRunningAppProcesses();
+                if (procs != null) {
+                    for (android.app.ActivityManager.RunningAppProcessInfo info : procs) {
+                        if (packageName.equals(info.processName)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return false;
     }
 
     private String getForegroundPackage() {

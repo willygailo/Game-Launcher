@@ -71,7 +71,12 @@ public class FocusModeEngine {
             "com.oppo.launcher",
             "com.huawei.android.launcher",
             "com.transsion.hilauncher",
-            "com.oneplus.launcher"
+            "com.oneplus.launcher",
+            "com.discord",
+            "com.google.android.tts",
+            "com.android.providers.media.module",
+            "com.android.permissioncontroller",
+            "com.google.android.permissioncontroller"
     ));
 
     private static SharedPreferences getPrefs(Context context) {
@@ -289,8 +294,9 @@ public class FocusModeEngine {
         for (FocusAppModel app : candidates) {
             String pkg = app.packageName;
 
-            // Skip active game
+            // Skip active game and any known game package
             if (activeGamePackage != null && pkg.equalsIgnoreCase(activeGamePackage)) continue;
+            if (GamePackageRegistry.isSupportedGame(pkg) || GamePackageRegistry.getAllKnownGames().containsKey(pkg)) continue;
 
             // Skip user whitelist
             if (userWhitelist.contains(pkg)) continue;

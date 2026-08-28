@@ -48,7 +48,7 @@ public class GpuTweaksChannel {
         // Apply Vulkan Game Overlay to all registered games on Android 13+
         for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
             try {
-                CommandExecutor.executeSystemCommand("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185:mode=3,useAngle=true,fps=185");
+                CommandExecutor.executeSystemCommand("device_config put game_overlay " + pkg + " mode=2,fps=185:mode=3,fps=185");
             } catch (Throwable ignored) {}
         }
         return ok;

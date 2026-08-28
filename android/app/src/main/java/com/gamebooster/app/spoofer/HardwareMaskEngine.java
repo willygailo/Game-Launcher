@@ -272,9 +272,6 @@ public class HardwareMaskEngine {
             // Trigger Shizuku display refresh rate and game driver forcing
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
-                ShizukuExecutor.executeShizukuCommands(
-                        "am force-stop " + pkg + " 2>/dev/null"
-                );
                 com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(pkg);
             }
             if (profile.maxRefreshRateHz > 60) {

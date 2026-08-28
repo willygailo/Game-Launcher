@@ -140,7 +140,7 @@ public class GameBoosterService extends Service {
                 ShizukuUserServiceConnector.getInstance().trimCachesAndDropCaches();
                 com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
                 com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
-                        "sync; echo 3 > /proc/sys/vm/drop_caches; am kill-all"
+                        "sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"
                 );
             } catch (Exception e) {
                 Log.w(TAG, "Error cleaning memory", e);
