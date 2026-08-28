@@ -172,6 +172,11 @@ public final class MaxHzForceChannel {
             ok += run("settings put system screen_refresh_rate_mode "
                     + (targetHz >= 90 ? "1" : "0"));                                total++;
             ok += run("settings put system infinix_refresh_rate " + hz);             total++;
+            ok += run("settings put system tecno_refresh_rate " + hz);               total++;
+            ok += run("settings put system tran_refresh_rate " + hz);                total++;
+            ok += run("settings put system tran_screen_refresh_rate_mode " + hz);    total++;
+            ok += run("settings put system refresh_rate_setting " + hz);             total++;
+            ok += run("settings put system auto_refresh_rate 0");                    total++;
 
         } else if (id.contains("motorola") || id.contains("moto")) {
             // Motorola (MyUX)

@@ -148,6 +148,11 @@ public final class GameManagerSessionEngine {
         try {
             GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
             GameProfileAutoConfigurator.autoConfigGamePackage(appContext, pkg, targetFps);
+            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+            if (profile != null) {
+                com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+            }
         } catch (Throwable t) {
             Log.w(TAG, "Config patch warning: " + t.getMessage());
         }

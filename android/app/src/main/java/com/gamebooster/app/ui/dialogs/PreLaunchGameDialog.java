@@ -200,64 +200,20 @@ public class PreLaunchGameDialog {
 
             Toast.makeText(context.getApplicationContext(), "⚡ Pre-Launch Tuning for " + (label != null ? label : pkg) + " (" + finalFps + " FPS)...", Toast.LENGTH_SHORT).show();
 
-            // Background pre-launch optimization pipeline & automated config application
-            AppExecutors.getInstance().executeCommand(() -> {
-                try {
-                    // 1. Build & save competitive profile
-                    String gameKey = CfgProfileManager.resolveGameKey(pkg);
-                    CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
-                    if (profile == null) {
-                        profile = new CompetitiveCfgProfile(gameKey, finalFps, true, true);
-                    } else {
-                        profile.setTargetFps(finalFps);
-                    }
-                    profile.setAntiLogEnabled(true);
-                    profile.setFocusFreezeEnabled(true);
-                    CfgProfileManager.saveProfile(context, profile);
+            // Build & save competitive profile
+            String gameKey = CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
+            if (profile == null) {
+                profile = new CompetitiveCfgProfile(gameKey, finalFps, true, true);
+            } else {
+                profile.setTargetFps(finalFps);
+            }
+            profile.setAntiLogEnabled(true);
+            profile.setFocusFreezeEnabled(true);
+            CfgProfileManager.saveProfile(context, profile);
 
-                    // 2. Auto-patch internal game config files with selected FPS
-                    GameConfigPatcher.applyGameFpsPatch(context, pkg, finalFps);
-                    CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
-
-                    // 3. If hardware spoofer is enabled, apply hardware identity
-                    if (SpoofPreferences.isSpoofEnabled(context)) {
-                        DeviceSpooferEngine.applySpoofing(context, pkg);
-                    }
-
-                    // 4. Apply Focus Freeze (suspend background tasks to dedicate 100% hardware)
-                    FocusModeEngine.enableFocusMode(context, pkg);
-
-                    // 5. Apply targeted Game Driver & ANGLE Vulkan isolation
-                    if (ShizukuExecutor.hasShizukuPermission()) {
-                        GpuTweaksChannel.setTargetGameDriver(pkg, GpuTweaksChannel.GraphicsDriverType.GAME_DRIVER);
-                    }
-
-                    // 6. Apply SurfaceFlinger & Game Mode API refresh rate lock
-                    if (ShizukuExecutor.hasShizukuPermission()) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("cmd game mode performance ").append(pkg).append(" 2>/dev/null; ");
-                        sb.append("cmd window set-app-refresh-rate ").append(pkg).append(" ").append(finalFps).append(" 2>/dev/null; ");
-                        sb.append("cmd game set --fps ").append(finalFps).append(" ").append(pkg).append(" 2>/dev/null; ");
-                        sb.append("service call SurfaceFlinger 1035 i32 ").append(finalFps).append(" 2>/dev/null; ");
-                        sb.append("setprop debug.sf.fps_limit ").append(finalFps).append("; ");
-                        sb.append("setprop persist.sys.NV_FPSLIMIT ").append(finalFps).append("; ");
-                        sb.append("setprop debug.sf.nobootanimation 1; ");
-                        sb.append("setprop debug.hwui.render_dirty_regions false");
-                        ShizukuExecutor.executeShizukuCommand(sb.toString());
-                    }
-
-                    // 7. Purge telemetry & crash logs
-                    AntiLogPatcher.applyAntiLog(pkg);
-
-                } catch (Throwable t) {
-                    android.util.Log.w(TAG, "Pre-launch optimization warning: " + t.getMessage());
-                }
-
-                // 8. Launch the game
-                AppExecutors.getInstance().postToMainThread(() -> {
-                    GameManagerLauncher.launchGame(context, game);
-                });
-            });
+            // Launch the game via unified engine (which executes full cold-start pre-injection and auto-opens the game)
+            GameManagerLauncher.launchGame(context, game);
         });
 
         dialog.setCanceledOnTouchOutside(true);

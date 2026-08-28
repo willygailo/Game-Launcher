@@ -71,12 +71,20 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             holder.layoutCardBg.setBackgroundResource(game.getCardBgRes());
         }
 
-        View.OnClickListener launchListener = v -> PreLaunchGameDialog.show(context, game);
+        View.OnClickListener launchListener = v -> com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(context, game);
+        View.OnLongClickListener tuneListener = v -> {
+            PreLaunchGameDialog.show(context, game);
+            return true;
+        };
+
         holder.btnLaunch.setOnClickListener(launchListener);
+        holder.btnLaunch.setOnLongClickListener(tuneListener);
         if (holder.layoutCardBg != null) {
             holder.layoutCardBg.setOnClickListener(launchListener);
+            holder.layoutCardBg.setOnLongClickListener(tuneListener);
         }
         holder.itemView.setOnClickListener(launchListener);
+        holder.itemView.setOnLongClickListener(tuneListener);
     }
 
     @Override

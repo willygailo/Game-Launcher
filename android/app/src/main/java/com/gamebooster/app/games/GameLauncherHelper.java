@@ -28,13 +28,13 @@ public class GameLauncherHelper {
     private static final String PREF_NAME = "custom_game_library_prefs";
     private static final String KEY_CUSTOM_PACKAGES = "custom_game_packages";
 
-    public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
+    public static void autoLaunchGame(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
-        if (context instanceof android.app.Activity) {
-            com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(context, game);
-        } else {
-            com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
-        }
+        com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
+    }
+
+    public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
+        autoLaunchGame(context, game);
     }
 
     private static int targetFpsForToast(Context context, String packageName) {
