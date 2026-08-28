@@ -112,7 +112,26 @@ public final class GameManagerLauncher {
         final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 1: RESOLVE BEST LAUNCH INTENT IMMEDIATELY
+        // STEP 1: INSTANT PRE-CONFIG AUTO-INJECTION (Sub-10ms)
+        // Auto-applies 185 FPS configs, Unreal .ini, Unity boot.config, Active.sav,
+        // aim assist, zero recoil, fast touch, and device spoofing BEFORE the game boots.
+        // ═══════════════════════════════════════════════════════════
+        try {
+            com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, fps);
+            com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, fps);
+            com.gamebooster.app.spoofer.HardwareMaskEngine.maskPackage(appContext, pkg);
+            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+            com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+            if (profile == null) {
+                profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, fps, true, true);
+            }
+            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+        } catch (Throwable t) {
+            Log.w(TAG, "Pre-config auto-injection warning: " + t.getMessage());
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 2: RESOLVE BEST LAUNCH INTENT IMMEDIATELY
         // ═══════════════════════════════════════════════════════════
         PackageManager pm = appContext.getPackageManager();
         Intent targetIntent = launchIntent;
@@ -126,7 +145,7 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2: INSTANT FOREGROUND DISPATCH (0ms Latency on UI Thread)
+        // STEP 3: INSTANT FOREGROUND DISPATCH (0ms Latency on UI Thread)
         // ═══════════════════════════════════════════════════════════
         boolean launchedDirectly = false;
         if (targetIntent != null) {
@@ -149,7 +168,7 @@ public final class GameManagerLauncher {
         }
 
         if (launchedDirectly) {
-            Toast.makeText(appContext, "🚀 Turbo Launching " + gameTitle + " @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "🚀 " + fps + " FPS & Configs Auto-Applied: " + gameTitle, Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
 
@@ -157,7 +176,7 @@ public final class GameManagerLauncher {
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: ASYNC PARALLEL HARDWARE, DRIVER & NATIVE CONFIG BOOSTS
+        // STEP 4: ASYNC PARALLEL HARDWARE, DRIVER & ADVANCED BOOSTS
         // ═══════════════════════════════════════════════════════════
         AppExecutors.getInstance().executeCommand(() -> {
             try {

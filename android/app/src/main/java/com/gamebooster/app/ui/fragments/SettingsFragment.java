@@ -227,7 +227,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 }
             });
         }
-        renderDiagnostics();
+        // Card 1.5: APK & Package Management Hub
+        Button btnSettingsOpenApkManager = view.findViewById(R.id.btn_settings_open_apk_manager);
+        Button btnSettingsAddGame = view.findViewById(R.id.btn_settings_add_game);
+        if (btnSettingsOpenApkManager != null) {
+            btnSettingsOpenApkManager.setOnClickListener(v -> com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), null));
+        }
+        if (btnSettingsAddGame != null) {
+            btnSettingsAddGame.setOnClickListener(v -> com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), null));
+        }
 
         // Card 2: Esports Gaming Controls
         switchOverlayHud = view.findViewById(R.id.switch_overlay_hud);

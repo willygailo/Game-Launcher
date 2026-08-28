@@ -119,45 +119,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Native framework lock warning: " + t.getMessage());
         }
 
-        // ── 8. Native C++ Engine Config Injection ────────────────────────────
-        // Detect engine type and inject UE .ini / Unity boot.config / HoYo via POSIX C++ layer.
-        // This ensures game engines re-read optimal settings on cold start.
-        try {
-            final int detectedEngine = detectEngineType(pkg);
-            List<String> cfgPaths = GameConfigPathResolver.getPathsForGame(pkg);
-            if (cfgPaths != null && !cfgPaths.isEmpty()) {
-                for (String path : cfgPaths) {
-                    if (path.endsWith(".ini") && detectedEngine == ENGINE_UNREAL) {
-                        NativeConfigInjector.injectUnrealEngineIni(path, targetFps);
-                    } else if (path.contains("boot.config") && detectedEngine == ENGINE_UNITY) {
-                        NativeConfigInjector.injectUnityBootConfig(path, targetFps);
-                    } else if ((path.endsWith(".ini") || path.endsWith(".json"))
-                            && (detectedEngine == ENGINE_HOYO || detectedEngine == ENGINE_CUSTOM)) {
-                        NativeConfigInjector.injectNextGenEngine(path, targetFps, detectedEngine);
-                    }
-                }
-            }
-            // Always try Vulkan pipeline cache warming for faster first-frame load
-            String vulkanCacheDir = "/data/data/" + pkg + "/cache/vulkan_shader_cache";
-            NativeConfigInjector.forceVulkanPipelineCache(vulkanCacheDir, pkg);
-        } catch (Throwable t) {
-            Log.w(TAG, "Native C++ injection warning: " + t.getMessage());
-        }
-
-        // ── 9. Auto-patch game config files if configured ────────────────────
-        try {
-            GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
-            GameProfileAutoConfigurator.autoConfigGamePackage(appContext, pkg, targetFps);
-            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-            CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
-            if (profile != null) {
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "Config patch warning: " + t.getMessage());
-        }
-
-        // ── 10. DND & Network Turbo ──────────────────────────────────────────
+        // ── 8. Runtime Session Framework & Network Boost ─────────────────────
         try {
             NetworkOptimizer.optimizeAllDataAndWifi(appContext);
             GameSpaceDndManager.setGamingDndMode(appContext, true);
@@ -165,15 +127,11 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "DND/Network warning: " + t.getMessage());
         }
 
-        // ── 11. Async Post-Launch CPU Core Pinning, I/O Priority & Realtime Scheduling ──
-        // Wait 1.5s for the game process to fully start, then:
-        //   a) Pin main PID to Big/Prime cores (mask 0xf0) + SCHED_FIFO priority 80
-        //   b) Apply real-time I/O class (ionice class 1, level 0) to the game PID
-        //   c) Scan /proc/<pid>/task/ for known render threads and pin them individually
+        // ── 9. Safe Process Priority (CFS renice on main PID without thread disruption) ──
         final int finalFps = targetFps;
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
-                Thread.sleep(1500);
+                Thread.sleep(2000);
                 String pidOut = ShizukuExecutor.executeShizukuCommand("pidof " + pkg);
                 if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
                     String[] pids = pidOut.trim().split("\\s+");
@@ -182,74 +140,19 @@ public final class GameManagerSessionEngine {
                             int pid = Integer.parseInt(pStr.trim());
                             if (pid <= 0) continue;
 
-                            // Dynamic CPU core topology detection
-                            int totalCores = Runtime.getRuntime().availableProcessors();
-                            if (totalCores <= 0) totalCores = 8;
-                            int cpuMask = (totalCores >= 8) ? 0xf0 : ((totalCores >= 6) ? 0x38 : ((1 << totalCores) - 1));
-                            String maskHex = Integer.toHexString(cpuMask);
-
-                            // a) Native sched_setaffinity — pin to Big/Prime CPU cluster safely
-                            NativeConfigInjector.setProcessCpuAffinity(pid, cpuMask);
-
-                            // b) Safe Linux CFS High-Priority renice (-20) & taskset (avoids dangerous RT watchdog SIGKILL)
+                            // Apply safe background optimization without touching sensitive render thread signals
                             ShizukuExecutor.executeShizukuCommands(
-                                "taskset -p " + maskHex + " " + pid + " 2>/dev/null",
-                                "renice -n -20 -p " + pid + " 2>/dev/null",
+                                "renice -n -10 -p " + pid + " 2>/dev/null",
                                 "ionice -c 2 -n 0 -p " + pid + " 2>/dev/null"
                             );
-
-                            // c) Per-thread render thread affinity + high priority
-                            // Scan /proc/<pid>/task/ for known game render thread names
-                            // and elevate each one for maximum frame consistency without watchdog starvation
-                            try {
-                                String taskListOut = ShizukuExecutor.executeShizukuCommand(
-                                    "ls /proc/" + pid + "/task/ 2>/dev/null"
-                                );
-                                if (taskListOut != null && !taskListOut.startsWith("ERROR")) {
-                                    for (String tidStr : taskListOut.trim().split("\\s+")) {
-                                        try {
-                                            int tid = Integer.parseInt(tidStr.trim());
-                                            if (tid <= 0) continue;
-                                            String comm = ShizukuExecutor.executeShizukuCommand(
-                                                "cat /proc/" + pid + "/task/" + tid + "/comm 2>/dev/null"
-                                            );
-                                            if (comm == null) continue;
-                                            comm = comm.trim().toLowerCase();
-                                            // Target: Unity main, OpenGL/Vulkan render threads, game threads
-                                            boolean isRenderThread =
-                                                comm.contains("unitymain") ||
-                                                comm.contains("renderthread") ||
-                                                comm.contains("glthread") ||
-                                                comm.contains("vulkanqueuethr") ||
-                                                comm.contains("ue4") ||
-                                                comm.contains("renderdoc") ||
-                                                comm.startsWith("render") ||
-                                                comm.contains("gamethrea");
-                                            if (isRenderThread) {
-                                                ShizukuExecutor.executeShizukuCommands(
-                                                    "taskset -p " + maskHex + " " + tid + " 2>/dev/null",
-                                                    "renice -n -20 -p " + tid + " 2>/dev/null",
-                                                    "ionice -c 2 -n 0 -p " + tid + " 2>/dev/null"
-                                                );
-                                                Log.i(TAG, "✅ Optimized render thread [" + comm + "] TID:" + tid);
-                                            }
-                                        } catch (NumberFormatException ignored) {}
-                                    }
-                                }
-                            } catch (Throwable rt) {
-                                Log.d(TAG, "Render thread scan skipped: " + rt.getMessage());
-                            }
-
-                            Log.i(TAG, "✅ Safe high-priority scheduling & core pinning (" + maskHex + ") for PID: " + pid);
+                            Log.i(TAG, "✅ Safe high-priority scheduling for PID: " + pid);
                         } catch (NumberFormatException ignored) {}
                     }
-                } else {
-                    Log.d(TAG, "PID not found for " + pkg + " (game may still be loading)");
                 }
 
                 // Focus Mode (Deep App Freezer) for the active game session
                 String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-                com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+                CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
                 boolean shouldFreeze = (profile != null && profile.isFocusFreezeEnabled()) || com.gamebooster.app.config.ManualSettingsPreferences.isFocusModeEnabled(appContext);
                 if (shouldFreeze) {
                     int frozen = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(appContext, pkg);
