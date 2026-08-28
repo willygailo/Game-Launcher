@@ -190,7 +190,8 @@ public class HomeGameScanner {
             Intent pmIntent = pm.getLaunchIntentForPackage(pkg);
             if (pmIntent != null) {
                 pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return pmIntent;
             }
         } catch (Throwable ignored) {}
@@ -200,7 +201,8 @@ public class HomeGameScanner {
             Intent leanback = pm.getLeanbackLaunchIntentForPackage(pkg);
             if (leanback != null) {
                 leanback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return leanback;
             }
         } catch (Throwable ignored) {}
@@ -221,7 +223,8 @@ public class HomeGameScanner {
                 intent.addCategory(Intent.CATEGORY_LAUNCHER);
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return intent;
             }
         } catch (Throwable ignored) {}
@@ -238,7 +241,8 @@ public class HomeGameScanner {
                 intent.addCategory(Intent.CATEGORY_INFO);
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return intent;
             }
         } catch (Throwable ignored) {}
@@ -252,7 +256,8 @@ public class HomeGameScanner {
                         Intent intent = new Intent(Intent.ACTION_MAIN);
                         intent.setComponent(new ComponentName(pkg, ai.name));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         return intent;
                     }
                 }
@@ -262,7 +267,8 @@ public class HomeGameScanner {
                     Intent intent = new Intent(Intent.ACTION_MAIN);
                     intent.setComponent(new ComponentName(pkg, firstAi.name));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                            | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     return intent;
                 }
             }

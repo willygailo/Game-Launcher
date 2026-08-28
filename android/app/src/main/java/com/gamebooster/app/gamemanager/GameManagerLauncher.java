@@ -112,47 +112,32 @@ public final class GameManagerLauncher {
         final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 1: INSTANT PRE-CONFIG AUTO-INJECTION (Sub-10ms)
-        // Auto-applies 185 FPS configs, Unreal .ini, Unity boot.config, Active.sav,
-        // aim assist, zero recoil, fast touch, and device spoofing BEFORE the game boots.
-        // ═══════════════════════════════════════════════════════════
-        try {
-            com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, fps);
-            com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, fps);
-            com.gamebooster.app.spoofer.HardwareMaskEngine.maskPackage(appContext, pkg);
-            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-            com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
-            if (profile == null) {
-                profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, fps, true, true);
-            }
-            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
-        } catch (Throwable t) {
-            Log.w(TAG, "Pre-config auto-injection warning: " + t.getMessage());
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // STEP 2: RESOLVE BEST LAUNCH INTENT IMMEDIATELY
+        // STEP 1: RESOLVE BEST LAUNCH INTENT IMMEDIATELY (Zero I/O Lag)
         // ═══════════════════════════════════════════════════════════
         PackageManager pm = appContext.getPackageManager();
         Intent targetIntent = launchIntent;
-        if (targetIntent == null) {
-            targetIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
-        }
-        if (targetIntent == null) {
+        if (targetIntent == null && pm != null) {
             try {
                 targetIntent = pm.getLaunchIntentForPackage(pkg);
             } catch (Throwable ignored) {}
         }
+        if (targetIntent == null && pm != null) {
+            try {
+                targetIntent = pm.getLeanbackLaunchIntentForPackage(pkg);
+            } catch (Throwable ignored) {}
+        }
+        if (targetIntent == null && pm != null) {
+            targetIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
+        }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: INSTANT FOREGROUND DISPATCH (0ms Latency on UI Thread)
+        // STEP 2: INSTANT FOREGROUND DISPATCH (0ms Latency on UI Thread)
         // ═══════════════════════════════════════════════════════════
         boolean launchedDirectly = false;
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             try {
                 context.startActivity(targetIntent);
@@ -168,7 +153,7 @@ public final class GameManagerLauncher {
         }
 
         if (launchedDirectly) {
-            Toast.makeText(appContext, "🚀 " + fps + " FPS & Configs Auto-Applied: " + gameTitle, Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "🚀 " + fps + " FPS & Turbo Active: " + gameTitle, Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
 
@@ -176,7 +161,7 @@ public final class GameManagerLauncher {
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4: ASYNC PARALLEL HARDWARE, DRIVER & ADVANCED BOOSTS
+        // STEP 3: ASYNC PARALLEL HARDWARE, DRIVER & ADVANCED BOOSTS
         // ═══════════════════════════════════════════════════════════
         AppExecutors.getInstance().executeCommand(() -> {
             try {
@@ -218,13 +203,6 @@ public final class GameManagerLauncher {
                         }
                     }
 
-                    if (!elevatedSuccess) {
-                        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(startCmd, false);
-                        if (cr.isSuccess()) {
-                            elevatedSuccess = true;
-                        }
-                    }
-
                     if (elevatedSuccess) {
                         AppExecutors.getInstance().postToMainThread(() -> {
                             Toast.makeText(appContext, "🚀 Privileged Turbo Launch: " + gameTitle + " @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
@@ -233,10 +211,12 @@ public final class GameManagerLauncher {
                     } else {
                         // Check if package is installed on device at all
                         boolean isInstalled = false;
-                        try {
-                            pm.getPackageInfo(pkg, 0);
-                            isInstalled = true;
-                        } catch (Throwable ignored) {}
+                        if (pm != null) {
+                            try {
+                                pm.getPackageInfo(pkg, 0);
+                                isInstalled = true;
+                            } catch (Throwable ignored) {}
+                        }
 
                         if (!isInstalled) {
                             AppExecutors.getInstance().postToMainThread(() -> {
@@ -252,9 +232,30 @@ public final class GameManagerLauncher {
                                         context.startActivity(webIntent);
                                     } catch (Throwable ignored) {}
                                 }
+                                if (listener != null) listener.onLaunchFailed(pkg, "App not installed");
+                            });
+                        } else {
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                Toast.makeText(appContext, "⚠️ Hindi mabuksan ang " + gameTitle + ". Pakitiyak na naka-grant ang Shizuku o buksan ang laro nang direkta.", Toast.LENGTH_LONG).show();
+                                if (listener != null) listener.onLaunchFailed(pkg, "Unable to launch game activity directly");
                             });
                         }
                     }
+                }
+
+                // ── Background Auto-Injection & Config Optimization ──
+                try {
+                    com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, fps);
+                    com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, fps);
+                    com.gamebooster.app.spoofer.HardwareMaskEngine.maskPackage(appContext, pkg);
+                    String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+                    com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+                    if (profile == null) {
+                        profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, fps, true, true);
+                    }
+                    com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Pre-config auto-injection warning: " + t.getMessage());
                 }
 
                 // Apply 185/165/144/120 Hz lock to SurfaceFlinger, AOSP & OEM
