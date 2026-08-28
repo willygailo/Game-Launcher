@@ -672,6 +672,20 @@ public class TerminalCoreEngine {
                 "Forces 185Hz refresh rate via SurfaceFlinger and system display settings",
                 "settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; service call SurfaceFlinger 1035 i32 185; service call SurfaceFlinger 1036 i32 185; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185"
         ));
+
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_sys_secure_global",
+                "⚡ System, Secure & Global Gaming Settings",
+                "Applies maximum performance settings across system, secure, and global Android tables",
+                "settings put system touch_slop_reduction 1; settings put secure long_press_timeout 150; settings put secure screensaver_enabled 0; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put global cached_apps_freezer enabled; cmd power set-fixed-performance-mode-enabled true"
+        ));
+
+        presetScripts.add(new TerminalScriptPreset(
+                "tweak_zero_anim",
+                "💨 Zero Window & Transition Animation Scale",
+                "Disables UI animation delays for instant app switching and reduced frame overhead",
+                "settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0"
+        ));
     }
 
     private String generateNeofetchBanner() {

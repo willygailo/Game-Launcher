@@ -44,6 +44,18 @@ public class PerAppSpoofDialog {
         Activity activity = (Activity) context;
         if (activity.isFinishing() || activity.isDestroyed()) return;
 
+        if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            new androidx.appcompat.app.AlertDialog.Builder(activity)
+                    .setTitle("🛡️ SHIZUKU API REQUIRED")
+                    .setMessage("Per-App Hardware Spoofing requires active Shizuku API (UID 2000 Privileged Shell) to inject game engine profiles and enforce performance settings.\n\nPlease authorize Shizuku to proceed.")
+                    .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
+                        com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                    })
+                    .setNegativeButton("CANCEL", null)
+                    .show();
+            return;
+        }
+
         dismissCurrent();
 
         Dialog dialog = new Dialog(activity);
@@ -71,6 +83,11 @@ public class PerAppSpoofDialog {
         switchAllApps.setOnCheckedChangeListener((btn, isChecked) -> {
             SpoofPreferences.setSpoofAllApps(context, isChecked);
             Toast.makeText(context, isChecked ? "Spoof All Apps: ENABLED" : "Spoof All Apps: DISABLED (Games Only)", Toast.LENGTH_SHORT).show();
+            if (isChecked && com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(context);
+                });
+            }
         });
 
         btnInspector.setOnClickListener(v -> SpoofInspectorDialog.show(context));
@@ -84,7 +101,17 @@ public class PerAppSpoofDialog {
 
                 tvAppCount.setText(appList.size() + " APPS");
                 PerAppSpoofAdapter adapter = new PerAppSpoofAdapter(context, appList, (pkg, profileId) -> {
-                    Toast.makeText(context, "Saved profile for " + pkg, Toast.LENGTH_SHORT).show();
+                    if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                        Toast.makeText(context, "⚠️ Shizuku API required to force spoof!", Toast.LENGTH_SHORT).show();
+                        com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                        return;
+                    }
+                    SpoofPreferences.setSpoofEnabled(context, true);
+                    SpoofPreferences.setProfileIdForPackage(context, pkg, profileId);
+                    Toast.makeText(context, "⚡ Forcing profile for " + pkg + "...", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        com.gamebooster.app.spoofer.DeviceSpooferEngine.forceApplySpoof(context, profileId, pkg);
+                    });
                 });
                 rvGames.setAdapter(adapter);
             });

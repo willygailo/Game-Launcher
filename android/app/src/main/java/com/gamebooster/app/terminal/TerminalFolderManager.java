@@ -201,7 +201,37 @@ public class TerminalFolderManager {
                 "echo '[WEBVIEW GPU RASTERIZATION & VULKAN SKIA APPLIED]'\n"
         );
 
-        createScriptIfNotExists("9_device_diagnostics_id.sh",
+        createScriptIfNotExists("9_system_secure_global_boost.sh",
+                "# ==================================================\n" +
+                "# GAME BOOSTER PRO - SYSTEM, SECURE & GLOBAL BOOST\n" +
+                "# ==================================================\n" +
+                "# 1. SYSTEM SETTINGS\n" +
+                "settings put system peak_refresh_rate 185.0\n" +
+                "settings put system min_refresh_rate 185.0\n" +
+                "settings put system user_refresh_rate 185\n" +
+                "settings put system touch_slop_reduction 1\n" +
+                "settings put system pointer_speed 7\n" +
+                "settings put system sound_effects_enabled 0\n" +
+                "# 2. SECURE SETTINGS\n" +
+                "settings put secure long_press_timeout 150\n" +
+                "settings put secure multi_press_timeout 150\n" +
+                "settings put secure screensaver_enabled 0\n" +
+                "settings put secure refresh_rate_mode 2\n" +
+                "settings put secure high_refresh_rate_blacklist \"\"\n" +
+                "# 3. GLOBAL SETTINGS\n" +
+                "settings put global window_animation_scale 0.0\n" +
+                "settings put global transition_animation_scale 0.0\n" +
+                "settings put global animator_duration_scale 0.0\n" +
+                "settings put global low_power 0\n" +
+                "settings put global ram_expand_size 0\n" +
+                "settings put global cached_apps_freezer enabled\n" +
+                "settings put global webview_multiprocess 1\n" +
+                "# 4. POWER & PERFORMANCE CMD\n" +
+                "cmd power set-fixed-performance-mode-enabled true 2>/dev/null || true\n" +
+                "echo '[SYSTEM, SECURE & GLOBAL OPTIMIZATIONS APPLIED]'\n"
+        );
+
+        createScriptIfNotExists("10_device_diagnostics_id.sh",
                 "# ==================================================\n" +
                 "# GAME BOOSTER PRO - DIAGNOSTICS & IDENTITY\n" +
                 "# ==================================================\n" +

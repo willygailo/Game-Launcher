@@ -969,6 +969,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnForceApplySpoof != null) {
             btnForceApplySpoof.setOnClickListener(v -> {
                 if (getContext() == null) return;
+
+                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("🛡️ SHIZUKU API REQUIRED")
+                            .setMessage("Force Applying Spoof requires active Shizuku API (UID 2000 Privileged Shell).\n\nPlease grant Shizuku permission.")
+                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
+                                com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                            })
+                            .setNegativeButton("CANCEL", null)
+                            .show();
+                    return;
+                }
+
                 String activeId = SpoofPreferences.getActiveProfileId(getContext());
                 SpoofProfile targetProf = (activeId != null && !activeId.isEmpty())
                         ? DeviceSpooferEngine.getProfileById(activeId)
@@ -994,7 +1007,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
                 final SpoofProfile profileToApply = targetProf;
                 AppExecutors.getInstance().executeCommand(() -> {
-                    boolean success = DeviceSpooferEngine.applyProfile(getContext(), profileToApply, null);
+                    boolean success = DeviceSpooferEngine.forceApplySpoof(getContext(), profileToApply.id, null);
                     int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), profileToApply);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
@@ -1044,28 +1057,41 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             spoofProfileAdapter = new SpoofProfileAdapter(getContext(), initialProfiles, profile -> {
                 if (getContext() == null || profile == null) return;
 
-                // 1. Persist selected profile ID
+                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("🛡️ SHIZUKU API REQUIRED")
+                            .setMessage("Device Spoofing requires active Shizuku API (UID 2000 Privileged Shell).\n\nPlease authorize Shizuku to activate.")
+                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
+                                com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                            })
+                            .setNegativeButton("CANCEL", null)
+                            .show();
+                    return;
+                }
+
+                // 1. Persist selected profile ID and enable spoofing
+                SpoofPreferences.setSpoofEnabled(getContext(), true);
                 SpoofPreferences.setActiveProfileId(getContext(), profile.id);
+                if (switchDeviceSpoof != null) {
+                    isProgrammaticToggle = true;
+                    switchDeviceSpoof.setChecked(true);
+                    isProgrammaticToggle = false;
+                }
                 if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(profile.id);
                 updateSpoofUiState();
 
-                boolean isEnabled = SpoofPreferences.isSpoofEnabled(getContext());
-                if (isEnabled) {
-                    Toast.makeText(getContext(), "⚡ Applying Spoof: " + (profile.brandLabel != null ? profile.brandLabel : profile.brand) + " • " + profile.displayName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "⚡ Activating & Forcing: " + profile.displayName, Toast.LENGTH_SHORT).show();
 
-                    // 2. Perform background real-world hardware & game file injection
-                    AppExecutors.getInstance().executeCommand(() -> {
-                        boolean applied = DeviceSpooferEngine.applyProfile(getContext(), profile, null);
-                        com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            if (!isAdded() || getContext() == null) return;
-                            updateSpoofUiState();
-                            Toast.makeText(getContext(), "✅ Spoofed as " + profile.displayName + " (" + profile.model + ")", Toast.LENGTH_SHORT).show();
-                        });
+                // 2. Perform background real-world hardware & game file injection
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean applied = DeviceSpooferEngine.forceApplySpoof(getContext(), profile.id, null);
+                    int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), profile);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        updateSpoofUiState();
+                        Toast.makeText(getContext(), "✅ Spoofed & Forced as " + profile.displayName + " (" + count + " apps masked)", Toast.LENGTH_SHORT).show();
                     });
-                } else {
-                    Toast.makeText(getContext(), "📱 Selected: " + profile.displayName + "\n(Turn ON Switch to Activate)", Toast.LENGTH_SHORT).show();
-                }
+                });
             });
             rvSpoofProfiles.setAdapter(spoofProfileAdapter);
         }
@@ -1113,6 +1139,22 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchDeviceSpoof != null) {
             switchDeviceSpoof.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
+
+                if (isChecked && !com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                    isProgrammaticToggle = true;
+                    switchDeviceSpoof.setChecked(false);
+                    isProgrammaticToggle = false;
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("🛡️ SHIZUKU API REQUIRED")
+                            .setMessage("Device Spoofing requires active Shizuku API (UID 2000 Privileged Shell).\n\nPlease authorize Shizuku to proceed.")
+                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
+                                com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                            })
+                            .setNegativeButton("CANCEL", null)
+                            .show();
+                    return;
+                }
+
                 SpoofPreferences.setSpoofEnabled(getContext(), isChecked);
 
                 if (!isChecked) {
@@ -1145,12 +1187,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
                             updateSpoofUiState();
                             AppExecutors.getInstance().executeCommand(() -> {
-                                boolean applied = DeviceSpooferEngine.applyProfile(getContext(), finalProf, null);
-                                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext());
+                                boolean applied = DeviceSpooferEngine.forceApplySpoof(getContext(), finalProf.id, null);
+                                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), finalProf);
                                 AppExecutors.getInstance().postToMainThread(() -> {
                                     if (isAdded() && getContext() != null) {
                                         updateSpoofUiState();
-                                        Toast.makeText(getContext(), "✅ Masked " + maskedCount + " Apps with " + finalProf.displayName + " (" + finalProf.model + ")", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "✅ Masked & Forced " + maskedCount + " Apps with " + finalProf.displayName + " (" + finalProf.model + ")", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             });
@@ -1228,7 +1270,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         if (btnSettingsScriptRam != null) {
-            btnSettingsScriptRam.setOnClickListener(v -> runSettingsTerminalQuickCmd("pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"));
+            btnSettingsScriptRam.setOnClickListener(v -> runSettingsTerminalQuickCmd("cmd package trim-caches 9223372036854775807 2>/dev/null || pm trim-caches 40000000000; am kill-all; dumpsys meminfo --oom"));
         }
 
         if (btnSettingsScriptStorage != null) {

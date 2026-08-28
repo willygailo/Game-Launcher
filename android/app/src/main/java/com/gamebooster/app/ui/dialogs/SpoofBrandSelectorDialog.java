@@ -44,6 +44,18 @@ public class SpoofBrandSelectorDialog {
         Activity activity = (Activity) context;
         if (activity.isFinishing() || activity.isDestroyed()) return;
 
+        if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            new androidx.appcompat.app.AlertDialog.Builder(activity)
+                    .setTitle("🛡️ SHIZUKU API REQUIRED")
+                    .setMessage("Hardware Masking & Device Spoofing requires active Shizuku API (UID 2000 Privileged Shell) to inject system properties, SurfaceFlinger refresh rates, and game configs.\n\nPlease authorize Shizuku to proceed.")
+                    .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
+                        com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                    })
+                    .setNegativeButton("CANCEL", null)
+                    .show();
+            return;
+        }
+
         dismissCurrent();
 
         Dialog dialog = new Dialog(activity);
@@ -93,15 +105,22 @@ public class SpoofBrandSelectorDialog {
         final SpoofProfileAdapter adapter = new SpoofProfileAdapter(context, allProfiles, selectedProfile -> {
             if (selectedProfile == null) return;
 
+            if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                Toast.makeText(context, "⚠️ Shizuku API required to force spoof profile!", Toast.LENGTH_SHORT).show();
+                com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
+                return;
+            }
+
             // 1. Immediately persist and activate selected profile
             SpoofPreferences.setSpoofEnabled(context, true);
             SpoofPreferences.setActiveProfileId(context, selectedProfile.id);
 
-            Toast.makeText(context, "⚡ Activating: " + selectedProfile.displayName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "⚡ Activating & Forcing: " + selectedProfile.displayName, Toast.LENGTH_SHORT).show();
 
-            // 2. Perform background injection
+            // 2. Perform background injection & force apply
             AppExecutors.getInstance().executeCommand(() -> {
-                boolean applied = DeviceSpooferEngine.applyProfile(context, selectedProfile, null);
+                boolean applied = DeviceSpooferEngine.forceApplySpoof(context, selectedProfile.id, null);
+                int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(context, selectedProfile);
                 AppExecutors.getInstance().postToMainThread(() -> {
                     if (dialog.isShowing()) {
                         dialog.dismiss();
@@ -111,11 +130,12 @@ public class SpoofBrandSelectorDialog {
                     }
                     CyberActionDialog.show(
                             context,
-                            "🎭 DEVICE IDENTITY ACTIVE",
+                            "🎭 DEVICE IDENTITY ACTIVE & FORCED",
                             true,
                             "Brand: " + (selectedProfile.brandLabel != null ? selectedProfile.brandLabel : selectedProfile.brand),
                             "Model: " + selectedProfile.displayName + " (" + selectedProfile.model + ")",
-                            "GPU: " + selectedProfile.glRenderer + " (165Hz Max FPS Ready)"
+                            "GPU: " + selectedProfile.glRenderer + " (185Hz Max FPS Ready)",
+                            "Masked Applications: " + count + " apps & games"
                     );
                 });
             });
