@@ -187,7 +187,7 @@ public class AddGameDialog {
 
                     boolean isUserApp = (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
                     boolean isUpdatedSystemApp = (ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
-                    boolean isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME) || ((ai.flags & ApplicationInfo.FLAG_IS_GAME) != 0);
+                    boolean isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME);
                     boolean isCustom = customAdded.contains(ai.packageName);
 
                     if (isUserApp || isUpdatedSystemApp || isGameCategory || isCustom || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(ai.packageName)) {

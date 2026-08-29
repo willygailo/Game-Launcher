@@ -296,9 +296,6 @@ public class HomeGameScanner {
             if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
                 return true;
             }
-            if ((appInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
-                return true;
-            }
         }
 
         String pkgLower = pkg.toLowerCase(java.util.Locale.ROOT);
