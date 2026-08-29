@@ -160,6 +160,15 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
         }
     }
 
+    public synchronized boolean isPlaying() {
+        if (mediaPlayer != null && isPrepared) {
+            try {
+                return mediaPlayer.isPlaying();
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
     public synchronized void pause() {
         shouldPlayWhenReady = false;
         if (mediaPlayer != null && isPrepared) {

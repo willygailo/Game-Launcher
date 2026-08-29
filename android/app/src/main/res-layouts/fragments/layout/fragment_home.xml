@@ -17,14 +17,14 @@
         android:background="#55080B12" />
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_home"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
         android:overScrollMode="never"
         android:clipToPadding="false"
         android:scrollbars="vertical"
-        android:scrollbarThumbVertical="@drawable/badge_neon_cyan"
-        android:paddingBottom="120dp">
+        android:scrollbarThumbVertical="@drawable/badge_neon_cyan">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +32,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="18dp"
         android:paddingTop="36dp"
-        android:paddingBottom="24dp">
+        android:paddingBottom="140dp">
 
         <!-- Top Header: Title, Live Pulse Dot, & Settings Shortcut -->
         <RelativeLayout
@@ -252,7 +252,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="SUPPORTED GAMES (0 DETECTED)"
+                android:text="INSTALLED GAMES (SCANNING...)"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -287,7 +287,8 @@
             android:id="@+id/rv_games_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipToPadding="false" />
+            android:clipToPadding="false"
+            android:nestedScrollingEnabled="false" />
 
         <!-- Empty State (Shown when no target games detected) -->
         <LinearLayout

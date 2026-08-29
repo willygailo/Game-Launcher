@@ -139,27 +139,22 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));
-            rvGames.setHasFixedSize(true);
+            rvGames.setNestedScrollingEnabled(false);
             rvGames.setItemViewCacheSize(25);
             rvGames.setItemAnimator(null);
             adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);
+        }
 
-            // Smart Scroll Optimization: pause background video decoding during scroll to guarantee 120Hz/144Hz scroll smoothness
-            rvGames.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    super.onScrollStateChanged(recyclerView, newState);
-                    if (getContext() != null && com.gamebooster.app.config.ManualSettingsPreferences.isVideoSaverEnabled(getContext())) {
-                        return;
-                    }
-                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                        if (videoHomeBg != null) videoHomeBg.pause();
-                        if (videoHeroBanner != null) videoHeroBanner.pause();
-                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        if (videoHomeBg != null) videoHomeBg.play();
-                        if (videoHeroBanner != null) videoHeroBanner.play();
-                    }
+        androidx.core.widget.NestedScrollView scrollHome = view.findViewById(R.id.scroll_home);
+        if (scrollHome != null) {
+            scrollHome.setOnScrollChangeListener((androidx.core.widget.NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                if (getContext() != null && com.gamebooster.app.config.ManualSettingsPreferences.isVideoSaverEnabled(getContext())) {
+                    return;
+                }
+                if (Math.abs(scrollY - oldScrollY) > 10) {
+                    if (videoHomeBg != null && videoHomeBg.isPlaying()) videoHomeBg.pause();
+                    if (videoHeroBanner != null && videoHeroBanner.isPlaying()) videoHeroBanner.pause();
                 }
             });
         }

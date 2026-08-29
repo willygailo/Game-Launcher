@@ -244,21 +244,22 @@ public class ShizukuExecutor {
         outThread.start();
         errThread.start();
 
-        long deadline = System.currentTimeMillis() + timeoutMs;
-        boolean completed = false;
-        while (System.currentTimeMillis() < deadline) {
+        final int[] exitCodeHolder = new int[]{-1};
+        final boolean[] finished = new boolean[]{false};
+        Thread waitThread = new Thread(() -> {
             try {
-                process.exitValue();
-                completed = true;
-                break;
-            } catch (IllegalThreadStateException e) {
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException ignored) {}
-            }
-        }
+                exitCodeHolder[0] = process.waitFor();
+                finished[0] = true;
+            } catch (Throwable ignored) {}
+        }, "Shizuku-WaitThread");
+        waitThread.setDaemon(true);
+        waitThread.start();
 
-        if (!completed) {
+        try {
+            waitThread.join(timeoutMs);
+        } catch (InterruptedException ignored) {}
+
+        if (!finished[0]) {
             try {
                 process.destroy();
             } catch (Throwable ignored) {}
@@ -266,13 +267,13 @@ public class ShizukuExecutor {
         }
 
         try {
-            outThread.join(250);
-            errThread.join(250);
+            outThread.join(300);
+            errThread.join(300);
         } catch (InterruptedException ignored) {}
 
         String stdoutStr = stdout.toString().trim();
         String stderrStr = stderr.toString().trim();
-        int exitCode = process.exitValue();
+        int exitCode = exitCodeHolder[0];
 
         if (exitCode == 0) {
             return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
