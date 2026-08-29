@@ -61,8 +61,6 @@ public class GameConfigPatcher {
      */
     public static PatchResult applyUltraExtreme144Patch(Context context, String packageName) {
         PatchResult base = applyGameFpsPatch(context, packageName, 144);
-        // The per-game patchUltraExtreme144() calls are already wired inside applyGameFpsPatch
-        // when forcedFps >= 144; this method serves as the explicit user-facing entry point.
         Log.i(TAG, "UltraExtreme144 SuperSmooth preset applied for " + packageName
                 + " — " + (base.success ? "OK" : "FAILED"));
         return base;
@@ -71,6 +69,46 @@ public class GameConfigPatcher {
     /** Overload without Context. */
     public static PatchResult applyUltraExtreme144Patch(String packageName) {
         return applyUltraExtreme144Patch(null, packageName);
+    }
+
+    /**
+     * Convenience entry-point: applies the UltraExtreme 165fps SuperSmooth preset.
+     * Calls {@link #applyGameFpsPatch(Context, String, int)} with 165 FPS for maximum frame unlock.
+     *
+     * @param context     optional Context
+     * @param packageName target game package name
+     * @return PatchResult indicating success / failure
+     */
+    public static PatchResult applyUltraExtreme165Patch(Context context, String packageName) {
+        PatchResult base = applyGameFpsPatch(context, packageName, 165);
+        Log.i(TAG, "UltraExtreme165 SuperSmooth preset applied for " + packageName
+                + " — " + (base.success ? "OK" : "FAILED"));
+        return base;
+    }
+
+    /** Overload without Context. */
+    public static PatchResult applyUltraExtreme165Patch(String packageName) {
+        return applyUltraExtreme165Patch(null, packageName);
+    }
+
+    /**
+     * Convenience entry-point: applies the UltraExtreme 185fps SuperSmooth preset.
+     * Calls {@link #applyGameFpsPatch(Context, String, int)} with 185 FPS for maximum display overclocking.
+     *
+     * @param context     optional Context
+     * @param packageName target game package name
+     * @return PatchResult indicating success / failure
+     */
+    public static PatchResult applyUltraExtreme185Patch(Context context, String packageName) {
+        PatchResult base = applyGameFpsPatch(context, packageName, 185);
+        Log.i(TAG, "UltraExtreme185 SuperSmooth preset applied for " + packageName
+                + " — " + (base.success ? "OK" : "FAILED"));
+        return base;
+    }
+
+    /** Overload without Context. */
+    public static PatchResult applyUltraExtreme185Patch(String packageName) {
+        return applyUltraExtreme185Patch(null, packageName);
     }
 
     public static PatchResult applyGameFpsPatch(Context context, String packageName, int targetFps) {

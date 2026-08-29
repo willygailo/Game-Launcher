@@ -72,15 +72,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "sf_latch_unsignaled",
-                "Zero Frame Latency Latching & Backpressure Bypass",
-                "Latches graphics buffers immediately without waiting for fence signaling and disables buffer backpressure",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.performance.tuning 1",
-                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.performance.tuning 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "sf_zero_vsync_phase",
@@ -142,15 +133,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "cpu_affinity_priority",
-                "CPU Thread Affinity Priority",
-                "Pins game processes and render threads to high-performance Big/Prime CPU cores",
-                "setprop sys.games.cpu_affinity 1; setprop sys.use_fifo 1",
-                "setprop sys.games.cpu_affinity 0; setprop sys.use_fifo 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "disable_blur_effects",
@@ -361,15 +343,6 @@ public class TweakManagerRepository {
         // =========================================================================
         // 4. NETWORK & PACKET PROTOCOL TWEAKS (Unique & Non-Overlapping)
         // =========================================================================
-        TWEAKS.add(new TweakItem(
-                "tcp_bbr_congestion_lock",
-                "Google BBR TCP Congestion Algorithm",
-                "Locks TCP congestion algorithm to Google BBR to eliminate packet queue bufferbloat during matches",
-                "setprop net.ipv4.tcp_congestion_control bbr; setprop net.ipv4.tcp_notsent_lowat 16384",
-                "setprop net.ipv4.tcp_congestion_control cubic",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "wlan_fast_roaming_boost",
@@ -496,10 +469,10 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "tcp_bbr_gaming_low_latency",
-                "Linux TCP BBR Congestion Control & Nagle Bypass",
-                "Applies TCP BBR congestion algorithm and disables Nagle packet buffering for zero-jitter multiplayer gaming",
-                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null",
-                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=0 2>/dev/null",
+                "Google BBR TCP Congestion Control, Anti-Bufferbloat & Nagle Bypass",
+                "Applies Google BBR TCP congestion algorithm, unthrottles packet low-watermark, and bypasses socket buffering delays",
+                "setprop net.ipv4.tcp_congestion_control bbr; setprop net.ipv4.tcp_notsent_lowat 16384; sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null",
+                "setprop net.ipv4.tcp_congestion_control cubic; sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=0 2>/dev/null",
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));

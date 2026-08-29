@@ -199,10 +199,9 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
             batchCommands.add("setprop debug.gr.swapinterval 0");
 
-            // Thermal Throttling Bypass for Maximum Performance
+            // Thermal Throttling Bypass for Maximum Performance without touching Real Battery
             batchCommands.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
-            batchCommands.add("dumpsys battery set temp 280 2>/dev/null");
-            batchCommands.add("dumpsys battery set level 100 2>/dev/null");
+            batchCommands.add("dumpsys battery reset 2>/dev/null");
 
             // Per-Package Android Game Mode & Overlay
             if (packageName != null && !packageName.trim().isEmpty()) {
