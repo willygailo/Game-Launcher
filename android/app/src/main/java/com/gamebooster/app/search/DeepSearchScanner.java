@@ -39,45 +39,34 @@ public class DeepSearchScanner {
 
         PackageManager pm = context.getPackageManager();
 
-        // 1. Shizuku ADB Multi-User & Unrestricted Package Query (pm list packages -3 -u -a)
-        if (ShizukuExecutor.isShizukuAvailable()) {
+        // 1. Shizuku ADB 3rd-Party Package Query (pm list packages -3)
+        if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String cmdRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3 -u -a");
+                String cmdRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
                 if (cmdRes != null && !cmdRes.startsWith("ERROR")) {
                     String[] lines = cmdRes.split("\n");
                     for (String line : lines) {
                         String pkg = line.trim().replace("package:", "").trim();
                         if (!pkg.isEmpty()) {
-                            if (GamePackageRegistry.isKnownGame(pkg) || PLATFORM_STORES.contains(pkg.toLowerCase())) {
-                                discoveredPackages.add(pkg);
-                            }
+                            discoveredPackages.add(pkg);
                         }
                     }
                 }
             } catch (Throwable e) {
                 Log.e(TAG, "Shizuku package query error", e);
             }
-
-            // 2. Storage Directory Deep Inspection (/sdcard/Android/data & /sdcard/Android/obb)
-            try {
-                String dataRes = ShizukuExecutor.executeShizukuCommand("ls -1 /sdcard/Android/data/ 2>/dev/null");
-                if (dataRes != null && !dataRes.startsWith("ERROR")) {
-                    String[] folders = dataRes.split("\n");
-                    for (String folder : folders) {
-                        String pkg = folder.trim();
-                        if (GamePackageRegistry.isKnownGame(pkg)) {
-                            discoveredPackages.add(pkg);
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
         }
 
-        // 3. Standard PackageManager Query Fallback
+        // 2. Standard PackageManager Query Fallback
         try {
             for (String knownPkg : GamePackageRegistry.getAllKnownGames().keySet()) {
                 try {
-                    ApplicationInfo appInfo = pm.getApplicationInfo(knownPkg, 0);
+                    ApplicationInfo appInfo = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        appInfo = pm.getApplicationInfo(knownPkg, PackageManager.ApplicationInfoFlags.of(0));
+                    } else {
+                        appInfo = pm.getApplicationInfo(knownPkg, 0);
+                    }
                     if (appInfo != null) {
                         discoveredPackages.add(knownPkg);
                     }
@@ -85,7 +74,7 @@ public class DeepSearchScanner {
             }
         } catch (Throwable ignored) {}
 
-        Log.i(TAG, "Deep Search completed. Discovered " + discoveredPackages.size() + " game/platform packages.");
+        Log.i(TAG, "Deep Search completed. Discovered " + discoveredPackages.size() + " packages.");
         return discoveredPackages;
     }
 }

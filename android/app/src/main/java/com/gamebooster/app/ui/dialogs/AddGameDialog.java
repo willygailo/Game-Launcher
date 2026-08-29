@@ -3,6 +3,7 @@ package com.gamebooster.app.ui.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -29,6 +30,7 @@ import com.gamebooster.app.ui.adapters.AddGameAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -126,36 +128,125 @@ public class AddGameDialog {
         if (pm == null) return list;
 
         Set<String> customAdded = GameLauncherHelper.getCustomPackages(context);
+        Set<String> seenPackages = new HashSet<>();
 
+        // 1. Primary: Query all Launcher Activities (Android 13-16)
         try {
-            List<ApplicationInfo> installed = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-            for (ApplicationInfo ai : installed) {
-                if (ai == null || ai.packageName == null) continue;
-                if (ai.packageName.equals(context.getPackageName())) continue;
+            Intent launcherIntent = new Intent(Intent.ACTION_MAIN, null);
+            launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-                boolean isUserApp = (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
-                boolean isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME);
-                boolean isCustom = customAdded.contains(ai.packageName);
+            List<android.content.pm.ResolveInfo> resolveInfos = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                try {
+                    resolveInfos = pm.queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+                } catch (Throwable ignored) {}
+            }
+            if (resolveInfos == null || resolveInfos.isEmpty()) {
+                resolveInfos = pm.queryIntentActivities(launcherIntent, 0);
+            }
 
-                if (isUserApp || isGameCategory || isCustom) {
-                    CharSequence label = pm.getApplicationLabel(ai);
-                    Drawable icon = null;
-                    try {
-                        icon = pm.getApplicationIcon(ai);
-                    } catch (Throwable ignored) {}
+            if (resolveInfos != null) {
+                for (android.content.pm.ResolveInfo ri : resolveInfos) {
+                    if (ri == null || ri.activityInfo == null) continue;
+                    String pkg = ri.activityInfo.packageName;
+                    if (pkg == null || pkg.equalsIgnoreCase(context.getPackageName()) || seenPackages.contains(pkg)) {
+                        continue;
+                    }
+
+                    String label = ri.loadLabel(pm).toString();
+                    Drawable icon = ri.loadIcon(pm);
+                    boolean isCustom = customAdded.contains(pkg);
 
                     list.add(new AddGameAdapter.AppPickerItem(
-                            label != null ? label.toString() : ai.packageName,
-                            ai.packageName,
+                            label,
+                            pkg,
                             icon,
                             isCustom
                     ));
+                    seenPackages.add(pkg);
                 }
             }
-
-            Collections.sort(list, (a, b) -> a.appName.compareToIgnoreCase(b.appName));
         } catch (Throwable ignored) {}
 
+        // 2. Secondary: Query Installed Applications (Android 13-16)
+        try {
+            List<ApplicationInfo> installed = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                try {
+                    installed = pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0));
+                } catch (Throwable ignored) {}
+            }
+            if (installed == null) {
+                installed = pm.getInstalledApplications(0);
+            }
+
+            if (installed != null) {
+                for (ApplicationInfo ai : installed) {
+                    if (ai == null || ai.packageName == null || seenPackages.contains(ai.packageName)) continue;
+                    if (ai.packageName.equalsIgnoreCase(context.getPackageName())) continue;
+
+                    boolean isUserApp = (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
+                    boolean isUpdatedSystemApp = (ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
+                    boolean isGameCategory = (ai.category == ApplicationInfo.CATEGORY_GAME) || ((ai.flags & ApplicationInfo.FLAG_IS_GAME) != 0);
+                    boolean isCustom = customAdded.contains(ai.packageName);
+
+                    if (isUserApp || isUpdatedSystemApp || isGameCategory || isCustom || com.gamebooster.app.games.GamePackageRegistry.isKnownGame(ai.packageName)) {
+                        CharSequence label = pm.getApplicationLabel(ai);
+                        Drawable icon = null;
+                        try {
+                            icon = pm.getApplicationIcon(ai);
+                        } catch (Throwable ignored) {}
+
+                        list.add(new AddGameAdapter.AppPickerItem(
+                                label != null ? label.toString() : ai.packageName,
+                                ai.packageName,
+                                icon,
+                                isCustom
+                        ));
+                        seenPackages.add(ai.packageName);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // 3. Tertiary: Shizuku 3rd-party Packages Fallback
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.isShizukuAvailable()) {
+            try {
+                String shizukuRes = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
+                    String[] lines = shizukuRes.split("\n");
+                    for (String line : lines) {
+                        String pkg = line.trim().replace("package:", "").trim();
+                        if (pkg.isEmpty() || seenPackages.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
+                            continue;
+                        }
+
+                        try {
+                            ApplicationInfo ai = null;
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                ai = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
+                            } else {
+                                ai = pm.getApplicationInfo(pkg, 0);
+                            }
+
+                            CharSequence label = (ai != null) ? pm.getApplicationLabel(ai) : pkg;
+                            Drawable icon = (ai != null) ? pm.getApplicationIcon(ai) : null;
+                            boolean isCustom = customAdded.contains(pkg);
+
+                            list.add(new AddGameAdapter.AppPickerItem(
+                                    label != null ? label.toString() : pkg,
+                                    pkg,
+                                    icon,
+                                    isCustom
+                            ));
+                            seenPackages.add(pkg);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        Collections.sort(list, (a, b) -> a.appName.compareToIgnoreCase(b.appName));
         return list;
     }
 

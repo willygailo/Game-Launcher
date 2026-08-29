@@ -278,28 +278,218 @@ public class HomeGameScanner {
     }
 
     /**
-     * Scans and returns all verified installed target and supported games on the device.
+     * Helper to classify whether a package or app is a game on Android 13, 14, 15, and 16.
+     */
+    public static boolean isGamePackage(Context context, String pkg, String label, ApplicationInfo appInfo, Set<String> customPkgs) {
+        if (pkg == null || pkg.trim().isEmpty()) return false;
+        if (context != null && pkg.equalsIgnoreCase(context.getPackageName())) return false;
+
+        if (customPkgs != null && customPkgs.contains(pkg)) {
+            return true;
+        }
+
+        if (GamePackageRegistry.isKnownGame(pkg)) {
+            return true;
+        }
+
+        if (appInfo != null) {
+            if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
+                return true;
+            }
+            if ((appInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) {
+                return true;
+            }
+        }
+
+        String pkgLower = pkg.toLowerCase(java.util.Locale.ROOT);
+        String labelLower = (label != null) ? label.toLowerCase(java.util.Locale.ROOT) : "";
+
+        // Keyword checks on package name
+        if (pkgLower.contains("mobilelegends") || pkgLower.contains("mobile.legends")
+                || pkgLower.contains("pubg") || pkgLower.contains("codm") || pkgLower.contains("callofduty") || pkgLower.contains("warzone")
+                || pkgLower.contains("freefire") || pkgLower.contains("genshin") || pkgLower.contains("roblox")
+                || pkgLower.contains("wildrift") || pkgLower.contains("league") || pkgLower.contains("sgame")
+                || pkgLower.contains("honorofkings") || pkgLower.contains("supercell") || pkgLower.contains("brawlstars")
+                || pkgLower.contains("clashroyale") || pkgLower.contains("clashofclans") || pkgLower.contains("squad")
+                || pkgLower.contains("ea.gp") || pkgLower.contains("ea.games") || pkgLower.contains("fifa")
+                || pkgLower.contains("garena") || pkgLower.contains("tencent") || pkgLower.contains("netease")
+                || pkgLower.contains("hoyoverse") || pkgLower.contains("mihoyo") || pkgLower.contains("hkrpg")
+                || pkgLower.contains("wutheringwaves") || pkgLower.contains("bloodstrike") || pkgLower.contains("newspike")
+                || pkgLower.contains("farlight") || pkgLower.contains("solarland") || pkgLower.contains("minecraft")
+                || pkgLower.contains("subwaysurf") || pkgLower.contains("fallbuddies") || pkgLower.contains("sololv")
+                || pkgLower.contains("asphalt") || pkgLower.contains("gameloft") || pkgLower.contains("konami")
+                || pkgLower.contains("pesam") || pkgLower.contains("efootball") || pkgLower.contains("dls7")
+                || pkgLower.contains("standoff2") || pkgLower.contains("carxstreet") || pkgLower.contains("uamo")
+                || pkgLower.contains("deltaforce") || pkgLower.contains("projectc") || pkgLower.contains("valorant")
+                || pkgLower.contains("innersloth") || pkgLower.contains("spacemafia") || pkgLower.contains("plarium")
+                || pkgLower.contains("habby") || pkgLower.contains("nekki") || pkgLower.contains("rockstargames")
+                || pkgLower.contains("chucklefish") || pkgLower.contains(".game.") || pkgLower.contains(".games.")
+                || pkgLower.endsWith(".game") || pkgLower.endsWith(".games")
+                || pkgLower.contains("speed") || pkgLower.contains("racing") || pkgLower.contains("simulator")
+                || pkgLower.contains("arcade") || pkgLower.contains("rpg") || pkgLower.contains("fight")
+                || pkgLower.contains("battle") || pkgLower.contains("strike") || pkgLower.contains("hero")
+                || pkgLower.contains("runner") || pkgLower.contains("craft")) {
+            return true;
+        }
+
+        // Keyword checks on app label
+        if (labelLower.contains("mobile legends") || labelLower.contains("mlbb")
+                || labelLower.contains("pubg") || labelLower.contains("call of duty") || labelLower.contains("cod") || labelLower.contains("warzone")
+                || labelLower.contains("free fire") || labelLower.contains("genshin") || labelLower.contains("roblox")
+                || labelLower.contains("wild rift") || labelLower.contains("honor of kings") || labelLower.contains("arena of valor")
+                || labelLower.contains("brawl stars") || labelLower.contains("clash") || labelLower.contains("squad busters")
+                || labelLower.contains("blood strike") || labelLower.contains("farlight") || labelLower.contains("standoff")
+                || labelLower.contains("minecraft") || labelLower.contains("subway surfers") || labelLower.contains("stumble guys")
+                || labelLower.contains("solo leveling") || labelLower.contains("asphalt") || labelLower.contains("efootball")
+                || labelLower.contains("fc mobile") || labelLower.contains("fifa") || labelLower.contains("real racing")
+                || labelLower.contains("carx") || labelLower.contains("shadow fight") || labelLower.contains("among us")
+                || labelLower.contains("sonic") || labelLower.contains("gta") || labelLower.contains("stardew valley")
+                || labelLower.contains("8 ball pool") || labelLower.contains("hill climb") || labelLower.contains("game")
+                || labelLower.contains("racing") || labelLower.contains("simulator") || labelLower.contains("battle")
+                || labelLower.contains("arcade") || labelLower.contains("fighter") || labelLower.contains("striker")
+                || labelLower.contains("sniper") || labelLower.contains("craft") || labelLower.contains("shooter")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static String resolveCategory(String pkg, String label, ApplicationInfo appInfo) {
+        String pkgLower = (pkg != null) ? pkg.toLowerCase(java.util.Locale.ROOT) : "";
+        String labelLower = (label != null) ? label.toLowerCase(java.util.Locale.ROOT) : "";
+
+        if (pkgLower.contains("legends") || pkgLower.contains("wildrift") || pkgLower.contains("sgame") || pkgLower.contains("moba")) {
+            return "MOBA";
+        }
+        if (pkgLower.contains("cod") || pkgLower.contains("duty") || pkgLower.contains("shooter") || pkgLower.contains("fps") || pkgLower.contains("standoff") || pkgLower.contains("valorant") || pkgLower.contains("projectc")) {
+            return "FPS";
+        }
+        if (pkgLower.contains("pubg") || pkgLower.contains("freefire") || pkgLower.contains("farlight") || pkgLower.contains("bloodstrike") || pkgLower.contains("battle")) {
+            return "BATTLE ROYALE";
+        }
+        if (pkgLower.contains("genshin") || pkgLower.contains("honkai") || pkgLower.contains("hkrpg") || pkgLower.contains("nap") || pkgLower.contains("wuthering") || pkgLower.contains("sololv") || pkgLower.contains("rpg")) {
+            return "ACTION RPG";
+        }
+        if (pkgLower.contains("asphalt") || pkgLower.contains("racing") || pkgLower.contains("race") || pkgLower.contains("speed") || pkgLower.contains("carx") || pkgLower.contains("drift")) {
+            return "RACING";
+        }
+        if (pkgLower.contains("fifa") || pkgLower.contains("pesam") || pkgLower.contains("efootball") || pkgLower.contains("sports") || pkgLower.contains("pool") || pkgLower.contains("dls")) {
+            return "SPORTS";
+        }
+        if (pkgLower.contains("roblox") || pkgLower.contains("minecraft") || pkgLower.contains("sandbox") || pkgLower.contains("craft")) {
+            return "SANDBOX";
+        }
+        if (pkgLower.contains("clash") || pkgLower.contains("strategy") || pkgLower.contains("tactics")) {
+            return "STRATEGY";
+        }
+
+        return "GAMING";
+    }
+
+    private static int resolveCardBg(String category) {
+        if ("MOBA".equalsIgnoreCase(category) || "ACTION RPG".equalsIgnoreCase(category)) {
+            return R.drawable.home_game_card_bg_ml;
+        } else if ("FPS".equalsIgnoreCase(category) || "SANDBOX".equalsIgnoreCase(category)) {
+            return R.drawable.home_game_card_bg_codm;
+        } else {
+            return R.drawable.home_game_card_bg_pubg;
+        }
+    }
+
+    private static int resolveBadgeColor(String category) {
+        if ("MOBA".equalsIgnoreCase(category)) {
+            return Color.parseColor("#4A90E2");
+        } else if ("FPS".equalsIgnoreCase(category)) {
+            return Color.parseColor("#FF0055");
+        } else if ("BATTLE ROYALE".equalsIgnoreCase(category)) {
+            return Color.parseColor("#FF8800");
+        } else if ("ACTION RPG".equalsIgnoreCase(category)) {
+            return Color.parseColor("#9933FF");
+        } else if ("SANDBOX".equalsIgnoreCase(category)) {
+            return Color.parseColor("#00FF66");
+        } else if ("RACING".equalsIgnoreCase(category) || "SPORTS".equalsIgnoreCase(category)) {
+            return Color.parseColor("#FFCC00");
+        } else {
+            return Color.parseColor("#00F0FF");
+        }
+    }
+
+    /**
+     * Scans and returns all verified installed target, custom, and supported games on Android 13-16.
      */
     public static List<GameAppInfo> scanTargetGames(Context context) {
         List<GameAppInfo> detectedGames = new ArrayList<>();
         if (context == null) return detectedGames;
 
         PackageManager pm = context.getPackageManager();
-        Set<String> addedPackages = new HashSet<>();
+        if (pm == null) return detectedGames;
 
-        // 1. Primary Targeted Specs Scan (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
+        Set<String> addedPackages = new HashSet<>();
+        Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
+
+        // TIER 1: User-Custom Added Packages (Guaranteed 100% Inclusion)
+        for (String customPkg : customPkgs) {
+            if (customPkg == null || customPkg.trim().isEmpty() || addedPackages.contains(customPkg)) continue;
+            if (customPkg.equalsIgnoreCase(context.getPackageName())) continue;
+
+            ApplicationInfo appInfo = null;
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    appInfo = pm.getApplicationInfo(customPkg, PackageManager.ApplicationInfoFlags.of(0));
+                } else {
+                    appInfo = pm.getApplicationInfo(customPkg, 0);
+                }
+            } catch (Throwable ignored) {}
+
+            Intent launchIntent = resolveLaunchIntent(pm, customPkg);
+            if (appInfo != null || launchIntent != null) {
+                String label = customPkg;
+                Drawable icon = null;
+                try {
+                    if (appInfo != null) {
+                        label = pm.getApplicationLabel(appInfo).toString();
+                        icon = pm.getApplicationIcon(appInfo);
+                    } else if (launchIntent != null) {
+                        icon = pm.getActivityIcon(launchIntent);
+                    }
+                } catch (Throwable ignored) {}
+
+                if (icon == null) {
+                    try {
+                        icon = context.getApplicationInfo().loadIcon(pm);
+                    } catch (Throwable ignored) {}
+                }
+
+                String category = resolveCategory(customPkg, label, appInfo);
+                detectedGames.add(new GameAppInfo(
+                        label,
+                        customPkg,
+                        icon,
+                        launchIntent,
+                        category,
+                        resolveCardBg(category),
+                        resolveBadgeColor(category)
+                ));
+                addedPackages.add(customPkg);
+            }
+        }
+
+        // TIER 2: Primary Targeted Specs (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
         for (TargetGameSpec spec : ALL_TARGET_SPECS) {
             for (String pkg : spec.packageNames) {
                 if (addedPackages.contains(pkg)) continue;
 
                 ApplicationInfo appInfo = null;
                 try {
-                    appInfo = pm.getApplicationInfo(pkg, 0);
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        appInfo = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
+                    } else {
+                        appInfo = pm.getApplicationInfo(pkg, 0);
+                    }
                 } catch (Throwable ignored) {}
 
                 Intent launchIntent = resolveLaunchIntent(pm, pkg);
 
-                // Add ONLY if the app is actually installed on the physical device
                 if (appInfo != null || launchIntent != null) {
                     String label = spec.defaultTitle;
                     Drawable icon = null;
@@ -332,21 +522,25 @@ public class HomeGameScanner {
             }
         }
 
-        // 2. Secondary Scan: Known Games Registry
+        // TIER 3: Known Games Registry (Global & Regional Hit Games)
         try {
             for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
                 if (addedPackages.contains(pkg)) continue;
 
                 ApplicationInfo appInfo = null;
                 try {
-                    appInfo = pm.getApplicationInfo(pkg, 0);
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        appInfo = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
+                    } else {
+                        appInfo = pm.getApplicationInfo(pkg, 0);
+                    }
                 } catch (Throwable ignored) {}
 
                 Intent launchIntent = resolveLaunchIntent(pm, pkg);
                 if (appInfo != null || launchIntent != null) {
-                    GamePackageRegistry.GameInfoSpec info = GamePackageRegistry.getSpec(pkg);
-                    String label = info != null ? info.title : pkg;
-                    String category = info != null ? info.category : "GAMING";
+                    GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkg);
+                    String label = (spec != null) ? spec.title : pkg;
+                    String category = (spec != null) ? spec.category : resolveCategory(pkg, label, appInfo);
                     Drawable icon = null;
                     try {
                         if (appInfo != null) {
@@ -367,19 +561,29 @@ public class HomeGameScanner {
                             icon,
                             launchIntent,
                             category,
-                            R.drawable.home_game_card_bg_ml,
-                            Color.parseColor("#00F0FF")
+                            resolveCardBg(category),
+                            resolveBadgeColor(category)
                     ));
                     addedPackages.add(pkg);
                 }
             }
         } catch (Throwable ignored) {}
 
-        // 3. Tertiary Scan: Query Launcher Intent Activities with CATEGORY_GAME
+        // TIER 4: Comprehensive Launcher Intent Activities Scan (Android 13-16)
         try {
-            Intent gameIntent = new Intent(Intent.ACTION_MAIN, null);
-            gameIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(gameIntent, 0);
+            Intent launcherIntent = new Intent(Intent.ACTION_MAIN, null);
+            launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+            List<ResolveInfo> resolveInfos = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                try {
+                    resolveInfos = pm.queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+                } catch (Throwable ignored) {}
+            }
+            if (resolveInfos == null || resolveInfos.isEmpty()) {
+                resolveInfos = pm.queryIntentActivities(launcherIntent, 0);
+            }
+
             if (resolveInfos != null) {
                 for (ResolveInfo ri : resolveInfos) {
                     if (ri == null || ri.activityInfo == null) continue;
@@ -389,32 +593,128 @@ public class HomeGameScanner {
                     }
 
                     ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
-                    boolean isGame = false;
-                    if (aInfo != null) {
-                        if (aInfo.category == ApplicationInfo.CATEGORY_GAME) {
-                            isGame = true;
-                        }
-                    }
+                    String label = ri.loadLabel(pm).toString();
 
-                    if (isGame || GameLauncherHelper.getCustomPackages(context).contains(pkg)) {
-                        String label = ri.loadLabel(pm).toString();
+                    if (isGamePackage(context, pkg, label, aInfo, customPkgs)) {
                         Drawable icon = ri.loadIcon(pm);
                         Intent launchIntent = resolveLaunchIntent(pm, pkg);
+                        String category = resolveCategory(pkg, label, aInfo);
 
                         detectedGames.add(new GameAppInfo(
                                 label,
                                 pkg,
                                 icon,
                                 launchIntent,
-                                "GAME",
-                                R.drawable.home_game_card_bg_pubg,
-                                Color.parseColor("#FFCC00")
+                                category,
+                                resolveCardBg(category),
+                                resolveBadgeColor(category)
                         ));
                         addedPackages.add(pkg);
                     }
                 }
             }
         } catch (Throwable ignored) {}
+
+        // TIER 5: Installed Applications Fallback Scan (for non-standard launcher activities)
+        try {
+            List<ApplicationInfo> installedApps = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                try {
+                    installedApps = pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0));
+                } catch (Throwable ignored) {}
+            }
+            if (installedApps == null) {
+                try {
+                    installedApps = pm.getInstalledApplications(0);
+                } catch (Throwable ignored) {}
+            }
+
+            if (installedApps != null) {
+                for (ApplicationInfo ai : installedApps) {
+                    if (ai == null || ai.packageName == null || addedPackages.contains(ai.packageName)) continue;
+                    if (ai.packageName.equalsIgnoreCase(context.getPackageName())) continue;
+
+                    CharSequence labelSeq = pm.getApplicationLabel(ai);
+                    String label = (labelSeq != null) ? labelSeq.toString() : ai.packageName;
+
+                    if (isGamePackage(context, ai.packageName, label, ai, customPkgs)) {
+                        Intent launchIntent = resolveLaunchIntent(pm, ai.packageName);
+                        Drawable icon = null;
+                        try {
+                            icon = pm.getApplicationIcon(ai);
+                        } catch (Throwable ignored) {}
+
+                        if (icon == null) {
+                            try {
+                                icon = context.getApplicationInfo().loadIcon(pm);
+                            } catch (Throwable ignored) {}
+                        }
+
+                        String category = resolveCategory(ai.packageName, label, ai);
+                        detectedGames.add(new GameAppInfo(
+                                label,
+                                ai.packageName,
+                                icon,
+                                launchIntent,
+                                category,
+                                resolveCardBg(category),
+                                resolveBadgeColor(category)
+                        ));
+                        addedPackages.add(ai.packageName);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // TIER 6: Shizuku Deep Search Discovery (for Android 13-16 Package Visibility restrictions)
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                Set<String> deepPackages = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
+                if (deepPackages != null) {
+                    for (String pkg : deepPackages) {
+                        if (pkg == null || addedPackages.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) continue;
+
+                        ApplicationInfo appInfo = null;
+                        try {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                appInfo = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
+                            } else {
+                                appInfo = pm.getApplicationInfo(pkg, 0);
+                            }
+                        } catch (Throwable ignored) {}
+
+                        String label = pkg;
+                        Drawable icon = null;
+                        if (appInfo != null) {
+                            try {
+                                label = pm.getApplicationLabel(appInfo).toString();
+                                icon = pm.getApplicationIcon(appInfo);
+                            } catch (Throwable ignored) {}
+                        }
+
+                        if (isGamePackage(context, pkg, label, appInfo, customPkgs)) {
+                            Intent launchIntent = resolveLaunchIntent(pm, pkg);
+                            if (icon == null) {
+                                try {
+                                    icon = context.getApplicationInfo().loadIcon(pm);
+                                } catch (Throwable ignored) {}
+                            }
+                            String category = resolveCategory(pkg, label, appInfo);
+                            detectedGames.add(new GameAppInfo(
+                                    label,
+                                    pkg,
+                                    icon,
+                                    launchIntent,
+                                    category,
+                                    resolveCardBg(category),
+                                    resolveBadgeColor(category)
+                            ));
+                            addedPackages.add(pkg);
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
 
         return detectedGames;
     }

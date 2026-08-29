@@ -76,34 +76,13 @@ public class ShizukuExecutor {
             }
 
             Process process = null;
-            BufferedReader stdoutReader = null;
-            BufferedReader stderrReader = null;
             try {
                 java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
                 newProcessMethod.setAccessible(true);
                 process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
 
-                stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                StringBuilder stdout = new StringBuilder();
-                String line;
-                while ((line = stdoutReader.readLine()) != null) {
-                    stdout.append(line).append("\n");
-                }
-
-                stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                StringBuilder stderr = new StringBuilder();
-                while ((line = stderrReader.readLine()) != null) {
-                    stderr.append(line).append("\n");
-                }
-
-                int exitCode = process.waitFor();
-                String stdoutStr = stdout.toString().trim();
-                String stderrStr = stderr.toString().trim();
-
-                if (exitCode == 0) {
-                    return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
-                } else if (!stderrStr.isEmpty()) {
-                    return "ERROR: " + stderrStr;
+                if (process != null) {
+                    return readProcessOutput(process, 4000L);
                 }
             } catch (Throwable e) {
                 Log.w(TAG, "Shizuku newProcess fallback to rish/UserService: " + e.getMessage());
@@ -124,11 +103,11 @@ public class ShizukuExecutor {
                     Log.e(TAG, "Shizuku UserService failed: " + t.getMessage());
                 }
             } finally {
-                try {
-                    if (stdoutReader != null) stdoutReader.close();
-                    if (stderrReader != null) stderrReader.close();
-                    if (process != null) process.destroy();
-                } catch (Throwable ignored) {}
+                if (process != null) {
+                    try {
+                        process.destroy();
+                    } catch (Throwable ignored) {}
+                }
             }
         }
 
@@ -235,6 +214,73 @@ public class ShizukuExecutor {
 
     public static String injectTouchSwipe(int startX, int startY, int endX, int endY, int durationMs) {
         return executeShizukuCommand("input swipe " + startX + " " + startY + " " + endX + " " + endY + " " + durationMs);
+    }
+
+    public static String readProcessOutput(Process process, long timeoutMs) {
+        if (process == null) return "ERROR: Process is null";
+        final StringBuilder stdout = new StringBuilder();
+        final StringBuilder stderr = new StringBuilder();
+
+        Thread outThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stdout.append(line).append("\n");
+                }
+            } catch (Throwable ignored) {}
+        }, "Shizuku-StdoutReader");
+
+        Thread errThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stderr.append(line).append("\n");
+                }
+            } catch (Throwable ignored) {}
+        }, "Shizuku-StderrReader");
+
+        outThread.setDaemon(true);
+        errThread.setDaemon(true);
+        outThread.start();
+        errThread.start();
+
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        boolean completed = false;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                process.exitValue();
+                completed = true;
+                break;
+            } catch (IllegalThreadStateException e) {
+                try {
+                    Thread.sleep(30);
+                } catch (InterruptedException ignored) {}
+            }
+        }
+
+        if (!completed) {
+            try {
+                process.destroy();
+            } catch (Throwable ignored) {}
+            return "ERROR: Command timed out after " + timeoutMs + "ms";
+        }
+
+        try {
+            outThread.join(250);
+            errThread.join(250);
+        } catch (InterruptedException ignored) {}
+
+        String stdoutStr = stdout.toString().trim();
+        String stderrStr = stderr.toString().trim();
+        int exitCode = process.exitValue();
+
+        if (exitCode == 0) {
+            return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
+        } else if (!stderrStr.isEmpty()) {
+            return "ERROR: " + stderrStr;
+        } else {
+            return stdoutStr.isEmpty() ? "ERROR: Exit code " + exitCode : stdoutStr;
+        }
     }
 }
 

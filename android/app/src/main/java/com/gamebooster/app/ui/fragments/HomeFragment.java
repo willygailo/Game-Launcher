@@ -51,7 +51,12 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private final com.gamebooster.app.shizuku.ShizukuConnectionManager.ConnectionListener connListener =
             state -> {
                 if (isAdded() && getContext() != null) {
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::updateStatusStrip);
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                        updateStatusStrip();
+                        if (state == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY) {
+                            loadAndScanGames(true);
+                        }
+                    });
                 }
             };
 
@@ -117,13 +122,13 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         View.OnClickListener openAddGameAction = v -> {
             if (getContext() != null) {
-                com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), this::loadAndScanGamesZeroDelay);
+                com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), () -> loadAndScanGames(true));
             }
         };
 
         View.OnClickListener openApkManagerAction = v -> {
             if (getContext() != null) {
-                com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), this::loadAndScanGamesZeroDelay);
+                com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), () -> loadAndScanGames(true));
             }
         };
 
@@ -160,22 +165,53 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         }
 
         updateStatusStrip();
-        loadAndScanGamesZeroDelay();
+        loadAndScanGames(true);
         return view;
     }
 
     private volatile boolean isScanning = false;
     private volatile long lastScanTime = 0L;
-    private static final long SCAN_DEBOUNCE_MS = 2500L;
+    private static final long SCAN_DEBOUNCE_MS = 2000L;
+    private long lastPackageEventTime = 0L;
+
+    private final android.content.BroadcastReceiver packageReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, android.content.Intent intent) {
+            if (intent != null && intent.getAction() != null) {
+                long now = System.currentTimeMillis();
+                if (now - lastPackageEventTime < 1500L) {
+                    return;
+                }
+                lastPackageEventTime = now;
+                com.gamebooster.app.core.AppExecutors.getInstance().postDelayed(() -> {
+                    if (isAdded() && getContext() != null) {
+                        loadAndScanGames(true);
+                    }
+                }, 300L);
+            }
+        }
+    };
 
     @Override
     public void onResume() {
         super.onResume();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         ShizukuManager.addStateListener(this);
+
+        try {
+            if (getContext() != null) {
+                android.content.IntentFilter filter = new android.content.IntentFilter();
+                filter.addAction(android.content.Intent.ACTION_PACKAGE_ADDED);
+                filter.addAction(android.content.Intent.ACTION_PACKAGE_REMOVED);
+                filter.addAction(android.content.Intent.ACTION_PACKAGE_REPLACED);
+                filter.addDataScheme("package");
+                getContext().registerReceiver(packageReceiver, filter);
+            }
+        } catch (Throwable ignored) {}
+
         applyVideoBackgroundState();
         updateStatusStrip();
-        loadAndScanGamesZeroDelay();
+        loadAndScanGames(true);
     }
 
     private void applyVideoBackgroundState() {
@@ -205,6 +241,11 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     @Override
     public void onPause() {
         super.onPause();
+        try {
+            if (getContext() != null) {
+                getContext().unregisterReceiver(packageReceiver);
+            }
+        } catch (Throwable ignored) {}
         if (videoHomeBg != null) videoHomeBg.pause();
         if (videoHeroBanner != null) videoHeroBanner.pause();
     }
@@ -218,13 +259,18 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         } else {
             applyVideoBackgroundState();
             updateStatusStrip();
-            loadAndScanGamesZeroDelay();
+            loadAndScanGames(true);
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        try {
+            if (getContext() != null) {
+                getContext().unregisterReceiver(packageReceiver);
+            }
+        } catch (Throwable ignored) {}
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().removeConnectionListener(connListener);
         ShizukuManager.removeStateListener(this);
         if (videoHomeBg != null) {
@@ -240,7 +286,12 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     @Override
     public void onBinderStateChanged(boolean alive) {
         if (isAdded() && getContext() != null) {
-            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::updateStatusStrip);
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                updateStatusStrip();
+                if (alive) {
+                    loadAndScanGames(true);
+                }
+            });
         }
     }
 
@@ -302,11 +353,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
      * 2. Perform fresh scan asynchronously on background scan thread
      * 3. Update UI on the main thread with zero freeze / flicker
      */
-    private void loadAndScanGamesZeroDelay() {
+    public void loadAndScanGamesZeroDelay() {
+        loadAndScanGames(false);
+    }
+
+    public void loadAndScanGames(boolean forceScan) {
         if (!isAdded() || getContext() == null) return;
         final Context ctx = getContext().getApplicationContext();
 
-        // If games already in memory, display them right away
+        // If games already in memory and not forceScan, display them right away
         if (!gameList.isEmpty()) {
             if (adapter != null) {
                 adapter.updateList(gameList);
@@ -319,7 +374,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         }
 
         long now = System.currentTimeMillis();
-        if (isScanning || (now - lastScanTime < SCAN_DEBOUNCE_MS)) {
+        if (!forceScan && (isScanning || (now - lastScanTime < SCAN_DEBOUNCE_MS))) {
             return;
         }
 
@@ -334,20 +389,29 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                     isScanning = false;
                     if (!isAdded() || getContext() == null) return;
 
+                    // Safety guard: if scan returned empty but we previously had games and context was still valid,
+                    // do not clear the list unless verified empty by PackageManager
+                    if ((scannedGames == null || scannedGames.isEmpty()) && !gameList.isEmpty()) {
+                        android.util.Log.w("HomeFragment", "Scanned games was unexpectedly empty, keeping previous cached list (" + gameList.size() + " games)");
+                        return;
+                    }
+
                     gameList.clear();
-                    gameList.addAll(scannedGames);
+                    if (scannedGames != null) {
+                        gameList.addAll(scannedGames);
+                    }
 
                     if (adapter != null) {
-                        adapter.updateList(scannedGames);
+                        adapter.updateList(new ArrayList<>(gameList));
                     }
 
                     // Update header count
                     if (tvGamesHeader != null) {
-                        tvGamesHeader.setText("INSTALLED GAMES (" + scannedGames.size() + " DETECTED)");
+                        tvGamesHeader.setText("INSTALLED GAMES (" + gameList.size() + " DETECTED)");
                     }
 
                     // Toggle empty state vs games list
-                    if (scannedGames.isEmpty()) {
+                    if (gameList.isEmpty()) {
                         if (rvGames != null) rvGames.setVisibility(View.GONE);
                         if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
                     } else {
@@ -357,6 +421,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 });
             } catch (Throwable t) {
                 isScanning = false;
+                android.util.Log.e("HomeFragment", "Error in loadAndScanGames: " + t.getMessage(), t);
             }
         });
     }

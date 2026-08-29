@@ -50,27 +50,64 @@ public class UserService extends IUserService.Stub {
             return "ERROR: Empty command";
         }
         java.lang.Process process = null;
-        BufferedReader stdoutReader = null;
-        BufferedReader stderrReader = null;
         try {
             process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+            final StringBuilder stdout = new StringBuilder();
+            final StringBuilder stderr = new StringBuilder();
 
-            stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-            StringBuilder stdout = new StringBuilder();
-            String line;
-            while ((line = stdoutReader.readLine()) != null) {
-                stdout.append(line).append("\n");
+            final java.lang.Process proc = process;
+            Thread outThread = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stdout.append(line).append("\n");
+                    }
+                } catch (Throwable ignored) {}
+            });
+
+            Thread errThread = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getErrorStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stderr.append(line).append("\n");
+                    }
+                } catch (Throwable ignored) {}
+            });
+
+            outThread.setDaemon(true);
+            errThread.setDaemon(true);
+            outThread.start();
+            errThread.start();
+
+            long deadline = System.currentTimeMillis() + 4000L;
+            boolean completed = false;
+            while (System.currentTimeMillis() < deadline) {
+                try {
+                    process.exitValue();
+                    completed = true;
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    try {
+                        Thread.sleep(30);
+                    } catch (InterruptedException ignored) {}
+                }
             }
 
-            stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
-            StringBuilder stderr = new StringBuilder();
-            while ((line = stderrReader.readLine()) != null) {
-                stderr.append(line).append("\n");
+            if (!completed) {
+                try {
+                    process.destroy();
+                } catch (Throwable ignored) {}
+                return "ERROR: Command timed out after 4000ms";
             }
 
-            int exitCode = process.waitFor();
+            try {
+                outThread.join(250);
+                errThread.join(250);
+            } catch (InterruptedException ignored) {}
+
             String stdoutStr = stdout.toString().trim();
             String stderrStr = stderr.toString().trim();
+            int exitCode = process.exitValue();
 
             if (exitCode == 0) {
                 return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;
@@ -81,11 +118,11 @@ public class UserService extends IUserService.Stub {
             Log.e(TAG, "execCommand exception", e);
             return "ERROR: " + e.getMessage();
         } finally {
-            try {
-                if (stdoutReader != null) stdoutReader.close();
-                if (stderrReader != null) stderrReader.close();
-                if (process != null) process.destroy();
-            } catch (Exception ignored) {}
+            if (process != null) {
+                try {
+                    process.destroy();
+                } catch (Throwable ignored) {}
+            }
         }
     }
 

@@ -62,7 +62,12 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
                 GameAppInfo oldItem = oldList.get(oldItemPosition);
                 GameAppInfo newItem = finalNewList.get(newItemPosition);
-                return oldItem.equals(newItem) || (oldItem.getLabel() != null && oldItem.getLabel().equals(newItem.getLabel()));
+                if (oldItem == null && newItem == null) return true;
+                if (oldItem == null || newItem == null) return false;
+                return oldItem.equals(newItem)
+                        && oldItem.getCardBgRes() == newItem.getCardBgRes()
+                        && oldItem.getBadgeColor() == newItem.getBadgeColor()
+                        && (oldItem.getGameType() != null ? oldItem.getGameType().equals(newItem.getGameType()) : newItem.getGameType() == null);
             }
         });
 

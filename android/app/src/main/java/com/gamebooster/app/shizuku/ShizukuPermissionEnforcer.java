@@ -134,15 +134,7 @@ public class ShizukuPermissionEnforcer {
             // 6. Fast Single-Batch Execution via Shizuku
             ShizukuExecutor.executeShizukuCommands(batchCmds);
 
-            // 7. Enforce storage permissions and AppOps across ALL installed games
-            List<GameAppInfo> detected = HomeGameScanner.scanTargetGames(context);
-            for (GameAppInfo g : detected) {
-                if (g != null && g.getPackageName() != null) {
-                    enforceGamePermissionsDirect(g.getPackageName());
-                }
-            }
-
-            Log.i(TAG, "All Shizuku system & storage privileges auto-granted successfully!");
+            Log.i(TAG, "All Shizuku launcher system & storage privileges auto-granted successfully!");
 
         } catch (Throwable t) {
             Log.e(TAG, "Error enforcing Shizuku permissions", t);

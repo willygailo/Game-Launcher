@@ -104,6 +104,30 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.supercell.clashroyale", new GameInfoSpec("Clash Royale", "Strategy", 185));
         KNOWN_GAMES.put("com.supercell.clashofclans", new GameInfoSpec("Clash of Clans", "Strategy", 185));
         KNOWN_GAMES.put("com.supercell.squad", new GameInfoSpec("Squad Busters", "Action", 185));
+        KNOWN_GAMES.put("com.supercell.hayday", new GameInfoSpec("Hay Day", "Simulation", 120));
+
+        // Popular Global Hits (Android 13-16)
+        KNOWN_GAMES.put("com.mojang.minecraftpe", new GameInfoSpec("Minecraft", "Sandbox", 185));
+        KNOWN_GAMES.put("com.kiloo.subwaysurf", new GameInfoSpec("Subway Surfers", "Arcade", 185));
+        KNOWN_GAMES.put("com.kitkagames.fallbuddies", new GameInfoSpec("Stumble Guys", "Party Royale", 185));
+        KNOWN_GAMES.put("com.miniclip.eightballpool", new GameInfoSpec("8 Ball Pool", "Sports", 185));
+        KNOWN_GAMES.put("com.netmarble.sololv", new GameInfoSpec("Solo Leveling: Arise", "Action RPG", 185));
+        KNOWN_GAMES.put("com.gameloft.android.ANMP.GloftA9HM", new GameInfoSpec("Asphalt Legends Unite", "Racing", 185));
+        KNOWN_GAMES.put("com.fingersoft.hillclimb", new GameInfoSpec("Hill Climb Racing", "Racing", 120));
+        KNOWN_GAMES.put("com.fingersoft.hcr2", new GameInfoSpec("Hill Climb Racing 2", "Racing", 185));
+        KNOWN_GAMES.put("com.innersloth.spacemafia", new GameInfoSpec("Among Us", "Party", 120));
+        KNOWN_GAMES.put("com.plarium.raidlegends", new GameInfoSpec("RAID: Shadow Legends", "RPG", 185));
+        KNOWN_GAMES.put("com.habby.archero", new GameInfoSpec("Archero", "Action", 185));
+        KNOWN_GAMES.put("com.habby.punball", new GameInfoSpec("PunBall", "Action", 185));
+        KNOWN_GAMES.put("com.habby.kinja", new GameInfoSpec("Kinja Run", "Action", 185));
+        KNOWN_GAMES.put("com.nekki.shadowfight3", new GameInfoSpec("Shadow Fight 3", "Action", 185));
+        KNOWN_GAMES.put("com.nekki.shadowfight4", new GameInfoSpec("Shadow Fight 4: Arena", "Action", 185));
+        KNOWN_GAMES.put("com.firsttouchgames.dls7", new GameInfoSpec("Dream League Soccer 2024", "Sports", 185));
+        KNOWN_GAMES.put("com.chucklefish.stardewvalley", new GameInfoSpec("Stardew Valley", "RPG", 120));
+        KNOWN_GAMES.put("com.rockstargames.gtasa", new GameInfoSpec("GTA: San Andreas", "Action", 120));
+        KNOWN_GAMES.put("com.rockstargames.gtavc", new GameInfoSpec("GTA: Vice City", "Action", 120));
+        KNOWN_GAMES.put("com.rockstargames.gta3", new GameInfoSpec("GTA III", "Action", 120));
+        KNOWN_GAMES.put("com.sega.sonicdash", new GameInfoSpec("Sonic Dash", "Runner", 185));
     }
 
     public static boolean isSupportedGame(String packageName) {
@@ -112,7 +136,7 @@ public class GamePackageRegistry {
 
     public static boolean isKnownGame(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        String pkg = packageName.toLowerCase().trim();
+        String pkg = packageName.toLowerCase(java.util.Locale.ROOT).trim();
         if (KNOWN_GAMES.containsKey(pkg)) return true;
 
         // Heuristic fallback for regional or modded package variants
@@ -149,7 +173,18 @@ public class GamePackageRegistry {
                 || pkg.contains("projectc")
                 || pkg.contains("valorant")
                 || pkg.contains("farlight")
-                || pkg.contains("solarland");
+                || pkg.contains("solarland")
+                || pkg.contains("minecraft")
+                || pkg.contains("subwaysurf")
+                || pkg.contains("fallbuddies")
+                || pkg.contains("sololv")
+                || pkg.contains("fifamobile")
+                || pkg.contains("gameloft")
+                || pkg.contains("konami")
+                || pkg.contains(".game.")
+                || pkg.contains(".games.")
+                || pkg.endsWith(".game")
+                || pkg.endsWith(".games");
     }
 
     public static GameInfoSpec getSpec(String packageName) {

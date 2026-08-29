@@ -226,7 +226,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 Toast.makeText(getApplicationContext(), "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                    ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
                 });
             }
