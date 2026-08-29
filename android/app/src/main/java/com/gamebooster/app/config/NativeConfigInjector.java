@@ -1303,7 +1303,7 @@ public class NativeConfigInjector {
 
     /**
      * Injects all updated competitive configurations (High Damage, No Recoil, High Aim Assist, Tracking Bullet, Armor Def, Shield 1500, Fast CD, Drone View, Super Touch, Ultra Extreme Graphics)
-     * across all candidate paths for a game package.
+     * across all candidate paths for a game package in a single format-aware atomic write pass per path.
      */
     public static int injectAllConfigsForPackage(String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) return 0;
@@ -1311,31 +1311,329 @@ public class NativeConfigInjector {
         List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
         if (paths == null || paths.isEmpty()) return 0;
 
+        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
+
+        // Consolidated key-value pairs for full game optimization
+        String[] consolidatedKeys = {
+            // ── Display & FPS Unlocks ──
+            "FPS=" + forcedFps,
+            "TargetFPS=" + forcedFps,
+            "MaxFPS=" + forcedFps,
+            "MaxFrameRate=" + forcedFps,
+            "FrameRateLimit=" + forcedFps,
+            "MobileFPSLimit=" + forcedFps,
+            "HighFPSMode=1",
+            "HighFrameRate=1",
+            "SuperHighFPS=1",
+            "UnlockFPS=1",
+            "UnlockHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock120FPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            // ── Ultra Graphics & Textures ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "HDRMode=1",
+            "HDRColorMode=2",
+            "UltraHDMode=1",
+            "HDMode=1",
+            "SuperResolution=1",
+            "ResolutionScale=1.20",
+            "ScreenScale=120",
+            "Shadow=1",
+            "ShadowQuality=2",
+            "AntiAliasing=1",
+            "AntiAliasingQuality=4",
+            "PostProcessQuality=3",
+            "TextureQuality=3",
+            "EffectsQuality=3",
+            "FoliageQuality=2",
+            "ShadingQuality=2",
+            "VulkanEnabled=1",
+            "UnlockMaxGraphics=1",
+            "MaxGraphic=1",
+            "UltraQuality=1",
+            // ── 1000Hz Ultra Fast Touch & Gyro ──
+            "HighFreqTouchHz=" + forcedFps,
+            "TouchPollingRate=1000",
+            "TouchSampleRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "TouchSlopReduction=1",
+            "TouchResponseLevel=3",
+            "TouchPressureThreshold=0.001",
+            "TouchFilterSmoothing=1",
+            "InputBufferRate=1000",
+            "TouchInterpolation=1",
+            "MultiTouchSampling=1000",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1",
+            "GyroSensitivityRatio=20.0",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "GyroLatencyMode=0",
+            // ── 1000% Aim Assist & Lock ──
+            "AimAssist=1",
+            "AimAssistStrength=10000",
+            "AimAssistLevel=10",
+            "AimPrecision=100",
+            "AutoAim=1",
+            "AimTracking=1",
+            "TargetLock=1",
+            "TargetLockSensitivity=10000",
+            "SmartTargetingMode=1",
+            "HeroPriorityLock=1",
+            "LowestHPTargetLock=1",
+            "AimAssistRadius=5000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
+            "ScopeAimAssist=1",
+            "RedDotAimAssist=1",
+            "SniperAimAssist=1",
+            // ── Zero Recoil & Weapon Stability ──
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "VerticalRecoilScale=0.00",
+            "HorizontalRecoilScale=0.00",
+            "VerticalRecoilMultiplier=0.00",
+            "HorizontalRecoilMultiplier=0.00",
+            "RecoilReduction=1.00",
+            "WeaponStability=500",
+            "ScreenShake=0",
+            "CameraShake=0",
+            "NoCameraShake=1",
+            "GunKick=0",
+            "GunKickReduction=1.00",
+            "WeaponKickReduction=1.00",
+            "AllGunsRecoilReduction=1.00",
+            "ScopeShakeReduction=1.00",
+            "ScopeRecoilMultiplier=0.00",
+            "ScopeStability=5.00",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
+            "SpreadScale=0.00",
+            "BulletSpreadReduction=1",
+            "FirstBulletAccuracy=1",
+            "WeaponSway=0",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            "MovementStabilization=1",
+            "JoystickZeroDeadzone=1",
+            "TouchJitterFilter=1",
+            "ZeroInputDelay=1",
+            // ── 1000% Damage Overdrive ──
+            "DamageMultiplier=100.00",
+            "PhysicalDamageBoost=100.00",
+            "MagicDamageBoost=100.00",
+            "TrueDamageBoost=100.00",
+            "BulletDamageBoost=100.00",
+            "DamageBoost=100.00",
+            "DamageBoostRatio=100.00",
+            "HeadshotMultiplier=100.00",
+            "HeadshotDamageMultiplier=100.00",
+            "CriticalHitRate=100",
+            "CriticalDamage=1000",
+            "CriticalDamageRate=100",
+            "CriticalDamageMultiplier=10.00",
+            "PenetrationBoost=1000",
+            "ArmorPenetration=1000",
+            "PhysicalPenetrationBoost=1000",
+            "MagicPenetrationBoost=1000",
+            "MagicResistPenetration=1000",
+            "HighDamageRateMode=1",
+            "SkillDamageMultiplier=100.00",
+            "HeroDamageMultiplier=10.00",
+            "AllHeroDamageMultiplier=10.00",
+            "BurstDamageMultiplier=100.00",
+            "CritDamageMultiplier=100.00",
+            "WeakpointDamageMultiplier=100.00",
+            "SmiteTrueDamage=99999",
+            "RetributionDamageThreshold=99999",
+            "ExecuteThreshold=99999",
+            "AutoDamageExecutionMode=1",
+            "AutoSmiteExecution=1",
+            // ── 1000% Tracking & Skill Homing ──
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "AutoTrackingBullet=1",
+            "MagicBullet=1",
+            "AutoTrackingSkill=1",
+            "SkillMagnetism=100.00",
+            "BulletMagnetism=100.00",
+            "HitboxExpansion=100.00",
+            "ProjectileHoming=1",
+            "HomingStrength=100.00",
+            "BulletCurveFactor=100.00",
+            "BulletVelocityMultiplier=200.00",
+            // ── 1500+ Shield & Armor Defense ──
+            "ShieldMultiplier=1500.00",
+            "ShieldCapacity=1500.00",
+            "ShieldStrength=1500.00",
+            "ShieldEfficiency=1500.00",
+            "ShieldPointsMultiplier=1500.00",
+            "PhysicalDefenseBoost=1000.00",
+            "MagicDefenseBoost=1000.00",
+            "PhysicalDefenseMultiplier=1000.00",
+            "MagicDefenseMultiplier=1000.00",
+            "DamageReductionRatio=0.9999",
+            "DamageReduction=0.9999",
+            "IncomingDamageReduction=0.9999",
+            "DamageResistance=0.9999",
+            "MaxHPMultiplier=100.00",
+            "HPBoostRatio=100.00",
+            "DamageAbsorbRatio=100.00",
+            "ArmorBoost=50000",
+            "MagicResistBoost=50000",
+            "VestDurability=1000.00",
+            "HelmetDamageReduction=0.9999",
+            "TenacityRatio=0.9999",
+            "HealthRegenBoost=1000.00",
+            "HealthRegenRate=1000.00",
+            "HeavyHitAbsorption=100.00",
+            "BurstDamageReduction=100.00",
+            "HighDamageMitigationRatio=100.00",
+            // ── Fast Cooldown & Infinite Mana ──
+            "FastCooldown=1",
+            "CooldownReductionRatio=0.99",
+            "MaxCooldownReduction=0.99",
+            "CDRRatio=0.99",
+            "SkillCooldownMultiplier=0.01",
+            "UltimateCooldownReduction=0.99",
+            "PassiveCooldownReduction=0.99",
+            "SpellCooldownReduction=0.99",
+            "SkillAnimationCancelZeroDelay=1",
+            "SkillResponseZeroDelay=1",
+            "SkillCastZeroDelay=1",
+            "InstantSkillRelease=1",
+            "NoCastDelay=1",
+            "AttackSpeedMultiplier=25.00",
+            "AttackSpeedBoost=25.00",
+            "AttackDelayReduction=1",
+            "EnergyRegenRate=100.00",
+            "ManaRegenRate=100.00",
+            "UnlimitedEnergy=1",
+            "UnlimitedMana=1",
+            "NoManaCost=1",
+            "NoEnergyCost=1",
+            // ── Drone View FOV ──
+            "DroneView=1",
+            "FOVLevel=180",
+            "FieldOfView=180",
+            "CameraDistance=180",
+            "CameraHeight=180",
+            "CameraFOV=180.00",
+            "MaxCameraDistance=180.00",
+            "WideViewMode=1",
+            "UltraWideView=1",
+            "RadarView=1",
+            "TacticalMapVision=1",
+            "FogOfWarVision=1",
+            "MapAwarenessAssist=1",
+            "FullMapVision=1",
+            // ── UE4 / UE5 Specific CVars ──
+            "+CVars=r.PUBGDeviceFPS=10",
+            "+CVars=r.PUBGMaxFPS=" + forcedFps,
+            "+CVars=r.PUBGFrameRateLimit=" + forcedFps,
+            "+CVars=r.FrameRateLimit=" + forcedFps,
+            "+CVars=r.MobileFPSLimit=" + forcedFps,
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.PUBGQualityLevel=4",
+            "+CVars=r.PUBGSDKQualityLevel=4",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.VSync=0",
+            "+CVars=r.FinishCurrentFrame=0",
+            "+CVars=r.OneFrameThreadLag=0",
+            "+CVars=r.DamageMultiplier=100.00",
+            "+CVars=r.BulletDamageScale=100.00",
+            "+CVars=r.HeadshotMultiplier=100.00",
+            "+CVars=r.WeaponDamageScale=100.00",
+            "+CVars=r.PhysicalDamageScale=100.00",
+            "+CVars=r.MagicDamageScale=100.00",
+            "+CVars=r.TrueDamageScale=100.00",
+            "+CVars=r.PenetrationPower=50.00",
+            "+CVars=r.HitboxExpansion=10.00",
+            "+CVars=r.BulletVelocityScale=50.00",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssistRadius=1000",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.ScreenShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
+            "+CVars=r.ScopeStability=5.00",
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.MagicBullet=1",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.ArmorDamageReduction=0.999",
+            "+CVars=r.ShieldMultiplier=100.00"
+        };
+
         int count = 0;
         for (String path : paths) {
-            boolean ok = false;
-            if (path.endsWith("boot.config")) {
-                ok |= injectUnityBootConfig(path, targetFps);
-                ok |= injectNextGenEngine(path, targetFps, 1);
-            } else if (path.endsWith("Engine.ini") || path.endsWith("GameUserSettings.ini") || path.endsWith("UserCustom.ini")) {
-                ok |= injectUnrealEngineIni(path, targetFps);
-                ok |= injectNextGenEngine(path, targetFps, 0);
+            if (path.endsWith("Active.sav")) {
+                PubgConfigPatcher.patchActiveSavBinary(pkg, forcedFps);
+                count++;
+                continue;
             }
-            ok |= injectUltraExtremeGraphics(path, targetFps);
-            ok |= injectNextGenTouchSampling(path, 1000);
-            ok |= injectHighDamage(path);
-            ok |= injectNoRecoil(path);
-            ok |= injectAimAssist(path);
-            ok |= injectTrackingBullet(path);
-            ok |= injectArmorDef(path);
-            ok |= injectShield1500(path);
-            ok |= injectFastCooldown(path);
-            ok |= injectDroneView(path);
-            ok |= injectSuperFastTouch(path);
-            if (ok) count++;
+
+            if (path.endsWith("boot.config")) {
+                injectUnityBootConfig(path, forcedFps);
+                injectNextGenEngine(path, forcedFps, 1);
+                count++;
+                continue;
+            }
+
+            if (path.endsWith("Engine.ini") || path.endsWith("GameUserSettings.ini") || path.endsWith("UserCustom.ini")) {
+                injectUnrealEngineIni(path, forcedFps);
+                injectNextGenEngine(path, forcedFps, 0);
+            }
+
+            // Perform single-pass format-aware atomic batch patch
+            boolean patched = false;
+            if (sNativeLibraryLoaded) {
+                try {
+                    patched = nativeInjectPerGameProfile(path, pkg, forcedFps, true, true, true, true);
+                } catch (Throwable ignored) {}
+            }
+
+            if (!patched) {
+                String section = path.contains("UE4Game") ? "[UserCustom DeviceProfile]" : "[GameBoosterProfile]";
+                patched = ConfigFileHelper.patchKeys(path, consolidatedKeys, section);
+            }
+
+            if (patched) {
+                count++;
+            }
         }
+
         forceVulkanPipelineCache("/sdcard/Android/data/" + pkg + "/cache/vulkan_pso_cache.bin", pkg);
-        Log.i(TAG, "NativeConfigInjector: Applied all next-gen configs to " + count + " paths for " + packageName);
+        Log.i(TAG, "NativeConfigInjector: Applied all next-gen configs (single-pass batch) to " + count + " paths for " + packageName);
         return count;
     }
 

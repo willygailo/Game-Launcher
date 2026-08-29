@@ -120,6 +120,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchGpuMode;
     private Switch switchCpuMode;
     private Switch switchThermalBypass;
+    private Switch switchAdpfEngine;
+    private Switch switchVideoSaver;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switch5g6gData;
@@ -230,11 +232,51 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Card 1.5: APK & Package Management Hub
         Button btnSettingsOpenApkManager = view.findViewById(R.id.btn_settings_open_apk_manager);
         Button btnSettingsAddGame = view.findViewById(R.id.btn_settings_add_game);
+        Button btnSettingsAotCompileAll = view.findViewById(R.id.btn_settings_aot_compile_all);
         if (btnSettingsOpenApkManager != null) {
             btnSettingsOpenApkManager.setOnClickListener(v -> com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), null));
         }
         if (btnSettingsAddGame != null) {
             btnSettingsAddGame.setOnClickListener(v -> com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), null));
+        }
+        if (btnSettingsAotCompileAll != null) {
+            btnSettingsAotCompileAll.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!ShizukuManager.isShizukuRunningAndGranted()) {
+                    ShizukuManager.showShizukuPermissionDialog(getContext(), "AOT Machine Code Compiler");
+                    return;
+                }
+
+                List<String> gamePkgs = new ArrayList<>(com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet());
+                if (gamePkgs.isEmpty()) {
+                    Toast.makeText(getContext(), "No games registered to compile.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                btnSettingsAotCompileAll.setEnabled(false);
+                btnSettingsAotCompileAll.setText("⚡ COMPILING AOT DEX (PLEASE WAIT)...");
+                Toast.makeText(getContext(), "⚡ Starting ART Speed AOT Compilation for " + gamePkgs.size() + " games...", Toast.LENGTH_SHORT).show();
+
+                com.gamebooster.app.engine.AotCompilerEngine.compileBatchAsync(gamePkgs, com.gamebooster.app.engine.AotCompilerEngine.CompileMode.SPEED, new com.gamebooster.app.engine.AotCompilerEngine.CompileListener() {
+                    @Override
+                    public void onProgress(int current, int total, String packageName, String message) {
+                        if (isAdded() && getActivity() != null) {
+                            btnSettingsAotCompileAll.setText("⚡ COMPILING (" + current + "/" + total + ")...");
+                        }
+                    }
+
+                    @Override
+                    public void onComplete(int successCount, int failedCount, String message) {
+                        if (isAdded() && getActivity() != null) {
+                            btnSettingsAotCompileAll.setEnabled(true);
+                            btnSettingsAotCompileAll.setText("⚡ 1-TAP AOT DEX COMPILE (0MS STUTTER)");
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "✔ " + message, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                });
+            });
         }
 
         // Card 2: Esports Gaming Controls
@@ -538,6 +580,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
         switchThermalBypass = view.findViewById(R.id.switch_thermal_bypass);
+        switchAdpfEngine = view.findViewById(R.id.switch_adpf_engine);
+        switchVideoSaver = view.findViewById(R.id.switch_video_saver);
 
         if (btn185 != null) {
             btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
@@ -559,6 +603,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
             if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
+            if (switchAdpfEngine != null) switchAdpfEngine.setChecked(ManualSettingsPreferences.isAdpfEngineEnabled(getContext()));
+            if (switchVideoSaver != null) switchVideoSaver.setChecked(ManualSettingsPreferences.isVideoSaverEnabled(getContext()));
             isProgrammaticToggle = false;
         }
 
@@ -636,6 +682,35 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         }
                     });
                 });
+            });
+        }
+
+        if (switchAdpfEngine != null) {
+            switchAdpfEngine.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                ManualSettingsPreferences.setAdpfEngineEnabled(getContext(), isChecked);
+                Toast.makeText(getContext(), isChecked
+                        ? "⚡ Android 13–16 ADPF Power Hint Engine Enabled"
+                        : "ADPF Engine Disabled", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (switchVideoSaver != null) {
+            switchVideoSaver.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                ManualSettingsPreferences.setVideoSaverEnabled(getContext(), isChecked);
+                if (videoSettingsBg != null) {
+                    if (isChecked) {
+                        videoSettingsBg.pause();
+                        videoSettingsBg.setVisibility(View.GONE);
+                    } else {
+                        videoSettingsBg.setVisibility(View.VISIBLE);
+                        videoSettingsBg.play();
+                    }
+                }
+                Toast.makeText(getContext(), isChecked
+                        ? "🔋 Video Saver Enabled: Static Glass UI Active"
+                        : "Cyber Video Background Restored", Toast.LENGTH_SHORT).show();
             });
         }
 

@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gamebooster.app.R;
@@ -35,11 +36,39 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
     }
 
     public void updateList(List<GameAppInfo> newList) {
-        games.clear();
-        if (newList != null) {
-            games.addAll(newList);
-        }
-        notifyDataSetChanged();
+        if (newList == null) newList = new ArrayList<>();
+        final List<GameAppInfo> oldList = new ArrayList<>(this.games);
+        final List<GameAppInfo> finalNewList = newList;
+
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return oldList.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return finalNewList.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                String oldPkg = oldList.get(oldItemPosition).getPackageName();
+                String newPkg = finalNewList.get(newItemPosition).getPackageName();
+                return oldPkg != null && oldPkg.equals(newPkg);
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                GameAppInfo oldItem = oldList.get(oldItemPosition);
+                GameAppInfo newItem = finalNewList.get(newItemPosition);
+                return oldItem.equals(newItem) || (oldItem.getLabel() != null && oldItem.getLabel().equals(newItem.getLabel()));
+            }
+        });
+
+        this.games.clear();
+        this.games.addAll(finalNewList);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull

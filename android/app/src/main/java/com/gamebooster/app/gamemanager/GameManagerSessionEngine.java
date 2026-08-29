@@ -88,6 +88,21 @@ public final class GameManagerSessionEngine {
         // ── 4. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
+        // ── 4b. Format-Aware Per-Game Configuration & Physics Injection ──────
+        try {
+            com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
+            com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
+            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+            com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+            if (profile == null) {
+                profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, targetFps, true, true);
+            }
+            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+            Log.i(TAG, "✅ Injected optimal configs & tunings for " + pkg + " @ " + targetFps + " FPS");
+        } catch (Throwable t) {
+            Log.w(TAG, "Config auto-injection non-fatal warning: " + t.getMessage());
+        }
+
         // ── 5. Force High Hardware Display Refresh Rate ──────────────────────
         try {
             MaxHzForceChannel.forceApply(targetFps);
@@ -127,11 +142,22 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "DND/Network warning: " + t.getMessage());
         }
 
-        // ── 9. Safe Process Priority (CFS renice on main PID without thread disruption) ──
+        // ── 9. Safe Process Priority (CFS renice on main PID & Android 13-16 OS hooks) ──
         final int finalFps = targetFps;
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
-                Thread.sleep(2000);
+                // Android 13, 14, 15, 16 Native Game Mode & Per-App Window Refresh Rate
+                ShizukuExecutor.executeShizukuCommands(
+                        "cmd game set --mode 2 " + pkg + " 2>/dev/null || true",
+                        "cmd game set --fps " + finalFps + " " + pkg + " 2>/dev/null || true",
+                        "cmd window set-app-refresh-rate " + pkg + " " + finalFps + " 2>/dev/null || true",
+                        // Android 14-16 Linux UClamp & CFS Top-App Scheduling Boost
+                        "echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null || true",
+                        "echo 1024 > /sys/fs/cgroup/top-app/uclamp.min 2>/dev/null || true",
+                        "echo 100 > /dev/stune/top-app/schedtune.boost 2>/dev/null || true"
+                );
+
+                Thread.sleep(1500);
                 String pidOut = ShizukuExecutor.executeShizukuCommand("pidof " + pkg);
                 if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
                     String[] pids = pidOut.trim().split("\\s+");

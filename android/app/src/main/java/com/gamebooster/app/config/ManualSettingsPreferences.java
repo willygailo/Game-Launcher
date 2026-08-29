@@ -173,6 +173,40 @@ public class ManualSettingsPreferences {
         return getPrefs(context).getBoolean(KEY_DUAL_DATA_WIFI, false);
     }
 
+    private static final String KEY_ADPF_ENGINE = "pref_adpf_engine";
+    private static final String KEY_VIDEO_SAVER = "pref_video_saver";
+    private static final String KEY_AOT_SPEED = "pref_aot_speed";
+
+    public static void setAdpfEngineEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_ADPF_ENGINE, enabled).apply();
+    }
+
+    public static boolean isAdpfEngineEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_ADPF_ENGINE, true);
+    }
+
+    public static void setVideoSaverEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_VIDEO_SAVER, enabled).apply();
+    }
+
+    public static boolean isVideoSaverEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_VIDEO_SAVER, false);
+    }
+
+    public static void setAotSpeedEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_AOT_SPEED, enabled).apply();
+    }
+
+    public static boolean isAotSpeedEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_AOT_SPEED, true);
+    }
+
     /**
      * Applies all stored manual hardware, kernel, network, and driver settings via Shizuku.
      */

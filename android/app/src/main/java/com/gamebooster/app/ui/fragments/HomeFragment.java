@@ -139,6 +139,24 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             rvGames.setItemAnimator(null);
             adapter = new HomeGamesAdapter(getContext(), gameList);
             rvGames.setAdapter(adapter);
+
+            // Smart Scroll Optimization: pause background video decoding during scroll to guarantee 120Hz/144Hz scroll smoothness
+            rvGames.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (getContext() != null && com.gamebooster.app.config.ManualSettingsPreferences.isVideoSaverEnabled(getContext())) {
+                        return;
+                    }
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING) {
+                        if (videoHomeBg != null) videoHomeBg.pause();
+                        if (videoHeroBanner != null) videoHeroBanner.pause();
+                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        if (videoHomeBg != null) videoHomeBg.play();
+                        if (videoHeroBanner != null) videoHeroBanner.play();
+                    }
+                }
+            });
         }
 
         updateStatusStrip();
@@ -155,10 +173,33 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         super.onResume();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         ShizukuManager.addStateListener(this);
-        if (videoHomeBg != null) videoHomeBg.play();
-        if (videoHeroBanner != null) videoHeroBanner.play();
+        applyVideoBackgroundState();
         updateStatusStrip();
         loadAndScanGamesZeroDelay();
+    }
+
+    private void applyVideoBackgroundState() {
+        if (getContext() == null) return;
+        boolean videoSaver = com.gamebooster.app.config.ManualSettingsPreferences.isVideoSaverEnabled(getContext());
+        if (videoSaver) {
+            if (videoHomeBg != null) {
+                videoHomeBg.pause();
+                videoHomeBg.setVisibility(View.GONE);
+            }
+            if (videoHeroBanner != null) {
+                videoHeroBanner.pause();
+                videoHeroBanner.setVisibility(View.GONE);
+            }
+        } else {
+            if (videoHomeBg != null) {
+                videoHomeBg.setVisibility(View.VISIBLE);
+                videoHomeBg.play();
+            }
+            if (videoHeroBanner != null) {
+                videoHeroBanner.setVisibility(View.VISIBLE);
+                videoHeroBanner.play();
+            }
+        }
     }
 
     @Override
@@ -175,8 +216,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             if (videoHomeBg != null) videoHomeBg.pause();
             if (videoHeroBanner != null) videoHeroBanner.pause();
         } else {
-            if (videoHomeBg != null) videoHomeBg.play();
-            if (videoHeroBanner != null) videoHeroBanner.play();
+            applyVideoBackgroundState();
             updateStatusStrip();
             loadAndScanGamesZeroDelay();
         }
@@ -216,7 +256,17 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         if (isShizukuActive) {
             if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ FULL ACCESS: SHIZUKU API ACTIVE");
+                String osBadge = "SHIZUKU API ACTIVE";
+                if (android.os.Build.VERSION.SDK_INT >= 36) {
+                    osBadge = "ANDROID 16 BAKLAVA • ADPF 3.0";
+                } else if (android.os.Build.VERSION.SDK_INT >= 35) {
+                    osBadge = "ANDROID 15 • ADPF 3.0 + 16KB";
+                } else if (android.os.Build.VERSION.SDK_INT >= 34) {
+                    osBadge = "ANDROID 14 • ADPF 2.0";
+                } else if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    osBadge = "ANDROID 13 • GAME ENGINE";
+                }
+                tvEngineMode.setText("⚡ " + osBadge);
                 tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
             }
         } else if (ShizukuExecutor.isShizukuAvailable()) {

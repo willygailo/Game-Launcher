@@ -102,31 +102,34 @@ public class DeviceSpooferEngine {
         if (packageName == null) return SpoofProfileRegistry.getById("samsung_s26_ultra");
         String pkg = packageName.toLowerCase();
 
-        // 1. PUBGM / BGMI / Free Fire / Battle Royale
+        // 1. PUBGM / BGMI / Free Fire / Battle Royale (eSports high refresh rate)
         if (pkg.contains("tencent.ig") || pkg.contains("pubg") || pkg.contains("imobile") || 
             pkg.contains("krmobile") || pkg.contains("vng.pubgmobile") || pkg.contains("freefire") || 
             pkg.contains("arenabreakout") || pkg.contains("farlight84")) {
-            return SpoofProfileRegistry.getById("samsung_s26_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("redmagic_10_pro_plus");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
         }
 
-        // 2. CODM / Warzone / Blood Strike / Tactical FPS
+        // 2. CODM / Warzone / Blood Strike / Tactical FPS (Snapdragon 8 Elite / Adreno 840)
         if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike") || 
             pkg.contains("standoff2") || pkg.contains("deltaforce")) {
             return SpoofProfileRegistry.getById("samsung_s26_ultra");
         }
 
-        // 3. MLBB / HOK / Arena of Valor / Wild Rift / Roblox
+        // 3. MLBB / HOK / Arena of Valor / Wild Rift / Roblox (185Hz / Ultra-low Touch Latency)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("sgame") || 
             pkg.contains("wildrift") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || 
             pkg.contains("kgvn") || pkg.contains("kgid") || pkg.contains("roblox")) {
-            return SpoofProfileRegistry.getById("samsung_s26_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("asus_rog9_pro_edition");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
         }
 
-        // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves
+        // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves (Vulkan Ultra Tier 5)
         if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai") || 
             pkg.contains("cognosphere") || pkg.contains("mihoyo") || pkg.contains("hoyoverse") || 
             pkg.contains("nap") || pkg.contains("wutheringwaves")) {
-            return SpoofProfileRegistry.getById("xiaomi_15_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("xiaomi_15_ultra");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
         }
 
         // Default Flagship Profile

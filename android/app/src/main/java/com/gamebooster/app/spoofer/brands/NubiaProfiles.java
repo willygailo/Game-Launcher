@@ -41,7 +41,7 @@ public class NubiaProfiles {
                 "512.615.0",
                 24576,
                 20480,
-                144
+                165
         ));
 
         // 2. Nubia REDMAGIC 10 Pro (Snapdragon 8 Elite + Red Core R3 / 16GB / 144Hz)
