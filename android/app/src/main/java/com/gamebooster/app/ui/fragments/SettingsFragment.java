@@ -198,6 +198,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Settings Background Looping Video
         videoSettingsBg = view.findViewById(R.id.video_settings_bg);
         if (videoSettingsBg != null) {
+            videoSettingsBg.setMuted(true);
             videoSettingsBg.setVideoRawResource(R.raw.settings_bg_video);
         }
 

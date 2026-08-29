@@ -148,17 +148,13 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         holder.tvDescription.setText(targetItem.getDescription());
 
         boolean hasShizuku = ShizukuManager.isShizukuRunningAndGranted() || RishManager.isRishAvailable();
-        boolean hasRoot = ShellExecutor.isRootSuAvailable();
-        boolean hasElevatedAccess = hasShizuku || hasRoot;
+        boolean hasElevatedAccess = hasShizuku;
 
-        if (hasRoot) {
-            holder.tvBadge.setText("[ROOT / SUPERUSER]");
-            holder.tvBadge.setTextColor(Color.parseColor("#00F0FF"));
-        } else if (hasShizuku) {
-            holder.tvBadge.setText("[SHIZUKU / PRIVILEGED]");
+        if (hasShizuku) {
+            holder.tvBadge.setText("[SHIZUKU ACTIVE / FULL NATIVE]");
             holder.tvBadge.setTextColor(Color.parseColor("#00FF66"));
         } else {
-            holder.tvBadge.setText("[SHIZUKU / ROOT REQUIRED]");
+            holder.tvBadge.setText("[SHIZUKU ACCESS REQUIRED]");
             holder.tvBadge.setTextColor(Color.parseColor("#FF4444"));
         }
 

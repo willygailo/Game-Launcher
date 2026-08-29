@@ -590,15 +590,6 @@ public class TweakManagerRepository {
             } catch (Throwable ignored) {}
         }
 
-        // Tier 2/3: Root su execution
-        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
-            com.gamebooster.app.engine.ShellExecutor.CommandResult rootRes =
-                    com.gamebooster.app.engine.ShellExecutor.executeCommand(command, true);
-            if (rootRes.isSuccess()) {
-                return rootRes.stdout.isEmpty() ? "SUCCESS" : rootRes.stdout;
-            }
-        }
-
         // Tier 3: Standard CommandExecutor fallback
         return CommandExecutor.executeSystemCommand(command);
     }
@@ -731,7 +722,7 @@ public class TweakManagerRepository {
         if (context == null) return;
         AppExecutors.getInstance().executeCommand(() -> {
             EngineMode mode = CommandExecutor.getActiveEngineMode();
-            if (mode == EngineMode.READ_ONLY && !com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) return;
+            if (mode == EngineMode.READ_ONLY && !com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) return;
 
             // 1. Re-apply all enabled Shizuku ADB system tweaks
             List<String> savedCmds = new ArrayList<>();

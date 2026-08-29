@@ -66,12 +66,7 @@ public final class ResolutionScalerEngine {
             if (out != null && !out.startsWith("ERROR")) return out;
         }
 
-        if (ShellExecutor.isRootSuAvailable()) {
-            ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command, true);
-            if (cr != null && cr.isSuccess()) return cr.stdout;
-        }
-
-        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command, false);
+        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command);
         return cr != null ? cr.stdout : "";
     }
 

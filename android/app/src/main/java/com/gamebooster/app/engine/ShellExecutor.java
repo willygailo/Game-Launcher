@@ -23,31 +23,15 @@ public class ShellExecutor {
         }
     }
 
-    private static Boolean sHasSu = null;
-
+    /**
+     * Non-rooted system design: root / su is completely disabled.
+     * Privileged operations run via Shizuku AIDL and Rish.
+     */
     public static boolean isRootSuAvailable() {
-        if (sHasSu != null) return sHasSu;
-        String[] paths = {"/system/bin/su", "/system/xbin/su", "/sbin/su", "/data/local/xbin/su",
-                "/data/local/bin/su", "/system/sd/xbin/su", "/system/bin/failsafe/su", "/data/local/su"};
-        for (String p : paths) {
-            try {
-                if (new File(p).exists()) {
-                    sHasSu = true;
-                    return true;
-                }
-            } catch (Throwable ignored) {}
-        }
-        sHasSu = false;
         return false;
     }
 
     public static CommandResult executeCommand(String command, boolean preferRoot) {
-        if (preferRoot && isRootSuAvailable()) {
-            CommandResult suRes = executeInternal("su", command);
-            if (suRes.isSuccess()) {
-                return suRes;
-            }
-        }
         return executeCommand(command);
     }
 

@@ -61,14 +61,24 @@ public class PerformanceChannel {
         ThermalChannel.setThermalOverride(true);
         RamZramChannel.trimMemoryAndCleanCache(context);
         RamZramChannel.applyIOAndMemoryFlags();
-        writeAndExecuteRootTweaksScript(targetHz);
+        writeAndExecutePerformanceTweaksScript(targetHz);
 
         return new ProfileResult(true, targetHz, "⚡ " + profile.title + " Locked @ " + targetHz + "Hz");
     }
 
-    /** Writes and executes root shell script at 185Hz. */
+    /** Writes and executes elevated performance script at 185Hz. */
+    public static boolean writeAndExecutePerformanceTweaksScript() {
+        return writeAndExecutePerformanceTweaksScript(185);
+    }
+
+    /** Backward compatibility alias. */
     public static boolean writeAndExecuteRootTweaksScript() {
-        return writeAndExecuteRootTweaksScript(185);
+        return writeAndExecutePerformanceTweaksScript(185);
+    }
+
+    /** Backward compatibility alias. */
+    public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
+        return writeAndExecutePerformanceTweaksScript(targetHz);
     }
 
     /**
@@ -76,7 +86,7 @@ public class PerformanceChannel {
      *
      * @param targetHz Target refresh rate (120, 144, 165, or 185)
      */
-    public static boolean writeAndExecuteRootTweaksScript(int targetHz) {
+    public static boolean writeAndExecutePerformanceTweaksScript(int targetHz) {
         final int hz = targetHz > 0 ? targetHz : 185;
         try {
             String targetGamesCsv = GpuTweaksChannel.getTargetGamesCsv();
@@ -299,7 +309,7 @@ public class PerformanceChannel {
                 return CommandExecutor.isSuccessOutput(res);
             }
         } catch (Throwable t) {
-            Log.w(TAG, "Error executing root tweaks script", t);
+            Log.w(TAG, "Error executing performance tweaks script", t);
             return false;
         }
     }

@@ -78,11 +78,10 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             videoHomeBg.setVideoRawResource(R.raw.home_bg_video);
         }
 
-        // Hero Hardware Banner Looping Video (With Audio Enabled)
+        // Hero Hardware Banner Looping Video (Video Only - Silent)
         videoHeroBanner = view.findViewById(R.id.video_hero_banner);
         if (videoHeroBanner != null) {
-            videoHeroBanner.setMuted(false);
-            videoHeroBanner.setVolume(1.0f, 1.0f);
+            videoHeroBanner.setMuted(true);
             videoHeroBanner.setVideoRawResource(R.raw.banner_video);
         }
 

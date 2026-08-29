@@ -196,12 +196,6 @@ public final class GameManagerLauncher {
                         }
                     }
 
-                    if (!elevatedSuccess && ShellExecutor.isRootSuAvailable()) {
-                        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(startCmd, true);
-                        if (cr.isSuccess()) {
-                            elevatedSuccess = true;
-                        }
-                    }
 
                     if (elevatedSuccess) {
                         AppExecutors.getInstance().postToMainThread(() -> {

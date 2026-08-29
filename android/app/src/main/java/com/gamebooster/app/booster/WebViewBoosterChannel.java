@@ -80,7 +80,7 @@ public final class WebViewBoosterChannel {
     }
 
     /**
-     * Applies full WebView performance optimizations using elevated shell/Shizuku/Root and system properties.
+     * Applies full WebView performance optimizations using elevated Shizuku and system properties.
      */
     public static boolean applyWebViewPerformanceBoost() {
         String flags = getWebViewCommandLineFlags();
@@ -175,7 +175,7 @@ public final class WebViewBoosterChannel {
                 targetFile.setReadable(true, false);
             }
         } catch (Throwable ignored) {
-            // Root/Shizuku execution is the primary path
+            // Shizuku execution is the primary path
         }
     }
 }

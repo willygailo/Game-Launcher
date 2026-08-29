@@ -56,8 +56,7 @@ public final class ArtCompilerEngine {
     public static boolean isCompilerAvailable() {
         return ShizukuExecutor.hasShizukuPermission()
                 || ShizukuUserServiceConnector.getInstance().isServiceConnected()
-                || RishManager.isRishAvailable()
-                || ShellExecutor.isRootSuAvailable();
+                || RishManager.isRishAvailable();
     }
 
     /**
@@ -79,12 +78,7 @@ public final class ArtCompilerEngine {
             if (out != null && !out.startsWith("ERROR")) return out;
         }
 
-        if (ShellExecutor.isRootSuAvailable()) {
-            ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command, true);
-            if (cr != null && cr.isSuccess()) return cr.stdout;
-        }
-
-        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command, false);
+        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command);
         return cr != null ? cr.stdout : "";
     }
 

@@ -17,7 +17,7 @@ import java.util.Set;
  * GameConfigStorageAccessEngine — Comprehensive internal & external storage permission,
  * path resolution, and combo access manager for Android 13, 14, 15, and 16.
  *
- * Grants root/Shizuku full read/write permission (chmod 777, chown, setenforce, AppOps)
+ * Grants Shizuku elevated read/write permission (chmod 777, chown, setenforce, AppOps)
  * to all game data folders (/sdcard/Android/data, /sdcard/Android/obb, /data/data)
  * and verifies config path integrity.
  */
@@ -191,7 +191,7 @@ public final class GameConfigStorageAccessEngine {
         }
 
         String summary = hasShizuku
-                ? "Full Shizuku/Root Combo Access Granted (" + paths.size() + " paths unlocked)"
+                ? "Full Shizuku Elevated Access Granted (" + paths.size() + " paths unlocked)"
                 : (accessibleCount > 0
                 ? "Standard Access (" + accessibleCount + "/" + paths.size() + " paths)"
                 : "Restricted Scoped Storage (Grant Shizuku)");

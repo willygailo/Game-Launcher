@@ -33,9 +33,8 @@ public class CommandExecutor {
             if (res != null) return res;
         }
 
-        // 3. Fallback to Root SU / Local Shell Execution
-        boolean preferRoot = ShellExecutor.isRootSuAvailable();
-        ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command, preferRoot);
+        // 3. Fallback to Local Shell Execution
+        ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command);
         if (!shellRes.isSuccess()) {
             return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
         }
