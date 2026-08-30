@@ -97,6 +97,83 @@ public class ArenaBreakoutConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Arena Breakout.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "+CVars=r.FrameRateLimit=185",
+            "+CVars=r.MobileFPSLimit=185",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.FramePacing=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.SuppressLogs=1",
+            "MaxFPS=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
+            "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
+            "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
+            "HDRMode=1", "ResolutionScale=120",
+            "UltraExtreme=1", "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True", "Vsync=0",
+            "TouchBoostHz=185", "TouchPollingRate=1000",
+            "GyroSampleRate=1000", "GyroZeroDelay=1",
+            // ── Zero Recoil & Weapon Stability ──
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.ScopeStability=10.00",
+            // ── Aim Assist & Tracking ──
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssist.Magnetism=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.AimSnapStrength=100.00",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.BulletTracking=1",
+            "+CVars=r.HitboxExpansion=100.00",
+            "+CVars=r.ArmorPiercing=10.00",
+            "+CVars=r.WallbangDamage=10.00"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "ArenaBreakout UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

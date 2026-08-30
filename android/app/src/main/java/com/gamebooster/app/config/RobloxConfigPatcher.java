@@ -67,6 +67,49 @@ public class RobloxConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Roblox.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "MaxFPS=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "HighFPSMode=1",
+            "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
+            "QualityLevel=5", "TextureQuality=4", "ShadowQuality=2",
+            "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
+            "HDRMode=1", "ResolutionScale=120",
+            "UltraExtreme=1", "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True", "Vsync=0",
+            "TouchBoostHz=185", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1",
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
+            "ZeroRecoil=1", "RecoilControl=1", "MovementSpeedMultiplier=15.00"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Roblox UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

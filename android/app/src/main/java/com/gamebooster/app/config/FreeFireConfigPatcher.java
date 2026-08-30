@@ -137,6 +137,126 @@ public class FreeFireConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Free Fire / Free Fire MAX.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "HighFPS=1",
+            "HighFPSMode=1",
+            "FPSMode=2",
+            "FrameRateLevel=10",
+            "MaxFPS=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── Max Graphics ──
+            "GraphicLevel=4",
+            "TextureQuality=4",
+            "Shadow=1",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HighResolution=1",
+            "ResolutionScale=120",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "SuperResolution=1",
+            "VulkanEnabled=1",
+            "bReduceLoadedMips=False",
+            // ── SuperSmooth Frame Pacing ──
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "HighFreqTouchHz=185",
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=20.0",
+            "GyroZeroDelay=1",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            // ── 1000% Aim Assist, Target Lock & Magnetism ──
+            "AimAssist=1",
+            "AutoAimPrecision=100.0",
+            "AimAssistStrength=10000",
+            "AimAssistLevel=10",
+            "AimPrecision=100",
+            "AutoAim=1",
+            "AimTracking=1",
+            "TargetLock=1",
+            "TargetLockSensitivity=10000",
+            "AimAssistRadius=5000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
+            "SprintSensitivity=1000",
+            "GeneralSensitivity=1000",
+            "RedDotSensitivity=1000",
+            "TPPFov=180",
+            "FPPFov=180",
+            "HeadshotAimAssist=1",
+            "PrecisionAim=1",
+            // ── All Guns Zero Recoil ──
+            "NoRecoil=1",
+            "ZeroRecoil=1",
+            "RecoilControl=1",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "RecoilReduction=1.00",
+            "WeaponStability=1000",
+            "ScopeShakeReduction=1.00",
+            "ScopeStability=1000",
+            "FirstBulletAccuracy=1",
+            "AimPunchReduction=1",
+            "FlinchReduction=1",
+            // ── Damage Script & Tracking ──
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "BulletMagnetism=100.00",
+            "HitboxExpansion=100.00",
+            "DamageScript=1",
+            "DamageMultiplier=10.00",
+            "UltraDamage=1",
+            "HeadshotMultiplier=10.00",
+            "HeadshotDamageMultiplier=10.00",
+            "CritDamageMultiplier=10.00",
+            "FastCooldown=1",
+            "CooldownReduction=0.99"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[FFGraphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "FreeFire UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

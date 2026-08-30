@@ -77,6 +77,58 @@ public class GenshinConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Genshin / Star Rail / ZZZ.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "targetFrameRate=185",
+            "maxFrameRate=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
+            "HighFPSMode=1",
+            "graphicsQuality=5",
+            "textureQuality=4",
+            "shadowQuality=2",
+            "antiAliasing=4",
+            "bloomQuality=5",
+            "maxAnisotropy=16",
+            "hdrMode=1",
+            "resolutionQuality=4",
+            "ResolutionScale=120",
+            "UltraExtreme=1", "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "vSync=0", "Vsync=0",
+            "TouchBoostHz=185", "TouchPollingRate=1000",
+            // ── Action RPG Combat Scaling ──
+            "DamageMultiplier=1000.00", "PhysicalDamageBoost=1000.00", "MagicDamageBoost=1000.00",
+            "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99", "MovementSpeedMultiplier=15.00",
+            "AttackSpeedMultiplier=25.00", "ShieldMultiplier=1500.00", "ShieldCapacity=1500.00"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Genshin UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

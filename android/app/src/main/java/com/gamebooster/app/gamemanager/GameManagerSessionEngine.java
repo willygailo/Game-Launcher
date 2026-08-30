@@ -134,12 +134,13 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Native framework lock warning: " + t.getMessage());
         }
 
-        // ── 8. Runtime Session Framework & Network Boost ─────────────────────
+        // ── 8. Runtime Session Framework, Touch & Network Boost ──────────────
         try {
+            com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
             NetworkOptimizer.optimizeAllDataAndWifi(appContext);
             GameSpaceDndManager.setGamingDndMode(appContext, true);
         } catch (Throwable t) {
-            Log.w(TAG, "DND/Network warning: " + t.getMessage());
+            Log.w(TAG, "DND/Network/Touch warning: " + t.getMessage());
         }
 
         // ── 9. Safe Process Priority (CFS renice on main PID & Android 13-16 OS hooks) ──

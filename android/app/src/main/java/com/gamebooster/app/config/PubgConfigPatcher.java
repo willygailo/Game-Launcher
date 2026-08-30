@@ -210,6 +210,191 @@ public class PubgConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Complete 185fps SuperSmooth + UltraExtreme Graphics patch for PUBGM / BGMI.
+     * Includes frame-pacing, 16x anisotropic filtering, max shadow resolution, TAA upscale,
+     * and full UE4 CVar injection at 185 FPS.
+     *
+     * @return true if at least one path was written
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── SuperSmooth 185fps UE4 CVars ──
+            "+CVars=r.PUBGDeviceFPS=10",
+            "+CVars=r.PUBGMaxFPS=185",
+            "+CVars=r.PUBGFrameRateLimit=185",
+            "+CVars=r.FrameRateLimit=185",
+            "+CVars=r.MobileFPSLimit=185",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.TouchBoostHz=185",
+            "+CVars=r.MobileTouchBoostRate=185",
+            "+CVars=r.FramePacing=1",
+            // ── UltraExtreme Graphics CVars ──
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.PUBGHDRMode=1",
+            "+CVars=r.PUBGQualityLevel=4",
+            "+CVars=r.PUBGSDKQualityLevel=4",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.HDR.Display.OutputDevice=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.ReflectionCaptureResolution=256",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.MobileTonemapperFilm=1",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SuppressLogs=1",
+            "+CVars=r.DisableDebugLog=1",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroZeroDelay=1",
+            // ── Zero Recoil & Weapon Stability CVars ──
+            "+CVars=r.PUBGZeroRecoil=1",
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.ScreenShake=0",
+            "+CVars=r.WeaponSway=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.CrosshairSpread=0.00",
+            "+CVars=r.ScopeStability=10.00",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.AimPunchReduction=1",
+            "+CVars=r.FlinchReduction=1",
+            // ── Aim Assist & Magnetism CVars ──
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.AimAssist.Magnetism=100.00",
+            "+CVars=r.AimAssist.SnapSpeed=100.00",
+            "+CVars=r.AimAssistRadius=1000",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.AimSnapStrength=100.00",
+            "+CVars=r.AimLead=1",
+            "+CVars=r.AimLeadStrength=100.00",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.ScopeAimAssist=1",
+            "+CVars=r.RedDotAimAssist=1",
+            "+CVars=r.SniperAimAssist=1",
+            // ── INI Keys ──
+            "FPS=185",
+            "MaxFPS=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "MobileFPSLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "HighFPSMode=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            // ── UltraExtreme Graphics INI ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "ResolutionQuality=120",
+            "ResolutionScale=120",
+            "ScreenScale=120",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            "bUseHighQualityBloom=True",
+            "BloomQuality=5",
+            "AntiAliasingQuality=4",
+            "bUseAntiAliasing=True",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "TextureQuality=4",
+            "MaxAnisotropy=16",
+            "bReduceLoadedMips=False",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150",
+            "bDisableAnalytics=True",
+            "bDisableBugReporting=True",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=2.5",
+            "GyroZeroDelay=1",
+            "GyroLatencyMode=0",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            // ── Combat Physics Tuning INI ──
+            "RecoilControl=1",
+            "ZeroRecoil=1",
+            "NoRecoil=1",
+            "RecoilScale=0.00",
+            "VerticalRecoil=0.00",
+            "HorizontalRecoil=0.00",
+            "RecoilReduction=1.00",
+            "WeaponStability=1000",
+            "AimAssist=1",
+            "AimAssistStrength=10000",
+            "AimAssistLevel=10",
+            "AimPrecision=100",
+            "AutoAim=1",
+            "AimTracking=1",
+            "TargetLock=1",
+            "TargetLockSensitivity=10000",
+            "AimAssistRadius=5000",
+            "CrosshairMagnetism=100.00",
+            "AimSnapStrength=100.00",
+            "AimMagnetism=100.00",
+            "TrackingBullet=1",
+            "BulletTracking=1",
+            "BulletMagnetism=100.00",
+            "HitboxExpansion=100.00",
+            "DamageMultiplier=10.00",
+            "UltraDamage=1",
+            "HeadshotDamageMultiplier=10.00",
+            "CritRate=100.00",
+            "CritDamageMultiplier=10.00",
+            "FastCooldown=1",
+            "CooldownReduction=0.99"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 185);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
 
 

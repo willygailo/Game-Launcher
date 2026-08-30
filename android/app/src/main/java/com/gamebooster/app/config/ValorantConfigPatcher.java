@@ -118,6 +118,96 @@ public class ValorantConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Valorant Mobile.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── UE4 CVars ──
+            "+CVars=r.FrameRateLimit=185",
+            "+CVars=r.MobileFPSLimit=185",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.FramePacing=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.SuppressLogs=1",
+            // ── INI Keys ──
+            "MaxFPS=185",
+            "TargetFPS=185",
+            "FrameRateLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "ShadingQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HDRMode=1",
+            "ResolutionScale=120",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1",
+            // ── Zero Recoil & Aim Assist CVars & Keys ──
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.FirstBulletAccuracy=1",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.BulletMagnetism=100.00",
+            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1", "RecoilScale=0.00",
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Valorant UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
 
 

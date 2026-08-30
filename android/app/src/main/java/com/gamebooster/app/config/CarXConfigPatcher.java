@@ -77,6 +77,55 @@ public class CarXConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for CarX / Asphalt / Racing Games.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "TargetFPS=185",
+            "MaxFPS=185",
+            "FPSLimit=0",
+            "FrameRateLimit=185",
+            "FPSLevel=10",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "UnlockHighFPS=1",
+            "Unlock120FPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "GraphicQuality=5",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "HDRMode=1",
+            "Vsync=0",
+            "ResolutionScale=1.2",
+            "ShadowQuality=2",
+            "DynamicResolution=0",
+            "TouchPollingRate=1000",
+            "TouchSlop=1",
+            "TouchZeroDelay=1",
+            "TouchBoostHz=185",
+            // ── Racing Engine & Speed Agility ──
+            "MovementSpeedMultiplier=15.00", "SprintSpeedMultiplier=15.00",
+            "AgilityMultiplier=15.00", "ZeroInputLag=1", "SteeringResponseRate=1000",
+            "ZeroDeadzone=1"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[GraphicSettings]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CarX UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);

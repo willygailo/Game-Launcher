@@ -187,6 +187,104 @@ public class DeltaForceConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Delta Force Mobile.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] cvarKeys = {
+            // FPS unlock
+            "+CVars=r.MaxFPS=185",
+            "+CVars=r.FrameRateLimit=185",
+            "+CVars=r.MobileFPSLimit=185",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            // SuperSmooth
+            "+CVars=r.VSync=0",
+            "+CVars=r.OneFrameThreadLag=0",
+            "+CVars=r.FinishCurrentFrame=0",
+            "+CVars=r.DFR.Enabled=0",
+            "+CVars=r.FramePacing=1",
+            // UltraExtreme graphics
+            "+CVars=r.MobileContentScaleFactor=1.2",
+            "+CVars=r.ShadowQuality=5",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.DefaultFeature.AntiAliasing=4",
+            "+CVars=r.TemporalAA.Quality=4",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.ReflectionEnvironment=1",
+            "+CVars=r.SSR.Quality=4",
+            "+CVars=r.PostProcessAAQuality=6",
+            "+CVars=r.TranslucencyLightingVolumeDim=64",
+            "+CVars=r.LightFunctionQuality=2",
+            "+CVars=r.DetailMode=2",
+            "+CVars=r.Streaming.PoolSize=0",
+            "+CVars=r.RenderTargetPoolMin=2048",
+            "+CVars=r.HDR.EnableHDROutput=1",
+            "+CVars=r.HDR.Display.OutputDevice=4",
+            // Touch 1000Hz
+            "+CVars=r.TouchBoostHz=185",
+            "+CVars=r.TouchPollingRate=1000",
+            "+CVars=r.GyroSampleRate=1000",
+            // Zero Recoil & Aim Assist
+            "+CVars=r.WeaponRecoilScale=0.00",
+            "+CVars=r.VerticalRecoilMultiplier=0.00",
+            "+CVars=r.HorizontalRecoilMultiplier=0.00",
+            "+CVars=r.GunKickReduction=1",
+            "+CVars=r.CameraShake=0",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.AimAssist=1",
+            "+CVars=r.AimAssist.Strength=100.00",
+            "+CVars=r.CrosshairMagnetism=100.00",
+            "+CVars=r.TargetLockSensitivity=1000",
+            "+CVars=r.BulletMagnetism=100.00",
+            "+CVars=r.BulletTracking=1"
+        };
+
+        String[] rawKeys = {
+            "r.MaxFPS=185",
+            "r.FrameRateLimit=185",
+            "r.MobileFPSLimit=185",
+            "r.VSync=0",
+            "r.OneFrameThreadLag=0",
+            "r.FinishCurrentFrame=0",
+            "r.FramePacing=1",
+            "r.MobileContentScaleFactor=1.2",
+            "r.ShadowQuality=5",
+            "r.Shadow.MaxResolution=2048",
+            "r.Tonemapper.Quality=4",
+            "r.DefaultFeature.AntiAliasing=4",
+            "r.TemporalAA.Quality=4",
+            "r.MaxAnisotropy=16",
+            "r.BloomQuality=5",
+            "r.PostProcessAAQuality=6",
+            "r.DetailMode=2",
+            "r.HDR.EnableHDROutput=1",
+            "r.HDR.Display.OutputDevice=4",
+            "bSmoothFrameRate=False",
+            "MaxSmoothedFrameRate=185",
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            boolean isUserCustom = path.contains("UserCustom");
+            String[] keys = isUserCustom ? cvarKeys : rawKeys;
+            String section = isUserCustom ? "[UserCustom DeviceProfile]" : "[/Script/Engine.RendererSettings]";
+            if (ConfigFileHelper.patchKeys(path, keys, section)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "DeltaForce UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     private static boolean applyPatch(String path, int forcedFps) {
         String[] keys = new String[]{
                 "+CVars=r.MaxFPS=" + forcedFps,

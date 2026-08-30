@@ -83,6 +83,66 @@ public class HokConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Honor of Kings / Arena of Valor.
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "FrameRate=185",
+            "TargetFPS=185",
+            "MaxFrameRate=185",
+            "FrameRateLimit=185",
+            "FrameRateLevel=10",
+            "UnlockFPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "HighFPSMode=1",
+            "QualityLevel=5",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            "HDRMode=1",
+            "UltraHDMode=1",
+            "ResolutionScale=120",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TouchBoostHz=185", "TouchPollingRate=1000",
+            "GyroSampleRate=1000", "GyroZeroDelay=1",
+            // ── MOBA Combat & Skill Assist ──
+            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
+            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
+            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
+            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
+            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "HOK UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
 

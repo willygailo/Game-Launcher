@@ -73,6 +73,54 @@ public class SupercellConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 185 FPS and Ultra Graphics presets for Supercell Games (Brawl Stars, Clash Royale, etc.).
+     */
+    public static boolean patchUltraExtreme185(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            "TargetFPS=185",
+            "MaxFPS=185",
+            "FPSLevel=10",
+            "FPSCap=185",
+            "HighFPSMode=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock185FPS=1",
+            "Ultra185FPS=1",
+            "HighRefreshRate=1",
+            "GraphicQuality=5",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "HDRMode=1",
+            "ResolutionScale=1.2",
+            "TouchPollingRate=1000",
+            "TouchSlop=1",
+            "TouchZeroDelay=1",
+            "TouchBoostHz=185",
+            // ── Smart Aim Lock & Combat Agility ──
+            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
+            "AutoAim=1", "AimTracking=1", "TargetLock=1", "ZeroInputLag=1",
+            "DamageMultiplier=1000.00", "MovementSpeedMultiplier=15.00"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (ConfigFileHelper.patchKeys(path, keys, "[SupercellEngine]")) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "Supercell UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
