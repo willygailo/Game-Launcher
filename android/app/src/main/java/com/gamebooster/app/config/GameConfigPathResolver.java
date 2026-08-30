@@ -112,18 +112,19 @@ public class GameConfigPathResolver {
         List<String> roots = new ArrayList<>();
         // 1. Primary User 0 standard storage locations (highest priority)
         roots.add("/storage/emulated/0/Android/data/" + pkg);
-        roots.add("/sdcard/Android/data/" + pkg);
         roots.add("/data/user/0/" + pkg);
         roots.add("/data/data/" + pkg);
         roots.add("/storage/emulated/0/Android/media/" + pkg);
-        roots.add("/sdcard/Android/media/" + pkg);
 
-        // 2. Multi-profile / Dual App / Private Space roots (Android 13, 14, 15, 16)
+        // 2. Multi-profile / Dual App / Private Space roots only if secondary user dir exists
         int[] secondaryUserIds = {10, 11, 12, 13, 14, 15, 999};
         for (int u : secondaryUserIds) {
-            roots.add("/storage/emulated/" + u + "/Android/data/" + pkg);
-            roots.add("/data/user/" + u + "/" + pkg);
-            roots.add("/storage/emulated/" + u + "/Android/media/" + pkg);
+            File userRoot = new File("/storage/emulated/" + u);
+            if (userRoot.exists()) {
+                roots.add("/storage/emulated/" + u + "/Android/data/" + pkg);
+                roots.add("/data/user/" + u + "/" + pkg);
+                roots.add("/storage/emulated/" + u + "/Android/media/" + pkg);
+            }
         }
         return roots;
     }

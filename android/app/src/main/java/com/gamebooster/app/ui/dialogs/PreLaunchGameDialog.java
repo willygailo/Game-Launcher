@@ -211,6 +211,7 @@ public class PreLaunchGameDialog {
             profile.setAntiLogEnabled(true);
             profile.setFocusFreezeEnabled(true);
             CfgProfileManager.saveProfile(context, profile);
+            GameProfilePreferences.setTargetHz(context, pkg, finalFps);
 
             // Launch the game via unified engine (which executes full cold-start pre-injection and auto-opens the game)
             GameManagerLauncher.launchGame(context, game);

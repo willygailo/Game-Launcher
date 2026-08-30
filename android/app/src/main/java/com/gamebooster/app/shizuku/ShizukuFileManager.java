@@ -254,12 +254,23 @@ public final class ShizukuFileManager {
         if (path == null || path.trim().isEmpty()) return "";
 
         try {
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                String direct = ShizukuUserServiceConnector.getInstance().readDirectFile(path);
+                if (direct != null && !direct.startsWith("ERROR:")) {
+                    return direct;
+                }
+            }
+
             if (hasFullAccess()) {
                 String res = ShizukuExecutor.executeShizukuCommand("cat '" + path + "'");
                 if (res != null && !res.startsWith("ERROR:")) {
                     return res;
                 }
             } else {
+                File f = new File(path);
+                if (f.exists() && f.canRead()) {
+                    return new String(java.nio.file.Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
+                }
                 String res = CommandExecutor.executeSystemCommand("cat '" + path + "'");
                 if (res != null && !res.startsWith("ERROR:")) {
                     return res;
@@ -402,8 +413,18 @@ public final class ShizukuFileManager {
             return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath)
                       : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
         } else {
-            CommandExecutor.executeSystemCommand(cmd);
-            return FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell");
+            try {
+                File f = new File(targetProtectedPath);
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
+                    fos.write(data);
+                    fos.flush();
+                }
+                CommandExecutor.executeSystemCommand("chmod " + mode + " '" + targetProtectedPath + "'");
+                return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
+            } catch (Throwable t) {
+                CommandExecutor.executeSystemCommand(cmd);
+                return FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell");
+            }
         }
     }
 

@@ -237,21 +237,6 @@ public final class GameManagerLauncher {
                     }
                 }
 
-                // ── Background Auto-Injection & Config Optimization ──
-                try {
-                    com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, fps);
-                    com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, fps);
-                    com.gamebooster.app.spoofer.HardwareMaskEngine.maskPackage(appContext, pkg);
-                    String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-                    com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
-                    if (profile == null) {
-                        profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, fps, true, true);
-                    }
-                    com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
-                } catch (Throwable t) {
-                    Log.w(TAG, "Pre-config auto-injection warning: " + t.getMessage());
-                }
-
                 // Apply 185/165/144/120 Hz lock to SurfaceFlinger, AOSP & OEM
                 try {
                     MaxHzForceChannel.forceApply(fps);
@@ -283,7 +268,7 @@ public final class GameManagerLauncher {
                     );
                 }
 
-                // Full Game Session: Native C++ config injection, masking, locks
+                // Full Game Session: Native C++ config injection, hardware masking, locks
                 try {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);

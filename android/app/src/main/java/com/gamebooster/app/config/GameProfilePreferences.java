@@ -47,14 +47,33 @@ public final class GameProfilePreferences {
                 .apply();
     }
 
-    /** Always returns 185. */
+    public static void setTargetHz(Context context, String packageName, int targetHz) {
+        if (context == null || packageName == null || packageName.trim().isEmpty()) return;
+        String gameKey = CfgProfileManager.resolveGameKey(packageName);
+        CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
+        if (profile == null) {
+            profile = new CompetitiveCfgProfile(gameKey, targetHz, true, true);
+        } else {
+            profile.setTargetFps(targetHz);
+        }
+        CfgProfileManager.saveProfile(context, profile);
+    }
+
+    /** Returns the configured target Hz for the package, defaulting to 185 if not explicitly configured. */
     public static int getTargetHz(Context context, String packageName) {
+        if (context == null || packageName == null) return 185;
+        try {
+            String gameKey = CfgProfileManager.resolveGameKey(packageName);
+            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
+            if (profile != null && profile.getTargetFps() > 0) {
+                return profile.getTargetFps();
+            }
+        } catch (Throwable ignored) {}
         return 185;
     }
 
-    /** Always returns 185. */
     public static int getTargetHz(Context context, Profile profile) {
-        return 185;
+        return profile != null ? profile.requestedHz : 185;
     }
 
     public static String getSummary(Context context, String packageName) {
