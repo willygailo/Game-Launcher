@@ -554,6 +554,18 @@ public class CodmConfigPatcher {
         CommonConfigTuningInjector.applyTrackingBulletConfig(packageName);
     }
 
+    public static void applyAimHeadLockConfig(String packageName) {
+        CommonConfigTuningInjector.applyAimHeadLockConfig(packageName);
+    }
+
+    public static void applyUltraDamageOverdriveConfig(String packageName) {
+        CommonConfigTuningInjector.applyUltraDamageOverdriveConfig(packageName);
+    }
+
+    public static void applyHeroAimLockConfig(String packageName) {
+        CommonConfigTuningInjector.applyHeroAimLockConfig(packageName);
+    }
+
     public static void applyAntiLog(String packageName) {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }

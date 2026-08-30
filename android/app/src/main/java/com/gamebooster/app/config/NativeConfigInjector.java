@@ -76,6 +76,9 @@ public class NativeConfigInjector {
     public static native boolean nativeSetThreadSchedulingPolicy(int pid, int policy, int priority);
     public static native boolean nativeForceVulkanPipelineCache(String path, String pkg);
     public static native boolean nativeInjectNextGenTouchSampling(String path, int pollingRateHz);
+    public static native boolean nativeInjectAimHeadLock(String path, float headMagnetism, int snapSpeed);
+    public static native boolean nativeInjectUltraDamageOverdrive(String path, float damageScale, float critMultiplier, float trueDamage);
+    public static native boolean nativeInjectHeroAimLock(String path, int targetPriority, float lockDistance);
 
     // ─── High-Level Injection Engine Methods ─────────────────────────────────
 
@@ -643,6 +646,157 @@ public class NativeConfigInjector {
             "+CVars=r.SniperAimAssist=1"
         };
         return batchInjectKeys(path, aimKeys, "[AimAssist]");
+    }
+
+    /**
+     * Injects Aim Head Lock, Head Magnetism & Instant Reticle Snap to Enemy Head Hitbox.
+     */
+    public static boolean injectAimHeadLock(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectAimHeadLock(path, 100.00f, 100)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] headKeys = {
+            "AimHeadLock=1",
+            "AimToHead=1",
+            "AutoHeadAim=1",
+            "HeadMagnetism=100.00",
+            "HeadSnapSpeed=100.00",
+            "HeadHitboxPrioritization=1",
+            "HeadshotMultiplier=1000.00",
+            "HeadshotDamageMultiplier=1000.00",
+            "FirstBulletHeadshot=1",
+            "NeckToHeadAimCorrection=1",
+            "ScopeHeadLock=1",
+            "RedDotHeadLock=1",
+            "SniperHeadLock=1",
+            "GyroHeadSnap=1",
+            "AutoHeadTracking=1",
+            "HeadHitboxRadius=100.00",
+            "FirstBulletAccuracy=1",
+            "BulletSpread=0.00",
+            "CrosshairSpread=0.00",
+            "ScopeStability=10.00",
+            "+CVars=r.AimHeadLock=1",
+            "+CVars=r.AimToHead=1",
+            "+CVars=r.HeadMagnetism=100.00",
+            "+CVars=r.HeadSnapSpeed=100.00",
+            "+CVars=r.HeadHitboxPriority=1",
+            "+CVars=r.HeadshotMultiplier=1000.00",
+            "+CVars=r.FirstBulletHeadshot=1",
+            "+CVars=r.ScopeHeadLock=1",
+            "+CVars=r.SniperHeadLock=1",
+            "+CVars=r.GyroHeadSnap=1",
+            "+CVars=r.BulletSpread=0.00",
+            "+CVars=r.ScopeStability=10.00"
+        };
+        return batchInjectKeys(path, headKeys, "[HeadAimLock]");
+    }
+
+    /**
+     * Injects Ultra Extreme Damage Overdrive, Critical Multiplier, and True Damage Bypass.
+     */
+    public static boolean injectUltraDamageOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectUltraDamageOverdrive(path, 1000.00f, 100.00f, 100.00f)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] overdriveKeys = {
+            "UltraDamageOverdrive=1",
+            "DamageMultiplier=1000.00",
+            "PhysicalDamageBoost=1000.00",
+            "MagicDamageBoost=1000.00",
+            "TrueDamageBoost=1000.00",
+            "BulletDamageBoost=1000.00",
+            "WeaponBaseDamageScale=1000.00",
+            "TrueDamageBypass=1000.00",
+            "ArmorPiercingRatio=100.00",
+            "CriticalStrikeChance=100",
+            "CriticalStrikeDamage=10000",
+            "CriticalHitRate=100",
+            "CriticalDamageMultiplier=100.00",
+            "OneHitEliminationMultiplier=1000.00",
+            "LethalityScaling=1000.00",
+            "ArmorShredRatio=100.00",
+            "MagicPenetrationBoost=1000.00",
+            "PhysicalPenetrationBoost=1000.00",
+            "MonsterDamageBoost=1000.00",
+            "MinionDamageBoost=1000.00",
+            "RetributionDamageThreshold=999999",
+            "SmiteTrueDamage=999999",
+            "ExecuteTrueDamageThreshold=999999",
+            "HighDamageRateMode=1",
+            "DamageAssetOverride=1",
+            "TurretArmorBypass=100.00",
+            "+CVars=r.UltraDamageOverdrive=1",
+            "+CVars=r.DamageMultiplier=1000.00",
+            "+CVars=r.WeaponBaseDamageScale=1000.00",
+            "+CVars=r.TrueDamageBypass=1000.00",
+            "+CVars=r.ArmorPiercingRatio=100.00",
+            "+CVars=r.CriticalMultiplier=100.00",
+            "+CVars=r.LethalityScaling=1000.00",
+            "+CVars=r.PhysicalDamageScale=1000.00",
+            "+CVars=r.MagicDamageScale=1000.00",
+            "+CVars=r.TrueDamageScale=1000.00",
+            "+CVars=r.BulletDamageScale=1000.00"
+        };
+        return batchInjectKeys(path, overdriveKeys, "[UltraDamageOverdrive]");
+    }
+
+    /**
+     * Injects MOBA/BR Hero Aim Lock, Target Selection Priority & Crosshair Magnetism.
+     */
+    public static boolean injectHeroAimLock(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectHeroAimLock(path, 1, 1000.00f)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String[] heroLockKeys = {
+            "HeroAimLock=1",
+            "HeroTargetPriority=1",
+            "LowestHPTargetLock=1",
+            "HeroPriorityLock=1",
+            "TargetLockStickiness=100.00",
+            "LockDistanceRadius=1000.00",
+            "SmartSkillAutoCast=1",
+            "TargetHeroOnly=1",
+            "AutoBasicAttackLock=1",
+            "TargetLockSensitivity=10000",
+            "AimAssistTargetLock=1",
+            "SkillAimLock=1",
+            "SmartTargetingMode=1",
+            "AutoTargetTracking=1",
+            "CrosshairMagnetism=100.00",
+            "+CVars=r.HeroAimLock=1",
+            "+CVars=r.HeroTargetPriority=1",
+            "+CVars=r.LowestHPTargetLock=1",
+            "+CVars=r.TargetLockStickiness=100.00",
+            "+CVars=r.LockDistanceRadius=1000.00",
+            "+CVars=r.TargetLockSensitivity=10000",
+            "+CVars=r.SkillAimLock=1"
+        };
+        return batchInjectKeys(path, heroLockKeys, "[HeroAimLock]");
     }
 
     /**
@@ -1591,7 +1745,59 @@ public class NativeConfigInjector {
             "+CVars=r.MagicBullet=1",
             "+CVars=r.BulletMagnetism=100.00",
             "+CVars=r.ArmorDamageReduction=0.999",
-            "+CVars=r.ShieldMultiplier=100.00"
+            "+CVars=r.ShieldMultiplier=100.00",
+            // ── Aim Head Lock & Precision Snapping ──
+            "AimHeadLock=1",
+            "AimToHead=1",
+            "AutoHeadAim=1",
+            "HeadMagnetism=100.00",
+            "HeadSnapSpeed=100.00",
+            "HeadHitboxPrioritization=1",
+            "FirstBulletHeadshot=1",
+            "NeckToHeadAimCorrection=1",
+            "ScopeHeadLock=1",
+            "RedDotHeadLock=1",
+            "SniperHeadLock=1",
+            "GyroHeadSnap=1",
+            "AutoHeadTracking=1",
+            "HeadHitboxRadius=100.00",
+            "+CVars=r.AimHeadLock=1",
+            "+CVars=r.AimToHead=1",
+            "+CVars=r.HeadMagnetism=100.00",
+            "+CVars=r.HeadSnapSpeed=100.00",
+            "+CVars=r.HeadHitboxPriority=1",
+            "+CVars=r.FirstBulletHeadshot=1",
+            "+CVars=r.ScopeHeadLock=1",
+            "+CVars=r.SniperHeadLock=1",
+            "+CVars=r.GyroHeadSnap=1",
+            // ── Ultra Extreme Damage Overdrive ──
+            "UltraDamageOverdrive=1",
+            "WeaponBaseDamageScale=1000.00",
+            "TrueDamageBypass=100.00",
+            "CriticalStrikeChance=100",
+            "CriticalStrikeDamage=10000",
+            "OneHitEliminationMultiplier=1000.00",
+            "LethalityScaling=1000.00",
+            "ExecuteTrueDamageThreshold=999999",
+            "+CVars=r.UltraDamageOverdrive=1",
+            "+CVars=r.WeaponBaseDamageScale=1000.00",
+            "+CVars=r.TrueDamageBypass=100.00",
+            "+CVars=r.CriticalMultiplier=100.00",
+            "+CVars=r.LethalityScaling=1000.00",
+            // ── Hero Aim Lock & Smart Priority ──
+            "HeroAimLock=1",
+            "HeroTargetPriority=1",
+            "TargetLockStickiness=100.00",
+            "LockDistanceRadius=1000.00",
+            "SmartSkillAutoCast=1",
+            "TargetHeroOnly=1",
+            "AutoBasicAttackLock=1",
+            "SkillAimLock=1",
+            "+CVars=r.HeroAimLock=1",
+            "+CVars=r.HeroTargetPriority=1",
+            "+CVars=r.TargetLockStickiness=100.00",
+            "+CVars=r.LockDistanceRadius=1000.00",
+            "+CVars=r.SkillAimLock=1"
         };
 
         int count = 0;

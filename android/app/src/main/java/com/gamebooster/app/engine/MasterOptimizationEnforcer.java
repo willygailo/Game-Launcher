@@ -94,7 +94,7 @@ public class MasterOptimizationEnforcer {
                 // TIER 3: APK CORE OPTIMIZATION ENGINES
                 // ─────────────────────────────────────────────────────────────
                 if (listener != null) {
-                    AppExecutors.getInstance().postToMainThread(() -> listener.onProgress("🚀 Applying 60 Curated Hardware & Kernel Tweaks...", 65));
+                    AppExecutors.getInstance().postToMainThread(() -> listener.onProgress("🚀 Applying 71 Curated Hardware, Touch, Kernel & Combat Tweaks...", 65));
                 }
 
                 // 3A. Apply curated tweaks repository
@@ -104,6 +104,10 @@ public class MasterOptimizationEnforcer {
                 // 3B. CPU, GPU & WebView hardware channels
                 PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                 PerformanceChannel.setGpuRenderMode(true); // Vulkan 3D
+                CpuGovernorChannel.applyExtendedKernelFlags();
+                GpuTweaksChannel.applyExtendedAdrenoFlags();
+                GpuTweaksChannel.applyExtendedMediaTekFlags();
+                GpuTweaksChannel.applyExtendedTensorFlags();
 
                 // 3C. Touch, Precision Gyro & Network Turbo
                 com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();

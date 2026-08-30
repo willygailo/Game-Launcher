@@ -204,6 +204,42 @@ public final class CommonConfigTuningInjector {
     }
 
     /**
+     * Injects Aim Head Lock & Headshot Magnetism.
+     */
+    public static void applyAimHeadLockConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectAimHeadLock(path);
+        }
+        Log.i(TAG, "Aim Head Lock & Headshot Magnetism applied for " + packageName);
+    }
+
+    /**
+     * Injects Ultra Extreme Damage Overdrive & 10000 Crit Multipliers.
+     */
+    public static void applyUltraDamageOverdriveConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUltraDamageOverdrive(path);
+        }
+        Log.i(TAG, "Ultra Extreme Damage Overdrive applied for " + packageName);
+    }
+
+    /**
+     * Injects Hero Aim Lock & Smart Priority Targeting.
+     */
+    public static void applyHeroAimLockConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectHeroAimLock(path);
+        }
+        Log.i(TAG, "Hero Aim Lock & Smart Target Priority applied for " + packageName);
+    }
+
+    /**
      * Injects Fast Cooldown (99% CDR, zero cast delay, instant energy/mana).
      */
     public static void applyFastCooldownConfig(String packageName) {

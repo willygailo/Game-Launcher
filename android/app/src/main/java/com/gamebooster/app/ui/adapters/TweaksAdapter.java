@@ -108,13 +108,31 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                         matches = true;
                     } else if ((currentQuery.equals("val") || currentQuery.equals("valo")) && (id.contains("valorant") || title.contains("valorant"))) {
                         matches = true;
-                    } else if (currentQuery.equals("fps") && (title.contains("fps") || title.contains("185hz") || title.contains("frame rate") || desc.contains("fps"))) {
+                    } else if (currentQuery.equals("fps") && (title.contains("fps") || title.contains("185hz") || title.contains("frame rate") || desc.contains("fps") || desc.contains("refresh rate"))) {
                         matches = true;
                     } else if (currentQuery.equals("vulkan") && (title.contains("vulkan") || desc.contains("vulkan"))) {
                         matches = true;
-                    } else if (currentQuery.equals("touch") && (title.contains("touch") || desc.contains("touch") || desc.contains("latency"))) {
+                    } else if ((currentQuery.equals("touch") || currentQuery.equals("aim") || currentQuery.equals("sampling")) && (title.contains("touch") || desc.contains("touch") || desc.contains("latency") || title.contains("digitizer") || title.contains("pressure") || title.contains("slop"))) {
                         matches = true;
-                    } else if (currentQuery.equals("gyro") && (title.contains("gyro") || desc.contains("gyro"))) {
+                    } else if (currentQuery.equals("gyro") && (title.contains("gyro") || desc.contains("gyro") || desc.contains("recoil"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("cpu") || currentQuery.equals("kernel")) && (title.contains("cpu") || title.contains("cfs") || title.contains("sched") || title.contains("kernel") || desc.contains("cpu") || desc.contains("kernel"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("gpu") || currentQuery.equals("graphics")) && (title.contains("gpu") || title.contains("adreno") || title.contains("mali") || title.contains("vulkan") || desc.contains("gpu") || desc.contains("graphics"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("net") || currentQuery.equals("ping") || currentQuery.equals("wifi") || currentQuery.equals("dns")) && (title.contains("tcp") || title.contains("wi-fi") || title.contains("dns") || title.contains("packet") || desc.contains("ping") || desc.contains("network"))) {
+                        matches = true;
+                    } else if (currentQuery.equals("audio") && (title.contains("audio") || desc.contains("audio") || desc.contains("gunshot"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("damage") || currentQuery.equals("dmg") || currentQuery.equals("crit")) && (title.contains("damage") || desc.contains("damage") || desc.contains("crit") || id.contains("damage"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("headshot") || currentQuery.equals("head") || currentQuery.equals("longshot")) && (title.contains("headshot") || desc.contains("headshot") || desc.contains("bullet spread") || id.contains("headshot"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("lock") || currentQuery.equals("target") || currentQuery.equals("hero")) && (title.contains("lock") || title.contains("target") || desc.contains("target") || desc.contains("hero") || id.contains("target_lock"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("drone") || currentQuery.equals("fov") || currentQuery.equals("camera")) && (title.contains("drone") || desc.contains("fov") || desc.contains("camera") || id.contains("drone_view"))) {
+                        matches = true;
+                    } else if ((currentQuery.equals("cooldown") || currentQuery.equals("cdr") || currentQuery.equals("skill")) && (title.contains("cooldown") || desc.contains("cooldown") || desc.contains("cdr") || id.contains("fast_cooldown"))) {
                         matches = true;
                     }
                 }

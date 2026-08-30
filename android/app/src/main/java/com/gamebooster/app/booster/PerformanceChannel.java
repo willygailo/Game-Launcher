@@ -239,16 +239,101 @@ public class PerformanceChannel {
                     "cmd thermalservice override-status 0\n" +
                     "cmd thermal override-status 0\n" +
                     "setprop debug.thermal.throttle.disable 1\n" +
+                    // 5. High-Frequency Touch Digitizer, InputFlinger & Palm Rejection Bypass
                     "setprop view.touch_slop 0\n" +
+                    "setprop view.scroll_friction 0.001\n" +
+                    "setprop view.fading_edge_length 0\n" +
+                    "setprop ro.min_pointer_dur 1\n" +
+                    "settings put system touch_slop_reduction 1\n" +
+                    "settings put system pointer_speed 7\n" +
+                    "settings put system touch_sensitivity 1\n" +
+                    "settings put system master_touch_sensitivity 1\n" +
+                    "settings put system game_mode_touch 1\n" +
+                    "settings put system edge_touch_filter 0\n" +
+                    "settings put secure long_press_timeout 150\n" +
+                    "settings put secure multi_press_timeout 100\n" +
+                    "settings put secure edge_rejection_mode 0\n" +
+                    "setprop debug.inputflinger.touch_boost 1\n" +
+                    "setprop debug.inputflinger.fling_boost 1\n" +
+                    "setprop debug.input.boost_time_ms 2000\n" +
                     "setprop debug.input.max_events_per_sec 1000\n" +
+                    "setprop debug.hwui.input_latency_timeout 0\n" +
+                    "setprop persist.sys.input.latency 0\n" +
                     "setprop persist.sys.touch.report_rate 1000\n" +
                     "setprop persist.vendor.touch.sampling_rate 1000\n" +
+                    "setprop debug.touch.sampling_rate 1000\n" +
+                    "setprop persist.sys.gamemode.touch 1\n" +
+                    "setprop vendor.touch.game_mode 1\n" +
+                    "setprop persist.asus.touch_sampling_rate 1000\n" +
+                    "setprop persist.vendor.asus.touch_opt 1\n" +
+                    "setprop persist.sys.touch.edge_filter 0\n" +
+                    "setprop persist.vendor.touch.edge_reject 0\n" +
+                    "setprop persist.sys.touch.corner_filter 0\n" +
+                    "setprop touch.pressure.scale 0.0001\n" +
+                    "setprop touch.size.calibration geometric\n" +
+                    "setprop touch.pressure.calibration physical\n" +
+                    "setprop touch.distance.scale 0\n" +
+                    "setprop touch.size.bias 0\n" +
                     "setprop debug.sensor.gyro.sample_rate 1000\n" +
+                    "setprop debug.sensor.motion.rate 1000\n" +
                     "setprop debug.sensor.gyro.smooth 1\n" +
                     "setprop debug.sensor.gyro.stabilization 1\n" +
                     "setprop persist.sys.gyro.filter 1\n" +
                     "setprop persist.sys.gyro.delay 0\n" +
-                    // 6. Android WebView & Chromium GPU Acceleration Flags
+                    // 6. Kernel CFS Scheduler, EAS SchedTune & Memory VM Shield
+                    "echo 1 > /proc/sys/kernel/sched_child_runs_first 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/kernel/sched_autogroup_enabled 2>/dev/null\n" +
+                    "echo 50000 > /proc/sys/kernel/sched_migration_cost_ns 2>/dev/null\n" +
+                    "echo 128 > /proc/sys/kernel/sched_nr_migrate 2>/dev/null\n" +
+                    "echo -1 > /proc/sys/kernel/perf_event_paranoid 2>/dev/null\n" +
+                    "echo NEXT_BUDDY > /sys/kernel/debug/sched_features 2>/dev/null\n" +
+                    "echo 100 > /dev/stune/top-app/schedtune.boost 2>/dev/null\n" +
+                    "echo 0 > /dev/stune/top-app/schedtune.prefer_idle 2>/dev/null\n" +
+                    "echo 100 > /dev/stune/foreground/schedtune.boost 2>/dev/null\n" +
+                    "echo 0 > /dev/stune/foreground/schedtune.prefer_idle 2>/dev/null\n" +
+                    "echo 0 > /dev/stune/background/schedtune.boost 2>/dev/null\n" +
+                    "echo 0 > /dev/cpu_dma_latency 2>/dev/null\n" +
+                    "echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null\n" +
+                    "echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null\n" +
+                    "echo 10 > /proc/sys/vm/swappiness 2>/dev/null\n" +
+                    "echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null\n" +
+                    "echo 5 > /proc/sys/vm/dirty_ratio 2>/dev/null\n" +
+                    "echo 2 > /proc/sys/vm/dirty_background_ratio 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/vm/page-cluster 2>/dev/null\n" +
+                    "echo 65536 > /proc/sys/vm/min_free_kbytes 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/vm/watermark_boost_factor 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/vm/compaction_proactiveness 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/kernel/printk 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/kernel/watchdog 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/kernel/nmi_watchdog 2>/dev/null\n" +
+                    "echo 0 > /proc/sys/kernel/soft_watchdog 2>/dev/null\n" +
+                    // 7. Low-Latency Audio HAL & Telemetry Probes Disable
+                    "setprop af.resampler.quality 4\n" +
+                    "setprop audio.deep_buffer.media false\n" +
+                    "setprop audio.offload.buffer.size.kb 32\n" +
+                    "setprop audio.offload.gapless true\n" +
+                    "setprop audio.offload.video false\n" +
+                    "setprop persist.sys.audio.latency 0\n" +
+                    "settings put global wifi_verbose_logging_enabled 0\n" +
+                    "settings put global ble_scan_always_enabled 0\n" +
+                    "settings put global wifi_scan_always_enabled 0\n" +
+                    "settings put global netstats_enabled 0\n" +
+                    // 8. 16MB Socket Buffer & Low-Latency Network Pipeline
+                    "sysctl -w net.core.rmem_max=16777216 2>/dev/null\n" +
+                    "sysctl -w net.core.wmem_max=16777216 2>/dev/null\n" +
+                    "sysctl -w net.core.rmem_default=262144 2>/dev/null\n" +
+                    "sysctl -w net.core.wmem_default=262144 2>/dev/null\n" +
+                    "sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null\n" +
+                    "setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576\n" +
+                    "setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576\n" +
+                    "settings put global wifi_power_save 0\n" +
+                    "setprop persist.sys.wifi.power_save 0\n" +
+                    "setprop persist.vendor.wifi.powersave 0\n" +
+                    "cmd wifi set-power-save-enabled disabled 2>/dev/null\n" +
+                    "setprop net.dns1 1.1.1.1\n" +
+                    "setprop net.dns2 8.8.8.8\n" +
+                    "settings put global private_dns_specifier one.one.one.one\n" +
+                    // 9. Android WebView & Chromium GPU Acceleration Flags
                     "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/webview-command-line\n" +
                     "chmod 644 /data/local/tmp/webview-command-line 2>/dev/null\n" +
                     "echo '" + WebViewBoosterChannel.getWebViewCommandLineFlags() + "' > /data/local/tmp/chrome-command-line\n" +
@@ -267,7 +352,7 @@ public class PerformanceChannel {
                     "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
                     "cmd wifi force-low-latency-mode enabled\n" +
-                    // 7. SurfaceFlinger display pipeline — missing flags
+                    // 10. SurfaceFlinger display pipeline — missing flags
                     // Stop SF from down-clocking refresh rate when detecting "static" game content
                     "setprop debug.sf.use_content_detection_for_refresh_rate false\n" +
                     // Disable HWC virtual display — forces direct composition path
@@ -285,7 +370,7 @@ public class PerformanceChannel {
                     // Disable SF idle timer — prevents refresh rate drops between game frames
                     "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
                     "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
-                    // 8. Extended vendor-specific display FPS keys
+                    // 11. Extended vendor-specific display FPS keys
                     "settings put system nubia_display_refresh_rate " + hz + "\n" +
                     "settings put system iqoo_ultra_refresh_rate " + hz + "\n" +
                     "settings put system blackshark_display_fps " + hz + "\n" +

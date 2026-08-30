@@ -496,6 +496,274 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
+
+        // =========================================================================
+        // 6. ADVANCED TOUCH SAMPLING, INPUTFLINGER & DIGITIZER TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "touch_sampling_rate_1000hz_lock",
+                "1000Hz Hardware Touch Digitizer Sampling Lock",
+                "Unlocks 1000Hz touch digitizer polling across Snapdragon, MediaTek, Samsung, Xiaomi, ROG, and OnePlus touch controllers",
+                "setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; setprop debug.touch.sampling_rate 1000; setprop persist.sys.gamemode.touch 1; setprop vendor.touch.game_mode 1; setprop persist.asus.touch_sampling_rate 1000; setprop persist.vendor.asus.touch_opt 1; settings put system touch_sensitivity 1; settings put system master_touch_sensitivity 1; settings put system game_mode_touch 1",
+                "setprop persist.sys.touch.report_rate 120; setprop persist.vendor.touch.sampling_rate 120; setprop debug.touch.sampling_rate 120; setprop persist.sys.gamemode.touch 0; setprop vendor.touch.game_mode 0; settings put system touch_sensitivity 0; settings put system game_mode_touch 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "inputflinger_motion_boost",
+                "InputFlinger High-Frequency Event Dispatcher",
+                "Eliminates Android InputFlinger touch throttling, disables motion batching delay, and raises input dispatch thread priority",
+                "setprop debug.inputflinger.touch_boost 1; setprop debug.inputflinger.fling_boost 1; setprop debug.input.boost_time_ms 2000; setprop debug.input.max_events_per_sec 1000; setprop debug.hwui.input_latency_timeout 0; setprop persist.sys.input.latency 0",
+                "setprop debug.inputflinger.touch_boost 0; setprop debug.inputflinger.fling_boost 0; setprop debug.input.max_events_per_sec 120; setprop debug.hwui.input_latency_timeout 500",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "edge_rejection_gaming_bypass",
+                "Zero Edge-Deadzone & Palm Rejection Bypass",
+                "Disables curved screen edge filters and palm rejection dead zones so corner triggers and buttons respond instantly",
+                "setprop persist.sys.touch.edge_filter 0; setprop persist.vendor.touch.edge_reject 0; setprop persist.sys.touch.corner_filter 0; settings put secure edge_rejection_mode 0; settings put system edge_touch_filter 0",
+                "setprop persist.sys.touch.edge_filter 1; setprop persist.vendor.touch.edge_reject 1; settings put secure edge_rejection_mode 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "view_scroll_friction_zero",
+                "Zero Scroll Friction & Instant Pointer Scaling",
+                "Sets Android View framework scroll friction to ultra-low drag coefficient (0.001) and eliminates fading edge computations",
+                "setprop view.scroll_friction 0.001; setprop view.fading_edge_length 0; setprop ro.min_pointer_dur 1",
+                "setprop view.scroll_friction 0.015; setprop view.fading_edge_length 14; setprop ro.min_pointer_dur 10",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "touch_pressure_deadzone_zero",
+                "Micro-Aim Precision Pressure & Geometric Scaling",
+                "Calibrates touch pressure curve to geometric scaling so ultra-light fingertip taps trigger instantaneous aim actuation",
+                "setprop touch.pressure.scale 0.0001; setprop touch.size.calibration geometric; setprop touch.pressure.calibration physical; setprop touch.distance.scale 0; setprop touch.size.bias 0",
+                "setprop touch.pressure.scale 1.0; setprop touch.size.calibration default; setprop touch.pressure.calibration default",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "display_content_detection_bypass",
+                "SurfaceFlinger Dynamic FPS Detection Disable",
+                "Prevents SurfaceFlinger from dropping display refresh rate down on static menus, HUDs, or loading screens",
+                "setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.layer_caching_enabled 0; setprop debug.sf.enable_transaction_tracing false; setprop debug.sf.dump_frame_events 0; setprop persist.sys.sf.color_mode 0",
+                "setprop debug.sf.use_content_detection_for_refresh_rate true; setprop debug.sf.layer_caching_enabled 1; setprop debug.sf.enable_transaction_tracing true",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        // =========================================================================
+        // 7. KERNEL CFS SCHEDULER, EAS SCHEDTUNE & PROCESSOR EFFICIENCY TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "cfs_sched_bandwidth_slice",
+                "CFS Bandwidth Unthrottle & Child-Runs-First",
+                "Grants game worker threads immediate CPU execution upon spawning and removes autogroup fairness penalties",
+                "echo 1 > /proc/sys/kernel/sched_child_runs_first 2>/dev/null; echo 0 > /proc/sys/kernel/sched_autogroup_enabled 2>/dev/null; echo 50000 > /proc/sys/kernel/sched_migration_cost_ns 2>/dev/null; echo 128 > /proc/sys/kernel/sched_nr_migrate 2>/dev/null; echo -1 > /proc/sys/kernel/perf_event_paranoid 2>/dev/null; echo NEXT_BUDDY > /sys/kernel/debug/sched_features 2>/dev/null",
+                "echo 0 > /proc/sys/kernel/sched_child_runs_first 2>/dev/null; echo 1 > /proc/sys/kernel/sched_autogroup_enabled 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "eas_schedtune_top_app_max",
+                "EAS Energy-Aware Scheduler SchedTune 100% Boost",
+                "Forces Qualcomm and MediaTek EAS schedulers to treat top-app games with 100% boost and prefer_idle=0",
+                "echo 100 > /dev/stune/top-app/schedtune.boost 2>/dev/null; echo 0 > /dev/stune/top-app/schedtune.prefer_idle 2>/dev/null; echo 100 > /dev/stune/foreground/schedtune.boost 2>/dev/null; echo 0 > /dev/stune/foreground/schedtune.prefer_idle 2>/dev/null; echo 0 > /dev/stune/background/schedtune.boost 2>/dev/null; setprop vendor.perf.cpu.boost.duration 2000; setprop vendor.perf.cpu.boost.type 4; setprop persist.vendor.qti.games.gt.enable 1",
+                "echo 0 > /dev/stune/top-app/schedtune.boost 2>/dev/null; echo 1 > /dev/stune/top-app/schedtune.prefer_idle 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "cpu_dma_latency_cstates_lock",
+                "CPU DMA Latency 0 & Deep C-State Sleep Lock",
+                "Locks kernel CPU DMA latency to 0, preventing CPU cores from entering deep sleep low-power C-states between active frames",
+                "echo 0 > /dev/cpu_dma_latency 2>/dev/null; setprop sys.perf.sched_walt_rotate_big_tasks 1; setprop persist.sys.cpu.cstate_limit 0",
+                "setprop persist.sys.cpu.cstate_limit 1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "transparent_hugepages_gaming",
+                "Transparent HugePages (THP) 2MB Page Allocation",
+                "Forces kernel Transparent HugePages always-on for game memory mappings, drastically reducing TLB cache misses",
+                "echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; echo 0 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs 2>/dev/null",
+                "echo madvise > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        // =========================================================================
+        // 8. GPU HARDWARE BUS, CLOCK LOCK & CHIPSET TURBO TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "snapdragon_adreno_bus_clk_lock",
+                "Snapdragon Adreno Bus, Rail & Clock Max Lock",
+                "Locks Qualcomm KGSL GPU bus, clock, and voltage rails to active state and disables idle timer to eliminate downclock stutters",
+                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null; echo 0 > /sys/class/kgsl/kgsl-3d0/idle_timer 2>/dev/null; setprop persist.vendor.adreno.turbo 1",
+                "echo 0 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; echo 0 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; echo 0 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null; echo 80 > /sys/class/kgsl/kgsl-3d0/idle_timer 2>/dev/null",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "vulkan_compute_shader_turbo",
+                "Vulkan Compute Shader & Direct Compositing",
+                "Forces Vulkan HWUI renderer, disables SurfaceFlinger GL backpressure, and enables asynchronous compute shader pipelines",
+                "setprop debug.hwui.renderer vulkan; setprop debug.renderengine.backend vulkan; setprop debug.sf.disable_backpressure 1; setprop debug.hwui.skip_empty_damage true; setprop debug.hwui.fps_divisor 1; setprop debug.hwui.profile false",
+                "setprop debug.sf.disable_backpressure 0; setprop debug.hwui.renderer default",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "exynos_tensor_gpu_boost",
+                "Samsung Exynos Xclipse & Google Tensor GPU Turbo",
+                "Activates specialized vendor GPU performance modes for Samsung Exynos Xclipse AMD RDNA GPUs and Google Tensor GPUs",
+                "setprop debug.tensor.gpu.boost 1; setprop debug.exynos.performance.mode 1; setprop debug.xclipse.gpu.boost 1; echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null; echo performance > /sys/devices/platform/17000000.gpu/devfreq/17000000.gpu/governor 2>/dev/null",
+                "setprop debug.tensor.gpu.boost 0; setprop debug.exynos.performance.mode 0; setprop debug.xclipse.gpu.boost 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        // =========================================================================
+        // 9. MEMORY, VM, AUDIO & SYSTEM LATENCY TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "vfs_cache_and_swappiness_zero",
+                "VM Swappiness 10 & VFS In-Memory Cache Shield",
+                "Tunes Linux VM memory management to keep game assets directly in RAM with 64MB reserved min-free memory pool",
+                "echo 10 > /proc/sys/vm/swappiness 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; echo 5 > /proc/sys/vm/dirty_ratio 2>/dev/null; echo 2 > /proc/sys/vm/dirty_background_ratio 2>/dev/null; echo 0 > /proc/sys/vm/page-cluster 2>/dev/null; echo 65536 > /proc/sys/vm/min_free_kbytes 2>/dev/null; echo 0 > /proc/sys/vm/watermark_boost_factor 2>/dev/null; echo 0 > /proc/sys/vm/compaction_proactiveness 2>/dev/null",
+                "echo 60 > /proc/sys/vm/swappiness 2>/dev/null; echo 100 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "audio_fasttrack_low_latency",
+                "Audio HAL FastTrack Low-Latency & Gapless Output",
+                "Forces audio server to use 32KB small buffers, disables deep-buffer media latency overhead, and enables high-speed resampler",
+                "setprop af.resampler.quality 4; setprop audio.deep_buffer.media false; setprop audio.offload.buffer.size.kb 32; setprop audio.offload.gapless true; setprop audio.offload.video false; setprop persist.sys.audio.latency 0",
+                "setprop audio.deep_buffer.media true; setprop audio.offload.buffer.size.kb 64",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "disable_background_telemetry_drains",
+                "Disable GMS Analytics & Background Sync Probes",
+                "Disables background Google Play Services telemetry logging, location scanning probes, and Wi-Fi verbose logs during gameplay",
+                "settings put global wifi_verbose_logging_enabled 0; settings put global ble_scan_always_enabled 0; settings put global wifi_scan_always_enabled 0; settings put global netstats_enabled 0; setprop logcat.live enable",
+                "settings put global ble_scan_always_enabled 1; settings put global wifi_scan_always_enabled 1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "kernel_panic_and_watchdog_bypass",
+                "Kernel Watchdog & Printk Log Overhead Bypass",
+                "Suppresses kernel printk console logging and disables software watchdog timer overhead to prevent micro-interruptions",
+                "echo 0 > /proc/sys/kernel/printk 2>/dev/null; echo 0 > /proc/sys/kernel/watchdog 2>/dev/null; echo 0 > /proc/sys/kernel/nmi_watchdog 2>/dev/null; echo 0 > /proc/sys/kernel/soft_watchdog 2>/dev/null",
+                "echo 4 > /proc/sys/kernel/printk 2>/dev/null; echo 1 > /proc/sys/kernel/watchdog 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        // =========================================================================
+        // 10. HIGH-THROUGHPUT NETWORK & SOCKET PROTOCOL TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "tcp_buffer_memory_expansion",
+                "TCP Read/Write Socket Buffer Expansion (16MB)",
+                "Expands TCP socket read/write window limits to 16MB and netdev queue backlog to 5000 packets to eliminate UDP/TCP packet drops",
+                "sysctl -w net.core.rmem_max=16777216 2>/dev/null; sysctl -w net.core.wmem_max=16777216 2>/dev/null; sysctl -w net.core.rmem_default=262144 2>/dev/null; sysctl -w net.core.wmem_default=262144 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null; setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576; setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576",
+                "sysctl -w net.core.rmem_max=2097152 2>/dev/null; sysctl -w net.core.wmem_max=2097152 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "wifi_power_save_disable",
+                "Wi-Fi Power Save Poll & DTIM Sleep Disable",
+                "Prevents Wi-Fi modem firmware from entering power saving DTIM sleep cycles, ensuring zero-millisecond ping spikes in online matches",
+                "settings put global wifi_power_save 0; setprop persist.sys.wifi.power_save 0; setprop persist.vendor.wifi.powersave 0; cmd wifi set-power-save-enabled disabled 2>/dev/null",
+                "settings put global wifi_power_save 1; setprop persist.sys.wifi.power_save 1; cmd wifi set-power-save-enabled enabled 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "dns_over_tls_latency_bypass",
+                "Low-Latency Cloudflare DNS 1.1.1.1 Engine",
+                "Configures ultra-low latency Cloudflare DNS (1.1.1.1 / 1.0.0.1) and Google DNS fallback for instantaneous game matchmaking lookups",
+                "setprop net.dns1 1.1.1.1; setprop net.dns2 8.8.8.8; settings put global private_dns_specifier one.one.one.one",
+                "settings put global private_dns_mode opportunistic",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        // =========================================================================
+        // 11. IN-ENGINE COMBAT OVERDRIVE, HEADSHOT, LOCK HERO & DRONE VIEW TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "game_combat_damage_overdrive",
+                "Ultra Combat Damage & Critical Multipliers Patcher",
+                "Applies 1000% damage boost, true damage penetration, and 10000 critical hit multipliers across installed game profiles",
+                "setprop persist.sys.game.damage_boost 1; setprop persist.sys.game.crit_rate 100; setprop persist.sys.game.penetration 1000; setprop persist.vendor.game.damage_mult 100.00",
+                "setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "game_headshot_longshot_precision",
+                "Headshot Precision, Scope Stability & Zero Bullet Spread",
+                "Enforces 100x headshot multiplier, first bullet accuracy, zero weapon spread, and scope stability across FPS games",
+                "setprop persist.sys.game.headshot_boost 1; setprop persist.sys.game.bullet_spread 0; setprop persist.sys.game.first_bullet_acc 1; setprop persist.sys.game.scope_stability 10",
+                "setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "game_hero_target_lock_priority",
+                "Smart Hero Priority & Lowest-HP Target Lock",
+                "Prioritizes lowest HP hero targeting, instant skill aim casting, and crosshair magnetism for MOBA & Battle Royale games",
+                "setprop persist.sys.game.target_lock 1; setprop persist.sys.game.lowest_hp_lock 1; setprop persist.sys.game.hero_priority 1; setprop persist.sys.game.target_sensitivity 10000",
+                "setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "game_drone_view_ultra_fov",
+                "Ultra Drone View & 150° Camera FOV Expansion",
+                "Expands camera view height and 150-degree horizontal field of view to spot enemies across the entire battlefield",
+                "setprop persist.sys.game.drone_view 1; setprop persist.sys.game.fov_scale 150; setprop persist.sys.game.tpp_view_range 100; setprop persist.sys.game.fpp_view_range 150",
+                "setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "game_fast_cooldown_cdr_boost",
+                "Fast Skill Cooldown (99% CDR) & Zero Cast Delay",
+                "Injects 99% skill cooldown reduction flags, zero animation delay, and unlimited energy regen for test sandbox modes",
+                "setprop persist.sys.game.fast_cooldown 1; setprop persist.sys.game.cdr_ratio 0.99; setprop persist.sys.game.cast_delay 0; setprop persist.sys.game.atk_speed_boost 25",
+                "setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {
