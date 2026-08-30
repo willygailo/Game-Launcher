@@ -326,6 +326,19 @@ public class SpoofProfile {
         props.put("debug.hwui.renderer", "vulkan");
         props.put("debug.renderengine.backend", "vulkan");
 
+        // Unique Device Identifiers & Hardware Fingerprint
+        props.put("ro.serialno", getSerialNumber());
+        props.put("ro.boot.serialno", getSerialNumber());
+        props.put("ril.serialnumber", getSerialNumber());
+        props.put("ro.ril.oem.imei1", getImei1());
+        props.put("ro.ril.oem.imei2", getImei2());
+        props.put("debug.game.spoofed_android_id", getAndroidId());
+        props.put("debug.game.spoofed_oaid", getOaid());
+        props.put("debug.game.spoofed_gsf_id", getGsfId());
+        props.put("debug.game.spoofed_widevine", getWidevineDeviceId());
+        props.put("debug.game.spoofed_wifi_mac", getWifiMacAddress());
+        props.put("debug.game.spoofed_bt_mac", getBluetoothMacAddress());
+
         // RAM & Device Names
         props.put("debug.game.spoofed_ram", String.valueOf(ramTotalMb));
         props.put("debug.game.spoofed_ram_avail", String.valueOf(ramAvailableMb));
@@ -354,6 +367,8 @@ public class SpoofProfile {
                 "DeviceName=" + model + "\n" +
                 "DeviceBrand=" + brand + "\n" +
                 "DeviceManufacturer=" + manufacturer + "\n" +
+                "DeviceID=" + getAndroidId() + "\n" +
+                "DeviceSerialNumber=" + getSerialNumber() + "\n" +
                 "GPUFamily=" + glRenderer + "\n" +
                 "SoCModel=" + socModel + "\n" +
                 "RAMTotalMB=" + ramTotalMb + "\n" +
@@ -379,6 +394,10 @@ public class SpoofProfile {
                 "  \"DeviceModel\": \"" + model + "\",\n" +
                 "  \"DeviceBrand\": \"" + brand + "\",\n" +
                 "  \"Manufacturer\": \"" + manufacturer + "\",\n" +
+                "  \"AndroidID\": \"" + getAndroidId() + "\",\n" +
+                "  \"SerialNumber\": \"" + getSerialNumber() + "\",\n" +
+                "  \"OAID\": \"" + getOaid() + "\",\n" +
+                "  \"MacAddress\": \"" + getWifiMacAddress() + "\",\n" +
                 "  \"GPURenderer\": \"" + glRenderer + "\",\n" +
                 "  \"GPUVendor\": \"" + glVendor + "\",\n" +
                 "  \"SoCModel\": \"" + socModel + "\",\n" +
@@ -510,6 +529,10 @@ public class SpoofProfile {
                 "DeviceModel=" + model + "\n" +
                 "DeviceBrand=" + brand + "\n" +
                 "Manufacturer=" + manufacturer + "\n" +
+                "DeviceID=" + getAndroidId() + "\n" +
+                "DeviceSerial=" + getSerialNumber() + "\n" +
+                "AndroidID=" + getAndroidId() + "\n" +
+                "OAID=" + getOaid() + "\n" +
                 "GPURenderer=" + glRenderer + "\n" +
                 "GPUVendor=" + glVendor + "\n" +
                 "SoCModel=" + socModel + "\n" +
@@ -519,6 +542,48 @@ public class SpoofProfile {
                 "MaxFrameRate=" + targetFps + "\n" +
                 "HighFPSMode=1\n" +
                 "VulkanSupport=1\n";
+    }
+
+    // ── Unique Device Identity Descriptors (7-Vector Hardware Fingerprint) ──
+
+    public String getAndroidId() {
+        return DeviceIdentityGenerator.generateAndroidId(this);
+    }
+
+    public String getSerialNumber() {
+        return DeviceIdentityGenerator.generateSerialNumber(this);
+    }
+
+    public String getWifiMacAddress() {
+        return DeviceIdentityGenerator.generateWifiMacAddress(this);
+    }
+
+    public String getBluetoothMacAddress() {
+        return DeviceIdentityGenerator.generateBluetoothMacAddress(this);
+    }
+
+    public String getOaid() {
+        return DeviceIdentityGenerator.generateOaid(this);
+    }
+
+    public String getGsfId() {
+        return DeviceIdentityGenerator.generateGsfId(this);
+    }
+
+    public String getWidevineDeviceId() {
+        return DeviceIdentityGenerator.generateWidevineDeviceId(this);
+    }
+
+    public String getAdvertisingId() {
+        return DeviceIdentityGenerator.generateAdvertisingId(this);
+    }
+
+    public String getImei1() {
+        return DeviceIdentityGenerator.generateImei(this, 1);
+    }
+
+    public String getImei2() {
+        return DeviceIdentityGenerator.generateImei(this, 2);
     }
 
     @Override

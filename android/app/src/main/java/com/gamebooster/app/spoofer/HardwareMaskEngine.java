@@ -70,13 +70,25 @@ public class HardwareMaskEngine {
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 0: MAGISK / KERNELSU RESETPROP INJECTION (If Root Available)
             // ═══════════════════════════════════════════════════════════════════
-            String serialNo = "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL);
-            String spoofedAndroidId = String.format("%016x", profile.id.hashCode() & 0x7fffffffL);
-            String spoofedMac = generateMacAddress(profile);
+            String serialNo = profile.getSerialNumber();
+            String spoofedAndroidId = profile.getAndroidId();
+            String spoofedWifiMac = profile.getWifiMacAddress();
+            String spoofedBtMac = profile.getBluetoothMacAddress();
+            String spoofedOaid = profile.getOaid();
+            String spoofedGsfId = profile.getGsfId();
+            String spoofedWidevine = profile.getWidevineDeviceId();
+            String spoofedAaid = profile.getAdvertisingId();
+            String spoofedImei1 = profile.getImei1();
+            String spoofedImei2 = profile.getImei2();
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
 
             batchCommands.add("resetprop -n ro.serialno \"" + serialNo + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ril.serialnumber \"" + serialNo + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.ril.oem.imei1 \"" + spoofedImei1 + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.ril.oem.imei2 \"" + spoofedImei2 + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.ril.miui.imei0 \"" + spoofedImei1 + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.ril.miui.imei1 \"" + spoofedImei2 + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.model \"" + profile.model + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.brand \"" + profile.brand + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
@@ -223,15 +235,23 @@ public class HardwareMaskEngine {
             batchCommands.add("settings put system device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system lock_screen_owner_info \"" + profile.model + "\"");
             batchCommands.add("settings put secure bluetooth_name \"" + profile.model + "\"");
-            batchCommands.add("settings put secure bluetooth_address \"" + spoofedMac + "\"");
+            batchCommands.add("settings put secure bluetooth_address \"" + spoofedBtMac + "\"");
             batchCommands.add("settings put global randomized_mac_support 1");
             batchCommands.add("settings put global randomized_mac_connected_mac_randomization 1");
             batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
+            batchCommands.add("setprop debug.game.spoofed_android_id \"" + spoofedAndroidId + "\"");
+            batchCommands.add("setprop debug.game.spoofed_serial \"" + serialNo + "\"");
+            batchCommands.add("setprop debug.game.spoofed_wifi_mac \"" + spoofedWifiMac + "\"");
+            batchCommands.add("setprop debug.game.spoofed_bt_mac \"" + spoofedBtMac + "\"");
+            batchCommands.add("setprop debug.game.spoofed_oaid \"" + spoofedOaid + "\"");
+            batchCommands.add("setprop debug.game.spoofed_gsf_id \"" + spoofedGsfId + "\"");
+            batchCommands.add("setprop debug.game.spoofed_widevine \"" + spoofedWidevine + "\"");
+            batchCommands.add("setprop debug.game.spoofed_aaid \"" + spoofedAaid + "\"");
 
-            // 2. Advertising ID (AAID) Zeroing & Anti-Tracking
+            // 2. Advertising ID (AAID) & Privacy Anti-Tracking
             batchCommands.add("settings put secure limit_ad_tracking 1");
-            batchCommands.add("settings put secure ad_id \"00000000-0000-0000-0000-000000000000\"");
-            batchCommands.add("settings put secure advertising_id \"00000000-0000-0000-0000-000000000000\"");
+            batchCommands.add("settings put secure ad_id \"" + spoofedAaid + "\"");
+            batchCommands.add("settings put secure advertising_id \"" + spoofedAaid + "\"");
             batchCommands.add("device_config put privacy privacy_sandbox_enabled false 2>/dev/null");
 
             // 3. Telemetry, Crash Analytics & Usage Reporting Deactivation
@@ -718,17 +738,10 @@ public class HardwareMaskEngine {
     }
 
     public static String generateMacAddress(SpoofProfile profile) {
-        long seed = (long) (profile != null ? profile.id : "default").hashCode() & 0xFFFFFFFFL;
-        java.util.Random rand = new java.util.Random(seed);
-        byte[] macBytes = new byte[6];
-        rand.nextBytes(macBytes);
-        macBytes[0] = (byte) ((macBytes[0] & 0xFE) | 0x02); // locally administered unicast
-        StringBuilder sb = new StringBuilder(18);
-        for (byte b : macBytes) {
-            if (sb.length() > 0) sb.append(":");
-            sb.append(String.format("%02X", b));
+        if (profile != null) {
+            return profile.getWifiMacAddress();
         }
-        return sb.toString();
+        return DeviceIdentityGenerator.generateWifiMacAddress(null);
     }
 
     /**
