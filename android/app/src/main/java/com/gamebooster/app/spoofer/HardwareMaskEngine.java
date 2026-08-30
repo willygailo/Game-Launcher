@@ -572,17 +572,16 @@ public class HardwareMaskEngine {
      */
     public static boolean maskPackage(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        if (context != null && !SpoofPreferences.isSpoofEnabled(context)) {
-            Log.d(TAG, "Device spoofing is disabled by user preference. Skipping maskPackage.");
-            return false;
-        }
         String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
-        if (activeId == null || activeId.trim().isEmpty()) {
-            Log.d(TAG, "No spoof profile selected by user. Skipping maskPackage.");
-            return false;
+        SpoofProfile profile = null;
+        if (activeId != null && !activeId.trim().isEmpty()) {
+            profile = DeviceSpooferEngine.getProfileById(activeId);
         }
-        SpoofProfile profile = DeviceSpooferEngine.getProfileById(activeId);
         if (profile == null) {
+            profile = DeviceSpooferEngine.getDefaultProfile();
+        }
+        if (profile == null) {
+            Log.d(TAG, "No spoof profile available. Skipping maskPackage.");
             return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
