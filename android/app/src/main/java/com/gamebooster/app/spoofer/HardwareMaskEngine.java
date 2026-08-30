@@ -541,9 +541,6 @@ public class HardwareMaskEngine {
     }
 
     /**
-     * Resets hardware masking and returns system properties to defaults.
-     */
-    /**
      * Resets hardware masking and returns system properties and settings to defaults.
      */
     public static void resetHardwareMask() {

@@ -240,14 +240,7 @@ public class DeviceSpooferEngine {
      * Injects hardware profile into all known games installed or registered on the system.
      */
     public static void injectAllInstalledGamesHardwareProfile(SpoofProfile profile) {
-        if (profile == null) return;
-        try {
-            for (String pkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
-                HardwareMaskEngine.injectTailoredGameHardwareConfigs(pkg, profile);
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "injectAllInstalledGamesHardwareProfile error: " + t.getMessage());
-        }
+        HardwareMaskEngine.injectAllInstalledGamesHardwareProfile(profile);
     }
 
     /**

@@ -68,8 +68,6 @@ import com.gamebooster.app.cleaner.scanner.JunkScanner;
 import com.gamebooster.app.cleaner.ui.JunkCleanerDialog;
 import com.gamebooster.app.ui.dialogs.CyberActionDialog;
 import com.gamebooster.app.spoofer.SpoofProfileRegistry;
-import com.gamebooster.app.spoofer.ui.PerAppSpoofDialog;
-import com.gamebooster.app.spoofer.ui.SpoofInspectorDialog;
 import com.gamebooster.app.ui.dialogs.SpoofBrandSelectorDialog;
 import com.gamebooster.app.ui.views.LoopingVideoBackgroundView;
 import java.io.File;
@@ -228,55 +226,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     Toast.makeText(getContext(), "🧹 Crash logs cleared", Toast.LENGTH_SHORT).show();
                     renderDiagnostics();
                 }
-            });
-        }
-        // Card 1.5: APK & Package Management Hub
-        Button btnSettingsOpenApkManager = view.findViewById(R.id.btn_settings_open_apk_manager);
-        Button btnSettingsAddGame = view.findViewById(R.id.btn_settings_add_game);
-        Button btnSettingsAotCompileAll = view.findViewById(R.id.btn_settings_aot_compile_all);
-        if (btnSettingsOpenApkManager != null) {
-            btnSettingsOpenApkManager.setOnClickListener(v -> com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), null));
-        }
-        if (btnSettingsAddGame != null) {
-            btnSettingsAddGame.setOnClickListener(v -> com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), null));
-        }
-        if (btnSettingsAotCompileAll != null) {
-            btnSettingsAotCompileAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!ShizukuManager.isShizukuRunningAndGranted()) {
-                    ShizukuManager.showShizukuPermissionDialog(getContext(), "AOT Machine Code Compiler");
-                    return;
-                }
-
-                List<String> gamePkgs = new ArrayList<>(com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet());
-                if (gamePkgs.isEmpty()) {
-                    Toast.makeText(getContext(), "No games registered to compile.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                btnSettingsAotCompileAll.setEnabled(false);
-                btnSettingsAotCompileAll.setText("⚡ COMPILING AOT DEX (PLEASE WAIT)...");
-                Toast.makeText(getContext(), "⚡ Starting ART Speed AOT Compilation for " + gamePkgs.size() + " games...", Toast.LENGTH_SHORT).show();
-
-                com.gamebooster.app.engine.AotCompilerEngine.compileBatchAsync(gamePkgs, com.gamebooster.app.engine.AotCompilerEngine.CompileMode.SPEED, new com.gamebooster.app.engine.AotCompilerEngine.CompileListener() {
-                    @Override
-                    public void onProgress(int current, int total, String packageName, String message) {
-                        if (isAdded() && getActivity() != null) {
-                            btnSettingsAotCompileAll.setText("⚡ COMPILING (" + current + "/" + total + ")...");
-                        }
-                    }
-
-                    @Override
-                    public void onComplete(int successCount, int failedCount, String message) {
-                        if (isAdded() && getActivity() != null) {
-                            btnSettingsAotCompileAll.setEnabled(true);
-                            btnSettingsAotCompileAll.setText("⚡ 1-TAP AOT DEX COMPILE (0MS STUTTER)");
-                            if (getContext() != null) {
-                                Toast.makeText(getContext(), "✔ " + message, Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-                });
             });
         }
 
@@ -1045,78 +994,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvSettingsSpoofBrandInfo = view.findViewById(R.id.tv_settings_spoof_brand_info);
         hsvSettingsSpoofBrands = view.findViewById(R.id.hsv_settings_spoof_brands);
         rvSpoofProfiles = view.findViewById(R.id.rv_spoof_profiles);
-
-        Button btnForceApplySpoof = view.findViewById(R.id.btn_force_apply_spoof);
-        Button btnOpenPerAppSpoof = view.findViewById(R.id.btn_open_per_app_spoof);
-        Button btnOpenSpoofInspector = view.findViewById(R.id.btn_open_spoof_inspector);
-
-        if (btnForceApplySpoof != null) {
-            btnForceApplySpoof.setOnClickListener(v -> {
-                if (getContext() == null) return;
-
-                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("🛡️ SHIZUKU API REQUIRED")
-                            .setMessage("Force Applying Spoof requires active Shizuku API (UID 2000 Privileged Shell).\n\nPlease grant Shizuku permission.")
-                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> {
-                                com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission();
-                            })
-                            .setNegativeButton("CANCEL", null)
-                            .show();
-                    return;
-                }
-
-                String activeId = SpoofPreferences.getActiveProfileId(getContext());
-                SpoofProfile targetProf = (activeId != null && !activeId.isEmpty())
-                        ? DeviceSpooferEngine.getProfileById(activeId)
-                        : DeviceSpooferEngine.getDefaultProfile();
-                if (targetProf == null) {
-                    Toast.makeText(getContext(), "⚠️ Please select a spoof profile below first!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                SpoofPreferences.setSpoofEnabled(getContext(), true);
-                SpoofPreferences.setActiveProfileId(getContext(), targetProf.id);
-                if (switchDeviceSpoof != null) {
-                    isProgrammaticToggle = true;
-                    switchDeviceSpoof.setChecked(true);
-                    isProgrammaticToggle = false;
-                }
-                if (spoofProfileAdapter != null) {
-                    spoofProfileAdapter.setActiveProfileId(targetProf.id);
-                }
-                updateSpoofUiState();
-
-                Toast.makeText(getContext(), "⚡ Force-Applying Spoof via Shizuku API: " + targetProf.displayName + "...", Toast.LENGTH_SHORT).show();
-
-                final SpoofProfile profileToApply = targetProf;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean success = DeviceSpooferEngine.forceApplySpoof(getContext(), profileToApply.id, null);
-                    int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), profileToApply);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        updateSpoofUiState();
-                        Toast.makeText(getContext(), "✅ Force-Applied Spoof via Shizuku: " + profileToApply.displayName + " (" + count + " apps masked)", Toast.LENGTH_LONG).show();
-                    });
-                });
-            });
-        }
-
-        if (btnOpenPerAppSpoof != null) {
-            btnOpenPerAppSpoof.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    PerAppSpoofDialog.show(getContext());
-                }
-            });
-        }
-
-        if (btnOpenSpoofInspector != null) {
-            btnOpenSpoofInspector.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    SpoofInspectorDialog.show(getContext());
-                }
-            });
-        }
 
         boolean spoofEnabled = getContext() != null && SpoofPreferences.isSpoofEnabled(getContext());
         if (switchDeviceSpoof != null) {
