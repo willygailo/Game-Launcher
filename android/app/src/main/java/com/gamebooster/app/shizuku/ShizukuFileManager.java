@@ -215,10 +215,18 @@ public final class ShizukuFileManager {
         if (hasFullAccess()) {
             String res = ShizukuExecutor.executeShizukuCommand(moveCmd);
             boolean ok = res != null && !res.toLowerCase().contains("error");
-            return ok ? FileOpResult.ok(path, "Written atomically via Shizuku") : FileOpResult.fail(path, "Atomic rename failed: " + res);
+            if (!ok) {
+                deleteFile(tmpPath);
+                return FileOpResult.fail(path, "Atomic rename failed: " + res);
+            }
+            return FileOpResult.ok(path, "Written atomically via Shizuku");
         } else {
-            CommandExecutor.executeSystemCommand(moveCmd);
-            return FileOpResult.ok(path, "Written atomically via shell");
+            String res = CommandExecutor.executeSystemCommand(moveCmd);
+            boolean ok = res != null && !res.toLowerCase().contains("error");
+            if (!ok) {
+                deleteFile(tmpPath);
+            }
+            return ok ? FileOpResult.ok(path, "Written atomically via shell") : FileOpResult.fail(path, "Atomic rename failed");
         }
     }
 

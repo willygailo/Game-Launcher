@@ -172,10 +172,10 @@ public class TerminalCoreEngine {
                 return new TerminalResult(pkgHelp, 0, currentWorkingDir);
             } else if ("list".equals(subCmd)) {
                 String flag = parts.length > 2 ? parts[2] : "";
-                return executeCommand("pm list packages " + flag);
+                return executeCommand("pm list packages --user 0 " + flag);
             } else if ("search".equals(subCmd)) {
                 if (parts.length > 2) {
-                    return executeCommand("pm list packages | grep -i " + parts[2]);
+                    return executeCommand("pm list packages --user 0 | grep -i " + parts[2]);
                 } else {
                     return new TerminalResult("\u001B[31mUsage: pkg search <keyword>\u001B[0m", 1, currentWorkingDir);
                 }

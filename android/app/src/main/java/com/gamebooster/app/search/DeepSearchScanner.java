@@ -39,10 +39,10 @@ public class DeepSearchScanner {
 
         PackageManager pm = context.getPackageManager();
 
-        // 1. Shizuku ADB 3rd-Party Package Query (pm list packages -3)
+        // 1. Shizuku ADB 3rd-Party Package Query (pm list packages --user 0 -3)
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String cmdRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                String cmdRes = ShizukuExecutor.executeShizukuCommand("pm list packages --user 0 -3");
                 if (cmdRes != null && !cmdRes.startsWith("ERROR")) {
                     String[] lines = cmdRes.split("\n");
                     for (String line : lines) {

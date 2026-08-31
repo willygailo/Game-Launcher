@@ -581,12 +581,12 @@ public class JunkScanner {
 
     private void scanSystemAllocatable(Context context, JunkScanResult result, OnScanProgressListener listener) {
         if (context == null) return;
-        long allocatableBytes = StorageStatsHelper.getAllocatableBytes(context);
-        if (allocatableBytes > 0) {
+        long reclaimableBytes = StorageStatsHelper.getReclaimableCacheBytes(context);
+        if (reclaimableBytes > (1024 * 1024)) { // Only add if genuine reclaimable cache exceeds 1MB
             result.addItem(new JunkItem(
                     "SYSTEM_ALLOCATABLE_TRIM",
                     "Android OS System Reclaimable Cache Buffer",
-                    allocatableBytes,
+                    reclaimableBytes,
                     JunkCategory.SYSTEM_CACHE,
                     true
             ));

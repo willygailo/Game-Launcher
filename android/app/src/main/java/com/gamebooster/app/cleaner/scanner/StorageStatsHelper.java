@@ -234,6 +234,28 @@ public final class StorageStatsHelper {
     }
 
     /**
+     * Accurately calculates genuine reclaimable system cache by subtracting
+     * the volume's raw free space from StorageManager's allocatable bytes.
+     * Prevents reporting the device's free disk space as junk.
+     */
+    public static long getReclaimableCacheBytes(@NonNull Context context) {
+        try {
+            StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            if (sm != null) {
+                long allocatable = sm.getAllocatableBytes(StorageManager.UUID_DEFAULT);
+                File dataDir = Environment.getDataDirectory();
+                long freeBytes = (dataDir != null && dataDir.exists()) ? dataDir.getFreeSpace() : 0L;
+                long reclaimable = Math.max(0L, allocatable - freeBytes);
+                // Cap to 5GB maximum reasonable cache buffer to prevent any OS metric anomalies
+                return Math.min(reclaimable, 5L * 1024 * 1024 * 1024);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "getReclaimableCacheBytes exception", t);
+        }
+        return 0L;
+    }
+
+    /**
      * Official Android OS system cache eviction: requests the system to reclaim
      * clearable cache from other applications to satisfy the specified byte quota.
      */

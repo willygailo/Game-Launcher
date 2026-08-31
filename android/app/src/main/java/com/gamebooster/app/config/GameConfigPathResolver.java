@@ -146,28 +146,10 @@ public class GameConfigPathResolver {
 
         // 1. Mobile Legends: Bang Bang (all regional versions)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            // dragon2017 branch
-            rel.add("files/dragon2017/assets/UI/Config/UserSystem.ini");
-            rel.add("files/dragon2017/assets/UI/Config/DamageSystem.ini");
-            rel.add("files/dragon2017/assets/UI/Config/DeviceHardware.ini");
-            rel.add("files/dragon2017/assets/UI/HighFPSConfig.ini");
-            rel.add("files/dragon2017/assets/Com/MobileLegendsSettings.ini");
-            rel.add("files/dragon2017/assets/Config/HighFPS.xml");
-            rel.add("files/dragon2017/assets/Config/Performance.xml");
-            rel.add("files/dragon2017/assets/Config/Setting.xml");
-            // dragon / Document / android branch (latest MLBB engine)
-            rel.add("files/dragon/assets/Document/android/UserSystem.ini");
-            rel.add("files/dragon/assets/Document/android/DamageSystem.ini");
-            rel.add("files/dragon/assets/Document/android/DeviceHardware.ini");
-            rel.add("files/dragon/assets/Document/android/HighFPSConfig.ini");
-            rel.add("files/dragon/assets/Document/android/Setting.xml");
-            rel.add("files/dragon/assets/Document/android/Performance.xml");
-            rel.add("files/dragon/assets/Document/android/HighFPS.xml");
-            // alternative Document/android branch
-            rel.add("files/assets/Document/android/UserSystem.ini");
-            rel.add("files/assets/Document/android/DamageSystem.ini");
-            rel.add("files/assets/Document/android/HighFPSConfig.ini");
-            rel.add("files/assets/Document/android/Setting.xml");
+            // dragon2017 engine branch
+            rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
+            rel.add("files/dragon2017/assets/Document/android/mode_versions_build.xml");
+            rel.add("files/dragon2017/assets/Document/android/mola_config.xml");
             // shared preferences
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");

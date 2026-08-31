@@ -209,10 +209,10 @@ public class AddGameDialog {
             }
         } catch (Throwable ignored) {}
 
-        // 3. Tertiary: Shizuku 3rd-party Packages Fallback
+        // 3. Tertiary: Shizuku 3rd-party Packages Fallback (Explicit --user 0 for Android 15/16 Private Space compatibility)
         if (com.gamebooster.app.shizuku.ShizukuExecutor.isShizukuAvailable()) {
             try {
-                String shizukuRes = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                String shizukuRes = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pm list packages --user 0 -3");
                 if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
                     String[] lines = shizukuRes.split("\n");
                     for (String line : lines) {

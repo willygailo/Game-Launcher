@@ -197,13 +197,7 @@ public class FocusModeEngine {
                 }
             }
 
-            if (!commands.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (String c : commands) {
-                    sb.append(c).append("; ");
-                }
-                executeShellBatch(sb.toString());
-            }
+            executeShellCommandsBatched(commands);
 
             // Persist frozen set
             getPrefs(context).edit()
@@ -232,12 +226,21 @@ public class FocusModeEngine {
         }
 
         AppExecutors.getInstance().executeCommand(() -> {
-            Set<String> frozen = getFrozenPackages(context);
-            int total = frozen.size();
+            Set<String> packagesToUnsuspend = new HashSet<>(getFrozenPackages(context));
+            List<FocusAppModel> candidates = getFreezableApps(context);
+            for (FocusAppModel c : candidates) {
+                if (c != null && c.packageName != null) {
+                    packagesToUnsuspend.add(c.packageName);
+                }
+            }
+
+            int total = packagesToUnsuspend.size();
             int current = 0;
 
             List<String> commands = new ArrayList<>();
-            for (String pkg : frozen) {
+            StringBuilder batchPkgList = new StringBuilder();
+
+            for (String pkg : packagesToUnsuspend) {
                 if (pkg == null || !pkg.matches("^[a-zA-Z0-9_.]+$")) continue;
                 current++;
                 if (listener != null) {
@@ -245,24 +248,22 @@ public class FocusModeEngine {
                     AppExecutors.getInstance().postToMainThread(() -> listener.onProgress(c, total, pkg));
                 }
 
-                // 1. Unsuspend package
-                commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
-                commands.add("cmd package unsuspend --user 0 " + pkg + " 2>/dev/null");
+                // Collect for fast batch unsuspend
+                batchPkgList.append(pkg).append(" ");
 
-                // 2. Restore normal background permissions & active standby bucket
+                // Individual fallbacks & appops restore
+                commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
                 commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
                 commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
                 commands.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
                 commands.add("am set-standby-bucket " + pkg + " 10 2>/dev/null");
             }
 
-            if (!commands.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (String c : commands) {
-                    sb.append(c).append("; ");
-                }
-                executeShellBatch(sb.toString());
+            if (batchPkgList.length() > 0) {
+                commands.add(0, "cmd package unsuspend --user 0 " + batchPkgList.toString().trim() + " 2>/dev/null");
             }
+
+            executeShellCommandsBatched(commands);
 
             getPrefs(context).edit()
                     .putBoolean(KEY_FOCUS_ACTIVE, false)
@@ -324,12 +325,7 @@ public class FocusModeEngine {
 
         Log.i(TAG, "Suspending and freezing " + packagesToFreeze.size() + " background apps for focus mode.");
 
-        StringBuilder sb = new StringBuilder();
-        for (String c : commands) {
-            sb.append(c).append("; ");
-        }
-
-        executeShellBatch(sb.toString());
+        executeShellCommandsBatched(commands);
 
         getPrefs(context).edit()
                 .putBoolean(KEY_FOCUS_ACTIVE, true)
@@ -347,46 +343,67 @@ public class FocusModeEngine {
     public static int disableFocusMode(Context context) {
         if (context == null) return 0;
 
-        Set<String> frozen = getFrozenPackages(context);
-        if (frozen.isEmpty()) {
-            getPrefs(context).edit().putBoolean(KEY_FOCUS_ACTIVE, false).apply();
-            return 0;
+        Set<String> packagesToUnsuspend = new HashSet<>(getFrozenPackages(context));
+        List<FocusAppModel> candidates = getFreezableApps(context);
+        for (FocusAppModel c : candidates) {
+            if (c != null && c.packageName != null) {
+                packagesToUnsuspend.add(c.packageName);
+            }
         }
 
-        Log.i(TAG, "Unsuspending and restoring " + frozen.size() + " applications from Focus Mode.");
+        Log.i(TAG, "Unsuspending and restoring " + packagesToUnsuspend.size() + " applications from Focus Mode.");
 
         List<String> commands = new ArrayList<>();
-        for (String pkg : frozen) {
-            // 1. Unsuspend package
-            commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
-            commands.add("cmd package unsuspend --user 0 " + pkg + " 2>/dev/null");
+        StringBuilder batchPkgList = new StringBuilder();
 
-            // 2. Restore normal background permissions & active standby bucket
+        for (String pkg : packagesToUnsuspend) {
+            if (pkg == null || !pkg.matches("^[a-zA-Z0-9_.]+$")) continue;
+            batchPkgList.append(pkg).append(" ");
+            commands.add("pm unsuspend --user 0 " + pkg + " 2>/dev/null");
             commands.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
             commands.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
             commands.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
             commands.add("am set-standby-bucket " + pkg + " 10 2>/dev/null");
         }
 
-        StringBuilder sb = new StringBuilder();
-        for (String c : commands) {
-            sb.append(c).append("; ");
+        if (batchPkgList.length() > 0) {
+            commands.add(0, "cmd package unsuspend --user 0 " + batchPkgList.toString().trim() + " 2>/dev/null");
         }
 
-        executeShellBatch(sb.toString());
+        executeShellCommandsBatched(commands);
 
-        int count = frozen.size();
+        int count = packagesToUnsuspend.size();
         getPrefs(context).edit()
                 .putBoolean(KEY_FOCUS_ACTIVE, false)
                 .remove(KEY_FROZEN_PACKAGES)
                 .apply();
 
+        ManualSettingsPreferences.setFocusModeEnabled(context, false);
         return count;
     }
 
+    private static void executeShellCommandsBatched(List<String> commands) {
+        if (commands == null || commands.isEmpty()) return;
+        final int BATCH_SIZE = 25;
+        for (int i = 0; i < commands.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, commands.size());
+            List<String> batch = commands.subList(i, end);
+            StringBuilder sb = new StringBuilder();
+            for (String c : batch) {
+                sb.append(c).append("; ");
+            }
+            executeShellBatch(sb.toString());
+        }
+    }
+
     private static void executeShellBatch(String script) {
+        if (script == null || script.trim().isEmpty()) return;
         try {
-            ShizukuExecutor.executeShizukuCommand(script);
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(script);
+            } else {
+                com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(script);
+            }
         } catch (Throwable t) {
             Log.w(TAG, "FocusMode batch execution error: " + t.getMessage());
         }

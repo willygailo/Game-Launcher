@@ -79,7 +79,6 @@ public final class GameConfigStorageAccessEngine {
             if (resolvedPaths != null) {
                 for (String p : resolvedPaths) {
                     if (p != null && !p.isEmpty()) {
-                        pathSet.add(p);
                         File f = new File(p);
                         if (f.getParent() != null) {
                             pathSet.add(f.getParent());
@@ -94,6 +93,14 @@ public final class GameConfigStorageAccessEngine {
         List<String> list = new ArrayList<>(pathSet);
         Collections.sort(list);
         return list;
+    }
+
+    private static boolean isFileLikePath(String path) {
+        if (path == null) return false;
+        String lower = path.toLowerCase();
+        return lower.endsWith(".ini") || lower.endsWith(".xml") || lower.endsWith(".json")
+                || lower.endsWith(".cfg") || lower.endsWith(".sav") || lower.endsWith(".dat")
+                || lower.endsWith(".txt") || lower.endsWith(".conf") || lower.endsWith(".properties");
     }
 
     /**
@@ -124,10 +131,18 @@ public final class GameConfigStorageAccessEngine {
             commands.add("appops set " + myPkg + " WRITE_EXTERNAL_STORAGE allow");
         }
 
-        // 3. Filesystem Chmod 777 & Directory Access
+        // 3. Filesystem Chmod 777 & Directory Access (Never run mkdir -p on file paths)
         for (String path : paths) {
-            commands.add("mkdir -p \"" + path + "\" 2>/dev/null");
-            commands.add("chmod -R 777 \"" + path + "\" 2>/dev/null");
+            if (isFileLikePath(path)) {
+                File parent = new File(path).getParentFile();
+                if (parent != null) {
+                    commands.add("mkdir -p \"" + parent.getAbsolutePath() + "\" 2>/dev/null");
+                }
+                commands.add("chmod 666 \"" + path + "\" 2>/dev/null");
+            } else {
+                commands.add("mkdir -p \"" + path + "\" 2>/dev/null");
+                commands.add("chmod -R 777 \"" + path + "\" 2>/dev/null");
+            }
         }
 
         // 4. SELinux & Special Permissive Paths

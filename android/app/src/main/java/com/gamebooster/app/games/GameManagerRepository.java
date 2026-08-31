@@ -101,10 +101,10 @@ public class GameManagerRepository {
             }
         } catch (Throwable ignored) {}
 
-        // Method 3: Shizuku ADB package list
+        // Method 3: Shizuku ADB package list (Explicit --user 0 for Android 15/16 Private Space compatibility)
         if (ShizukuExecutor.isShizukuAvailable()) {
             try {
-                String shizukuRes = ShizukuExecutor.executeShizukuCommand("pm list packages -3");
+                String shizukuRes = ShizukuExecutor.executeShizukuCommand("pm list packages --user 0 -3");
                 if (shizukuRes != null && !shizukuRes.startsWith("ERROR")) {
                     String[] lines = shizukuRes.split("\n");
                     for (String line : lines) {
