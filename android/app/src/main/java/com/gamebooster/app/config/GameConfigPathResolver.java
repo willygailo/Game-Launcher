@@ -57,7 +57,7 @@ public class GameConfigPathResolver {
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
                 String scanRoots = "/sdcard/Android/data/" + pkg + "/ /storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/";
-                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" \\) 2>/dev/null";
+                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"*.unity3d\" \\) 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
@@ -157,7 +157,41 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
-            // 2026: MLBB GraphicsSettings separate config file
+            // 2026: MLBB Document & Document/android config files (JSON, XML, Unity3D)
+            rel.add("files/dragon2017/assets/Document/android/QualityConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/GraphicsSetting.json");
+            rel.add("files/dragon2017/assets/Document/android/HighFPSConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/HardwareLevel.json");
+            rel.add("files/dragon2017/assets/Document/android/ModelQuality.json");
+            rel.add("files/dragon2017/assets/Document/android/BattleConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/SystemConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/Config.json");
+            rel.add("files/dragon2017/assets/Document/android/document.xml");
+            rel.add("files/dragon2017/assets/Document/android/Document.xml");
+            rel.add("files/dragon2017/assets/Document/android/QualityConfig.xml");
+            rel.add("files/dragon2017/assets/Document/android/GraphicsSetting.xml");
+            rel.add("files/dragon2017/assets/Document/android/HighFPSConfig.xml");
+            rel.add("files/dragon2017/assets/Document/android/Config.xml");
+            rel.add("files/dragon2017/assets/Document/android/BattleConfig.xml");
+            rel.add("files/dragon2017/assets/Document/android/SystemConfig.xml");
+            rel.add("files/dragon2017/assets/Document/android/document.unity3d");
+            rel.add("files/dragon2017/assets/Document/android/Document.unity3d");
+            rel.add("files/dragon2017/assets/Document/android/graphics.unity3d");
+            rel.add("files/dragon2017/assets/Document/android/config.unity3d");
+            rel.add("files/dragon2017/assets/Document/android/highfps.unity3d");
+            rel.add("files/dragon2017/assets/Document/QualityConfig.json");
+            rel.add("files/dragon2017/assets/Document/GraphicsSetting.json");
+            rel.add("files/dragon2017/assets/Document/HighFPSConfig.json");
+            rel.add("files/dragon2017/assets/Document/HardwareLevel.json");
+            rel.add("files/dragon2017/assets/Document/Config.json");
+            rel.add("files/dragon2017/assets/Document/document.xml");
+            rel.add("files/dragon2017/assets/Document/Document.xml");
+            rel.add("files/dragon2017/assets/Document/QualityConfig.xml");
+            rel.add("files/dragon2017/assets/Document/GraphicsSetting.xml");
+            rel.add("files/dragon2017/assets/Document/HighFPSConfig.xml");
+            rel.add("files/dragon2017/assets/Document/Config.xml");
+            rel.add("files/dragon2017/assets/Document/document.unity3d");
+            rel.add("files/dragon2017/assets/Document/Document.unity3d");
             rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
         }
 
@@ -170,11 +204,14 @@ public class GameConfigPathResolver {
             // 2026: EnjoyCJZC.ini — main quality/FPS controller for 2.9.x+
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
-            // 2026: Quality.ini — new 2026 graphics quality profile
+            // 2026: Quality.ini & Scalability profiles
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Quality.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Engine.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Scalability.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/ChineseUserCustom.ini");
-            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SrcVersion.ini");
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
