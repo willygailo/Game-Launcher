@@ -8,7 +8,7 @@ import java.util.List;
  * Farlight 84 (all global and regional package releases).
  *
  * Configures 120 / 144 / 165 / 185 FPS unlock, 1000Hz touch & gyro polling,
- * zero input lag, recoil control, and performance rendering pipeline.
+ * zero input lag, and performance rendering pipeline.
  */
 public class FarlightConfigPatcher {
 
@@ -30,11 +30,6 @@ public class FarlightConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Farlight 84.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -50,18 +45,11 @@ public class FarlightConfigPatcher {
             "HighFPSMode=1", "SuperHighFPS=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // Zero Recoil & Aim Assist
-            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1", "RecoilScale=0.00",
-            "VerticalRecoil=0.00", "HorizontalRecoil=0.00", "RecoilReduction=1.00",
-            "WeaponStability=1000", "BulletSpread=0.00",
-            "AimAssist=1", "AimAssistStrength=10000", "AimAssistLevel=10", "AimPrecision=100",
-            "CrosshairMagnetism=100.00", "AimSnapStrength=100.00", "AimMagnetism=100.00",
-            "TrackingBullet=1", "BulletTracking=1", "BulletMagnetism=100.00", "HitboxExpansion=100.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -76,9 +64,6 @@ public class FarlightConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Farlight 84.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -98,18 +83,11 @@ public class FarlightConfigPatcher {
             "HighFPSMode=1", "SuperHighFPS=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // Zero Recoil & Aim Assist
-            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1", "RecoilScale=0.00",
-            "VerticalRecoil=0.00", "HorizontalRecoil=0.00", "RecoilReduction=1.00",
-            "WeaponStability=1000", "BulletSpread=0.00",
-            "AimAssist=1", "AimAssistStrength=10000", "AimAssistLevel=10", "AimPrecision=100",
-            "CrosshairMagnetism=100.00", "AimSnapStrength=100.00", "AimMagnetism=100.00",
-            "TrackingBullet=1", "BulletTracking=1", "BulletMagnetism=100.00", "HitboxExpansion=100.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -126,11 +104,6 @@ public class FarlightConfigPatcher {
 
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
 
-    /**
-     * Force-overwrites ALL Farlight 84 config paths unconditionally.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
@@ -158,50 +131,10 @@ public class FarlightConfigPatcher {
                         "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroPollingRate\": 1000,\n" +
-                        "  \"AimAssist\": 1,\n" +
-                        "  \"AimAssistStrength\": 10000,\n" +
-                        "  \"AimAssistLevel\": 10,\n" +
-                        "  \"AimPrecision\": 100,\n" +
-                        "  \"TargetLockSensitivity\": 10000,\n" +
-                        "  \"CrosshairMagnetism\": 100.00,\n" +
-                        "  \"AimSnapStrength\": 100.00,\n" +
-                        "  \"AimMagnetism\": 100.00,\n" +
-                        "  \"TrackingBullet\": 1,\n" +
-                        "  \"BulletTracking\": 1,\n" +
-                        "  \"AutoTrackingBullet\": 1,\n" +
-                        "  \"MagicBullet\": 1,\n" +
-                        "  \"HitboxExpansion\": 100.00,\n" +
-                        "  \"BulletMagnetism\": 100.00,\n" +
-                        "  \"ProjectileHoming\": 1,\n" +
-                        "  \"HomingStrength\": 100.00,\n" +
-                        "  \"BulletCurveFactor\": 100.00,\n" +
-                        "  \"BulletVelocityMultiplier\": 200.00,\n" +
-                        "  \"PhysicalDefenseBoost\": 1000.00,\n" +
-                        "  \"MagicDefenseBoost\": 1000.00,\n" +
-                        "  \"DamageReductionRatio\": 0.9999,\n" +
-                        "  \"DamageReduction\": 0.9999,\n" +
-                        "  \"IncomingDamageReduction\": 0.9999,\n" +
-                        "  \"ShieldMultiplier\": 1500.00,\n" +
-                        "  \"ShieldCapacity\": 1500.00,\n" +
-                        "  \"ArmorBoost\": 50000,\n" +
-                        "  \"VestDurability\": 1500.00,\n" +
-                        "  \"HelmetDamageReduction\": 0.9999,\n" +
-                        "  \"TenacityRatio\": 0.9999,\n" +
-                        "  \"DamageMultiplier\": 1000.00,\n" +
-                        "  \"DamageBoostRatio\": 1000.00,\n" +
-                        "  \"BulletDamageBoost\": 1000.00,\n" +
-                        "  \"HeadshotDamageMultiplier\": 1000.00,\n" +
-                        "  \"CriticalHitRate\": 100,\n" +
-                        "  \"CriticalDamage\": 10000,\n" +
-                        "  \"DroneView\": 1,\n" +
-                        "  \"DroneViewHeight\": 4,\n" +
-                        "  \"CameraFOV\": 180,\n" +
-                        "  \"RecoilReduction\": 1.00,\n" +
                         "  \"LowLatencyMode\": 1,\n" +
                         "  \"AntiAliasing\": 1\n" +
                         "}\n";
             } else {
-                // UE4 INI format (Solarland / GameUserSettings.ini / UserCustom.ini)
                 content = "[/Script/Engine.GameUserSettings]\n" +
                         "bUseVSync=False\n" +
                         "FrameRateLimit=" + forcedFps + ".000000\n" +
@@ -224,39 +157,6 @@ public class FarlightConfigPatcher {
                         "+CVars=r.Unlock144Hz=1\n" +
                         "+CVars=r.Unlock165Hz=1\n" +
                         "+CVars=r.Unlock185Hz=1\n" +
-                        "+CVars=r.AimAssist=1\n" +
-                        "+CVars=r.AimAssist.Strength=100.00\n" +
-                        "+CVars=r.AimAssist.Magnetism=100.00\n" +
-                        "+CVars=r.AimAssist.SnapSpeed=100.00\n" +
-                        "+CVars=r.AimAssistRadius=5000\n" +
-                        "+CVars=r.CrosshairMagnetism=100.00\n" +
-                        "+CVars=r.TargetLockSensitivity=10000\n" +
-                        "+CVars=r.AimSnapStrength=100.00\n" +
-                        "+CVars=r.BulletTracking=1\n" +
-                        "+CVars=r.MagicBullet=1\n" +
-                        "+CVars=r.HitboxExpansion=100.00\n" +
-                        "+CVars=r.BulletMagnetism=100.00\n" +
-                        "+CVars=r.BulletVelocityScale=200.00\n" +
-                        "+CVars=r.BulletCurveFactor=100.00\n" +
-                        "+CVars=r.TargetLockTracking=1\n" +
-                        "+CVars=r.FirstBulletAccuracy=1\n" +
-                        "+CVars=r.ProjectileHoming=1\n" +
-                        "+CVars=r.HomingStrength=100.00\n" +
-                        "+CVars=r.ArmorDamageReduction=0.9999\n" +
-                        "+CVars=r.ShieldEfficiency=1500.00\n" +
-                        "+CVars=r.ShieldMultiplier=1500.00\n" +
-                        "+CVars=r.ShieldRechargeRate=1000.00\n" +
-                        "+CVars=r.ShieldCapacityBoost=1500.00\n" +
-                        "+CVars=r.DamageResistance=0.9999\n" +
-                        "+CVars=r.VestDurabilityBoost=1500.00\n" +
-                        "+CVars=r.HelmetDamageReduction=0.9999\n" +
-                        "+CVars=r.MaxHPMultiplier=100.00\n" +
-                        "+CVars=r.IncomingDamageScale=0.0001\n" +
-                        "+CVars=r.HeavyDamageDampener=100.00\n" +
-                        "+CVars=r.BurstDamageReduction=100.00\n" +
-                        "+CVars=r.CameraFOV=180\n" +
-                        "+CVars=r.FieldOfView=180\n" +
-                        "+CVars=r.DroneViewHeight=4\n" +
                         "[SolarlandGraphics]\n" +
                         "FrameRateLimit=" + forcedFps + "\n" +
                         "MaxFPS=" + forcedFps + "\n" +
@@ -273,50 +173,13 @@ public class FarlightConfigPatcher {
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +
                         "GyroPollingRate=1000\n" +
-                        "AimAssist=1\n" +
-                        "AimAssistStrength=10000\n" +
-                        "AimAssistLevel=10\n" +
-                        "AimPrecision=100\n" +
-                        "TargetLockSensitivity=10000\n" +
-                        "CrosshairMagnetism=100.00\n" +
-                        "AimSnapStrength=100.00\n" +
-                        "AimMagnetism=100.00\n" +
-                        "TrackingBullet=1\n" +
-                        "BulletTracking=1\n" +
-                        "AutoTrackingBullet=1\n" +
-                        "MagicBullet=1\n" +
-                        "HitboxExpansion=100.00\n" +
-                        "BulletMagnetism=100.00\n" +
-                        "BulletCurveFactor=100.00\n" +
-                        "BulletVelocityMultiplier=200.00\n" +
-                        "PhysicalDefenseBoost=1000.00\n" +
-                        "MagicDefenseBoost=1000.00\n" +
-                        "DamageReductionRatio=0.9999\n" +
-                        "DamageReduction=0.9999\n" +
-                        "IncomingDamageReduction=0.9999\n" +
-                        "ShieldMultiplier=1500.00\n" +
-                        "ShieldCapacity=1500.00\n" +
-                        "ArmorBoost=50000\n" +
-                        "VestDurability=1500.00\n" +
-                        "HelmetDamageReduction=0.9999\n" +
-                        "TenacityRatio=0.9999\n" +
-                        "DamageMultiplier=1000.00\n" +
-                        "BulletDamageBoost=1000.00\n" +
-                        "HeadshotDamageMultiplier=1000.00\n" +
-                        "CriticalHitRate=100\n" +
-                        "CriticalDamage=10000\n" +
-                        "DroneView=1\n" +
-                        "DroneViewHeight=4\n" +
-                        "CameraFOV=180\n" +
-                        "RecoilReduction=1.00\n" +
-                        "WeaponKickScale=0.00\n" +
                         "ZeroInputLag=1\n";
             }
             if (ConfigFileHelper.writeContentAtomic(path, content)) {
                 written++;
             }
         }
-        Log.i(TAG, "Farlight 84 competitive " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "Farlight 84 competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -370,7 +233,7 @@ public class FarlightConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static List<String> getConfigPaths(String pkg) {
+    private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 

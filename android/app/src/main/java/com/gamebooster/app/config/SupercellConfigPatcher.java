@@ -25,11 +25,6 @@ public class SupercellConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Supercell games (Brawl Stars, Clash, Squad Busters).
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -50,15 +45,12 @@ public class SupercellConfigPatcher {
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "HDRMode=1",
-            "ResolutionScale=1.2",
+            "ResolutionScale=100",
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
             "TouchBoostHz=144",
-            // ── Smart Aim Lock & Combat Agility ──
-            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
-            "AutoAim=1", "AimTracking=1", "TargetLock=1", "ZeroInputLag=1",
-            "DamageMultiplier=1000.00", "MovementSpeedMultiplier=15.00"
+            "ZeroInputLag=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -73,9 +65,6 @@ public class SupercellConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Supercell Games (Brawl Stars, Clash Royale, etc.).
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -98,15 +87,12 @@ public class SupercellConfigPatcher {
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "HDRMode=1",
-            "ResolutionScale=1.2",
+            "ResolutionScale=100",
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
             "TouchBoostHz=185",
-            // ── Smart Aim Lock & Combat Agility ──
-            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
-            "AutoAim=1", "AimTracking=1", "TargetLock=1", "ZeroInputLag=1",
-            "DamageMultiplier=1000.00", "MovementSpeedMultiplier=15.00"
+            "ZeroInputLag=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -142,56 +128,11 @@ public class SupercellConfigPatcher {
                 "GraphicQuality=4\n" +
                 "UltraExtreme=1\n" +
                 "HDRMode=1\n" +
-                "ResolutionScale=1.2\n" +
+                "ResolutionScale=1.0\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
                 "TouchZeroDelay=1\n" +
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraDistance=10.0\n" +
-                "CameraFOV=180\n" +
-                "FieldOfView=180\n" +
-                "FOV=180\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "AutoAimAssist=1\n" +
-                "AimSnap=1\n" +
-                "SmartTargeting=1\n" +
-                "TargetLock=1\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "AutoAttackTracking=1\n" +
-                "SuperAttackLock=1\n" +
-                "ProjectileHoming=1\n" +
-                "HomingStrength=100.00\n" +
-                "AutoTargetLock=1\n" +
-                "SkillMagnetism=100.00\n" +
-                "HitboxExpansion=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ShieldStrength=1500.00\n" +
-                "ShieldEfficiency=1500.00\n" +
-                "DefenseRatio=1000.00\n" +
-                "DamageReduction=0.9999\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "ArmorBoost=50000\n" +
-                "TenacityRatio=0.9999\n" +
-                "DamageMultiplier=1000.00\n" +
-                "SuperAttackMultiplier=1000.00\n" +
-                "CriticalStrikeRate=100\n" +
-                "CriticalDamage=10000\n" +
-                "AutoAimGuide=1\n";
+                "ZeroInputLag=1\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -200,7 +141,7 @@ public class SupercellConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "Supercell competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
+        Log.i(TAG, "Supercell competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -254,18 +195,14 @@ public class SupercellConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static boolean applyStandardPatch(String path, int targetFps) {
+    private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {
             "TargetFPS=" + forcedFps,
             "MaxFPS=" + forcedFps,
-            "FPSCap=" + forcedFps,
             "FPSLevel=" + fpsLevel,
-            "GraphicQuality=4",
-            "UltraExtreme=1",
-            "HDRMode=1",
-            "ResolutionScale=1.2",
+            "FPSCap=" + forcedFps,
             "HighFPSMode=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",

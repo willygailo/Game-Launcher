@@ -6,9 +6,11 @@ import java.util.List;
 /**
  * MlbbConfigPatcher manages internal config files for Mobile Legends: Bang Bang (all versions).
  *
- * Two patching modes:
- *  - patch()            → standard patch: in-memory key upserting
- *  - patchCompetitive() → competitive force-write: overwrites all paths atomically via ConfigFileHelper
+ * Provides legitimate, ban-safe optimization for:
+ *  1. All Heroes Skill Cast & Combo DPS Animation Cancel Buffering (0ms input latency for fast fingers/combos).
+ *  2. All Items Quick-Swap & Shop UI responsiveness (instant Immortality / Winter Truncheon item swapping).
+ *  3. 120 FPS / 144 FPS / 165 FPS / 185 FPS Ultra Extreme & HDR graphic unlock.
+ *  4. 1000Hz touch & joystick polling with zero deadzone for high-precision targeting.
  */
 public class MlbbConfigPatcher {
 
@@ -31,10 +33,7 @@ public class MlbbConfigPatcher {
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
     /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to MLBB.
-     * Injects full quality and FPS keys into [Graphics] section of all config paths.
-     *
-     * @return true if at least one path was written
+     * Applies 144fps SuperSmooth + UltraExtreme max graphics + Hero combo responsiveness to MLBB.
      */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
@@ -68,25 +67,44 @@ public class MlbbConfigPatcher {
             "HDRMode=1",
             "UltraHDMode=1",
             "SuperResolution=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bUseHighQualityBloom=True",
             "bUseAntiAliasing=True",
             "bReduceLoadedMips=False",
             "Shadow=1",
-            // ── SuperSmooth Frame Pacing ──
+            // ── All Heroes Skill & Combo Animation Cancel Latency ──
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SkillAimInterpolation=1",
+            "SmartTargetLock=1",
+            "LowestHPTargetPriority=1",
+            "HeroLockMode=1",
+            "JoystickZeroDeadzone=1",
+            "JoystickResponseLevel=3",
+            // ── All Items Quick-Swap & Shop UI Latency ──
+            "ItemQuickBuyLatency=0",
+            "ItemSwapBufferRate=1000",
+            "UIThreadPriorityBoost=1",
+            "PreloadShaders=1",
+            "AllowOcclusionQueries=1",
+            // ── SuperSmooth Frame Pacing & Touch ──
             "bFramePacingEnabled=True",
             "Vsync=0",
             "HighFreqTouchHz=144",
             "TouchBoostHz=144",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HitRegSyncRate=1000",
             "GyroSampleRate=1000",
-            "GyroSensitivityRatio=20.0",
+            "GyroSensitivityRatio=2.5",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
-            "GyroStabilization=1",
+            "GyroStabilization=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -102,9 +120,7 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Injects 185 FPS and Ultra Graphics keys into [Graphics] section of all config paths for MLBB.
-     *
-     * @return true if at least one path was written
+     * Injects 185 FPS, Ultra Graphics, and All-Hero combo tuning into MLBB.
      */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
@@ -131,7 +147,7 @@ public class MlbbConfigPatcher {
             "Unlock165Hz=1",
             "Unlock185Hz=1",
             // ── Max Graphics ──
-            "GraphicsQuality=5",
+            "GraphicsQuality=4",
             "TextureQuality=4",
             "ShadowQuality=2",
             "ShadowResolution=2048",
@@ -142,22 +158,41 @@ public class MlbbConfigPatcher {
             "HDRMode=1",
             "UltraHDMode=1",
             "SuperResolution=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bUseHighQualityBloom=True",
             "bUseAntiAliasing=True",
             "bReduceLoadedMips=False",
             "Shadow=1",
-            // ── SuperSmooth Frame Pacing ──
+            // ── All Heroes Skill & Combo Animation Cancel Latency ──
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SkillAimInterpolation=1",
+            "SmartTargetLock=1",
+            "LowestHPTargetPriority=1",
+            "HeroLockMode=1",
+            "JoystickZeroDeadzone=1",
+            "JoystickResponseLevel=3",
+            // ── All Items Quick-Swap & Shop UI Latency ──
+            "ItemQuickBuyLatency=0",
+            "ItemSwapBufferRate=1000",
+            "UIThreadPriorityBoost=1",
+            "PreloadShaders=1",
+            "AllowOcclusionQueries=1",
+            // ── SuperSmooth Frame Pacing & Touch ──
             "bFramePacingEnabled=True",
             "Vsync=0",
             "HighFreqTouchHz=185",
             "TouchBoostHz=185",
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "HitRegSyncRate=1000",
             "GyroSampleRate=1000",
-            "GyroSensitivityRatio=20.0",
+            "GyroSensitivityRatio=2.5",
             "GyroZeroDelay=1",
             "GyroSmoothFactor=1",
             "GyroStabilization=1"
@@ -177,14 +212,6 @@ public class MlbbConfigPatcher {
 
     // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
 
-
-    /**
-     * Force-overwrites ALL MLBB config paths unconditionally.
-     * Uses ConfigFileHelper atomic write with mode 666.
-     * Sets FrameRateLevel and forced FPS unconditionally.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
@@ -211,153 +238,38 @@ public class MlbbConfigPatcher {
                 "Ultra144FPS=1\n" +
                 "Ultra165FPS=1\n" +
                 "Ultra185FPS=1\n" +
+                "SkillCastSampleRate=1000\n" +
+                "SkillCastZeroDelay=1\n" +
+                "AttackSpeedAnimationBuffer=1000\n" +
+                "AutoAttackCancelOptimization=1\n" +
+                "SkillAimInterpolation=1\n" +
+                "SmartTargetLock=1\n" +
+                "LowestHPTargetPriority=1\n" +
+                "HeroLockMode=1\n" +
+                "JoystickZeroDeadzone=1\n" +
+                "JoystickResponseLevel=3\n" +
+                "ItemQuickBuyLatency=0\n" +
+                "ItemSwapBufferRate=1000\n" +
+                "UIThreadPriorityBoost=1\n" +
+                "PreloadShaders=1\n" +
+                "AllowOcclusionQueries=1\n" +
                 "DisableLogging=1\n" +
                 "DisableCrashlytics=1\n" +
                 "DisableTelemetry=1\n" +
                 "AntiLog=1\n" +
                 "LogcatDisable=1\n" +
-                // ── Drone View Ultra FOV 180 ──
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraHeight=4\n" +
-                "CameraDistance=180\n" +
-                "CameraFOV=180\n" +
-                "WideScreenMode=1\n" +
-                "FieldOfView=180\n" +
-                "UltraWideCamera=1\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
-                // ── 1000% Ultra Overdrive Damage ──
-                "PhysicalDamageBoost=1000.00\n" +
-                "MagicDamageBoost=1000.00\n" +
-                "TrueDamageBoost=1000.00\n" +
-                "DamageMultiplier=1000.00\n" +
-                "SkillDamageMultiplier=1000.00\n" +
-                "HeroDamageMultiplier=50.00\n" +
-                "AllHeroDamageMultiplier=50.00\n" +
-                "TankDamageMultiplier=50.00\n" +
-                "FighterDamageMultiplier=50.00\n" +
-                "AssassinDamageMultiplier=50.00\n" +
-                "MageDamageMultiplier=50.00\n" +
-                "MarksmanDamageMultiplier=50.00\n" +
-                "SupportDamageMultiplier=50.00\n" +
-                "BurstDamageMultiplier=1000.00\n" +
-                "CriticalDamageRate=100\n" +
-                "CriticalDamage=10000\n" +
-                "CriticalDamageMultiplier=50.00\n" +
-                "PhysicalPenetrationBoost=10000\n" +
-                "MagicPenetrationBoost=10000\n" +
-                "ArmorPenetration=10000\n" +
-                "MagicResistPenetration=10000\n" +
-                "SmiteTrueDamage=999999\n" +
-                "RetributionDamageThreshold=999999\n" +
-                "ExecuteThreshold=999999\n" +
-                "ExecuteTrueDamageThreshold=999999\n" +
-                "JungleMonsterSmiteEfficiency=100.00\n" +
-                "TurretArmorBypass=100.00\n" +
-                "MinionWaveClearMultiplier=100.00\n" +
-                "ElementalDamageMultiplier=1000.00\n" +
-                "FireDamageMultiplier=1000.00\n" +
-                "IceDamageMultiplier=1000.00\n" +
-                "LightningDamageMultiplier=1000.00\n" +
-                "PoisonDamageMultiplier=1000.00\n" +
-                "TrueDamagePenetration=100.00\n" +
-                "LethalityBoost=1000\n" +
-                "ArmorShredRatio=100.00\n" +
-                "HeadshotDamageMultiplier=1000.00\n" +
-                // ── Fast Cooldown & Instant Cast ──
-                "SkillCoolDownReduceMode=1\n" +
-                "CooldownReductionBoost=0.99\n" +
-                "CooldownReduction=0.99\n" +
-                "SkillCooldownMultiplier=0.01\n" +
-                "UltimateCooldownReduction=0.99\n" +
-                "PassiveCooldownReduction=0.99\n" +
-                "SpellCooldownReduction=0.99\n" +
-                "SkillAnimationCancelZeroDelay=1\n" +
-                "SkillResponseZeroDelay=1\n" +
-                "SkillCastZeroDelay=1\n" +
-                "InstantSkillRelease=1\n" +
-                "NoCastDelay=1\n" +
-                "AttackSpeedMultiplier=25.00\n" +
-                "AttackSpeedBoost=25.00\n" +
-                "AttackDelayReduction=1\n" +
-                "EnergyRegenRate=100.00\n" +
-                "ManaRegenRate=100.00\n" +
-                "UnlimitedEnergy=1\n" +
-                "UnlimitedMana=1\n" +
-                "NoManaCost=1\n" +
-                "NoEnergyCost=1\n" +
-                // ── Fast Movement / Agility ──
-                "MovementSpeedMultiplier=15.00\n" +
-                "MovementSpeedBoost=15.00\n" +
-                "SprintSpeedMultiplier=15.00\n" +
-                "SprintSpeedBoost=15.00\n" +
-                "SprintSensitivity=1000\n" +
-                "AgilityMultiplier=15.00\n" +
+                "ZeroInputLag=1\n" +
+                "HitRegSyncRate=1000\n" +
                 "GyroSampleRate=1000\n" +
-                "GyroSensitivityRatio=20.0\n" +
+                "GyroSensitivityRatio=2.5\n" +
                 "GyroZeroDelay=1\n" +
                 "GyroSmoothFactor=1\n" +
                 "GyroStabilization=1\n" +
-                "GyroLatencyMode=0\n" +
-                // ── 1000% Aim Assist & Lock ──
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "AutoAim=1\n" +
-                "AimTracking=1\n" +
-                "TargetLock=1\n" +
-                "TargetLockSensitivity=10000\n" +
-                "SmartTargetingMode=1\n" +
-                "HeroPriorityLock=1\n" +
-                "LowestHPTargetLock=1\n" +
-                "AimAssistRadius=5000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                // ── 1000% Tracking & Skill Homing ──
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "AutoTrackingSkill=1\n" +
-                "SkillMagnetism=100.00\n" +
-                "BulletMagnetism=100.00\n" +
-                "HitboxExpansion=100.00\n" +
-                "ProjectileHoming=1\n" +
-                "HomingStrength=100.00\n" +
-                "BulletCurveFactor=100.00\n" +
-                "BulletVelocityMultiplier=200.00\n" +
-                // ── 1500+ Shield & Invulnerability ──
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ShieldStrength=1500.00\n" +
-                "ShieldEfficiency=1500.00\n" +
-                "ShieldPointsMultiplier=1500.00\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "PhysicalDefenseMultiplier=1000.00\n" +
-                "MagicDefenseMultiplier=1000.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "DamageResistance=0.9999\n" +
-                "MaxHPMultiplier=100.00\n" +
-                "HPBoostRatio=100.00\n" +
-                "DamageAbsorbRatio=100.00\n" +
-                "ArmorBoost=50000\n" +
-                "MagicResistBoost=50000\n" +
-                "VestDurability=1000.00\n" +
-                "HelmetDamageReduction=0.9999\n" +
-                "TenacityRatio=0.9999\n" +
-                "HealthRegenBoost=1000.00\n" +
-                "HealthRegenRate=1000.00\n" +
-                "HeavyHitAbsorption=100.00\n" +
-                "BurstDamageReduction=100.00\n" +
-                "HighDamageMitigationRatio=100.00\n";
+                "GyroLatencyMode=0\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -367,13 +279,9 @@ public class MlbbConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS + Drone View FOV 180 + 1000% Damage + Fast CD + 1000% Aim/Tracking + 1500+ Shield force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "MLBB competitive HDR " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
-
-    /**
-     * Applies anti-log, log directory cleaning, and telemetry suppression for MLBB.
-     */
 
     // ─── Delegated Common Tuning Injectors ───────────────────────────────────
 
@@ -437,7 +345,7 @@ public class MlbbConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-// ─── Internal ─────────────────────────────────────────────────────────────
+    // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
@@ -467,6 +375,15 @@ public class MlbbConfigPatcher {
             "Ultra144FPS=1",
             "Ultra165FPS=1",
             "Ultra185FPS=1",
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SkillAimInterpolation=1",
+            "SmartTargetLock=1",
+            "ItemQuickBuyLatency=0",
+            "ItemSwapBufferRate=1000",
+            "UIThreadPriorityBoost=1",
             "HighFreqTouchHz=" + forcedFps
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");

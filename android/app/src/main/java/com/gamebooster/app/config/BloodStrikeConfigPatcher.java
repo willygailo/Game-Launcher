@@ -25,11 +25,6 @@ public class BloodStrikeConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Blood Strike.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -58,21 +53,11 @@ public class BloodStrikeConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── Zero Recoil & Weapon Stability ──
-            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1",
-            "RecoilScale=0.00", "VerticalRecoil=0.00", "HorizontalRecoil=0.00",
-            "RecoilReduction=1.00", "WeaponStability=1000", "CrosshairSpread=0.00",
-            "ScopeStability=5.00", "BulletSpread=0.00",
-            // ── 1000% Aim Assist & Tracking ──
-            "AimAssist=1", "AimAssistStrength=10000", "AimAssistLevel=10",
-            "AimPrecision=100", "TargetLock=1", "TargetLockSensitivity=10000",
-            "CrosshairMagnetism=100.00", "AimSnapStrength=100.00", "AimMagnetism=100.00",
-            "TrackingBullet=1", "BulletTracking=1", "BulletMagnetism=100.00", "HitboxExpansion=100.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -87,9 +72,6 @@ public class BloodStrikeConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Blood Strike.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -123,21 +105,11 @@ public class BloodStrikeConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── Zero Recoil & Weapon Stability ──
-            "ZeroRecoil=1", "NoRecoil=1", "RecoilControl=1",
-            "RecoilScale=0.00", "VerticalRecoil=0.00", "HorizontalRecoil=0.00",
-            "RecoilReduction=1.00", "WeaponStability=1000", "CrosshairSpread=0.00",
-            "ScopeStability=5.00", "BulletSpread=0.00",
-            // ── 1000% Aim Assist & Tracking ──
-            "AimAssist=1", "AimAssistStrength=10000", "AimAssistLevel=10",
-            "AimPrecision=100", "TargetLock=1", "TargetLockSensitivity=10000",
-            "CrosshairMagnetism=100.00", "AimSnapStrength=100.00", "AimMagnetism=100.00",
-            "TrackingBullet=1", "BulletTracking=1", "BulletMagnetism=100.00", "HitboxExpansion=100.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -178,51 +150,10 @@ public class BloodStrikeConfigPatcher {
                 "AntiAliasing=1\n" +
                 "Vsync=0\n" +
                 "DynamicResolution=0\n" +
-                "ResolutionScale=1.2\n" +
+                "ResolutionScale=1.0\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
-                "TouchZeroDelay=1\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "HitboxExpansion=100.00\n" +
-                "BulletMagnetism=100.00\n" +
-                "BulletCurveFactor=100.00\n" +
-                "BulletVelocityMultiplier=200.00\n" +
-                "ProjectileHoming=1\n" +
-                "HomingStrength=100.00\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ArmorBoost=50000\n" +
-                "VestDurability=1500.00\n" +
-                "HelmetDamageReduction=0.9999\n" +
-                "TenacityRatio=0.9999\n" +
-                "BulletDamageBoost=1000.00\n" +
-                "DamageMultiplier=1000.00\n" +
-                "HeadshotDamageMultiplier=1000.00\n" +
-                "CriticalHitRate=100\n" +
-                "CriticalDamage=10000\n" +
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraFOV=180\n" +
-                "FieldOfView=180\n" +
-                "NoRecoil=1\n" +
-                "CrosshairSpread=0.00\n" +
-                "ScopeStability=5.00\n";
+                "TouchZeroDelay=1\n";
 
         String jsonContent = "{\n" +
                 "  \"graphics\": {\n" +
@@ -235,30 +166,10 @@ public class BloodStrikeConfigPatcher {
                 "    \"high_fps_mode\": true,\n" +
                 "    \"unlock_fps\": true,\n" +
                 "    \"unlock_high_fps\": true,\n" +
-                "    \"resolution_scale\": 1.2,\n" +
+                "    \"resolution_scale\": 1.0,\n" +
                 "    \"graphic_quality\": \"ultra\",\n" +
                 "    \"hdr_enabled\": true,\n" +
-                "    \"drone_view\": true,\n" +
-                "    \"camera_fov\": 180,\n" +
                 "    \"vsync\": false\n" +
-                "  },\n" +
-                "  \"combat\": {\n" +
-                "    \"damage_boost_ratio\": 1000.00,\n" +
-                "    \"bullet_damage_multiplier\": 1000.00,\n" +
-                "    \"headshot_multiplier\": 1000.00,\n" +
-                "    \"critical_strike_rate\": 100,\n" +
-                "    \"critical_damage\": 10000,\n" +
-                "    \"recoil_reduction\": 1.00,\n" +
-                "    \"crosshair_spread\": 0.00,\n" +
-                "    \"aim_assist\": 1,\n" +
-                "    \"aim_assist_strength\": 10000,\n" +
-                "    \"aim_magnetism\": 100.00,\n" +
-                "    \"bullet_tracking\": 1,\n" +
-                "    \"magic_bullet\": 1,\n" +
-                "    \"hitbox_expansion\": 100.00,\n" +
-                "    \"damage_reduction\": 0.9999,\n" +
-                "    \"shield_multiplier\": 1500.00,\n" +
-                "    \"armor_boost\": 50000\n" +
                 "  },\n" +
                 "  \"input\": {\n" +
                 "    \"touch_hz\": 1000,\n" +
@@ -278,7 +189,7 @@ public class BloodStrikeConfigPatcher {
             }
             if (ok) written++;
         }
-        Log.i(TAG, "Blood Strike competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
+        Log.i(TAG, "Blood Strike competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -332,7 +243,7 @@ public class BloodStrikeConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static boolean applyStandardPatch(String path, int targetFps) {
+    private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {

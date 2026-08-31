@@ -26,11 +26,6 @@ public class RobloxConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Roblox.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -46,13 +41,11 @@ public class RobloxConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "QualityLevel=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            "TouchZeroDelay=1", "ZeroInputLag=1",
-            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
-            "ZeroRecoil=1", "RecoilControl=1", "MovementSpeedMultiplier=15.00"
+            "TouchZeroDelay=1", "ZeroInputLag=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -67,9 +60,6 @@ public class RobloxConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Roblox.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -89,13 +79,11 @@ public class RobloxConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "QualityLevel=5", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            "TouchZeroDelay=1", "ZeroInputLag=1",
-            "AimAssist=1", "AimAssistStrength=10000", "CrosshairMagnetism=100.00",
-            "ZeroRecoil=1", "RecoilControl=1", "MovementSpeedMultiplier=15.00"
+            "TouchZeroDelay=1", "ZeroInputLag=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -121,44 +109,16 @@ public class RobloxConfigPatcher {
                 "  \"FFlagEnableHighFPS\": \"True\",\n" +
                 "  \"FFlagUnlockFPS\": \"True\",\n" +
                 "  \"FFlagTaskSchedulerLimitTargetFps\": \"False\",\n" +
-                "  \"FFlagDebugGraphicsDisableDirect3D11\": \"False\",\n" +
                 "  \"FFlagDebugGraphicsPreferVulkan\": \"True\",\n" +
                 "  \"FFlagFixGraphicsQuality\": \"True\",\n" +
                 "  \"DFFlagDisableDPIScale\": \"True\",\n" +
                 "  \"FFlagCommitToFastPhysics\": \"True\",\n" +
                 "  \"FFlagEnableVulkan\": \"True\",\n" +
-                "  \"FIntCameraMaxZoomDistance\": 500,\n" +
-                "  \"FFlagDroneViewUnlocked\": \"True\",\n" +
-                "  \"FIntFieldOfView\": 180,\n" +
-                "  \"FIntCameraFOV\": 180,\n" +
                 "  \"FFlagFastTouchResponse\": \"True\",\n" +
                 "  \"FIntTouchPollingRate\": 1000,\n" +
                 "  \"FFlagZeroTouchDelay\": \"True\",\n" +
                 "  \"FFlagReduceInputLatency\": \"True\",\n" +
-                "  \"FFlagTouchSlopReduction\": \"True\",\n" +
-                "  \"FFlagGyroFastAim\": \"True\",\n" +
-                "  \"FIntGyroPollingRate\": 1000,\n" +
-                "  \"FFlagDisableCameraShake\": \"True\",\n" +
-                "  \"FFlagWeaponRecoilReduction\": \"True\",\n" +
-                "  \"FFlagAimAssist\": \"True\",\n" +
-                "  \"FIntAimAssistStrength\": 10000,\n" +
-                "  \"FIntAimAssistLevel\": 10,\n" +
-                "  \"FIntAimPrecision\": 100,\n" +
-                "  \"FIntTargetLockSensitivity\": 10000,\n" +
-                "  \"FIntCrosshairMagnetism\": 100,\n" +
-                "  \"FFlagBulletTracking\": \"True\",\n" +
-                "  \"FFlagAutoTrackingBullet\": \"True\",\n" +
-                "  \"FFlagMagicBullet\": \"True\",\n" +
-                "  \"FIntHitboxExpansion\": 100,\n" +
-                "  \"FIntBulletMagnetism\": 100,\n" +
-                "  \"FFlagProjectileHoming\": \"True\",\n" +
-                "  \"FIntHomingStrength\": 100,\n" +
-                "  \"FIntDefenseMultiplier\": 1000,\n" +
-                "  \"FIntDamageReduction\": 9999,\n" +
-                "  \"FIntShieldMultiplier\": 1500,\n" +
-                "  \"FIntArmorBoost\": 50000,\n" +
-                "  \"FFlagDamageBoostMode\": \"True\",\n" +
-                "  \"FIntDamageMultiplier\": 1000\n" +
+                "  \"FFlagTouchSlopReduction\": \"True\"\n" +
                 "}\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -168,7 +128,7 @@ public class RobloxConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "Roblox competitive " + forcedFps + "FPS FastFlag force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -222,7 +182,7 @@ public class RobloxConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static List<String> getConfigPaths(String pkg) {
+    private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 

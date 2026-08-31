@@ -26,12 +26,6 @@ public class GenshinConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Genshin Impact / HSR / HoYoverse.
-     * Uses Genshin's own keys (targetFrameRate, graphicsQuality, etc.) + generic unlock keys.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -54,15 +48,12 @@ public class GenshinConfigPatcher {
             "maxAnisotropy=16",
             "hdrMode=1",
             "resolutionQuality=4",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "vSync=0", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            // ── Action RPG Combat Scaling ──
-            "DamageMultiplier=1000.00", "PhysicalDamageBoost=1000.00", "MagicDamageBoost=1000.00",
-            "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99", "MovementSpeedMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00", "ShieldMultiplier=1500.00", "ShieldCapacity=1500.00"
+            "vulkan_enabled=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -77,9 +68,6 @@ public class GenshinConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Genshin / Star Rail / ZZZ.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -106,15 +94,12 @@ public class GenshinConfigPatcher {
             "maxAnisotropy=16",
             "hdrMode=1",
             "resolutionQuality=4",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "vSync=0", "Vsync=0",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            // ── Action RPG Combat Scaling ──
-            "DamageMultiplier=1000.00", "PhysicalDamageBoost=1000.00", "MagicDamageBoost=1000.00",
-            "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99", "MovementSpeedMultiplier=15.00",
-            "AttackSpeedMultiplier=25.00", "ShieldMultiplier=1500.00", "ShieldCapacity=1500.00"
+            "vulkan_enabled=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -144,8 +129,8 @@ public class GenshinConfigPatcher {
                 "  \"fps_unlock_165\": true,\n" +
                 "  \"fps_unlock_185\": true,\n" +
                 "  \"graphics_quality\": 5,\n" +
-                "  \"render_resolution\": 1.2,\n" +
-                "  \"shadow_quality\": 4,\n" +
+                "  \"render_resolution\": 1.0,\n" +
+                "  \"shadow_quality\": 2,\n" +
                 "  \"visual_effects\": 4,\n" +
                 "  \"sfx_quality\": 4,\n" +
                 "  \"environment_detail\": 4,\n" +
@@ -159,49 +144,10 @@ public class GenshinConfigPatcher {
                 "  \"unlock_144hz\": true,\n" +
                 "  \"unlock_165hz\": true,\n" +
                 "  \"unlock_185hz\": true,\n" +
-                "  \"camera_distance\": 10.0,\n" +
-                "  \"camera_fov\": 180,\n" +
-                "  \"drone_view\": true,\n" +
-                "  \"drone_view_height\": 4,\n" +
-                "  \"field_of_view\": 180,\n" +
                 "  \"touch_polling_rate\": 1000,\n" +
                 "  \"zero_touch_delay\": true,\n" +
-                "  \"touch_response_ms\": 0,\n" +
                 "  \"input_latency_reduction\": true,\n" +
-                "  \"gyro_sample_rate\": 1000,\n" +
-                "  \"aim_assist\": 1,\n" +
-                "  \"aim_assist_strength\": 10000,\n" +
-                "  \"aim_assist_level\": 10,\n" +
-                "  \"aim_precision\": 100,\n" +
-                "  \"target_lock_sensitivity\": 10000,\n" +
-                "  \"crosshair_magnetism\": 100.00,\n" +
-                "  \"aim_snap_strength\": 100.00,\n" +
-                "  \"aim_magnetism\": 100.00,\n" +
-                "  \"bow_auto_tracking\": 1,\n" +
-                "  \"homing_arrows\": 1,\n" +
-                "  \"projectile_homing\": 1,\n" +
-                "  \"homing_strength\": 100.00,\n" +
-                "  \"hitbox_expansion\": 100.00,\n" +
-                "  \"bullet_magnetism\": 100.00,\n" +
-                "  \"bullet_tracking\": 1,\n" +
-                "  \"auto_tracking_bullet\": 1,\n" +
-                "  \"magic_bullet\": 1,\n" +
-                "  \"defense_multiplier\": 1000.00,\n" +
-                "  \"shield_strength\": 1500.00,\n" +
-                "  \"shield_capacity\": 1500.00,\n" +
-                "  \"shield_multiplier\": 1500.00,\n" +
-                "  \"damage_reduction_ratio\": 0.9999,\n" +
-                "  \"damage_reduction\": 0.9999,\n" +
-                "  \"incoming_damage_reduction\": 0.9999,\n" +
-                "  \"elemental_resistance_boost\": 1000.00,\n" +
-                "  \"armor_boost\": 50000,\n" +
-                "  \"tenacity_ratio\": 0.9999,\n" +
-                "  \"damage_multiplier\": 1000.00,\n" +
-                "  \"attack_speed_multiplier\": 25.0,\n" +
-                "  \"crit_rate_boost\": 1.00,\n" +
-                "  \"critical_damage\": 10000,\n" +
-                "  \"recoil_compensation\": 1.0,\n" +
-                "  \"camera_shake\": 0.0\n" +
+                "  \"gyro_sample_rate\": 1000\n" +
                 "}\n";
 
         String hardwareConfig = "{\n" +
@@ -224,7 +170,7 @@ public class GenshinConfigPatcher {
             if (ok) written++;
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "Genshin competitive " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "Genshin competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -278,7 +224,7 @@ public class GenshinConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static List<String> getConfigPaths(String pkg) {
+    private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 

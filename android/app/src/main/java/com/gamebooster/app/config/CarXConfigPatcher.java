@@ -26,11 +26,6 @@ public class CarXConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to CarX / Asphalt racing titles.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -52,16 +47,15 @@ public class CarXConfigPatcher {
             "bUseUltraExtreme=True",
             "HDRMode=1",
             "Vsync=0",
-            "ResolutionScale=1.2",
+            "ResolutionScale=100",
             "ShadowQuality=2",
             "DynamicResolution=0",
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
             "TouchBoostHz=144",
-            // ── Racing Engine & Speed Agility ──
-            "MovementSpeedMultiplier=15.00", "SprintSpeedMultiplier=15.00",
-            "AgilityMultiplier=15.00", "ZeroInputLag=1", "SteeringResponseRate=1000",
+            "ZeroInputLag=1",
+            "SteeringResponseRate=1000",
             "ZeroDeadzone=1"
         };
 
@@ -77,9 +71,6 @@ public class CarXConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for CarX / Asphalt / Racing Games.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -101,16 +92,15 @@ public class CarXConfigPatcher {
             "bUseUltraExtreme=True",
             "HDRMode=1",
             "Vsync=0",
-            "ResolutionScale=1.2",
+            "ResolutionScale=100",
             "ShadowQuality=2",
             "DynamicResolution=0",
             "TouchPollingRate=1000",
             "TouchSlop=1",
             "TouchZeroDelay=1",
             "TouchBoostHz=185",
-            // ── Racing Engine & Speed Agility ──
-            "MovementSpeedMultiplier=15.00", "SprintSpeedMultiplier=15.00",
-            "AgilityMultiplier=15.00", "ZeroInputLag=1", "SteeringResponseRate=1000",
+            "ZeroInputLag=1",
+            "SteeringResponseRate=1000",
             "ZeroDeadzone=1"
         };
 
@@ -148,50 +138,15 @@ public class CarXConfigPatcher {
                 "UltraExtreme=1\n" +
                 "HDRMode=1\n" +
                 "Vsync=0\n" +
-                "ResolutionScale=1.2\n" +
+                "ResolutionScale=1.0\n" +
                 "MotionBlur=0\n" +
                 "ShadowQuality=2\n" +
                 "DynamicResolution=0\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "SteeringAssist=1\n" +
-                "SteeringAssistStrength=10000\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "RacingLineTracking=1\n" +
-                "ApexAssist=1\n" +
-                "AutoCounterSteer=1\n" +
-                "DriftTrackingAssist=1\n" +
-                "SteeringMagnetism=100.00\n" +
-                "HitboxExpansion=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "ChassisDurability=1500.00\n" +
-                "CollisionDamageReduction=0.0001\n" +
-                "BodyIntegrity=1500.00\n" +
-                "ImpactAbsorption=100.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "ArmorBoost=50000\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "TenacityRatio=0.9999\n" +
-                "NitroMultiplier=1000.00\n" +
-                "TorqueBoost=1000.00\n" +
-                "DriftScoreMultiplier=50.0\n" +
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraFOV=180\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
-                "TouchZeroDelay=1\n";
+                "TouchZeroDelay=1\n" +
+                "ZeroDeadzone=1\n" +
+                "SteeringResponseRate=1000\n";
 
         String jsonContent = "{\n" +
                 "  \"graphics\": {\n" +
@@ -207,46 +162,14 @@ public class CarXConfigPatcher {
                 "    \"unlock_185\": true,\n" +
                 "    \"ultra_extreme\": true,\n" +
                 "    \"graphic_quality\": \"ultra\",\n" +
-                "    \"resolution_scale\": 1.2,\n" +
+                "    \"resolution_scale\": 1.0,\n" +
                 "    \"hdr_enabled\": true,\n" +
-                "    \"drone_view\": true,\n" +
-                "    \"camera_fov\": 180,\n" +
                 "    \"vsync\": false\n" +
                 "  },\n" +
-                "  \"performance\": {\n" +
-                "    \"aim_assist\": 1,\n" +
-                "    \"aim_assist_strength\": 10000,\n" +
-                "    \"aim_assist_level\": 10,\n" +
-                "    \"aim_precision\": 100,\n" +
-                "    \"steering_assist\": 1,\n" +
-                "    \"steering_assist_strength\": 10000,\n" +
-                "    \"target_lock_sensitivity\": 10000,\n" +
-                "    \"crosshair_magnetism\": 100.00,\n" +
-                "    \"aim_snap_strength\": 100.00,\n" +
-                "    \"aim_magnetism\": 100.00,\n" +
-                "    \"racing_line_tracking\": 1,\n" +
-                "    \"apex_assist\": 1,\n" +
-                "    \"drift_tracking_assist\": 1,\n" +
-                "    \"steering_magnetism\": 100.00,\n" +
-                "    \"hitbox_expansion\": 100.00,\n" +
-                "    \"tracking_bullet\": 1,\n" +
-                "    \"bullet_tracking\": 1,\n" +
-                "    \"auto_tracking_bullet\": 1,\n" +
-                "    \"magic_bullet\": 1,\n" +
-                "    \"chassis_durability\": 1500.00,\n" +
-                "    \"collision_damage_reduction\": 0.0001,\n" +
-                "    \"body_integrity\": 1500.00,\n" +
-                "    \"impact_absorption\": 100.00,\n" +
-                "    \"damage_reduction_ratio\": 0.9999,\n" +
-                "    \"damage_reduction\": 0.9999,\n" +
-                "    \"incoming_damage_reduction\": 0.9999,\n" +
-                "    \"physical_defense_boost\": 1000.00,\n" +
-                "    \"shield_multiplier\": 1500.00,\n" +
-                "    \"armor_boost\": 50000,\n" +
-                "    \"tenacity_ratio\": 0.9999,\n" +
-                "    \"nitro_boost\": 1000.00,\n" +
-                "    \"torque_multiplier\": 1000.00,\n" +
-                "    \"drift_multiplier\": 50.0\n" +
+                "  \"input\": {\n" +
+                "    \"touch_polling_hz\": 1000,\n" +
+                "    \"zero_deadzone\": true,\n" +
+                "    \"steering_response_rate\": 1000\n" +
                 "  }\n" +
                 "}\n";
 
@@ -261,7 +184,7 @@ public class CarXConfigPatcher {
             }
             if (ok) written++;
         }
-        Log.i(TAG, "CarX competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
+        Log.i(TAG, "CarX competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -315,7 +238,7 @@ public class CarXConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static boolean applyStandardPatch(String path, int targetFps) {
+    private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {

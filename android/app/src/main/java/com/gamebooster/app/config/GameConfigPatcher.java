@@ -442,49 +442,16 @@ public class GameConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "bFramePacingEnabled=True",
             "Vsync=0",
             "TouchBoostHz=" + targetFps,
             "TouchPollingRate=1000",
-            "AimAssist=1",
-            "AimAssistStrength=1000",
-            "AimAssistLevel=10",
-            "AimPrecision=10",
-            "TargetLockSensitivity=1000",
-            "CrosshairMagnetism=100.00",
-            "AimSnapStrength=100.00",
-            "AimMagnetism=100.00",
-            "TrackingBullet=1",
-            "BulletTracking=1",
-            "AutoTrackingBullet=1",
-            "MagicBullet=1",
-            "HitboxExpansion=50.00",
-            "BulletMagnetism=100.00",
-            "ProjectileHoming=1",
-            "HomingStrength=100.00",
-            "PhysicalDefenseBoost=100.00",
-            "MagicDefenseBoost=100.00",
-            "PhysicalArmor=100.00",
-            "MagicResistance=100.00",
-            "DamageReductionRatio=0.999",
-            "DamageReduction=0.999",
-            "IncomingDamageReduction=0.999",
-            "ShieldMultiplier=100.00",
-            "ShieldCapacity=100.00",
-            "ArmorBoost=10000",
-            "TenacityRatio=0.999",
-            "DamageMultiplier=100.00",
-            "BulletDamageBoost=100.00",
-            "CriticalHitRate=100",
-            "CriticalDamage=1000"
+            "PreloadShaders=1",
+            "AllowOcclusionQueries=1"
         };
-        NativeConfigInjector.injectAimAssist(path);
-        NativeConfigInjector.injectTrackingBullet(path);
-        NativeConfigInjector.injectArmorDef(path);
-        NativeConfigInjector.injectHighDamage(path);
-        NativeConfigInjector.injectNoRecoil(path);
-        NativeConfigInjector.injectSpeedBoost(path);
+        NativeConfigInjector.injectSuperFastTouch(path);
+        NativeConfigInjector.injectUltraExtremeGraphics(path, targetFps);
         boolean ok = ConfigFileHelper.patchKeys(path, genericKeys, "[Graphics]");
         if (!ok) {
             ConfigBackupManager.restorePath(null, path);

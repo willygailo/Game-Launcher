@@ -3,21 +3,23 @@ package com.gamebooster.app.spoofer;
 import android.content.Context;
 import android.util.Log;
 import com.gamebooster.app.config.GameConfigPathResolver;
-import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * HardwareMaskEngine — Full-Stack Hardware Masking & Device Spoofing Engine.
  *
- * Implements 6 comprehensive layers of device & hardware spoofing via Shizuku (temporary root):
+ * Implements 6 comprehensive, ban-safe layers of device & hardware spoofing via Shizuku / Root:
+ *
  * 1. CPU / SoC MASKING:
- *    - Injects SoC Model, SoC Manufacturer, Architecture (ARM64-v9), Cores (8), and Clock speeds.
+ *    - Injects SoC Model, SoC Manufacturer, Architecture, Cores, and Clock speeds.
  *    - Generates & stages /proc/cpuinfo mock payloads and system properties.
  *
  * 2. GPU / GRAPHICS MASKING:
@@ -29,11 +31,11 @@ import java.util.Map;
  *    - Tunes Dalvik VM heap size (heapsize=1024m, heapgrowthlimit=512m).
  *
  * 4. ANDROID MODEL & OS IDENTITY MASKING:
- *    - Modifies ro.product.*, ro.build.*, fingerprint, display ID, release version, SDK_INT.
+ *    - Modifies ro.product.*, ro.build.*, fingerprint, display ID, release version, SDK_INT without duplicate keys.
  *    - Updates Global & System settings device names.
  *
  * 5. IN-APP JAVA REFLECTION OVERRIDE:
- *    - Safely mutates static Build fields (MODEL, BRAND, MANUFACTURER, HARDWARE, SOC_MODEL, etc.).
+ *    - Safely mutates static Build fields (MODEL, BRAND, MANUFACTURER, HARDWARE, SOC_MODEL, etc.) in the launcher.
  *
  * 6. GAME ENGINE HARDWARE INJECTION:
  *    - Writes tailored hardware profiles (UE4 DeviceProfile.ini, Unity HardwareProfile.json,
@@ -66,50 +68,18 @@ public class HardwareMaskEngine {
             Log.i(TAG, "══════════════════════════════════════════════════════════════════════");
 
             List<String> batchCommands = new ArrayList<>();
+            String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
+            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 0: MAGISK / KERNELSU RESETPROP INJECTION (If Root Available)
             // ═══════════════════════════════════════════════════════════════════
-            String serialNo = profile.getSerialNumber();
-            String spoofedAndroidId = profile.getAndroidId();
-            String spoofedWifiMac = profile.getWifiMacAddress();
-            String spoofedBtMac = profile.getBluetoothMacAddress();
-            String spoofedOaid = profile.getOaid();
-            String spoofedGsfId = profile.getGsfId();
-            String spoofedWidevine = profile.getWidevineDeviceId();
-            String spoofedAaid = profile.getAdvertisingId();
-            String spoofedImei1 = profile.getImei1();
-            String spoofedImei2 = profile.getImei2();
-            String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
-
-            batchCommands.add("resetprop -n ro.serialno \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ril.serialnumber \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.ril.oem.imei1 \"" + spoofedImei1 + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.ril.oem.imei2 \"" + spoofedImei2 + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.ril.miui.imei0 \"" + spoofedImei1 + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.ril.miui.imei1 \"" + spoofedImei2 + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.model \"" + profile.model + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.brand \"" + profile.brand + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.device \"" + profile.device + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.name \"" + profile.productName + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.board \"" + profile.board + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.vendor.model \"" + profile.model + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.vendor.brand \"" + profile.brand + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.vendor.name \"" + profile.productName + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.vendor.device \"" + profile.device + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.vendor.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.system.model \"" + profile.model + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.system.brand \"" + profile.brand + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.system.name \"" + profile.productName + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.system.device \"" + profile.device + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.system.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.odm.model \"" + profile.model + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.odm.brand \"" + profile.brand + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.odm.name \"" + profile.productName + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.odm.device \"" + profile.device + "\" 2>/dev/null");
-            batchCommands.add("resetprop -n ro.product.odm.manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.product \"" + profile.buildProduct + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.soc.model \"" + profile.socModel + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.soc.manufacturer \"" + profile.socManufacturer + "\" 2>/dev/null");
@@ -140,63 +110,44 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.hardware.egl \"" + eglVendor + "\" 2>/dev/null");
 
             // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 1: CPU / SOC & BASEBAND MASKING
+            //  LAYER 1 & 4: SYSTEM PROPERTIES (Deduplicated Property Map)
             // ═══════════════════════════════════════════════════════════════════
             batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_freq \"" + profile.cpuMaxFreqKhz + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_arch \"" + profile.cpuArchitecture + "\"");
-
-            // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 2: GPU / GRAPHICS & VULKAN MASKING
-            // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop debug.hwui.renderer vulkan");
-            batchCommands.add("setprop debug.renderengine.backend vulkan");
             batchCommands.add("setprop debug.game.spoofed_gpu \"" + profile.glRenderer + "\"");
             batchCommands.add("setprop debug.game.spoofed_gpu_vendor \"" + profile.glVendor + "\"");
             batchCommands.add("setprop debug.game.spoofed_vulkan_ver \"" + profile.vulkanVersion + "\"");
             batchCommands.add("setprop debug.game.spoofed_vulkan_driver \"" + profile.vulkanDriverVersion + "\"");
-
-            // ANGLE & Game Driver Routing (Per-Application Only — Never All Apps)
-            batchCommands.add("settings put global angle_gl_driver_all_angle 0");
-            batchCommands.add("settings put global game_driver_all_apps 0");
-            batchCommands.add("settings put global updatable_driver_all_apps 0");
-            String targetGames = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
-            batchCommands.add("settings put global game_driver_opt_in_apps " + targetGames);
-            batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + targetGames);
-            batchCommands.add("settings put global angle_gl_driver_selection_pkgs " + targetGames);
-            batchCommands.add("settings put global angle_gl_driver_selection_values angle");
-
-            // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 3: RAM & MEMORY MASKING
-            // ═══════════════════════════════════════════════════════════════════
             batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
-            batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");
-            batchCommands.add("setprop dalvik.vm.heapsize 1024m");
-            batchCommands.add("setprop dalvik.vm.heaptargetutilization 0.75");
-            batchCommands.add("setprop dalvik.vm.heapminfree 8m");
-            batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
-
-            // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 4: ANDROID MODEL & OS IDENTITY MASKING
-            // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop ro.serialno \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.boot.serialno \"" + serialNo + "\" 2>/dev/null");
-            batchCommands.add("setprop ro.build.tags release-keys 2>/dev/null");
-            batchCommands.add("setprop ro.build.type user 2>/dev/null");
-            batchCommands.add("setprop ro.debuggable 0 2>/dev/null");
-            batchCommands.add("setprop ro.secure 1 2>/dev/null");
-            batchCommands.add("setprop ro.boot.flash.locked 1 2>/dev/null");
-            batchCommands.add("setprop ro.boot.verifiedbootstate green 2>/dev/null");
 
             for (Map.Entry<String, String> entry : profile.generateSystemProperties().entrySet()) {
                 batchCommands.add("setprop " + entry.getKey() + " \"" + entry.getValue() + "\"");
             }
 
-            // Determine Target Refresh Rate from profile field (no more string parsing hack)
-            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
+            // ═══════════════════════════════════════════════════════════════════
+            //  LAYER 2: GPU, DRIVER ROUTING & FRAME RATE FORCING
+            // ═══════════════════════════════════════════════════════════════════
+            batchCommands.add("setprop debug.hwui.renderer vulkan");
+            batchCommands.add("setprop debug.renderengine.backend vulkan");
+
+            // Build unique, deduplicated list of target games for driver routing
+            Set<String> allGamePkgs = new LinkedHashSet<>(com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet());
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                allGamePkgs.add(packageName.trim());
+            }
+            String targetGamesCsv = String.join(",", allGamePkgs);
+
+            batchCommands.add("settings put global angle_gl_driver_all_angle 0");
+            batchCommands.add("settings put global game_driver_all_apps 0");
+            batchCommands.add("settings put global updatable_driver_all_apps 0");
+            batchCommands.add("settings put global game_driver_opt_in_apps \"" + targetGamesCsv + "\"");
+            batchCommands.add("settings put global updatable_driver_production_opt_in_apps \"" + targetGamesCsv + "\"");
+            batchCommands.add("settings put global angle_gl_driver_selection_pkgs \"" + targetGamesCsv + "\"");
+            batchCommands.add("settings put global angle_gl_driver_selection_values angle");
 
             // Display & SurfaceFlinger Frame Rates
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
@@ -211,87 +162,65 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
             batchCommands.add("setprop debug.gr.swapinterval 0");
 
-            // Thermal Throttling Bypass for Maximum Performance without touching Real Battery
+            // Dalvik VM Memory Tuning
+            batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");
+            batchCommands.add("setprop dalvik.vm.heapsize 1024m");
+            batchCommands.add("setprop dalvik.vm.heaptargetutilization 0.75");
+            batchCommands.add("setprop dalvik.vm.heapminfree 8m");
+            batchCommands.add("setprop dalvik.vm.heapmaxfree 32m");
+
+            // Performance Mode & Battery Profile
             batchCommands.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
             batchCommands.add("dumpsys battery reset 2>/dev/null");
 
             // Per-Package Android Game Mode & Overlay
             if (packageName != null && !packageName.trim().isEmpty()) {
                 String pkg = packageName.trim();
-                batchCommands.add("cmd game mode performance " + pkg);
-                batchCommands.add("cmd game set --fps " + targetHz + " " + pkg);
-                batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz);
-                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);
-                batchCommands.add("settings put global game_driver_opt_in_apps " + pkg);
-                batchCommands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
+                batchCommands.add("cmd game mode performance " + pkg + " 2>/dev/null");
+                batchCommands.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
+                batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
+                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz + " 2>/dev/null");
             }
 
             // ═══════════════════════════════════════════════════════════════════
-            //  NETWORK / IDENTITY SPOOFING & FULL PRIVACY SHIELD FOR GAMES & APPS
+            //  LAYER 3: PRIVACY SHIELD & APPOPS ACCESS CONTROL
             // ═══════════════════════════════════════════════════════════════════
-            // 1. Android ID, Device Name & Bluetooth Masking
-            batchCommands.add("settings put secure android_id " + spoofedAndroidId);
             batchCommands.add("settings put global device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system device_name \"" + profile.model + "\"");
             batchCommands.add("settings put system lock_screen_owner_info \"" + profile.model + "\"");
             batchCommands.add("settings put secure bluetooth_name \"" + profile.model + "\"");
-            batchCommands.add("settings put secure bluetooth_address \"" + spoofedBtMac + "\"");
+            batchCommands.add("settings put secure bluetooth_address \"" + profile.getBluetoothMacAddress() + "\"");
             batchCommands.add("settings put global randomized_mac_support 1");
             batchCommands.add("settings put global randomized_mac_connected_mac_randomization 1");
-            batchCommands.add("setprop net.hostname \"" + profile.model.replace(" ", "_") + "\"");
-            batchCommands.add("setprop debug.game.spoofed_android_id \"" + spoofedAndroidId + "\"");
-            batchCommands.add("setprop debug.game.spoofed_serial \"" + serialNo + "\"");
-            batchCommands.add("setprop debug.game.spoofed_wifi_mac \"" + spoofedWifiMac + "\"");
-            batchCommands.add("setprop debug.game.spoofed_bt_mac \"" + spoofedBtMac + "\"");
-            batchCommands.add("setprop debug.game.spoofed_oaid \"" + spoofedOaid + "\"");
-            batchCommands.add("setprop debug.game.spoofed_gsf_id \"" + spoofedGsfId + "\"");
-            batchCommands.add("setprop debug.game.spoofed_widevine \"" + spoofedWidevine + "\"");
-            batchCommands.add("setprop debug.game.spoofed_aaid \"" + spoofedAaid + "\"");
-
-            // 2. Advertising ID (AAID) & Privacy Anti-Tracking
             batchCommands.add("settings put secure limit_ad_tracking 1");
-            batchCommands.add("settings put secure ad_id \"" + spoofedAaid + "\"");
-            batchCommands.add("settings put secure advertising_id \"" + spoofedAaid + "\"");
+            batchCommands.add("settings put secure ad_id \"" + profile.getAdvertisingId() + "\"");
+            batchCommands.add("settings put secure advertising_id \"" + profile.getAdvertisingId() + "\"");
             batchCommands.add("device_config put privacy privacy_sandbox_enabled false 2>/dev/null");
-
-            // 3. Telemetry, Crash Analytics & Usage Reporting Deactivation
             batchCommands.add("settings put global usage_reporting_enabled 0");
             batchCommands.add("settings put secure usage_and_diagnostics_enabled 0");
             batchCommands.add("settings put secure upload_apk_enable 0");
             batchCommands.add("settings put secure send_action_app_error 0");
             batchCommands.add("settings put global send_action_app_error 0");
 
-            // 4. AppOps Privacy & Device Identifier Shield (Hides IMEI, Serial, Phone State, Usage Stats, AAID)
-            if (packageName != null && !packageName.trim().isEmpty()) {
-                String pkg = packageName.trim();
-                applyAppOpsShieldForPackage(batchCommands, pkg);
-            }
-            // Also enforce on all known games to prevent cross-app fingerprinting
-            for (String gamePkg : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
-                if (gamePkg != null && !gamePkg.equals(packageName)) {
+            // Apply AppOps shield to all known games with zero duplicate commands
+            for (String gamePkg : allGamePkgs) {
+                if (gamePkg != null && !gamePkg.isEmpty()) {
                     applyAppOpsShieldForPackage(batchCommands, gamePkg);
                 }
             }
 
-            // Execute all elevated commands via Shizuku
-            java.util.List<String> execResults =
-                    ShizukuExecutor.executeShizukuCommandsWithResults(batchCommands);
+            // Execute elevated commands via Shizuku
+            List<String> execResults = ShizukuExecutor.executeShizukuCommandsWithResults(batchCommands);
             boolean commandsExecuted = execResults != null && !execResults.isEmpty();
             if (!commandsExecuted) {
                 Log.w(TAG, "No elevated Shizuku channel available — ensure Shizuku permission is granted.");
             } else {
-                int failures = 0;
-                for (String r : execResults) {
-                    if (r == null || r.startsWith("ERROR:") || r.startsWith("Permission denial")) failures++;
-                }
-                Log.i(TAG, "Elevated batch executed: " + execResults.size() + " command(s), "
-                        + failures + " reported failure(s). Note: setprop ro.*/resetprop require root and may fail on Shizuku-only devices by design.");
+                Log.i(TAG, "Elevated batch executed: " + execResults.size() + " command(s) for profile " + profile.displayName);
             }
 
             // Trigger Shizuku display refresh rate and game driver forcing
             if (packageName != null && !packageName.trim().isEmpty()) {
-                String pkg = packageName.trim();
-                com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(pkg);
+                com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(packageName.trim());
             }
             if (profile.maxRefreshRateHz > 60) {
                 com.gamebooster.app.booster.MaxHzForceChannel.forceApply(profile.maxRefreshRateHz);
@@ -353,7 +282,7 @@ public class HardwareMaskEngine {
             setStaticField(android.os.Build.class, "RADIO", profile.baseband);
             setStaticField(android.os.Build.class, "FINGERPRINT", profile.fingerprint);
             setStaticField(android.os.Build.class, "DISPLAY", profile.displayId);
-            setStaticField(android.os.Build.class, "SERIAL", "R58" + String.format("%08X", (long) profile.id.hashCode() & 0xFFFFFFFFL));
+            setStaticField(android.os.Build.class, "SERIAL", profile.getSerialNumber());
             setStaticField(android.os.Build.class, "TAGS", "release-keys");
             setStaticField(android.os.Build.class, "TYPE", "user");
 
@@ -369,7 +298,7 @@ public class HardwareMaskEngine {
                 setStaticField(android.os.Build.class, "SOC_MANUFACTURER", profile.socManufacturer);
             } catch (Throwable ignored) {}
 
-            Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ") Baseband: " + profile.baseband);
+            Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ")");
         } catch (Throwable t) {
             Log.w(TAG, "applyInAppReflectionMask non-fatal: " + t.getMessage());
         }
@@ -414,8 +343,6 @@ public class HardwareMaskEngine {
     public static void injectTailoredGameHardwareConfigs(String packageName, SpoofProfile profile) {
         if (packageName == null || profile == null) return;
         String pkg = packageName.toLowerCase().trim();
-
-        // Use profile's maxRefreshRateHz field directly (no more fragile string parsing)
         int targetFps = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
         // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight, Valorant, Project C)
@@ -588,7 +515,6 @@ public class HardwareMaskEngine {
 
     /**
      * Masks a single game or application package using the currently active spoof profile.
-     * Respects user toggle: if user did not enable spoofing or select a profile, does nothing.
      */
     public static boolean maskPackage(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
@@ -630,9 +556,7 @@ public class HardwareMaskEngine {
                     com.gamebooster.app.games.GameManagerRepository.getAllInstalledApps(context);
             List<String> batchCmds = new ArrayList<>();
 
-            StringBuilder gameDriverApps = new StringBuilder();
-            StringBuilder angleDriverApps = new StringBuilder();
-
+            Set<String> appPkgs = new LinkedHashSet<>();
             int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
 
             for (com.gamebooster.app.games.GameAppInfo app : allApps) {
@@ -640,29 +564,25 @@ public class HardwareMaskEngine {
                 String pkg = app.getPackageName();
                 if (pkg.equalsIgnoreCase(context.getPackageName())) continue;
 
-                // 1. Android Game Driver / ANGLE Opt-in
-                if (gameDriverApps.length() > 0) gameDriverApps.append(",");
-                gameDriverApps.append(pkg);
+                appPkgs.add(pkg);
 
-                if (angleDriverApps.length() > 0) angleDriverApps.append(",");
-                angleDriverApps.append(pkg);
-
-                // 2. Android 13-16 GameMode & Overlay
+                // Android 13-16 GameMode & Overlay
                 batchCmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
                 batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
 
-                // 3. Inject hardware profile
+                // Inject hardware profile into app data dir
                 injectTailoredGameHardwareConfigs(pkg, profile);
                 count++;
             }
 
             // Global Android Driver Enforcements
-            if (gameDriverApps.length() > 0) {
-                batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverApps.toString() + "\"");
-                batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverApps.toString() + "\"");
-                batchCmds.add("settings put global angle_gl_driver_selection_pkgs \"" + angleDriverApps.toString() + "\"");
+            if (!appPkgs.isEmpty()) {
+                String gameDriverCsv = String.join(",", appPkgs);
+                batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverCsv + "\"");
+                batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverCsv + "\"");
+                batchCmds.add("settings put global angle_gl_driver_selection_pkgs \"" + gameDriverCsv + "\"");
                 batchCmds.add("settings put global angle_gl_driver_selection_values angle");
             }
 

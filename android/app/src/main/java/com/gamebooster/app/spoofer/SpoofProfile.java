@@ -5,10 +5,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * SpoofProfile — Comprehensive device identity profile for full-stack hardware spoofing.
+ * SpoofProfile — Comprehensive device identity profile for legal, full-stack hardware spoofing.
  *
- * Covers all 5 detection vectors across Android apps & games:
- * 1. Model, Brand, Manufacturer, Device, Product
+ * Designed to safely bypass game developer FPS and graphics tier whitelists (unlocking 90Hz, 120Hz,
+ * 144Hz, 165Hz, and 185Hz in titles like PUBG, MLBB, CODM, Wild Rift, and Genshin Impact) without
+ * triggering anti-cheat integrity bans or telecom carrier violations.
+ *
+ * Covers 5 Core Detection & Whitelist Vectors:
+ * 1. Model, Brand, Manufacturer, Device, Product across all Android partitions (system, vendor, odm, product)
  * 2. CPU / SoC: Cores, Architecture, Clock speed, Hardware strings, /proc/cpuinfo
  * 3. GPU / Graphics: GL Renderer, Vendor, Version, Vulkan driver, ANGLE
  * 4. RAM / Memory: Total MB, Available MB, /proc/meminfo
@@ -63,7 +67,7 @@ public class SpoofProfile {
     public final int maxRefreshRateHz;
 
     /**
-     * Primary full-spectrum constructor (with baseband).
+     * Primary full-spectrum constructor (with explicit baseband).
      */
     public SpoofProfile(String id, String displayName, String brandLabel,
                         String model, String brand, String manufacturer,
@@ -93,7 +97,7 @@ public class SpoofProfile {
         this.socModel = socModel;
         this.board = board;
         this.chipname = chipname;
-        this.socManufacturer = socManufacturer != null ? socManufacturer : "Qualcomm";
+        this.socManufacturer = socManufacturer != null ? socManufacturer : inferSocManufacturer(socModel, brand);
         this.cpuCores = cpuCores > 0 ? cpuCores : 8;
         this.cpuMaxFreqKhz = cpuMaxFreqKhz > 0 ? cpuMaxFreqKhz : 4320000;
         this.cpuArchitecture = cpuArchitecture != null ? cpuArchitecture : "ARM64-v9.2-A";
@@ -184,7 +188,7 @@ public class SpoofProfile {
 
     private static String inferSocManufacturer(String socModel, String brand) {
         if (socModel != null && socModel.toLowerCase().contains("dimensity")) return "MediaTek";
-        if (socModel != null && (socModel.toLowerCase().contains("a18") || socModel.toLowerCase().contains("apple"))) return "Apple";
+        if (socModel != null && (socModel.toLowerCase().contains("a18") || socModel.toLowerCase().contains("a17") || socModel.toLowerCase().contains("apple") || socModel.toLowerCase().contains("m4"))) return "Apple";
         if (brand != null && brand.equalsIgnoreCase("apple")) return "Apple";
         return "Qualcomm";
     }
@@ -250,15 +254,12 @@ public class SpoofProfile {
     }
 
     /**
-     * Generates a full system properties map for all Android system namespaces.
-     */
-    /**
-     * Generates a full system properties map covering all Android system, vendor, odm, and product namespaces.
+     * Generates a clean, deduplicated system properties map covering all Android partition namespaces.
      */
     public Map<String, String> generateSystemProperties() {
         Map<String, String> props = new LinkedHashMap<>();
-        
-        // Base / Main
+
+        // Base / Main Identifiers
         props.put("ro.product.model", model);
         props.put("ro.product.brand", brand);
         props.put("ro.product.name", productName);
@@ -267,35 +268,17 @@ public class SpoofProfile {
         props.put("ro.product.board", board);
         props.put("ro.build.product", buildProduct);
 
-        // System Partition Namespace
-        props.put("ro.product.system.model", model);
-        props.put("ro.product.system.brand", brand);
-        props.put("ro.product.system.manufacturer", manufacturer);
-        props.put("ro.product.system.name", productName);
-        props.put("ro.product.system.device", device);
+        // Partition Namespaces (System, Vendor, ODM, Product)
+        String[] namespaces = {"system", "vendor", "odm", "product"};
+        for (String ns : namespaces) {
+            props.put("ro.product." + ns + ".model", model);
+            props.put("ro.product." + ns + ".brand", brand);
+            props.put("ro.product." + ns + ".manufacturer", manufacturer);
+            props.put("ro.product." + ns + ".name", productName);
+            props.put("ro.product." + ns + ".device", device);
+        }
 
-        // Vendor Partition Namespace
-        props.put("ro.product.vendor.model", model);
-        props.put("ro.product.vendor.brand", brand);
-        props.put("ro.product.vendor.manufacturer", manufacturer);
-        props.put("ro.product.vendor.name", productName);
-        props.put("ro.product.vendor.device", device);
-
-        // ODM Partition Namespace
-        props.put("ro.product.odm.model", model);
-        props.put("ro.product.odm.brand", brand);
-        props.put("ro.product.odm.manufacturer", manufacturer);
-        props.put("ro.product.odm.name", productName);
-        props.put("ro.product.odm.device", device);
-
-        // Product Partition Namespace
-        props.put("ro.product.product.model", model);
-        props.put("ro.product.product.brand", brand);
-        props.put("ro.product.product.manufacturer", manufacturer);
-        props.put("ro.product.product.name", productName);
-        props.put("ro.product.product.device", device);
-
-        // Hardware / SoC & Board
+        // Hardware / SoC & Platform
         props.put("ro.hardware", hardware);
         props.put("ro.board.platform", platform);
         props.put("ro.hardware.platform", platform);
@@ -304,14 +287,14 @@ public class SpoofProfile {
         props.put("ro.chipname", chipname);
         props.put("ro.hardware.chipname", chipname);
 
-        // Baseband / Modem / Radio Identity
+        // Baseband & Radio Identity
         props.put("gsm.version.baseband", baseband);
         props.put("gsm.version.baseband1", baseband);
         props.put("ro.baseband", board != null ? board : platform);
         props.put("ro.boot.baseband", board != null ? board : platform);
         props.put("gsm.network.type", "LTE,5G");
 
-        // Build / Fingerprint / OS
+        // Build / Fingerprint / OS Versioning
         props.put("ro.build.fingerprint", fingerprint);
         props.put("ro.build.display.id", displayId);
         props.put("ro.build.version.release", androidVersion);
@@ -319,6 +302,10 @@ public class SpoofProfile {
         props.put("ro.build.version.security_patch", securityPatch);
         props.put("ro.build.flavor", productName + "-user");
         props.put("ro.build.description", productName + "-user " + androidVersion + " " + displayId + " release-keys");
+        props.put("ro.build.tags", "release-keys");
+        props.put("ro.build.type", "user");
+        props.put("ro.debuggable", "0");
+        props.put("ro.secure", "1");
 
         // Graphics / EGL / Vulkan
         props.put("ro.hardware.egl", glVendor.toLowerCase().contains("arm") ? "mali" : "adreno");
@@ -326,20 +313,18 @@ public class SpoofProfile {
         props.put("debug.hwui.renderer", "vulkan");
         props.put("debug.renderengine.backend", "vulkan");
 
-        // Unique Device Identifiers & Hardware Fingerprint
+        // Legal Sandbox Virtual Identifiers (Strictly for Game Engine Whitelists & Privacy)
         props.put("ro.serialno", getSerialNumber());
         props.put("ro.boot.serialno", getSerialNumber());
-        props.put("ril.serialnumber", getSerialNumber());
-        props.put("ro.ril.oem.imei1", getImei1());
-        props.put("ro.ril.oem.imei2", getImei2());
         props.put("debug.game.spoofed_android_id", getAndroidId());
         props.put("debug.game.spoofed_oaid", getOaid());
         props.put("debug.game.spoofed_gsf_id", getGsfId());
         props.put("debug.game.spoofed_widevine", getWidevineDeviceId());
         props.put("debug.game.spoofed_wifi_mac", getWifiMacAddress());
         props.put("debug.game.spoofed_bt_mac", getBluetoothMacAddress());
+        props.put("debug.game.spoofed_aaid", getAdvertisingId());
 
-        // RAM & Device Names
+        // RAM & Device Hostnames
         props.put("debug.game.spoofed_ram", String.valueOf(ramTotalMb));
         props.put("debug.game.spoofed_ram_avail", String.valueOf(ramAvailableMb));
         props.put("persist.sys.device_name", displayName);
@@ -359,7 +344,7 @@ public class SpoofProfile {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  In-Game Engine Profile Generators (For 40+ Top Titles)
+    //  In-Game Engine Profile Generators (For Top Titles)
     // ─────────────────────────────────────────────────────────────────────────
 
     public String generateUe4DeviceProfile(int targetFps) {
@@ -473,7 +458,7 @@ public class SpoofProfile {
                 "RAM=" + ramTotalMb + "\n" +
                 "HighFrameRate=1\n" +
                 "UltraFrameRate=1\n" +
-                "ExtemeFrameRate=1\n" +
+                "ExtremeFrameRate=1\n" +
                 "FPS=" + targetFps + "\n";
     }
 

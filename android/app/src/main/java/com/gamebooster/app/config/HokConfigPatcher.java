@@ -25,11 +25,6 @@ public class HokConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Honor of Kings / Arena of Valor.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -56,19 +51,22 @@ public class HokConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SmartTargetLock=1",
+            "LowestHPTargetPriority=1",
+            "ItemQuickBuyLatency=0",
+            "ItemSwapBufferRate=1000",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── MOBA Combat & Skill Assist ──
-            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
-            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
-            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
-            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
-            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
+            "TouchZeroDelay=1", "ZeroInputLag=1",
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -83,9 +81,6 @@ public class HokConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Honor of Kings / Arena of Valor.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -116,19 +111,22 @@ public class HokConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SmartTargetLock=1",
+            "LowestHPTargetPriority=1",
+            "ItemQuickBuyLatency=0",
+            "ItemSwapBufferRate=1000",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── MOBA Combat & Skill Assist ──
-            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
-            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
-            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
-            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
-            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
+            "TouchZeroDelay=1", "ZeroInputLag=1",
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -166,53 +164,20 @@ public class HokConfigPatcher {
                 "Unlock144Hz=1\n" +
                 "Unlock165Hz=1\n" +
                 "Unlock185Hz=1\n" +
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraHeight=4\n" +
-                "CameraDistance=180\n" +
-                "CameraFOV=180\n" +
-                "FieldOfView=180\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "SmartTargeting=1\n" +
-                "TargetLock=1\n" +
-                "SkillTargetAssist=1\n" +
-                "AutoAim=1\n" +
-                "SkillTracking=1\n" +
-                "AutoTargetLock=1\n" +
-                "TargetLockTracking=1\n" +
-                "PredictPath=1\n" +
-                "SkillMagnetism=100.00\n" +
-                "HitboxExpansion=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "PhysicalArmor=1000.00\n" +
-                "MagicResistance=1000.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ArmorBoost=50000\n" +
-                "TenacityRatio=0.9999\n" +
-                "PhysicalDamageMultiplier=1000.00\n" +
-                "MagicDamageMultiplier=1000.00\n" +
-                "CriticalRateBoost=100\n" +
-                "CriticalDamage=10000\n" +
+                "SkillCastSampleRate=1000\n" +
+                "SkillCastZeroDelay=1\n" +
+                "AttackSpeedAnimationBuffer=1000\n" +
+                "AutoAttackCancelOptimization=1\n" +
+                "SmartTargetLock=1\n" +
+                "LowestHPTargetPriority=1\n" +
+                "ItemQuickBuyLatency=0\n" +
+                "ItemSwapBufferRate=1000\n" +
                 "HighFreqTouchHz=" + forcedFps + "\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchZeroDelay=1\n" +
                 "TouchResponseLevel=3\n" +
+                "ZeroInputLag=1\n" +
+                "HitRegSyncRate=1000\n" +
                 "GyroSampleRate=1000\n";
 
         List<String> paths = getConfigPaths(packageName);
@@ -222,7 +187,7 @@ public class HokConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "HOK competitive " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "HOK competitive " + forcedFps + "FPS force-write: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }
 
@@ -276,7 +241,7 @@ public class HokConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static List<String> getConfigPaths(String pkg) {
+    private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }
 
@@ -301,7 +266,11 @@ private static List<String> getConfigPaths(String pkg) {
             "Unlock165Hz=1",
             "Unlock185Hz=1",
             "Shadow=1",
-            "ResolutionScale=1.2",
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "ItemQuickBuyLatency=0",
             "HighFreqTouchHz=" + forcedFps
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");

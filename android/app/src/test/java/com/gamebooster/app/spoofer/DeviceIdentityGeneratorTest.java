@@ -3,6 +3,7 @@ package com.gamebooster.app.spoofer;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ public class DeviceIdentityGeneratorTest {
         assertNotNull(allProfiles);
         assertFalse(allProfiles.isEmpty());
 
+        Set<String> profileIds = new HashSet<>();
         Set<String> androidIds = new HashSet<>();
         Set<String> serialNumbers = new HashSet<>();
         Set<String> wifiMacs = new HashSet<>();
@@ -28,6 +30,9 @@ public class DeviceIdentityGeneratorTest {
 
         for (SpoofProfile profile : allProfiles.values()) {
             assertNotNull(profile);
+
+            // Zero duplicate profile IDs
+            assertTrue("Profile ID must be unique: " + profile.id, profileIds.add(profile.id));
 
             // 1. Android ID (16 lowercase hex characters)
             String androidId = profile.getAndroidId();
@@ -77,48 +82,62 @@ public class DeviceIdentityGeneratorTest {
             assertNotNull(aaid);
             assertEquals(36, aaid.length());
 
-            // 8. IMEI (15 digits with valid Luhn)
-            String imei1 = profile.getImei1();
-            String imei2 = profile.getImei2();
-            assertNotNull(imei1);
-            assertNotNull(imei2);
-            assertEquals(15, imei1.length());
-            assertEquals(15, imei2.length());
-            assertFalse(imei1.equals(imei2));
+            // 8. System Properties validity
+            Map<String, String> props = profile.generateSystemProperties();
+            assertNotNull(props);
+            assertFalse(props.isEmpty());
+            assertTrue(props.containsKey("ro.product.model"));
+            assertTrue(props.containsKey("ro.product.brand"));
+            assertTrue(props.containsKey("ro.hardware.egl"));
+            assertTrue(props.containsKey("debug.game.spoofed_android_id"));
         }
     }
 
     @Test
     public void testBrandSpecificOuiAndSerialFormatting() {
         SpoofProfile samsung = DeviceSpooferEngine.getProfileById("samsung_s25_ultra");
-        SpoofProfile asus = DeviceSpooferEngine.getProfileById("asus_rog_9_pro");
+        SpoofProfile asus = DeviceSpooferEngine.getProfileById("asus_rog9_pro");
         SpoofProfile xiaomi = DeviceSpooferEngine.getProfileById("xiaomi_15_ultra");
-        SpoofProfile nubia = DeviceSpooferEngine.getProfileById("nubia_redmagic_10_pro_plus");
+        SpoofProfile nubia = DeviceSpooferEngine.getProfileById("redmagic_10_pro_plus");
 
-        if (samsung != null) {
-            assertTrue("Samsung serial should start with R58: " + samsung.getSerialNumber(),
-                    samsung.getSerialNumber().startsWith("R58"));
-            assertTrue("Samsung Wi-Fi MAC should start with Samsung OUI: " + samsung.getWifiMacAddress(),
-                    samsung.getWifiMacAddress().startsWith("00:16:32"));
-        }
+        assertNotNull("samsung_s25_ultra must exist", samsung);
+        assertTrue("Samsung serial should start with R58: " + samsung.getSerialNumber(),
+                samsung.getSerialNumber().startsWith("R58"));
+        assertTrue("Samsung Wi-Fi MAC should start with Samsung OUI: " + samsung.getWifiMacAddress(),
+                samsung.getWifiMacAddress().startsWith("00:16:32"));
 
-        if (asus != null) {
-            assertTrue("ASUS serial should match ROG pattern: " + asus.getSerialNumber(),
-                    asus.getSerialNumber().startsWith("N2AZB6"));
-            assertTrue("ASUS Wi-Fi MAC should start with ASUS OUI: " + asus.getWifiMacAddress(),
-                    asus.getWifiMacAddress().startsWith("00:1A:92"));
-        }
+        assertNotNull("asus_rog9_pro must exist", asus);
+        assertTrue("ASUS serial should match ROG pattern: " + asus.getSerialNumber(),
+                asus.getSerialNumber().startsWith("N2AZB6"));
+        assertTrue("ASUS Wi-Fi MAC should start with ASUS OUI: " + asus.getWifiMacAddress(),
+                asus.getWifiMacAddress().startsWith("00:1A:92"));
 
-        if (xiaomi != null) {
-            assertTrue("Xiaomi serial should start with 0x: " + xiaomi.getSerialNumber(),
-                    xiaomi.getSerialNumber().startsWith("0x"));
-            assertTrue("Xiaomi Wi-Fi MAC should start with Xiaomi OUI: " + xiaomi.getWifiMacAddress(),
-                    xiaomi.getWifiMacAddress().startsWith("18:65:90"));
-        }
+        assertNotNull("xiaomi_15_ultra must exist", xiaomi);
+        assertTrue("Xiaomi serial should start with 0x: " + xiaomi.getSerialNumber(),
+                xiaomi.getSerialNumber().startsWith("0x"));
+        assertTrue("Xiaomi Wi-Fi MAC should start with Xiaomi OUI: " + xiaomi.getWifiMacAddress(),
+                xiaomi.getWifiMacAddress().startsWith("18:65:90"));
 
-        if (nubia != null) {
-            assertTrue("Nubia Wi-Fi MAC should start with ZTE/Nubia OUI: " + nubia.getWifiMacAddress(),
-                    nubia.getWifiMacAddress().startsWith("00:26:ED"));
+        assertNotNull("redmagic_10_pro_plus must exist", nubia);
+        assertTrue("Nubia Wi-Fi MAC should start with ZTE/Nubia OUI: " + nubia.getWifiMacAddress(),
+                nubia.getWifiMacAddress().startsWith("00:26:ED"));
+    }
+
+    @Test
+    public void testAllRegisteredBrandsCountAndLookups() {
+        List<String> brands = SpoofProfileRegistry.getBrandNames();
+        assertNotNull(brands);
+        assertEquals(11, brands.size());
+
+        for (String brand : brands) {
+            List<SpoofProfile> profiles = SpoofProfileRegistry.getByBrand(brand);
+            assertNotNull(profiles);
+            assertFalse(profiles.isEmpty());
+            for (SpoofProfile p : profiles) {
+                assertNotNull(p.id);
+                assertNotNull(p.displayName);
+                assertNotNull(p.model);
+            }
         }
     }
 }

@@ -84,16 +84,9 @@ public class DeltaForceConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth ────────────────────────────────────
 
-    /**
-     * Applies the 144fps SuperSmooth + UltraExtreme max graphics preset for Delta Force Mobile.
-     * Targets UE5 CVars (UserCustom.ini DeviceProfile) and raw renderer settings (Engine.ini /
-     * Scalability.ini).  Covers: 144fps unlock, resolution scale 120%, shadow 2048, TAA 4,
-     * anisotropy 16, HDR, frame pacing, 1000Hz touch polling.
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
-        // ── CVars block for UserCustom.ini ──────────────────────────────────
         String[] cvarKeys = {
             // FPS unlock
             "+CVars=r.MaxFPS=144",
@@ -110,7 +103,7 @@ public class DeltaForceConfigPatcher {
             "+CVars=r.DFR.Enabled=0",
             "+CVars=r.FramePacing=1",
             // UltraExtreme graphics
-            "+CVars=r.MobileContentScaleFactor=1.2",
+            "+CVars=r.MobileContentScaleFactor=1.0",
             "+CVars=r.ShadowQuality=5",
             "+CVars=r.Shadow.MaxResolution=2048",
             "+CVars=r.Tonemapper.Quality=4",
@@ -131,23 +124,9 @@ public class DeltaForceConfigPatcher {
             // Touch 1000Hz
             "+CVars=r.TouchBoostHz=144",
             "+CVars=r.TouchPollingRate=1000",
-            "+CVars=r.GyroSampleRate=1000",
-            // Zero Recoil & Aim Assist
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.GunKickReduction=1",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletTracking=1"
+            "+CVars=r.GyroSampleRate=1000"
         };
 
-        // ── Raw renderer keys for Engine.ini / Scalability.ini ──────────────
         String[] rawKeys = {
             "r.MaxFPS=144",
             "r.FrameRateLimit=144",
@@ -156,7 +135,7 @@ public class DeltaForceConfigPatcher {
             "r.OneFrameThreadLag=0",
             "r.FinishCurrentFrame=0",
             "r.FramePacing=1",
-            "r.MobileContentScaleFactor=1.2",
+            "r.MobileContentScaleFactor=1.0",
             "r.ShadowQuality=5",
             "r.Shadow.MaxResolution=2048",
             "r.Tonemapper.Quality=4",
@@ -169,7 +148,7 @@ public class DeltaForceConfigPatcher {
             "r.HDR.EnableHDROutput=1",
             "r.HDR.Display.OutputDevice=4",
             "bSmoothFrameRate=False",
-            "MaxSmoothedFrameRate=144",
+            "MaxSmoothedFrameRate=144"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -187,9 +166,6 @@ public class DeltaForceConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Delta Force Mobile.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -209,7 +185,7 @@ public class DeltaForceConfigPatcher {
             "+CVars=r.DFR.Enabled=0",
             "+CVars=r.FramePacing=1",
             // UltraExtreme graphics
-            "+CVars=r.MobileContentScaleFactor=1.2",
+            "+CVars=r.MobileContentScaleFactor=1.0",
             "+CVars=r.ShadowQuality=5",
             "+CVars=r.Shadow.MaxResolution=2048",
             "+CVars=r.Tonemapper.Quality=4",
@@ -230,20 +206,7 @@ public class DeltaForceConfigPatcher {
             // Touch 1000Hz
             "+CVars=r.TouchBoostHz=185",
             "+CVars=r.TouchPollingRate=1000",
-            "+CVars=r.GyroSampleRate=1000",
-            // Zero Recoil & Aim Assist
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.GunKickReduction=1",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletTracking=1"
+            "+CVars=r.GyroSampleRate=1000"
         };
 
         String[] rawKeys = {
@@ -254,7 +217,7 @@ public class DeltaForceConfigPatcher {
             "r.OneFrameThreadLag=0",
             "r.FinishCurrentFrame=0",
             "r.FramePacing=1",
-            "r.MobileContentScaleFactor=1.2",
+            "r.MobileContentScaleFactor=1.0",
             "r.ShadowQuality=5",
             "r.Shadow.MaxResolution=2048",
             "r.Tonemapper.Quality=4",
@@ -267,7 +230,7 @@ public class DeltaForceConfigPatcher {
             "r.HDR.EnableHDROutput=1",
             "r.HDR.Display.OutputDevice=4",
             "bSmoothFrameRate=False",
-            "MaxSmoothedFrameRate=185",
+            "MaxSmoothedFrameRate=185"
         };
 
         List<String> paths = getConfigPaths(packageName);

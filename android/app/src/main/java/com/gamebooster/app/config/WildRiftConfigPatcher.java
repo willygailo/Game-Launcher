@@ -25,11 +25,6 @@ public class WildRiftConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Wild Rift.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -56,19 +51,23 @@ public class WildRiftConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
-            "TouchBoostHz=144", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── MOBA Combat & Skill Assist ──
-            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
-            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
-            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
-            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
-            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SmartTargetLock=1",
+            "ItemQuickBuyLatency=0",
+            "TouchBoostHz=144",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -83,9 +82,6 @@ public class WildRiftConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for League of Legends: Wild Rift.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -116,19 +112,23 @@ public class WildRiftConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
-            "TouchBoostHz=185", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── MOBA Combat & Skill Assist ──
-            "AimAssist=1", "AimAssistStrength=10000", "SmartTargetingMode=1",
-            "HeroPriorityLock=1", "LowestHPTargetLock=1", "SkillAimAssist=1", "SmartAimCast=1",
-            "SkillPredictPath=1", "CrosshairMagnetism=100.00", "AimSnapStrength=100.00",
-            "DamageMultiplier=1000.00", "SkillDamageMultiplier=1000.00", "RetributionDamageThreshold=999999",
-            "SmiteTrueDamage=999999", "SkillCoolDownReduceMode=1", "CooldownReductionBoost=0.99"
+            "SkillCastSampleRate=1000",
+            "SkillCastZeroDelay=1",
+            "AttackSpeedAnimationBuffer=1000",
+            "AutoAttackCancelOptimization=1",
+            "SmartTargetLock=1",
+            "ItemQuickBuyLatency=0",
+            "TouchBoostHz=185",
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1",
+            "GyroSampleRate=1000",
+            "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -166,44 +166,10 @@ public class WildRiftConfigPatcher {
                 "    \"vsync\": false\n" +
                 "  },\n" +
                 "  \"combat\": {\n" +
-                "    \"aim_assist\": 1,\n" +
-                "    \"aim_assist_strength\": 10000,\n" +
-                "    \"aim_assist_level\": 10,\n" +
-                "    \"aim_precision\": 100,\n" +
-                "    \"target_lock_sensitivity\": 10000,\n" +
-                "    \"crosshair_magnetism\": 100.00,\n" +
-                "    \"aim_snap_strength\": 100.00,\n" +
-                "    \"aim_magnetism\": 100.00,\n" +
-                "    \"smart_targeting\": 1,\n" +
-                "    \"target_lock\": 1,\n" +
-                "    \"skill_tracking\": 1,\n" +
-                "    \"auto_target_lock\": 1,\n" +
-                "    \"predict_path\": 1,\n" +
-                "    \"skill_magnetism\": 100.00,\n" +
-                "    \"hitbox_expansion\": 100.00,\n" +
-                "    \"tracking_bullet\": 1,\n" +
-                "    \"bullet_tracking\": 1,\n" +
-                "    \"auto_tracking_bullet\": 1,\n" +
-                "    \"magic_bullet\": 1,\n" +
-                "    \"physical_defense_boost\": 1000.00,\n" +
-                "    \"magic_defense_boost\": 1000.00,\n" +
-                "    \"physical_armor\": 1000.00,\n" +
-                "    \"magic_resistance\": 1000.00,\n" +
-                "    \"damage_reduction_ratio\": 0.9999,\n" +
-                "    \"damage_reduction\": 0.9999,\n" +
-                "    \"incoming_damage_reduction\": 0.9999,\n" +
-                "    \"shield_multiplier\": 1500.00,\n" +
-                "    \"shield_capacity\": 1500.00,\n" +
-                "    \"armor_boost\": 50000,\n" +
-                "    \"tenacity_ratio\": 0.9999,\n" +
-                "    \"physical_damage_boost\": 1000.00,\n" +
-                "    \"magic_damage_boost\": 1000.00,\n" +
-                "    \"true_damage_boost\": 1000.00,\n" +
-                "    \"critical_damage_rate\": 100,\n" +
-                "    \"critical_damage\": 10000,\n" +
-                "    \"drone_view\": true,\n" +
-                "    \"camera_fov\": 180,\n" +
-                "    \"camera_distance\": 180\n" +
+                "    \"skill_cast_rate_hz\": 1000,\n" +
+                "    \"animation_buffer_hz\": 1000,\n" +
+                "    \"smart_targeting\": true,\n" +
+                "    \"item_quick_buy_latency\": 0\n" +
                 "  },\n" +
                 "  \"input\": {\n" +
                 "    \"touch_polling_hz\": 1000,\n" +
@@ -224,53 +190,16 @@ public class WildRiftConfigPatcher {
                 "Unlock185=1\n" +
                 "GraphicQuality=4\n" +
                 "UltraExtreme=1\n" +
-                "ResolutionScale=1.2\n" +
-                "DroneView=1\n" +
-                "DroneViewHeight=4\n" +
-                "CameraFOV=180\n" +
-                "CameraDistance=180\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "SmartTargeting=1\n" +
-                "TargetLock=1\n" +
-                "SkillTargetAssist=1\n" +
-                "AutoSkillAim=1\n" +
-                "SkillTracking=1\n" +
-                "AutoTargetLock=1\n" +
-                "TargetLockTracking=1\n" +
-                "PredictPath=1\n" +
-                "SkillMagnetism=100.00\n" +
-                "HitboxExpansion=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "PhysicalArmor=1000.00\n" +
-                "MagicResistance=1000.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ArmorBoost=50000\n" +
-                "TenacityRatio=0.9999\n" +
-                "PhysicalDamageBoost=1000.00\n" +
-                "MagicDamageBoost=1000.00\n" +
-                "TrueDamageBoost=1000.00\n" +
-                "DamageMultiplier=1000.00\n" +
-                "CriticalDamageRate=100\n" +
-                "CriticalDamage=10000\n" +
+                "SkillCastSampleRate=1000\n" +
+                "SkillCastZeroDelay=1\n" +
+                "AttackSpeedAnimationBuffer=1000\n" +
+                "AutoAttackCancelOptimization=1\n" +
+                "SmartTargetLock=1\n" +
+                "ItemQuickBuyLatency=0\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
-                "TouchZeroDelay=1\n";
+                "TouchZeroDelay=1\n" +
+                "ZeroInputLag=1\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -283,7 +212,7 @@ public class WildRiftConfigPatcher {
             }
             if (ok) written++;
         }
-        Log.i(TAG, "Wild Rift competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
+        Log.i(TAG, "Wild Rift competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -337,7 +266,7 @@ public class WildRiftConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static boolean applyStandardPatch(String path, int targetFps) {
+    private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {
@@ -354,7 +283,10 @@ private static boolean applyStandardPatch(String path, int targetFps) {
             "ultra_extreme=1",
             "TargetFPS=" + forcedFps,
             "MaxFPS=" + forcedFps,
-            "FPSLevel=" + fpsLevel
+            "FPSLevel=" + fpsLevel,
+            "SkillCastSampleRate=1000",
+            "AttackSpeedAnimationBuffer=1000",
+            "ItemQuickBuyLatency=0"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[WildRiftGraphics]");
     }

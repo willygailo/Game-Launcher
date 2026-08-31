@@ -1,5 +1,6 @@
 package com.gamebooster.app.spoofer;
 
+import android.util.Log;
 import com.gamebooster.app.spoofer.brands.AppleProfiles;
 import com.gamebooster.app.spoofer.brands.AsusRogProfiles;
 import com.gamebooster.app.spoofer.brands.BlackSharkProfiles;
@@ -21,12 +22,14 @@ import java.util.Map;
 /**
  * SpoofProfileRegistry — Central aggregator for all per-brand device spoof profiles.
  *
- * Loads profiles from all brand classes and provides lookup methods by ID,
- * brand name, or as a complete flat map.
+ * Loads profiles from all 11 brand modules with strict zero-duplication guarantees.
+ * Provides lookup methods by unique ID, brand name, or as a complete flat map.
  */
 public class SpoofProfileRegistry {
 
-    /** Flat map: profile ID → SpoofProfile */
+    private static final String TAG = "SpoofProfileRegistry";
+
+    /** Flat map: profile ID → SpoofProfile (Guaranteed strictly unique keys) */
     private static final Map<String, SpoofProfile> ALL_BY_ID = new LinkedHashMap<>();
 
     /** Brand map: brand label → list of SpoofProfile */
@@ -47,10 +50,16 @@ public class SpoofProfileRegistry {
     }
 
     private static void registerBrand(List<SpoofProfile> profiles) {
+        if (profiles == null) return;
         for (SpoofProfile p : profiles) {
+            if (p == null || p.id == null) continue;
+            if (ALL_BY_ID.containsKey(p.id)) {
+                Log.w(TAG, "Duplicate profile ID detected and ignored: " + p.id + " (" + p.displayName + ")");
+                continue;
+            }
             ALL_BY_ID.put(p.id, p);
             ALL_BY_BRAND
-                .computeIfAbsent(p.brandLabel, k -> new ArrayList<>())
+                .computeIfAbsent(p.brandLabel != null ? p.brandLabel : "Generic", k -> new ArrayList<>())
                 .add(p);
         }
     }
@@ -60,7 +69,8 @@ public class SpoofProfileRegistry {
      * @return the SpoofProfile, or null if not found.
      */
     public static SpoofProfile getById(String id) {
-        return ALL_BY_ID.get(id);
+        if (id == null) return null;
+        return ALL_BY_ID.get(id.trim());
     }
 
     /**

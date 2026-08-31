@@ -25,11 +25,6 @@ public class ArenaBreakoutConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to Arena Breakout / Delta Force.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
 
@@ -59,30 +54,11 @@ public class ArenaBreakoutConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=144", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── Zero Recoil & Weapon Stability ──
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.GunKickReduction=1",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.WeaponSway=0",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.ScopeStability=10.00",
-            // ── Aim Assist & Tracking ──
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
-            "+CVars=r.AimAssist.Magnetism=100.00",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
-            "+CVars=r.AimSnapStrength=100.00",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletTracking=1",
-            "+CVars=r.HitboxExpansion=100.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -97,9 +73,6 @@ public class ArenaBreakoutConfigPatcher {
         return written > 0;
     }
 
-    /**
-     * Injects 185 FPS and Ultra Graphics presets for Arena Breakout.
-     */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
 
@@ -134,32 +107,11 @@ public class ArenaBreakoutConfigPatcher {
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
             "ShadingQuality=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
-            "HDRMode=1", "ResolutionScale=120",
+            "HDRMode=1", "ResolutionScale=100",
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True", "Vsync=0",
             "TouchBoostHz=185", "TouchPollingRate=1000",
-            "GyroSampleRate=1000", "GyroZeroDelay=1",
-            // ── Zero Recoil & Weapon Stability ──
-            "+CVars=r.WeaponRecoilScale=0.00",
-            "+CVars=r.VerticalRecoilMultiplier=0.00",
-            "+CVars=r.HorizontalRecoilMultiplier=0.00",
-            "+CVars=r.GunKickReduction=1",
-            "+CVars=r.CameraShake=0",
-            "+CVars=r.WeaponSway=0",
-            "+CVars=r.BulletSpread=0.00",
-            "+CVars=r.ScopeStability=10.00",
-            // ── Aim Assist & Tracking ──
-            "+CVars=r.AimAssist=1",
-            "+CVars=r.AimAssist.Strength=100.00",
-            "+CVars=r.AimAssist.Magnetism=100.00",
-            "+CVars=r.CrosshairMagnetism=100.00",
-            "+CVars=r.TargetLockSensitivity=1000",
-            "+CVars=r.AimSnapStrength=100.00",
-            "+CVars=r.BulletMagnetism=100.00",
-            "+CVars=r.BulletTracking=1",
-            "+CVars=r.HitboxExpansion=100.00",
-            "+CVars=r.ArmorPiercing=10.00",
-            "+CVars=r.WallbangDamage=10.00"
+            "GyroSampleRate=1000", "GyroZeroDelay=1"
         };
 
         List<String> paths = getConfigPaths(packageName);
@@ -196,8 +148,8 @@ public class ArenaBreakoutConfigPatcher {
                 "Ultra144FPS=1\n" +
                 "Ultra165FPS=1\n" +
                 "Ultra185FPS=1\n" +
-                "ScreenScale=120\n" +
-                "ResolutionScale=120\n" +
+                "ScreenScale=100\n" +
+                "ResolutionScale=100\n" +
                 "ShadowQuality=2\n" +
                 "AntiAliasingQuality=4\n" +
                 "PostProcessQuality=3\n" +
@@ -227,44 +179,7 @@ public class ArenaBreakoutConfigPatcher {
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
                 "+CVars=r.HDR.Display.OutputDevice=1\n" +
-                // ── 10000 Aim Assist CVars ──
-                "+CVars=r.AimAssist=1\n" +
-                "+CVars=r.AimAssist.Strength=100.00\n" +
-                "+CVars=r.AimAssist.Magnetism=100.00\n" +
-                "+CVars=r.AimAssist.SnapSpeed=100.00\n" +
-                "+CVars=r.AimAssistRadius=5000\n" +
-                "+CVars=r.CrosshairMagnetism=100.00\n" +
-                "+CVars=r.TargetLockSensitivity=10000\n" +
-                "+CVars=r.AimSnapStrength=100.00\n" +
-                "+CVars=r.AimLead=1\n" +
-                "+CVars=r.AimLeadStrength=100.00\n" +
-                // ── 100 Hitbox & Tracking Bullet CVars ──
-                "+CVars=r.BulletTracking=1\n" +
-                "+CVars=r.MagicBullet=1\n" +
-                "+CVars=r.HitboxExpansion=100.00\n" +
-                "+CVars=r.BulletMagnetism=100.00\n" +
-                "+CVars=r.BulletVelocityScale=200.00\n" +
-                "+CVars=r.BulletCurveFactor=100.00\n" +
-                "+CVars=r.TargetLockTracking=1\n" +
-                "+CVars=r.FirstBulletAccuracy=1\n" +
-                "+CVars=r.ProjectileHoming=1\n" +
-                "+CVars=r.HomingStrength=100.00\n" +
-                // ── 1500+ Shield & Armor Defense CVars ──
-                "+CVars=r.ArmorDamageReduction=0.9999\n" +
-                "+CVars=r.VestDurabilityBoost=1500.00\n" +
-                "+CVars=r.HelmetDamageReduction=0.9999\n" +
-                "+CVars=r.IncomingDamageScale=0.0001\n" +
-                "+CVars=r.ShieldMultiplier=1500.00\n" +
-                "+CVars=r.ShieldEfficiency=1500.00\n" +
-                "+CVars=r.HealthRegenBoost=1000.00\n" +
-                "+CVars=r.DamageResistance=0.9999\n" +
-                "+CVars=r.TenacityRatio=0.9999\n" +
-                "+CVars=r.HeavyDamageDampener=100.00\n" +
-                "+CVars=r.BurstDamageReduction=100.00\n" +
-                // ── Drone View FOV 180 ──
-                "+CVars=r.CameraFOV=180\n" +
-                "+CVars=r.FieldOfView=180\n" +
-                "+CVars=r.DroneViewHeight=4\n" +
+                "+CVars=r.SuppressLogs=1\n" +
                 "\n" +
                 "[UserCustom]\n" +
                 "FrameRateLevel=" + fpsLevel + "\n" +
@@ -279,45 +194,7 @@ public class ArenaBreakoutConfigPatcher {
                 "UltraHDMode=1\n" +
                 "TouchPollingRate=1000\n" +
                 "TouchSlop=1\n" +
-                "TouchZeroDelay=1\n" +
-                "AimAssist=1\n" +
-                "AimAssistStrength=10000\n" +
-                "AimAssistLevel=10\n" +
-                "AimPrecision=100\n" +
-                "TargetLockSensitivity=10000\n" +
-                "CrosshairMagnetism=100.00\n" +
-                "AimSnapStrength=100.00\n" +
-                "AimMagnetism=100.00\n" +
-                "TrackingBullet=1\n" +
-                "BulletTracking=1\n" +
-                "AutoTrackingBullet=1\n" +
-                "MagicBullet=1\n" +
-                "HitboxExpansion=100.00\n" +
-                "BulletMagnetism=100.00\n" +
-                "BulletCurveFactor=100.00\n" +
-                "BulletVelocityMultiplier=200.00\n" +
-                "PhysicalDefenseBoost=1000.00\n" +
-                "MagicDefenseBoost=1000.00\n" +
-                "DamageReductionRatio=0.9999\n" +
-                "DamageReduction=0.9999\n" +
-                "IncomingDamageReduction=0.9999\n" +
-                "ShieldMultiplier=1500.00\n" +
-                "ShieldCapacity=1500.00\n" +
-                "ArmorBoost=50000\n" +
-                "VestDurability=1500.00\n" +
-                "HelmetDamageReduction=0.9999\n" +
-                "TenacityRatio=0.9999\n" +
-                "DamageMultiplier=1000.00\n" +
-                "BulletDamageBoost=1000.00\n" +
-                "HeadshotDamageMultiplier=1000.00\n" +
-                "CriticalHitRate=100\n" +
-                "CriticalDamage=10000\n" +
-                "DroneView=1\n" +
-                "CameraFOV=180\n" +
-                "NoRecoil=1\n" +
-                "WeaponKickReduction=1.00\n" +
-                "CrosshairSpread=0.00\n" +
-                "ScopeStability=5.00\n";
+                "TouchZeroDelay=1\n";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
@@ -326,7 +203,7 @@ public class ArenaBreakoutConfigPatcher {
                 written++;
             }
         }
-        Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS + 1000% Aim/Tracking/Defense force-write: " + written + " paths");
+        Log.i(TAG, "Arena Breakout competitive UltraExtreme " + forcedFps + "FPS force-write: " + written + " paths");
         return written > 0;
     }
 
@@ -380,7 +257,7 @@ public class ArenaBreakoutConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
-private static boolean applyStandardPatch(String path, int targetFps) {
+    private static boolean applyStandardPatch(String path, int targetFps) {
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int fpsLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {
