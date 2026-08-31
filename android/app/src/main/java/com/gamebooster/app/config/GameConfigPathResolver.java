@@ -150,7 +150,12 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
             rel.add("files/dragon2017/assets/Document/android/mode_versions_build.xml");
             rel.add("files/dragon2017/assets/Document/android/mola_config.xml");
-            // shared preferences
+            rel.add("files/dragon2017/assets/prefs_string");
+            rel.add("files/dragon2017/assets/prefs_int");
+            // shared preferences & direct files
+            rel.add("files/" + pkg + ".v2.playerprefs.xml");
+            rel.add("files/com.mobile.legends.v2.playerprefs.xml");
+            rel.add("files/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
@@ -167,6 +172,8 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/ChineseUserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+            rel.add("files/" + pkg + ".v2.playerprefs.xml");
+            rel.add("files/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
@@ -182,7 +189,14 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/" + pkg + ".v2.playerprefs.xml");
+            rel.add("files/com.garena.game.codm.v2.playerprefs.xml");
+            rel.add("files/com.activision.callofduty.shooter.v2.playerprefs.xml");
+            rel.add("files/" + pkg + "_preferences.xml");
+            rel.add("files/app_pref.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+            rel.add("shared_prefs/com.garena.game.codm.v2.playerprefs.xml");
+            rel.add("shared_prefs/com.activision.callofduty.shooter.v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/app_pref.xml");
         }
