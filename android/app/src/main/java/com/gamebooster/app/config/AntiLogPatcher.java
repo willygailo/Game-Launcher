@@ -201,11 +201,11 @@ public final class AntiLogPatcher {
         paths.add("/data/data/" + pkg + "/files/hawk_logs");
 
         // Game specific paths
-        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            paths.add(extRoot + "/files/dragon2017/assets/UI/android/log");
-            paths.add(extRoot + "/files/dragon2017/assets/UI/android/commlog");
-            paths.add(extRoot + "/files/dragon2017/assets/UI/android/assets_log");
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("mlbb")) {
+            paths.add(extRoot + "/files/Logs");
             paths.add("/data/data/" + pkg + "/files/crash_log");
+            paths.add("/data/data/" + pkg + "/files/tlog");
+            paths.add("/data/data/" + pkg + "/files/apm_logs");
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
             paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs");
             paths.add(extRoot + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes");

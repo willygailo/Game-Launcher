@@ -144,21 +144,15 @@ public class GameConfigPathResolver {
         pkg = pkg.trim().toLowerCase();
         List<String> rel = new ArrayList<>();
 
-        // 1. Mobile Legends: Bang Bang (all regional versions)
-        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            // dragon2017 engine branch
-            rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
-            rel.add("files/dragon2017/assets/Document/android/mode_versions_build.xml");
-            rel.add("files/dragon2017/assets/Document/android/mola_config.xml");
-            rel.add("files/dragon2017/assets/prefs_string");
-            rel.add("files/dragon2017/assets/prefs_int");
-            // shared preferences & direct files
-            rel.add("files/" + pkg + ".v2.playerprefs.xml");
-            rel.add("files/com.mobile.legends.v2.playerprefs.xml");
-            rel.add("files/" + pkg + "_preferences.xml");
+        // 1. Mobile Legends: Bang Bang (all regional versions - safe PlayerPrefs XML targets only)
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("mlbb")) {
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
+            rel.add("files/" + pkg + ".v2.playerprefs.xml");
+            rel.add("files/com.mobile.legends.v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("files/" + pkg + "_preferences.xml");
+            rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
         }
 
         // 2. PUBG Mobile / BGMI / Game for Peace / VNG / KR / New State
