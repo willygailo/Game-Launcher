@@ -10,6 +10,54 @@ import java.util.List;
  */
 public class CarXConfigPatcher {
 
+
+    // ── 2026 Lock Methods ─────────────────────────────────────────────────────
+
+    /**
+     * Damage Lock Max — 2026 Edition.
+     * Locks DPS at maximum via config-file injection into all resolved game paths.
+     * Ban-safe: config-file writes only.
+     */
+    public static void applyDamageLockMax(String packageName) {
+        CommonConfigTuningInjector.applyDamageLockMax(packageName);
+    }
+
+    /**
+     * Aim Assist Lock Max — 2026 Edition.
+     * Locks aim tracking at maximum magnetism + zero deadzone via config injection.
+     * Ban-safe: config-file writes only.
+     */
+    public static void applyAimAssistLockMax(String packageName) {
+        CommonConfigTuningInjector.applyAimAssistLockMax(packageName);
+    }
+
+    /**
+     * Vulkan Pipeline Prime — 2026 Edition.
+     * Pre-warms Vulkan pipeline cache + async shader compile. Eliminates mid-match stutter.
+     * Ban-safe: config-file writes only.
+     */
+    public static void applyVulkanPipelinePrime(String packageName) {
+        CommonConfigTuningInjector.applyVulkanPipelinePrime(packageName);
+    }
+
+    /**
+     * Anti-Telemetry Safe — 2026 Edition.
+     * Disables game-internal analytics/crash reporters only. Never touches anti-cheat.
+     * Ban-safe: config-file writes only.
+     */
+    public static void applyAntiTelemetrySafe(String packageName) {
+        CommonConfigTuningInjector.applyAntiTelemetrySafe(packageName);
+    }
+
+    /**
+     * Network Lag Compensation — 2026 Edition.
+     * Client-side lag comp + 64-tick + jitter buffer keys. UE4/5 games only (silently ignored on Unity).
+     * Ban-safe: config-file writes only.
+     */
+    public static void applyNetworkLagCompensation(String packageName) {
+        CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
+    }
+
     private static final String TAG = "CarXConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

@@ -93,6 +93,22 @@ public class MlbbConfigPatcher {
             "CameraHeight=1",
             "ScreenShake=0",
             "Vibrate=0",
+            // ── Damage Lock Max 2026 ──
+            "DamageLockMax=1",
+            "EffectiveDPSMode=3",
+            "PenetrationBoost=1",
+            "CritRateBoost=1",
+            "FrameSyncDamage=1",
+            "HitRegSyncRate=1000",
+            // ── Aim Assist Lock Max 2026 ──
+            "AimAssistLockMax=1",
+            "AimMagnetism=3",
+            "LockOnRange=1.0",
+            "AimSnapSpeed=10",
+            "AimStabilizer=1",
+            "HeadMagnetism=1",
+            "AdsZeroDelay=1",
+            "AimSmoothFactor=0",
             // ── Touch Engine Parameters ──
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
@@ -173,6 +189,22 @@ public class MlbbConfigPatcher {
             "CameraHeight=1",
             "ScreenShake=0",
             "Vibrate=0",
+            // ── Damage Lock Max 2026 ──
+            "DamageLockMax=1",
+            "EffectiveDPSMode=3",
+            "PenetrationBoost=1",
+            "CritRateBoost=1",
+            "FrameSyncDamage=1",
+            "HitRegSyncRate=1000",
+            // ── Aim Assist Lock Max 2026 ──
+            "AimAssistLockMax=1",
+            "AimMagnetism=3",
+            "LockOnRange=1.0",
+            "AimSnapSpeed=10",
+            "AimStabilizer=1",
+            "HeadMagnetism=1",
+            "AdsZeroDelay=1",
+            "AimSmoothFactor=0",
             // ── Touch Engine Parameters ──
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
@@ -305,6 +337,24 @@ public class MlbbConfigPatcher {
 
     public static void applyAntiLog(String packageName) {
         CommonConfigTuningInjector.applyAntiLog(packageName);
+    }
+
+    /**
+     * Damage Lock Max — 2026 Edition for MLBB.
+     * Locks DPS at maximum by zeroing frame-thread lag + enforcing hit-reg sync
+     * across all MLBB Document/ config paths (BattleConfig.json, QualityConfig.json, etc.).
+     */
+    public static void applyDamageLockMax(String packageName) {
+        CommonConfigTuningInjector.applyDamageLockMax(packageName);
+    }
+
+    /**
+     * Aim Assist Lock Max — 2026 Edition for MLBB.
+     * Locks aim tracking at max magnetism + zero deadzone + 1000Hz gyro/touch
+     * across all MLBB Document/ config paths.
+     */
+    public static void applyAimAssistLockMax(String packageName) {
+        CommonConfigTuningInjector.applyAimAssistLockMax(packageName);
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────

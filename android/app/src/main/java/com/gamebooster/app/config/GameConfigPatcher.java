@@ -143,6 +143,13 @@ public class GameConfigPatcher {
             MlbbConfigPatcher.applyTrackingBulletConfig(pkg);
             MlbbConfigPatcher.applyArmorDefConfig(pkg);
             MlbbConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: Damage Lock Max + Aim Assist Lock Max for Document/ folder coverage
+            MlbbConfigPatcher.applyDamageLockMax(pkg);
+            MlbbConfigPatcher.applyAimAssistLockMax(pkg);
+            // 2026: additional legal methods (DamageLockMax + AimAssistLockMax already above)
+            MlbbConfigPatcher.applyVulkanPipelinePrime(pkg);
+            MlbbConfigPatcher.applyAntiTelemetrySafe(pkg);
+            MlbbConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -155,6 +162,12 @@ public class GameConfigPatcher {
             CodmConfigPatcher.applyTrackingBulletConfig(pkg);
             CodmConfigPatcher.applyArmorDefConfig(pkg);
             CodmConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            CodmConfigPatcher.applyDamageLockMax(pkg);
+            CodmConfigPatcher.applyAimAssistLockMax(pkg);
+            CodmConfigPatcher.applyVulkanPipelinePrime(pkg);
+            CodmConfigPatcher.applyAntiTelemetrySafe(pkg);
+            CodmConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -168,6 +181,12 @@ public class GameConfigPatcher {
             PubgConfigPatcher.applyTrackingBulletConfig(pkg);
             PubgConfigPatcher.applyArmorDefConfig(pkg);
             PubgConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            PubgConfigPatcher.applyDamageLockMax(pkg);
+            PubgConfigPatcher.applyAimAssistLockMax(pkg);
+            PubgConfigPatcher.applyVulkanPipelinePrime(pkg);
+            PubgConfigPatcher.applyAntiTelemetrySafe(pkg);
+            PubgConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
             if (FreeFireConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FreeFireConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -180,6 +199,12 @@ public class GameConfigPatcher {
             FreeFireConfigPatcher.applyTrackingBulletConfig(pkg);
             FreeFireConfigPatcher.applyArmorDefConfig(pkg);
             FreeFireConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            FreeFireConfigPatcher.applyDamageLockMax(pkg);
+            FreeFireConfigPatcher.applyAimAssistLockMax(pkg);
+            FreeFireConfigPatcher.applyVulkanPipelinePrime(pkg);
+            FreeFireConfigPatcher.applyAntiTelemetrySafe(pkg);
+            FreeFireConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             if (GenshinConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (GenshinConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -192,6 +217,12 @@ public class GameConfigPatcher {
             GenshinConfigPatcher.applyTrackingBulletConfig(pkg);
             GenshinConfigPatcher.applyArmorDefConfig(pkg);
             GenshinConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            GenshinConfigPatcher.applyDamageLockMax(pkg);
+            GenshinConfigPatcher.applyAimAssistLockMax(pkg);
+            GenshinConfigPatcher.applyVulkanPipelinePrime(pkg);
+            GenshinConfigPatcher.applyAntiTelemetrySafe(pkg);
+            GenshinConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("wildrift") || pkg.contains("riotgames.league")) {
             if (WildRiftConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (WildRiftConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -204,6 +235,12 @@ public class GameConfigPatcher {
             WildRiftConfigPatcher.applyTrackingBulletConfig(pkg);
             WildRiftConfigPatcher.applyArmorDefConfig(pkg);
             WildRiftConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            WildRiftConfigPatcher.applyDamageLockMax(pkg);
+            WildRiftConfigPatcher.applyAimAssistLockMax(pkg);
+            WildRiftConfigPatcher.applyVulkanPipelinePrime(pkg);
+            WildRiftConfigPatcher.applyAntiTelemetrySafe(pkg);
+            WildRiftConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("uamo") || pkg.contains("arenabreakout")) {
             if (ArenaBreakoutConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ArenaBreakoutConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -216,6 +253,12 @@ public class GameConfigPatcher {
             ArenaBreakoutConfigPatcher.applyTrackingBulletConfig(pkg);
             ArenaBreakoutConfigPatcher.applyArmorDefConfig(pkg);
             ArenaBreakoutConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            ArenaBreakoutConfigPatcher.applyDamageLockMax(pkg);
+            ArenaBreakoutConfigPatcher.applyAimAssistLockMax(pkg);
+            ArenaBreakoutConfigPatcher.applyVulkanPipelinePrime(pkg);
+            ArenaBreakoutConfigPatcher.applyAntiTelemetrySafe(pkg);
+            ArenaBreakoutConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("deltaforce") || pkg.contains("dfm")) {
             if (DeltaForceConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (DeltaForceConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -228,6 +271,12 @@ public class GameConfigPatcher {
             DeltaForceConfigPatcher.applyTrackingBulletConfig(pkg);
             DeltaForceConfigPatcher.applyArmorDefConfig(pkg);
             DeltaForceConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            DeltaForceConfigPatcher.applyDamageLockMax(pkg);
+            DeltaForceConfigPatcher.applyAimAssistLockMax(pkg);
+            DeltaForceConfigPatcher.applyVulkanPipelinePrime(pkg);
+            DeltaForceConfigPatcher.applyAntiTelemetrySafe(pkg);
+            DeltaForceConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
             if (HokConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (HokConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -240,6 +289,12 @@ public class GameConfigPatcher {
             HokConfigPatcher.applyTrackingBulletConfig(pkg);
             HokConfigPatcher.applyArmorDefConfig(pkg);
             HokConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            HokConfigPatcher.applyDamageLockMax(pkg);
+            HokConfigPatcher.applyAimAssistLockMax(pkg);
+            HokConfigPatcher.applyVulkanPipelinePrime(pkg);
+            HokConfigPatcher.applyAntiTelemetrySafe(pkg);
+            HokConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
             if (BloodStrikeConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (BloodStrikeConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -252,6 +307,12 @@ public class GameConfigPatcher {
             BloodStrikeConfigPatcher.applyTrackingBulletConfig(pkg);
             BloodStrikeConfigPatcher.applyArmorDefConfig(pkg);
             BloodStrikeConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            BloodStrikeConfigPatcher.applyDamageLockMax(pkg);
+            BloodStrikeConfigPatcher.applyAimAssistLockMax(pkg);
+            BloodStrikeConfigPatcher.applyVulkanPipelinePrime(pkg);
+            BloodStrikeConfigPatcher.applyAntiTelemetrySafe(pkg);
+            BloodStrikeConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
             if (Standoff2ConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (Standoff2ConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -264,6 +325,12 @@ public class GameConfigPatcher {
             Standoff2ConfigPatcher.applyTrackingBulletConfig(pkg);
             Standoff2ConfigPatcher.applyArmorDefConfig(pkg);
             Standoff2ConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            Standoff2ConfigPatcher.applyDamageLockMax(pkg);
+            Standoff2ConfigPatcher.applyAimAssistLockMax(pkg);
+            Standoff2ConfigPatcher.applyVulkanPipelinePrime(pkg);
+            Standoff2ConfigPatcher.applyAntiTelemetrySafe(pkg);
+            Standoff2ConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters")) {
             if (CarXConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CarXConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -276,6 +343,12 @@ public class GameConfigPatcher {
             CarXConfigPatcher.applyTrackingBulletConfig(pkg);
             CarXConfigPatcher.applyArmorDefConfig(pkg);
             CarXConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            CarXConfigPatcher.applyDamageLockMax(pkg);
+            CarXConfigPatcher.applyAimAssistLockMax(pkg);
+            CarXConfigPatcher.applyVulkanPipelinePrime(pkg);
+            CarXConfigPatcher.applyAntiTelemetrySafe(pkg);
+            CarXConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) {
             if (SupercellConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (SupercellConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -288,6 +361,12 @@ public class GameConfigPatcher {
             SupercellConfigPatcher.applyTrackingBulletConfig(pkg);
             SupercellConfigPatcher.applyArmorDefConfig(pkg);
             SupercellConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            SupercellConfigPatcher.applyDamageLockMax(pkg);
+            SupercellConfigPatcher.applyAimAssistLockMax(pkg);
+            SupercellConfigPatcher.applyVulkanPipelinePrime(pkg);
+            SupercellConfigPatcher.applyAntiTelemetrySafe(pkg);
+            SupercellConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("roblox")) {
             if (RobloxConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (RobloxConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -300,6 +379,12 @@ public class GameConfigPatcher {
             RobloxConfigPatcher.applyTrackingBulletConfig(pkg);
             RobloxConfigPatcher.applyArmorDefConfig(pkg);
             RobloxConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            RobloxConfigPatcher.applyDamageLockMax(pkg);
+            RobloxConfigPatcher.applyAimAssistLockMax(pkg);
+            RobloxConfigPatcher.applyVulkanPipelinePrime(pkg);
+            RobloxConfigPatcher.applyAntiTelemetrySafe(pkg);
+            RobloxConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
             if (ValorantConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (ValorantConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -312,6 +397,12 @@ public class GameConfigPatcher {
             ValorantConfigPatcher.applyTrackingBulletConfig(pkg);
             ValorantConfigPatcher.applyArmorDefConfig(pkg);
             ValorantConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            ValorantConfigPatcher.applyDamageLockMax(pkg);
+            ValorantConfigPatcher.applyAimAssistLockMax(pkg);
+            ValorantConfigPatcher.applyVulkanPipelinePrime(pkg);
+            ValorantConfigPatcher.applyAntiTelemetrySafe(pkg);
+            ValorantConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("farlight") || pkg.contains("solarland")) {
             if (FarlightConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (FarlightConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -324,6 +415,12 @@ public class GameConfigPatcher {
             FarlightConfigPatcher.applyTrackingBulletConfig(pkg);
             FarlightConfigPatcher.applyArmorDefConfig(pkg);
             FarlightConfigPatcher.applySpeedBoostConfig(pkg);
+            // 2026: full lock method suite
+            FarlightConfigPatcher.applyDamageLockMax(pkg);
+            FarlightConfigPatcher.applyAimAssistLockMax(pkg);
+            FarlightConfigPatcher.applyVulkanPipelinePrime(pkg);
+            FarlightConfigPatcher.applyAntiTelemetrySafe(pkg);
+            FarlightConfigPatcher.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("pesam") || pkg.contains("fifamobile") || pkg.contains("easports")) {
             for (String path : configPaths) {
                 if (patchGenericConfig(path, forcedFps)) patchedFiles++;

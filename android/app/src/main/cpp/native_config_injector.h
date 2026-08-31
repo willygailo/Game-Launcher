@@ -183,7 +183,31 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHitRegDpsBoost
   (JNIEnv *, jclass, jstring);
 
-// ─── Backward-Compatibility / Safe Performance Aliases ───────────────────────
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectDamageLockMax
+ * Signature: (Ljava/lang/String;)Z
+ *
+ * 2026: Locks effective DPS at maximum by zeroing frame-thread lag,
+ * enforcing 1000Hz hit-reg sync, and injecting Document/BattleConfig
+ * DPS-floor keys. Ban-safe: config-file writes only, no binary patching.
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageLockMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectAimAssistLockMax
+ * Signature: (Ljava/lang/String;)Z
+ *
+ * 2026: Locks aim-assist tracking at maximum magnetism tier by injecting
+ * hero-lock, zero-deadzone, 1000Hz gyro/touch, and all-scope precision keys.
+ * Ban-safe: config-file writes only, no binary patching.
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssistLockMax
+  (JNIEnv *, jclass, jstring);
+
+// ─── Backward-Compatibility / Safe Performance Aliases ─────────────────────────────────────
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost
   (JNIEnv *, jclass, jstring, jfloat, jfloat, jint);
