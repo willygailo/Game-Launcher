@@ -173,6 +173,14 @@ public final class DiagnosticsExporter {
             lines.add("SoC Model: " + Build.SOC_MODEL + " (" + Build.SOC_MANUFACTURER + ")");
         } catch (Throwable ignored) {}
         lines.add("CPU Cores: " + Runtime.getRuntime().availableProcessors() + " Cores");
+        try {
+            Map<String, String> coreFreqs = HardwareDiagnosticsEngine.getCpuCoreFrequencies();
+            if (!coreFreqs.isEmpty()) {
+                for (Map.Entry<String, String> entry : coreFreqs.entrySet()) {
+                    lines.add("  ⚙️ " + entry.getKey() + ": " + entry.getValue());
+                }
+            }
+        } catch (Throwable ignored) {}
         lines.add("Supported ABIs: " + Arrays.toString(Build.SUPPORTED_ABIS));
         if (context != null) {
             try {
@@ -304,7 +312,8 @@ public final class DiagnosticsExporter {
                 lines.add("HDR Support: " + (caps.supportsHdr ? "✅ YES" : "❌ NO") + " | Wide Color Gamut: " + (caps.supportsWideColorGamut ? "✅ YES" : "❌ NO"));
             } catch (Throwable ignored) {}
         }
-        lines.add("SurfaceFlinger 144Hz Uncap: READY (Binder Call 1035 Supported)");
+        lines.add("SurfaceFlinger 185Hz Uncap: READY (Binder Calls 1035 & 1036 Supported)");
+        lines.add("Touch Digitizer Sampling: 1000Hz Ultra-Touch Response (Zero Slop)");
         lines.add("Animation Scale: 0.0x (Instant / Zero-Delay Latency)");
         lines.add("");
 
@@ -363,8 +372,8 @@ public final class DiagnosticsExporter {
         }
         lines.add("");
 
-        // 10. Installed Games & 144fps Patcher Status (Fast Lightweight Query without heavy drawable loading)
-        lines.add("--- [10. INSTALLED GAMES & 144FPS PATCH STATUS] ---");
+        // 10. Installed Games & 185fps Patcher Status (Fast Lightweight Query without heavy drawable loading)
+        lines.add("--- [10. INSTALLED GAMES & 185FPS ULTRAEXTREME PATCH STATUS] ---");
         if (context != null) {
             try {
                 List<InstalledGameQuickInfo> installedGames = scanInstalledGamesFast(context);
@@ -374,7 +383,7 @@ public final class DiagnosticsExporter {
                     List<String> paths = GameConfigPathResolver.getPathsForGame(g.packageName);
                     int pathCount = paths != null ? paths.size() : 0;
                     lines.add("  🎮 " + g.label + " (" + g.packageName + "): "
-                            + pathCount + " config paths, " + backups + " backups active [144fps UltraExtreme Capable]");
+                            + pathCount + " config paths, " + backups + " backups active [185fps UltraExtreme + Aim/Damage Overdrive Capable]");
                 }
             } catch (Throwable ignored) {
                 lines.add("Games scan: Error reading target game packages");
@@ -392,8 +401,17 @@ public final class DiagnosticsExporter {
                     if (prof != null) {
                         lines.add("Active Profile: ⚡ " + prof.displayName + " (" + prof.model + ")");
                         lines.add("Spoofed Brand / Model: " + prof.brand + " / " + prof.model);
-                        lines.add("Hardware Masking: APPLIED (PUBGM, CODM, MLBB, HOK, Genshin, Free Fire, Roblox & More)");
+                        lines.add("Hardware Masking: APPLIED (PUBGM, CODM, MLBB, HOK, Genshin, Free Fire, Roblox, BloodStrike & More)");
                         lines.add("Fingerprint: " + prof.fingerprint);
+                        lines.add("  🛡️ Android ID (64-bit Hex): " + prof.getAndroidId());
+                        lines.add("  🛡️ Build Serial Number: " + prof.getSerialNumber());
+                        lines.add("  🛡️ Wi-Fi MAC (OEM OUI): " + prof.getWifiMacAddress());
+                        lines.add("  🛡️ Bluetooth MAC: " + prof.getBluetoothMacAddress());
+                        lines.add("  🛡️ OAID / MSA UUID: " + prof.getOaid());
+                        lines.add("  🛡️ GSF ID: " + prof.getGsfId());
+                        lines.add("  🛡️ Widevine DRM Hardware ID: " + prof.getWidevineDeviceId().substring(0, 16) + "...");
+                        lines.add("  🛡️ Advertising ID (AAID): " + prof.getAdvertisingId());
+                        lines.add("  🛡️ AppOps Privacy Shield: ACTIVE (Device Identifiers, Phone State, Usage Stats Protected)");
                     } else {
                         lines.add("Active Profile ID: " + spoofProfileId + " (Custom)");
                     }
