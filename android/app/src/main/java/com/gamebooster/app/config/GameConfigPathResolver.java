@@ -244,7 +244,6 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/UAGame/UAGame/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/UAGame/UAGame/Saved/Paks/");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
@@ -254,7 +253,6 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/DeltaForce/DeltaForce/Saved/Paks/");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
@@ -337,7 +335,6 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/ProjectC/ProjectC/Saved/Paks/");
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Settings.json");
             rel.add("files/GraphicSettings.ini");
@@ -350,7 +347,6 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Solarland/Solarland/Saved/Config/Android/DeviceProfile.ini");
-            rel.add("files/UE4Game/Solarland/Solarland/Saved/Paks/");
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Settings.json");
             rel.add("files/GraphicSettings.ini");
