@@ -12,7 +12,7 @@
 
 <br/>
 
-[![Latest Release](https://img.shields.io/badge/Release-v16.10.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Latest Release](https://img.shields.io/badge/Release-v16.11.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Android-13--16-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=0D1117)](#-quick-start)
 [![Display Lock](https://img.shields.io/badge/Display-90Hz%20to%20185Hz-FF0055?style=for-the-badge&logo=speedtest&logoColor=white&labelColor=0D1117)](#-features)
 [![License](https://img.shields.io/badge/License-MIT-00E5FF?style=for-the-badge&labelColor=0D1117)](#-license)
