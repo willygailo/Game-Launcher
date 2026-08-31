@@ -494,10 +494,10 @@ public class GameConfigPatcher {
                     if (!ShizukuFileManager.fileExists(path)) continue;
                     checked++;
                     String content = ShizukuFileManager.readFile(path);
-                    if (GameConfigPatchVerifier.verifyFpsInContent(content, targetFps)) {
+                    if (GameConfigPatchVerifier.verifyPatchInContent(content, targetFps)) {
                         verified++;
                     } else {
-                        Log.d(TAG, "Read-back: no FPS value in " + path);
+                        Log.d(TAG, "Read-back: no matching patch values in " + path);
                     }
                 } catch (Throwable t) {
                     Log.w(TAG, "Read-back failed for " + path, t);

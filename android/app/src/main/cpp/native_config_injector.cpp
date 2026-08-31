@@ -153,13 +153,28 @@ static bool patch_key_value(std::string& content, const std::string& key, const 
         if (end_pos == std::string::npos) end_pos = content.length();
         content.replace(pos, end_pos - pos, key + "=" + value);
         return true;
-    } else {
-        if (!content.empty() && content.back() != '\n') {
-            content += "\n";
-        }
-        content += key + "=" + value + "\n";
+    }
+
+    // Case-insensitive fallback scan for existing key
+    std::string lowerKey = key;
+    std::transform(lowerKey.begin(), lowerKey.end(), lowerKey.begin(), ::tolower);
+    std::string lowerContent = content;
+    std::transform(lowerContent.begin(), lowerContent.end(), lowerContent.begin(), ::tolower);
+    std::string lowerPattern = lowerKey + "=";
+
+    pos = lowerContent.find(lowerPattern);
+    if (pos != std::string::npos && (pos == 0 || lowerContent[pos - 1] == '\n' || lowerContent[pos - 1] == '\r')) {
+        size_t end_pos = content.find('\n', pos);
+        if (end_pos == std::string::npos) end_pos = content.length();
+        content.replace(pos, end_pos - pos, key + "=" + value);
         return true;
     }
+
+    if (!content.empty() && content.back() != '\n') {
+        content += "\n";
+    }
+    content += key + "=" + value + "\n";
+    return true;
 }
 
 static bool patch_cvar(std::string& content, const std::string& cvar, const std::string& value) {
@@ -956,4 +971,132 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageLockMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::vector<std::pair<std::string, std::string>> damageLockKeys = {
+        {"DamageLockMax", "1"},
+        {"EffectiveDPSMode", "3"},
+        {"PenetrationBoost", "1"},
+        {"CritRateBoost", "1"},
+        {"FrameSyncDamage", "1"},
+        {"HitRegSyncRate", "1000"},
+        {"r.OneFrameThreadLag", "0"},
+        {"r.FinishCurrentFrame", "0"},
+        {"bFramePacingEnabled", "1"},
+        {"InputBufferRate", "1000"},
+        {"ZeroInputLag", "1"},
+        {"AllowOcclusionQueries", "1"},
+        {"PreloadShaders", "1"},
+        {"r.VSync", "0"}
+    };
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : damageLockKeys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, false);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssistLockMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::vector<std::pair<std::string, std::string>> aimAssistLockKeys = {
+        {"AimAssistLockMax", "1"},
+        {"AimMagnetism", "3"},
+        {"LockOnRange", "1.0"},
+        {"AimSnapSpeed", "10"},
+        {"AimStabilizer", "1"},
+        {"HeadMagnetism", "1"},
+        {"AdsZeroDelay", "1"},
+        {"AimSmoothFactor", "0"},
+        {"TouchPollingRate", "1000"},
+        {"TouchSampleRate", "1000"},
+        {"GyroSampleRate", "1000"},
+        {"GyroZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"HeroLock", "1"},
+        {"SkillSmartAim", "1"},
+        {"AimMethod", "1"},
+        {"TargetPriority", "0"}
+    };
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : aimAssistLockKeys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, false);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectVulkanOptimization
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    std::vector<std::pair<std::string, std::string>> vulkanKeys = {
+        {"r.Vulkan.Enable", "1"},
+        {"r.Vulkan.UsePipelines", "1"},
+        {"r.Vulkan.RobustBufferAccess", "0"},
+        {"r.Mobile.EnableVulkanPreTransform", "1"},
+        {"r.AsyncCompute", "1"},
+        {"r.EnableAsyncPipelineCompilation", "1"},
+        {"r.VRS.Enable", "1"},
+        {"VulkanEnabled", "1"},
+        {"VulkanPipelineCache", "1"},
+        {"AsyncCompute", "1"},
+        {"VRS", "1"},
+        {"PreloadShaders", "1"},
+        {"bPreloadShaders", "True"},
+        {"ShaderPrecompile", "1"},
+        {"EnableAsyncPipelineCompilation", "1"},
+        {"VulkanThreadCount", "4"},
+        {"ShaderWarmupAtLaunch", "1"},
+        {"GPUPipelineWarmup", "1"}
+    };
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : vulkanKeys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, false);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
 

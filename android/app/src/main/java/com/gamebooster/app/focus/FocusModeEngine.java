@@ -1,12 +1,15 @@
 package com.gamebooster.app.focus;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.gamebooster.app.config.ManualSettingsPreferences;
+import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -21,9 +24,10 @@ import java.util.Set;
  * FocusModeEngine — eSports Deep App Freezer & Background Suspension Engine.
  *
  * Implements privileged multi-layer Android package suspension (pm suspend / cmd package suspend),
- * appops background restriction, standby bucket restriction, and process termination (am force-stop)
- * to freeze non-gaming background applications, dedicating 100% of device CPU, GPU,
- * RAM, and network bandwidth to the active game.
+ * appops background restriction, standby bucket restriction, process termination (am force-stop),
+ * gaming DND / heads-up notification suppression, and network bandwidth prioritization to freeze
+ * non-gaming background applications, dedicating 100% of device CPU, GPU, RAM, and network
+ * bandwidth to the active game.
  */
 public class FocusModeEngine {
 
@@ -31,6 +35,9 @@ public class FocusModeEngine {
     private static final String PREF_NAME = "focus_mode_prefs";
     private static final String KEY_FROZEN_PACKAGES = "frozen_packages_set";
     private static final String KEY_FOCUS_ACTIVE = "focus_mode_active";
+    private static final String KEY_ORIGINAL_HEADS_UP = "original_heads_up_state";
+    private static final String KEY_ORIGINAL_DND_FILTER = "original_dnd_filter";
+    private static final String KEY_ORIGINAL_NET_RESTRICT = "original_net_restrict";
 
     public interface OnFreezeOperationListener {
         void onProgress(int current, int total, String appName);
@@ -199,6 +206,10 @@ public class FocusModeEngine {
 
             executeShellCommandsBatched(commands);
 
+            // 4. Engage Gaming DND and Network QoS focus
+            enableGamingDnd(context);
+            enableNetworkFocus(context);
+
             // Persist frozen set
             getPrefs(context).edit()
                     .putBoolean(KEY_FOCUS_ACTIVE, !validatedPackages.isEmpty())
@@ -265,6 +276,10 @@ public class FocusModeEngine {
 
             executeShellCommandsBatched(commands);
 
+            // Restore Gaming DND and Network Focus
+            restoreGamingDnd(context);
+            restoreNetworkFocus(context);
+
             getPrefs(context).edit()
                     .putBoolean(KEY_FOCUS_ACTIVE, false)
                     .remove(KEY_FROZEN_PACKAGES)
@@ -320,12 +335,19 @@ public class FocusModeEngine {
 
         if (packagesToFreeze.isEmpty()) {
             Log.i(TAG, "No candidate applications found to freeze.");
-            return 0;
+        } else {
+            Log.i(TAG, "Suspending and freezing " + packagesToFreeze.size() + " background apps for focus mode.");
+            executeShellCommandsBatched(commands);
         }
 
-        Log.i(TAG, "Suspending and freezing " + packagesToFreeze.size() + " background apps for focus mode.");
+        // 4. Engage Gaming DND & Network QoS Bandwidth Focus
+        enableGamingDnd(context);
+        enableNetworkFocus(context);
 
-        executeShellCommandsBatched(commands);
+        // 5. Pin active game CPU core affinity & scheduling priority
+        if (activeGamePackage != null) {
+            pinActiveGameCpu(activeGamePackage);
+        }
 
         getPrefs(context).edit()
                 .putBoolean(KEY_FOCUS_ACTIVE, true)
@@ -372,6 +394,10 @@ public class FocusModeEngine {
 
         executeShellCommandsBatched(commands);
 
+        // Restore Gaming DND and Network Focus
+        restoreGamingDnd(context);
+        restoreNetworkFocus(context);
+
         int count = packagesToUnsuspend.size();
         getPrefs(context).edit()
                 .putBoolean(KEY_FOCUS_ACTIVE, false)
@@ -380,6 +406,104 @@ public class FocusModeEngine {
 
         ManualSettingsPreferences.setFocusModeEnabled(context, false);
         return count;
+    }
+
+    // ─── Gaming Do-Not-Disturb & Notification Suppression ────────────────────
+
+    public static void enableGamingDnd(Context context) {
+        if (context == null) return;
+        try {
+            SharedPreferences prefs = getPrefs(context);
+            // 1. Capture and suppress Heads-Up Banner Notifications
+            try {
+                int currentHeadsUp = Settings.Global.getInt(context.getContentResolver(), "heads_up_notifications_enabled", 1);
+                prefs.edit().putInt(KEY_ORIGINAL_HEADS_UP, currentHeadsUp).apply();
+            } catch (Throwable ignored) {}
+
+            executeShellBatch("settings put global heads_up_notifications_enabled 0 2>/dev/null; "
+                    + "cmd notification set_interruption_filter priority 2>/dev/null; "
+                    + "cmd notification set_dnd_mode on 2>/dev/null");
+
+            // 2. Framework NotificationManager API
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && nm.isNotificationPolicyAccessGranted()) {
+                int currentFilter = nm.getCurrentInterruptionFilter();
+                prefs.edit().putInt(KEY_ORIGINAL_DND_FILTER, currentFilter).apply();
+                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "enableGamingDnd failed: " + t.getMessage());
+        }
+    }
+
+    public static void restoreGamingDnd(Context context) {
+        if (context == null) return;
+        try {
+            SharedPreferences prefs = getPrefs(context);
+            // 1. Restore Heads-Up Notifications
+            int originalHeadsUp = prefs.getInt(KEY_ORIGINAL_HEADS_UP, 1);
+            executeShellBatch("settings put global heads_up_notifications_enabled " + originalHeadsUp + " 2>/dev/null; "
+                    + "cmd notification set_interruption_filter all 2>/dev/null; "
+                    + "cmd notification set_dnd_mode off 2>/dev/null");
+
+            // 2. Restore Notification Policy
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && nm.isNotificationPolicyAccessGranted()) {
+                int originalFilter = prefs.getInt(KEY_ORIGINAL_DND_FILTER, NotificationManager.INTERRUPTION_FILTER_ALL);
+                nm.setInterruptionFilter(originalFilter);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "restoreGamingDnd failed: " + t.getMessage());
+        }
+    }
+
+    // ─── Network QoS & Bandwidth Prioritization ──────────────────────────────
+
+    public static void enableNetworkFocus(Context context) {
+        if (context == null) return;
+        try {
+            executeShellBatch("cmd netpolicy set restrict-background true 2>/dev/null; "
+                    + "cmd connectivity set-background-data false 2>/dev/null");
+        } catch (Throwable t) {
+            Log.w(TAG, "enableNetworkFocus failed: " + t.getMessage());
+        }
+    }
+
+    public static void restoreNetworkFocus(Context context) {
+        if (context == null) return;
+        try {
+            executeShellBatch("cmd netpolicy set restrict-background false 2>/dev/null; "
+                    + "cmd connectivity set-background-data true 2>/dev/null");
+        } catch (Throwable t) {
+            Log.w(TAG, "restoreNetworkFocus failed: " + t.getMessage());
+        }
+    }
+
+    // ─── Game CPU Core Pinning & Scheduling Priority ─────────────────────────
+
+    public static void pinActiveGameCpu(String activeGamePackage) {
+        if (activeGamePackage == null || activeGamePackage.trim().isEmpty()) return;
+        try {
+            String pidOut = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand("pidof " + activeGamePackage + " 2>/dev/null")
+                    : com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("pidof " + activeGamePackage + " 2>/dev/null");
+
+            if (pidOut != null && !pidOut.trim().isEmpty()) {
+                String[] pids = pidOut.trim().split("\\s+");
+                for (String p : pids) {
+                    try {
+                        int pid = Integer.parseInt(p);
+                        if (pid > 0) {
+                            NativeConfigInjector.setProcessCpuAffinity(pid, 0); // Big cores mask
+                            NativeConfigInjector.setThreadSchedulingPolicy(pid, 1, 50); // Real-time priority
+                            NativeConfigInjector.setIoPriority(pid, 1, 0); // Real-time I/O
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "pinActiveGameCpu failed for " + activeGamePackage + ": " + t.getMessage());
+        }
     }
 
     private static void executeShellCommandsBatched(List<String> commands) {

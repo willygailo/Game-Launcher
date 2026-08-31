@@ -222,6 +222,10 @@ public class JunkCleanerEngine {
                 sb.append("rm -rf /sdcard/Android/data/").append(packageName).append("/code_cache/* 2>/dev/null; ");
                 sb.append("rm -rf /data/data/").append(packageName).append("/cache/* 2>/dev/null; ");
                 sb.append("rm -rf /data/data/").append(packageName).append("/code_cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/user/0/").append(packageName).append("/cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/user/0/").append(packageName).append("/code_cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/user_de/0/").append(packageName).append("/cache/* 2>/dev/null; ");
+                sb.append("rm -rf /data/user_de/0/").append(packageName).append("/code_cache/* 2>/dev/null; ");
                 sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/Cache/* 2>/dev/null; ");
                 sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/GPUCache/* 2>/dev/null; ");
                 sb.append("rm -rf /data/data/").append(packageName).append("/app_webview/Default/Code\\ Cache/* 2>/dev/null");
@@ -369,12 +373,17 @@ public class JunkCleanerEngine {
             if (ShizukuFileManager.hasFullAccess()) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("fstrim -v /data 2>/dev/null; ");
+                sb.append("fstrim -v /cache 2>/dev/null; ");
                 sb.append("sync; ");
                 sb.append("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; ");
-                sb.append("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null");
+                sb.append("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; ");
+                sb.append("echo 1 > /sys/block/zram0/compact 2>/dev/null; ");
+                sb.append("cmd activity purge-cached-processes 2>/dev/null; ");
+                sb.append("cmd activity kill-all 2>/dev/null");
                 ShizukuExecutor.executeShizukuCommand(sb.toString());
+                if (logs != null) logs.add("Executed NAND fstrim, zRAM compaction, and cached process purge.");
             } else {
-                CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null; sync");
+                CommandExecutor.executeSystemCommand("fstrim -v /data 2>/dev/null; sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
             }
         } catch (Throwable ignored) {}
     }

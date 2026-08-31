@@ -519,14 +519,24 @@ public class JunkScanner {
                 }
             }
 
-            // Game Crash & Log Folders
+            // Game Crash & Log Folders (Esports & High-Load Titles)
             String[] gameLogPaths = {
                     "Android/data/com.dts.freefireth/files/FF_Log",
                     "Android/data/com.dts.freefiremax/files/FF_Log",
                     "Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
                     "Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes",
+                    "Android/data/com.pubg.imobile/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
+                    "Android/data/com.vng.pubgmobile/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
+                    "Android/data/com.activision.callofduty.shooter/files/logs",
+                    "Android/data/com.garena.game.codm/files/logs",
                     "Android/data/com.levelinfinite.deltaforce/files/UE4Game/DeltaForce/DeltaForce/Saved/Logs",
-                    "Android/data/com.mobile.legends/files/dragon2017/assets/UI/Logs"
+                    "Android/data/com.proximabeta.mf.uamo/files/UE4Game/UAMO/UAMO/Saved/Logs",
+                    "Android/data/com.netease.bloodstrike/files/logs",
+                    "Android/data/com.farlightgames.farlight84.gp/files/UE4Game/Solarland/Solarland/Saved/Logs",
+                    "Android/data/com.mobile.legends/files/dragon2017/assets/UI/Logs",
+                    "Android/data/com.mobile.legends/files/dragon2017/assets/Unity",
+                    "Android/data/com.miHoYo.GenshinImpact/files/logs",
+                    "Android/data/com.hoyoverse.hkrpg/files/logs"
             };
             for (String gl : gameLogPaths) {
                 File gDir = new File(extStorage, gl);

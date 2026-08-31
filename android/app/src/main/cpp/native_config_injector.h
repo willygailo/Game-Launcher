@@ -207,6 +207,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssistLockMax
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectVulkanOptimization
+ * Signature: (Ljava/lang/String;)Z
+ *
+ * 2026: Optimizes Vulkan pipeline cache, async shader compilation,
+ * and graphics settings. Ban-safe: config-file writes only.
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectVulkanOptimization
+  (JNIEnv *, jclass, jstring);
+
 // ─── Backward-Compatibility / Safe Performance Aliases ─────────────────────────────────────
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost

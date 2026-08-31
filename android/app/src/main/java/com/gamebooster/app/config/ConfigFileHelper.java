@@ -247,9 +247,13 @@ public final class ConfigFileHelper {
                     updated = sb.toString();
                 } else {
                     // Non-empty object — insert new entries right after '{\n'
+                    int insertAt = openBrace + 1;
+                    while (insertAt < updated.length() && (updated.charAt(insertAt) == '\r' || updated.charAt(insertAt) == '\n')) {
+                        insertAt++;
+                    }
                     updated = updated.substring(0, openBrace + 1) + "\n"
                             + newEntries
-                            + updated.substring(openBrace + 1);
+                            + updated.substring(insertAt);
                 }
             } else {
                 StringBuilder sb = new StringBuilder("{\n");

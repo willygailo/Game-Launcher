@@ -71,6 +71,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectDamageLockMax(String path);
     // 2026: Aim Assist Lock Max — locks angular tracking, hero magnetism, zero ADS lag
     public static native boolean nativeInjectAimAssistLockMax(String path);
+    // 2026: Vulkan Optimization — async shader compilation, pipeline cache, and GPU features
+    public static native boolean nativeInjectVulkanOptimization(String path);
 
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
@@ -174,22 +176,40 @@ public class NativeConfigInjector {
 
     /**
      * 2026: Composite Vulkan optimization — pre-warms pipeline cache and injects
-     * AsyncCompute + VRS config keys. Delegates to forceVulkanPipelineCache for the
-     * native pipeline cache side; uses ConfigFileHelper for config key injection.
+     * AsyncCompute + VRS + shader precompile config keys.
      */
     public static boolean injectVulkanOptimization(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         // Pre-warm Vulkan pipeline cache via existing native method (pkg param optional here)
         forceVulkanPipelineCache(path, "");
-        // Inject AsyncCompute + VRS keys
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectVulkanOptimization(path)) return true;
+            } catch (Throwable t) {
+                Log.w(TAG, "Native Vulkan optimization fallback (Java engine): " + t.getMessage());
+            }
+        }
+        // Inject AsyncCompute + VRS + Vulkan pipeline keys
         String[] vulkanKeys = {
-            "r.AsyncCompute=1",
-            "r.VRS.Enable=1",
+            "r.Vulkan.Enable=1",
             "r.Vulkan.UsePipelines=1",
+            "r.Vulkan.RobustBufferAccess=0",
             "r.Mobile.EnableVulkanPreTransform=1",
+            "r.AsyncCompute=1",
             "r.EnableAsyncPipelineCompilation=1",
-            "r.Vulkan.RobustBufferAccess=0"
+            "r.VRS.Enable=1",
+            "VulkanEnabled=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "PreloadShaders=1",
+            "bPreloadShaders=True",
+            "ShaderPrecompile=1",
+            "EnableAsyncPipelineCompilation=1",
+            "VulkanThreadCount=4",
+            "ShaderWarmupAtLaunch=1",
+            "GPUPipelineWarmup=1"
         };
         return ConfigFileHelper.patchKeys(path, vulkanKeys, "[VulkanOptimization]");
     }

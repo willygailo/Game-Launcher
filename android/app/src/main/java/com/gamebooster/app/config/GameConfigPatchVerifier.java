@@ -36,7 +36,7 @@ public final class GameConfigPatchVerifier {
     }
 
     /**
-     * Pure check: does this config file assert Ultra Extreme Graphics unlock?
+     * Pure check: does this config file assert Ultra Extreme Graphics, Damage Lock, or Aim Assist unlock?
      */
     public static boolean verifyUltraExtremeInContent(String content) {
         if (content == null || content.isEmpty()) return false;
@@ -49,11 +49,16 @@ public final class GameConfigPatchVerifier {
                 || content.contains("r.MobileHDR=1")
                 || content.contains("HDRMode=1")
                 || content.contains("\"GraphicQuality\": 4")
-                || content.contains("name=\"GraphicQuality\" value=\"4\"");
+                || content.contains("name=\"GraphicQuality\" value=\"4\"")
+                || content.contains("DamageLockMax=1")
+                || content.contains("AimAssistLockMax=1")
+                || content.contains("VulkanPipelineCache=1")
+                || content.contains("TouchPollingRate=1000")
+                || content.contains("HitRegSyncRate=1000");
     }
 
     /**
-     * Pure check: verifies both FPS and Ultra Extreme graphics in file content.
+     * Pure check: verifies FPS, Ultra Extreme graphics, or competitive locks in file content.
      */
     public static boolean verifyPatchInContent(String content, int targetFps) {
         return verifyFpsInContent(content, targetFps) || verifyUltraExtremeInContent(content);
