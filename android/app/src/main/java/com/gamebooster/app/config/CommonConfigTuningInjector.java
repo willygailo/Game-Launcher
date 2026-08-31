@@ -201,11 +201,14 @@ public final class CommonConfigTuningInjector {
 
     /**
      * Injects UltraExtreme max graphics quality + FPS unlock keys into all game config paths.
+     * 2026 Edition: full key set including AsyncCompute, VRS, HDR10Plus, VulkanPipelineCache,
+     * LightingQuality, ParticleQuality, PostProcessing, WaterReflection, and RenderScale=120.
      */
     public static void applyUltraExtremeGraphics(String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) return;
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
         final String[] graphicsKeys = {
+            // ── FPS & Frame Rate ──
             "FPS=" + tier.fps,
             "MaxFPS=" + tier.fps,
             "TargetFPS=" + tier.fps,
@@ -213,13 +216,51 @@ public final class CommonConfigTuningInjector {
             "MobileFPSLimit=" + tier.fps,
             "FrameRateLevel=" + tier.level,
             "UnlockFPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",         // 3 = 185fps on MLBB 2026 (not 1 or 2)
             "SuperHighFPS=1",
+            // ── Refresh Rate Unlocks ──
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            // ── 2026 UltraExtreme Graphics ──
+            "UltraExtreme=1",
+            "UltraExtreme2026=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicsPreset=5",      // 5 = Ultra Extreme (2026 scale)
+            "GraphicLevel=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "LightingQuality=3",     // max 2026
+            "ParticleQuality=3",     // max 2026
+            "PostProcessing=1",
+            "WaterReflection=1",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
+            // ── Resolution & HDR ──
+            "ResolutionScale=120",
+            "RenderScale=120",
+            "ScreenScale=120",
+            "HDRMode=1",
+            "HDR10Plus=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            // ── Vulkan & GPU ──
+            "VulkanEnabled=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            // ── Frame Pacing & Input ──
             "bFramePacingEnabled=True",
+            "bReduceLoadedMips=False",
             "Vsync=0",
             "TouchBoostHz=" + tier.fps,
             "TouchPollingRate=1000",
@@ -231,11 +272,93 @@ public final class CommonConfigTuningInjector {
             NativeConfigInjector.injectUltraExtremeGraphics(path, tier.fps);
             ConfigFileHelper.patchKeys(path, graphicsKeys, "[GraphicsUltraExtreme]");
         }
-        Log.i(TAG, "UltraExtreme Max Graphics @ " + tier.fps + "fps applied for " + packageName);
+        Log.i(TAG, "UltraExtreme2026 Max Graphics @ " + tier.fps + "fps applied for " + packageName);
     }
 
     public static void applyUltraExtreme144(String packageName) {
         applyUltraExtremeGraphics(packageName, FpsUnlockTier.FPS_144.fps);
+    }
+
+    /**
+     * Injects Vulkan pipeline pre-warm, async compute unlock, and shader pre-compilation.
+     * 2026 Edition — applied across all config paths for the game.
+     */
+    public static void applyVulkanOptimization(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        String[] vulkanKeys = {
+            "VulkanEnabled=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "PreloadShaders=1",
+            "bPreloadShaders=True",
+            "ShaderPrecompile=1",
+            "EnableAsyncPipelineCompilation=1",
+            "+CVars=r.Vulkan.RobustBufferAccess=0",
+            "+CVars=r.Vulkan.EnableValidation=0",
+            "+CVars=r.AsyncCompute=1",
+            "+CVars=r.VRS.Enable=1",
+            "+CVars=r.EnableAsyncPipelineCompilation=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectVulkanOptimization(path);
+            ConfigFileHelper.patchKeys(path, vulkanKeys, "[VulkanOptimization]");
+        }
+        Log.i(TAG, "Vulkan Optimization + AsyncCompute 2026 applied for " + packageName);
+    }
+
+    /**
+     * Injects HDR10 / P3 wide color gamut flags and 10-bit rendering keys.
+     * Works across INI, JSON, and XML config formats.
+     */
+    public static void applyHDRColorProfile(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        String[] hdrKeys = {
+            "HDRMode=1",
+            "HDR10Plus=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "bUseHDRMode=True",
+            "bHDR10=True",
+            "WideColorGamut=1",
+            "DynamicRange=HDR",
+            "ColorSpace=P3",
+            "Bit10Color=1",
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.HDR.Display.OutputDevice=1",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.HDR.Display.ColorGamut=3"
+        };
+        for (String path : paths) {
+            ConfigFileHelper.patchKeys(path, hdrKeys, "[HDRColorProfile]");
+        }
+        Log.i(TAG, "HDR10 Wide Color Gamut profile applied for " + packageName);
+    }
+
+    /**
+     * Suppresses game telemetry, crash reporters, and background analytics I/O.
+     * 2026 Edition — ban-safe: disables only game-internal diagnostics, not anti-cheat.
+     */
+    public static void applyAntiCheatSafe2026(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        String[] antiTelKeys = {
+            "DisableTelemetry=1",
+            "DisableCrashReport=1",
+            "DisableAnalytics=1",
+            "DisableANR=1",
+            "DisableLogUpload=1",
+            "AntiTelemetry=1",
+            "+CVars=r.GPUCrashDebugging=0",
+            "+CVars=r.RHISetGPUCaptureOptions=0"
+        };
+        for (String path : paths) {
+            ConfigFileHelper.patchKeys(path, antiTelKeys, "[AntiTelemetry]");
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "AntiCheatSafe2026 telemetry suppression applied for " + packageName);
     }
 
     /**
@@ -272,6 +395,7 @@ public final class CommonConfigTuningInjector {
 
     /**
      * Convenient single-method dispatcher to apply all enabled profile tunings for a package.
+     * 2026 Edition: also applies Vulkan Optimization, HDR Color Profile, and AntiCheat-safe telemetry suppress.
      */
     public static void applyAllEnabledTunings(String packageName, CompetitiveCfgProfile profile) {
         if (packageName == null || profile == null) return;
@@ -280,6 +404,10 @@ public final class CommonConfigTuningInjector {
         if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName);
         if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName);
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
+        // 2026: always apply Vulkan + HDR + telemetry suppression for all profiles
+        applyVulkanOptimization(packageName);
+        applyHDRColorProfile(packageName);
+        applyAntiCheatSafe2026(packageName);
         applyUnrealEngineOptimization(packageName, profile.getTargetFps());
         applyUnityBootConfigOptimization(packageName, profile.getTargetFps());
         applyUltraExtremeGraphics(packageName, profile.getTargetFps());

@@ -97,12 +97,14 @@ public class PubgConfigPatcher {
             "UnlockFPS=1",
             "Unlock144FPS=1",
             "Ultra144FPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",           // 2026: 3 = 185Hz-capable mode
             "SuperHighFPS=1",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
             // ── UltraExtreme Graphics INI ──
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
@@ -110,9 +112,10 @@ public class PubgConfigPatcher {
             "GraphicQuality=4",
             "GraphicLevel=4",
             "ResolutionQuality=120",
-            "ResolutionScale=100",
-            "ScreenScale=100",
+            "ResolutionScale=120",      // 2026: 120% render scale
+            "ScreenScale=120",
             "HDRMode=1",
+            "HDR10Plus=1",              // 2026: 10-bit HDR
             "UltraHDMode=1",
             "HDRColorMode=2",
             "SuperResolution=1",
@@ -125,6 +128,12 @@ public class PubgConfigPatcher {
             "ShadowResolution=2048",
             "TextureQuality=4",
             "MaxAnisotropy=16",
+            "LightingQuality=3",        // 2026: max lighting
+            "ParticleQuality=3",        // 2026: max particles
+            "WaterReflection=1",        // 2026: water reflections
+            "VulkanPipelineCache=1",    // 2026: Vulkan cache
+            "AsyncCompute=1",           // 2026: GPU async compute
+            "VRS=1",                    // 2026: Variable Rate Shading
             "bReduceLoadedMips=False",
             "bFramePacingEnabled=True",
             "Vsync=0",
@@ -206,6 +215,11 @@ public class PubgConfigPatcher {
             "+CVars=r.GyroSampleRate=1000",
             "+CVars=r.GyroSensitivityRatio=2.5",
             "+CVars=r.GyroZeroDelay=1",
+            // 2026: AsyncCompute, VRS, Vulkan CVars
+            "+CVars=r.AsyncCompute=1",
+            "+CVars=r.VRS.Enable=1",
+            "+CVars=r.Vulkan.RobustBufferAccess=0",
+            "+CVars=r.EnableAsyncPipelineCompilation=1",
             // ── INI Keys ──
             "FPS=185",
             "MaxFPS=185",
@@ -220,12 +234,14 @@ public class PubgConfigPatcher {
             "Ultra144FPS=1",
             "Ultra165FPS=1",
             "Ultra185FPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",           // 2026: 3 = 185Hz-capable mode
             "SuperHighFPS=1",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
             // ── UltraExtreme Graphics INI ──
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
@@ -233,9 +249,10 @@ public class PubgConfigPatcher {
             "GraphicQuality=4",
             "GraphicLevel=4",
             "ResolutionQuality=120",
-            "ResolutionScale=100",
-            "ScreenScale=100",
+            "ResolutionScale=120",      // 2026: 120% render scale
+            "ScreenScale=120",
             "HDRMode=1",
+            "HDR10Plus=1",              // 2026: 10-bit HDR
             "UltraHDMode=1",
             "HDRColorMode=2",
             "SuperResolution=1",
@@ -248,6 +265,12 @@ public class PubgConfigPatcher {
             "ShadowResolution=2048",
             "TextureQuality=4",
             "MaxAnisotropy=16",
+            "LightingQuality=3",        // 2026: max lighting
+            "ParticleQuality=3",        // 2026: max particles
+            "WaterReflection=1",        // 2026: water reflections
+            "VulkanPipelineCache=1",    // 2026: Vulkan cache
+            "AsyncCompute=1",           // 2026: GPU async compute
+            "VRS=1",                    // 2026: Variable Rate Shading
             "bReduceLoadedMips=False",
             "bFramePacingEnabled=True",
             "Vsync=0",

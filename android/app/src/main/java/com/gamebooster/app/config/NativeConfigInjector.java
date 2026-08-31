@@ -168,6 +168,28 @@ public class NativeConfigInjector {
     }
 
     /**
+     * 2026: Composite Vulkan optimization — pre-warms pipeline cache and injects
+     * AsyncCompute + VRS config keys. Delegates to forceVulkanPipelineCache for the
+     * native pipeline cache side; uses ConfigFileHelper for config key injection.
+     */
+    public static boolean injectVulkanOptimization(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        // Pre-warm Vulkan pipeline cache via existing native method (pkg param optional here)
+        forceVulkanPipelineCache(path, "");
+        // Inject AsyncCompute + VRS keys
+        String[] vulkanKeys = {
+            "r.AsyncCompute=1",
+            "r.VRS.Enable=1",
+            "r.Vulkan.UsePipelines=1",
+            "r.Mobile.EnableVulkanPreTransform=1",
+            "r.EnableAsyncPipelineCompilation=1",
+            "r.Vulkan.RobustBufferAccess=0"
+        };
+        return ConfigFileHelper.patchKeys(path, vulkanKeys, "[VulkanOptimization]");
+    }
+
+    /**
      * Prefetches configuration and asset mappings into kernel page cache via mmap.
      */
     public static boolean optimizeMemoryMapping(String path) {

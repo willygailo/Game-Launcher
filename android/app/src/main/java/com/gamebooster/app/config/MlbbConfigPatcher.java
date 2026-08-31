@@ -33,7 +33,8 @@ public class MlbbConfigPatcher {
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
     /**
-     * Applies 144fps SuperSmooth + Ultra Graphics + Esports Targeting preferences.
+     * Applies 144fps SuperSmooth + Ultra Graphics 2026 Edition + Esports Targeting preferences.
+     * 2026: GraphicsPreset=5, LightingQuality=3, ParticleQuality=3, HDR10Plus=1, RenderScale=120.
      */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
@@ -50,19 +51,38 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
             "HFR=1",
             "ShowFPS=1",
-            // ── Max Ultra Graphics ──
+            // ── 2026 Max Ultra Graphics ──
+            "GraphicsPreset=5",        // 2026: 5 = Ultra Extreme (new tier)
+            "UltraExtreme=1",
+            "UltraExtreme2026=1",
+            "bUseUltraExtreme=True",
             "QualityLevel=3",
-            "GraphicsQuality=3",
+            "GraphicsQuality=5",        // 2026: max = 5
             "TextureQuality=3",
             "HDMode=1",
+            "HDR10Plus=1",             // 2026: 10-bit HDR
             "Shadow=1",
             "Outline=1",
+            "LightingQuality=3",       // 2026: max lighting
+            "ParticleQuality=3",       // 2026: max particles
+            "PostProcessing=1",        // 2026: post processing enabled
+            "WaterReflection=1",       // 2026: water reflections
+            "VegetationDensity=2",     // 2026: max vegetation density
+            "RenderScale=120",         // 2026: 120% supersampling
+            "PhysicsSimulation=1",     // 2026: physics sim
+            "RealTimeLight=1",         // 2026: real-time lighting
+            "DynamicResolution=0",     // 2026: lock to fixed RenderScale
+            "VulkanPipelineCache=1",   // 2026: Vulkan cache
+            "AsyncCompute=1",          // 2026: GPU async compute
+            "VRS=1",                   // 2026: Variable Rate Shading
             "CreepHP=1",
             "DamageText=1",
             // ── Esports Advanced Targeting & Zero-Distraction Controls ──
@@ -87,14 +107,14 @@ public class MlbbConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "MLBB UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        Log.i(TAG, "MLBB UltraExtreme144 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
     }
 
-    // ─── UltraExtreme 185fps Overclock Patch ─────────────────────────────────
-
     /**
-     * Injects 185 FPS, Ultra Graphics, and Maximum Display Overclock settings into MLBB.
+     * Injects 185 FPS, Ultra Extreme 2026 Graphics, and Maximum Display Overclock into MLBB.
+     * 2026: GraphicsPreset=5, LightingQuality=3, ParticleQuality=3, HDR10Plus=1, RenderScale=120,
+     * VulkanPipelineCache=1, AsyncCompute=1, VRS=1.
      */
     public static boolean patchUltraExtreme185(String packageName) {
         if (packageName == null) return false;
@@ -111,19 +131,38 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
             "HFR=1",
             "ShowFPS=1",
-            // ── Max Ultra Graphics ──
+            // ── 2026 Max Ultra Graphics ──
+            "GraphicsPreset=5",        // 2026: 5 = Ultra Extreme
+            "UltraExtreme=1",
+            "UltraExtreme2026=1",
+            "bUseUltraExtreme=True",
             "QualityLevel=3",
-            "GraphicsQuality=3",
+            "GraphicsQuality=5",        // 2026: max = 5
             "TextureQuality=3",
             "HDMode=1",
+            "HDR10Plus=1",             // 2026: 10-bit HDR
             "Shadow=1",
             "Outline=1",
+            "LightingQuality=3",       // 2026: max lighting
+            "ParticleQuality=3",       // 2026: max particles
+            "PostProcessing=1",
+            "WaterReflection=1",
+            "VegetationDensity=2",     // 2026: max vegetation
+            "RenderScale=120",         // 2026: 120% supersampling
+            "PhysicsSimulation=1",
+            "RealTimeLight=1",
+            "DynamicResolution=0",     // 2026: lock RenderScale
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",                   // 2026: Variable Rate Shading
             "CreepHP=1",
             "DamageText=1",
             // ── Esports Advanced Targeting ──
@@ -148,7 +187,7 @@ public class MlbbConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "MLBB UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
+        Log.i(TAG, "MLBB UltraExtreme185 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
     }
 
@@ -158,7 +197,7 @@ public class MlbbConfigPatcher {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int frameRateLevel = (forcedFps >= 185) ? 5 : (forcedFps >= 144 ? 4 : 3);
-        final int highFpsMode = (forcedFps >= 120) ? 2 : 1;
+        final int highFpsMode = (forcedFps >= 120) ? 3 : 1; // 2026: 3 = enable 90Hz+ modes
 
         String[] keys = {
             "HighFPSMode=" + highFpsMode,

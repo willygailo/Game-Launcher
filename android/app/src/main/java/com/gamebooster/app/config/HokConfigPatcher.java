@@ -51,7 +51,7 @@ public class HokConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=100",
+            "ResolutionScale=120",  // 2026: 120% supersampling
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
@@ -111,7 +111,7 @@ public class HokConfigPatcher {
             "MaxAnisotropy=16",
             "HDRMode=1",
             "UltraHDMode=1",
-            "ResolutionScale=100",
+            "ResolutionScale=120",  // 2026: 120% supersampling
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",

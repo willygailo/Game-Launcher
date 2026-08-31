@@ -38,7 +38,7 @@ public class Standoff2ConfigPatcher {
             "Unlock144FPS=1",
             "Ultra144FPS=1",
             "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1",
-            "HighFPSMode=1", "SuperHighFPS=1",
+            "HighFPSMode=3", "SuperHighFPS=1",
             "QualityLevel=4", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
             "HDRMode=1", "ResolutionScale=100",
@@ -76,7 +76,7 @@ public class Standoff2ConfigPatcher {
             "Ultra144FPS=1",
             "Ultra165FPS=1",
             "Ultra185FPS=1",
-            "HighFPSMode=1", "SuperHighFPS=1",
+            "HighFPSMode=3", "SuperHighFPS=1",
             "QualityLevel=5", "TextureQuality=4", "ShadowQuality=2",
             "AntiAliasingQuality=4", "BloomQuality=5", "MaxAnisotropy=16",
             "HDRMode=1", "ResolutionScale=100",
@@ -134,7 +134,7 @@ public class Standoff2ConfigPatcher {
                 "MaxFPS=" + forcedFps + "\n" +
                 "FrameRateLimit=" + forcedFps + "\n" +
                 "FPSLevel=" + fpsLevel + "\n" +
-                "HighFPSMode=1\n" +
+                "HighFPSMode=3\n" +
                 "UnlockFPS=1\n" +
                 "SuperHighFPS=1\n" +
                 "Unlock120Hz=1\n" +

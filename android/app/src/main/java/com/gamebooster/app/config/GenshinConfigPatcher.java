@@ -48,7 +48,7 @@ public class GenshinConfigPatcher {
             "maxAnisotropy=16",
             "hdrMode=1",
             "resolutionQuality=4",
-            "ResolutionScale=100",
+            "ResolutionScale=120",  // 2026: 120% supersampling
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "vSync=0", "Vsync=0",
@@ -94,7 +94,7 @@ public class GenshinConfigPatcher {
             "maxAnisotropy=16",
             "hdrMode=1",
             "resolutionQuality=4",
-            "ResolutionScale=100",
+            "ResolutionScale=120",  // 2026: 120% supersampling
             "UltraExtreme=1", "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "vSync=0", "Vsync=0",

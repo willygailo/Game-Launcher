@@ -193,7 +193,7 @@ public class ValorantConfigPatcher {
                         "  \"Unlock165Hz\": 1,\n" +
                         "  \"Unlock144Hz\": 1,\n" +
                         "  \"Unlock120Hz\": 1,\n" +
-                        "  \"HighFPSMode\": 1,\n" +
+                        "  \"HighFPSMode\": 3,\n" +
                         "  \"TouchBoostHz\": " + forcedFps + ",\n" +
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
@@ -244,7 +244,7 @@ public class ValorantConfigPatcher {
                         "Unlock165Hz=1\n" +
                         "Unlock144Hz=1\n" +
                         "Unlock120Hz=1\n" +
-                        "HighFPSMode=1\n" +
+                        "HighFPSMode=3\n" +
                         "TouchPollingRate=1000\n" +
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchZeroDelay=1\n" +

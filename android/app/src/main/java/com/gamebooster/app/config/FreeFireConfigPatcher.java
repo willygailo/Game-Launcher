@@ -33,7 +33,7 @@ public class FreeFireConfigPatcher {
 
         String[] keys = {
             "HighFPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",
             "FPSMode=2",
             "FrameRateLevel=8",
             "MaxFPS=144",
@@ -99,7 +99,7 @@ public class FreeFireConfigPatcher {
 
         String[] keys = {
             "HighFPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",
             "FPSMode=2",
             "FrameRateLevel=10",
             "MaxFPS=185",
@@ -277,7 +277,7 @@ public class FreeFireConfigPatcher {
         final int frameRateLevel = FpsUnlockTier.fromFps(forcedFps).level;
         String[] keys = {
             "HighFPS=1",
-            "HighFPSMode=1",
+            "HighFPSMode=3",
             "FPSMode=2",
             "FrameRateLevel=" + frameRateLevel,
             "MaxFPS=" + forcedFps,

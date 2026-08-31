@@ -187,7 +187,7 @@ public class ArenaBreakoutConfigPatcher {
                 "TargetFPS=" + forcedFps + "\n" +
                 "FrameRateLimit=" + forcedFps + "\n" +
                 "MobileFPSLimit=" + forcedFps + "\n" +
-                "HighFPSMode=1\n" +
+                "HighFPSMode=3\n" +
                 "UltraExtreme=1\n" +
                 "GraphicQuality=4\n" +
                 "HDRMode=1\n" +

@@ -146,6 +146,10 @@ public class GameConfigPathResolver {
 
         // 1. Mobile Legends: Bang Bang (all regional versions - safe PlayerPrefs XML targets only)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("mlbb")) {
+            // 2026: v3 playerprefs (MLBB 1.9.x+)
+            rel.add("shared_prefs/" + pkg + ".v3.playerprefs.xml");
+            rel.add("shared_prefs/com.mobile.legends.v3.playerprefs.xml");
+            // v2 playerprefs (older fallback)
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
@@ -153,6 +157,8 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
+            // 2026: MLBB GraphicsSettings separate config file
+            rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
         }
 
         // 2. PUBG Mobile / BGMI / Game for Peace / VNG / KR / New State
@@ -161,8 +167,11 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
+            // 2026: EnjoyCJZC.ini — main quality/FPS controller for 2.9.x+
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
+            // 2026: Quality.ini — new 2026 graphics quality profile
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Quality.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/ChineseUserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
@@ -183,6 +192,10 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/DeviceProfile.ini");
+            // 2026: Quality.ini — new CODM quality config
+            rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/Quality.ini");
+            // 2026: cod_prefs.json — CODM 2026 client preferences
+            rel.add("files/cod_prefs.json");
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/com.garena.game.codm.v2.playerprefs.xml");
             rel.add("files/com.activision.callofduty.shooter.v2.playerprefs.xml");
@@ -205,6 +218,10 @@ public class GameConfigPathResolver {
             rel.add("files/ff_graphics.ini");
             rel.add("files/GameSettings.ini");
             rel.add("files/ClientSettings.json");
+            // 2026: New Free Fire config locations (OB50+)
+            rel.add("files/FFSettings_2026.json");
+            rel.add("files/DeviceHardwareFF.json");
+            rel.add("files/FFGraphicsSettings_2026.ini");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/com.dts.freefireth.v2.playerprefs.xml");
             rel.add("shared_prefs/com.dts.freefiremax.v2.playerprefs.xml");
@@ -222,6 +239,10 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/Client/Client/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Client/Client/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Client/Client/Saved/Config/Android/DeviceProfile.ini");
+            // 2026: New HoYoverse config paths (GI 5.x / HSR 3.x / ZZZ 2.x)
+            rel.add("files/GameSettings_2026.json");
+            rel.add("files/hardware_model_v2.json");
+            rel.add("files/UE4Game/Client/Client/Saved/Config/Android/Quality.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
@@ -234,6 +255,9 @@ public class GameConfigPathResolver {
             rel.add("files/GameSettings.json");
             rel.add("files/GraphicSettings.ini");
             rel.add("files/Saved/Config/GameSettings.json");
+            // 2026: New Wild Rift config paths (5.4+)
+            rel.add("files/Saved/Config/DeviceProfile_v2.json");
+            rel.add("files/Saved/Config/Quality.ini");
             rel.add("shared_prefs/RiotGames.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
@@ -266,6 +290,10 @@ public class GameConfigPathResolver {
             rel.add("files/GameSettings.json");
             rel.add("files/UserCustom.ini");
             rel.add("files/Settings.json");
+            // 2026: New HOK config paths (7.x+)
+            rel.add("files/TGP_settings.json");
+            rel.add("files/HK_graphics.json");
+            rel.add("shared_prefs/com.levelinfinite.hok.xml");
             rel.add("shared_prefs/" + pkg + ".xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
@@ -279,6 +307,8 @@ public class GameConfigPathResolver {
             rel.add("files/UserSetting.ini");
             rel.add("files/Settings.json");
             rel.add("files/GraphicSettings.ini");
+            // 2026: Blood Strike new graphics config location
+            rel.add("files/Config/GraphicsSettings_2026.json");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
@@ -325,6 +355,9 @@ public class GameConfigPathResolver {
             rel.add("files/AppSettings.json");
             rel.add("files/DeviceHardware.json");
             rel.add("files/ClientSettings.json");
+            // 2026: Roblox new FFlag config location
+            rel.add("files/ClientSettings/ClientAppSettings2026.json");
+            rel.add("files/GlobalSettings_2026.json");
             rel.add("shared_prefs/RobloxPreferences.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
@@ -360,6 +393,9 @@ public class GameConfigPathResolver {
             rel.add("files/GameSettings.json");
             rel.add("files/DeviceHardware.ini");
             rel.add("files/UserCustom.ini");
+            // 2026: New eFootball/EA FC config locations
+            rel.add("files/football_settings.json");
+            rel.add("files/GraphicMode.ini");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
