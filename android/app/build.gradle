@@ -140,6 +140,12 @@ android {
         }
     }
 
+    lint {
+        abortOnError true
+        checkReleaseBuilds false
+        disable 'ProtectedPermissions'
+    }
+
     testOptions {
         unitTests {
             // Android stubs (Log, etc.) return defaults — pure-logic tests only

@@ -5,9 +5,15 @@
     <uses-feature android:glEsVersion="0x00030002" android:required="false" />
     <uses-feature android:name="android.hardware.vulkan.level" android:version="1" android:required="false" />
     <uses-feature android:name="android.hardware.vulkan.version" android:version="0x401000" android:required="false" />
+    <uses-feature android:name="android.hardware.vulkan.compute" android:version="0" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
     <uses-feature android:name="android.software.game_service" android:required="false" />
 
     <!-- System and Performance Permissions -->
@@ -16,7 +22,12 @@
          BATTERY_STATS, MANAGE_GAME_MODE, OVERRIDE_WIFI_CONFIG,
          CHANGE_COMPONENT_ENABLED_STATE, FORCE_STOP_PACKAGES, CLEAR_APP_CACHE,
          SET_PROCESS_LIMIT, SET_ALWAYS_FINISH, STATUS_BAR,
-         INTERACT_ACROSS_USERS, REQUEST_INSTALL_PACKAGES. The declarations stay
+         INTERACT_ACROSS_USERS, REQUEST_INSTALL_PACKAGES, INSTALL_PACKAGES,
+         DELETE_PACKAGES, CLEAR_APP_USER_DATA, ACCESS_SURFACE_FLINGER,
+         READ_FRAME_BUFFER, READ_LOGS, SET_ACTIVITY_WATCHER, STOP_APP_SWITCHES,
+         SET_DEBUG_APP, DEVICE_POWER, START_ACTIVITIES_FROM_BACKGROUND,
+         MODIFY_PHONE_STATE, NETWORK_SETTINGS, NETWORK_STACK,
+         MANAGE_DOCUMENTS, WRITE_MEDIA_STORAGE, STATUS_BAR_SERVICE. The declarations stay
          for `pm grant`-ability via ADB on pre-24 devices; `tools:ignore`
          silences the protected-permission lint only. -->
     <!-- Shizuku: required for the rikka Shizuku API + provider to operate. Without
@@ -24,54 +35,92 @@
          elevated command engine silently degrades to unprivileged sh. -->
     <uses-permission android:name="moe.shizuku.privileged.api.permission.USE_SHIZUKU" />
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!-- APK, Application & Package Management -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.DELETE_PACKAGES" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.GET_PACKAGE_SIZE" />
+    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.REAL_GET_TASKS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+
+    <!-- Files, Storage, Media & OBB/Data Management -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" tools:ignore="ProtectedPermissions" />
+
+    <!-- System Performance, Telemetry & Hardware Tuning -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.DUMP" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.BATTERY_STATS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.MANAGE_GAME_MODE" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.OVERRIDE_WIFI_CONFIG" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SET_PROCESS_LIMIT" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.REAL_GET_TASKS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SET_ALWAYS_FINISH" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.READ_FRAME_BUFFER" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.READ_LOGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.STOP_APP_SWITCHES" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SET_DEBUG_APP" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.DEVICE_POWER" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" tools:ignore="ProtectedPermissions,PermissionImpliesUnsupportedChromeOsHardware" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" tools:ignore="ProtectedPermissions" />
+
+    <!-- Network Optimization & Low-Latency QoS -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.OVERRIDE_WIFI_CONFIG" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.NETWORK_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.NETWORK_STACK" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS" tools:ignore="ProtectedPermissions" />
+
+    <!-- Bluetooth & Gaming Controller Connectivity -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.UWB_RANGING" tools:ignore="ProtectedPermissions" />
+
+    <!-- Audio, Haptics, Overlay & System UI -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.SET_ALWAYS_FINISH" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <uses-permission android:name="android.permission.STATUS_BAR" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.STATUS_BAR_SERVICE" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-    <uses-permission android:name="android.permission.REORDER_TASKS" />
-    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
-    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
-    <uses-permission android:name="android.permission.STATUS_BAR" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" tools:ignore="ProtectedPermissions" />
 
     <!-- Package Visibility Queries for Android 11+ (Target SDK 30-36) -->
     <queries>
@@ -82,56 +131,118 @@
         <intent>
             <action android:name="android.intent.action.GAME" />
         </intent>
-        <!-- Popular Online Game Package Declarations -->
+        <!-- Mobile Legends: Bang Bang (MLBB) & Regional Variants -->
         <package android:name="com.mobile.legends" />
         <package android:name="com.mobilelegends.mi" />
         <package android:name="com.vng.mlbbvn" />
         <package android:name="com.mobilelegends.na" />
+        <package android:name="com.mobile.legends.vng" />
+        <package android:name="com.mobile.legends.kr" />
+        <package android:name="com.mobile.legends.jp" />
+        <package android:name="com.mobilelegends.hw" />
+        <package android:name="com.mobile.legends.moonton" />
+
+        <!-- Call of Duty: Mobile & Warzone Mobile -->
         <package android:name="com.garena.game.codm" />
         <package android:name="com.activision.callofduty.shooter" />
         <package android:name="com.vng.codmvn" />
         <package android:name="com.tencent.tmgp.kr.codm" />
+        <package android:name="com.tencent.tmgp.cod" />
+        <package android:name="com.activision.callofduty.warzone" />
+
+        <!-- PUBG Mobile & Regional Variants & BGMI -->
         <package android:name="com.tencent.ig" />
         <package android:name="com.pubg.imobile" />
         <package android:name="com.pubg.krmobile" />
         <package android:name="com.vng.pubgmobile" />
+        <package android:name="com.tencent.iglite" />
         <package android:name="com.pubg.newstate" />
         <package android:name="com.krafton.bgmi" />
+        <package android:name="com.tencent.tmgp.pubgm" />
+
+        <!-- Free Fire & Free Fire MAX -->
         <package android:name="com.dts.freefireth" />
         <package android:name="com.dts.freefiremax" />
+
+        <!-- League of Legends: Wild Rift & TFT -->
         <package android:name="com.riotgames.league.wildrift" />
+        <package android:name="com.riotgames.league.wildrifttw" />
+        <package android:name="com.riotgames.league.wildriftvn" />
         <package android:name="com.riotgames.league.teamfighttactics" />
+
+        <!-- Honor of Kings & Arena of Valor -->
         <package android:name="com.levelinfinite.sgameGlobal" />
+        <package android:name="com.levelinfinite.sgameGlobal.gpkg" />
         <package android:name="com.tencent.tmgp.sgame" />
         <package android:name="com.garena.game.kgtw" />
         <package android:name="com.garena.game.kgvn" />
+        <package android:name="com.garena.game.kgid" />
+
+        <!-- Genshin Impact, HoYoverse & Kuro Games -->
         <package android:name="com.miHoYo.GenshinImpact" />
         <package android:name="com.cognosphere.GenshinImpact" />
         <package android:name="com.HoYoverse.hkrpgoversea" />
         <package android:name="com.HoYoverse.nap" />
+        <package android:name="com.miHoYo.bh3oversea" />
+        <package android:name="com.kurogame.wutheringwaves.global" />
+        <package android:name="com.kurogame.kj" />
+
+        <!-- Competitive Shooters & Action -->
         <package android:name="com.roblox.client" />
         <package android:name="com.axlebolt.standoff2" />
         <package android:name="com.netease.bloodstrike" />
         <package android:name="com.netease.newspike" />
-        <package android:name="com.miracle.farlight84" />
         <package android:name="com.proximabeta.mf.uamo" />
         <package android:name="com.levelinfinite.deltaforce" />
         <package android:name="com.tencent.tmgp.dfm" />
-        <package android:name="com.activision.callofduty.warzone" />
-        <package android:name="com.h20.carxstreet" />
+        <package android:name="com.tencent.tmgp.projectc" />
+        <package android:name="com.riotgames.valorantmobile" />
+        <package android:name="com.tencent.tmgp.valorant" />
+        <package android:name="com.riotgames.valorant" />
+        <package android:name="com.miracle.farlight84" />
+        <package android:name="com.miraclegames.farlight84" />
+        <package android:name="com.farlightgames.farlight84.gp" />
+        <package android:name="com.farlightgames.farlight84.global" />
+        <package android:name="com.levelinfinite.hotta.gp" />
+        <package android:name="com.netease.lztgglobal" />
+        <package android:name="com.YoStar.AetherGazer" />
+
+        <!-- Sports & Racing -->
+        <package android:name="jp.konami.pesam" />
+        <package android:name="com.ea.gp.fifamobile" />
+        <package android:name="com.garena.game.fdtw" />
         <package android:name="com.gameloft.anmp.android.glofta9hm" />
+        <package android:name="com.gameloft.android.ANMP.GloftA9HM" />
+        <package android:name="com.h20.carxstreet" />
         <package android:name="com.ea.games.r3_row" />
+        <package android:name="com.firsttouchgames.dls7" />
+        <package android:name="com.fingersoft.hillclimb" />
+        <package android:name="com.fingersoft.hcr2" />
+
+        <!-- Supercell & Casual Hits -->
         <package android:name="com.supercell.brawlstars" />
         <package android:name="com.supercell.clashroyale" />
         <package android:name="com.supercell.clashofclans" />
         <package android:name="com.supercell.squad" />
-        <package android:name="com.kurogame.wutheringwaves.global" />
-        <package android:name="com.kurogame.kj" />
-        <package android:name="com.levelinfinite.hotta.gp" />
-        <package android:name="com.netease.lztgglobal" />
-        <package android:name="com.YoStar.AetherGazer" />
-        <package android:name="com.tencent.tmgp.projectc" />
-        <package android:name="com.riotgames.valorantmobile" />
+        <package android:name="com.supercell.hayday" />
+        <package android:name="com.mojang.minecraftpe" />
+        <package android:name="com.kiloo.subwaysurf" />
+        <package android:name="com.kitkagames.fallbuddies" />
+        <package android:name="com.miniclip.eightballpool" />
+        <package android:name="com.netmarble.sololv" />
+        <package android:name="com.innersloth.spacemafia" />
+        <package android:name="com.plarium.raidlegends" />
+        <package android:name="com.habby.archero" />
+        <package android:name="com.habby.punball" />
+        <package android:name="com.habby.kinja" />
+        <package android:name="com.nekki.shadowfight3" />
+        <package android:name="com.nekki.shadowfight4" />
+        <package android:name="com.chucklefish.stardewvalley" />
+        <package android:name="com.rockstargames.gtasa" />
+        <package android:name="com.rockstargames.gtavc" />
+        <package android:name="com.rockstargames.gta3" />
+        <package android:name="com.sega.sonicdash" />
+
         <!-- Third-Party Gaming Platforms & App Stores -->
         <package android:name="com.taptap.global" />
         <package android:name="com.taptap" />
@@ -139,6 +250,7 @@
         <package android:name="com.sec.android.app.samsungapps" />
         <package android:name="com.apkpure.aether" />
         <package android:name="com.qooapp.qoohelper" />
+
         <!-- Shizuku & System Package Queries -->
         <package android:name="moe.shizuku.privileged.api" />
     </queries>
