@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community Discussions & Questions
+    url: https://github.com/willygailo/Game-Launcher/discussions
+    about: Ask questions, share gaming setups, and chat with fellow players and developers.
+  - name: 🛡️ Report Security & Ban-Safety Vulnerabilities
+    url: https://github.com/willygailo/Game-Launcher/security/advisories/new
+    about: Privately report potential security vulnerabilities or anti-cheat safety concerns.

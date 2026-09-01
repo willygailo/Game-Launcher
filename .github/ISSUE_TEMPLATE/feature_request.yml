@@ -1,0 +1,68 @@
+name: 💡 Feature Request
+description: Suggest an idea, new game profile preset, or enhancement for Game Launcher PRO.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a great idea or feature request? We'd love to hear it! Please fill out the form below.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      options:
+        - 🎮 New Game Configuration Preset / Profile
+        - ⚡ Performance, CPU/GPU Governors & Refresh Rate Engine
+        - 🎯 In-Game HUD Overlay, FPS Counter & Crosshairs
+        - 🎨 UI/UX Design, Gamer Themes & Aesthetics
+        - 💾 Storage, SAF & Config File Patching
+        - 🛠️ Shizuku / Root / AIDL Bridge
+        - 🌐 Network & 5G/Wi-Fi Low-Latency Turbo
+        - 📦 Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Problem or Motivation
+      description: Is your feature request related to a problem, missing game support, or performance limitation?
+      placeholder: "e.g., Playing Warzone Mobile currently requires manual graphic tweaks because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution / Feature Description
+      description: Describe what you want to happen, how it should work, or what preset settings should be used.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context / Mockups / References
+      description: Add any relevant links, screenshots, or config file paths.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing feature requests to ensure this is not a duplicate.
+          required: true
+        - label: I understand that all features must comply with the 100% ban-safe and non-intrusive design philosophy.
+          required: true

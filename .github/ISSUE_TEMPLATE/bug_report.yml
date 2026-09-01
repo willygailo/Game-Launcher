@@ -1,0 +1,118 @@
+name: 🐛 Bug Report
+description: File a bug, crash, or unexpected behavior report.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Please provide as much detail as possible to help us reproduce and resolve the problem quickly.
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Model & Manufacturer
+      description: e.g., Xiaomi 14, Samsung Galaxy S24 Ultra, POCO F6, ROG Phone 8, OnePlus 12
+      placeholder: "e.g., POCO F6 Pro"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: chipset
+    attributes:
+      label: Processor / Chipset (SoC)
+      options:
+        - Snapdragon 8 Gen 3 / 8 Gen 2 / 8s Gen 3
+        - Snapdragon 870 / 888 / 7+ Gen 2 / 7s Gen 2
+        - Snapdragon 6-series / 4-series / Other Snapdragon
+        - MediaTek Dimensity 9300 / 9200 / 8300
+        - MediaTek Dimensity 7000 / 6000 / Helio series
+        - Samsung Exynos
+        - Google Tensor (G2 / G3 / G4)
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: android_version
+    attributes:
+      label: Android Version
+      options:
+        - Android 16 (SDK 36 / Baklava)
+        - Android 15 (SDK 35 / Vanilla Ice Cream)
+        - Android 14 (SDK 34 / Upside Down Cake)
+        - Android 13 (SDK 33 / Tiramisu)
+        - Android 12 or lower (Unsupported)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: shizuku_mode
+    attributes:
+      label: Execution Mode & Shizuku Status
+      options:
+        - Shizuku Active (Wireless Debugging / ADB)
+        - Shizuku Active (Root Mode)
+        - KernelSU / APatch / Magisk Direct Root
+        - Standard Non-Root (Without Shizuku)
+    validations:
+      required: true
+
+  - type: input
+    id: game_package
+    attributes:
+      label: Affected Game (Title & Package ID)
+      description: e.g., PUBG Mobile (com.tencent.ig), Mobile Legends (com.mobile.legends), Genshin Impact (com.miHoYo.GenshinImpact)
+      placeholder: "e.g., PUBG Mobile (com.tencent.ig)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Bug
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Open Game Launcher PRO
+        2. Select 'PUBG Mobile' and set FPS to 185Hz
+        3. Tap 'Boost & Launch'
+        4. In-game HUD overlay crashes or fails to lock refresh rate
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logcat
+    attributes:
+      label: Logcat / Terminal Logs (Optional)
+      description: Paste relevant logcat or Rish terminal output if available.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have verified this bug on the latest version of Game Launcher PRO.
+          required: true
+        - label: I have searched existing GitHub issues and this is not a duplicate.
+          required: true
+        - label: I understand that this project guarantees 100% ban safety and does not modify game binaries.
+          required: true

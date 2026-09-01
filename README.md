@@ -15,11 +15,12 @@
 [![Latest Release](https://img.shields.io/badge/Release-v16.14.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Android-13--16-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=0D1117)](#-quick-start)
 [![Display Lock](https://img.shields.io/badge/Display-90Hz%20to%20185Hz-FF0055?style=for-the-badge&logo=speedtest&logoColor=white&labelColor=0D1117)](#-features)
-[![License](https://img.shields.io/badge/License-MIT-00E5FF?style=for-the-badge&labelColor=0D1117)](#-license)
+[![License](https://img.shields.io/badge/License-MIT-00E5FF?style=for-the-badge&labelColor=0D1117)](LICENSE)
+[![Ban Safety](https://img.shields.io/badge/Ban--Safety-100%25%20Verified-00FF66?style=for-the-badge&logo=shield&labelColor=0D1117)](SECURITY.md)
 
 <br/>
 
-[📥 **Download Latest APK**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features) • [🎮 **Supported Games**](#-supported-games) • [🚀 **Quick Start**](#-quick-start)
+[📥 **Download Latest APK**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features) • [🎮 **Supported Games**](#-supported-games) • [🚀 **Quick Start**](#-quick-start) • [🤝 **Contributing**](CONTRIBUTING.md) • [🛡️ **Security**](SECURITY.md)
 
 <br/>
 
@@ -67,7 +68,16 @@
 
 ---
 
-## 🤝 Developer
+## 🤝 Contributing & Community
+
+We love contributions! Whether it's adding new game configuration profiles, improving refresh rate heuristics, or reporting bugs:
+- Read our [**Contributing Guide**](CONTRIBUTING.md) to set up your development environment.
+- Review our [**Security & Ban-Safety Policy**](SECURITY.md).
+- Open an issue using our [**Issue Templates**](https://github.com/willygailo/Game-Launcher/issues/new/choose).
+
+---
+
+## 👨‍💻 Developer & Author
 
 <div align="center">
 
@@ -85,4 +95,4 @@
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is open source and licensed under the [MIT License](LICENSE).
