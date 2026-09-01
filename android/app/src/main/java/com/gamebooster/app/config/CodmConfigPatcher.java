@@ -531,6 +531,18 @@ public class CodmConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
+    /**
+     * CODM — No recoil + no spread + aimbot precision injection.
+     * Iterates all CODM config paths (UserSetting.json, PlayerPrefs.xml, GraphicsSettings.ini, etc.)
+     * and injects zero-recoil/spread + max aim-assist keys via NativeConfigInjector.injectNoRecoilNoSpread.
+     */
+    public static void applyNoRecoilNoSpread(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectNoRecoilNoSpread(path);
+        }
+    }
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

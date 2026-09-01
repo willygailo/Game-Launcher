@@ -357,6 +357,67 @@ public class MlbbConfigPatcher {
         CommonConfigTuningInjector.applyAimAssistLockMax(packageName);
     }
 
+    /**
+     * MLBB — Ling hero damage-scripted auto sword combo injection.
+     * Runs across all resolved MLBB config paths (PlayerPrefs.xml, boot.config, etc.)
+     * via NativeConfigInjector.injectLingHeroDamageCombo.
+     */
+    public static void applyLingHeroDamageCombo(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectLingHeroDamageCombo(path);
+        }
+    }
+
+    /**
+     * MLBB SA server — Damage+ boost injection.
+     * Stacks DamagePlus, SADamageMod=3, SkillDamageBoost, TrueStrikeMod
+     * on top of DamageLockMax across all SA/SEA PlayerPrefs config paths.
+     */
+    public static void applySaDamagePlus(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectSaDamagePlus(path);
+        }
+    }
+
+    /**
+     * MLBB — Fast Farming injection for all heroes.
+     * Injects GoldRateBoost=3, ExpRateBoost=3, ClearSpeedBoost,
+     * SkillCDRatio=0.5, FastLevelUp, CreepGoldMultiplier=3 across all config paths.
+     */
+    public static void applyFastFarming(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectFastFarming(path);
+        }
+    }
+
+    /**
+     * MLBB — Jungle Hero optimizer (all assassin/fighter roles).
+     * SmiteBoost=3, JungleClearSpeed=3, BuffDuration=3, MonsterDamageBoost=3,
+     * ObjectivePriority=1, CounterJungle=1, GankSpeed=1 across all config paths.
+     */
+    public static void applyJungleHero(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectJungleHero(path);
+        }
+    }
+
+    /**
+     * MLBB — All Hero unlock (config layer).
+     * HeroUnlock=1, AllHeroEnabled=1, TrialHeroEnabled=1,
+     * DraftPickUnlock=1, CollaborationHeroEnabled=1, LimitedHeroEnabled=1
+     * across all resolved config paths.
+     */
+    public static void applyAllHeroUnlock(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectAllHeroUnlock(path);
+        }
+    }
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

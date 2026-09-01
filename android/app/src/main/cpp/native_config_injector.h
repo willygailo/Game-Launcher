@@ -271,6 +271,84 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroAimLock
   (JNIEnv *, jclass, jstring, jint, jfloat);
 
+// ─── New 2026 Game-Specific Tweaks ──────────────────────────────────────────
+
+/*
+ * nativeInjectLingHeroDamageCombo
+ * MLBB — Ling hero: damage-scripted auto sword combo.
+ * Injects hit-reg + skill timing + damage output maximizers
+ * specifically tuned for Ling's Luminous Slash / Tempest of Blades skill chain.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingHeroDamageCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMagicBulletAimbot
+ * PUBGM — Magic bullet + zero-spread aimbot.
+ * Injects predictive aim, gyro 1000Hz, no-spread, zero-sway, and
+ * bullet-velocity compensation CVars for all weapon classes.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMagicBulletAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectNoRecoilNoSpread
+ * CODM — No recoil + no spread + aimbot precision.
+ * Injects zero-recoil, zero-spread, aim magnetism, scope stabilization,
+ * and 1000Hz gyro tracking across all CODM config formats (INI/JSON/XML).
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoRecoilNoSpread
+  (JNIEnv *, jclass, jstring);
+
+// ─── MLBB SA / Farming / Jungle / All-Hero Features ──────────────────────────
+
+/*
+ * nativeInjectSaDamagePlus
+ * MLBB SA server — Damage+ modifier:
+ * Boosts effective DPS via DamageLockMax, EffectiveDPSMode=3, CritRateBoost,
+ * PenetrationBoost, FrameSyncDamage, HitRegSyncRate=1000, AimMagnetism=3,
+ * SkillSmartAim, HeroLock, TouchPollingRate=1000, zero input lag.
+ * Works across SA server PlayerPrefs XML / boot.config / INI formats.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaDamagePlus
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastFarming
+ * MLBB — Fast Farming (gold + exp maximizer for all heroes):
+ * Injects GoldRateBoost, ExpRateBoost, CreepGoldMultiplier, JungleExpMultiplier,
+ * MinionGoldMultiplier, FastLevelUp, GoldFarmRate, ClearSpeedBoost, CooldownReduction,
+ * SkillAutoChain, HitRegSyncRate=1000 and TouchPollingRate=1000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFarming
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectJungleHero
+ * MLBB — Jungle Hero optimizer:
+ * Injects SmiteBoost, JungleClearSpeed, BuffDuration, ObjectivePriority,
+ * MonsterDamageBoost, JungleExpBoost, SmiteRange, JunglePath, BuffSteal=1,
+ * and ClearSpeedBoost — tuned for all assassin/fighter jungle roles.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectJungleHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAllHeroUnlock
+ * MLBB — All Hero config unlock:
+ * Injects HeroUnlock=1, SkinUnlock=1, AllHeroEnabled=1, TrialHeroEnabled=1,
+ * FreeHeroEnabled=1, HeroPoolExpand=1, HeroSelectUnlock=1 across all config paths.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroUnlock
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

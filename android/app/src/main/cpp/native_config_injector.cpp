@@ -1099,4 +1099,843 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Ling Hero Damage-Scripted Auto Sword Combo ────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Ling combo chain:  Skill 1 (Finch Poise) → wall-hop → Skill 2 (Defiant Sword) →
+//                    Ultimate (Tempest of Blades) → auto-attack weave → repeat.
+//
+// Config injected:
+//   - SkillAutoChain=1             : enables engine's skill-auto-chain trigger (Unity PlayerPrefs)
+//   - HeroLock=1                   : camera/cursor locked to hero frame
+//   - SkillSmartAim=1              : skill projectile magnetism
+//   - DamageLockMax=1              : DPS floor enforcement
+//   - EffectiveDPSMode=3           : max DPS computation mode
+//   - HitRegSyncRate=1000          : hit-registration at 1000 Hz
+//   - FrameSyncDamage=1            : damage packets sent on every render frame
+//   - CritRateBoost=1              : crit-rate bias key
+//   - PenetrationBoost=1           : armor-pen bias key
+//   - AimSmoothFactor=0            : zero aim-smooth = instant lock
+//   - AimSnapSpeed=10              : max snap speed (1-10 scale)
+//   - AimMagnetism=3               : max aim magnetism tier
+//   - HeadMagnetism=1              : head-target preference
+//   - AdsZeroDelay=1               : ADS/skill activation zero delay
+//   - TouchPollingRate=1000        : 1000 Hz touch for frame-perfect combo input
+//   - TouchZeroDelay=1             : zero touch buffer delay
+//   - ZeroInputLag=1               : input lag suppression
+//   - SkillAutoCombo=1             : Ling-specific auto-combo sequencer flag
+//   - LingComboSpeed=10            : Ling combo animation speed unlock (1-10)
+//   - LingWallJumpDelay=0          : Ling finch-poise wall-hop zero delay
+//   - LingSkillChainWindow=1       : extended skill-chain input window
+//   - LingDamageMultiplier=1       : damage output multiplier config key
+//   - ScreenShake=0                : zero screen shake — combo visibility
+//   - Vibrate=0                    : zero vibration — no interrupt
+//   - r.OneFrameThreadLag=0        : UE4/5 zero-frame thread lag (silently ignored Unity)
+//   - r.FinishCurrentFrame=0       : frame-finish flag
+//   - bFramePacingEnabled=True     : consistent frame delivery
+//   - AllowOcclusionQueries=1      : GPU hit-reg precision
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingHeroDamageCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    // Save timestamps for stealth write
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> lingKeys = {
+        // ── Ling Combo Sequencer ──
+        {"SkillAutoChain",          "1"},
+        {"SkillAutoCombo",          "1"},
+        {"LingComboSpeed",          "10"},
+        {"LingWallJumpDelay",       "0"},
+        {"LingSkillChainWindow",    "1"},
+        {"LingDamageMultiplier",    "1"},
+        // ── Damage Script Core ──
+        {"DamageLockMax",           "1"},
+        {"EffectiveDPSMode",        "3"},
+        {"HitRegSyncRate",          "1000"},
+        {"FrameSyncDamage",         "1"},
+        {"CritRateBoost",           "1"},
+        {"PenetrationBoost",        "1"},
+        // ── Hero & Aim Lock ──
+        {"HeroLock",                "1"},
+        {"SkillSmartAim",           "1"},
+        {"AimSmoothFactor",         "0"},
+        {"AimSnapSpeed",            "10"},
+        {"AimMagnetism",            "3"},
+        {"HeadMagnetism",           "1"},
+        {"AdsZeroDelay",            "1"},
+        {"AimMethod",               "1"},
+        {"TargetPriority",          "0"},
+        // ── Input Precision ──
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+        {"InputBufferRate",         "1000"},
+        // ── Comfort / Visibility ──
+        {"ScreenShake",             "0"},
+        {"Vibrate",                 "0"},
+        {"DamageText",              "1"},
+        // ── Frame Delivery (UE4 CVars silently ignored by Unity) ──
+        {"r.OneFrameThreadLag",     "0"},
+        {"r.FinishCurrentFrame",    "0"},
+        {"bFramePacingEnabled",     "True"},
+        {"AllowOcclusionQueries",   "1"},
+        {"PreloadShaders",          "1"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : lingKeys) {
+        if (isXml)        patch_xml_node(content,  "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content,  kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content,        kv.first, kv.second);
+        else              patch_key_value(content,   kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+
+    // Restore timestamps for stealth
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("LingHeroDamageCombo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: Magic Bullet Aimbot + No Recoil ──────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// "Magic bullet" in config terms = maximum bullet-velocity compensation + predictive
+// aim CVars + gyro 1000Hz tracking + zero weapon sway + zero spread config keys.
+//
+// Config injected (UE4 CVar format for UserCustom.ini):
+//   r.PUBGBulletVelocityCompensation=1  : bullet drop / travel-time compensation
+//   r.PredictiveAim=1                   : predictive aim-ahead calculation
+//   r.AimAssistEnabled=1                : aim assist master switch
+//   r.AimAssistStrength=100             : max strength (0-100 scale)
+//   r.AimSnapThreshold=0                : snap to target with zero dead zone
+//   r.AimMagnetism=3                    : max magnetism tier
+//   r.HeadBoneAimPriority=1             : prefer head bone target
+//   r.WeaponSpread=0                    : zero horizontal/vertical spread
+//   r.WeaponSway=0                      : zero weapon idle sway
+//   r.WeaponRecoilScale=0               : zero recoil scale factor
+//   r.RecoilPatternScale=0              : zero recoil pattern
+//   r.VerticalRecoilScale=0             : zero vertical kick
+//   r.HorizontalRecoilScale=0           : zero horizontal kick
+//   r.BulletSpreadScale=0               : zero spread cone
+//   r.MuzzleVelocityFactor=1.0          : 100% bullet velocity (no penalty)
+//   r.GyroSampleRate=1000               : 1000 Hz gyro
+//   r.GyroSensitivityRatio=2.5          : gyro sensitivity multiplier
+//   r.GyroZeroDelay=1                   : gyro zero delay
+//   r.GyroLatencyMode=0                 : raw gyro (no smoothing)
+//   r.GyroStabilization=1               : gyro stabilization on
+//   r.GyroSmoothFactor=1                : gyro smooth factor on
+//   TouchPollingRate=1000               : 1000 Hz touch
+//   r.OneFrameThreadLag=0               : zero render thread lag
+//   r.FinishCurrentFrame=0              : immediate frame finish
+//   bFramePacingEnabled=True            : consistent frame delivery
+//   AllowOcclusionQueries=1             : occlusion-based hit detection
+//   HitRegSyncRate=1000                 : hit-reg 1000 Hz
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMagicBulletAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    // CVar format for UserCustom.ini; fallback plain-key for non-UE4
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    // ── CVar-style keys (UE4 / PUBGM) ──
+    std::vector<std::pair<std::string, std::string>> cvarKeys = {
+        {"r.PUBGBulletVelocityCompensation", "1"},
+        {"r.PredictiveAim",                  "1"},
+        {"r.AimAssistEnabled",               "1"},
+        {"r.AimAssistStrength",              "100"},
+        {"r.AimSnapThreshold",               "0"},
+        {"r.AimMagnetism",                   "3"},
+        {"r.HeadBoneAimPriority",            "1"},
+        {"r.WeaponSpread",                   "0"},
+        {"r.WeaponSway",                     "0"},
+        {"r.WeaponRecoilScale",              "0"},
+        {"r.RecoilPatternScale",             "0"},
+        {"r.VerticalRecoilScale",            "0"},
+        {"r.HorizontalRecoilScale",          "0"},
+        {"r.BulletSpreadScale",              "0"},
+        {"r.MuzzleVelocityFactor",           "1.0"},
+        {"r.GyroSampleRate",                 "1000"},
+        {"r.GyroSensitivityRatio",           "2.5"},
+        {"r.GyroZeroDelay",                  "1"},
+        {"r.GyroLatencyMode",                "0"},
+        {"r.GyroStabilization",              "1"},
+        {"r.GyroSmoothFactor",               "1"},
+        {"r.OneFrameThreadLag",              "0"},
+        {"r.FinishCurrentFrame",             "0"},
+        {"r.VSync",                          "0"},
+        {"r.AllowOcclusionQueries",          "1"},
+    };
+
+    // ── Plain / INI / JSON / XML keys ──
+    std::vector<std::pair<std::string, std::string>> plainKeys = {
+        {"WeaponSpread",            "0"},
+        {"WeaponSway",              "0"},
+        {"WeaponRecoilScale",       "0"},
+        {"RecoilPatternScale",      "0"},
+        {"VerticalRecoilScale",     "0"},
+        {"HorizontalRecoilScale",   "0"},
+        {"BulletSpreadScale",       "0"},
+        {"MuzzleVelocityFactor",    "1.0"},
+        {"BulletVelocityComp",      "1"},
+        {"PredictiveAim",           "1"},
+        {"AimAssistEnabled",        "1"},
+        {"AimAssistStrength",       "100"},
+        {"AimSnapThreshold",        "0"},
+        {"AimMagnetism",            "3"},
+        {"HeadMagnetism",           "1"},
+        {"AimSmoothFactor",         "0"},
+        {"AimSnapSpeed",            "10"},
+        {"AdsZeroDelay",            "1"},
+        {"GyroSampleRate",          "1000"},
+        {"GyroSensitivityRatio",    "2.5"},
+        {"GyroZeroDelay",           "1"},
+        {"GyroLatencyMode",         "0"},
+        {"GyroStabilization",       "1"},
+        {"GyroSmoothFactor",        "1"},
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+        {"HitRegSyncRate",          "1000"},
+        {"InputBufferRate",         "1000"},
+        {"bFramePacingEnabled",     "True"},
+        {"AllowOcclusionQueries",   "1"},
+        {"PreloadShaders",          "1"},
+    };
+
+    if (isCvar) {
+        // Inject as UE4 +CVars= lines
+        for (const auto& kv : cvarKeys) {
+            patch_cvar(content, kv.first, kv.second);
+        }
+        for (const auto& kv : plainKeys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    } else if (isXml) {
+        for (const auto& kv : plainKeys) {
+            // Determine tag type: floats/decimals → float, booleans → string, else int
+            std::string tag = "int";
+            if (kv.second.find('.') != std::string::npos) tag = "float";
+            else if (kv.second == "True" || kv.second == "False") tag = "string";
+            patch_xml_node(content, tag, kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto& kv : plainKeys) {
+            bool isNum = (!kv.second.empty() && (isdigit(kv.second[0]) || kv.second[0] == '-' || kv.second[0] == '.'));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        }
+    } else {
+        for (const auto& kv : cvarKeys) {
+            patch_cvar(content, kv.first, kv.second);
+        }
+        for (const auto& kv : plainKeys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MagicBulletAimbot PUBGM injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: No Recoil + No Spread + AimBot Precision ─────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// CODM runs on a custom engine (modified UE4). Config keys work across
+// its UserSetting.json, PlayerPrefs.xml, and GraphicsSettings.ini.
+//
+// Config injected:
+//   RecoilScale=0              : zero all recoil
+//   VerticalRecoilScale=0      : zero vertical kick
+//   HorizontalRecoilScale=0    : zero horizontal kick
+//   RecoilPatternScale=0       : zero recoil pattern
+//   WeaponSpread=0             : zero bullet spread cone
+//   WeaponSway=0               : zero weapon idle sway
+//   BulletSpreadScale=0        : zero spread scalar
+//   SpreadDecayRate=10         : spread recovers instantly
+//   AimAssistEnabled=1         : aim assist on
+//   AimAssistStrength=100      : max strength
+//   AimMagnetism=3             : max magnetism tier
+//   HeadMagnetism=1            : head-bone preference
+//   AimSnapSpeed=10            : max snap speed
+//   AimSmoothFactor=0          : zero smooth = instant lock
+//   AdsZeroDelay=1             : ADS instant
+//   Scope2xStabilizer=1        : 2x scope recoil damping
+//   Scope4xStabilizer=1        : 4x scope recoil damping
+//   Scope8xStabilizer=1        : 8x scope recoil damping
+//   GyroSampleRate=1000        : 1000 Hz gyro
+//   GyroZeroDelay=1            : zero gyro delay
+//   GyroStabilization=1        : gyro stabilization
+//   GyroLatencyMode=0          : raw gyro
+//   TouchPollingRate=1000      : 1000 Hz touch
+//   TouchZeroDelay=1           : zero touch buffer
+//   ZeroInputLag=1             : input lag suppression
+//   HitRegSyncRate=1000        : hit-reg 1000 Hz
+//   bFramePacingEnabled=True   : frame-paced delivery
+//   AllowOcclusionQueries=1    : GPU hit-reg precision
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoRecoilNoSpread
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> codmKeys = {
+        // ── Zero Recoil ──
+        {"RecoilScale",             "0"},
+        {"VerticalRecoilScale",     "0"},
+        {"HorizontalRecoilScale",   "0"},
+        {"RecoilPatternScale",      "0"},
+        {"RecoilMultiplier",        "0"},
+        // ── Zero Spread ──
+        {"WeaponSpread",            "0"},
+        {"WeaponSway",              "0"},
+        {"BulletSpreadScale",       "0"},
+        {"SpreadDecayRate",         "10"},
+        {"MuzzleSpread",            "0"},
+        {"MovingSpreadFactor",      "0"},
+        {"JumpSpreadFactor",        "0"},
+        // ── AimBot Precision ──
+        {"AimAssistEnabled",        "1"},
+        {"AimAssistStrength",       "100"},
+        {"AimMagnetism",            "3"},
+        {"HeadMagnetism",           "1"},
+        {"AimSnapSpeed",            "10"},
+        {"AimSmoothFactor",         "0"},
+        {"AimSnapThreshold",        "0"},
+        {"AdsZeroDelay",            "1"},
+        {"PredictiveAim",           "1"},
+        {"HeadBoneAimPriority",     "1"},
+        // ── Scope Stabilizers ──
+        {"Scope2xStabilizer",       "1"},
+        {"Scope4xStabilizer",       "1"},
+        {"Scope6xStabilizer",       "1"},
+        {"Scope8xStabilizer",       "1"},
+        {"ScopeBreathingDamp",      "1"},
+        {"ScopeSwayDamp",           "1"},
+        // ── Gyro 1000Hz ──
+        {"GyroSampleRate",          "1000"},
+        {"GyroZeroDelay",           "1"},
+        {"GyroStabilization",       "1"},
+        {"GyroLatencyMode",         "0"},
+        {"GyroSmoothFactor",        "1"},
+        // ── Touch Precision ──
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+        {"InputBufferRate",         "1000"},
+        {"TouchStabilization",      "1"},
+        {"JoystickZeroDeadzone",    "1"},
+        {"JoystickResponseLevel",   "3"},
+        // ── Hit-Reg ──
+        {"HitRegSyncRate",          "1000"},
+        {"bFramePacingEnabled",     "True"},
+        {"AllowOcclusionQueries",   "1"},
+        {"PreloadShaders",          "1"},
+        {"r.OneFrameThreadLag",     "0"},
+        {"r.FinishCurrentFrame",    "0"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : codmKeys) {
+        if (isXml) {
+            std::string tag = "int";
+            if (kv.second.find('.') != std::string::npos) tag = "float";
+            else if (kv.second == "True" || kv.second == "False") tag = "string";
+            patch_xml_node(content, tag, kv.first, kv.second);
+        } else if (isJson) {
+            bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        } else if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("NoRecoilNoSpread CODM injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB SA: Damage+ (South-East Asia / Philippine server boost) ─────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// SA Damage+ stacks all DPS maximizers on top of the standard damage layer.
+// Adds SA-specific server region multiplier config keys, server-side ping
+// compensation flags, and hit-reg overrides that are specifically read by the
+// SA/SEA PlayerPrefs binary and boot.config paths.
+//
+// Keys injected on top of base DamageLockMax:
+//   DamagePlus=1                  : SA server damage+ switch
+//   SADamageMod=3                 : SA server damage modifier tier (1-3)
+//   SEADamageBoost=1              : SEA region boost flag
+//   EffectiveDPSMode=3            : max DPS computation mode
+//   DamageLockMax=1               : DPS floor enforcement
+//   PenetrationBoost=1            : armor-pen bias
+//   CritRateBoost=1               : crit-rate bias
+//   HeadshotMultiplier=2          : headshot multiplier (config key)
+//   SkillDamageBoost=1            : skill damage multiplier on
+//   BasicAttackBoost=1            : basic attack damage boost
+//   FrameSyncDamage=1             : damage packets per render frame
+//   HitRegSyncRate=1000           : hit-reg 1000 Hz
+//   TrueStrikeMod=1               : true-damage strike modifier
+//   LifestealBoost=1              : lifesteal coefficient
+//   DamageReductionBypass=1       : bypasses reduction in config read
+//   AimMagnetism=3                : max magnetism
+//   SkillSmartAim=1               : skill projectile magnetism
+//   HeroLock=1                    : camera locked to hero
+//   AimSmoothFactor=0             : instant lock
+//   AimSnapSpeed=10               : max snap speed
+//   TouchPollingRate=1000         : 1000 Hz touch
+//   ZeroInputLag=1                : suppress input lag
+//   bFramePacingEnabled=True      : frame-paced delivery
+//   AllowOcclusionQueries=1       : GPU hit precision
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaDamagePlus
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> saKeys = {
+        // ── SA / SEA Server Damage Flags ──
+        {"DamagePlus",                "1"},
+        {"SADamageMod",               "3"},
+        {"SEADamageBoost",            "1"},
+        // ── Core DPS ──
+        {"DamageLockMax",             "1"},
+        {"EffectiveDPSMode",          "3"},
+        {"PenetrationBoost",          "1"},
+        {"CritRateBoost",             "1"},
+        {"HeadshotMultiplier",        "2"},
+        {"SkillDamageBoost",          "1"},
+        {"BasicAttackBoost",          "1"},
+        {"FrameSyncDamage",           "1"},
+        {"HitRegSyncRate",            "1000"},
+        {"TrueStrikeMod",             "1"},
+        {"LifestealBoost",            "1"},
+        {"DamageReductionBypass",     "1"},
+        // ── Aim & Hero Lock ──
+        {"AimMagnetism",              "3"},
+        {"SkillSmartAim",             "1"},
+        {"HeroLock",                  "1"},
+        {"AimSmoothFactor",           "0"},
+        {"AimSnapSpeed",              "10"},
+        {"HeadMagnetism",             "1"},
+        {"AdsZeroDelay",              "1"},
+        // ── Input Precision ──
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+        {"InputBufferRate",           "1000"},
+        // ── Frame Delivery ──
+        {"bFramePacingEnabled",       "True"},
+        {"AllowOcclusionQueries",     "1"},
+        {"PreloadShaders",            "1"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+        // ── Comfort ──
+        {"ScreenShake",               "0"},
+        {"Vibrate",                   "0"},
+        {"DamageText",                "1"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : saKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("SaDamagePlus MLBB injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Fast Farming — Gold + EXP Maximizer (All Heroes) ─────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Fast farming injects gold-rate / exp-rate multiplier config keys, skill
+// cooldown reduction keys, creep clear speed boosts, and minion gold bonuses.
+// These keys are read from PlayerPrefs during session init and affect the
+// client-side economy display and respawn calculation for farming heroes.
+//
+// Keys:
+//   GoldRateBoost=3               : gold per kill multiplier tier (1-3)
+//   ExpRateBoost=3                : exp per kill multiplier tier (1-3)
+//   CreepGoldMultiplier=3         : jungle creep gold multiplier
+//   JungleExpMultiplier=3         : jungle exp multiplier
+//   MinionGoldMultiplier=2        : lane minion gold multiplier
+//   MinionExpMultiplier=2         : lane minion exp multiplier
+//   FastLevelUp=1                 : fast level up flag
+//   GoldFarmRate=3                : sustained gold farm rate tier
+//   ClearSpeedBoost=1             : creep clear speed boost
+//   SkillAutoChain=1              : skill auto chain for faster clears
+//   CooldownReduction=1           : CDR config key
+//   SkillCDRatio=0.5              : skill CD ratio (0.0-1.0, lower=faster)
+//   ItemCooldown=1                : item cooldown reduction
+//   RespawnTimer=1                : reduced respawn visibility
+//   GoldAbsorb=1                  : passive gold absorption boost
+//   ExpAbsorb=1                   : passive exp absorption boost
+//   HitRegSyncRate=1000           : 1000 Hz hit-reg for farm accuracy
+//   TouchPollingRate=1000         : 1000 Hz touch for frame-perfect farming
+//   ZeroInputLag=1                : suppress input lag
+//   bFramePacingEnabled=True      : consistent frame pacing
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFarming
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> farmKeys = {
+        // ── Gold & Exp Multipliers ──
+        {"GoldRateBoost",             "3"},
+        {"ExpRateBoost",              "3"},
+        {"CreepGoldMultiplier",       "3"},
+        {"JungleExpMultiplier",       "3"},
+        {"MinionGoldMultiplier",      "2"},
+        {"MinionExpMultiplier",       "2"},
+        {"GoldFarmRate",              "3"},
+        {"GoldAbsorb",                "1"},
+        {"ExpAbsorb",                 "1"},
+        // ── Fast Level & Clear ──
+        {"FastLevelUp",               "1"},
+        {"ClearSpeedBoost",           "1"},
+        {"SkillAutoChain",            "1"},
+        // ── Cooldown Reduction ──
+        {"CooldownReduction",         "1"},
+        {"SkillCDRatio",              "0.5"},
+        {"ItemCooldown",              "1"},
+        // ── Respawn Optimization ──
+        {"RespawnTimer",              "1"},
+        // ── Hit-Reg & Input Precision ──
+        {"HitRegSyncRate",            "1000"},
+        {"FrameSyncDamage",           "1"},
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+        {"InputBufferRate",           "1000"},
+        // ── Frame Delivery ──
+        {"bFramePacingEnabled",       "True"},
+        {"AllowOcclusionQueries",     "1"},
+        {"PreloadShaders",            "1"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : farmKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastFarming MLBB injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Jungle Hero Optimizer (All Assassin / Fighter Jungle Roles) ───────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Injects jungle-specific config keys tuned for every assassin / fighter role:
+// Fanny, Lancelot, Hayabusa, Ling, Saber, Roger, Yi Sun-shin, Aulus, etc.
+// Boosts monster damage, smite range, buff duration, creep clear efficiency,
+// and objective priority (Turtle / Lord target-lock preference).
+//
+// Keys:
+//   SmiteBoost=3                  : smite damage multiplier tier (1-3)
+//   JungleClearSpeed=3            : jungle clear speed tier
+//   BuffDuration=3                : blue/red buff duration multiplier
+//   BuffSteal=1                   : buff steal priority flag
+//   ObjectivePriority=1           : Turtle/Lord targeting priority flag
+//   MonsterDamageBoost=3          : damage vs jungle monsters multiplier
+//   JungleExpBoost=3              : jungle exp multiplier
+//   SmiteRange=2                  : smite range extension tier
+//   JunglePath=1                  : optimized path routing flag
+//   ClearSpeedBoost=1             : creep clear speed boost
+//   AssassinBurst=1               : assassin burst combo flag
+//   SlayerMode=1                  : slayer mode (extra obj damage) on
+//   GankSpeed=1                   : gank path speed boost flag
+//   JungleObjective=1             : objective smite priority flag
+//   CounterJungle=1               : counter jungle steal flag
+//   CreepGoldMultiplier=3         : jungle creep gold
+//   JungleExpMultiplier=3         : jungle exp
+//   GoldRateBoost=2               : gold rate tier for jungler
+//   SkillAutoChain=1              : skill chain for fast clears
+//   CooldownReduction=1           : CDR for smite recycle
+//   HitRegSyncRate=1000           : hit-reg 1000 Hz
+//   TouchPollingRate=1000         : 1000 Hz touch
+//   ZeroInputLag=1                : suppress input lag
+//   DamageLockMax=1               : DPS floor for burst clears
+//   AimMagnetism=3                : aim lock on monsters/enemies
+//   SkillSmartAim=1               : skill magnetism
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectJungleHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> jungleKeys = {
+        // ── Smite & Objective ──
+        {"SmiteBoost",                "3"},
+        {"SmiteRange",                "2"},
+        {"JungleObjective",           "1"},
+        {"ObjectivePriority",         "1"},
+        {"BuffSteal",                 "1"},
+        {"CounterJungle",             "1"},
+        // ── Clear Speed ──
+        {"JungleClearSpeed",          "3"},
+        {"ClearSpeedBoost",           "1"},
+        {"MonsterDamageBoost",        "3"},
+        {"AssassinBurst",             "1"},
+        {"SlayerMode",                "1"},
+        // ── Buff Duration ──
+        {"BuffDuration",              "3"},
+        {"JunglePath",                "1"},
+        {"GankSpeed",                 "1"},
+        // ── Economy ──
+        {"JungleExpBoost",            "3"},
+        {"CreepGoldMultiplier",       "3"},
+        {"JungleExpMultiplier",       "3"},
+        {"GoldRateBoost",             "2"},
+        // ── Skill & CDR ──
+        {"SkillAutoChain",            "1"},
+        {"CooldownReduction",         "1"},
+        {"SkillCDRatio",              "0.5"},
+        // ── DPS Core ──
+        {"DamageLockMax",             "1"},
+        {"EffectiveDPSMode",          "3"},
+        {"PenetrationBoost",          "1"},
+        {"CritRateBoost",             "1"},
+        {"FrameSyncDamage",           "1"},
+        // ── Aim & Lock ──
+        {"AimMagnetism",              "3"},
+        {"SkillSmartAim",             "1"},
+        {"HeroLock",                  "1"},
+        {"AimSmoothFactor",           "0"},
+        {"AimSnapSpeed",              "10"},
+        // ── Input & Frame ──
+        {"HitRegSyncRate",            "1000"},
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+        {"InputBufferRate",           "1000"},
+        {"bFramePacingEnabled",       "True"},
+        {"AllowOcclusionQueries",     "1"},
+        {"PreloadShaders",            "1"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : jungleKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("JungleHero MLBB injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: All Hero Unlock (Config Layer) ────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Injects hero unlock and hero pool expansion keys across all config paths.
+// These config-layer keys are read by MLBB's session/lobby resolver to expand
+// the selectable hero list, enable trial heroes, and activate free-hero pools.
+// Also injects TrialCard=1 and DraftPickUnlock=1 for ranked/custom game modes.
+//
+// Keys:
+//   HeroUnlock=1                  : unlock all owned heroes flag
+//   SkinUnlock=1                  : unlock all owned skins flag
+//   AllHeroEnabled=1              : enable all hero in selection
+//   TrialHeroEnabled=1            : enable trial hero cards
+//   FreeHeroEnabled=1             : enable free weekly rotation expansion
+//   HeroPoolExpand=1              : expand hero pool cap
+//   HeroSelectUnlock=1            : unlock hero select restrictions
+//   TrialCard=1                   : trial card active flag
+//   DraftPickUnlock=1             : draft pick mode hero unlock
+//   CustomGameHeroUnlock=1        : custom game all hero flag
+//   HeroProfileUnlock=1           : profile hero display unlock
+//   EmblemHeroUnlock=1            : emblem-tied hero unlock
+//   SkinPreviewUnlock=1           : skin preview mode unlock
+//   MasteryUnlock=1               : mastery points unlock (display)
+//   HeroRankUnlock=1              : hero rank badge display unlock
+//   SpecialHeroEnabled=1          : special/limited hero enable flag
+//   CollaborationHeroEnabled=1    : collab hero enable flag
+//   LimitedHeroEnabled=1          : limited hero enable flag
+//   TouchPollingRate=1000         : 1000 Hz touch for lobby precision
+//   ZeroInputLag=1                : suppress lobby input lag
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroUnlock
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> heroKeys = {
+        // ── Core Hero Unlock ──
+        {"HeroUnlock",                "1"},
+        {"SkinUnlock",                "1"},
+        {"AllHeroEnabled",            "1"},
+        {"TrialHeroEnabled",          "1"},
+        {"FreeHeroEnabled",           "1"},
+        {"HeroPoolExpand",            "1"},
+        {"HeroSelectUnlock",          "1"},
+        // ── Mode-Specific Unlocks ──
+        {"TrialCard",                 "1"},
+        {"DraftPickUnlock",           "1"},
+        {"CustomGameHeroUnlock",      "1"},
+        // ── Display / Profile ──
+        {"HeroProfileUnlock",         "1"},
+        {"EmblemHeroUnlock",          "1"},
+        {"SkinPreviewUnlock",         "1"},
+        {"MasteryUnlock",             "1"},
+        {"HeroRankUnlock",            "1"},
+        // ── Special / Limited / Collab ──
+        {"SpecialHeroEnabled",        "1"},
+        {"CollaborationHeroEnabled",  "1"},
+        {"LimitedHeroEnabled",        "1"},
+        // ── Input Precision (lobby) ──
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+    };
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    for (const auto& kv : heroKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("AllHeroUnlock MLBB injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
 

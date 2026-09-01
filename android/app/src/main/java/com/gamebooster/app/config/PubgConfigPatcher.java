@@ -569,6 +569,18 @@ public class PubgConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
+    /**
+     * PUBGM — Magic bullet aimbot + zero recoil + no spread.
+     * Iterates all PUBGM config paths and calls NativeConfigInjector.injectMagicBulletAimbot
+     * (UE4 CVar format on UserCustom.ini, plain-key on others).
+     */
+    public static void applyMagicBulletAimbot(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMagicBulletAimbot(path);
+        }
+    }
+
 // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

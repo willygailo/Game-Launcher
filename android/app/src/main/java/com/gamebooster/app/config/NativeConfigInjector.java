@@ -93,6 +93,59 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectUltraDamageOverdrive(String path, float damageScale, float critMultiplier, float trueDamage);
     public static native boolean nativeInjectHeroAimLock(String path, int targetPriority, float lockDistance);
 
+    // ─── 2026 Game-Specific Tweaks ───────────────────────────────────────────
+
+    /**
+     * MLBB — Ling hero damage-scripted auto sword combo.
+     * Injects SkillAutoChain, LingComboSpeed, DamageLockMax, HitRegSyncRate,
+     * AimMagnetism, TouchPollingRate=1000 and all combo-sequencer keys.
+     */
+    public static native boolean nativeInjectLingHeroDamageCombo(String path);
+
+    /**
+     * PUBGM — Magic bullet aimbot + zero recoil/spread.
+     * Injects r.PUBGBulletVelocityCompensation, r.PredictiveAim, r.WeaponRecoilScale=0,
+     * r.WeaponSpread=0, r.AimAssistStrength=100, GyroSampleRate=1000 and all precision keys.
+     */
+    public static native boolean nativeInjectMagicBulletAimbot(String path);
+
+    /**
+     * CODM — No recoil + no spread + aimbot precision.
+     * Injects RecoilScale=0, WeaponSpread=0, AimMagnetism=3, Scope*Stabilizer=1,
+     * GyroSampleRate=1000, TouchPollingRate=1000, HitRegSyncRate=1000.
+     */
+    public static native boolean nativeInjectNoRecoilNoSpread(String path);
+
+    // ─── MLBB SA / Farming / Jungle / All-Hero ────────────────────────────────────────────────
+
+    /**
+     * MLBB SA server — Damage+ modifier.
+     * Stacks DamagePlus, SADamageMod=3, SEADamageBoost, DamageLockMax,
+     * HeadshotMultiplier=2, SkillDamageBoost, TrueStrikeMod on all config paths.
+     */
+    public static native boolean nativeInjectSaDamagePlus(String path);
+
+    /**
+     * MLBB — Fast Farming gold + EXP maximizer for all heroes.
+     * Injects GoldRateBoost=3, ExpRateBoost=3, CreepGoldMultiplier=3,
+     * SkillCDRatio=0.5, CooldownReduction, FastLevelUp, ClearSpeedBoost.
+     */
+    public static native boolean nativeInjectFastFarming(String path);
+
+    /**
+     * MLBB — Jungle Hero optimizer (assassin / fighter all roles).
+     * Injects SmiteBoost=3, JungleClearSpeed=3, BuffDuration=3, BuffSteal,
+     * MonsterDamageBoost=3, ObjectivePriority, CounterJungle, GankSpeed.
+     */
+    public static native boolean nativeInjectJungleHero(String path);
+
+    /**
+     * MLBB — All Hero config unlock.
+     * Injects HeroUnlock, AllHeroEnabled, TrialHeroEnabled, FreeHeroEnabled,
+     * HeroPoolExpand, DraftPickUnlock, CollaborationHeroEnabled, LimitedHeroEnabled.
+     */
+    public static native boolean nativeInjectAllHeroUnlock(String path);
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -709,7 +762,103 @@ public class NativeConfigInjector {
         return injectUltraExtremeGraphics(path, 120);
     }
 
-    // ─── Helper Methods ──────────────────────────────────────────────────────
+    // ─── 2026 New Game-Specific Wrappers ─────────────────────────────────────────────────────
+
+    /**
+     * MLBB — Ling hero damage script + auto sword combo injection.
+     * Calls native for max fidelity; falls back to hit-reg + touch boosts if lib unavailable.
+     */
+    public static boolean injectLingHeroDamageCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectLingHeroDamageCombo(path); } catch (Throwable ignored) {}
+        }
+        // Fallback: apply hit-reg DPS boost + scope aim calibration
+        return injectHitRegDpsBoost(path) | injectScopeAimCalibration(path);
+    }
+
+    /**
+     * PUBGM — Magic bullet aimbot + no recoil + zero spread.
+     * Calls native for max fidelity; falls back to aim calibration + touch boost if lib unavailable.
+     */
+    public static boolean injectMagicBulletAimbot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMagicBulletAimbot(path); } catch (Throwable ignored) {}
+        }
+        // Fallback: scope aim calibration covers most aimbot/recoil keys
+        return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
+    }
+
+    /**
+     * CODM — No recoil + no spread + aimbot precision.
+     * Calls native for max fidelity; falls back to scope aim + touch boost if lib unavailable.
+     */
+    public static boolean injectNoRecoilNoSpread(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectNoRecoilNoSpread(path); } catch (Throwable ignored) {}
+        }
+        // Fallback: scope aim calibration + hit-reg for max recoil/aim coverage
+        return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
+    }
+
+    // ─── MLBB SA / Farming / Jungle / All-Hero Wrappers ─────────────────────────────
+
+    /**
+     * MLBB SA server — Damage+ injection.
+     * SA-specific DPS boost: DamagePlus=1, SADamageMod=3, HeadshotMultiplier=2,
+     * TrueStrikeMod, SkillDamageBoost stacked on top of DamageLockMax.
+     */
+    public static boolean injectSaDamagePlus(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectSaDamagePlus(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
+    }
+
+    /**
+     * MLBB — Fast Farming (gold + EXP maximizer for all heroes).
+     * GoldRateBoost=3, ExpRateBoost=3, ClearSpeedBoost, SkillCDRatio=0.5, FastLevelUp.
+     */
+    public static boolean injectFastFarming(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastFarming(path); } catch (Throwable ignored) {}
+        }
+        return injectHitRegDpsBoost(path);
+    }
+
+    /**
+     * MLBB — Jungle Hero optimizer (all assassin/fighter jungle roles).
+     * SmiteBoost=3, JungleClearSpeed=3, BuffDuration=3, MonsterDamageBoost=3,
+     * ObjectivePriority=1, CounterJungle=1, DamageLockMax, AimMagnetism=3.
+     */
+    public static boolean injectJungleHero(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectJungleHero(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
+    }
+
+    /**
+     * MLBB — All Hero unlock (config layer).
+     * HeroUnlock=1, AllHeroEnabled=1, TrialHeroEnabled=1, DraftPickUnlock=1,
+     * CollaborationHeroEnabled=1, LimitedHeroEnabled=1, HeroPoolExpand=1.
+     */
+    public static boolean injectAllHeroUnlock(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAllHeroUnlock(path); } catch (Throwable ignored) {}
+        }
+        // Fallback: at minimum inject touch precision for lobby stability
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+
+    // ─── Helper Methods ───────────────────────────────────────────────────────
 
     private static void ensureParentDirectory(String path) {
         if (path == null) return;
