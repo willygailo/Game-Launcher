@@ -111,6 +111,7 @@ public final class GameManagerSessionEngine {
                 profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, targetFps, true, true);
             }
             com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
             Log.i(TAG, "✅ Injected optimal configs & tunings for " + pkg + " @ " + targetFps + " FPS");
         } catch (Throwable t) {
             Log.w(TAG, "Config auto-injection non-fatal warning: " + t.getMessage());

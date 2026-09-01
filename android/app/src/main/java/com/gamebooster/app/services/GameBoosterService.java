@@ -133,6 +133,7 @@ public class GameBoosterService extends Service {
                 // 1. Legal native framework GameManager API & config auto-configuration
                 NativeFrameworkBridge.setGameModePerformance(getApplicationContext(), packageName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(getApplicationContext(), packageName, targetHz);
+                com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(packageName);
 
                 // 2. Privileged Shizuku enhancements
                 if (ShizukuManager.isShizukuRunningAndGranted()) {

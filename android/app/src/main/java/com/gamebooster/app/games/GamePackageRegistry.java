@@ -198,6 +198,68 @@ public class GamePackageRegistry {
         return null;
     }
 
+    public enum GameType {
+        MLBB,
+        PUBGM,
+        CODM,
+        FREEFIRE,
+        GENSHIN,
+        HOK,
+        ROBLOX,
+        VALORANT,
+        FARLIGHT,
+        BLOODSTRIKE,
+        STANDOFF2,
+        WILDRIFT,
+        CARX,
+        OTHER
+    }
+
+    public static GameType getGameType(String packageName) {
+        if (packageName == null) return GameType.OTHER;
+        String pkg = packageName.toLowerCase().trim();
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("vng.mlbbvn")) {
+            return GameType.MLBB;
+        }
+        if (pkg.contains("pubg") || pkg.contains("iglite") || pkg.contains("tmgp.pubgm") || pkg.equals("com.tencent.ig")) {
+            return GameType.PUBGM;
+        }
+        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains(".cod") || pkg.contains("warzone")) {
+            return GameType.CODM;
+        }
+        if (pkg.contains("freefire")) {
+            return GameType.FREEFIRE;
+        }
+        if (pkg.contains("genshin") || pkg.contains("cognosphere") || pkg.contains("hkrpg") || pkg.contains("hoyoverse")) {
+            return GameType.GENSHIN;
+        }
+        if (pkg.contains("sgame") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
+            return GameType.HOK;
+        }
+        if (pkg.contains("roblox")) {
+            return GameType.ROBLOX;
+        }
+        if (pkg.contains("valorant") || pkg.contains("projectc")) {
+            return GameType.VALORANT;
+        }
+        if (pkg.contains("farlight") || pkg.contains("solarland")) {
+            return GameType.FARLIGHT;
+        }
+        if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
+            return GameType.BLOODSTRIKE;
+        }
+        if (pkg.contains("standoff2")) {
+            return GameType.STANDOFF2;
+        }
+        if (pkg.contains("wildrift")) {
+            return GameType.WILDRIFT;
+        }
+        if (pkg.contains("carxstreet")) {
+            return GameType.CARX;
+        }
+        return GameType.OTHER;
+    }
+
     public static Map<String, GameInfoSpec> getAllKnownGames() {
         return Collections.unmodifiableMap(KNOWN_GAMES);
     }
