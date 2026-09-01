@@ -35,6 +35,7 @@ public class GameBoosterService extends Service {
     public static final String ACTION_LOCK_120HZ = "com.gamebooster.app.action.LOCK_120HZ";
     public static final String ACTION_CLEAN_RAM = "com.gamebooster.app.action.CLEAN_RAM";
     public static final String ACTION_TURBO_5G_WIFI = "com.gamebooster.app.action.TURBO_5G_WIFI";
+    public static final String ACTION_TOGGLE_FOCUS_DND = "com.gamebooster.app.action.TOGGLE_FOCUS_DND";
     public static final String ACTION_BOOST_GAME = "com.gamebooster.app.action.BOOST_GAME";
     public static final String EXTRA_PACKAGE_NAME = "extra_package_name";
 
@@ -61,10 +62,12 @@ public class GameBoosterService extends Service {
             showToast("⚡ 185 FPS / 185Hz Extreme Mode Locked");
         } else if (ACTION_CLEAN_RAM.equals(action)) {
             cleanMemory();
-            showToast("🧹 RAM & Cache Purged — Memory Boosted");
+            showToast("🧹 RAM & zRAM Compaction Complete");
         } else if (ACTION_TURBO_5G_WIFI.equals(action)) {
             turbo5gWifi();
-            showToast("🚀 5G / 6G & Wi-Fi 6/7 Turbo Boost Active");
+            showToast("🚀 5G / Wi-Fi Turbo & Network QoS Active");
+        } else if (ACTION_TOGGLE_FOCUS_DND.equals(action)) {
+            toggleFocusDnd();
         } else if (ACTION_BOOST_GAME.equals(action) && intent != null) {
             String pkg = intent.getStringExtra(EXTRA_PACKAGE_NAME);
             if (pkg != null) {
@@ -123,6 +126,22 @@ public class GameBoosterService extends Service {
                 ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(packageName);
                 ShizukuUserServiceConnector.getInstance().setGameModeApi(packageName, targetHz);
                 GameProfileAutoConfigurator.autoConfigGamePackage(getApplicationContext(), packageName, targetHz);
+
+                // Pin active game PID to Big CPU cores with real-time nice priority
+                String pidOut = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + packageName + " 2>/dev/null");
+                if (pidOut != null && !pidOut.trim().isEmpty()) {
+                    String[] pids = pidOut.trim().split("\\s+");
+                    for (String p : pids) {
+                        try {
+                            int pid = Integer.parseInt(p);
+                            if (pid > 0) {
+                                ShizukuUserServiceConnector.getInstance().setCpuAffinity(pid, 0xF0);
+                                ShizukuUserServiceConnector.getInstance().setProcessPriority(pid, -20);
+                            }
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+
                 Log.i(TAG, "Privileged boosted game: " + packageName);
             } catch (Exception e) {
                 Log.w(TAG, "Error boosting game: " + packageName, e);
@@ -137,11 +156,9 @@ public class GameBoosterService extends Service {
                     Log.w(TAG, "Shizuku not active — skipping memory drop");
                     return;
                 }
+                ShizukuUserServiceConnector.getInstance().executeZramCompaction();
                 ShizukuUserServiceConnector.getInstance().trimCachesAndDropCaches();
                 com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
-                com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
-                        "sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"
-                );
             } catch (Exception e) {
                 Log.w(TAG, "Error cleaning memory", e);
             }
@@ -156,9 +173,27 @@ public class GameBoosterService extends Service {
                     return;
                 }
                 ShizukuUserServiceConnector.getInstance().optimize5GAndWifi();
+                ShizukuUserServiceConnector.getInstance().setNetworkQoS(true);
                 com.gamebooster.app.booster.NetworkOptimizer.optimizeAllDataAndWifi(getApplicationContext());
             } catch (Exception e) {
                 Log.w(TAG, "Error applying 5G/Wi-Fi turbo", e);
+            }
+        });
+    }
+
+    private void toggleFocusDnd() {
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                boolean isFocusActive = com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(getApplicationContext());
+                if (isFocusActive) {
+                    com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(getApplicationContext());
+                    showToast("🛡️ Focus Mode & Gaming DND Deactivated");
+                } else {
+                    com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(getApplicationContext(), null);
+                    showToast("🛡️ Focus Mode & Gaming DND Active");
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Error toggling focus DND", e);
             }
         });
     }
@@ -181,15 +216,19 @@ public class GameBoosterService extends Service {
         Intent turboNetIntent = new Intent(this, GameBoosterService.class).setAction(ACTION_TURBO_5G_WIFI);
         PendingIntent pTurboNet = PendingIntent.getService(this, 3, turboNetIntent, flag);
 
+        Intent dndIntent = new Intent(this, GameBoosterService.class).setAction(ACTION_TOGGLE_FOCUS_DND);
+        PendingIntent pDnd = PendingIntent.getService(this, 4, dndIntent, flag);
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GAME SPACE — " + targetHz + " FPS/Hz Engine Active")
                 .setContentText("Privileged Shizuku Engine Active • " + targetHz + "Hz Mode Lock")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
-                .addAction(0, "⚡ 185Hz Lock", p185)
+                .addAction(0, "⚡ 185Hz", p185)
                 .addAction(0, "🧹 Clean RAM", pClean)
-                .addAction(0, "🚀 5G/Wi-Fi Turbo", pTurboNet)
+                .addAction(0, "🚀 5G/Wi-Fi", pTurboNet)
+                .addAction(0, "🛡️ DND", pDnd)
                 .build();
     }
 

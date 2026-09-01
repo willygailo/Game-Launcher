@@ -494,9 +494,7 @@ public class FocusModeEngine {
                     try {
                         int pid = Integer.parseInt(p);
                         if (pid > 0) {
-                            NativeConfigInjector.setProcessCpuAffinity(pid, 0); // Big cores mask
-                            NativeConfigInjector.setThreadSchedulingPolicy(pid, 1, 50); // Real-time priority
-                            NativeConfigInjector.setIoPriority(pid, 1, 0); // Real-time I/O
+                            NativeConfigInjector.boostProcessResources(pid, 0);
                         }
                     } catch (NumberFormatException ignored) {}
                 }

@@ -412,4 +412,118 @@ public class ShizukuUserServiceConnector {
         }
         ShizukuExecutor.executeShizukuCommands("setprop debug.thermal.throttle.disable 1; setprop debug.performance.tuning 1; setprop debug.hwui.renderer vulkan");
     }
+
+    public boolean setCpuAffinity(int pid, int mask) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setCpuAffinity(pid, mask);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setCpuAffinity", e);
+            }
+        }
+        int cpuMask = mask > 0 ? mask : 0xF0;
+        String hexMask = Integer.toHexString(cpuMask);
+        String res = ShizukuExecutor.executeShizukuCommand("taskset -p " + hexMask + " " + pid + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean setProcessPriority(int pid, int niceLevel) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setProcessPriority(pid, niceLevel);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setProcessPriority", e);
+            }
+        }
+        int nice = (niceLevel >= -20 && niceLevel <= 19) ? niceLevel : -20;
+        String res = ShizukuExecutor.executeShizukuCommand("renice -n " + nice + " -p " + pid + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean suppressHeadsUpNotifications(boolean suppress) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.suppressHeadsUpNotifications(suppress);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in suppressHeadsUpNotifications", e);
+            }
+        }
+        int val = suppress ? 0 : 1;
+        String res = ShizukuExecutor.executeShizukuCommand("settings put global heads_up_notifications_enabled " + val + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean setGamingDnd(boolean enable) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setGamingDnd(enable);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setGamingDnd", e);
+            }
+        }
+        String filter = enable ? "priority" : "all";
+        String dndMode = enable ? "on" : "off";
+        String res = ShizukuExecutor.executeShizukuCommand("cmd notification set_interruption_filter " + filter + " 2>/dev/null; cmd notification set_dnd_mode " + dndMode + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean executeZramCompaction() {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.executeZramCompaction();
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in executeZramCompaction", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null; fstrim -v /cache 2>/dev/null; sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; echo 1 > /sys/block/zram0/compact 2>/dev/null; cmd activity purge-cached-processes 2>/dev/null; cmd activity kill-all 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean setNetworkQoS(boolean prioritize) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setNetworkQoS(prioritize);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setNetworkQoS", e);
+            }
+        }
+        String netVal = prioritize ? "true" : "false";
+        String bgVal = prioritize ? "false" : "true";
+        String res = ShizukuExecutor.executeShizukuCommand("cmd netpolicy set restrict-background " + netVal + " 2>/dev/null; cmd connectivity set-background-data " + bgVal + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean freezeApp(String packageName) {
+        if (packageName == null) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.freezeApp(packageName);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in freezeApp", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("am force-stop " + packageName + " 2>/dev/null; pm suspend --user 0 " + packageName + " 2>/dev/null; cmd package suspend --user 0 " + packageName + " 2>/dev/null; cmd appops set " + packageName + " RUN_IN_BACKGROUND ignore 2>/dev/null; cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null; am set-standby-bucket " + packageName + " restricted 2>/dev/null; am set-standby-bucket " + packageName + " 45 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean unfreezeApp(String packageName) {
+        if (packageName == null) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.unfreezeApp(packageName);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in unfreezeApp", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("pm unsuspend --user 0 " + packageName + " 2>/dev/null; cmd package unsuspend --user 0 " + packageName + " 2>/dev/null; cmd appops set " + packageName + " RUN_IN_BACKGROUND allow 2>/dev/null; cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null; am set-standby-bucket " + packageName + " active 2>/dev/null; am set-standby-bucket " + packageName + " 10 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
 }

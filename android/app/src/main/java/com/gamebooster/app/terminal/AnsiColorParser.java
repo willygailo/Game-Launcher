@@ -38,6 +38,14 @@ public class AnsiColorParser {
     public static final int COLOR_BRIGHT_WHITE   = 0xFFFFFFFF;
 
     /**
+     * Strips all ANSI escape codes from the input string.
+     */
+    public static String stripAnsi(CharSequence input) {
+        if (input == null) return "";
+        return ANSI_PATTERN.matcher(input.toString()).replaceAll("");
+    }
+
+    /**
      * Parses raw terminal output containing ANSI codes into a formatted SpannableStringBuilder.
      */
     public static SpannableStringBuilder parseAnsi(CharSequence input, int defaultColor) {

@@ -24,4 +24,12 @@ interface IUserService {
     void applyThermalAndKernelBoost() = 18;
     boolean isPrivilegedReady() = 19;
     void restoreCpuGpuGovernors() = 20;
+    boolean setCpuAffinity(int pid, int mask) = 21;
+    boolean setProcessPriority(int pid, int niceLevel) = 22;
+    boolean suppressHeadsUpNotifications(boolean suppress) = 23;
+    boolean setGamingDnd(boolean enable) = 24;
+    boolean executeZramCompaction() = 25;
+    boolean setNetworkQoS(boolean prioritize) = 26;
+    boolean freezeApp(String packageName) = 27;
+    boolean unfreezeApp(String packageName) = 28;
 }

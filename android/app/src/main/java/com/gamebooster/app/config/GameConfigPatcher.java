@@ -147,9 +147,9 @@ public class GameConfigPatcher {
             MlbbConfigPatcher.applyDamageLockMax(pkg);
             MlbbConfigPatcher.applyAimAssistLockMax(pkg);
             // 2026: additional legal methods (DamageLockMax + AimAssistLockMax already above)
-            MlbbConfigPatcher.applyVulkanPipelinePrime(pkg);
-            MlbbConfigPatcher.applyAntiTelemetrySafe(pkg);
-            MlbbConfigPatcher.applyNetworkLagCompensation(pkg);
+            CommonConfigTuningInjector.applyVulkanPipelinePrime(pkg);
+            CommonConfigTuningInjector.applyAntiTelemetrySafe(pkg);
+            CommonConfigTuningInjector.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
@@ -165,9 +165,9 @@ public class GameConfigPatcher {
             // 2026: full lock method suite
             CodmConfigPatcher.applyDamageLockMax(pkg);
             CodmConfigPatcher.applyAimAssistLockMax(pkg);
-            CodmConfigPatcher.applyVulkanPipelinePrime(pkg);
-            CodmConfigPatcher.applyAntiTelemetrySafe(pkg);
-            CodmConfigPatcher.applyNetworkLagCompensation(pkg);
+            CommonConfigTuningInjector.applyVulkanPipelinePrime(pkg);
+            CommonConfigTuningInjector.applyAntiTelemetrySafe(pkg);
+            CommonConfigTuningInjector.applyNetworkLagCompensation(pkg);
         } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;

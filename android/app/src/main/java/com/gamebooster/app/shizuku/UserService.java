@@ -142,16 +142,32 @@ public class UserService extends IUserService.Stub {
     @Override
     public boolean writeDirectFile(String path, String content, String mode) {
         if (path == null || content == null) return false;
-        try {
-            File file = new File(path);
-            File parent = file.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
+        File file = new File(path);
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
 
-            try (FileOutputStream fos = new FileOutputStream(file, false)) {
+        File tmpFile = new File(path + ".tmp." + System.currentTimeMillis());
+        try {
+            try (FileOutputStream fos = new FileOutputStream(tmpFile, false)) {
                 fos.write(content.getBytes(StandardCharsets.UTF_8));
                 fos.flush();
+                fos.getFD().sync();
+            }
+
+            if (!tmpFile.renameTo(file)) {
+                try (FileInputStream fis = new FileInputStream(tmpFile);
+                     FileOutputStream fos = new FileOutputStream(file, false)) {
+                    byte[] buf = new byte[8192];
+                    int r;
+                    while ((r = fis.read(buf)) != -1) {
+                        fos.write(buf, 0, r);
+                    }
+                    fos.flush();
+                    fos.getFD().sync();
+                }
+                tmpFile.delete();
             }
 
             if (mode != null && !mode.isEmpty()) {
@@ -160,6 +176,7 @@ public class UserService extends IUserService.Stub {
             return true;
         } catch (Exception e) {
             Log.e(TAG, "writeDirectFile failed for: " + path, e);
+            if (tmpFile.exists()) tmpFile.delete();
             // Elevated shell fallback
             String escaped = content.replace("'", "'\\''");
             String cmd = "mkdir -p \"" + new File(path).getParent() + "\" && printf '%s' '" + escaped + "' > \"" + path + "\"";
@@ -513,5 +530,94 @@ public class UserService extends IUserService.Stub {
                      "for c in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo performance > $c 2>/dev/null; done; " +
                      "for g in /sys/class/kgsl/kgsl-3d0/force_bus_on /sys/class/kgsl/kgsl-3d0/force_clk_on; do echo 1 > $g 2>/dev/null; done";
         execCommand(cmd);
+    }
+
+    @Override
+    public boolean setCpuAffinity(int pid, int mask) {
+        if (pid <= 0) return false;
+        int cpuMask = mask > 0 ? mask : 0xF0; // Default Big/Prime cores
+        String hexMask = Integer.toHexString(cpuMask);
+        String cmd = "taskset -p " + hexMask + " " + pid + " 2>/dev/null; "
+                   + "for t in /proc/" + pid + "/task/*; do taskset -p " + hexMask + " $(basename $t) 2>/dev/null; done";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean setProcessPriority(int pid, int niceLevel) {
+        if (pid <= 0) return false;
+        int nice = (niceLevel >= -20 && niceLevel <= 19) ? niceLevel : -20;
+        String cmd = "renice -n " + nice + " -p " + pid + " 2>/dev/null; "
+                   + "for t in /proc/" + pid + "/task/*; do renice -n " + nice + " -p $(basename $t) 2>/dev/null; done";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean suppressHeadsUpNotifications(boolean suppress) {
+        int val = suppress ? 0 : 1;
+        String res = execCommand("settings put global heads_up_notifications_enabled " + val + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean setGamingDnd(boolean enable) {
+        String filter = enable ? "priority" : "all";
+        String dndMode = enable ? "on" : "off";
+        String cmd = "cmd notification set_interruption_filter " + filter + " 2>/dev/null; "
+                   + "cmd notification set_dnd_mode " + dndMode + " 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean executeZramCompaction() {
+        String cmd = "fstrim -v /data 2>/dev/null; "
+                   + "fstrim -v /cache 2>/dev/null; "
+                   + "sync; "
+                   + "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; "
+                   + "echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; "
+                   + "echo 1 > /sys/block/zram0/compact 2>/dev/null; "
+                   + "cmd activity purge-cached-processes 2>/dev/null; "
+                   + "cmd activity kill-all 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean setNetworkQoS(boolean prioritize) {
+        String netVal = prioritize ? "true" : "false";
+        String bgVal = prioritize ? "false" : "true";
+        String cmd = "cmd netpolicy set restrict-background " + netVal + " 2>/dev/null; "
+                   + "cmd connectivity set-background-data " + bgVal + " 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean freezeApp(String packageName) {
+        if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
+        String cmd = "am force-stop " + packageName + " 2>/dev/null; "
+                   + "pm suspend --user 0 " + packageName + " 2>/dev/null; "
+                   + "cmd package suspend --user 0 " + packageName + " 2>/dev/null; "
+                   + "cmd appops set " + packageName + " RUN_IN_BACKGROUND ignore 2>/dev/null; "
+                   + "cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null; "
+                   + "am set-standby-bucket " + packageName + " restricted 2>/dev/null; "
+                   + "am set-standby-bucket " + packageName + " 45 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean unfreezeApp(String packageName) {
+        if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
+        String cmd = "pm unsuspend --user 0 " + packageName + " 2>/dev/null; "
+                   + "cmd package unsuspend --user 0 " + packageName + " 2>/dev/null; "
+                   + "cmd appops set " + packageName + " RUN_IN_BACKGROUND allow 2>/dev/null; "
+                   + "cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null; "
+                   + "am set-standby-bucket " + packageName + " active 2>/dev/null; "
+                   + "am set-standby-bucket " + packageName + " 10 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
     }
 }
