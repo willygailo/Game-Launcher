@@ -28,6 +28,10 @@ public class AdpfPerformanceEngine {
     private long currentTargetNanos = 8_333_333L; // Default: 120 FPS (8.33ms)
     private boolean isInitialized = false;
 
+    public interface ThermalHeadroomCallback {
+        void onHeadroomChanged(float headroom);
+    }
+
     private AdpfPerformanceEngine() {}
 
     public static AdpfPerformanceEngine getInstance() {
@@ -36,11 +40,17 @@ public class AdpfPerformanceEngine {
 
     /**
      * Checks if ADPF is supported on this Android device (Android 12+ / API 31+).
-     * Note: minSdk >= 33 so SDK_INT is always >= S; guard removed per lint ObsoleteSdkInt.
      */
     public boolean isSupported(Context context) {
         ensureInitialized(context);
         return hintManager != null;
+    }
+
+    /**
+     * Checks if a PerformanceHintSession is currently active.
+     */
+    public synchronized boolean isSessionActive() {
+        return activeSession != null;
     }
 
     private synchronized void ensureInitialized(Context context) {
@@ -61,6 +71,13 @@ public class AdpfPerformanceEngine {
      * Starts an ADPF Hint Session for the given target FPS (e.g. 60, 90, 120, 144, 165, 185 FPS).
      */
     public synchronized boolean startSession(Context context, int targetFps) {
+        return startSession(context, targetFps, null);
+    }
+
+    /**
+     * Starts an ADPF Hint Session for target FPS with optional target thread IDs.
+     */
+    public synchronized boolean startSession(Context context, int targetFps, int[] targetTids) {
         if (context == null) return false;
         ensureInitialized(context);
         if (hintManager == null) return false;
@@ -71,8 +88,9 @@ public class AdpfPerformanceEngine {
         closeSession();
 
         try {
-            int myPid = Process.myPid();
-            int[] tids = new int[]{myPid};
+            int[] tids = (targetTids != null && targetTids.length > 0)
+                    ? targetTids
+                    : new int[]{Process.myPid()};
 
             Method createSessionMethod = hintManager.getClass().getMethod("createHintSession", int[].class, long.class);
             activeSession = createSessionMethod.invoke(hintManager, tids, currentTargetNanos);

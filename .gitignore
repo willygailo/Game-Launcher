@@ -6,11 +6,15 @@
 *.aab
 *.dex
 *.class
+*.aar
+*.klib
+*.bundle
 
-# Shizuku / Rish assets exception
+# Shizuku / Rish runtime assets exception (MUST BE PRESERVED)
 !**/shizuku/*.dex
 !**/assets/shizuku/*.dex
 !*rish_shizuku.dex
+!**/assets/shizuku/*
 
 # Gradle build cache & output directories
 .gradle/
@@ -19,27 +23,41 @@ build/
 android/.gradle/
 android/build/
 android/app/build/
+**/reports/
+**/test-results/
+
+# JaCoCo Code Coverage Data
+*.exec
+*.ec
+build/jacoco/
+**/jacoco/
+
+# Android Baseline Profiles
+*.prof
+*.profm
 
 # Native / NDK / C++ build outputs
 .cxx/
-**/build/.cxx/
+**/.cxx/
 .externalNativeBuild/
 android/app/.cxx/
 android/app/.externalNativeBuild/
 obj/
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+cmake_install.cmake
 
 # Kotlin & Java caches
 .kotlin/
 .incremental/
-*.bundle
-*.aar
-*.klib
 
 # ====================================================================
-# Local Configuration & Secrets
+# Local Configuration, Keys & Secrets
 # ====================================================================
 local.properties
 *.local.properties
+android/local.properties
 secrets.properties
 gradle.properties.private
 
@@ -50,6 +68,9 @@ GoogleService-Info.plist
 # Signing & Keystores
 *.jks
 *.keystore
+debug.keystore
+android/debug.keystore
+release.keystore
 *.pepk
 *.p8
 *.p12
@@ -57,6 +78,12 @@ GoogleService-Info.plist
 *.pk8
 *.pem
 keystore.properties
+signing.properties
+
+# Environment Variables
+.env
+.env.*
+!.env.example
 
 # ====================================================================
 # Android Studio / IntelliJ IDEA / VS Code / Editors
@@ -65,6 +92,7 @@ keystore.properties
 *.iml
 .navigation/
 captures/
+**/captures/
 .shelf/
 *.hprof
 *.iws
@@ -107,8 +135,10 @@ $RECYCLE.BIN/
 *~
 *.swp
 *.swo
+*.swn
 *.bak
 *.tmp
+*.orig
 
 # ====================================================================
 # Logs, Diagnostic Dumps & AI Assistant Data

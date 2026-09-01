@@ -19,8 +19,11 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.booster.HzFpsChannel;
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.booster.RamZramChannel;
+import com.gamebooster.app.booster.NetworkOptimizer;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.engine.NativeFrameworkBridge;
 import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
@@ -96,19 +99,26 @@ public class GameBoosterService extends Service {
         final int forcedHz = hz > 0 ? hz : 185;
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                if (!ShizukuManager.isShizukuRunningAndGranted()) {
-                    Log.w(TAG, "Shizuku not active — skipping privileged Hz lock");
-                    return;
+                // 1. Legal native framework locks & ADPF
+                NativeFrameworkBridge.acquireSustainedPerformanceLock(getApplicationContext());
+                NativeFrameworkBridge.acquireLowLatencyWifiLock(getApplicationContext());
+                NativeFrameworkBridge.startAdpfSession(getApplicationContext(), forcedHz);
+                HzFpsChannel.setRefreshRate(getApplicationContext(), forcedHz);
+
+                // 2. Privileged Shizuku tweaks when available
+                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                    ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
+                    MaxHzForceChannel.forceApply(forcedHz);
+                    HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
+                    PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                    PerformanceChannel.writeAndExecuteRootTweaksScript(forcedHz);
+                    ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(forcedHz);
+                    ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
+                    ShizukuUserServiceConnector.getInstance().applyThermalAndKernelBoost();
+                    Log.i(TAG, "Applied privileged " + forcedHz + "Hz lock via GameBoosterService");
+                } else {
+                    Log.i(TAG, "Applied legal SDK framework " + forcedHz + "Hz optimizations");
                 }
-                ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                MaxHzForceChannel.forceApply(forcedHz);
-                HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
-                PerformanceChannel.applyProfile(getApplicationContext(), PerformanceChannel.Profile.EXTREME_PERFORMANCE);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(forcedHz);
-                ShizukuUserServiceConnector.getInstance().forceDisplayRefreshRate(forcedHz);
-                ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
-                ShizukuUserServiceConnector.getInstance().applyThermalAndKernelBoost();
-                Log.i(TAG, "Applied privileged " + forcedHz + "Hz lock via GameBoosterService");
             } catch (Exception e) {
                 Log.w(TAG, "Error applying Hz lock", e);
             }
@@ -118,31 +128,35 @@ public class GameBoosterService extends Service {
     private void boostSpecificGame(String packageName) {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                if (!ShizukuManager.isShizukuRunningAndGranted()) {
-                    Log.w(TAG, "Shizuku not active — cannot privileged boost " + packageName);
-                    return;
-                }
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(getApplicationContext());
-                ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(packageName);
-                ShizukuUserServiceConnector.getInstance().setGameModeApi(packageName, targetHz);
+
+                // 1. Legal native framework GameManager API & config auto-configuration
+                NativeFrameworkBridge.setGameModePerformance(getApplicationContext(), packageName);
                 GameProfileAutoConfigurator.autoConfigGamePackage(getApplicationContext(), packageName, targetHz);
 
-                // Pin active game PID to Big CPU cores with real-time nice priority
-                String pidOut = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + packageName + " 2>/dev/null");
-                if (pidOut != null && !pidOut.trim().isEmpty()) {
-                    String[] pids = pidOut.trim().split("\\s+");
-                    for (String p : pids) {
-                        try {
-                            int pid = Integer.parseInt(p);
-                            if (pid > 0) {
-                                ShizukuUserServiceConnector.getInstance().setCpuAffinity(pid, 0xF0);
-                                ShizukuUserServiceConnector.getInstance().setProcessPriority(pid, -20);
-                            }
-                        } catch (NumberFormatException ignored) {}
-                    }
-                }
+                // 2. Privileged Shizuku enhancements
+                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                    ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(packageName);
+                    ShizukuUserServiceConnector.getInstance().setGameModeApi(packageName, targetHz);
 
-                Log.i(TAG, "Privileged boosted game: " + packageName);
+                    // Pin active game PID to Big CPU cores with real-time nice priority
+                    String pidOut = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + packageName + " 2>/dev/null");
+                    if (pidOut != null && !pidOut.trim().isEmpty()) {
+                        String[] pids = pidOut.trim().split("\\s+");
+                        for (String p : pids) {
+                            try {
+                                int pid = Integer.parseInt(p);
+                                if (pid > 0) {
+                                    ShizukuUserServiceConnector.getInstance().setCpuAffinity(pid, 0xF0);
+                                    ShizukuUserServiceConnector.getInstance().setProcessPriority(pid, -20);
+                                }
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+                    Log.i(TAG, "Privileged boosted game: " + packageName);
+                } else {
+                    Log.i(TAG, "Standard boosted game: " + packageName);
+                }
             } catch (Exception e) {
                 Log.w(TAG, "Error boosting game: " + packageName, e);
             }
@@ -152,13 +166,14 @@ public class GameBoosterService extends Service {
     private void cleanMemory() {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                if (!ShizukuManager.isShizukuRunningAndGranted()) {
-                    Log.w(TAG, "Shizuku not active — skipping memory drop");
-                    return;
+                // 1. Always execute legal JVM / Android memory trim
+                RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+
+                // 2. Privileged drops when Shizuku is active
+                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                    ShizukuUserServiceConnector.getInstance().executeZramCompaction();
+                    ShizukuUserServiceConnector.getInstance().trimCachesAndDropCaches();
                 }
-                ShizukuUserServiceConnector.getInstance().executeZramCompaction();
-                ShizukuUserServiceConnector.getInstance().trimCachesAndDropCaches();
-                com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
             } catch (Exception e) {
                 Log.w(TAG, "Error cleaning memory", e);
             }
@@ -168,13 +183,15 @@ public class GameBoosterService extends Service {
     private void turbo5gWifi() {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                if (!ShizukuManager.isShizukuRunningAndGranted()) {
-                    Log.w(TAG, "Shizuku not active — skipping network turbo");
-                    return;
+                // 1. Always optimize network sockets and bind high priority
+                NetworkOptimizer.optimizeAllDataAndWifi(getApplicationContext());
+                NativeFrameworkBridge.requestHighPriorityNetwork(getApplicationContext());
+
+                // 2. Privileged QoS when Shizuku is active
+                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                    ShizukuUserServiceConnector.getInstance().optimize5GAndWifi();
+                    ShizukuUserServiceConnector.getInstance().setNetworkQoS(true);
                 }
-                ShizukuUserServiceConnector.getInstance().optimize5GAndWifi();
-                ShizukuUserServiceConnector.getInstance().setNetworkQoS(true);
-                com.gamebooster.app.booster.NetworkOptimizer.optimizeAllDataAndWifi(getApplicationContext());
             } catch (Exception e) {
                 Log.w(TAG, "Error applying 5G/Wi-Fi turbo", e);
             }

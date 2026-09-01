@@ -4,10 +4,11 @@ import android.util.Log;
 
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
-import org.json.JSONObject;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  *  1. Zero duplicate section headers across multiple patch passes.
  *  2. Safe in-memory key-value replacement and clean section-scoped insertion.
  *  3. Atomic file writes with permission mode 666 via ShizukuFileManager.writeFileAtomic.
- *  4. Direct byte and text I/O with automatic parent directory scaffolding.
+ *  4. Direct byte and text I/O with automatic parent directory scaffolding and JVM direct fallback.
  */
 public final class ConfigFileHelper {
 
@@ -40,9 +41,31 @@ public final class ConfigFileHelper {
      */
     public static boolean writeContentAtomic(String path, String content) {
         if (path == null || path.trim().isEmpty()) return false;
-        ShizukuFileManager.ensureParentDirectory(path);
-        ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFileAtomic(path, content != null ? content : "", "666");
-        return res != null && res.success;
+        try {
+            ShizukuFileManager.ensureParentDirectory(path);
+            ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFileAtomic(path, content != null ? content : "", "666");
+            if (res != null && res.success) {
+                return true;
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "ShizukuFileManager write attempt note: " + t.getMessage());
+        }
+
+        // Direct JVM file write fallback for accessible paths (e.g. app-private or SAF accessible)
+        try {
+            File f = new File(path);
+            if (f.getParentFile() != null && !f.getParentFile().exists()) {
+                f.getParentFile().mkdirs();
+            }
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write((content != null ? content : "").getBytes(StandardCharsets.UTF_8));
+                fos.flush();
+                return true;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Direct file write fallback failed for " + path + ": " + t.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -62,9 +85,14 @@ public final class ConfigFileHelper {
         try {
             ShizukuFileManager.ensureParentDirectory(path);
             String existingContent = ShizukuFileManager.readFile(path);
+            if (existingContent.isEmpty()) {
+                File f = new File(path);
+                if (f.exists() && f.canRead()) {
+                    existingContent = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
+                }
+            }
             String updatedContent = patchContentInMemory(existingContent, keyValues, defaultSection, path);
-            ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFileAtomic(path, updatedContent, "666");
-            return res != null && res.success;
+            return writeContentAtomic(path, updatedContent);
         } catch (Throwable t) {
             Log.w(TAG, "patchKeys failed for " + path + ": " + t.getMessage(), t);
             return false;

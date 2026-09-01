@@ -1,18 +1,19 @@
 package com.gamebooster.app.engine;
 
+import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 
 /**
  * Phase 2.1 — SDK gates for privileged GameMode shell commands.
  *
- * <p>The AIDL/Shizuku commands issued during Tier 1 were historically attempted
- * on every device (minSdk 24). On older Android versions several of them fail
- * silently or print to stderr yet were still counted as "applied". This class
- * centralizes the API-level knowledge: one recommendation gate (Android 14+,
- * the full command set) plus the per-command minimums for callers that want
- * granular behavior. All sdk-parameterized overloads are pure and unit-tested.
+ * <p>The AIDL/Shizuku commands issued during Tier 1 are gated by Android version:
+ * one recommendation gate (Android 14+, the full command set) plus per-command minimums.
+ * All sdk-parameterized overloads are pure and unit-tested.
  */
 public final class GameModeApiSupport {
+
+    private static final String TAG = "GameModeApiSupport";
 
     /** GameManager service (games framework) — Android 12. */
     public static final int MIN_GAME_MODE_API = 31;
@@ -62,6 +63,16 @@ public final class GameModeApiSupport {
         return sdk >= MIN_APP_REFRESH_RATE_API;
     }
 
+    /** Android 15 (API 35+) performance and battery constraints bypass. */
+    public static boolean isAndroid15Api(int sdk) {
+        return sdk >= ANDROID_15_API;
+    }
+
+    /** Android 16 (API 36+) performance class 3 extreme mode. */
+    public static boolean isAndroid16Api(int sdk) {
+        return sdk >= ANDROID_16_API;
+    }
+
     /** Forces Android Game Mode Performance via Shizuku shell. */
     public static void setGameModePerformance(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return;
@@ -73,6 +84,25 @@ public final class GameModeApiSupport {
                 "cmd window set-app-refresh-rate " + pkg + " 185",
                 "device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high"
         );
+    }
+
+    /**
+     * Applies performance mode with automatic legal Android SDK fallback when Shizuku is absent.
+     */
+    public static boolean setGameModePerformanceWithFallback(Context context, String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.trim();
+
+        // 1. Legal native framework reflection
+        boolean nativeOk = NativeFrameworkBridge.setGameModePerformance(context, pkg);
+
+        // 2. Elevated shell if Shizuku is active
+        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+            setGameModePerformance(pkg);
+            return true;
+        }
+
+        return nativeOk;
     }
 
     /**

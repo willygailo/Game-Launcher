@@ -33,18 +33,17 @@ import java.util.List;
  * high refresh rate, and CPU/GPU performance governors) are enforced when a game starts,
  * and cleanly reverted to stock baseline when the game session ends.
  *
- * Session pipeline (called after Phase 1 & 2 in GameManagerLauncher):
+ * Session pipeline:
  *  1. Capture baseline session state + target FPS
  *  2. Grant full combo storage access (MediaStore + data dir + external)
- *  3. Apply Android 13-16 Game Mode API flags
- *  4. Hardware Device Masking (GPU / RAM / Model spoof via HardwareMaskEngine)
- *  5. Force high display refresh rate (MaxHzForceChannel + HzFpsChannel + AIDL)
- *  6. Elevate CPU/GPU governors (AIDL setCpuGpuPerformanceGovernors, thermal boost)
- *  7. Acquire sustained performance lock + low-latency WiFi lock + ADPF session
- *  8. Native C++ config injection — Unreal Engine .ini + Unity boot.config + Vulkan cache
- *  9. Auto-patch game config files (GameConfigPatcher + GameProfileAutoConfigurator)
- * 10. DND gaming mode + Network turbo optimization
- * 11. Async post-launch CPU core pinning (Big/Prime cores) + SCHED_FIFO realtime scheduling
+ *  3. Acquire legal SDK locks (Sustained Performance, Low-Latency Wi-Fi, ADPF)
+ *  4. Enforce legal Android GameManager API + Android 13-16 Game Mode performance flags
+ *  5. Hardware Device Masking (GPU / RAM / Model spoof via HardwareMaskEngine)
+ *  6. Format-Aware Per-Game Configuration & Physics Injection (Unreal/Unity/HoYo/Custom)
+ *  7. Force high display refresh rate (MaxHzForceChannel + HzFpsChannel + DisplayManager)
+ *  8. Elevate CPU/GPU governors (AIDL setCpuGpuPerformanceGovernors, thermal boost)
+ *  9. DND gaming mode + Network turbo optimization
+ * 10. Async post-launch CPU core pinning (Big/Prime cores) + SCHED_FIFO realtime scheduling
  */
 public final class GameManagerSessionEngine {
 
@@ -82,13 +81,27 @@ public final class GameManagerSessionEngine {
         // ── 2. Grant full combo storage access ───────────────────────────────
         GameConfigStorageAccessEngine.grantAllPathsAccess(appContext, pkg);
 
-        // ── 3. Apply modern Android 13-16 performance API flags ──────────────
-        GameModeApiSupport.applyModernAndroidPerformanceFlags(pkg, targetFps);
+        // ── 3. Acquire Sustained Performance Lock & Low-Latency WiFi Lock ────
+        try {
+            NativeFrameworkBridge.acquireSustainedPerformanceLock(appContext);
+            NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext);
+            NativeFrameworkBridge.startAdpfSession(appContext, targetFps);
+        } catch (Throwable t) {
+            Log.w(TAG, "Native framework lock warning: " + t.getMessage());
+        }
 
-        // ── 4. Enforce Hardware Device Masking for target game ───────────────
+        // ── 4. Apply modern Android 13-16 performance API flags ──────────────
+        try {
+            NativeFrameworkBridge.setGameModePerformance(appContext, pkg);
+            GameModeApiSupport.applyModernAndroidPerformanceFlags(pkg, targetFps);
+        } catch (Throwable t) {
+            Log.w(TAG, "Game mode flags warning: " + t.getMessage());
+        }
+
+        // ── 5. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
-        // ── 4b. Format-Aware Per-Game Configuration & Physics Injection ──────
+        // ── 5b. Format-Aware Per-Game Configuration & Physics Injection ──────
         try {
             com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
             com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
@@ -103,7 +116,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Config auto-injection non-fatal warning: " + t.getMessage());
         }
 
-        // ── 5. Force High Hardware Display Refresh Rate ──────────────────────
+        // ── 6. Force High Hardware Display Refresh Rate ──────────────────────
         try {
             MaxHzForceChannel.forceApply(targetFps);
             HzFpsChannel.forceSetRefreshRate(appContext, targetFps);
@@ -114,7 +127,7 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
         }
 
-        // ── 6. Elevate CPU/GPU Performance Governors via AIDL/Shizuku ────────
+        // ── 7. Elevate CPU/GPU Performance Governors via AIDL/Shizuku ────────
         try {
             if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                 ShizukuUserServiceConnector.getInstance().setCpuGpuPerformanceGovernors();
@@ -123,15 +136,6 @@ public final class GameManagerSessionEngine {
             PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
         } catch (Throwable t) {
             Log.w(TAG, "Performance channel warning: " + t.getMessage());
-        }
-
-        // ── 7. Acquire Sustained Performance Lock & Low-Latency WiFi Lock ────
-        try {
-            NativeFrameworkBridge.acquireSustainedPerformanceLock(appContext);
-            NativeFrameworkBridge.acquireLowLatencyWifiLock(appContext);
-            NativeFrameworkBridge.startAdpfSession(appContext, targetFps);
-        } catch (Throwable t) {
-            Log.w(TAG, "Native framework lock warning: " + t.getMessage());
         }
 
         // ── 8. Runtime Session Framework, Touch & Network Boost ──────────────

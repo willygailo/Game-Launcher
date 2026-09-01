@@ -1,7 +1,9 @@
 package com.gamebooster.app.config;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.util.Log;
 
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -17,13 +19,30 @@ import java.util.Set;
  * GameConfigStorageAccessEngine — Comprehensive internal & external storage permission,
  * path resolution, and combo access manager for Android 13, 14, 15, and 16.
  *
- * Grants Shizuku elevated read/write permission (chmod 777, chown, setenforce, AppOps)
- * to all game data folders (/sdcard/Android/data, /sdcard/Android/obb, /data/data)
- * and verifies config path integrity.
+ * Handles dual-engine storage access:
+ * 1. Shizuku elevated shell (chmod 777, chown, setenforce, AppOps) for /data/data and /sdcard/Android/data.
+ * 2. Storage Access Framework (SAF) Document Trees and app-private storage fallback.
  */
 public final class GameConfigStorageAccessEngine {
 
     private static final String TAG = "StorageAccessEngine";
+
+    public enum StorageAccessMode {
+        SHIZUKU_ELEVATED("Elevated Shizuku ADB Access"),
+        SAF_DOCUMENT_TREE("Storage Access Framework (SAF) Tree"),
+        DIRECT_APP_PRIVATE("App-Private Internal Storage"),
+        RESTRICTED("Restricted Scoped Storage");
+
+        private final String displayName;
+
+        StorageAccessMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
 
     private GameConfigStorageAccessEngine() {
     }
@@ -31,16 +50,19 @@ public final class GameConfigStorageAccessEngine {
     public static final class StorageAccessReport {
         public final String packageName;
         public final boolean hasShizukuAccess;
+        public final StorageAccessMode accessMode;
         public final int totalPathsResolved;
         public final int accessiblePathsCount;
         public final List<String> paths;
         public final String statusSummary;
 
         public StorageAccessReport(String packageName, boolean hasShizukuAccess,
+                                   StorageAccessMode accessMode,
                                    int totalPathsResolved, int accessiblePathsCount,
                                    List<String> paths, String statusSummary) {
             this.packageName = packageName;
             this.hasShizukuAccess = hasShizukuAccess;
+            this.accessMode = accessMode != null ? accessMode : StorageAccessMode.RESTRICTED;
             this.totalPathsResolved = totalPathsResolved;
             this.accessiblePathsCount = accessiblePathsCount;
             this.paths = paths;
@@ -59,12 +81,17 @@ public final class GameConfigStorageAccessEngine {
         Set<String> pathSet = new HashSet<>();
 
         // 1. Standard External Storage Data & OBB Paths
-        String extStorage = Environment.getExternalStorageDirectory().getAbsolutePath();
-        pathSet.add(extStorage + "/Android/data/" + pkg);
-        pathSet.add(extStorage + "/Android/data/" + pkg + "/files");
-        pathSet.add(extStorage + "/Android/data/" + pkg + "/cache");
-        pathSet.add(extStorage + "/Android/obb/" + pkg);
-        pathSet.add(extStorage + "/Android/media/" + pkg);
+        try {
+            String extStorage = Environment.getExternalStorageDirectory().getAbsolutePath();
+            pathSet.add(extStorage + "/Android/data/" + pkg);
+            pathSet.add(extStorage + "/Android/data/" + pkg + "/files");
+            pathSet.add(extStorage + "/Android/data/" + pkg + "/cache");
+            pathSet.add(extStorage + "/Android/obb/" + pkg);
+            pathSet.add(extStorage + "/Android/media/" + pkg);
+        } catch (Throwable ignored) {
+            pathSet.add("/sdcard/Android/data/" + pkg);
+            pathSet.add("/sdcard/Android/obb/" + pkg);
+        }
 
         // 2. Internal /data/data Paths (requires elevated Shizuku/root)
         pathSet.add("/data/data/" + pkg);
@@ -95,12 +122,39 @@ public final class GameConfigStorageAccessEngine {
         return list;
     }
 
-    private static boolean isFileLikePath(String path) {
+    /**
+     * Determines whether a given string is a configuration file path rather than a directory.
+     */
+    public static boolean isFileLikePath(String path) {
         if (path == null) return false;
         String lower = path.toLowerCase();
         return lower.endsWith(".ini") || lower.endsWith(".xml") || lower.endsWith(".json")
                 || lower.endsWith(".cfg") || lower.endsWith(".sav") || lower.endsWith(".dat")
-                || lower.endsWith(".txt") || lower.endsWith(".conf") || lower.endsWith(".properties");
+                || lower.endsWith(".txt") || lower.endsWith(".conf") || lower.endsWith(".config")
+                || lower.endsWith(".properties");
+    }
+
+    /**
+     * Constructs a Storage Access Framework (SAF) Document Tree Uri representation for Android/data.
+     */
+    public static Uri buildSafDocumentTreeUri(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) {
+            return DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android/data");
+        }
+        return DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android/data/" + packageName.trim());
+    }
+
+    /**
+     * Checks if standard file system access or SAF permissions are available.
+     */
+    public static boolean hasDirectStorageAccess(Context context, String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        try {
+            File file = new File(path);
+            return file.exists() && file.canRead();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /**
@@ -192,7 +246,7 @@ public final class GameConfigStorageAccessEngine {
      */
     public static StorageAccessReport verifyAccess(Context context, String packageName) {
         if (packageName == null) {
-            return new StorageAccessReport("", false, 0, 0, Collections.emptyList(), "Invalid Package");
+            return new StorageAccessReport("", false, StorageAccessMode.RESTRICTED, 0, 0, Collections.emptyList(), "Invalid Package");
         }
         List<String> paths = resolveAllStoragePaths(context, packageName);
         boolean hasShizuku = ShizukuExecutor.hasShizukuPermission();
@@ -205,12 +259,16 @@ public final class GameConfigStorageAccessEngine {
             }
         }
 
+        StorageAccessMode mode = hasShizuku
+                ? StorageAccessMode.SHIZUKU_ELEVATED
+                : (accessibleCount > 0 ? StorageAccessMode.DIRECT_APP_PRIVATE : StorageAccessMode.RESTRICTED);
+
         String summary = hasShizuku
                 ? "Full Shizuku Elevated Access Granted (" + paths.size() + " paths unlocked)"
                 : (accessibleCount > 0
                 ? "Standard Access (" + accessibleCount + "/" + paths.size() + " paths)"
                 : "Restricted Scoped Storage (Grant Shizuku)");
 
-        return new StorageAccessReport(packageName, hasShizuku, paths.size(), accessibleCount, paths, summary);
+        return new StorageAccessReport(packageName, hasShizuku, mode, paths.size(), accessibleCount, paths, summary);
     }
 }

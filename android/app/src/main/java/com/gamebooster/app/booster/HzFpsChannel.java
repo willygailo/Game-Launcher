@@ -1,11 +1,12 @@
 package com.gamebooster.app.booster;
-import com.gamebooster.app.config.*;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
-import android.content.Context;
+
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.engine.NativeFrameworkBridge;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 public class HzFpsChannel {
@@ -48,12 +49,12 @@ public class HzFpsChannel {
      * even if Android's Display.getSupportedModes() does not list the requested Hz.
      *
      * @param context App context
-     * @param requestedHz Target: 120, 144, or 165
+     * @param requestedHz Target: 120, 144, 165, or 185
      */
     public static RefreshRateResult forceSetRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
         if (!ShizukuExecutor.hasShizukuPermission()) {
-            return RefreshRateResult.failed(requestedHz, 0);
+            return setRefreshRate(context, requestedHz);
         }
         MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
         return r.success
@@ -75,9 +76,15 @@ public class HzFpsChannel {
             }
         }
 
-        String hzStr = String.valueOf(requestedHz);
-        String hzFloatStr = requestedHz + ".0";
-        int hzInt = requestedHz;
+        float maxSupported = NativeFrameworkBridge.getHighestSupportedRefreshRate(context);
+        int targetHz = requestedHz;
+        if (maxSupported > 0 && requestedHz > (int) (maxSupported + 1)) {
+            Log.d(TAG, "Requested " + requestedHz + "Hz exceeds display max hardware (" + maxSupported + "Hz), applying available modes.");
+        }
+
+        String hzStr = String.valueOf(targetHz);
+        String hzFloatStr = targetHz + ".0";
+        int hzInt = targetHz;
         boolean ok = true;
 
         // Stock AOSP / Pixel Standard settings (Android 11+) & Dynamic Refresh Defeat
@@ -89,12 +96,12 @@ public class HzFpsChannel {
         CommandExecutor.setSystemSetting("system", "match_content_frame_rate", "0");
         CommandExecutor.setSystemSetting("secure", "match_content_frame_rate_preference", "0");
         CommandExecutor.executeSystemCommand("cmd game mode performance global");
-        CommandExecutor.executeSystemCommand("cmd game set --fps " + requestedHz + " global");
-        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + requestedHz);
+        CommandExecutor.executeSystemCommand("cmd game set --fps " + targetHz + " global");
+        CommandExecutor.executeSystemCommand("cmd window set-app-refresh-rate global " + targetHz);
 
         String manufacturer = Build.MANUFACTURER != null ? Build.MANUFACTURER.toLowerCase() : "";
         String brand = Build.BRAND != null ? Build.BRAND.toLowerCase() : "";
-        Log.d(TAG, "setRefreshRate: targetHz=" + requestedHz + " manufacturer='" + manufacturer + "' brand='" + brand + "'");
+        Log.d(TAG, "setRefreshRate: targetHz=" + targetHz + " manufacturer='" + manufacturer + "' brand='" + brand + "'");
 
         // Vendor-Gated Specific Keys
         if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || brand.contains("poco")) {
@@ -141,7 +148,7 @@ public class HzFpsChannel {
         CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
         CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
 
-        return RefreshRateResult.success(requestedHz, requestedHz);
+        return RefreshRateResult.success(requestedHz, targetHz);
     }
 
     public static boolean forceGameFps(Context context, String packageName, int targetFps) {
