@@ -216,60 +216,63 @@ public class ShizukuExecutor {
         return executeShizukuCommand("input swipe " + startX + " " + startY + " " + endX + " " + endY + " " + durationMs);
     }
 
+    private static final java.util.concurrent.ExecutorService PROCESS_IO_POOL = java.util.concurrent.Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "Shizuku-ProcessIO");
+        t.setDaemon(true);
+        return t;
+    });
+
     public static String readProcessOutput(Process process, long timeoutMs) {
         if (process == null) return "ERROR: Process is null";
         final StringBuilder stdout = new StringBuilder();
         final StringBuilder stderr = new StringBuilder();
 
-        Thread outThread = new Thread(() -> {
+        java.util.concurrent.Future<?> outFuture = PROCESS_IO_POOL.submit(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     stdout.append(line).append("\n");
                 }
             } catch (Throwable ignored) {}
-        }, "Shizuku-StdoutReader");
+        });
 
-        Thread errThread = new Thread(() -> {
+        java.util.concurrent.Future<?> errFuture = PROCESS_IO_POOL.submit(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     stderr.append(line).append("\n");
                 }
             } catch (Throwable ignored) {}
-        }, "Shizuku-StderrReader");
-
-        outThread.setDaemon(true);
-        errThread.setDaemon(true);
-        outThread.start();
-        errThread.start();
+        });
 
         final int[] exitCodeHolder = new int[]{-1};
-        final boolean[] finished = new boolean[]{false};
-        Thread waitThread = new Thread(() -> {
+        java.util.concurrent.Future<?> waitFuture = PROCESS_IO_POOL.submit(() -> {
             try {
                 exitCodeHolder[0] = process.waitFor();
-                finished[0] = true;
             } catch (Throwable ignored) {}
-        }, "Shizuku-WaitThread");
-        waitThread.setDaemon(true);
-        waitThread.start();
+        });
 
         try {
-            waitThread.join(timeoutMs);
-        } catch (InterruptedException ignored) {}
-
-        if (!finished[0]) {
+            waitFuture.get(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (java.util.concurrent.TimeoutException te) {
             try {
                 process.destroy();
             } catch (Throwable ignored) {}
+            outFuture.cancel(true);
+            errFuture.cancel(true);
+            waitFuture.cancel(true);
             return "ERROR: Command timed out after " + timeoutMs + "ms";
+        } catch (Throwable t) {
+            try {
+                process.destroy();
+            } catch (Throwable ignored) {}
+            return "ERROR: " + t.getMessage();
         }
 
         try {
-            outThread.join(300);
-            errThread.join(300);
-        } catch (InterruptedException ignored) {}
+            outFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+            errFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (Throwable ignored) {}
 
         String stdoutStr = stdout.toString().trim();
         String stderrStr = stderr.toString().trim();

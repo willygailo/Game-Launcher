@@ -239,6 +239,42 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
         updateTextureMatrix();
     }
 
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        if (visibility == VISIBLE) {
+            if (shouldPlayWhenReady) {
+                play();
+            }
+        } else {
+            pause();
+        }
+    }
+
+    @Override
+    public void onVisibilityAggregated(boolean isVisible) {
+        super.onVisibilityAggregated(isVisible);
+        if (isVisible) {
+            if (shouldPlayWhenReady) {
+                play();
+            }
+        } else {
+            pause();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        release();
+    }
+
+    public void trimMemory(int level) {
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+            release();
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // SurfaceTextureListener
     // ─────────────────────────────────────────────────────────────────────────
@@ -249,7 +285,7 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
             surface.release();
         }
         surface = new Surface(surfaceTexture);
-        if (videoUri != null) {
+        if (videoUri != null && shouldPlayWhenReady) {
             openVideo();
         }
     }

@@ -67,6 +67,9 @@ public class AutoGameMonitorService extends Service {
         context.stopService(intent);
     }
 
+    private boolean isScreenOn = true;
+    private android.content.BroadcastReceiver screenReceiver;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -78,7 +81,35 @@ public class AutoGameMonitorService extends Service {
             startForeground(NOTIF_ID, createNotification());
         }
 
+        registerScreenReceiver();
         setupMonitorLoop();
+    }
+
+    private void registerScreenReceiver() {
+        screenReceiver = new android.content.BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null) return;
+                if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                    isScreenOn = false;
+                    if (handler != null && monitorRunnable != null) {
+                        handler.removeCallbacks(monitorRunnable);
+                    }
+                    Log.d(TAG, "Screen OFF — Paused game monitoring loop to save battery");
+                } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                    isScreenOn = true;
+                    if (handler != null && monitorRunnable != null && isRunning) {
+                        handler.removeCallbacks(monitorRunnable);
+                        handler.post(monitorRunnable);
+                    }
+                    Log.d(TAG, "Screen ON — Resumed game monitoring loop");
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        registerReceiver(screenReceiver, filter);
     }
 
     private void setupMonitorLoop() {
@@ -88,8 +119,9 @@ public class AutoGameMonitorService extends Service {
         monitorRunnable = new Runnable() {
             @Override
             public void run() {
+                if (!isScreenOn) return;
                 checkForegroundApp();
-                if (handler != null && isRunning) {
+                if (handler != null && isRunning && isScreenOn) {
                     handler.postDelayed(this, 2500); // Check every 2.5s
                 }
             }
@@ -310,6 +342,12 @@ public class AutoGameMonitorService extends Service {
     public void onDestroy() {
         super.onDestroy();
         isRunning = false;
+        if (screenReceiver != null) {
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Throwable ignored) {}
+            screenReceiver = null;
+        }
         if (handler != null && monitorRunnable != null) {
             handler.removeCallbacks(monitorRunnable);
         }
