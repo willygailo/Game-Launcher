@@ -113,8 +113,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchAutoGameBoost;
     private Switch switchEsportsAudio;
     private Switch switchAntiLog;
-    private Switch switchFocusMode;
-    private Button btnFocusWhitelist;
 
     // Network Mode UI
     private TextView tvNetworkActiveMode;
@@ -367,53 +365,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             }
                         }
                 );
-            });
-        }
-
-        // Focus Mode (App Freezer & Deep Suspend)
-        switchFocusMode = view.findViewById(R.id.switch_focus_mode);
-        btnFocusWhitelist = view.findViewById(R.id.btn_focus_whitelist);
-
-        if (switchFocusMode != null && getContext() != null) {
-            isProgrammaticToggle = true;
-            switchFocusMode.setChecked(ManualSettingsPreferences.isFocusModeEnabled(getContext()) || com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(getContext()));
-            isProgrammaticToggle = false;
-
-            switchFocusMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Focus Mode (App Freeze)")) return;
-                ManualSettingsPreferences.setFocusModeEnabled(getContext(), isChecked);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    int count;
-                    if (isChecked) {
-                        count = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(getContext(), null);
-                    } else {
-                        count = com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(getContext());
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            if (isChecked) {
-                                Toast.makeText(getContext(), "🎯 Focus Mode Active: " + count + " Background Apps Frozen! (100% CPU & RAM Dedicated to Gaming)", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(getContext(), "🔄 Focus Mode Disabled: " + count + " Apps Restored to Normal", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnFocusWhitelist != null) {
-            btnFocusWhitelist.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Focus Mode App Whitelist")) return;
-                com.gamebooster.app.focus.FocusAppSelectorDialog.show(getContext(), (frozenCount, isFrozen) -> {
-                    if (switchFocusMode != null && isAdded()) {
-                        isProgrammaticToggle = true;
-                        switchFocusMode.setChecked(isFrozen && frozenCount > 0);
-                        isProgrammaticToggle = false;
-                    }
-                });
             });
         }
 
@@ -1397,7 +1348,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchAutoGameBoost != null) switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
                 if (switchEsportsAudio != null) switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
                 if (switchAntiLog != null) switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
-                if (switchFocusMode != null) switchFocusMode.setChecked(ManualSettingsPreferences.isFocusModeEnabled(getContext()) || com.gamebooster.app.focus.FocusModeEngine.isFocusModeActive(getContext()));
                 if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
                 if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));

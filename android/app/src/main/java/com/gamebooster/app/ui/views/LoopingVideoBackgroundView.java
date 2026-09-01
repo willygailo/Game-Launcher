@@ -269,8 +269,10 @@ public class LoopingVideoBackgroundView extends TextureView implements TextureVi
         release();
     }
 
+    @SuppressWarnings("deprecation")
     public void trimMemory(int level) {
-        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW
+                || level >= android.content.ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
             release();
         }
     }

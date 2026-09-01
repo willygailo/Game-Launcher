@@ -349,6 +349,36 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroUnlock
   (JNIEnv *, jclass, jstring);
 
+/*
+ * MLBB Hero-Specific Combo & Damage Scripts
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyFastCableCombo
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionDaggerCombo
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouKickCombo
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHayabusaShadowCombo
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBeatrixAllGunDamage
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCriticalBurstOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * All-Gun & All-Scope Universal Calibrations
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllGunWeaponCalibration
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeMasteryCalibration
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

@@ -418,6 +418,66 @@ public class MlbbConfigPatcher {
         }
     }
 
+    /**
+     * MLBB — Fanny hero fast cable & energy burst combo injection.
+     */
+    public static void applyFannyFastCableCombo(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectFannyFastCableCombo(path);
+        }
+    }
+
+    /**
+     * MLBB — Gusion hero 10-dagger return instant weave injection.
+     */
+    public static void applyGusionDaggerCombo(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectGusionDaggerCombo(path);
+        }
+    }
+
+    /**
+     * MLBB — Chou hero Shunpo zero-delay & insec kick magnetism injection.
+     */
+    public static void applyChouKickCombo(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectChouKickCombo(path);
+        }
+    }
+
+    /**
+     * MLBB — Hayabusa hero shadow quad-teleport kill injection.
+     */
+    public static void applyHayabusaShadowCombo(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectHayabusaShadowCombo(path);
+        }
+    }
+
+    /**
+     * MLBB — Beatrix 4-gun damage boost & instant weapon swap injection.
+     */
+    public static void applyBeatrixAllGunDamage(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectBeatrixAllGunDamage(path);
+        }
+    }
+
+    /**
+     * MLBB — Critical burst overdrive (true damage pen, crit multiplier 2.5x).
+     */
+    public static void applyCriticalBurstOverdrive(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCriticalBurstOverdrive(path);
+        }
+    }
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

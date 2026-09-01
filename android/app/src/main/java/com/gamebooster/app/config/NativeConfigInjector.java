@@ -146,6 +146,15 @@ public class NativeConfigInjector {
      */
     public static native boolean nativeInjectAllHeroUnlock(String path);
 
+    public static native boolean nativeInjectFannyFastCableCombo(String path);
+    public static native boolean nativeInjectGusionDaggerCombo(String path);
+    public static native boolean nativeInjectChouKickCombo(String path);
+    public static native boolean nativeInjectHayabusaShadowCombo(String path);
+    public static native boolean nativeInjectBeatrixAllGunDamage(String path);
+    public static native boolean nativeInjectCriticalBurstOverdrive(String path);
+    public static native boolean nativeInjectAllGunWeaponCalibration(String path);
+    public static native boolean nativeInjectAllScopeMasteryCalibration(String path);
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -855,6 +864,70 @@ public class NativeConfigInjector {
         }
         // Fallback: at minimum inject touch precision for lobby stability
         return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectFannyFastCableCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFannyFastCableCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectGusionDaggerCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectGusionDaggerCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectChouKickCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectChouKickCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectHayabusaShadowCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHayabusaShadowCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectBeatrixAllGunDamage(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectBeatrixAllGunDamage(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectCriticalBurstOverdrive(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCriticalBurstOverdrive(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
+    }
+
+    public static boolean injectAllGunWeaponCalibration(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAllGunWeaponCalibration(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
+    }
+
+    public static boolean injectAllScopeMasteryCalibration(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAllScopeMasteryCalibration(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path) | injectNextGenTouchSampling(path, 1000);
     }
 
 

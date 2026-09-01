@@ -100,10 +100,75 @@ public final class CommonConfigTuningInjector {
     }
 
     /**
+     * Injects comprehensive All-Gun Weapon Class Calibration (AR, SMG, Sniper, DMR, Shotgun, LMG, Pistols).
+     */
+    public static void applyAllGunWeaponCalibration(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        String[] gunKeys = {
+            "AR_RecoilZero=1", "AR_SpreadZero=1", "AR_BulletVelocityBoost=1", "AR_AimMagnetism=3",
+            "SMG_HipfireBurst=1", "SMG_ZeroRecoil=1", "SMG_RapidFireHitReg=1000",
+            "Sniper_ZeroSway=1", "Sniper_QuickScopeZeroDelay=1", "Sniper_BulletDropComp=1", "Sniper_HeadshotLock=1",
+            "DMR_RapidTapSync=1000", "DMR_VerticalKickDamp=1", "DMR_RecoilRecovery=10",
+            "Shotgun_TightPelletSpread=1", "Shotgun_ZeroPelletRNG=1", "Shotgun_HitSync=1000",
+            "LMG_ContinuousFireStability=1", "LMG_OverheatReduction=1", "LMG_RecoilCeiling=0",
+            "Pistol_TriggerZeroDeadzone=1", "Pistol_RapidTapBoost=1",
+            "WeaponSpread=0", "WeaponSway=0", "WeaponRecoilScale=0", "RecoilPatternScale=0",
+            "VerticalRecoilScale=0", "HorizontalRecoilScale=0", "BulletSpreadScale=0",
+            "MuzzleVelocityFactor=1.0", "PredictiveAim=1", "HitRegSyncRate=1000",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectAllGunWeaponCalibration(path);
+            ConfigFileHelper.patchKeys(path, gunKeys, "[AllGunCalibration]");
+        }
+        Log.i(TAG, "All-Gun Weapon Calibration applied for " + packageName);
+    }
+
+    /**
+     * Injects complete All-Scope Optics Mastery (NoScope, RedDot, Holo, 2x, 3x, 4x, 6x, 8x, Thermal, Canted).
+     */
+    public static void applyAllScopeMasteryCalibration(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        String[] scopeMasteryKeys = {
+            "NoScopeTouchRate=1000", "HipfireDeadzone=0", "HipfireSensitivityBoost=1.2", "HipfireSpread=0", "HipfireAimLock=1",
+            "IronSightSensitivity=1.0", "CantedSightZeroDelay=1", "CantedSightSensitivity=1.0",
+            "RedDotSensScale=1.0", "RedDotAimLock=1", "HoloSensScale=1.0", "HoloZeroDeadzone=1",
+            "Scope2xSensitivity=1.0", "Scope2xGyroSample=1000", "Scope2xStabilizer=1", "Scope2xRecoilDamp=1",
+            "Scope3xSensitivity=0.90", "Scope3xGyroStabilization=1", "Scope3xRecoilDamp=1", "Scope3xDriftCancel=1",
+            "Scope4xSensitivity=0.85", "Scope4xGyroStabilization=1", "Scope4xStabilizer=1", "Scope4xZeroSway=1",
+            "Scope6xSensitivity=0.75", "Scope6xMicroDamping=1", "Scope6xStabilizer=1", "Scope6xGyro1000Hz=1",
+            "Scope8xSensitivity=0.65", "Scope8xPrecisionFilter=1", "Scope8xStabilizer=1", "Scope8xGyro1000Hz=1", "Scope8xZeroBreathing=1",
+            "ThermalScopeTracking=1", "ThermalHitboxGlow=1", "NightVisionClarity=1",
+            "AimAssistLockMax=1", "AimMagnetism=3", "AimSnapSpeed=10", "AimSmoothFactor=0", "HeadMagnetism=1",
+            "AdsZeroDelay=1", "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "GyroLatencyMode=0",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        for (String path : paths) {
+            NativeConfigInjector.injectAllScopeMasteryCalibration(path);
+            ConfigFileHelper.patchKeys(path, scopeMasteryKeys, "[ScopeMasteryPrecision]");
+        }
+        Log.i(TAG, "All-Scope Optics Mastery Calibration applied for " + packageName);
+    }
+
+    /**
+     * Injects Critical Burst Overdrive (True damage pen, crit multiplier, anti-armor bypass).
+     */
+    public static void applyCriticalBurstOverdrive(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCriticalBurstOverdrive(path);
+        }
+        Log.i(TAG, "CriticalBurstOverdrive applied for " + packageName);
+    }
+
+    /**
      * Injects Gyroscope 1000Hz sampling, low-latency tracking, and input stabilization.
      */
     public static void applyAimAssistConfig(String packageName) {
-        applyAllScopeAimPrecision(packageName);
+        applyAllScopeMasteryCalibration(packageName);
     }
 
     /**

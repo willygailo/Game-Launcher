@@ -310,6 +310,7 @@ public class GameCfgDialog {
                     // 2. Fast direct config patching for target package only
                     GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
                     com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+                    com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
                     if (profile.isHardwareMaskEnabled()) {
                         com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkg);
                     }
