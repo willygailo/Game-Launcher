@@ -54,7 +54,6 @@ public class CompetitiveCfgProfile {
     private boolean droneViewUltraEnabled;
     private boolean hardwareMaskEnabled;
     private boolean antiLogEnabled;
-    private boolean focusFreezeEnabled = true;
 
     // ─── Constructors ────────────────────────────────────────────────────────
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -330,9 +329,6 @@ public class CompetitiveCfgProfile {
 
     public boolean isAntiLogEnabled() { return antiLogEnabled; }
     public void setAntiLogEnabled(boolean enabled) { this.antiLogEnabled = enabled; }
-
-    public boolean isFocusFreezeEnabled() { return focusFreezeEnabled; }
-    public void setFocusFreezeEnabled(boolean enabled) { this.focusFreezeEnabled = enabled; }
 
     // ─── SharedPrefs Key Builder ─────────────────────────────────────────────
     /** Returns the SharedPreferences key prefix for this profile. */

@@ -27,7 +27,6 @@ import com.gamebooster.app.config.CompetitiveCfgProfile;
 import com.gamebooster.app.config.GameConfigPatcher;
 import com.gamebooster.app.config.GameProfilePreferences;
 import com.gamebooster.app.core.AppExecutors;
-import com.gamebooster.app.focus.FocusModeEngine;
 import com.gamebooster.app.gamemanager.GameManagerLauncher;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -209,7 +208,6 @@ public class PreLaunchGameDialog {
                 profile.setTargetFps(finalFps);
             }
             profile.setAntiLogEnabled(true);
-            profile.setFocusFreezeEnabled(true);
             CfgProfileManager.saveProfile(context, profile);
             GameProfilePreferences.setTargetHz(context, pkg, finalFps);
 

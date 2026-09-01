@@ -255,7 +255,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:lineSpacingExtra="3dp"
-            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ Focus Freeze: suspend background apps for 100% CPU/RAM\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted ANGLE / Vulkan Game Driver isolation\n✔ Anti-Log &amp; crash telemetry cleaner"
+            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted ANGLE / Vulkan Game Driver isolation\n✔ Anti-Log &amp; crash telemetry shield"
             android:textColor="@color/text_secondary"
             android:textSize="10sp" />
     </LinearLayout>

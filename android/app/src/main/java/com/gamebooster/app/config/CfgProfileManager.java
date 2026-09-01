@@ -40,7 +40,6 @@ public class CfgProfileManager {
     private static final String KEY_ARMOR_SUFFIX = "_armor_def";
     private static final String KEY_MASK_SUFFIX  = "_hardware_mask";
     private static final String KEY_ANTILOG_SUFFIX = "_anti_log";
-    private static final String KEY_FOCUS_FREEZE_SUFFIX = "_focus_freeze";
     private static final String KEY_FAST_CD_SUFFIX = "_fast_cd";
     private static final String KEY_SHIELD_SUFFIX = "_shield1500";
     private static final String KEY_DRONE_SUFFIX = "_drone_view";
@@ -196,7 +195,6 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_ARMOR_SUFFIX,  profile.isArmorDefEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
-        ed.putBoolean(key + KEY_FOCUS_FREEZE_SUFFIX, profile.isFocusFreezeEnabled());
         ed.apply();
         Log.i(TAG, "Saved profile: " + profile);
     }
@@ -222,10 +220,7 @@ public class CfgProfileManager {
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
-        boolean focusFreeze = prefs.getBoolean(key + KEY_FOCUS_FREEZE_SUFFIX, true);
-        CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
-        profile.setFocusFreezeEnabled(focusFreeze);
-        return profile;
+        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────

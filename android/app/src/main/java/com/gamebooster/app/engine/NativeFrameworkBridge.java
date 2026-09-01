@@ -67,6 +67,7 @@ public class NativeFrameworkBridge {
      * Queries active Game Mode for package from Android GameManager (API 31+).
      * @return Game Mode int (2 = Performance, 1 = Standard, 3 = Battery), or -1 if unsupported.
      */
+    @SuppressLint("WrongConstant")
     public static int getGameMode(Context context, String packageName) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return -1;
         try {

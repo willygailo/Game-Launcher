@@ -116,7 +116,6 @@
 # 6. ALL INTERNAL SUBSYSTEMS & MODULES (com.gamebooster.app.**)
 # ----------------------------------------------------------------------------
 -keep class com.gamebooster.app.booster.** { *; }
--keep class com.gamebooster.app.cleaner.** { *; }
 -keep class com.gamebooster.app.config.** { *; }
 -keep class com.gamebooster.app.core.** { *; }
 -keep class com.gamebooster.app.device.** { *; }

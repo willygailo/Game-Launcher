@@ -93,7 +93,6 @@ public class GameCfgDialog {
         SwitchCompat switchSuperTouch = view.findViewById(R.id.switch_super_touch);
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
         SwitchCompat switchAntiLog = view.findViewById(R.id.switch_anti_log);
-        SwitchCompat switchFocusFreeze = view.findViewById(R.id.switch_focus_freeze);
 
         // Graphics Driver RadioGroup
         RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
@@ -189,9 +188,6 @@ public class GameCfgDialog {
             switchSuperTouch.setChecked(currentCfg.isSuperFastTouchEnabled());
             switchForceHz.setChecked(currentCfg.isForceWriteSystemHz());
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
-            if (switchFocusFreeze != null) {
-                switchFocusFreeze.setChecked(currentCfg.isFocusFreezeEnabled());
-            }
 
             int currentFps = currentCfg.getTargetFps();
             if (currentFps == 185 && rb185 != null) {
@@ -257,7 +253,6 @@ public class GameCfgDialog {
             final boolean superTouch = switchSuperTouch.isChecked();
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
-            final boolean focusFreeze = switchFocusFreeze != null && switchFocusFreeze.isChecked();
 
             final com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType driverType;
             if (rbDriverAngle != null && rbDriverAngle.isChecked()) {
@@ -310,7 +305,6 @@ public class GameCfgDialog {
                     // 1. Build and Save Profile
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
-                    profile.setFocusFreezeEnabled(focusFreeze);
                     CfgProfileManager.saveProfile(context, profile);
 
                     // 2. Fast direct config patching for target package only
@@ -350,11 +344,6 @@ public class GameCfgDialog {
                     // 5. Anti-Log & Telemetry Purge
                     if (antiLog) {
                         AntiLogPatcher.applyAntiLog(pkg);
-                    }
-
-                    // 6. Deep Focus Freeze (Suspend All Background Apps)
-                    if (focusFreeze) {
-                        com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(context, pkg);
                     }
 
                 } catch (Throwable t) {
