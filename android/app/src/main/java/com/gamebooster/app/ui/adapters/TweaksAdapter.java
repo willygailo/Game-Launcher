@@ -193,6 +193,19 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (holder.isUpdatingProgrammatically) return;
 
+                if (isChecked && !ShizukuManager.isShizukuRunningAndGranted() && !RishManager.isRishAvailable()) {
+                    holder.isUpdatingProgrammatically = true;
+                    buttonView.setChecked(false);
+                    holder.isUpdatingProgrammatically = false;
+                    targetItem.setApplied(false);
+                    TweakPreferences.saveTweakState(context, targetItem.getId(), false);
+                    if (stateChangeListener != null) {
+                        stateChangeListener.onTweakStateChanged(targetItem, false, TweakManagerRepository.getAppliedCount(context));
+                    }
+                    ShizukuManager.showShizukuPermissionDialog(context, targetItem.getTitle());
+                    return;
+                }
+
                 // 1. Immediately persist state in memory & storage
                 targetItem.setApplied(isChecked);
                 TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);
