@@ -166,6 +166,8 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyAimHeadLockConfig(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyUltraDamageOverdriveConfig(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyTrackingBulletConfig(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyMlbbAllHeroMaxDamage2026(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyMlbbUltimateDamageOverdrive2026(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 
@@ -186,6 +188,8 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyAimHeadLockConfig(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyHeroAimLockConfig(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyTrackingBulletConfig(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmAllWeaponMaxDamage2026(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmUltraAimbot2026(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 
@@ -206,6 +210,8 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyAimHeadLockConfig(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyHeroAimLockConfig(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyTrackingBulletConfig(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmMaxDamageAllWeapon2026(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmUltraConfigCheat2026(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 

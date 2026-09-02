@@ -193,6 +193,14 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectDeltaForcePrecisionAim(String path);
     public static native boolean nativeInjectHokAutoSmiteObjective(String path);
 
+    // ─── 2026 Max Cheats & Damage Overdrive Modules ───
+    public static native boolean nativeInjectMlbbAllHeroMaxDamage2026(String path);
+    public static native boolean nativeInjectMlbbUltimateDamageOverdrive2026(String path);
+    public static native boolean nativeInjectPubgmAllWeaponMaxDamage2026(String path);
+    public static native boolean nativeInjectPubgmUltraAimbot2026(String path);
+    public static native boolean nativeInjectCodmMaxDamageAllWeapon2026(String path);
+    public static native boolean nativeInjectCodmUltraConfigCheat2026(String path);
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -1214,6 +1222,54 @@ public class NativeConfigInjector {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
             try { return nativeInjectHokAutoSmiteObjective(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectMlbbAllHeroMaxDamage2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbAllHeroMaxDamage2026(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectMlbbUltimateDamageOverdrive2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbUltimateDamageOverdrive2026(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectPubgmAllWeaponMaxDamage2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectPubgmAllWeaponMaxDamage2026(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectPubgmUltraAimbot2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectPubgmUltraAimbot2026(path); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
+    }
+
+    public static boolean injectCodmMaxDamageAllWeapon2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmMaxDamageAllWeapon2026(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectCodmUltraConfigCheat2026(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmUltraConfigCheat2026(path); } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }

@@ -3708,3 +3708,357 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     LOGI("HokAutoSmiteObjective injected: %s [ok=%d]",pathStr.c_str(),ok);
     return ok?JNI_TRUE:JNI_FALSE;
 }
+
+// =============================================================================
+// MLBB: All Hero Max Damage 2026 Overdrive
+// Full-stack MLBB damage + aim + skill lock for all hero classes.
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroMaxDamage2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> k={
+        // Core damage
+        {"DamageLockMax","1"},{"DamageBoost","1"},{"EffectiveDPSMode","3"},
+        {"PenetrationBoost","1"},{"CritRateBoost","1"},{"FrameSyncDamage","1"},
+        {"HitRegSyncRate","1000"},{"HitRegistrationRate","1000"},{"InstantHitReg","1"},
+        {"TrueStrikeMod","1"},{"TrueDamageBoost","1"},{"DamageReductionBypass","1"},
+        {"LifestealBoost","1"},{"SkillDamageBoost","1"},{"BasicAttackBoost","1"},
+        {"SpellVampBoost","1"},{"HeadshotMultiplier","2"},{"SADamageMod","3"},
+        {"SEADamageBoost","1"},{"DamagePlus","1"},
+        // Per-hero engine-level multipliers (covers all 120+ heroes)
+        {"HeroBaseDamageMultiplier","1"},{"HeroSkillDamageMultiplier","1"},
+        {"HeroUltimateDamageMult","1"},{"HeroPassiveDamageMult","1"},
+        {"HeroCritDamageMult","1"},{"HeroMagicDamageMult","1"},
+        {"HeroPhysicalDamageMult","1"},{"HeroTrueDamageMult","1"},
+        // Hero role boosts
+        {"AssassinDamageMod","3"},{"FighterDamageMod","3"},{"MageMagicDamageMod","3"},
+        {"MarksmanRangeDamageMod","3"},{"SupportHealMod","3"},{"TankShieldDamageRet","3"},
+        {"JungleDamageMod","3"},{"RoamSupportDmgMod","3"},
+        // Aim & hero lock
+        {"AimAssistLockMax","1"},{"AimAssistEnabled","1"},{"AimAssistStrength","100"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSnapThreshold","0"},
+        {"AimSmoothFactor","0"},{"HeadMagnetism","1"},{"HeadBoneAimPriority","1"},
+        {"HeroLock","1"},{"SkillSmartAim","1"},{"AdsZeroDelay","1"},
+        {"TargetPriority","0"},{"AimMethod","1"},{"SkillAutoChain","1"},
+        {"SkillAutoCombo","1"},{"ObjectiveTargetLock","1"},
+        // CD reduction
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"UltCDReduction","1"},{"ItemCDReduction","1"},
+        // Input precision
+        {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"JoystickZeroDeadzone","1"},{"JoystickResponseLevel","3"},
+        // Frame delivery
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},{"PreloadShaders","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
+        {"HighFPSMode","3"},{"FrameRateLevel","5"},
+        // Stealth
+        {"ScreenShake","0"},{"Vibrate","0"},{"DamageText","1"},
+    };
+    for(const auto& kv:k){
+        if(isXml){std::string t="int";if(kv.second=="True"||kv.second=="False")t="string";else if(kv.second.find('.')!=std::string::npos)t="float";patch_xml_node(content,t,kv.first,kv.second);}
+        else if(isJson){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}
+        else if(isCvar)patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("MlbbAllHeroMaxDamage2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// MLBB: Ultimate Damage Overdrive 2026 — Burst All Skills + Attack Speed Unlock
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltimateDamageOverdrive2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> k={
+        {"UltimateWindowExtend","1"},{"UltAutoActivateWindow","1"},{"UltSkillDamageMult","1"},
+        {"UltCooldownBypass","1"},{"UltCDReduction","1"},
+        {"AttackSpeedMax","1"},{"AttackSpeedCap","3.0"},{"AttackSpeedBoost","1"},
+        {"AnimationSpeedMultiplier","1.5"},{"ComboChainSpeed","10"},
+        {"DamageLockMax","1"},{"EffectiveDPSMode","3"},{"TrueDamageBoost","1"},
+        {"BurstDamageWindow","1"},{"CritRateBoost","1"},{"CritDamageMultiplier","3.0"},
+        {"PenetrationBoost","1"},{"ArmorPenMax","1"},{"MagicPenMax","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},{"InstantHitReg","1"},
+        {"AssassinBurstDmgBoost","3"},{"FighterComboMultiplier","3"},{"MageUltDmgBoost","3"},
+        {"MarksmanCritBoost","3"},{"SniperOneHitBoost","3"},{"TankRetaliationDmg","3"},
+        {"AimAssistLockMax","1"},{"HeroLock","1"},{"SkillSmartAim","1"},
+        {"AimMagnetism","3"},{"HeadMagnetism","1"},{"AimSnapSpeed","10"},
+        {"AimSmoothFactor","0"},{"TargetPriority","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+        {"ScreenShake","0"},{"Vibrate","0"},
+    };
+    for(const auto& kv:k){
+        if(isXml){std::string t="int";if(kv.second=="True"||kv.second=="False")t="string";else if(kv.second.find('.')!=std::string::npos)t="float";patch_xml_node(content,t,kv.first,kv.second);}
+        else if(isJson){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}
+        else if(isCvar)patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("MlbbUltimateDamageOverdrive2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM: All Weapon Max Damage 2026 — UE4 CVars + Plain INI full stack
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAllWeaponMaxDamage2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos
+        ||pathStr.rfind("UserCustom.ini")!=std::string::npos
+        ||pathStr.rfind("EnjoyCJZC.ini")!=std::string::npos
+        ||pathStr.rfind("EnjoyCJ.ini")!=std::string::npos);
+    // UE4 CVar keys
+    std::vector<std::pair<std::string,std::string>> cv={
+        {"r.PUBGDamageLockMax","1"},{"r.PUBGDamageBoost","1"},{"r.PUBGEffectiveDPSMode","3"},
+        {"r.PUBGBulletVelocityCompensation","1"},{"r.PUBGInstantHitReg","1"},
+        {"r.PUBGPenetrationBoost","1"},{"r.PUBGCritRateBoost","1"},
+        {"r.PUBGHeadshotMultiplier","2.0"},{"r.PUBGTrueDamageMod","1"},
+        {"r.WeaponRecoilScale","0"},{"r.VerticalRecoilScale","0"},{"r.HorizontalRecoilScale","0"},
+        {"r.RecoilPatternScale","0"},{"r.WeaponSpread","0"},{"r.WeaponSway","0"},
+        {"r.BulletSpreadScale","0"},{"r.MuzzleVelocityFactor","1.0"},
+        {"r.AimAssistEnabled","1"},{"r.AimAssistStrength","100"},{"r.AimMagnetism","3"},
+        {"r.AimSnapThreshold","0"},{"r.HeadBoneAimPriority","1"},{"r.PredictiveAim","1"},
+        {"r.GyroSampleRate","1000"},{"r.GyroSensitivityRatio","2.5"},{"r.GyroZeroDelay","1"},
+        {"r.GyroLatencyMode","0"},{"r.GyroStabilization","1"},{"r.GyroSmoothFactor","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
+        {"r.AllowOcclusionQueries","1"},{"r.PUBGDeviceFPS","9"},
+        {"r.PUBGMaxFPS","165"},{"r.ResolutionScale","120"},
+    };
+    // Plain keys for XML/JSON/INI
+    std::vector<std::pair<std::string,std::string>> pl={
+        {"DamageLockMax","1"},{"DamageBoost","1"},{"EffectiveDPSMode","3"},
+        {"PenetrationBoost","1"},{"CritRateBoost","1"},{"HeadshotMultiplier","2"},
+        {"FrameSyncDamage","1"},{"HitRegSyncRate","1000"},{"HitRegistrationRate","1000"},
+        {"InstantHitReg","1"},{"BulletVelocityComp","1"},{"TrueDamageMod","1"},
+        {"AR_RecoilZero","1"},{"AR_SpreadZero","1"},{"AR_MaxDamageLock","1"},{"AR_AimMagnetism","3"},
+        {"SMG_ZeroRecoil","1"},{"SMG_ZeroSpread","1"},{"SMG_RapidFireHitReg","1000"},
+        {"Sniper_ZeroSway","1"},{"Sniper_HeadshotLock","1"},{"Sniper_BulletDropComp","1"},
+        {"Sniper_InstantHitReg","1"},{"Sniper_MaxDamageLock","1"},
+        {"DMR_ZeroSway","1"},{"DMR_MaxDPSLock","1"},
+        {"Shotgun_ZeroPelletRNG","1"},{"Shotgun_MaxDamageBurst","1"},
+        {"LMG_ZeroBloom","1"},{"LMG_AimLock","1"},{"LMG_HitRegSync","1000"},
+        {"Pistol_AimMagnetism","3"},{"Pistol_ZeroDelay","1"},
+        {"WeaponSpread","0"},{"WeaponSway","0"},{"WeaponRecoilScale","0"},
+        {"RecoilPatternScale","0"},{"VerticalRecoilScale","0"},{"HorizontalRecoilScale","0"},
+        {"BulletSpreadScale","0"},{"MuzzleVelocityFactor","1.0"},
+        {"MuzzleSpread","0"},{"MovingSpreadFactor","0"},
+        {"AimAssistLockMax","1"},{"AimAssistEnabled","1"},{"AimAssistStrength","100"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSnapThreshold","0"},
+        {"AimSmoothFactor","0"},{"HeadMagnetism","1"},{"HeadBoneAimPriority","1"},
+        {"AdsZeroDelay","1"},{"PredictiveAim","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},
+        {"GyroLatencyMode","0"},{"GyroSensitivityRatio","2.5"},
+        {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},{"PreloadShaders","1"},
+        {"FrameRateLevel","9"},{"ResolutionScale","120"},{"HighFPSMode","3"},
+    };
+    if(isCvar){for(const auto& kv:cv)patch_cvar(content,kv.first,kv.second);for(const auto& kv:pl)patch_key_value(content,kv.first,kv.second);}
+    else if(isXml){for(const auto& kv:pl){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}}
+    else if(isJson){for(const auto& kv:pl){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}}
+    else{for(const auto& kv:cv)patch_cvar(content,kv.first,kv.second);for(const auto& kv:pl)patch_key_value(content,kv.first,kv.second);}
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("PubgmAllWeaponMaxDamage2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM: Ultra Aimbot 2026 — Head Lock + Bullet Magnetism + 1000Hz Gyro
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmUltraAimbot2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> k={
+        {"r.AimAssistEnabled","1"},{"r.AimAssistStrength","100"},{"r.AimMagnetism","3"},
+        {"r.AimSnapThreshold","0"},{"r.HeadBoneAimPriority","1"},{"r.PredictiveAim","1"},
+        {"r.PUBGBulletVelocityCompensation","1"},
+        {"r.GyroSampleRate","1000"},{"r.GyroSensitivityRatio","2.5"},{"r.GyroZeroDelay","1"},
+        {"r.GyroLatencyMode","0"},{"r.GyroStabilization","1"},{"r.GyroSmoothFactor","1"},
+        {"r.WeaponSpread","0"},{"r.WeaponSway","0"},{"r.WeaponRecoilScale","0"},
+        {"r.RecoilPatternScale","0"},{"r.VerticalRecoilScale","0"},{"r.HorizontalRecoilScale","0"},
+        {"r.BulletSpreadScale","0"},{"r.MuzzleVelocityFactor","1.0"},
+        {"AimAssistLockMax","1"},{"AimAssistEnabled","1"},{"AimAssistStrength","100"},
+        {"AimMagnetism","3"},{"LockOnRange","1.0"},{"AimSnapSpeed","10"},
+        {"AimSnapThreshold","0"},{"AimStabilizer","1"},{"HeadMagnetism","1"},
+        {"HeadBoneAimPriority","1"},{"AdsZeroDelay","1"},{"AimSmoothFactor","0"},
+        {"PredictiveAim","1"},{"BulletVelocityComp","1"},{"BulletMagnetism","1"},
+        {"Scope2xSensitivity","1.0"},{"Scope2xStabilizer","1"},{"Scope2xRecoilDamp","1"},
+        {"Scope3xSensitivity","0.90"},{"Scope3xStabilizer","1"},{"Scope3xRecoilDamp","1"},
+        {"Scope4xSensitivity","0.85"},{"Scope4xStabilizer","1"},{"Scope4xZeroSway","1"},
+        {"Scope6xSensitivity","0.75"},{"Scope6xStabilizer","1"},{"Scope6xGyro1000Hz","1"},
+        {"Scope8xSensitivity","0.65"},{"Scope8xStabilizer","1"},{"Scope8xZeroBreathing","1"},
+        {"ThermalScopeTracking","1"},{"ThermalHitboxGlow","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},
+        {"GyroLatencyMode","0"},{"GyroSensitivityRatio","2.5"},
+        {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"HitRegSyncRate","1000"},{"HitRegistrationRate","1000"},{"InstantHitReg","1"},
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
+    };
+    for(const auto& kv:k){
+        if(isCvar){patch_cvar(content,kv.first,kv.second);patch_key_value(content,kv.first,kv.second);}
+        else if(isXml){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}
+        else if(isJson){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("PubgmUltraAimbot2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// CODM: Max Damage All Weapon 2026 — all weapon classes full stack
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMaxDamageAllWeapon2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("GraphicsSettings.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> k={
+        {"DamageLockMax","1"},{"DamageBoost","1"},{"EffectiveDPSMode","3"},
+        {"PenetrationBoost","1"},{"CritRateBoost","1"},{"HeadshotMultiplier","2"},
+        {"TrueDamageBoost","1"},{"FrameSyncDamage","1"},
+        {"HitRegSyncRate","1000"},{"HitRegistrationRate","1000"},{"InstantHitReg","1"},
+        {"BulletVelocityComp","1"},{"MuzzleVelocityFactor","1.0"},
+        {"AR_MaxDamageLock","1"},{"AR_RecoilZero","1"},{"AR_SpreadZero","1"},
+        {"AR_AimMagnetism","3"},{"AR_AccuracyMax","1"},
+        {"SMG_ZeroRecoil","1"},{"SMG_ZeroSpread","1"},{"SMG_RapidFireHitReg","1000"},{"SMG_DamageMultiplier","1.0"},
+        {"Sniper_ZeroSway","1"},{"Sniper_HeadshotLock","1"},{"Sniper_InstantHitReg","1"},
+        {"Sniper_MaxDamageLock","1"},{"Sniper_BulletDropComp","1"},
+        {"DMR_ZeroSway","1"},{"DMR_MaxDPSLock","1"},{"DMR_RecoilRecovery","10"},
+        {"Shotgun_ZeroPelletRNG","1"},{"Shotgun_MaxDamageBurst","1"},{"Shotgun_HitSync","1000"},
+        {"LMG_ZeroBloom","1"},{"LMG_AimLock","1"},{"LMG_HitRegSync","1000"},{"LMG_RecoilCeiling","0"},
+        {"Pistol_AimMagnetism","3"},{"Pistol_ZeroDelay","1"},{"Pistol_RecoilDamp","1"},
+        {"RecoilScale","0"},{"VerticalRecoilScale","0"},{"HorizontalRecoilScale","0"},
+        {"RecoilPatternScale","0"},{"RecoilMultiplier","0"},
+        {"WeaponSpread","0"},{"WeaponSway","0"},{"BulletSpreadScale","0"},
+        {"SpreadDecayRate","10"},{"MuzzleSpread","0"},{"MovingSpreadFactor","0"},{"JumpSpreadFactor","0"},
+        {"AimAssistLockMax","1"},{"AimAssistEnabled","1"},{"AimAssistStrength","100"},
+        {"AimMagnetism","3"},{"HeadMagnetism","1"},{"HeadBoneAimPriority","1"},
+        {"AimSnapSpeed","10"},{"AimSnapThreshold","0"},{"AimSmoothFactor","0"},
+        {"AdsZeroDelay","1"},{"PredictiveAim","1"},
+        {"Scope2xStabilizer","1"},{"Scope4xStabilizer","1"},{"Scope6xStabilizer","1"},
+        {"Scope8xStabilizer","1"},{"ScopeBreathingDamp","1"},{"ScopeSwayDamp","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},
+        {"GyroLatencyMode","0"},{"GyroSensitivityRatio","2.5"},
+        {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"JoystickZeroDeadzone","1"},{"JoystickResponseLevel","3"},
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},{"PreloadShaders","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
+        {"FrameRateLevel","9"},{"ResolutionScale","120"},
+    };
+    for(const auto& kv:k){
+        if(isXml){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}
+        else if(isJson){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}
+        else if(isCvar)patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmMaxDamageAllWeapon2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// CODM: Ultra Config Cheat 2026 — Full Stack: Damage + Aim + Speed + Graphics
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmUltraConfigCheat2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path), content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("GraphicsSettings.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> k={
+        // Damage
+        {"DamageLockMax","1"},{"DamageBoost","1"},{"EffectiveDPSMode","3"},
+        {"PenetrationBoost","1"},{"CritRateBoost","1"},{"HeadshotMultiplier","2"},
+        {"TrueDamageBoost","1"},{"FrameSyncDamage","1"},
+        {"HitRegSyncRate","1000"},{"InstantHitReg","1"},
+        // Aim
+        {"AimAssistLockMax","1"},{"AimAssistEnabled","1"},{"AimAssistStrength","100"},
+        {"AimMagnetism","3"},{"HeadMagnetism","1"},{"HeadBoneAimPriority","1"},
+        {"AimSnapSpeed","10"},{"AimSnapThreshold","0"},{"AimSmoothFactor","0"},
+        {"AdsZeroDelay","1"},{"PredictiveAim","1"},
+        // No recoil / no spread
+        {"RecoilScale","0"},{"VerticalRecoilScale","0"},{"HorizontalRecoilScale","0"},
+        {"RecoilPatternScale","0"},{"RecoilMultiplier","0"},
+        {"WeaponSpread","0"},{"WeaponSway","0"},{"BulletSpreadScale","0"},
+        {"SpreadDecayRate","10"},{"MuzzleSpread","0"},
+        {"MovingSpreadFactor","0"},{"JumpSpreadFactor","0"},
+        // Speed & movement
+        {"MovementSpeedBoost","1"},{"SprintSpeedMax","1"},{"SlideDistanceMax","1"},
+        {"SlideSpeedBoost","1"},{"JumpHeightBoost","1"},
+        // Graphics unlock 2026
+        {"FrameRateLevel","9"},{"ResolutionScale","120"},
+        {"HDR10Plus","1"},{"UltraExtreme2026","1"},
+        {"VulkanPipelineCache","1"},{"AsyncCompute","1"},{"VRS","1"},
+        {"PreloadShaders","1"},{"bPreloadShaders","True"},
+        {"ShaderPrecompile","1"},{"ShaderWarmupAtLaunch","1"},
+        // Gyro & touch
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},
+        {"GyroLatencyMode","0"},{"GyroSensitivityRatio","2.5"},
+        {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"JoystickZeroDeadzone","1"},{"JoystickResponseLevel","3"},
+        // Frame & engine
+        {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
+        {"ScreenShake","0"},{"Vibrate","0"},
+    };
+    for(const auto& kv:k){
+        if(isXml){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}
+        else if(isJson){bool n=!kv.second.empty()&&(isdigit((unsigned char)kv.second[0])||kv.second[0]=='-');patch_json_node(content,kv.first,kv.second,n);}
+        else if(isCvar)patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmUltraConfigCheat2026 injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}

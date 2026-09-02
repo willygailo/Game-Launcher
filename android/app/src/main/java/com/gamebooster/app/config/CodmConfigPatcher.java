@@ -96,6 +96,20 @@ public class CodmConfigPatcher {
         }
     }
 
+    public static void applyCodmMaxDamageAllWeapon2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmMaxDamageAllWeapon2026(path);
+        }
+    }
+
+    public static void applyCodmUltraConfigCheat2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmUltraConfigCheat2026(path);
+        }
+    }
+
     private static final String TAG = "CodmConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

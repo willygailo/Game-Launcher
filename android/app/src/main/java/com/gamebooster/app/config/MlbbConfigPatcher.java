@@ -120,6 +120,20 @@ public class MlbbConfigPatcher {
         }
     }
 
+    public static void applyMlbbAllHeroMaxDamage2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbAllHeroMaxDamage2026(path);
+        }
+    }
+
+    public static void applyMlbbUltimateDamageOverdrive2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbUltimateDamageOverdrive2026(path);
+        }
+    }
+
     private static final String TAG = "MlbbConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

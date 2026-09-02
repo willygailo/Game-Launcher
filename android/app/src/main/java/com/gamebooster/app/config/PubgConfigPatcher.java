@@ -100,6 +100,20 @@ public class PubgConfigPatcher {
         }
     }
 
+    public static void applyPubgmAllWeaponMaxDamage2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmAllWeaponMaxDamage2026(path);
+        }
+    }
+
+    public static void applyPubgmUltraAimbot2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmUltraAimbot2026(path);
+        }
+    }
+
     private static final String TAG = "PubgConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────
