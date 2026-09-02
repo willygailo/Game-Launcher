@@ -101,20 +101,12 @@ public final class GameManagerSessionEngine {
         // ── 5. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
-        // ── 5b. Format-Aware Per-Game Configuration & Physics Injection ──────
+        // ── 5b. Stealth In-Lobby Configuration & Overdrive Injection ──────────
         try {
-            com.gamebooster.app.config.GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
-            com.gamebooster.app.config.NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
-            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-            com.gamebooster.app.config.CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
-            if (profile == null) {
-                profile = new com.gamebooster.app.config.CompetitiveCfgProfile(gameKey, targetFps, true, true);
-            }
-            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
-            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
-            Log.i(TAG, "✅ Injected optimal configs & tunings for " + pkg + " @ " + targetFps + " FPS");
+            com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetFps);
+            Log.i(TAG, "🛡️ Scheduled in-lobby safe injection for " + pkg + " @ " + targetFps + " FPS (Anti-Detection Protected)");
         } catch (Throwable t) {
-            Log.w(TAG, "Config auto-injection non-fatal warning: " + t.getMessage());
+            Log.w(TAG, "Lobby injection scheduling warning: " + t.getMessage());
         }
 
         // ── 6. Force High Hardware Display Refresh Rate ──────────────────────

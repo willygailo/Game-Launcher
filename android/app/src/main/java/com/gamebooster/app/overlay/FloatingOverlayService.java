@@ -43,6 +43,7 @@ import com.gamebooster.app.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.device.DisplayCapabilitiesDetector;
+import com.gamebooster.app.config.LobbyInjectionEngine;
 import com.gamebooster.app.gamespace.GameSpaceDndManager;
 
 import java.net.InetSocketAddress;
@@ -118,6 +119,7 @@ public class FloatingOverlayService extends Service {
     private Button btnHudDnd;
     private Button btnHudTouch;
     private Button btnHudNet;
+    private Button btnHudInjectLobby;
 
     // State Variables
     private static final int[] REFRESH_RATE_TIERS = {185};
@@ -311,6 +313,8 @@ public class FloatingOverlayService extends Service {
         btnHudDnd = overlayView.findViewById(R.id.btn_hud_dnd);
         btnHudTouch = overlayView.findViewById(R.id.btn_hud_touch);
         btnHudNet = overlayView.findViewById(R.id.btn_hud_net);
+        // Inject-in-lobby quick-action button (may be null if layout not updated yet; handled gracefully)
+        btnHudInjectLobby = overlayView.findViewById(R.id.btn_hud_inject_lobby);
     }
 
     private void setupActionButtons() {
@@ -444,6 +448,38 @@ public class FloatingOverlayService extends Service {
                         scheduleAutoCollapse();
                     });
                 });
+            });
+        }
+
+        // 7. ⚡ INJECT IN LOBBY — Stealth 2026 Overdrive Quick-Trigger
+        if (btnHudInjectLobby != null) {
+            btnHudInjectLobby.setOnClickListener(v -> {
+                performHaptic();
+                final String activePkg = LobbyInjectionEngine.getActiveGamePackage();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    LobbyInjectionEngine.triggerManualLobbyInject(getApplicationContext(), activePkg);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudInjectLobby != null) {
+                            btnHudInjectLobby.setTextColor(Color.parseColor("#00FF66"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                "⚡ 2026 Overdrive Injected (Lobby Safe)",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+
+            btnHudInjectLobby.setOnLongClickListener(v -> {
+                performHaptic();
+                final String activePkg2 = LobbyInjectionEngine.getActiveGamePackage();
+                AppExecutors.getInstance().postToMainThread(() ->
+                        LobbyInjectionEngine.scheduleLobbyInjection(
+                                getApplicationContext(), activePkg2, 185, 18));
+                Toast.makeText(getApplicationContext(),
+                        "⏳ Auto-Injection re-scheduled in 18s (go to game lobby)",
+                        Toast.LENGTH_SHORT).show();
+                return true;
             });
         }
     }

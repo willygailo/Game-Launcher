@@ -442,6 +442,22 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- ⚡ INJECT IN LOBBY — Stealth 2026 Overdrive Trigger -->
+        <Button
+            android:id="@+id/btn_hud_inject_lobby"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/hud_btn_cyber_dark"
+            android:padding="0dp"
+            android:text="⚡ INJECT IN LOBBY"
+            android:textColor="#00FF66"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
     </LinearLayout>
 
 </FrameLayout>

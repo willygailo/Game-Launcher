@@ -35,6 +35,20 @@ public final class GameAutoInjectDispatcher {
     }
 
     /**
+     * Schedules a stealth in-lobby injection after game boots and enters main home screen.
+     */
+    public static void scheduleLobbySafeInjection(Context context, String packageName, int targetFps) {
+        LobbyInjectionEngine.scheduleLobbyInjection(context, packageName, targetFps);
+    }
+
+    /**
+     * Schedules a stealth in-lobby injection with custom delay.
+     */
+    public static void scheduleLobbySafeInjection(Context context, String packageName, int targetFps, int delaySeconds) {
+        LobbyInjectionEngine.scheduleLobbyInjection(context, packageName, targetFps, delaySeconds);
+    }
+
+    /**
      * Dispatches automatic configuration and script injection for the specified game package with optional Context.
      * Executes synchronously within the background worker thread of GameManagerSessionEngine or GameBoosterService.
      *
