@@ -184,10 +184,14 @@ jacoco {
     toolVersion = '0.8.12'
 }
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    group = 'Reporting'
+    description = 'Generate JaCoCo coverage reports for Debug unit tests'
+
     reports {
-        xml.required = true
-        html.required = true
+        xml.required.set(true)
+        html.required.set(true)
     }
     def excluded = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/*$*.class', '**/Manifest*']
     def javaClasses = fileTree(dir: layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes"), excludes: excluded)
