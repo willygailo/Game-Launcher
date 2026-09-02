@@ -259,6 +259,60 @@ public final class CommonConfigTuningInjector {
         }
     }
 
+    public static void applyFastFullMana(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectFastFullMana(path);
+        }
+    }
+
+    public static void applyFastFullEnergy(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectFastFullEnergy(path);
+        }
+    }
+
+    public static void applyFastHpRegen(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectFastHpRegen(path);
+        }
+    }
+
+    public static void applyFastStaminaFuryRegen(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectFastStaminaFuryRegen(path);
+        }
+    }
+
+    public static void applyZeroSkillCost(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectZeroSkillCost(path);
+        }
+    }
+
+    public static void applyMaxUltCharge(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectMaxUltCharge(path);
+        }
+    }
+
+    /**
+     * Master one-shot Skill Economy Overdrive — fires all 7 skill economy injectors
+     * across every resolved config path for the target game.
+     * Called automatically by applyAllEnabledTunings() and LobbyInjectionEngine.
+     */
+    public static void applySkillEconomyMasterSuite(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectSkillEconomyMasterSuite(path);
+        }
+    }
+
     public static void applyShield1500Config(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return;
         for (String path : getPaths(packageName)) {
@@ -708,5 +762,7 @@ public final class CommonConfigTuningInjector {
         applyVulkanPipelinePrime(packageName);
         applyAntiTelemetrySafe(packageName);
         applyNetworkLagCompensation(packageName);
+        // 2026 Skill Economy Overdrive — fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
+        applySkillEconomyMasterSuite(packageName);
     }
 }

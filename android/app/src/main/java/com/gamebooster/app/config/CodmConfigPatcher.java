@@ -796,4 +796,27 @@ public class CodmConfigPatcher {
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }
+
+    // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────
+
+    /**
+     * CODM — Zero operator skill / tactical / lethal cooldowns, max scorestreak charge,
+     *          max HP regen, zero stamina cost, zero skill costs.
+     */
+    public static void applyFastCooldownAbilityRegen(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            NativeConfigInjector.injectFastFullEnergy(path);
+            NativeConfigInjector.injectFastHpRegen(path);
+            NativeConfigInjector.injectFastStaminaFuryRegen(path);
+            NativeConfigInjector.injectZeroSkillCost(path);
+            NativeConfigInjector.injectMaxUltCharge(path);
+        }
+    }
+
+    /** Convenience alias. */
+    public static void applySkillEconomy(String packageName) {
+        applyFastCooldownAbilityRegen(packageName);
+    }
 }

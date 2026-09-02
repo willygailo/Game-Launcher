@@ -908,4 +908,26 @@ public class PubgConfigPatcher {
         };
         return ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
     }
+
+    // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────
+
+    /**
+     * PUBGM/BGMI — Fast Stamina, Adrenaline Energy, HP Regen, Zero Parachute/Vehicle Cooldown.
+     */
+    public static void applyFastStaminaEnergyBoost(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectFastCooldown(path);
+            NativeConfigInjector.injectFastFullEnergy(path);
+            NativeConfigInjector.injectFastHpRegen(path);
+            NativeConfigInjector.injectFastStaminaFuryRegen(path);
+            NativeConfigInjector.injectZeroSkillCost(path);
+            NativeConfigInjector.injectMaxUltCharge(path);
+        }
+    }
+
+    /** Convenience alias. */
+    public static void applySkillEconomy(String packageName) {
+        applyFastStaminaEnergyBoost(packageName);
+    }
 }

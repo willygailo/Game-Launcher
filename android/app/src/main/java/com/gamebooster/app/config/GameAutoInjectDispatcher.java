@@ -185,6 +185,8 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUltraExtreme240FpsGraphics(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
+        // 2026 Skill Economy: fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
+        try { MlbbConfigPatcher.applyFastCooldownManaEnergy(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -212,6 +214,8 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUltraExtreme240FpsGraphics(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
+        // 2026 Skill Economy: fast stamina, adrenaline energy, HP regen, zero vehicle cooldown
+        try { PubgConfigPatcher.applyFastStaminaEnergyBoost(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -239,6 +243,8 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUltraExtreme240FpsGraphics(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
+        // 2026 Skill Economy: zero operator/tactical/lethal cooldowns, max scorestreak, HP regen
+        try { CodmConfigPatcher.applyFastCooldownAbilityRegen(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {

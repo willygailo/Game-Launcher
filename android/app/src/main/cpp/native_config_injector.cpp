@@ -4558,3 +4558,270 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2026 SKILL ECONOMY OVERDRIVE SUITE
+// Fast Cooldown · Fast Full Mana · Fast Full Energy · Fast HP Regen
+// Fast Stamina/Fury · Zero Skill Cost · Max Ult Charge · Master Suite
+// ─────────────────────────────────────────────────────────────────────────────
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
+  (JNIEnv *env, jclass, jstring jPath, jfloat cdrRatio) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    // cdrRatio: 0.001 = near-instant cooldown (0.1% of normal)
+    char cdrBuf[32]; snprintf(cdrBuf, sizeof(cdrBuf), "%.4f", (float)cdrRatio);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"SkillCDR",               cdrBuf},
+        {"CooldownMultiplier",     cdrBuf},
+        {"SkillCooldown",          "0.0"},
+        {"SkillCooldownReduction", "1.0"},
+        {"ItemCooldown",           "0.0"},
+        {"ItemActiveCooldown",     "0.0"},
+        {"PassiveCDReduction",     "1.0"},
+        {"GlobalCooldown",         cdrBuf},
+        {"UltCooldownReduction",   "1.0"},
+        {"HeroUltCD",              cdrBuf},
+        {"PassiveCooldown",        "0.0"},
+        {"CastTimeReduction",      "1.0"},
+        {"TalentCooldown",         "0.0"},
+        {"EquipmentCooldown",      "0.0"},
+        // MLBB keys
+        {"SkillCD",                "0"},
+        {"SP_SkillCooldown",       "0.0"},
+        // CODM keys
+        {"OperatorSkillCooldown",  cdrBuf},
+        {"TacticalCooldown",       cdrBuf},
+        {"LethalCooldown",         cdrBuf},
+        {"FieldUpgradeCooldown",   cdrBuf},
+        // PUBGM keys
+        {"VehicleCooldown",        "0.0"},
+        {"AdrenalineCooldown",     "0.0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastCooldown2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastCooldown2026 injected: %s [cdr=%.4f ok=%d]", pathStr.c_str(), (float)cdrRatio, ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullMana
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"ManaRegen",          "10000"},
+        {"MaxMana",            "99999"},
+        {"StartMana",          "99999"},
+        {"ManaCostMultiplier", "0.0"},
+        {"SkillManaCost",      "0"},
+        {"UltManaCost",        "0"},
+        {"ManaPerSecond",      "10000"},
+        {"ManaRestoreRate",    "10000"},
+        {"InstantManaFull",    "1"},
+        {"ManaOnKill",         "10000"},
+        {"ManaOnHit",          "10000"},
+        // MLBB mana keys
+        {"HeroMaxMana",        "99999"},
+        {"ManaGain",           "10000"},
+        {"SP_MaxMana",         "99999"},
+        {"SP_ManaRegen",       "10000"},
+        // HoYo/Genshin keys
+        {"SkillEnergyCost",    "0"},
+        {"EnergyRecharge",     "10000"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastFullMana2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastFullMana2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullEnergy
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"EnergyRegen",          "10000"},
+        {"MaxEnergy",            "99999"},
+        {"StartEnergy",          "99999"},
+        {"EnergyCostMultiplier", "0.0"},
+        {"SkillEnergyCost",      "0"},
+        {"UltEnergyCost",        "0"},
+        {"EnergyPerSecond",      "10000"},
+        {"EnergyRestoreRate",    "10000"},
+        {"InstantEnergyFull",    "1"},
+        {"EnergyOnKill",         "10000"},
+        {"EnergyOnHit",          "10000"},
+        // MLBB/HOK energy keys
+        {"SP_MaxEnergy",         "99999"},
+        {"SP_EnergyRegen",       "10000"},
+        {"EnergyGain",           "10000"},
+        // Farlight/ArenaBreakout shield-energy
+        {"ShieldEnergyRegen",    "10000"},
+        {"MaxShieldEnergy",      "99999"},
+        // PUBGM adrenaline / boost energy
+        {"BoostEnergyRegen",     "10000"},
+        {"AdrenalineEffect",     "10000"},
+        {"BoostDecayRate",       "0.0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastFullEnergy2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastFullEnergy2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastHpRegen
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"HpRegen",              "10000"},
+        {"HpRegenPerSecond",     "10000"},
+        {"PassiveRegenTick",     "10000"},
+        {"RegenDelay",           "0.0"},
+        {"HealMultiplier",       "10.0"},
+        {"LifeStealRate",        "1.0"},
+        {"LifeStealMax",         "1.0"},
+        {"BloodthirstRate",      "10000"},
+        {"VampirismRate",        "10000"},
+        {"HpOnKill",             "10000"},
+        {"HpOnHit",              "10000"},
+        {"SelfHealMultiplier",   "10.0"},
+        {"OutOfCombatRegen",     "10000"},
+        // MLBB hero HP regen
+        {"HeroHPRegen",          "10000"},
+        {"SP_HpRegen",           "10000"},
+        // PUBGM health bar regen
+        {"HealthRegen",          "10000"},
+        {"AutoHealRate",         "10000"},
+        // CODM operator passive regen
+        {"OperatorHealRate",     "10000"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastHpRegen2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastHpRegen2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastStaminaFuryRegen
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"StaminaRegen",       "10000"},
+        {"MaxStamina",         "99999"},
+        {"StaminaDecayRate",   "0.0"},
+        {"SprintStaminaCost",  "0.0"},
+        {"DodgeCost",          "0.0"},
+        {"JumpCost",           "0.0"},
+        {"FuryRegen",          "10000"},
+        {"MaxFury",            "99999"},
+        {"FuryDecay",          "0.0"},
+        {"RageRegen",          "10000"},
+        {"MaxRage",            "99999"},
+        {"RageDecay",          "0.0"},
+        {"MomentumRegen",      "10000"},
+        {"FlowRegen",          "10000"},
+        // MLBB fighter rage/fury
+        {"SP_FuryRegen",       "10000"},
+        {"HeroFuryMax",        "99999"},
+        // PUBGM sprint stamina
+        {"SprintDuration",     "99999"},
+        {"SprintRecovery",     "10000"},
+        // CODM operator charge
+        {"OperatorCharge",     "10000"},
+        {"ChargeDecayRate",    "0.0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastStaminaFuryRegen2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastStaminaFuryRegen2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroSkillCost
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"SkillCost",         "0"},
+        {"UltCost",           "0"},
+        {"AbilityCost",       "0"},
+        {"SpellCost",         "0"},
+        {"ThrowableCost",     "0"},
+        {"ConsumableCost",    "0"},
+        {"AmmoConsumption",   "0"},
+        {"ResourceCost",      "0"},
+        {"StaminaCost",       "0"},
+        {"EnergyCost",        "0"},
+        {"ManaCost",          "0"},
+        {"FuryCost",          "0"},
+        {"RageCost",          "0"},
+        {"HeatCost",          "0"},
+        // MLBB zero skill mana cost
+        {"SP_SkillManaCost",  "0"},
+        {"SP_UltManaCost",    "0"},
+        // CODM zero costs
+        {"OperatorSkillCost", "0"},
+        {"TacticalCost",      "0"},
+        {"LethalCost",        "0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ZeroSkillCost2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("ZeroSkillCost2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMaxUltCharge
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"UltChargeRate",       "10000"},
+        {"UltChargeMax",        "99999"},
+        {"StartUltCharge",      "99999"},
+        {"UltPassiveRegen",     "10000"},
+        {"SuperChargeRate",     "10000"},
+        {"UltReadyInstant",     "1"},
+        {"ChargeDecayRate",     "0.0"},
+        {"UltChargeOnKill",     "10000"},
+        {"UltChargeOnHit",      "10000"},
+        {"UltChargeOnDamage",   "10000"},
+        // MLBB ult recharge
+        {"HeroUltRecharge",     "10000"},
+        {"SP_UltChargeRate",    "10000"},
+        // CODM scorestreak charge
+        {"ScorestreakCharge",   "10000"},
+        {"KillstreakCharge",    "10000"},
+        // HOK/WildRift ult charge
+        {"AbilityChargeRate",   "10000"},
+        {"UltimateChargeRate",  "10000"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MaxUltCharge2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MaxUltCharge2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─── Master One-Shot Skill Economy Injector ──────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSkillEconomyMasterSuite
+  (JNIEnv *env, jclass cls, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    // Re-use path string across all sub-injectors
+    bool r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown(env, cls, jPath, 0.001f);
+    bool r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullMana(env, cls, jPath);
+    bool r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullEnergy(env, cls, jPath);
+    bool r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastHpRegen(env, cls, jPath);
+    bool r5 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastStaminaFuryRegen(env, cls, jPath);
+    bool r6 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroSkillCost(env, cls, jPath);
+    bool r7 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMaxUltCharge(env, cls, jPath);
+    bool anyOk = r1 || r2 || r3 || r4 || r5 || r6 || r7;
+    LOGI("SkillEconomyMasterSuite2026: CDR=%d Mana=%d Energy=%d HP=%d Stamina=%d ZeroCost=%d Ult=%d",
+         r1,r2,r3,r4,r5,r6,r7);
+    return anyOk ? JNI_TRUE : JNI_FALSE;
+}

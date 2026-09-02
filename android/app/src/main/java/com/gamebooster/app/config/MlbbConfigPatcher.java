@@ -768,4 +768,35 @@ public class MlbbConfigPatcher {
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }
+
+    // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────
+
+    /**
+     * MLBB — Fast Cooldown + Full Mana + Full Energy + HP Regen + Max Ult Charge.
+     * Injects MLBB-specific skill economy config keys across all resolved paths.
+     */
+    public static void applyFastCooldownManaEnergy(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            // Fast Cooldown
+            NativeConfigInjector.injectFastCooldown(path);
+            // Full Mana
+            NativeConfigInjector.injectFastFullMana(path);
+            // Full Energy / SP bar
+            NativeConfigInjector.injectFastFullEnergy(path);
+            // HP Regen + lifesteal
+            NativeConfigInjector.injectFastHpRegen(path);
+            // Fury / rage for fighters
+            NativeConfigInjector.injectFastStaminaFuryRegen(path);
+            // Zero skill resource cost
+            NativeConfigInjector.injectZeroSkillCost(path);
+            // Max ult charge rate
+            NativeConfigInjector.injectMaxUltCharge(path);
+        }
+    }
+
+    /** Convenience alias — fires the full master suite for MLBB. */
+    public static void applySkillEconomy(String packageName) {
+        applyFastCooldownManaEnergy(packageName);
+    }
 }

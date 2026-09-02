@@ -87,6 +87,14 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectTrackingBullet1000(String path, float trackingStrength, float hitboxMultiplier);
     public static native boolean nativeInjectArmorDef1000(String path, float defBoost, float dmgReduction);
     public static native boolean nativeInjectFastCooldown(String path, float cdrRatio);
+    public static native boolean nativeInjectFastFullMana(String path);
+    public static native boolean nativeInjectFastFullEnergy(String path);
+    public static native boolean nativeInjectFastHpRegen(String path);
+    public static native boolean nativeInjectFastStaminaFuryRegen(String path);
+    public static native boolean nativeInjectZeroSkillCost(String path);
+    public static native boolean nativeInjectMaxUltCharge(String path);
+    public static native boolean nativeInjectSkillEconomyMasterSuite(String path);
+
     public static native boolean nativeInjectShield1500(String path, float shieldMultiplier, float defBoost);
     public static native boolean nativeInjectDroneView(String path, int fov, int height);
     public static native boolean nativeInjectAimHeadLock(String path, float headMagnetism, int snapSpeed);
@@ -871,10 +879,77 @@ public class NativeConfigInjector {
     public static boolean injectFastCooldown(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastCooldown(path, 0.0f); } catch (Throwable ignored) {}
+            try { return nativeInjectFastCooldown(path, 0.001f); } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
+
+    public static boolean injectFastFullMana(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastFullMana(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFastFullEnergy(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastFullEnergy(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFastHpRegen(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastHpRegen(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFastStaminaFuryRegen(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastStaminaFuryRegen(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectZeroSkillCost(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectZeroSkillCost(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectMaxUltCharge(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMaxUltCharge(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectSkillEconomyMasterSuite(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectSkillEconomyMasterSuite(path); } catch (Throwable ignored) {}
+        }
+        // Fallback: fire each sub-injector individually
+        boolean ok = false;
+        ok |= injectFastCooldown(path);
+        ok |= injectFastFullMana(path);
+        ok |= injectFastFullEnergy(path);
+        ok |= injectFastHpRegen(path);
+        ok |= injectFastStaminaFuryRegen(path);
+        ok |= injectZeroSkillCost(path);
+        ok |= injectMaxUltCharge(path);
+        return ok;
+    }
+
+    // ─── 2026 New Game-Specific Wrappers ─────────────────────────────────────────────────────
 
     public static boolean injectShield1500(String path) {
         if (path == null) return false;
@@ -891,8 +966,6 @@ public class NativeConfigInjector {
         }
         return injectUltraExtremeGraphics(path, 120);
     }
-
-    // ─── 2026 New Game-Specific Wrappers ─────────────────────────────────────────────────────
 
     /**
      * MLBB — Ling hero damage script + auto sword combo injection.
