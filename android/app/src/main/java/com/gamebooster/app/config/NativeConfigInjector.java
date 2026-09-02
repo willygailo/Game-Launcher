@@ -201,6 +201,19 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmMaxDamageAllWeapon2026(String path);
     public static native boolean nativeInjectCodmUltraConfigCheat2026(String path);
 
+    // ─── 2026 Master 10000+ Damage & Attack Speed Overdrive Modules ───
+    public static native boolean nativeInjectMlbbDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectPubgmDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectCodmDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectFreeFireDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectHokDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectWildRiftDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectFastReloadQuickSwap(String path);
+    public static native boolean nativeInjectWallPiercingArmorShredder(String path);
+    public static native boolean nativeInjectZeroPingNetworkOverclock(String path);
+    public static native boolean nativeInjectUltraExtreme240FpsGraphics(String path);
+    public static native boolean nativeInjectUniversalDamage10000AttackSpeedMax(String path);
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -1326,6 +1339,94 @@ public class NativeConfigInjector {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
             try { return nativeInjectCodmUltraConfigCheat2026(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectMlbbDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectPubgmDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectPubgmDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectCodmDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFreeFireDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFreeFireDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectHokDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHokDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectWildRiftDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectWildRiftDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFastReloadQuickSwap(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastReloadQuickSwap(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectWallPiercingArmorShredder(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectWallPiercingArmorShredder(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectZeroPingNetworkOverclock(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectZeroPingNetworkOverclock(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectUltraExtreme240FpsGraphics(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectUltraExtreme240FpsGraphics(path); } catch (Throwable ignored) {}
+        }
+        return injectUltraExtremeGraphics(path, 240);
+    }
+
+    public static boolean injectUniversalDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectUniversalDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }

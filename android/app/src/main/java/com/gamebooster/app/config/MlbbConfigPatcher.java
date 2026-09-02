@@ -711,6 +711,17 @@ public class MlbbConfigPatcher {
         }
     }
 
+    /**
+     * MLBB — 2026 Master Overdrive: 10000+ Damage Lock & Max Attack Speed all heroes.
+     */
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbDamage10000AttackSpeedMax(path);
+        }
+        Log.i(TAG, "MLBB Damage10000AttackSpeedMax applied for " + packageName);
+    }
+
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {

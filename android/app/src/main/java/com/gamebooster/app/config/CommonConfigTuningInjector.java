@@ -300,6 +300,51 @@ public final class CommonConfigTuningInjector {
         applyHitRegistrationDpsBoost(packageName);
     }
 
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUniversalDamage10000AttackSpeedMax(path);
+        }
+        Log.i(TAG, "Damage10000AttackSpeedMax applied for " + packageName + " (" + paths.size() + " paths)");
+    }
+
+    public static void applyFastReloadQuickSwap(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
+        }
+        Log.i(TAG, "FastReloadQuickSwap applied for " + packageName);
+    }
+
+    public static void applyWallPiercingArmorShredder(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectWallPiercingArmorShredder(path);
+        }
+        Log.i(TAG, "WallPiercingArmorShredder applied for " + packageName);
+    }
+
+    public static void applyZeroPingNetworkOverclock(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectZeroPingNetworkOverclock(path);
+        }
+        Log.i(TAG, "ZeroPingNetworkOverclock applied for " + packageName);
+    }
+
+    public static void applyUltraExtreme240FpsGraphics(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUltraExtreme240FpsGraphics(path);
+        }
+        Log.i(TAG, "UltraExtreme240FpsGraphics applied for " + packageName);
+    }
+
     /**
      * Damage Lock Max — 2026 Edition.
      * Locks effective DPS at maximum by zeroing frame-thread lag, enforcing 1000Hz

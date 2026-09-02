@@ -669,6 +669,41 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAlucardLifestealCombo
   (JNIEnv *, jclass, jstring);
 
+// ─── 2026 Master 10000+ Damage & Attack Speed Overdrive Suite ───────────────
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectWildRiftDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastReloadQuickSwap
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectWallPiercingArmorShredder
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroPingNetworkOverclock
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtreme240FpsGraphics
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

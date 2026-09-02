@@ -72,6 +72,13 @@ public class FreeFireConfigPatcher {
         }
     }
 
+    public static void applyFreeFireDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFreeFireDamage10000AttackSpeedMax(path);
+        }
+    }
+
     private static final String TAG = "FreeFireConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

@@ -110,6 +110,14 @@ public class CodmConfigPatcher {
         }
     }
 
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmDamage10000AttackSpeedMax(path);
+        }
+        Log.i(TAG, "CODM Damage10000AttackSpeedMax applied for " + packageName);
+    }
+
     private static final String TAG = "CodmConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

@@ -60,6 +60,14 @@ public class HokConfigPatcher {
         }
     }
 
+    public static void applyHokDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectHokDamage10000AttackSpeedMax(path);
+        }
+    }
+
     private static final String TAG = "HokConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

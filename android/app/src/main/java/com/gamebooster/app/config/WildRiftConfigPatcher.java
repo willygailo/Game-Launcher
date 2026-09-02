@@ -57,6 +57,14 @@ public class WildRiftConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    public static void applyWildRiftDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectWildRiftDamage10000AttackSpeedMax(path);
+        }
+    }
+
     private static final String TAG = "WildRiftConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {
