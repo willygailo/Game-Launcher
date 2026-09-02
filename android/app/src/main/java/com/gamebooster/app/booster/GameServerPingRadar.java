@@ -127,10 +127,20 @@ public class GameServerPingRadar {
     }
 
     public static List<PingResult> pingAllServers() {
-        List<PingResult> results = new ArrayList<>();
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(DEFAULT_TARGETS.size());
+        List<java.util.concurrent.Future<PingResult>> futures = new ArrayList<>();
         for (ServerTarget target : DEFAULT_TARGETS) {
-            results.add(pingServer(target));
+            futures.add(executor.submit(() -> pingServer(target)));
         }
+        List<PingResult> results = new ArrayList<>();
+        for (java.util.concurrent.Future<PingResult> f : futures) {
+            try {
+                results.add(f.get(3, java.util.concurrent.TimeUnit.SECONDS));
+            } catch (Throwable t) {
+                // Ignore timeout
+            }
+        }
+        executor.shutdown();
         return results;
     }
 }

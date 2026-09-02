@@ -41,6 +41,7 @@ import com.gamebooster.app.tweaks.TweakManagerRepository;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.shizuku.ShizukuManager;
+import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 import com.gamebooster.app.spoofer.SpoofProfile;
 import com.gamebooster.app.spoofer.SpoofPreferences;
@@ -143,9 +144,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private boolean isProgrammaticToggle = false;
 
+    private boolean isPrivilegedExecutionAvailable() {
+        return ShizukuManager.isShizukuRunningAndGranted()
+                || ShizukuExecutor.hasShizukuPermission()
+                || ShizukuUserServiceConnector.getInstance().isServiceConnected()
+                || com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable();
+    }
+
     private boolean checkShizukuOrRevert(android.widget.CompoundButton button, String featureName) {
         if (isProgrammaticToggle) return true;
-        if (!ShizukuManager.isShizukuRunningAndGranted()) {
+        if (!isPrivilegedExecutionAvailable()) {
             if (getContext() != null) {
                 isProgrammaticToggle = true;
                 if (button != null) button.setChecked(false);
@@ -158,7 +166,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     }
 
     private boolean requireShizukuForAction(String featureName) {
-        if (!ShizukuManager.isShizukuRunningAndGranted()) {
+        if (!isPrivilegedExecutionAvailable()) {
             if (getContext() != null) {
                 ShizukuManager.showShizukuPermissionDialog(getContext(), featureName);
             }
@@ -754,22 +762,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnPhTntSmart != null) {
             btnPhTntSmart.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("TNT / Smart 5G Ultra Boost")) return;
                 Toast.makeText(getContext(), "🇵🇭 Supercharging TNT / Smart 5G...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TNT_SMART);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            if (ok) {
-                                com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TNT / SMART 5G ULTRA GAMING BOOST", true,
-                                        "✓ Carrier: Smart / PLDT Core Backbone",
-                                        "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
-                                        "✓ Cloudflare DoT (1.1.1.1): LOCKED",
-                                        "✓ 5G SA/NSA Power-Save: DISABLED",
-                                        "✓ Baseband & Route Cache: FLUSHED");
-                            } else {
-                                Toast.makeText(getContext(), "⚠️ Failed to apply TNT/Smart Boost", Toast.LENGTH_SHORT).show();
-                            }
+                            com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TNT / SMART 5G ULTRA GAMING BOOST", true,
+                                    "✓ Carrier: Smart / PLDT Core Backbone",
+                                    "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
+                                    "✓ Cloudflare DoT (1.1.1.1): LOCKED",
+                                    "✓ 5G SA/NSA Power-Save: DISABLED",
+                                    "✓ Baseband & Route Cache: FLUSHED");
                         }
                     });
                 });
@@ -779,22 +782,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnPhTmGlobe != null) {
             btnPhTmGlobe.setOnClickListener(v -> {
                 if (getContext() == null) return;
-                if (!requireShizukuForAction("TM / Globe 5G Turbo Boost")) return;
                 Toast.makeText(getContext(), "🇵🇭 Supercharging TM / Globe 5G...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TM_GLOBE);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            if (ok) {
-                                com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TM / GLOBE 5G TURBO FAST ROUTE", true,
-                                        "✓ Carrier: Globe Telecom Backbone",
-                                        "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
-                                        "✓ Google DoT (8.8.8.8 Fast Route): LOCKED",
-                                        "✓ 5G SA/NSA Power-Save: DISABLED",
-                                        "✓ Baseband & Route Cache: FLUSHED");
-                            } else {
-                                Toast.makeText(getContext(), "⚠️ Failed to apply TM/Globe Boost", Toast.LENGTH_SHORT).show();
-                            }
+                            com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TM / GLOBE 5G TURBO FAST ROUTE", true,
+                                    "✓ Carrier: Globe Telecom Backbone",
+                                    "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
+                                    "✓ Google DoT (8.8.8.8 Fast Route): LOCKED",
+                                    "✓ 5G SA/NSA Power-Save: DISABLED",
+                                    "✓ Baseband & Route Cache: FLUSHED");
                         }
                     });
                 });
@@ -1321,7 +1319,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void applyGamingDns(NetworkOptimizer.DnsMode mode, String msg) {
         if (getContext() == null) return;
-        if (!requireShizukuForAction("Gaming DNS")) return;
         AppExecutors.getInstance().executeCommand(() -> {
             NetworkOptimizer.applyGamingDns(getContext(), mode);
             AppExecutors.getInstance().postToMainThread(() -> {

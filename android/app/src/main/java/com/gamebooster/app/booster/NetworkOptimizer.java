@@ -62,24 +62,15 @@ public class NetworkOptimizer {
     public static boolean applyGamingDns(Context context, DnsMode mode) {
         if (mode == DnsMode.SYSTEM_DEFAULT) {
             CommandExecutor.setSystemSetting("global", "private_dns_mode", "off");
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand("settings put global private_dns_mode off");
-            }
+            CommandExecutor.executeSystemCommand("settings put global private_dns_mode off");
             return true;
         }
 
         // Set private DNS mode to opportunistic / hostname DoT (DNS-over-TLS)
         CommandExecutor.setSystemSetting("global", "private_dns_mode", "hostname");
         CommandExecutor.setSystemSetting("global", "private_dns_specifier", mode.privateDnsHost);
-
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommands(
-                "settings put global private_dns_mode hostname",
-                "settings put global private_dns_specifier " + mode.privateDnsHost,
-                "setprop net.dns1 " + mode.primary,
-                "setprop net.dns2 " + mode.secondary
-            );
-        }
+        CommandExecutor.executeSystemCommand("settings put global private_dns_mode hostname");
+        CommandExecutor.executeSystemCommand("settings put global private_dns_specifier " + mode.privateDnsHost);
 
         // System property DNS fallback
         CommandExecutor.executeSystemCommand("setprop net.dns1 " + mode.primary);
@@ -166,7 +157,7 @@ public class NetworkOptimizer {
             CommandExecutor.executeSystemCommand("cmd wifi force-hi-perf-mode enabled");
             CommandExecutor.executeSystemCommand("cmd wifi set-multicast-filter enabled");
 
-            // 2. Disable background scanning throttle during games
+            // 2. Suppress background AP Wi-Fi scanning during gameplay
             CommandExecutor.executeSystemCommand("settings put global wifi_scan_always_enabled 0");
             CommandExecutor.executeSystemCommand("settings put global wifi_framework_scan_interval_ms 300000"); // 5-minute interval
             CommandExecutor.executeSystemCommand("settings put global wifi_sleep_policy 2"); // Never sleep
@@ -280,23 +271,14 @@ public class NetworkOptimizer {
             // 3. Carrier-tailored low latency DNS over TLS
             CommandExecutor.setSystemSetting("global", "private_dns_mode", "hostname");
             CommandExecutor.setSystemSetting("global", "private_dns_specifier", carrier.privateDnsHost);
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommands(
-                    "settings put global private_dns_mode hostname",
-                    "settings put global private_dns_specifier " + carrier.privateDnsHost,
-                    "setprop net.dns1 " + carrier.dnsPrimary,
-                    "setprop net.dns2 8.8.4.4"
-                );
-            }
+            CommandExecutor.executeSystemCommand("settings put global private_dns_mode hostname");
+            CommandExecutor.executeSystemCommand("settings put global private_dns_specifier " + carrier.privateDnsHost);
             CommandExecutor.executeSystemCommand("setprop net.dns1 " + carrier.dnsPrimary);
+            CommandExecutor.executeSystemCommand("setprop net.dns2 8.8.4.4");
 
             // 4. Background network throttle clamp
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommands(
-                    "cmd netpolicy set restrict-background true",
-                    "cmd connectivity set-background-data false"
-                );
-            }
+            CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background true");
+            CommandExecutor.executeSystemCommand("cmd connectivity set-background-data false");
 
             // 5. Immediate DNS & route cache purge
             flushDnsCache();
