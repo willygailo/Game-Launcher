@@ -57,6 +57,21 @@ public class FreeFireConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+
+    public static void applyFreeFireAutoHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFreeFireAutoHeadshot(path);
+        }
+    }
+
+    public static void applyFreeFireFastGlooWall(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFreeFireFastGlooWall(path);
+        }
+    }
+
     private static final String TAG = "FreeFireConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

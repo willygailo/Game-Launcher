@@ -1193,7 +1193,7 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try { return nativeInjectBloodStrikeZeroRecoil(path); } catch (Throwable ignored) {}
         }
-        return injectZeroRecoil(path, 0f, 100);
+        return injectScopeAimCalibration(path);
     }
 
     public static boolean injectDeltaForcePrecisionAim(String path) {

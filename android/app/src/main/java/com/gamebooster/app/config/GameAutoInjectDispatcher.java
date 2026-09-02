@@ -151,8 +151,8 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectFreeFire(String pkg) {
         Log.i(TAG, "🔥 Injecting Free Fire Auto-Headshot, All-Gun & All-Scope Calibration...");
-        try { NativeConfigInjector.injectFreeFireAutoHeadshot(GameConfigPathResolver.getPrimaryConfigPath(pkg)); } catch (Throwable ignored) {}
-        try { NativeConfigInjector.injectFreeFireFastGlooWall(GameConfigPathResolver.getPrimaryConfigPath(pkg)); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyFreeFireAutoHeadshot(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyFreeFireFastGlooWall(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
