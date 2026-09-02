@@ -206,6 +206,30 @@ public class ConfigBackupManager {
         return paths;
     }
 
+    public static List<String> getBackedUpPackages(Context context) {
+        Context ctx = resolveContext(context);
+        if (ctx == null) return Collections.emptyList();
+        SharedPreferences prefs = prefs(ctx);
+        List<String> pkgs = new ArrayList<>();
+        for (String key : prefs.getAll().keySet()) {
+            if (key.startsWith(KEY_PREFIX)) {
+                pkgs.add(key.substring(KEY_PREFIX.length()));
+            }
+        }
+        return pkgs;
+    }
+
+    public static int restoreAll(Context context) {
+        Context ctx = resolveContext(context);
+        if (ctx == null) return 0;
+        List<String> pkgs = getBackedUpPackages(ctx);
+        int totalRestored = 0;
+        for (String pkg : pkgs) {
+            totalRestored += restorePackage(ctx, pkg);
+        }
+        return totalRestored;
+    }
+
     public static boolean clearBackups(Context context, String pkg) {
         Context ctx = resolveContext(context);
         if (ctx == null || pkg == null) return false;

@@ -287,6 +287,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        Button btnAudioPresets = view.findViewById(R.id.btn_audio_presets);
+        Button btnRestoreOriginalConfigs = view.findViewById(R.id.btn_restore_original_configs);
+
+        if (btnAudioPresets != null) {
+            btnAudioPresets.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.ui.dialogs.AudioPresetSelectorDialog.show(getContext());
+                }
+            });
+        }
+
+        if (btnRestoreOriginalConfigs != null) {
+            btnRestoreOriginalConfigs.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.ui.dialogs.ConfigRestoreDialog.show(getContext());
+                }
+            });
+        }
+
         switchAntiLog = view.findViewById(R.id.switch_anti_log);
         Button btnPurgeGameLogs = view.findViewById(R.id.btn_purge_game_logs);
 
@@ -436,6 +455,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnSensitivityCalculator.setOnClickListener(v -> {
                 if (!requireShizukuForAction("Interactive Gyro & Recoil Tuner")) return;
                 showSensitivityCalculatorDialog();
+            });
+        }
+
+        Button btnGyroCalibrator = view.findViewById(R.id.btn_gyro_calibrator);
+        if (btnGyroCalibrator != null) {
+            btnGyroCalibrator.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.ui.dialogs.GyroCalibratorDialog.show(getContext());
+                }
             });
         }
 
@@ -859,6 +887,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         }
                     });
                 });
+            });
+        }
+
+        Button btnOpenGameRadar = view.findViewById(R.id.btn_open_game_radar);
+        if (btnOpenGameRadar != null) {
+            btnOpenGameRadar.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    com.gamebooster.app.ui.dialogs.GameServerRadarDialog.show(getContext());
+                }
             });
         }
 
