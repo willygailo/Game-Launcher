@@ -141,536 +141,44 @@ public class PubgConfigPatcher {
 
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
-    /**
-     * Applies 144fps SuperSmooth + UltraExtreme max graphics to all PUBGM/BGMI config paths.
-     * Includes frame-pacing, 16x anisotropic filtering, max shadow resolution, TAA upscale,
-     * and full UE4 CVar injection — the most complete single-call patch for PUBGM.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchUltraExtreme144(String packageName) {
-        if (packageName == null) return false;
-        final FpsUnlockTier tier = FpsUnlockTier.FPS_144;
-
-        String[] keys = {
-            // ── SuperSmooth 144fps UE4 CVars ──
-            "+CVars=r.PUBGDeviceFPS=8",
-            "+CVars=r.PUBGMaxFPS=144",
-            "+CVars=r.PUBGFrameRateLimit=144",
-            "+CVars=r.FrameRateLimit=144",
-            "+CVars=r.MobileFPSLimit=144",
-            "+CVars=r.Vsync=0",
-            "+CVars=r.Unlock120Hz=1",
-            "+CVars=r.Unlock144Hz=1",
-            "+CVars=r.Unlock165Hz=1",
-            "+CVars=r.Unlock185Hz=1",
-            "+CVars=r.TouchBoostHz=144",
-            "+CVars=r.MobileTouchBoostRate=144",
-            "+CVars=r.FramePacing=1",
-            // ── UltraExtreme Graphics CVars ──
-            "+CVars=r.MobileHDR=1",
-            "+CVars=r.PUBGHDRMode=1",
-            "+CVars=r.PUBGQualityLevel=4",
-            "+CVars=r.PUBGSDKQualityLevel=4",
-            "+CVars=r.Tonemapper.Quality=4",
-            "+CVars=r.HDR.Display.OutputDevice=1",
-            "+CVars=r.MobileContentScaleFactor=1.0",
-            "+CVars=r.MobileReduceLoadedMips=0",
-            "+CVars=r.MaxAnisotropy=16",
-            "+CVars=r.BloomQuality=5",
-            "+CVars=r.DepthOfFieldQuality=4",
-            "+CVars=r.Shadow.MaxResolution=2048",
-            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
-            "+CVars=r.ReflectionCaptureResolution=256",
-            "+CVars=r.TemporalAA.Upscale=1",
-            "+CVars=r.VelocityBlur=1",
-            "+CVars=r.AllowOcclusionQueries=1",
-            "+CVars=r.MobileTonemapperFilm=1",
-            "+CVars=r.PUBGTPPViewRange=100.00",
-            "+CVars=r.PUBGFPPViewRange=150.00",
-            "+CVars=r.SuppressLogs=1",
-            "+CVars=r.DisableDebugLog=1",
-            "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroSensitivityRatio=2.5",
-            "+CVars=r.GyroZeroDelay=1",
-            // ── INI Keys ──
-            "FPS=144",
-            "MaxFPS=144",
-            "TargetFPS=144",
-            "FrameRateLimit=144",
-            "MobileFPSLimit=144",
-            "FrameRateLevel=8",
-            "UnlockFPS=1",
-            "Unlock144FPS=1",
-            "Ultra144FPS=1",
-            "HighFPSMode=3",           // 2026: 3 = 185Hz-capable mode
-            "SuperHighFPS=1",
-            "Unlock90Hz=1",
-            "Unlock120Hz=1",
-            "Unlock144Hz=1",
-            "Unlock165Hz=1",
-            "Unlock185Hz=1",
-            "Unlock240Hz=1",
-            // ── UltraExtreme Graphics INI ──
-            "UltraExtreme=1",
-            "bUseUltraExtreme=True",
-            "GraphicsQuality=5",
-            "GraphicQuality=4",
-            "GraphicLevel=4",
-            "ResolutionQuality=120",
-            "ResolutionScale=120",      // 2026: 120% render scale
-            "ScreenScale=120",
-            "HDRMode=1",
-            "HDR10Plus=1",              // 2026: 10-bit HDR
-            "UltraHDMode=1",
-            "HDRColorMode=2",
-            "SuperResolution=1",
-            "bUseHDRMode=True",
-            "bUseHighQualityBloom=True",
-            "BloomQuality=5",
-            "AntiAliasingQuality=4",
-            "bUseAntiAliasing=True",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "TextureQuality=4",
-            "MaxAnisotropy=16",
-            "LightingQuality=3",        // 2026: max lighting
-            "ParticleQuality=3",        // 2026: max particles
-            "WaterReflection=1",        // 2026: water reflections
-            "VulkanPipelineCache=1",    // 2026: Vulkan cache
-            "AsyncCompute=1",           // 2026: GPU async compute
-            "VRS=1",                    // 2026: Variable Rate Shading
-            "bReduceLoadedMips=False",
-            "bFramePacingEnabled=True",
-            "Vsync=0",
-            "TPPFieldOfView=100",
-            "FPPFieldOfView=150",
-            "bDisableAnalytics=True",
-            "bDisableBugReporting=True",
-            "GyroSampleRate=1000",
-            "GyroSensitivityRatio=2.5",
-            "GyroZeroDelay=1",
-            "GyroLatencyMode=0",
-            "GyroSmoothFactor=1",
-            "GyroStabilization=1",
-            "TouchBoostHz=144",
-            "TouchPollingRate=1000"
-        };
-
-        List<String> paths = getConfigPaths(packageName);
-        int written = 0;
-        for (String path : paths) {
-            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
-                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
-                ConfigFileHelper.patchKeys(path, new String[]{
-                    "FrameRateLevel=8",
-                    "GraphicQuality=4",
-                    "GraphicResolution=2",
-                    "MobileHDRMode=1",
-                    "bFramePacingEnabled=True",
-                    "ResolutionScale=120",
-                    "HighFPSMode=3"
-                }, "[/Script/ShadowTrackerExtra.UserSetting]");
-            }
-            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
-                written++;
-            }
-        }
-        patchActiveSavBinary(packageName, 144);
-        AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "PUBGM UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
-        return written > 0;
+        return patchForTier(packageName, FpsUnlockTier.FPS_144);
     }
 
-    /**
-     * Complete 165fps SuperSmooth + UltraExtreme Graphics patch for PUBGM / BGMI / KR.
-     * Targets 165Hz displays (Asus ROG 8, Red Magic 9, etc.) with FrameRateLevel=9 and 165 FPS limit.
-     */
+    // ─── UltraExtreme 165fps SuperSmooth Patch ───────────────────────────────
+
     public static boolean patchUltraExtreme165(String packageName) {
-        if (packageName == null) return false;
-
-        String[] keys = {
-            // ── SuperSmooth 165fps UE4 CVars ──
-            "+CVars=r.PUBGDeviceFPS=9",
-            "+CVars=r.PUBGMaxFPS=165",
-            "+CVars=r.PUBGFrameRateLimit=165",
-            "+CVars=r.FrameRateLimit=165",
-            "+CVars=r.MobileFPSLimit=165",
-            "+CVars=r.Vsync=0",
-            "+CVars=r.Unlock120Hz=1",
-            "+CVars=r.Unlock144Hz=1",
-            "+CVars=r.Unlock165Hz=1",
-            "+CVars=r.Unlock185Hz=1",
-            "+CVars=r.TouchBoostHz=165",
-            "+CVars=r.MobileTouchBoostRate=165",
-            "+CVars=r.FramePacing=1",
-            // ── UltraExtreme Graphics CVars ──
-            "+CVars=r.MobileHDR=1",
-            "+CVars=r.PUBGHDRMode=1",
-            "+CVars=r.PUBGQualityLevel=4",
-            "+CVars=r.PUBGSDKQualityLevel=4",
-            "+CVars=r.Tonemapper.Quality=4",
-            "+CVars=r.HDR.Display.OutputDevice=1",
-            "+CVars=r.MobileContentScaleFactor=1.0",
-            "+CVars=r.MobileReduceLoadedMips=0",
-            "+CVars=r.MaxAnisotropy=16",
-            "+CVars=r.BloomQuality=5",
-            "+CVars=r.DepthOfFieldQuality=4",
-            "+CVars=r.Shadow.MaxResolution=2048",
-            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
-            "+CVars=r.ReflectionCaptureResolution=256",
-            "+CVars=r.TemporalAA.Upscale=1",
-            "+CVars=r.VelocityBlur=1",
-            "+CVars=r.AllowOcclusionQueries=1",
-            "+CVars=r.MobileTonemapperFilm=1",
-            "+CVars=r.PUBGTPPViewRange=100.00",
-            "+CVars=r.PUBGFPPViewRange=150.00",
-            "+CVars=r.SuppressLogs=1",
-            "+CVars=r.DisableDebugLog=1",
-            "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroSensitivityRatio=2.5",
-            "+CVars=r.GyroZeroDelay=1",
-            // ── INI Keys ──
-            "FPS=165",
-            "MaxFPS=165",
-            "TargetFPS=165",
-            "FrameRateLimit=165",
-            "MobileFPSLimit=165",
-            "FrameRateLevel=9",
-            "UnlockFPS=1",
-            "Unlock165FPS=1",
-            "Ultra165FPS=1",
-            "HighFPSMode=3",
-            "SuperHighFPS=1",
-            "Unlock90Hz=1",
-            "Unlock120Hz=1",
-            "Unlock144Hz=1",
-            "Unlock165Hz=1",
-            "Unlock185Hz=1",
-            "Unlock240Hz=1",
-            // ── UltraExtreme Graphics INI ──
-            "UltraExtreme=1",
-            "bUseUltraExtreme=True",
-            "GraphicsQuality=5",
-            "GraphicQuality=4",
-            "GraphicLevel=4",
-            "ResolutionQuality=120",
-            "ResolutionScale=120",
-            "ScreenScale=120",
-            "HDRMode=1",
-            "HDR10Plus=1",
-            "UltraHDMode=1",
-            "HDRColorMode=2",
-            "SuperResolution=1",
-            "bUseHDRMode=True",
-            "bUseHighQualityBloom=True",
-            "BloomQuality=5",
-            "AntiAliasingQuality=4",
-            "bUseAntiAliasing=True",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "TextureQuality=4",
-            "MaxAnisotropy=16",
-            "LightingQuality=3",
-            "ParticleQuality=3",
-            "WaterReflection=1",
-            "VulkanPipelineCache=1",
-            "AsyncCompute=1",
-            "VRS=1",
-            "bReduceLoadedMips=False",
-            "bFramePacingEnabled=True",
-            "Vsync=0",
-            "TPPFieldOfView=100",
-            "FPPFieldOfView=150",
-            "bDisableAnalytics=True",
-            "bDisableBugReporting=True",
-            "GyroSampleRate=1000",
-            "GyroSensitivityRatio=2.5",
-            "GyroZeroDelay=1",
-            "GyroLatencyMode=0",
-            "GyroSmoothFactor=1",
-            "GyroStabilization=1",
-            "TouchBoostHz=165",
-            "TouchPollingRate=1000"
-        };
-
-        List<String> paths = getConfigPaths(packageName);
-        int written = 0;
-        for (String path : paths) {
-            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
-                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
-                ConfigFileHelper.patchKeys(path, new String[]{
-                    "FrameRateLevel=9",
-                    "GraphicQuality=4",
-                    "GraphicResolution=2",
-                    "MobileHDRMode=1",
-                    "bFramePacingEnabled=True",
-                    "ResolutionScale=120",
-                    "HighFPSMode=3"
-                }, "[/Script/ShadowTrackerExtra.UserSetting]");
-            }
-            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
-                written++;
-            }
-        }
-        patchActiveSavBinary(packageName, 165);
-        AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "PUBGM UltraExtreme165 SuperSmooth patch: " + written + " paths for " + packageName);
-        return written > 0;
+        return patchForTier(packageName, FpsUnlockTier.FPS_165);
     }
 
-    /**
-     * Complete 185fps SuperSmooth + UltraExtreme Graphics patch for PUBGM / BGMI.
-     * Includes frame-pacing, 16x anisotropic filtering, max shadow resolution, TAA upscale,
-     * and full UE4 CVar injection at 185 FPS.
-     *
-     * @return true if at least one path was written
-     */
+    // ─── UltraExtreme 185fps SuperSmooth Patch ───────────────────────────────
+
     public static boolean patchUltraExtreme185(String packageName) {
-        if (packageName == null) return false;
-
-        String[] keys = {
-            // ── SuperSmooth 185fps UE4 CVars ──
-            "+CVars=r.PUBGDeviceFPS=10",
-            "+CVars=r.PUBGMaxFPS=185",
-            "+CVars=r.PUBGFrameRateLimit=185",
-            "+CVars=r.FrameRateLimit=185",
-            "+CVars=r.MobileFPSLimit=185",
-            "+CVars=r.Vsync=0",
-            "+CVars=r.Unlock120Hz=1",
-            "+CVars=r.Unlock144Hz=1",
-            "+CVars=r.Unlock165Hz=1",
-            "+CVars=r.Unlock185Hz=1",
-            "+CVars=r.TouchBoostHz=185",
-            "+CVars=r.MobileTouchBoostRate=185",
-            "+CVars=r.FramePacing=1",
-            // ── UltraExtreme Graphics CVars ──
-            "+CVars=r.MobileHDR=1",
-            "+CVars=r.PUBGHDRMode=1",
-            "+CVars=r.PUBGQualityLevel=4",
-            "+CVars=r.PUBGSDKQualityLevel=4",
-            "+CVars=r.Tonemapper.Quality=4",
-            "+CVars=r.HDR.Display.OutputDevice=1",
-            "+CVars=r.MobileContentScaleFactor=1.0",
-            "+CVars=r.MobileReduceLoadedMips=0",
-            "+CVars=r.MaxAnisotropy=16",
-            "+CVars=r.BloomQuality=5",
-            "+CVars=r.DepthOfFieldQuality=4",
-            "+CVars=r.Shadow.MaxResolution=2048",
-            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
-            "+CVars=r.ReflectionCaptureResolution=256",
-            "+CVars=r.TemporalAA.Upscale=1",
-            "+CVars=r.VelocityBlur=1",
-            "+CVars=r.AllowOcclusionQueries=1",
-            "+CVars=r.MobileTonemapperFilm=1",
-            "+CVars=r.PUBGTPPViewRange=100.00",
-            "+CVars=r.PUBGFPPViewRange=150.00",
-            "+CVars=r.SuppressLogs=1",
-            "+CVars=r.DisableDebugLog=1",
-            "+CVars=r.GyroSampleRate=1000",
-            "+CVars=r.GyroSensitivityRatio=2.5",
-            "+CVars=r.GyroZeroDelay=1",
-            // 2026: AsyncCompute, VRS, Vulkan CVars
-            "+CVars=r.AsyncCompute=1",
-            "+CVars=r.VRS.Enable=1",
-            "+CVars=r.Vulkan.RobustBufferAccess=0",
-            "+CVars=r.EnableAsyncPipelineCompilation=1",
-            // ── INI Keys ──
-            "FPS=185",
-            "MaxFPS=185",
-            "TargetFPS=185",
-            "FrameRateLimit=185",
-            "MobileFPSLimit=185",
-            "FrameRateLevel=10",
-            "UnlockFPS=1",
-            "Unlock144FPS=1",
-            "Unlock165FPS=1",
-            "Unlock185FPS=1",
-            "Ultra144FPS=1",
-            "Ultra165FPS=1",
-            "Ultra185FPS=1",
-            "HighFPSMode=3",           // 2026: 3 = 185Hz-capable mode
-            "SuperHighFPS=1",
-            "Unlock90Hz=1",
-            "Unlock120Hz=1",
-            "Unlock144Hz=1",
-            "Unlock165Hz=1",
-            "Unlock185Hz=1",
-            "Unlock240Hz=1",
-            // ── UltraExtreme Graphics INI ──
-            "UltraExtreme=1",
-            "bUseUltraExtreme=True",
-            "GraphicsQuality=5",
-            "GraphicQuality=4",
-            "GraphicLevel=4",
-            "ResolutionQuality=120",
-            "ResolutionScale=120",      // 2026: 120% render scale
-            "ScreenScale=120",
-            "HDRMode=1",
-            "HDR10Plus=1",              // 2026: 10-bit HDR
-            "UltraHDMode=1",
-            "HDRColorMode=2",
-            "SuperResolution=1",
-            "bUseHDRMode=True",
-            "bUseHighQualityBloom=True",
-            "BloomQuality=5",
-            "AntiAliasingQuality=4",
-            "bUseAntiAliasing=True",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "TextureQuality=4",
-            "MaxAnisotropy=16",
-            "LightingQuality=3",        // 2026: max lighting
-            "ParticleQuality=3",        // 2026: max particles
-            "WaterReflection=1",        // 2026: water reflections
-            "VulkanPipelineCache=1",    // 2026: Vulkan cache
-            "AsyncCompute=1",           // 2026: GPU async compute
-            "VRS=1",                    // 2026: Variable Rate Shading
-            "bReduceLoadedMips=False",
-            "bFramePacingEnabled=True",
-            "Vsync=0",
-            "TPPFieldOfView=100",
-            "FPPFieldOfView=150",
-            "bDisableAnalytics=True",
-            "bDisableBugReporting=True",
-            "GyroSampleRate=1000",
-            "GyroSensitivityRatio=2.5",
-            "GyroZeroDelay=1",
-            "GyroLatencyMode=0",
-            "GyroSmoothFactor=1",
-            "GyroStabilization=1",
-            "TouchBoostHz=185",
-            "TouchPollingRate=1000"
-        };
-
-        List<String> paths = getConfigPaths(packageName);
-        int written = 0;
-        for (String path : paths) {
-            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
-                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
-                ConfigFileHelper.patchKeys(path, new String[]{
-                    "FrameRateLevel=10",
-                    "GraphicQuality=4",
-                    "GraphicResolution=2",
-                    "MobileHDRMode=1",
-                    "bFramePacingEnabled=True",
-                    "ResolutionScale=120",
-                    "HighFPSMode=3"
-                }, "[/Script/ShadowTrackerExtra.UserSetting]");
-            }
-            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
-                written++;
-            }
-        }
-        patchActiveSavBinary(packageName, 185);
-        AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "PUBGM UltraExtreme185 SuperSmooth patch: " + written + " paths for " + packageName);
-        return written > 0;
+        return patchForTier(packageName, FpsUnlockTier.FPS_185);
     }
 
-    // ─── Competitive Force-Write (Shizuku, No Fallback) ──────────────────────
+    // ─── Competitive Force-Write ─────────────────────────────────────────────
 
-
-    /**
-     * Force-overwrites ALL PUBGM/BGMI config paths unconditionally.
-     * Includes full UE4 CVar injection for 120 / 144 / 165 / 185 FPS, frame rate limits, and content scale.
-     *
-     * @return true if at least one path was written
-     */
     public static boolean patchCompetitive(String packageName, int targetFps) {
-        if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(forcedFps);
-        final int pubgFpsLevel = tier.level;
+        boolean ok = patchForTier(packageName, tier);
+        deployPakPatch(packageName);
+        return ok;
+    }
 
-        String[] keys = new String[] {
-                "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel,
-                "+CVars=r.PUBGMaxFPS=" + forcedFps,
-                "+CVars=r.PUBGFrameRateLimit=" + forcedFps,
-                "+CVars=r.MobileFPSLimit=" + forcedFps,
-                "+CVars=r.FrameRateLimit=" + forcedFps,
-                "+CVars=r.PUBGHDRMode=1",
-                "+CVars=r.MobileHDR=1",
-                "+CVars=r.PUBGQualityLevel=4",
-                "+CVars=r.PUBGSDKQualityLevel=4",
-                "+CVars=r.Tonemapper.Quality=4",
-                "+CVars=r.HDR.Display.OutputDevice=1",
-                "+CVars=r.MobileContentScaleFactor=1.0",
-                "+CVars=r.MobileTonemapperFilm=1",
-                "+CVars=r.PUBGTPPViewRange=100.00",
-                "+CVars=r.PUBGFPPViewRange=150.00",
-                "+CVars=r.SprintSensitivity=150",
-                "+CVars=r.Vsync=0",
-                "+CVars=r.Unlock120Hz=1",
-                "+CVars=r.Unlock144Hz=1",
-                "+CVars=r.Unlock165Hz=1",
-                "+CVars=r.Unlock185Hz=1",
-                "+CVars=r.SuppressLogs=1",
-                "+CVars=r.DisableDebugLog=1",
-                "+CVars=r.EnableCrashReporting=0",
-                "+CVars=r.Telemetry=0",
-                "+CVars=a.DisableAnalytics=1",
-                "+CVars=r.LogFilter=0",
-                "+CVars=r.TouchBoostHz=" + forcedFps,
-                "+CVars=r.MobileTouchBoostRate=" + forcedFps,
-                "+CVars=r.GyroSampleRate=1000",
-                "+CVars=r.GyroSensitivityRatio=2.5",
-                "+CVars=r.GyroZeroDelay=1",
-                "+CVars=r.GyroLatencyMode=0",
-                "+CVars=r.GyroSmoothFactor=1",
-                "+CVars=r.GyroStabilization=1",
-                "FrameRateLevel=" + pubgFpsLevel,
-                "FPS=" + forcedFps,
-                "TargetFPS=" + forcedFps,
-                "MaxFPS=" + forcedFps,
-                "UnlockFPS=1",
-                "Unlock120FPS=1",
-                "Unlock144FPS=1",
-                "Unlock165FPS=1",
-                "Unlock185FPS=1",
-                "Ultra144FPS=1",
-                "Ultra165FPS=1",
-                "Ultra185FPS=1",
-                "UltraExtreme=1",
-                "bUseUltraExtreme=True",
-                "GraphicsQuality=5",
-                "GraphicQuality=4",
-                "HDRMode=1",
-                "UltraHDMode=1",
-                "SuperResolution=1",
-                "bUseHDRMode=True",
-                "bUseHighQualityBloom=True",
-                "bUseAntiAliasing=True",
-                "bDisableAnalytics=True",
-                "bDisableBugReporting=True",
-                "SprintSensitivity=150",
-                "TPPFieldOfView=100",
-                "FPPFieldOfView=150"
-        };
-
+    private static boolean patchForTier(String packageName, FpsUnlockTier tier) {
+        if (packageName == null || tier == null) return false;
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
-                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
-                ConfigFileHelper.patchKeys(path, new String[]{
-                    "FrameRateLevel=" + pubgFpsLevel,
-                    "GraphicQuality=4",
-                    "GraphicResolution=2",
-                    "MobileHDRMode=1",
-                    "bFramePacingEnabled=True",
-                    "ResolutionScale=120",
-                    "HighFPSMode=3"
-                }, "[/Script/ShadowTrackerExtra.UserSetting]");
-            }
-            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+            if (applyPubgFilePatch(path, tier)) {
                 written++;
             }
         }
-        patchActiveSavBinary(packageName, forcedFps);
-        deployPakPatch(packageName);
+        patchActiveSavBinary(packageName, tier.fps);
         AntiLogPatcher.applyAntiLog(packageName);
-        Log.i(TAG, "PUBGM competitive HDR " + forcedFps + "FPS non-destructive in-place merge: " + written + " paths @ " + forcedFps + "fps for " + packageName);
+        Log.i(TAG, "PUBGM " + tier.label + " SuperSmooth & UltraExtreme patch: " + written + " paths for " + packageName);
         return written > 0;
     }
 
@@ -819,6 +327,168 @@ public class PubgConfigPatcher {
     }
 
     /**
+     * Format-aware per-file patcher for PUBGM:
+     * - EnjoyCJZC.ini / GameUserSettings.ini: patches [/Script/ShadowTrackerExtra.UserSetting]
+     * - UserCustom.ini / DeviceProfile.ini: patches [UserCustom DeviceProfile] with CVars & INI keys
+     * - PlayerPrefs XML: patches XML nodes
+     */
+    public static boolean applyPubgFilePatch(String path, FpsUnlockTier tier) {
+        if (path == null || path.trim().isEmpty() || tier == null) return false;
+
+        if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
+                || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini")
+                || path.endsWith("VNGEnjoyCJZC.ini") || path.endsWith("GameUserSettings.ini")) {
+            String[] userSettingKeys = {
+                "FrameRateLevel=" + tier.level,
+                "BattleFPS=" + tier.level,
+                "LobbyFPS=" + tier.level,
+                "FPS=" + tier.fps,
+                "MaxFPS=" + tier.fps,
+                "TargetFPS=" + tier.fps,
+                "FrameRateLimit=" + tier.fps,
+                "MobileFPSLimit=" + tier.fps,
+                "GraphicQuality=4",
+                "ArtQuality=4",
+                "ShadowQuality=2",
+                "MobileHDRMode=1",
+                "HighFPSMode=3",
+                "bUseHDRMode=True",
+                "bUseUltraExtreme=True",
+                "bFramePacingEnabled=True",
+                "ResolutionScale=120",
+                "ResolutionQuality=120",
+                "UnlockFPS=1",
+                "Unlock120Hz=1",
+                "Unlock144Hz=1",
+                "Unlock165Hz=1",
+                "Unlock185Hz=1",
+                "Unlock240Hz=1"
+            };
+            return ConfigFileHelper.patchKeys(path, userSettingKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
+        }
+
+        if (path.endsWith(".playerprefs.xml") || path.endsWith("_preferences.xml")) {
+            String[] xmlKeys = {
+                "FPS=" + tier.fps,
+                "FrameRateLevel=" + tier.level,
+                "GraphicQuality=4",
+                "MobileHDRMode=1",
+                "HighFPSMode=3"
+            };
+            return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
+        }
+
+        // Default: UE4 UserCustom / DeviceProfile INI
+        String[] cVarsAndIniKeys = {
+            // ── SuperSmooth Frame Rate & Device Profile CVars ──
+            "+CVars=r.PUBGDeviceFPS=" + tier.level,
+            "+CVars=r.DefaultDeviceFPS=" + tier.level,
+            "+CVars=r.UserFPSSetting=" + tier.level,
+            "+CVars=r.PUBGMaxFPS=" + tier.fps,
+            "+CVars=r.PUBGFrameRateLimit=" + tier.fps,
+            "+CVars=r.FrameRateLimit=" + tier.fps,
+            "+CVars=r.MobileFPSLimit=" + tier.fps,
+            "+CVars=r.Vsync=0",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.Unlock240Hz=1",
+            "+CVars=r.TouchBoostHz=" + tier.fps,
+            "+CVars=r.MobileTouchBoostRate=" + tier.fps,
+            "+CVars=r.FramePacing=1",
+            // ── UltraExtreme Graphics CVars ──
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.PUBGHDRMode=1",
+            "+CVars=r.PUBGQualityLevel=5",
+            "+CVars=r.PUBGSDKQualityLevel=5",
+            "+CVars=r.UserQualitySetting=5",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.HDR.Display.OutputDevice=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.ReflectionCaptureResolution=256",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.MobileTonemapperFilm=1",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SuppressLogs=1",
+            "+CVars=r.DisableDebugLog=1",
+            "+CVars=r.AsyncCompute=1",
+            "+CVars=r.VRS.Enable=1",
+            "+CVars=r.EnableAsyncPipelineCompilation=1",
+            // ── INI Graphics & FPS Keys ──
+            "FPS=" + tier.fps,
+            "MaxFPS=" + tier.fps,
+            "TargetFPS=" + tier.fps,
+            "FrameRateLimit=" + tier.fps,
+            "MobileFPSLimit=" + tier.fps,
+            "FrameRateLevel=" + tier.level,
+            "UnlockFPS=1",
+            "Unlock120FPS=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "Ultra185FPS=1",
+            "HighFPSMode=3",
+            "SuperHighFPS=1",
+            "Unlock90Hz=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "ResolutionQuality=120",
+            "ResolutionScale=120",
+            "ScreenScale=120",
+            "HDRMode=1",
+            "HDR10Plus=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            "bUseHighQualityBloom=True",
+            "BloomQuality=5",
+            "AntiAliasingQuality=4",
+            "bUseAntiAliasing=True",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "TextureQuality=4",
+            "MaxAnisotropy=16",
+            "LightingQuality=3",
+            "ParticleQuality=3",
+            "WaterReflection=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "bReduceLoadedMips=False",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150",
+            "bDisableAnalytics=True",
+            "bDisableBugReporting=True",
+            "TouchBoostHz=" + tier.fps,
+            "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, cVarsAndIniKeys, "[UserCustom DeviceProfile]");
+    }
+
+    /**
      * Patches Active.sav binary savegame file directly using byte manipulation.
      * Enforces FPSLevel, BattleFPS, and LobbyFPS to target levels (10=185fps, 9=165fps, 8=144fps, 7=120fps).
      */
@@ -827,20 +497,48 @@ public class PubgConfigPatcher {
         final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
         String[] savPaths = {
             "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav",
             "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
+            "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav",
             "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
-            "/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"
+            "/data/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav",
+            "/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
+            "/data/user/0/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav",
+            // New State save paths
+            "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/PUBGNewState/PUBGNewState/Saved/SaveGames/Active.sav",
+            "/sdcard/Android/data/" + pkg + "/files/UE4Game/PUBGNewState/PUBGNewState/Saved/SaveGames/Active.sav"
         };
+
         for (String sav : savPaths) {
             try {
-                if (!ShizukuFileManager.fileExists(sav)) continue;
-                byte[] data = ShizukuFileManager.readFileBytes(sav);
+                byte[] data = null;
+                if (ShizukuFileManager.fileExists(sav)) {
+                    data = ShizukuFileManager.readFileBytes(sav);
+                } else {
+                    java.io.File f = new java.io.File(sav);
+                    if (f.exists() && f.canRead()) {
+                        data = java.nio.file.Files.readAllBytes(f.toPath());
+                    }
+                }
+
                 if (data != null && data.length > 0) {
-                    boolean modified = patchBinarySavField(data, "FPSLevel", fpsLevel);
+                    boolean modified = false;
+                    modified |= patchBinarySavField(data, "FPSLevel", fpsLevel);
                     modified |= patchBinarySavField(data, "BattleFPS", fpsLevel);
                     modified |= patchBinarySavField(data, "LobbyFPS", fpsLevel);
+                    modified |= patchBinarySavField(data, "HighFPSMode", 3);
+                    modified |= patchBinarySavField(data, "GraphicQuality", 4);
+                    modified |= patchBinarySavField(data, "ArtQuality", 4);
+                    modified |= patchBinarySavField(data, "ShadowQuality", 2);
+                    modified |= patchBinarySavField(data, "MobileHDRMode", 1);
+
                     if (modified) {
-                        ShizukuFileManager.uploadBytes(sav, data, "666");
+                        if (ShizukuFileManager.fileExists(sav)) {
+                            ShizukuFileManager.uploadBytes(sav, data, "666");
+                        } else {
+                            java.io.File f = new java.io.File(sav);
+                            java.nio.file.Files.write(f.toPath(), data);
+                        }
                     }
                 }
             } catch (Throwable t) {
@@ -853,22 +551,26 @@ public class PubgConfigPatcher {
     private static boolean patchBinarySavField(byte[] data, String fieldName, int value) {
         if (data == null || fieldName == null) return false;
         byte[] pattern = fieldName.getBytes(StandardCharsets.UTF_8);
-        int idx = indexOfBytes(data, pattern);
-        if (idx != -1) {
-            // In Active.sav, the value byte usually appears 9-10 bytes after the field name ASCII bytes
-            for (int offset = idx + pattern.length; offset < Math.min(data.length, idx + pattern.length + 16); offset++) {
-                if (data[offset] >= 1 && data[offset] <= 10) {
+        int idx = 0;
+        boolean found = false;
+        while ((idx = indexOfBytesFrom(data, pattern, idx)) != -1) {
+            int start = idx + pattern.length;
+            int end = Math.min(data.length, start + 36);
+            for (int offset = start; offset < end; offset++) {
+                if (data[offset] >= 0 && data[offset] <= 12) {
                     data[offset] = (byte) value;
-                    return true;
+                    found = true;
+                    break;
                 }
             }
+            idx += pattern.length;
         }
-        return false;
+        return found;
     }
 
-    private static int indexOfBytes(byte[] source, byte[] target) {
-        if (source == null || target == null || source.length < target.length) return -1;
-        for (int i = 0; i <= source.length - target.length; i++) {
+    private static int indexOfBytesFrom(byte[] source, byte[] target, int fromIndex) {
+        if (source == null || target == null || source.length < target.length || fromIndex < 0) return -1;
+        for (int i = fromIndex; i <= source.length - target.length; i++) {
             boolean match = true;
             for (int j = 0; j < target.length; j++) {
                 if (source[i + j] != target[j]) {
@@ -883,30 +585,7 @@ public class PubgConfigPatcher {
 
     private static boolean applyPatch(String path, int targetFps) {
         final FpsUnlockTier tier = FpsUnlockTier.fromFps(targetFps);
-        final int pubgFpsLevel = tier.level;
-        String[] cvars = {
-            "+CVars=r.PUBGDeviceFPS=" + pubgFpsLevel,
-            "+CVars=r.PUBGMaxFPS=" + targetFps,
-            "+CVars=r.PUBGFrameRateLimit=" + targetFps,
-            "+CVars=r.MobileFPSLimit=" + targetFps,
-            "+CVars=r.FrameRateLimit=" + targetFps,
-            "+CVars=r.PUBGHDRMode=1",
-            "+CVars=r.MobileHDR=1",
-            "+CVars=r.PUBGQualityLevel=4",
-            "+CVars=r.PUBGSDKQualityLevel=4",
-            "+CVars=r.Unlock120Hz=1",
-            "+CVars=r.Unlock144Hz=1",
-            "+CVars=r.Unlock165Hz=1",
-            "+CVars=r.Unlock185Hz=1",
-            "+CVars=r.Vsync=0",
-            "FrameRateLevel=" + pubgFpsLevel,
-            "FPS=" + targetFps,
-            "TargetFPS=" + targetFps,
-            "MaxFPS=" + targetFps,
-            "bUseHDRMode=True",
-            "bUseAntiAliasing=True"
-        };
-        return ConfigFileHelper.patchKeys(path, cvars, "[UserCustom DeviceProfile]");
+        return applyPubgFilePatch(path, tier);
     }
 
     // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────

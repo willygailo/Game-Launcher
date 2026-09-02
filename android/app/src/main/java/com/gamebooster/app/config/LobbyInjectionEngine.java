@@ -112,7 +112,18 @@ public final class LobbyInjectionEngine {
         if (packageName == null || packageName.trim().isEmpty()) {
             packageName = sActiveGamePackage;
         }
-        if (packageName == null || packageName.trim().isEmpty()) return;
+        if (packageName == null || packageName.trim().isEmpty()) {
+            try {
+                packageName = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().getActiveGamePackage();
+            } catch (Throwable ignored) {}
+        }
+        if (packageName == null || packageName.trim().isEmpty()) {
+            if (context != null) {
+                sMainHandler.post(() ->
+                        Toast.makeText(context, "⚠️ No active game detected to inject", Toast.LENGTH_SHORT).show());
+            }
+            return;
+        }
 
         final String pkg = packageName.trim();
         final Context appContext = (context != null) ? context.getApplicationContext() : null;
@@ -120,7 +131,7 @@ public final class LobbyInjectionEngine {
 
         cancelPending(pkg);
 
-        Log.i(TAG, "⚡ [Manual Trigger] Executing instant In-Lobby Injection for " + pkg);
+        Log.i(TAG, "⚡ [Manual Trigger] Executing forced instant In-Lobby Injection for " + pkg);
         sWorkerExecutor.execute(() -> executeInLobbyInjection(appContext, pkg, targetFps, true));
     }
 

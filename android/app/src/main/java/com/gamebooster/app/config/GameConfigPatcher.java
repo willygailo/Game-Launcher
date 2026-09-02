@@ -135,6 +135,7 @@ public class GameConfigPatcher {
             if (MlbbConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (MlbbConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) MlbbConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 165) MlbbConfigPatcher.patchUltraExtreme165(pkg);
             else if (forcedFps >= 144) MlbbConfigPatcher.patchUltraExtreme144(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
@@ -154,6 +155,7 @@ public class GameConfigPatcher {
             if (CodmConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) CodmConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 165) CodmConfigPatcher.patchUltraExtreme165(pkg);
             else if (forcedFps >= 144) CodmConfigPatcher.patchUltraExtreme144(pkg);
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
@@ -172,6 +174,7 @@ public class GameConfigPatcher {
             if (PubgConfigPatcher.patch(pkg, forcedFps)) patchedFiles++;
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) PubgConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 165) PubgConfigPatcher.patchUltraExtreme165(pkg);
             else if (forcedFps >= 144) PubgConfigPatcher.patchUltraExtreme144(pkg);
             PubgConfigPatcher.deployPakPatch(pkg);
             PubgConfigPatcher.applySuperFastTouch(pkg);
