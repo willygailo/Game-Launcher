@@ -526,4 +526,86 @@ public class ShizukuUserServiceConnector {
         String res = ShizukuExecutor.executeShizukuCommand("pm unsuspend --user 0 " + packageName + " 2>/dev/null; cmd package unsuspend --user 0 " + packageName + " 2>/dev/null; cmd appops set " + packageName + " RUN_IN_BACKGROUND allow 2>/dev/null; cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null; am set-standby-bucket " + packageName + " active 2>/dev/null; am set-standby-bucket " + packageName + " 10 2>/dev/null");
         return res != null && !res.startsWith("ERROR");
     }
+
+    public boolean speedCompileGame(String packageName) {
+        if (packageName == null) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.speedCompileGame(packageName);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in speedCompileGame", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("cmd package compile -m speed -f " + packageName + " 2>/dev/null; pm compile -m speed -f " + packageName + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean setResolutionScale(int width, int height) {
+        if (width <= 0 || height <= 0) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setResolutionScale(width, height);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setResolutionScale", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("wm size " + width + "x" + height + " 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public void resetResolutionScale() {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                userServiceInstance.resetResolutionScale();
+                return;
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in resetResolutionScale", e);
+            }
+        }
+        ShizukuExecutor.executeShizukuCommands("wm size reset 2>/dev/null; wm density reset 2>/dev/null");
+    }
+
+    public boolean setGameGpuDriver(String packageName, String driverType) {
+        if (packageName == null) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setGameGpuDriver(packageName, driverType);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setGameGpuDriver", e);
+            }
+        }
+        return false;
+    }
+
+    public boolean purgeAppLogsAndTraces(String packageName) {
+        if (packageName == null) return false;
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.purgeAppLogsAndTraces(packageName);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in purgeAppLogsAndTraces", e);
+            }
+        }
+        String res = ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* /sdcard/Android/data/" + packageName + "/files/*.log /sdcard/Android/data/" + packageName + "/files/dragon2017/assets/Logs/* 2>/dev/null");
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    public boolean setTouchSamplingRate(int rateHz) {
+        ensureBound();
+        if (userServiceInstance != null) {
+            try {
+                return userServiceInstance.setTouchSamplingRate(rateHz);
+            } catch (Exception e) {
+                Log.e(TAG, "RemoteException in setTouchSamplingRate", e);
+            }
+        }
+        final int rate = rateHz > 0 ? rateHz : 1000;
+        String res = ShizukuExecutor.executeShizukuCommand("setprop persist.sys.touch.report_rate " + rate + "; setprop debug.input.max_events_per_sec " + rate + "; setprop view.touch_slop 0");
+        return res != null && !res.startsWith("ERROR");
+    }
 }

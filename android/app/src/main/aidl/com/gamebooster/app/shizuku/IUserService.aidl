@@ -32,4 +32,10 @@ interface IUserService {
     boolean setNetworkQoS(boolean prioritize) = 26;
     boolean freezeApp(String packageName) = 27;
     boolean unfreezeApp(String packageName) = 28;
+    boolean speedCompileGame(String packageName) = 29;
+    boolean setResolutionScale(int width, int height) = 30;
+    void resetResolutionScale() = 31;
+    boolean setGameGpuDriver(String packageName, String driverType) = 32;
+    boolean purgeAppLogsAndTraces(String packageName) = 33;
+    boolean setTouchSamplingRate(int rateHz) = 34;
 }

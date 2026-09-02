@@ -620,4 +620,70 @@ public class UserService extends IUserService.Stub {
         String res = execCommand(cmd);
         return res != null && !res.startsWith("ERROR");
     }
+
+    @Override
+    public boolean speedCompileGame(String packageName) {
+        if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
+        String cmd = "cmd package compile -m speed -f " + packageName + " 2>/dev/null; "
+                   + "pm compile -m speed -f " + packageName + " 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean setResolutionScale(int width, int height) {
+        if (width <= 0 || height <= 0) return false;
+        String cmd = "wm size " + width + "x" + height + " 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public void resetResolutionScale() {
+        execCommand("wm size reset 2>/dev/null; wm density reset 2>/dev/null");
+    }
+
+    @Override
+    public boolean setGameGpuDriver(String packageName, String driverType) {
+        if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
+        String type = driverType != null ? driverType.toLowerCase() : "vulkan";
+        String cmd;
+        if ("angle".equals(type)) {
+            cmd = "settings put global angle_gl_driver_selection_pkgs " + packageName + " 2>/dev/null; "
+                + "settings put global angle_gl_driver_selection_values angle 2>/dev/null";
+        } else if ("system".equals(type) || "default".equals(type)) {
+            cmd = "settings put global game_driver_opt_in_apps \"\" 2>/dev/null; "
+                + "settings put global angle_gl_driver_selection_pkgs \"\" 2>/dev/null";
+        } else {
+            cmd = "settings put global game_driver_opt_in_apps " + packageName + " 2>/dev/null; "
+                + "settings put global updatable_driver_production_opt_in_apps " + packageName + " 2>/dev/null";
+        }
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean purgeAppLogsAndTraces(String packageName) {
+        if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
+        String cmd = "rm -rf /sdcard/Android/data/" + packageName + "/cache/* 2>/dev/null; "
+                   + "rm -rf /sdcard/Android/data/" + packageName + "/files/vbox_log* 2>/dev/null; "
+                   + "rm -rf /sdcard/Android/data/" + packageName + "/files/*.log 2>/dev/null; "
+                   + "rm -rf /sdcard/Android/data/" + packageName + "/files/dragon2017/assets/Logs/* 2>/dev/null; "
+                   + "rm -rf /data/tombstones/* 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public boolean setTouchSamplingRate(int rateHz) {
+        final int rate = rateHz > 0 ? rateHz : 1000;
+        String cmd = "setprop persist.sys.touch.report_rate " + rate + " 2>/dev/null; "
+                   + "setprop persist.vendor.touch.sampling_rate " + rate + " 2>/dev/null; "
+                   + "setprop debug.input.max_events_per_sec " + rate + " 2>/dev/null; "
+                   + "setprop debug.sensor.gyro.sample_rate " + rate + " 2>/dev/null; "
+                   + "setprop view.touch_slop 0 2>/dev/null; "
+                   + "setprop persist.sys.touch.latency 0 2>/dev/null";
+        String res = execCommand(cmd);
+        return res != null && !res.startsWith("ERROR");
+    }
 }
