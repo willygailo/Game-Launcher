@@ -820,91 +820,383 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, targetFps);
 }
 
-// ─── Safe Backward Compatibility Implementations ─────────────────────────────
+// ─── Safe Backward Compatibility & 1000-Tier Dedicated Implementations ───────
+
+static bool apply_keys_to_file(const std::string& pathStr, const char* path,
+                               const std::vector<std::pair<std::string, std::string>>& keys,
+                               const char* logTag) {
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos
+                   || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJ.ini") != std::string::npos
+                   || pathStr.rfind("GraphicsSettings.ini") != std::string::npos);
+
+    for (const auto& kv : keys) {
+        if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+            patch_key_value(content, kv.first, kv.second);
+        } else if (isXml) {
+            std::string tag = "int";
+            if (kv.second == "True" || kv.second == "False") tag = "string";
+            else if (kv.second.find('.') != std::string::npos) tag = "float";
+            patch_xml_node(content, tag, kv.first, kv.second);
+        } else if (isJson) {
+            bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    LOGI("%s injected: %s [ok=%d]", logTag, pathStr.c_str(), ok);
+    return ok;
+}
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jfloat mult, jfloat hsMult, jint crit) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string multStr = std::to_string(mult > 0 ? mult : 1.5f);
+    std::string hsStr = std::to_string(hsMult > 0 ? hsMult : 2.0f);
+    std::string critStr = std::to_string(crit > 0 ? crit : 100);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageBoost", "1"}, {"DamageMultiplier", multStr}, {"DamageLockMax", "1"},
+        {"HeadshotMultiplier", hsStr}, {"CritRateBoost", critStr}, {"EffectiveDPSMode", "3"},
+        {"PenetrationBoost", "1"}, {"TrueDamageBoost", "1"}, {"InstantHitReg", "1"},
+        {"HitRegSyncRate", "1000"}, {"FrameSyncDamage", "1"}, {"TouchPollingRate", "1000"},
+        {"r.PUBGDamageLockMax", "1"}, {"r.PUBGDamageBoost", "1"}, {"r.PUBGHeadshotMultiplier", hsStr}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "DamageBoost");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroRecoil
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jfloat recoilScale, jint stability) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ZeroRecoil", "1"}, {"RecoilScale", "0"}, {"VerticalRecoilScale", "0"},
+        {"HorizontalRecoilScale", "0"}, {"RecoilPatternScale", "0"}, {"WeaponSpread", "0"},
+        {"WeaponSway", "0"}, {"BulletSpreadScale", "0"}, {"SpreadDecayRate", "10"},
+        {"MuzzleSpread", "0"}, {"MovingSpreadFactor", "0"}, {"RecoilControlAssist", "1"},
+        {"r.WeaponRecoilScale", "0"}, {"r.VerticalRecoilScale", "0"}, {"r.HorizontalRecoilScale", "0"},
+        {"r.RecoilPatternScale", "0"}, {"r.WeaponSpread", "0"}, {"r.WeaponSway", "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ZeroRecoil");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist
-  (JNIEnv *env, jclass, jstring jPath, jint, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jint strength, jint precision) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimAssistEnabled", "1"}, {"AimAssistStrength", "100"}, {"AimMagnetism", "3"},
+        {"AimAssistLockMax", "1"}, {"HeadMagnetism", "1"}, {"HeadBoneAimPriority", "1"},
+        {"AimSnapSpeed", "10"}, {"AimSnapThreshold", "0"}, {"AimSmoothFactor", "0"},
+        {"AdsZeroDelay", "1"}, {"PredictiveAim", "1"}, {"HeroLock", "1"}, {"SkillSmartAim", "1"},
+        {"r.AimAssistEnabled", "1"}, {"r.AimAssistStrength", "100"}, {"r.AimMagnetism", "3"},
+        {"r.AimSnapThreshold", "0"}, {"r.HeadBoneAimPriority", "1"}, {"r.PredictiveAim", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "AimAssist");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jfloat trackingStrength, jfloat hitboxMultiplier) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string hbStr = std::to_string(hitboxMultiplier > 0 ? hitboxMultiplier : 3.0f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"TrackingBullet", "1"}, {"TrackingStrength", "1000"}, {"BulletMagnetism", "1"},
+        {"HitboxMultiplier", hbStr}, {"HitboxScale", hbStr}, {"BulletVelocityComp", "1"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"HitRegistrationRate", "1000"},
+        {"ZeroBulletDrop", "1"}, {"BulletDropComp", "1"}, {"WeaponSpread", "0"},
+        {"BulletSpreadScale", "0"}, {"MuzzleVelocityFactor", "1.0"}, {"TrueDamageBoost", "1"},
+        {"r.PUBGBulletVelocityCompensation", "1"}, {"r.PUBGInstantHitReg", "1"},
+        {"r.BulletSpreadScale", "0"}, {"r.WeaponSpread", "0"}, {"r.MuzzleVelocityFactor", "1.0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "TrackingBullet");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jfloat defBoost, jfloat dmgReduction) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string defStr = std::to_string(defBoost > 0 ? defBoost : 3000.0f);
+    std::string redStr = std::to_string(dmgReduction > 0 ? dmgReduction : 0.99f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ArmorDefBoost", "1"}, {"ArmorDefense", defStr}, {"PhysicalDefense", defStr},
+        {"MagicDefense", defStr}, {"DamageReduction", redStr}, {"DamageReductionBypassImmune", "1"},
+        {"ShieldMultiplier", "3.0"}, {"LifestealBoost", "1"}, {"SpellVampBoost", "1"},
+        {"bFramePacingEnabled", "True"}, {"ZeroInputLag", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ArmorDef");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jfloat speedMultiplier, jfloat sprintBoost) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string spdStr = std::to_string(speedMultiplier > 0 ? speedMultiplier : 1.5f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"MovementSpeedBoost", "1"}, {"SpeedMultiplier", spdStr}, {"SprintSpeedMax", "1"},
+        {"SlideDistanceMax", "1"}, {"SlideSpeedBoost", "1"}, {"JumpHeightBoost", "1"},
+        {"FastTacticalSprint", "1"}, {"SprintDelayZero", "1"}, {"JoystickZeroDeadzone", "1"},
+        {"JoystickResponseLevel", "3"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "SpeedBoost");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroDamage1000
   (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat, jint, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 144);
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "1"}, {"DamageBoost", "1"}, {"EffectiveDPSMode", "3"},
+        {"HeroBaseDamageMultiplier", "1"}, {"HeroSkillDamageMultiplier", "1"},
+        {"HeroUltimateDamageMult", "1"}, {"HeroPassiveDamageMult", "1"},
+        {"HeroCritDamageMult", "1"}, {"HeroMagicDamageMult", "1"}, {"HeroPhysicalDamageMult", "1"},
+        {"HeroTrueDamageMult", "1"}, {"PenetrationBoost", "1"}, {"CritRateBoost", "1"},
+        {"CritDamageMultiplier", "3.0"}, {"HeadshotMultiplier", "2.0"}, {"InstantHitReg", "1"},
+        {"HitRegSyncRate", "1000"}, {"HitRegistrationRate", "1000"}, {"FrameSyncDamage", "1"},
+        {"TrueDamageBoost", "1"}, {"DamageReductionBypass", "1"}, {"SpellVampBoost", "1"},
+        {"LifestealBoost", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"r.PUBGDamageLockMax", "1"}, {"r.PUBGDamageBoost", "1"}, {"r.PUBGTrueDamageMod", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "HeroDamage1000");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil
   (JNIEnv *env, jclass, jstring jPath, jfloat, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ScopeZeroRecoil", "1"}, {"RecoilScale", "0"}, {"VerticalRecoilScale", "0"},
+        {"HorizontalRecoilScale", "0"}, {"RecoilPatternScale", "0"}, {"WeaponSpread", "0"},
+        {"WeaponSway", "0"}, {"BulletSpreadScale", "0"}, {"Scope2xStabilizer", "1"},
+        {"Scope3xStabilizer", "1"}, {"Scope4xStabilizer", "1"}, {"Scope6xStabilizer", "1"},
+        {"Scope8xStabilizer", "1"}, {"ScopeZeroSway", "1"}, {"ScopeBreathingDamp", "1"},
+        {"GyroSampleRate", "1000"}, {"GyroZeroDelay", "1"}, {"GyroStabilization", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"r.WeaponRecoilScale", "0"}, {"r.WeaponSpread", "0"}, {"r.WeaponSway", "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ScopeZeroRecoil");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000
-  (JNIEnv *env, jclass, jstring jPath, jint, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jint strength, jfloat precision) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimAssistLockMax", "1"}, {"AimAssistEnabled", "1"}, {"AimAssistStrength", "1000"},
+        {"AimMagnetism", "1000"}, {"AimMagnetismLevel", "10"}, {"LockOnRange", "1.0"},
+        {"AimSnapSpeed", "10"}, {"AimSnapThreshold", "0"}, {"AimSmoothFactor", "0"},
+        {"AimStabilizer", "1"}, {"HeadMagnetism", "1"}, {"HeadBoneAimPriority", "1"},
+        {"AdsZeroDelay", "1"}, {"PredictiveAim", "1"}, {"HeroLock", "1"}, {"SkillSmartAim", "1"},
+        {"TargetPriority", "0"}, {"AimMethod", "1"}, {"WeaponSway", "0"}, {"WeaponSpread", "0"},
+        {"WeaponRecoilScale", "0"}, {"TouchPollingRate", "1000"}, {"TouchSampleRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"GyroSampleRate", "1000"},
+        {"GyroZeroDelay", "1"}, {"GyroStabilization", "1"}, {"GyroLatencyMode", "0"},
+        {"GyroSensitivityRatio", "2.5"},
+        {"r.AimAssistEnabled", "1"}, {"r.AimAssistStrength", "100"}, {"r.AimMagnetism", "3"},
+        {"r.AimSnapThreshold", "0"}, {"r.HeadBoneAimPriority", "1"}, {"r.PredictiveAim", "1"},
+        {"r.GyroSampleRate", "1000"}, {"r.GyroZeroDelay", "1"}, {"r.GyroStabilization", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "AimAssist1000");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 144);
+  (JNIEnv *env, jclass, jstring jPath, jfloat trackingStrength, jfloat hitboxMultiplier) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string hbStr = std::to_string(hitboxMultiplier > 0 ? hitboxMultiplier : 3.0f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"TrackingBullet", "1"}, {"TrackingBulletLockMax", "1000"}, {"TrackingStrength", "1000"},
+        {"BulletTrackingStrength", "1000"}, {"HitboxMultiplier", hbStr}, {"HitboxScale", hbStr},
+        {"BulletMagnetism", "1"}, {"BulletVelocityComp", "1"}, {"BulletVelocityBoost", "1"},
+        {"MuzzleVelocityFactor", "1.0"}, {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"},
+        {"HitRegistrationRate", "1000"}, {"FrameSyncDamage", "1"}, {"ZeroBulletDrop", "1"},
+        {"BulletDropComp", "1"}, {"WeaponSpread", "0"}, {"BulletSpreadScale", "0"},
+        {"MuzzleSpread", "0"}, {"MovingSpreadFactor", "0"}, {"TrueDamageBoost", "1"},
+        {"PenetrationBoost", "1"}, {"DamageReductionBypass", "1"}, {"DamageLockMax", "1"},
+        {"EffectiveDPSMode", "3"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"r.PUBGBulletVelocityCompensation", "1"}, {"r.PUBGInstantHitReg", "1"},
+        {"r.PUBGTrueDamageMod", "1"}, {"r.BulletSpreadScale", "0"}, {"r.WeaponSpread", "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "TrackingBullet1000");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef1000
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 144);
+  (JNIEnv *env, jclass, jstring jPath, jfloat defBoost, jfloat dmgReduction) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string defStr = std::to_string(defBoost > 0 ? defBoost : 3000.0f);
+    std::string redStr = std::to_string(dmgReduction > 0 ? dmgReduction : 0.99f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ArmorDefBoost", "1"}, {"ArmorDef1000", "1"}, {"ArmorDefense", defStr},
+        {"PhysicalDefense", defStr}, {"MagicDefense", defStr}, {"DamageReduction", redStr},
+        {"DamageReductionBypassImmune", "1"}, {"ShieldMultiplier", "3.0"}, {"LifestealBoost", "1"},
+        {"SpellVampBoost", "1"}, {"RetaliationDamage", "3"}, {"bFramePacingEnabled", "True"},
+        {"ZeroInputLag", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ArmorDef1000");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
-  (JNIEnv *env, jclass, jstring jPath, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jfloat cdrRatio) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"CooldownReduction", "1"}, {"SkillCDRatio", "0"}, {"UltCDReduction", "1"},
+        {"ItemCDReduction", "1"}, {"SkillInstantReset", "1"}, {"EnergyRegenBoost", "10"},
+        {"ManaRegenBoost", "10"}, {"FastCooldownMax", "1"}, {"ZeroInputLag", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FastCooldown");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectShield1500
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jfloat shieldMult, jfloat defBoost) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string shStr = std::to_string(shieldMult > 0 ? shieldMult : 3.0f);
+    std::string defStr = std::to_string(defBoost > 0 ? defBoost : 3000.0f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"Shield1500", "1"}, {"ShieldMultiplier", shStr}, {"ShieldScale", shStr},
+        {"PhysicalDefense", defStr}, {"MagicDefense", defStr}, {"DamageReduction", "0.99"},
+        {"ShieldRegenRate", "10"}, {"ImmunityShield", "1"}, {"TankRetaliationDmg", "3"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "Shield1500");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDroneView
-  (JNIEnv *env, jclass, jstring jPath, jint, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 120);
+  (JNIEnv *env, jclass, jstring jPath, jint fov, jint height) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string fovStr = std::to_string(fov > 0 ? fov : 180);
+    std::string htStr = std::to_string(height > 0 ? height : 180);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DroneView", "1"}, {"DroneFOV", fovStr}, {"MaxFOV", fovStr}, {"FieldOfView", fovStr},
+        {"CameraHeight", htStr}, {"CameraDistance", htStr}, {"WideCameraAngle", "1"},
+        {"MapVisibilityRange", "2.0"}, {"FogOfWarBypass", "1"}, {"AllowOcclusionQueries", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "DroneView");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimHeadLock
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jint) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jfloat headMagnetism, jint snapSpeed) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string magStr = std::to_string(headMagnetism > 0 ? headMagnetism : 1.0f);
+    std::string spdStr = std::to_string(snapSpeed > 0 ? snapSpeed : 10);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimHeadLock", "1"}, {"HeadMagnetism", magStr}, {"HeadBoneAimPriority", "1"},
+        {"BoneIndex", "0"}, {"AimSnapSpeed", spdStr}, {"AimSnapThreshold", "0"},
+        {"AimSmoothFactor", "0"}, {"AdsZeroDelay", "1"}, {"PredictiveAim", "1"},
+        {"AimAssistStrength", "1000"}, {"AimMagnetism", "1000"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"GyroSampleRate", "1000"},
+        {"r.HeadBoneAimPriority", "1"}, {"r.AimAssistStrength", "100"}, {"r.AimMagnetism", "3"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "AimHeadLock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraDamageOverdrive
-  (JNIEnv *env, jclass, jstring jPath, jfloat, jfloat, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtremeGraphics(env, nullptr, jPath, 144);
+  (JNIEnv *env, jclass, jstring jPath, jfloat damageScale, jfloat critMultiplier, jfloat trueDamage) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string dmgStr = std::to_string(damageScale > 0 ? damageScale : 1.5f);
+    std::string critStr = std::to_string(critMultiplier > 0 ? critMultiplier : 3.0f);
+    std::string trueStr = std::to_string(trueDamage > 0 ? trueDamage : 1.0f);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"UltraDamageOverdrive", "1"}, {"DamageLockMax", "1"}, {"DamageBoost", "1"},
+        {"DamageScale", dmgStr}, {"CritDamageMultiplier", critStr}, {"CritRateBoost", "1"},
+        {"TrueDamageBoost", trueStr}, {"EffectiveDPSMode", "3"}, {"PenetrationBoost", "1"},
+        {"ArmorPenMax", "1"}, {"MagicPenMax", "1"}, {"InstantHitReg", "1"},
+        {"HitRegSyncRate", "1000"}, {"HitRegistrationRate", "1000"}, {"FrameSyncDamage", "1"},
+        {"HeadshotMultiplier", "2.0"}, {"DamageReductionBypass", "1"}, {"BurstDamageWindow", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"r.PUBGDamageLockMax", "1"}, {"r.PUBGDamageBoost", "1"}, {"r.PUBGTrueDamageMod", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UltraDamageOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroAimLock
-  (JNIEnv *env, jclass, jstring jPath, jint, jfloat) {
-    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNextGenTouchSampling(env, nullptr, jPath, 1000);
+  (JNIEnv *env, jclass, jstring jPath, jint targetPriority, jfloat lockDistance) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string prioStr = std::to_string(targetPriority >= 0 ? targetPriority : 0);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"HeroAimLock", "1"}, {"HeroLock", "1"}, {"SkillSmartAim", "1"},
+        {"TargetPriority", prioStr}, {"AimMethod", "1"}, {"AimAssistStrength", "1000"},
+        {"AimMagnetism", "1000"}, {"AimSnapSpeed", "10"}, {"AimSnapThreshold", "0"},
+        {"HeadMagnetism", "1"}, {"HeadBoneAimPriority", "1"}, {"AdsZeroDelay", "1"},
+        {"PredictiveAim", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"}, {"GyroSampleRate", "1000"}, {"GyroZeroDelay", "1"},
+        {"r.AimAssistEnabled", "1"}, {"r.AimAssistStrength", "100"}, {"r.AimMagnetism", "3"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "HeroAimLock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeAimCalibration

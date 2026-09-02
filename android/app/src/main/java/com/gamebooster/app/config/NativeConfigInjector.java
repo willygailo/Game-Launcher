@@ -768,58 +768,114 @@ public class NativeConfigInjector {
     }
 
     public static boolean injectAimAssist(String path) {
-        return injectNextGenTouchSampling(path, 1000);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAimAssist1000(path, 1000, 1.0f); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
     }
 
     public static boolean injectNoRecoil(String path) {
-        return injectNextGenTouchSampling(path, 1000);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectScopeZeroRecoil(path, 0.0f, 100); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
     }
 
     public static boolean injectHighDamage(String path) {
-        return injectUltraExtremeGraphics(path, 120);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectHighDamage(String path, int targetFps) {
-        return injectUltraExtremeGraphics(path, targetFps);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectTrackingBullet(String path) {
-        return injectUltraExtremeGraphics(path, 120);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectTrackingBullet1000(path, 1000.0f, 3.0f); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectArmorDef(String path) {
-        return injectUltraExtremeGraphics(path, 120);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectArmorDef1000(path, 3000.0f, 0.99f); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectSpeedBoost(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectSpeedBoost(path, 1.5f, 1.5f); } catch (Throwable ignored) {}
+        }
         return injectNextGenTouchSampling(path, 1000);
     }
 
     public static boolean injectHeroDamage1000(String path) {
-        return injectUltraExtremeGraphics(path, 144);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectAimHeadLock(String path) {
-        return injectNextGenTouchSampling(path, 1000);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAimHeadLock(path, 1.0f, 10); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
     }
 
     public static boolean injectUltraDamageOverdrive(String path) {
-        return injectUltraExtremeGraphics(path, 144);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectUltraDamageOverdrive(path, 1.5f, 3.0f, 1.0f); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectHeroAimLock(String path) {
-        return injectNextGenTouchSampling(path, 1000);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHeroAimLock(path, 0, 1.0f); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
     }
 
     public static boolean injectFastCooldown(String path) {
-        return injectUltraExtremeGraphics(path, 120);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastCooldown(path, 0.0f); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectShield1500(String path) {
-        return injectUltraExtremeGraphics(path, 120);
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectShield1500(path, 3.0f, 3000.0f); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
     }
 
     public static boolean injectDroneView(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectDroneView(path, 180, 180); } catch (Throwable ignored) {}
+        }
         return injectUltraExtremeGraphics(path, 120);
     }
 

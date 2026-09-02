@@ -220,28 +220,50 @@ public final class CommonConfigTuningInjector {
     }
 
     public static void applyDamageScriptConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectHeroDamage1000(path);
+        }
         applyHitRegistrationDpsBoost(packageName);
     }
 
     public static void applyAimHeadLockConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectAimHeadLock(path);
+        }
         applyAllScopeAimPrecision(packageName);
     }
 
     public static void applyUltraDamageOverdriveConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectUltraDamageOverdrive(path);
+        }
         applyHitRegistrationDpsBoost(packageName);
         applyUltraExtremeGraphics(packageName, 165);
     }
 
     public static void applyHeroAimLockConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectHeroAimLock(path);
+        }
         applyAllScopeAimPrecision(packageName);
     }
 
     public static void applyFastCooldownConfig(String packageName) {
-        applyUltraExtremeGraphics(packageName, 120);
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectFastCooldown(path);
+        }
     }
 
     public static void applyShield1500Config(String packageName) {
-        applyUltraExtremeGraphics(packageName, 120);
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectShield1500(path);
+        }
     }
 
     public static void applyDroneViewConfig(String packageName) {
@@ -249,18 +271,32 @@ public final class CommonConfigTuningInjector {
     }
 
     public static void applyDroneViewUltraConfig(String packageName) {
-        applyUltraExtremeGraphics(packageName, 120);
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectDroneView(path);
+        }
     }
 
     public static void applyArmorDefConfig(String packageName) {
-        applyUltraExtremeGraphics(packageName, 120);
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectArmorDef(path);
+        }
     }
 
     public static void applySpeedBoostConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectSpeedBoost(path);
+        }
         applySuperFastTouch(packageName);
     }
 
     public static void applyTrackingBulletConfig(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectTrackingBullet(path);
+        }
         applyHitRegistrationDpsBoost(packageName);
     }
 
