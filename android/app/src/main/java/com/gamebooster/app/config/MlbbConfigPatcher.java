@@ -14,6 +14,112 @@ import java.util.List;
  */
 public class MlbbConfigPatcher {
 
+
+    public static void applyUltraDamageAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbUltraDamageAllHero(path);
+        }
+    }
+
+    public static void applyArmorAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbArmorAllHero(path);
+        }
+    }
+
+    public static void applyFastAttackSpeedAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFastAttackSpeedAllHero(path);
+        }
+    }
+
+    public static void applyFannyAutoFullEnergy(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFannyAutoFullEnergy(path);
+        }
+    }
+
+    public static void applyLingFastestComboAutoSword(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectLingFastestComboAutoSword(path);
+        }
+    }
+
+    public static void applyGusionUltraOverdrive(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectGusionUltraOverdrive(path);
+        }
+    }
+
+    public static void applyAllHeroItemSkillBoost(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectAllHeroItemSkillBoost(path);
+        }
+    }
+
+    public static void applyKaguraCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectKaguraCombo(path);
+        }
+    }
+
+    public static void applyZilongAutoSlash(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectZilongAutoSlash(path);
+        }
+    }
+
+    public static void applySaberCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectSaberCombo(path);
+        }
+    }
+
+    public static void applyAlucardLifestealCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectAlucardLifestealCombo(path);
+        }
+    }
+
+    public static void applyYiSunShinCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectYiSunShinCombo(path);
+        }
+    }
+
+    public static void applyChouFreestyleCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectChouFreestyleCombo(path);
+        }
+    }
+
+    public static void applyLancelotDashCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectLancelotDashCombo(path);
+        }
+    }
+
+    public static void applyFrancoHookCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFrancoHookCombo(path);
+        }
+    }
+
     private static final String TAG = "MlbbConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

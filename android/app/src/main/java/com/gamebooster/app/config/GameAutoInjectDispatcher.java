@@ -77,6 +77,21 @@ public final class GameAutoInjectDispatcher {
     private static void injectMlbb(String pkg) {
         Log.i(TAG, "⚔️ Injecting MLBB hero combos (Ling, Fanny, Gusion, Chou, Haya, Beatrix), SA Damage+, Farming, Jungle & All-Hero...");
         try { MlbbConfigPatcher.applyLingHeroDamageCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyUltraDamageAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyArmorAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFastAttackSpeedAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyAllHeroItemSkillBoost(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFannyAutoFullEnergy(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyLingFastestComboAutoSword(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyGusionUltraOverdrive(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyKaguraCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyZilongAutoSlash(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applySaberCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyAlucardLifestealCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyYiSunShinCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyChouFreestyleCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyLancelotDashCombo(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFrancoHookCombo(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFannyFastCableCombo(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyGusionDaggerCombo(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyChouKickCombo(pkg); } catch (Throwable ignored) {}
@@ -99,6 +114,11 @@ public final class GameAutoInjectDispatcher {
     private static void injectPubgm(String pkg) {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
         try { PubgConfigPatcher.applyMagicBulletAimbot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyNoScopeAimbot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyAllScopeAimbot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyLongRangeScopeHeadshot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyMidRangeAutoHeadshot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmFastAttackSpeed(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
@@ -113,6 +133,11 @@ public final class GameAutoInjectDispatcher {
     private static void injectCodm(String pkg) {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
         try { CodmConfigPatcher.applyNoRecoilNoSpread(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyNoScopeAimbot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyAllScopeAimbot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyLongRangeHeadshot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyMidRangeHeadshot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyFastAttackSpeed(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
@@ -126,6 +151,8 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectFreeFire(String pkg) {
         Log.i(TAG, "🔥 Injecting Free Fire Auto-Headshot, All-Gun & All-Scope Calibration...");
+        try { NativeConfigInjector.injectFreeFireAutoHeadshot(GameConfigPathResolver.getPrimaryConfigPath(pkg)); } catch (Throwable ignored) {}
+        try { NativeConfigInjector.injectFreeFireFastGlooWall(GameConfigPathResolver.getPrimaryConfigPath(pkg)); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}

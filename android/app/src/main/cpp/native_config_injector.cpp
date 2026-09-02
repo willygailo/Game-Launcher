@@ -2523,3 +2523,1103 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 }
 
 
+
+// =============================================================================
+// ─── PUBGM: No-Scope Hipfire Aimbot ──────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoScopeAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"HipfireSpread","0"},{"HipfireSpreadScale","0"},{"WeaponSpread","0"},
+        {"BulletSpreadScale","0"},{"NoSpreadHipfire","1"},{"HipfireAimLock","1"},
+        {"WeaponSway","0"},{"SwayAmplitude","0"},{"SwayFrequency","0"},
+        {"BreathSway","0"},{"HeadMagnetism","1"},{"HeadBonePriority","1"},
+        {"AimBoneTarget","0"},{"AimMagnetism","3"},{"AimSnapSpeed","10"},
+        {"AimSmoothFactor","0"},{"AimAssistLockMax","1"},{"NoScopeAimbot","1"},
+        {"HipfireAimbotEnable","1"},{"HipfireHeadLock","1"},{"InstantAimSnap","1"},
+        {"AimDeadzone","0"},{"GyroSampleRate","1000"},{"GyroZeroDelay","1"},
+        {"GyroStabilization","1"},{"GyroLatencyMode","0"},{"TouchPollingRate","1000"},
+        {"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"HitRegSyncRate","1000"},
+        {"FrameSyncDamage","1"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for (const auto& kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime=stBefore.st_atime; t.modtime=stBefore.st_mtime; utime(path,&t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("NoScopeAimbot PUBGM injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: All-Scope Aimbot (2x-8x) ────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"AdsZeroDelay","1"},{"AdsSnapEnable","1"},{"AdsTransitionTime","0"},
+        {"HeadMagnetism","1"},{"HeadBonePriority","1"},{"AimBoneTarget","0"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"AimAssistLockMax","1"},{"AllScopeHeadLock","1"},{"ScopeAimbotEnable","1"},
+        {"PredictiveAim","1"},{"WeaponSway","0"},{"BreathSway","0"},{"SwayAmplitude","0"},
+        {"MicroJitterCancel","1"},
+        {"Scope2xGyroSample","1000"},{"Scope2xHeadLock","1"},{"Scope2xZeroSway","1"},{"Scope2xAimSnap","10"},
+        {"Scope3xGyroStabilization","1"},{"Scope3xHeadLock","1"},{"Scope3xZeroSway","1"},{"Scope3xAimSnap","10"},
+        {"Scope4xGyroStabilization","1"},{"Scope4xHeadLock","1"},{"Scope4xZeroSway","1"},{"Scope4xAimSnap","10"},
+        {"Scope6xGyro1000Hz","1"},{"Scope6xHeadLock","1"},{"Scope6xMicroDamping","1"},{"Scope6xAimSnap","10"},
+        {"Scope8xGyro1000Hz","1"},{"Scope8xHeadLock","1"},{"Scope8xPrecisionFilter","1"},
+        {"Scope8xZeroBreathing","1"},{"Scope8xAimSnap","10"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"HitRegSyncRate","1000"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for (const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("AllScopeAimbot PUBGM injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Long-Range Scope Headshot (6x/8x) ────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLongRangeScopeHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"BulletDropComp","1"},{"Sniper_BulletDropComp","1"},
+        {"BulletVelocityFactor","1.0"},{"MuzzleVelocityFactor","1.0"},
+        {"HoldBreathCancel","1"},{"BreathHoldTime","0"},{"BreathSway","0"},
+        {"Scope8xZeroBreathing","1"},{"Scope6xZeroBreathing","1"},
+        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"LongRangeHeadshotLock","1"},{"Sniper_HeadshotLock","1"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"MicroJitterCancel","1"},
+        {"Scope6xGyro1000Hz","1"},{"Scope6xMicroDamping","1"},{"Scope6xStabilizer","1"},{"Scope6xPrecisionFilter","1"},
+        {"Scope8xGyro1000Hz","1"},{"Scope8xPrecisionFilter","1"},{"Scope8xStabilizer","1"},{"Scope8xMicroJitterCancel","1"},
+        {"ThermalScopeTracking","1"},{"ThermalHitboxGlow","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("LongRangeScopeHeadshot PUBGM injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Mid-Range Auto Headshot (2x/3x/4x) ───────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMidRangeAutoHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"PredictiveAim","1"},{"TargetPrediction","1"},{"TargetLeadCompensation","1"},
+        {"FrameSyncHeadshot","1"},{"HeadshotLockMidRange","1"},
+        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"VerticalRecoilScale","0"},{"VerticalKickDamp","1"},{"RecoilPatternScale","0"},{"WeaponRecoilScale","0"},
+        {"Scope2xGyroSample","1000"},{"Scope2xHeadLock","1"},{"Scope2xRecoilDamp","1"},
+        {"Scope3xGyroStabilization","1"},{"Scope3xHeadLock","1"},{"Scope3xRecoilDamp","1"},{"Scope3xDriftCancel","1"},
+        {"Scope4xGyroStabilization","1"},{"Scope4xHeadLock","1"},{"Scope4xZeroSway","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("MidRangeAutoHeadshot PUBGM injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Fast Attack Speed (Fire Rate + Melee Max) ────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastAttackSpeed
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"WeaponFireRate","10"},{"FireRateBoost","10"},{"FireIntervalMin","0"},
+        {"FullAutoFrameSync","1"},{"AutoFireSync","1"},{"ADSFireInterval","0"},{"FireRateUnlockMax","1"},
+        {"MeleePunchSpeed","10"},{"MeleeAttackRate","10"},{"MeleeIntervalMin","0"},{"PubgmMeleeSpeedMax","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},{"AttackFrameSync","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"bFramePacingEnabled","True"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("PubgmFastAttackSpeed injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: No-Scope Hipfire Aimbot ───────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmNoScopeAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"HipfireSpread","0"},{"HipfireSpreadScale","0"},{"AR_SpreadZero","1"},
+        {"SMG_HipfireBurst","1"},{"Shotgun_ZeroPelletRNG","1"},
+        {"Pistol_TriggerZeroDeadzone","1"},{"LMG_RecoilCeiling","0"},
+        {"WeaponSpread","0"},{"BulletSpreadScale","0"},{"NoSpreadHipfire","1"},
+        {"HeadMagnetism","1"},{"HeadBonePriority","1"},{"AimBoneTarget","0"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"AimAssistLockMax","1"},{"HipfireHeadLock","1"},{"CodmNoScopeAimbot","1"},
+        {"InstantAimSnap","1"},{"WeaponSway","0"},{"SwayAmplitude","0"},{"BreathSway","0"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmNoScopeAimbot injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: All-Scope Aimbot (All Optic Classes) ──────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"AdsZeroDelay","1"},{"AdsTransitionTime","0"},{"AdsSnapEnable","1"},{"CodmAdsZeroDelay","1"},
+        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"AllScopeHeadshotPriority","1"},{"ScopeAimbotEnable","1"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},{"AimAssistLockMax","1"},
+        {"PredictiveAim","1"},{"RedDotAimLock","1"},{"HoloZeroDeadzone","1"},
+        {"Scope2xHeadLock","1"},{"Scope3xHeadLock","1"},{"Scope4xHeadLock","1"},
+        {"Scope6xHeadLock","1"},{"Scope8xHeadLock","1"},{"ThermalHeadshotLock","1"},
+        {"WeaponSway","0"},{"BreathSway","0"},{"MicroJitterCancel","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"HitRegSyncRate","1000"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmAllScopeAimbot injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Long-Range Headshot Lock (Sniper/Marksman) ────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmLongRangeHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"BulletDropComp","1"},{"Sniper_BulletDropComp","1"},
+        {"MuzzleVelocityFactor","1.0"},{"BulletVelocityBoost","1"},
+        {"HoldBreathCancel","1"},{"BreathHoldTime","0"},{"BreathSway","0"},
+        {"Scope8xZeroBreathing","1"},{"Scope6xZeroBreathing","1"},
+        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"Sniper_HeadshotLock","1"},{"CodmLongRangeHeadshotLock","1"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"MicroJitterCancel","1"},{"Scope6xMicroDamping","1"},{"Scope8xPrecisionFilter","1"},
+        {"Sniper_ZeroSway","1"},{"GyroSampleRate","1000"},
+        {"Scope6xGyro1000Hz","1"},{"Scope8xGyro1000Hz","1"},
+        {"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmLongRangeHeadshot injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Mid-Range Auto Headshot (AR/SMG) ──────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMidRangeHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"PredictiveAim","1"},{"TargetPrediction","1"},{"TargetLeadCompensation","1"},
+        {"FrameSyncHeadshot","1"},{"CodmMidRangeHeadshotLock","1"},{"HeadshotLockMidRange","1"},
+        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
+        {"VerticalRecoilScale","0"},{"VerticalKickDamp","1"},
+        {"AR_RecoilZero","1"},{"SMG_ZeroRecoil","1"},{"SMG_RapidFireHitReg","1000"},
+        {"RecoilPatternScale","0"},{"HorizontalRecoilScale","0"},
+        {"Scope2xHeadLock","1"},{"Scope2xRecoilDamp","1"},
+        {"Scope3xHeadLock","1"},{"Scope3xDriftCancel","1"},
+        {"Scope4xHeadLock","1"},{"Scope4xZeroSway","1"},
+        {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmMidRangeHeadshot injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Fast Fire Rate + Operator Attack Speed ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastAttackSpeed
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"WeaponFireRate","10"},{"FireRateBoost","10"},{"FireIntervalMin","0"},
+        {"FullAutoFrameSync","1"},{"ADSFireInterval","0"},{"FireRateUnlockMax","1"},{"CodmFireRateMax","1"},
+        {"OperatorSkillAttackRate","10"},{"OperatorCooldownMin","0"},
+        {"OperatorSkillCastSpeed","10"},{"OperatorSkillFrameSync","1"},
+        {"MeleePunchSpeed","10"},{"MeleeAttackRate","10"},{"MeleeIntervalMin","0"},{"CodmMeleeSpeedMax","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},{"AttackFrameSync","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"bFramePacingEnabled","True"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("CodmFastAttackSpeed injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Ultra Damage 2500+ All Hero ───────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDamageAllHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"PhysicalDamageBase","2500"},{"MagicDamageBase","2500"},{"TrueDmgMultiplier","3"},
+        {"BasicAttackDamage","2500"},{"SkillDamageBase","2500"},
+        {"CritMultiplier","3"},{"CritRateBoost","1"},{"CritDamageMultiplier","3"},
+        {"PenetrationBoost","1"},{"PhysicalPenBoost","2500"},{"MagicPenBoost","2500"},
+        {"ArmorPenPercent","1"},{"DamageLockMax","1"},{"EffectiveDPSMode","3"},
+        {"FrameSyncDamage","1"},{"HitRegSyncRate","1000"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"InputBufferRate","1000"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("MlbbUltraDamageAllHero injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Armor 3000+ All Hero ──────────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorAllHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"PhysicalDefense","3000"},{"MagicDefense","3000"},{"DamageReduction","0.99"},
+        {"DamageReductionMax","1"},{"PhysicalShield","5000"},{"MagicShield","5000"},
+        {"ShieldBoost","1"},{"ShieldAbsorption","1"},{"PassiveShieldRegen","1"},
+        {"MaxHPBoost","1"},{"HPRegenRate","10"},{"LifestealBoost","1"},{"SpellVampBoost","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("MlbbArmorAllHero injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Fanny Auto Full Energy + Free Cable ───────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyAutoFullEnergy
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"FannyEnergyRegen","10"},{"FannyEnergyRegenMax","1"},{"FannyEnergyFull","1"},
+        {"CableEnergyFree","1"},{"AutoEnergyRefill","1"},{"EnergyRegenRate","10"},{"FannyEnergyMax","1"},
+        {"CableCooldown","0"},{"FannyCableCooldown","0"},{"SkillCDRatio","0"},{"CooldownReduction","1"},
+        {"FannyMultiCableCombo","1"},{"FannyCableChain","1"},{"FannyCableInstantRecast","1"},
+        {"FannyInstantRecall","1"},{"SkillAutoChain","1"},{"AimMagnetism","3"},{"SkillSmartAim","1"},
+        {"ZeroInputDelay","1"},{"HitRegSyncRate","1000"},{"DamageLockMax","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("FannyAutoFullEnergy MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Ling Fastest Combo + Auto Sword Chain ─────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingFastestComboAutoSword
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"LingSwordAutoChain","1"},{"LingBlinkChainMax","1"},{"BlinkChainMax","1"},
+        {"LingWallBlink","1"},{"WallJumpInstant","1"},{"LingInstantDash","1"},
+        {"TempestInstantCast","1"},{"LingUltInstant","1"},
+        {"LingTempestBladeSpeed","10"},{"LingSwordSpawnInstant","1"},
+        {"ZeroInputDelay","1"},{"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"DamageLockMax","1"},{"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},
+        {"PenetrationBoost","1"},{"CritRateBoost","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"SkillAutoChain","1"},{"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("LingFastestComboAutoSword MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Gusion Ultra Overdrive ────────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionUltraOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"GusionDaggerChain","1"},{"GusionDaggerInstant","1"},{"GusionMultiDagger","1"},
+        {"GusionInstantRecall","1"},{"GusionDaggerReturnZero","1"},{"GusionDaggerSpeed","10"},
+        {"GusionUltraBurst","1"},{"GusionUltInstant","1"},{"GusionBurstComboInstant","1"},
+        {"UltraDamageOverdrive","1"},
+        {"PhysicalDamageBase","2500"},{"MagicDamageBase","2500"},{"SkillDamageBase","2500"},
+        {"CritMultiplier","3"},{"PenetrationBoost","1"},{"DamageLockMax","1"},
+        {"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},
+        {"GusionArmorMax","3000"},{"PhysicalDefense","3000"},{"MagicDefense","3000"},
+        {"DamageReduction","0.99"},{"PhysicalShield","5000"},{"MagicShield","5000"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"SkillAutoChain","1"},
+        {"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("GusionUltraOverdrive MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: All Hero Item + Skill Max Boost ───────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroItemSkillBoost
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"ItemStatBoost","10"},{"ItemDamageBoost","10"},{"ItemDefenseBoost","10"},
+        {"ItemHPBoost","10"},{"ItemAttackSpeed","10"},
+        {"SkillDamageBoost","10"},{"SkillDamageBase","2500"},{"SkillAmplifyBoost","10"},{"SkillCritBoost","1"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"ItemCooldown","0"},{"CooldownZero","1"},
+        {"LifestealBoost","1"},{"LifestealPercent","1"},{"SpellVampBoost","1"},{"OmniVamp","1"},
+        {"MovementSpeedBoost","1"},{"MovementSpeedMax","1"},
+        {"PenetrationBoost","1"},{"PhysicalPenBoost","2500"},{"MagicPenBoost","2500"},
+        {"HitRegSyncRate","1000"},{"DamageLockMax","1"},{"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("AllHeroItemSkillBoost MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Fast Attack Speed MAX All Hero ────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastAttackSpeedAllHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"AttackSpeedBoost","10"},{"BasicAttackRate","10"},{"AttackSpeedCap","10"},
+        {"AttackSpeedMax","1"},{"AttackSpeedUnlock","1"},
+        {"AutoAttackInterval","0"},{"BasicAttackInterval","0"},{"AttackIntervalMin","0"},
+        {"AutoAttackFrameSync","1"},{"AttackAnimSpeed","10"},{"AttackAnimRate","10"},{"AttackAnimBlend","0"},
+        {"HitRegSyncRate","1000"},{"AttackFrameSync","1"},{"FrameSyncDamage","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"InputBufferRate","1000"},
+        {"DamageLockMax","1"},{"EffectiveDPSMode","3"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("FastAttackSpeedAllHero MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Kagura Instant Umbrella Rapid Combo ───────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectKaguraCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"KaguraUmbrellaThrow","1"},{"KaguraUmbrellaInstant","1"},
+        {"KaguraZeroReturnDelay","1"},{"KaguraReturnSpeed","10"},
+        {"KaguraYinYangMax","1"},{"KaguraYinYangInstant","1"},
+        {"KaguraSeimeiUmbrellaInstant","1"},{"KaguraSkillChain","1"},{"KaguraSkillAutoChain","1"},
+        {"SkillAutoChain","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"DamageLockMax","1"},{"MagicDamageBase","2500"},{"SkillDamageBase","2500"},
+        {"CritMultiplier","3"},{"PenetrationBoost","1"},{"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},
+        {"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("KaguraCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Zilong Fastest Auto Slash + Spear Flip ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZilongAutoSlash
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"ZilongAutoSlash","1"},{"ZilongSlashChain","1"},{"ZilongSlashInterval","0"},
+        {"ZilongSpearFlipInstant","1"},{"ZilongSpearFlip","1"},{"ZilongSpearSpeed","10"},
+        {"ZilongDragonFlurry","1"},{"ZilongPassiveBoost","1"},{"ZilongUltSpeed","10"},
+        {"AttackSpeedBoost","10"},{"BasicAttackRate","10"},{"AutoAttackInterval","0"},
+        {"AttackSpeedMax","1"},{"AttackAnimSpeed","10"},
+        {"DamageLockMax","1"},{"PhysicalDamageBase","2500"},
+        {"CritRateBoost","1"},{"CritMultiplier","3"},{"PenetrationBoost","1"},
+        {"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("ZilongAutoSlash MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Saber Triple Strike Instant Combo ─────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaberCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"SaberTripleStrikeInstant","1"},{"SaberTripleStrikeChain","1"},
+        {"SaberStrikeInterval","0"},{"SaberStrikeSpeed","10"},
+        {"SaberChaseZeroDelay","1"},{"SaberChaseInstant","1"},{"SaberFlickerInstant","1"},
+        {"SaberUltLock","1"},{"SaberUltInstant","1"},{"SaberUltSpeed","10"},{"SaberUltTargetLock","1"},
+        {"DamageLockMax","1"},{"PhysicalDamageBase","2500"},
+        {"CritRateBoost","1"},{"CritMultiplier","3"},{"PenetrationBoost","1"},
+        {"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"SkillAutoChain","1"},{"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("SaberCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Alucard Lifesteal Burst + Full Sustain ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAlucardLifestealCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"AlucardLifesteal","10"},{"AlucardLifestealMax","1"},
+        {"AlucardOmniVamp","1"},{"AlucardOmniVampBoost","10"},
+        {"AlucardResetChain","1"},{"AlucardSkillReset","1"},{"AlucardComboChain","1"},
+        {"SkillAutoChain","1"},{"AlucardPhantomStepInstant","1"},{"AlucardPhantomStepZeroCD","1"},
+        {"AlucardUltInstant","1"},{"AlucardUltLifestealBurst","1"},
+        {"LifestealBoost","1"},{"LifestealPercent","1"},{"SpellVampBoost","1"},
+        {"HPRegenRate","10"},{"PassiveShieldRegen","1"},
+        {"DamageLockMax","1"},{"PhysicalDamageBase","2500"},
+        {"CritRateBoost","1"},{"CritMultiplier","3"},{"PenetrationBoost","1"},
+        {"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("AlucardLifestealCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Yi Sun-shin Weapon Switch + Ship Ult Global Lock ──────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectYiSunShinCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"YiSunShinAutoSwitch","1"},{"YiSunShinMeleeCrit","1"},{"YiSunShinRangedBleed","1"},
+        {"YiSunShinShipBuffInstant","1"},{"YiSunShinMountainShockerInstant","1"},{"YiSunShinUltGlobalLock","1"},
+        {"AttackSpeedBoost","10"},{"BasicAttackRate","10"},{"AttackSpeedCap","10"},
+        {"AttackSpeedMax","1"},{"AttackSpeedUnlock","1"},
+        {"AutoAttackInterval","0"},{"BasicAttackInterval","0"},{"AttackIntervalMin","0"},
+        {"AutoAttackFrameSync","1"},{"AttackAnimSpeed","10"},{"AttackAnimRate","10"},
+        {"DamageLockMax","1"},{"PhysicalDamageBase","2500"},
+        {"CritRateBoost","1"},{"CritMultiplier","3"},{"PenetrationBoost","1"},
+        {"EffectiveDPSMode","3"},{"FrameSyncDamage","1"},{"CooldownReduction","1"},{"SkillCDRatio","0"},
+        {"HitRegSyncRate","1000"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"ZeroInputLag","1"},{"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("YiSunShinCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Chou Freestyle Instant Kick + Shunpo Immune ───────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouFreestyleCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"ChouJeetKuneDoInstant","1"},{"ChouJeetKuneDoChain","1"},{"ChouShunpoImmune","1"},
+        {"ChouShunpoReset","1"},{"ChouDragonKickInstant","1"},{"ChouDragonKickLock","1"},
+        {"SkillAutoChain","1"},{"SkillZeroDelay","1"},{"AimMagnetism","3"},{"SkillSmartAim","1"},
+        {"PhysicalDamageBase","2500"},{"CritRateBoost","1"},{"CritMultiplier","3"},
+        {"PenetrationBoost","1"},{"DamageLockMax","1"},{"EffectiveDPSMode","3"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"HitRegSyncRate","1000"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("ChouFreestyleCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+
+// =============================================================================
+// ─── MLBB: Lancelot Infinite Triangular Dash ─────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLancelotDashCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"LancelotPunctureReset","1"},{"LancelotDashChainMax","1"},{"LancelotThornedRoseInstant","1"},
+        {"LancelotPhantomExecutionBurst","1"},{"LancelotImmuneFrame","1"},
+        {"SkillAutoChain","1"},{"SkillZeroDelay","1"},{"AimMagnetism","3"},{"SkillSmartAim","1"},
+        {"PhysicalDamageBase","2500"},{"CritRateBoost","1"},{"CritMultiplier","3"},
+        {"PenetrationBoost","1"},{"DamageLockMax","1"},{"EffectiveDPSMode","3"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"HitRegSyncRate","1000"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("LancelotDashCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Franco 100% Magnet Hook + Suppress ────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFrancoHookCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"FrancoHookMagnet","1"},{"FrancoHookSpeed","10"},{"FrancoHookRangeMax","1"},
+        {"FrancoBloodyHuntInstant","1"},{"FrancoSuppressInstant","1"},{"FrancoFlickerHook","1"},
+        {"AimMagnetism","3"},{"SkillSmartAim","1"},{"HeroLock","1"},
+        {"DamageReduction","0.99"},{"PhysicalDefense","3000"},{"MagicDefense","3000"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"HitRegSyncRate","1000"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("FrancoHookCombo MLBB injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Free Fire: Auto Drag Headshot Magnetism + Zero Bloom ─────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireAutoHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"DragHeadshotAssist","1"},{"HeadshotSensitivityMultiplier","3.0"},{"CrosshairBloom","0"},
+        {"SpreadZero","1"},{"RecoilControlAssist","1"},{"HeadMagnetism","1"},
+        {"AimBoneTarget","0"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("FreeFireAutoHeadshot injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Free Fire: Instant 360 Gloo Wall + Fast Reload ──────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireFastGlooWall
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"InstantGlooWall","1"},{"GlooWallDeployDelay","0"},{"FastGlooCrouch","1"},
+        {"ReloadSpeedBoost","10"},{"WeaponSwitchZeroDelay","1"},{"SprintDelayZero","1"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"HitRegSyncRate","1000"},{"FrameSyncDamage","1"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("FreeFireFastGlooWall injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Blood Strike: Zero Recoil + Slide Cancel ────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeZeroRecoil
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"RecoilCompFactor","0"},{"SpreadZero","1"},{"SlideCancelSync","1"},
+        {"FastTacticalSprint","1"},{"HipfireSpread","0"},{"HeadMagnetism","1"},
+        {"AimBoneTarget","0"},{"TouchPollingRate","1000"},{"TouchZeroDelay","1"},
+        {"HitRegSyncRate","1000"},{"ZeroInputLag","1"},{"FrameSyncDamage","1"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("BloodStrikeZeroRecoil injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Delta Force: Precision Aim + Bullet Drop Calculator ─────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForcePrecisionAim
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"BulletDropComp","1"},{"MuzzleVelocityFactor","1.0"},{"ZeroSwaySniper","1"},
+        {"ThermalScopeLock","1"},{"HeadBonePriority","1"},{"AimMagnetism","3"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"HitRegSyncRate","1000"},
+        {"ZeroInputLag","1"},{"FrameSyncDamage","1"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("DeltaForcePrecisionAim injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}
+
+// =============================================================================
+// ─── HOK: Auto Smite Objective + Predictive Skill Aim ────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokAutoSmiteObjective
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat=(stat(path,&stBefore)==0);
+    bool isXml=(pathStr.rfind(".xml")!=std::string::npos||content.find("<map>")!=std::string::npos);
+    bool isJson=(pathStr.rfind(".json")!=std::string::npos||(!content.empty()&&content.front()=='{'));
+    bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys={
+        {"HokSmiteObjectivePriority","1"},{"HokSmiteStealMax","1"},{"HokPredictiveSkillAim","1"},
+        {"SkillSmartAim","1"},{"HeroLock","1"},{"ObjectiveTargetLock","1"},
+        {"CooldownReduction","1"},{"SkillCDRatio","0"},{"HitRegSyncRate","1000"},
+        {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},
+        {"bFramePacingEnabled","True"},{"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
+    };
+    for(const auto& kv:keys){
+        if(isXml) patch_xml_node(content,"string",kv.first,kv.second);
+        else if(isJson) patch_json_node(content,kv.first,kv.second,true);
+        else if(isCvar) patch_cvar(content,kv.first,kv.second);
+        else patch_key_value(content,kv.first,kv.second);
+    }
+    bool ok=write_file_atomic(pathStr,content);
+    if(ok&&hasStat){struct utimbuf t;t.actime=stBefore.st_atime;t.modtime=stBefore.st_mtime;utime(path,&t);}
+    env->ReleaseStringUTFChars(jPath,path);
+    LOGI("HokAutoSmiteObjective injected: %s [ok=%d]",pathStr.c_str(),ok);
+    return ok?JNI_TRUE:JNI_FALSE;
+}

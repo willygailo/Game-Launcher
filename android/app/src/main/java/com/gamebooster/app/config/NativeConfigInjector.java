@@ -155,6 +155,44 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectAllGunWeaponCalibration(String path);
     public static native boolean nativeInjectAllScopeMasteryCalibration(String path);
 
+    // ─── PUBGM Modules ───
+    public static native boolean nativeInjectNoScopeAimbot(String path);
+    public static native boolean nativeInjectAllScopeAimbot(String path);
+    public static native boolean nativeInjectLongRangeScopeHeadshot(String path);
+    public static native boolean nativeInjectMidRangeAutoHeadshot(String path);
+    public static native boolean nativeInjectPubgmFastAttackSpeed(String path);
+
+    // ─── CODM Modules ───
+    public static native boolean nativeInjectCodmNoScopeAimbot(String path);
+    public static native boolean nativeInjectCodmAllScopeAimbot(String path);
+    public static native boolean nativeInjectCodmLongRangeHeadshot(String path);
+    public static native boolean nativeInjectCodmMidRangeHeadshot(String path);
+    public static native boolean nativeInjectCodmFastAttackSpeed(String path);
+
+    // ─── MLBB Modules ───
+    public static native boolean nativeInjectMlbbUltraDamageAllHero(String path);
+    public static native boolean nativeInjectMlbbArmorAllHero(String path);
+    public static native boolean nativeInjectFannyAutoFullEnergy(String path);
+    public static native boolean nativeInjectLingFastestComboAutoSword(String path);
+    public static native boolean nativeInjectGusionUltraOverdrive(String path);
+    public static native boolean nativeInjectAllHeroItemSkillBoost(String path);
+    public static native boolean nativeInjectFastAttackSpeedAllHero(String path);
+    public static native boolean nativeInjectKaguraCombo(String path);
+    public static native boolean nativeInjectZilongAutoSlash(String path);
+    public static native boolean nativeInjectSaberCombo(String path);
+    public static native boolean nativeInjectAlucardLifestealCombo(String path);
+    public static native boolean nativeInjectYiSunShinCombo(String path);
+    public static native boolean nativeInjectChouFreestyleCombo(String path);
+    public static native boolean nativeInjectLancelotDashCombo(String path);
+    public static native boolean nativeInjectFrancoHookCombo(String path);
+
+    // ─── Other Targets ───
+    public static native boolean nativeInjectFreeFireAutoHeadshot(String path);
+    public static native boolean nativeInjectFreeFireFastGlooWall(String path);
+    public static native boolean nativeInjectBloodStrikeZeroRecoil(String path);
+    public static native boolean nativeInjectDeltaForcePrecisionAim(String path);
+    public static native boolean nativeInjectHokAutoSmiteObjective(String path);
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -930,6 +968,249 @@ public class NativeConfigInjector {
         return injectScopeAimCalibration(path) | injectNextGenTouchSampling(path, 1000);
     }
 
+
+
+    // ─── Phase 1/2/3 Safe Injection Wrappers ──────────────────────────────────
+
+    public static boolean injectNoScopeAimbot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectNoScopeAimbot(path); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectAllScopeAimbot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAllScopeAimbot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path) | injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectLongRangeScopeHeadshot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectLongRangeScopeHeadshot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectMidRangeAutoHeadshot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMidRangeAutoHeadshot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectPubgmFastAttackSpeed(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectPubgmFastAttackSpeed(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectCodmNoScopeAimbot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmNoScopeAimbot(path); } catch (Throwable ignored) {}
+        }
+        return injectAimAssistLockMax(path);
+    }
+
+    public static boolean injectCodmAllScopeAimbot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmAllScopeAimbot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectCodmLongRangeHeadshot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmLongRangeHeadshot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectCodmMidRangeHeadshot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmMidRangeHeadshot(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectCodmFastAttackSpeed(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectCodmFastAttackSpeed(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectMlbbUltraDamageAllHero(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbUltraDamageAllHero(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
+    }
+
+    public static boolean injectMlbbArmorAllHero(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbArmorAllHero(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFannyAutoFullEnergy(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFannyAutoFullEnergy(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectLingFastestComboAutoSword(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectLingFastestComboAutoSword(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectGusionUltraOverdrive(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectGusionUltraOverdrive(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectAllHeroItemSkillBoost(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAllHeroItemSkillBoost(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFastAttackSpeedAllHero(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastAttackSpeedAllHero(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectKaguraCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectKaguraCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectZilongAutoSlash(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectZilongAutoSlash(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectSaberCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectSaberCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectAlucardLifestealCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectAlucardLifestealCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectYiSunShinCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectYiSunShinCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectChouFreestyleCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectChouFreestyleCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectLancelotDashCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectLancelotDashCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFrancoHookCombo(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFrancoHookCombo(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
+
+    public static boolean injectFreeFireAutoHeadshot(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFreeFireAutoHeadshot(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectFreeFireFastGlooWall(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFreeFireFastGlooWall(path); } catch (Throwable ignored) {}
+        }
+        return injectNextGenTouchSampling(path, 1000);
+    }
+
+    public static boolean injectBloodStrikeZeroRecoil(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectBloodStrikeZeroRecoil(path); } catch (Throwable ignored) {}
+        }
+        return injectZeroRecoil(path, 0f, 100);
+    }
+
+    public static boolean injectDeltaForcePrecisionAim(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectDeltaForcePrecisionAim(path); } catch (Throwable ignored) {}
+        }
+        return injectScopeAimCalibration(path);
+    }
+
+    public static boolean injectHokAutoSmiteObjective(String path) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectHokAutoSmiteObjective(path); } catch (Throwable ignored) {}
+        }
+        return injectDamageLockMax(path);
+    }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────
 

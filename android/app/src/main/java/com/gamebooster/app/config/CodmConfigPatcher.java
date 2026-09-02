@@ -60,6 +60,42 @@ public class CodmConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+
+    public static void applyNoScopeAimbot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmNoScopeAimbot(path);
+        }
+    }
+
+    public static void applyAllScopeAimbot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmAllScopeAimbot(path);
+        }
+    }
+
+    public static void applyLongRangeHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmLongRangeHeadshot(path);
+        }
+    }
+
+    public static void applyMidRangeHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmMidRangeHeadshot(path);
+        }
+    }
+
+    public static void applyFastAttackSpeed(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmFastAttackSpeed(path);
+        }
+    }
+
     private static final String TAG = "CodmConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

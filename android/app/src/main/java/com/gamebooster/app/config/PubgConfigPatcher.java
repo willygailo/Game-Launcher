@@ -64,6 +64,42 @@ public class PubgConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+
+    public static void applyNoScopeAimbot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectNoScopeAimbot(path);
+        }
+    }
+
+    public static void applyAllScopeAimbot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectAllScopeAimbot(path);
+        }
+    }
+
+    public static void applyLongRangeScopeHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectLongRangeScopeHeadshot(path);
+        }
+    }
+
+    public static void applyMidRangeAutoHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMidRangeAutoHeadshot(path);
+        }
+    }
+
+    public static void applyPubgmFastAttackSpeed(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmFastAttackSpeed(path);
+        }
+    }
+
     private static final String TAG = "PubgConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

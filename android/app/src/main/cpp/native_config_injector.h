@@ -3,6 +3,80 @@
 
 #include <jni.h>
 
+/*
+ * nativeInjectYiSunShinCombo
+ * MLBB — Yi Sun-shin weapon switch rapid combo + global ult lock:
+ * YiSunShinAutoSwitch=1, YiSunShinMeleeCrit=1, YiSunShinShipBuffInstant=1,
+ * AttackSpeedBoost=MAX, PhysicalDamageBase=2500, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectYiSunShinCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectChouFreestyleCombo
+ * MLBB — Chou freestyle combo + Shunpo immune:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouFreestyleCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLancelotDashCombo
+ * MLBB — Lancelot infinite triangular dash reset:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLancelotDashCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFrancoHookCombo
+ * MLBB — Franco 100% magnet hook + instant suppress:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFrancoHookCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFreeFireAutoHeadshot
+ * Free Fire — Drag headshot magnetism + zero bloom:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireAutoHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFreeFireFastGlooWall
+ * Free Fire — 360 Instant gloo wall + fast reload:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireFastGlooWall
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectBloodStrikeZeroRecoil
+ * Blood Strike — Zero recoil + fast slide cancel:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeZeroRecoil
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectDeltaForcePrecisionAim
+ * Delta Force — Sniper bullet drop + thermal precision:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForcePrecisionAim
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectHokAutoSmiteObjective
+ * HOK — 100% smite steal priority + predictive aim:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokAutoSmiteObjective
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -379,8 +453,225 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeMasteryCalibration
   (JNIEnv *, jclass, jstring);
 
+// ─── PUBGM: Aimbot Expansion ─────────────────────────────────────────────────
+
+/*
+ * nativeInjectNoScopeAimbot
+ * PUBGM — No-scope / hipfire aimbot:
+ * Zero spread, zero sway, head-bone magnetism, instant aim snap,
+ * 1000Hz gyro + touch, no bullet-spread RNG, hipfire aim-lock on head.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoScopeAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAllScopeAimbot
+ * PUBGM — All-scope aimbot (2x→8x):
+ * Per-scope gyro 1000Hz, head-lock, zero sway, ADS 0-delay,
+ * predictive tracking, zero breathing sway, snap speed max.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLongRangeScopeHeadshot
+ * PUBGM — 6x/8x long-range auto headshot:
+ * Bullet drop compensation, hold-breath cancel, head-bone priority aim,
+ * zero micro-jitter, thermal tracking, 1000Hz gyro stabilization.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLongRangeScopeHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMidRangeAutoHeadshot
+ * PUBGM — 2x/3x/4x mid-range auto headshot:
+ * Target prediction, frame-sync headshot lock, zero vertical kick,
+ * aim magnet to head hitbox, touch 1000Hz.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMidRangeAutoHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFastAttackSpeed
+ * PUBGM — Fast attack / fire rate boost:
+ * Full-auto frame-sync, melee punch speed max, ADS fire interval min,
+ * weapon fire rate override, 1000Hz hit-reg sync.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastAttackSpeed
+  (JNIEnv *, jclass, jstring);
+
+// ─── CODM: Aimbot Expansion ──────────────────────────────────────────────────
+
+/*
+ * nativeInjectCodmNoScopeAimbot
+ * CODM — No-scope / hipfire aimbot:
+ * Zero spread all weapon classes, head magnetism, instant aim snap,
+ * 1000Hz gyro + touch, no bullet-spread RNG, hipfire aim-lock on head.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmNoScopeAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmAllScopeAimbot
+ * CODM — All-scope aimbot (all optic classes):
+ * ADS 0-delay, headshot priority per optic, gyro 1000Hz,
+ * zero sway, predictive tracking, aim snap speed max.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmLongRangeHeadshot
+ * CODM — Sniper/marksman long-range headshot lock:
+ * Bullet velocity compensation, hold-breath zero delay, head-bone lock,
+ * zero micro-jitter, 1000Hz gyro stabilization.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmLongRangeHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmMidRangeHeadshot
+ * CODM — AR/SMG mid-range auto headshot:
+ * Target prediction + frame-sync headshot, zero vertical kick,
+ * head hitbox aim magnet, 1000Hz touch+gyro.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMidRangeHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmFastAttackSpeed
+ * CODM — Fast fire rate + operator attack speed:
+ * Melee speed max, operator skill attack rate max, fire interval min,
+ * weapon fire rate override, 1000Hz hit-reg sync.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastAttackSpeed
+  (JNIEnv *, jclass, jstring);
+
+// ─── MLBB: Ultra Damage / Armor / Hero Expansions ────────────────────────────
+
+/*
+ * nativeInjectMlbbUltraDamageAllHero
+ * MLBB — 2500+ damage all hero:
+ * PhysicalDamageBase=2500, MagicDamageBase=2500, TrueDmgMultiplier,
+ * CritMultiplier=3, PenetrationBoost, FrameSyncDamage, HitReg=1000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDamageAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbArmorAllHero
+ * MLBB — 3000+ armor all hero:
+ * PhysicalDefense=3000, MagicDefense=3000, DamageReduction=0.99,
+ * ShieldBoost, PhysicalShield=5000, MagicShield=5000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFannyAutoFullEnergy
+ * MLBB — Fanny auto full energy + free cable:
+ * FannyEnergyRegen=MAX, CableEnergyFree=1, AutoEnergyRefill=1,
+ * EnergyRegenRate=10, CableCooldown=0, FannyMultiCableCombo=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyAutoFullEnergy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLingFastestComboAutoSword
+ * MLBB — Ling fastest combo + auto sword chain:
+ * LingSwordAutoChain=1, BlinkChainMax=1, WallJumpInstant=1,
+ * TempestInstantCast=1, ZeroInputDelay=1, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingFastestComboAutoSword
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectGusionUltraOverdrive
+ * MLBB — Gusion ultra combo + 2500 damage + 3000 armor:
+ * All Gusion dagger keys + GusionArmorMax=3000, GusionUltraBurst=1,
+ * GusionInstantRecall=1, UltraDamageOverdrive=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionUltraOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAllHeroItemSkillBoost
+ * MLBB — All hero item + skill max boost:
+ * ItemStatBoost=MAX, SkillDamageBoost=MAX, CooldownReduction=0,
+ * LifestealBoost=1, SpellVampBoost=1, MovementSpeedBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroItemSkillBoost
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastAttackSpeedAllHero
+ * MLBB — Attack speed MAX all hero:
+ * AttackSpeedBoost=MAX, BasicAttackRate=MAX, AutoAttackInterval=0,
+ * AttackAnimSpeed=10, HitRegSyncRate=1000, AttackSpeedCap=10.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastAttackSpeedAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectKaguraCombo
+ * MLBB — Kagura instant umbrella rapid combo:
+ * KaguraUmbrellaThrow=1, KaguraZeroReturnDelay=1, KaguraSkillChain=1,
+ * KaguraYinYangMax=1, DamageLockMax=1, HitRegSyncRate=1000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectKaguraCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectZilongAutoSlash
+ * MLBB — Zilong fastest auto slash + spear flip:
+ * ZilongAutoSlash=1, ZilongSpearFlipInstant=1, ZilongDragonFlurry=1,
+ * AttackSpeedBoost=MAX, BasicAttackRate=MAX, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZilongAutoSlash
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectSaberCombo
+ * MLBB — Saber triple strike instant combo:
+ * SaberTripleStrikeInstant=1, SaberChaseZeroDelay=1, SaberUltLock=1,
+ * DamageLockMax=1, CritRateBoost=1, PenetrationBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaberCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAlucardLifestealCombo
+ * MLBB — Alucard lifesteal burst + full sustain:
+ * AlucardLifesteal=MAX, AlucardOmniVamp=1, AlucardResetChain=1,
+ * AlucardPhantomStepInstant=1, DamageLockMax=1, LifestealBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAlucardLifestealCombo
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif // GAMEBOOSTER_NATIVE_CONFIG_INJECTOR_H
+
