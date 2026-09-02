@@ -115,6 +115,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
 
         // Header & Empty State Action Buttons
         Button btnHomeAddGame = view.findViewById(R.id.btn_home_add_game);
+        Button btnHomeClearGames = view.findViewById(R.id.btn_home_clear_games);
         Button btnHomeApkManager = view.findViewById(R.id.btn_home_apk_manager);
         Button btnEmptyAddGame = view.findViewById(R.id.btn_empty_add_game);
         Button btnEmptyScanApks = view.findViewById(R.id.btn_empty_scan_apks);
@@ -125,6 +126,12 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             }
         };
 
+        View.OnClickListener openClearGamesAction = v -> {
+            if (getContext() != null) {
+                com.gamebooster.app.ui.dialogs.ClearGameDialog.show(getContext(), () -> loadAndScanGames(true));
+            }
+        };
+
         View.OnClickListener openApkManagerAction = v -> {
             if (getContext() != null) {
                 com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), () -> loadAndScanGames(true));
@@ -132,6 +139,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         };
 
         if (btnHomeAddGame != null) btnHomeAddGame.setOnClickListener(openAddGameAction);
+        if (btnHomeClearGames != null) btnHomeClearGames.setOnClickListener(openClearGamesAction);
         if (btnEmptyAddGame != null) btnEmptyAddGame.setOnClickListener(openAddGameAction);
         if (btnHomeApkManager != null) btnHomeApkManager.setOnClickListener(openApkManagerAction);
         if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);

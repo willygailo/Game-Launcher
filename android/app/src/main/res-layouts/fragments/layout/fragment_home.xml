@@ -265,8 +265,20 @@
                 android:layout_marginEnd="6dp"
                 android:background="@drawable/btn_cyber_cyan"
                 android:paddingHorizontal="10dp"
-                android:text="➕ ADD GAME"
+                android:text="➕ ADD"
                 android:textColor="#080B11"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_home_clear_games"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:paddingHorizontal="10dp"
+                android:text="🗑️ CLEAR"
+                android:textColor="#FF5555"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 

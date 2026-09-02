@@ -423,10 +423,12 @@ public class HomeGameScanner {
 
         Set<String> addedPackages = new HashSet<>();
         Set<String> customPkgs = GameLauncherHelper.getCustomPackages(context);
+        Set<String> excludedPkgs = GameLauncherHelper.getExcludedPackages(context);
 
-        // TIER 1: User-Custom Added Packages (Guaranteed 100% Inclusion)
+        // TIER 1: User-Custom Added Packages (Guaranteed 100% Inclusion unless Excluded)
         for (String customPkg : customPkgs) {
             if (customPkg == null || customPkg.trim().isEmpty() || addedPackages.contains(customPkg)) continue;
+            if (excludedPkgs.contains(customPkg)) continue;
             if (customPkg.equalsIgnoreCase(context.getPackageName())) continue;
 
             ApplicationInfo appInfo = null;
@@ -474,7 +476,7 @@ public class HomeGameScanner {
         // TIER 2: Primary Targeted Specs (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
         for (TargetGameSpec spec : ALL_TARGET_SPECS) {
             for (String pkg : spec.packageNames) {
-                if (addedPackages.contains(pkg)) continue;
+                if (addedPackages.contains(pkg) || excludedPkgs.contains(pkg)) continue;
 
                 ApplicationInfo appInfo = null;
                 try {
@@ -522,7 +524,7 @@ public class HomeGameScanner {
         // TIER 3: Known Games Registry (Global & Regional Hit Games)
         try {
             for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
-                if (addedPackages.contains(pkg)) continue;
+                if (addedPackages.contains(pkg) || excludedPkgs.contains(pkg)) continue;
 
                 ApplicationInfo appInfo = null;
                 try {
@@ -585,7 +587,7 @@ public class HomeGameScanner {
                 for (ResolveInfo ri : resolveInfos) {
                     if (ri == null || ri.activityInfo == null) continue;
                     String pkg = ri.activityInfo.packageName;
-                    if (pkg == null || addedPackages.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
+                    if (pkg == null || addedPackages.contains(pkg) || excludedPkgs.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
                         continue;
                     }
 
@@ -628,7 +630,7 @@ public class HomeGameScanner {
 
             if (installedApps != null) {
                 for (ApplicationInfo ai : installedApps) {
-                    if (ai == null || ai.packageName == null || addedPackages.contains(ai.packageName)) continue;
+                    if (ai == null || ai.packageName == null || addedPackages.contains(ai.packageName) || excludedPkgs.contains(ai.packageName)) continue;
                     if (ai.packageName.equalsIgnoreCase(context.getPackageName())) continue;
 
                     CharSequence labelSeq = pm.getApplicationLabel(ai);
@@ -669,7 +671,7 @@ public class HomeGameScanner {
                 Set<String> deepPackages = com.gamebooster.app.search.DeepSearchScanner.performDeepSearch(context);
                 if (deepPackages != null) {
                     for (String pkg : deepPackages) {
-                        if (pkg == null || addedPackages.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) continue;
+                        if (pkg == null || addedPackages.contains(pkg) || excludedPkgs.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) continue;
 
                         ApplicationInfo appInfo = null;
                         try {

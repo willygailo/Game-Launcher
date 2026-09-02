@@ -215,6 +215,25 @@ public class PreLaunchGameDialog {
             GameManagerLauncher.launchGame(context, game);
         });
 
+        Button btnRemoveGame = view.findViewById(R.id.btn_pre_launch_remove_game);
+        if (btnRemoveGame != null) {
+            btnRemoveGame.setOnClickListener(v -> {
+                dismissCurrent();
+                new androidx.appcompat.app.AlertDialog.Builder(context)
+                        .setTitle("🗑️ REMOVE GAME")
+                        .setMessage("Remove " + (label != null ? label : pkg) + " from the Home Launcher list?")
+                        .setPositiveButton("REMOVE", (d, w) -> {
+                            com.gamebooster.app.games.GameLauncherHelper.removeGameFromHome(context, pkg);
+                            Toast.makeText(context, "🗑️ Removed " + (label != null ? label : pkg) + " from Home", Toast.LENGTH_SHORT).show();
+                            if (context instanceof com.gamebooster.app.ui.activities.MainActivity) {
+                                ((com.gamebooster.app.ui.activities.MainActivity) context).reloadHomeGames();
+                            }
+                        })
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+            });
+        }
+
         dialog.setCanceledOnTouchOutside(true);
         activeDialog = dialog;
         dialog.show();

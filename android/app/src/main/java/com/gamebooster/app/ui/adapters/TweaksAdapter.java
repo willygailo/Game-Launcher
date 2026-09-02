@@ -58,6 +58,13 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         applyFilter();
     }
 
+    public void notifyAllStatesChanged() {
+        if (context != null) {
+            TweakPreferences.loadSavedStates(context, allMasterTweaks);
+        }
+        applyFilter();
+    }
+
     public void filter(String query, TweakCategory category) {
         this.currentQuery = (query != null) ? query.trim().toLowerCase() : "";
         if (category != null) {

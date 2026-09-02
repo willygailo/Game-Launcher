@@ -126,16 +126,6 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btn_restore_original_configs"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🛡️ 1-TAP RESTORE CLEAN FACTORY CONFIGS"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/btn_purge_game_logs"
@@ -654,6 +644,38 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
+                <!-- 1-Tap Batch Action Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_apply_all_tweaks"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:text="🚀 1-TAP APPLY ALL TWEAKS"
+                        android:textColor="#000000"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_revert_all_tweaks"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🔄 RESET ALL"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
                 <!-- Search Bar for Tweaks & Games -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -695,7 +717,7 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
-                <!-- Tweak Filter Buttons: CPU/GPU, TOUCH, SHIZUKU, NETWORK -->
+                <!-- Tweak Filter Buttons: ALL, CPU/GPU, TOUCH, SHIZUKU, NETWORK -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -708,14 +730,23 @@
                         android:orientation="horizontal">
 
                         <Button
+                            android:id="@+id/btn_filter_all"
+                            style="?android:attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:text="ALL"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <Button
                             android:id="@+id/btn_filter_cpugpu"
                             style="?android:attr/buttonBarButtonStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="34dp"
                             android:text="CPU/GPU"
-                            android:textColor="@color/accent_cyan"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
 
                         <Button
                             android:id="@+id/btn_filter_touch"

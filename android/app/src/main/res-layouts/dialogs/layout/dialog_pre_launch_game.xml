@@ -260,6 +260,18 @@
             android:textSize="10sp" />
     </LinearLayout>
 
+    <!-- Remove Game Button -->
+    <Button
+        android:id="@+id/btn_pre_launch_remove_game"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/btn_cyber_dark"
+        android:text="🗑️ REMOVE GAME FROM HOME"
+        android:textColor="#FF6666"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
     <!-- Action Buttons Row -->
     <LinearLayout
         android:layout_width="match_parent"

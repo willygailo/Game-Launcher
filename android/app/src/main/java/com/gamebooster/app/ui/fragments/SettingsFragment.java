@@ -297,20 +297,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         Button btnAudioPresets = view.findViewById(R.id.btn_audio_presets);
-        Button btnRestoreOriginalConfigs = view.findViewById(R.id.btn_restore_original_configs);
 
         if (btnAudioPresets != null) {
             btnAudioPresets.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.ui.dialogs.AudioPresetSelectorDialog.show(getContext());
-                }
-            });
-        }
-
-        if (btnRestoreOriginalConfigs != null) {
-            btnRestoreOriginalConfigs.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.ui.dialogs.ConfigRestoreDialog.show(getContext());
+                if (isAdded() && getActivity() != null) {
+                    com.gamebooster.app.ui.dialogs.AudioPresetSelectorDialog.show(requireActivity());
                 }
             });
         }
@@ -869,14 +860,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         EditText etSearchTweaks = view.findViewById(R.id.et_search_tweaks);
         ImageView ivClearSearch = view.findViewById(R.id.iv_clear_search);
 
+        Button btnFilterAll = view.findViewById(R.id.btn_filter_all);
         Button btnFilterCpuGpu = view.findViewById(R.id.btn_filter_cpugpu);
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
         Button btnFilterNetwork = view.findViewById(R.id.btn_filter_network);
+        Button btnApplyAllTweaks = view.findViewById(R.id.btn_apply_all_tweaks);
+        Button btnRevertAllTweaks = view.findViewById(R.id.btn_revert_all_tweaks);
 
         TweakManagerRepository.initializeStates(getContext());
 
-        final TweakCategory[] selectedCategory = {TweakCategory.CPU_GPU};
+        final TweakCategory[] selectedCategory = {TweakCategory.ALL};
 
         if (rvTweaks != null) {
             rvTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -888,7 +882,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     tvTweaksStatus.setText("ACTIVE: " + totalAppliedCount + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
                 }
             });
-            tweaksAdapter.setCategoryFilter(TweakCategory.CPU_GPU);
+            tweaksAdapter.setCategoryFilter(TweakCategory.ALL);
             rvTweaks.setAdapter(tweaksAdapter);
             if (tvTweaksStatus != null) {
                 tvTweaksStatus.setText("ACTIVE: " + TweakManagerRepository.getAppliedCount(getContext()) + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
@@ -920,8 +914,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             ivClearSearch.setOnClickListener(v -> etSearchTweaks.setText(""));
         }
 
-        Button[] filterButtons = {btnFilterCpuGpu, btnFilterTouch, btnFilterShizuku, btnFilterNetwork};
-        TweakCategory[] categories = {TweakCategory.CPU_GPU, TweakCategory.TOUCH_DISPLAY, TweakCategory.SHIZUKU_SYSTEM, TweakCategory.NETWORK_LATENCY};
+        Button[] filterButtons = {btnFilterAll, btnFilterCpuGpu, btnFilterTouch, btnFilterShizuku, btnFilterNetwork};
+        TweakCategory[] categories = {TweakCategory.ALL, TweakCategory.CPU_GPU, TweakCategory.TOUCH_DISPLAY, TweakCategory.SHIZUKU_SYSTEM, TweakCategory.NETWORK_LATENCY};
+        int[] highlightedFilter = {0}; // default: ALL is active
+
+        // Helper to update filter button highlight state
+        Runnable updateFilterHighlights = () -> {
+            for (int j = 0; j < filterButtons.length; j++) {
+                if (filterButtons[j] != null) {
+                    boolean isActive = (j == highlightedFilter[0]);
+                    filterButtons[j].setTextColor(isActive
+                            ? android.graphics.Color.parseColor("#00F0FF")
+                            : android.graphics.Color.parseColor("#94A3B8"));
+                    filterButtons[j].setTypeface(null, isActive
+                            ? android.graphics.Typeface.BOLD
+                            : android.graphics.Typeface.NORMAL);
+                }
+            }
+        };
+        updateFilterHighlights.run();
 
         for (int i = 0; i < filterButtons.length; i++) {
             final int index = i;
@@ -929,17 +940,82 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (btn != null) {
                 btn.setOnClickListener(v -> {
                     selectedCategory[0] = categories[index];
-                    for (int j = 0; j < filterButtons.length; j++) {
-                        if (filterButtons[j] != null) {
-                            filterButtons[j].setTextColor(j == index ? android.graphics.Color.parseColor("#00F0FF") : android.graphics.Color.parseColor("#94A3B8"));
-                        }
-                    }
-                    String currentQuery = (etSearchTweaks != null && etSearchTweaks.getText() != null) ? etSearchTweaks.getText().toString() : "";
+                    highlightedFilter[0] = index;
+                    updateFilterHighlights.run();
+                    String currentQuery = (etSearchTweaks != null && etSearchTweaks.getText() != null)
+                            ? etSearchTweaks.getText().toString() : "";
                     if (tweaksAdapter != null) {
                         tweaksAdapter.filter(currentQuery, selectedCategory[0]);
                     }
                 });
             }
+        }
+
+        // 1-Tap Apply All Tweaks
+        if (btnApplyAllTweaks != null) {
+            btnApplyAllTweaks.setOnClickListener(v -> {
+                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("🛡️ SHIZUKU REQUIRED")
+                            .setMessage("System tweaks require Shizuku (UID 2000 shell).\n\nPlease grant Shizuku permission to apply all tweaks.")
+                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission())
+                            .setNegativeButton("CANCEL", null)
+                            .show();
+                    return;
+                }
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                        .setTitle("🚀 1-TAP APPLY ALL TWEAKS")
+                        .setMessage("Apply all " + TweakManagerRepository.getTotalCount() + " system tweaks?\n\nThis will push CPU/GPU, touch, display, network, and Shizuku system optimizations.")
+                        .setPositiveButton("APPLY ALL", (d, w) -> {
+                            btnApplyAllTweaks.setEnabled(false);
+                            btnApplyAllTweaks.setText("⏳ Applying...");
+                            TweakManagerRepository.applyAllSupportedTweaksAsync(getContext(), appliedCount -> {
+                                if (!isAdded()) return;
+                                btnApplyAllTweaks.setEnabled(true);
+                                btnApplyAllTweaks.setText("🚀 1-TAP APPLY ALL TWEAKS");
+                                if (tvTweaksStatus != null) {
+                                    tvTweaksStatus.setText("ACTIVE: " + appliedCount + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
+                                }
+                                if (tweaksAdapter != null) {
+                                    tweaksAdapter.notifyAllStatesChanged();
+                                }
+                                android.widget.Toast.makeText(getContext(),
+                                        "⚡ " + appliedCount + " tweaks applied successfully!",
+                                        android.widget.Toast.LENGTH_SHORT).show();
+                            });
+                        })
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+            });
+        }
+
+        // Reset All Tweaks
+        if (btnRevertAllTweaks != null) {
+            btnRevertAllTweaks.setOnClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                        .setTitle("🔄 RESET ALL TWEAKS")
+                        .setMessage("Revert all system tweaks to default?\n\nAll active tweaks will be disabled and reverted.")
+                        .setPositiveButton("RESET ALL", (d, w) -> {
+                            btnRevertAllTweaks.setEnabled(false);
+                            btnRevertAllTweaks.setText("⏳ Resetting...");
+                            TweakManagerRepository.revertAllTweaksAsync(getContext(), revertedCount -> {
+                                if (!isAdded()) return;
+                                btnRevertAllTweaks.setEnabled(true);
+                                btnRevertAllTweaks.setText("🔄 RESET ALL");
+                                if (tvTweaksStatus != null) {
+                                    tvTweaksStatus.setText("ACTIVE: 0 / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
+                                }
+                                if (tweaksAdapter != null) {
+                                    tweaksAdapter.notifyAllStatesChanged();
+                                }
+                                android.widget.Toast.makeText(getContext(),
+                                        "🔄 All tweaks reset to default.",
+                                        android.widget.Toast.LENGTH_SHORT).show();
+                            });
+                        })
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+            });
         }
 
         // Card Spoof: Hardware Device Spoofing

@@ -271,6 +271,15 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         }
     }
 
+    public void reloadHomeGames() {
+        try {
+            Fragment homeFrag = getSupportFragmentManager().findFragmentByTag(TAG_HOME);
+            if (homeFrag instanceof HomeFragment && homeFrag.isAdded()) {
+                ((HomeFragment) homeFrag).loadAndScanGames(true);
+            }
+        } catch (Throwable ignored) {}
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
