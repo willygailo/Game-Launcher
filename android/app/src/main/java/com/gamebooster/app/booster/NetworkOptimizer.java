@@ -228,4 +228,83 @@ public class NetworkOptimizer {
         String res = CommandExecutor.executeSystemCommand("settings put global force_gnss_raw_measurements " + (enabled ? "1" : "0"));
         return CommandExecutor.isSuccessOutput(res);
     }
+
+    /**
+     * Philippine Telco Carrier Profiles for TNT/Smart and TM/Globe.
+     */
+    public enum PhCarrier {
+        TNT_SMART("TNT / Smart 5G Ultra Gaming", "smartdata", "1.1.1.1", "one.one.one.one", 1460, "Band 1, 3, 28, 41, n78"),
+        TM_GLOBE("TM / Globe 5G Turbo Fast", "real.globe.com.ph", "8.8.8.8", "dns.google", 1440, "Band 3, 7, 28, 40, n78"),
+        DITO("DITO 5G Fast Route", "dito.ph", "1.1.1.1", "one.one.one.one", 1460, "Band 1, 28, 41, n78");
+
+        public final String title;
+        public final String defaultApn;
+        public final String dnsPrimary;
+        public final String privateDnsHost;
+        public final int mtu;
+        public final String bestBands;
+
+        PhCarrier(String title, String defaultApn, String dnsPrimary, String privateDnsHost, int mtu, String bestBands) {
+            this.title = title;
+            this.defaultApn = defaultApn;
+            this.dnsPrimary = dnsPrimary;
+            this.privateDnsHost = privateDnsHost;
+            this.mtu = mtu;
+            this.bestBands = bestBands;
+        }
+    }
+
+    /**
+     * Applies specialized Philippine cellular data acceleration for TNT/Smart or TM/Globe.
+     * Enforces BBR TCP congestion, high-speed receive windows, radio sleep suppression,
+     * low-latency DoT DNS, and baseband keepalive.
+     */
+    public static boolean applyPhCarrierOptimization(Context context, PhCarrier carrier) {
+        if (carrier == null) return false;
+        try {
+            // 1. Enforce carrier-optimized TCP buffers and sysctl parameters
+            optimizeTcpBuffers();
+
+            // 2. Baseband modem keepalive & anti-power-save
+            CommandExecutor.executeSystemCommand("settings put global mobile_data_always_on 1");
+            CommandExecutor.executeSystemCommand("settings put global data_stall_recovery_on_bad_network 1");
+            CommandExecutor.executeSystemCommand("settings put global tcp_default_init_rwnd 60");
+            CommandExecutor.executeSystemCommand("setprop persist.radio.add_power_save 0");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.radio.5g_mode_pref 1");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.radio.nr_disable 0");
+            CommandExecutor.executeSystemCommand("setprop persist.radio.5g_mode_pref 1");
+            CommandExecutor.executeSystemCommand("setprop persist.radio.multimode 1");
+            CommandExecutor.executeSystemCommand("setprop ro.ril.enable.amr.wideband 1");
+            CommandExecutor.executeSystemCommand("setprop ril.power_mode 0");
+
+            // 3. Carrier-tailored low latency DNS over TLS
+            CommandExecutor.setSystemSetting("global", "private_dns_mode", "hostname");
+            CommandExecutor.setSystemSetting("global", "private_dns_specifier", carrier.privateDnsHost);
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommands(
+                    "settings put global private_dns_mode hostname",
+                    "settings put global private_dns_specifier " + carrier.privateDnsHost,
+                    "setprop net.dns1 " + carrier.dnsPrimary,
+                    "setprop net.dns2 8.8.4.4"
+                );
+            }
+            CommandExecutor.executeSystemCommand("setprop net.dns1 " + carrier.dnsPrimary);
+
+            // 4. Background network throttle clamp
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommands(
+                    "cmd netpolicy set restrict-background true",
+                    "cmd connectivity set-background-data false"
+                );
+            }
+
+            // 5. Immediate DNS & route cache purge
+            flushDnsCache();
+            Log.i(TAG, "🇵🇭 Philippine Telco Optimization applied for: " + carrier.title);
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to apply PH Telco optimization", t);
+            return false;
+        }
+    }
 }

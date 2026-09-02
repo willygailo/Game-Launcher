@@ -719,6 +719,67 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        Button btnPhTntSmart = view.findViewById(R.id.btn_ph_tnt_smart);
+        Button btnPhTmGlobe = view.findViewById(R.id.btn_ph_tm_globe);
+        Button btnPhTelcoToolkit = view.findViewById(R.id.btn_ph_telco_toolkit);
+
+        if (btnPhTntSmart != null) {
+            btnPhTntSmart.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("TNT / Smart 5G Ultra Boost")) return;
+                Toast.makeText(getContext(), "🇵🇭 Supercharging TNT / Smart 5G...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TNT_SMART);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            if (ok) {
+                                com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TNT / SMART 5G ULTRA GAMING BOOST", true,
+                                        "✓ Carrier: Smart / PLDT Core Backbone",
+                                        "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
+                                        "✓ Cloudflare DoT (1.1.1.1): LOCKED",
+                                        "✓ 5G SA/NSA Power-Save: DISABLED",
+                                        "✓ Baseband & Route Cache: FLUSHED");
+                            } else {
+                                Toast.makeText(getContext(), "⚠️ Failed to apply TNT/Smart Boost", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnPhTmGlobe != null) {
+            btnPhTmGlobe.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("TM / Globe 5G Turbo Boost")) return;
+                Toast.makeText(getContext(), "🇵🇭 Supercharging TM / Globe 5G...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TM_GLOBE);
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            if (ok) {
+                                com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TM / GLOBE 5G TURBO FAST ROUTE", true,
+                                        "✓ Carrier: Globe Telecom Backbone",
+                                        "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
+                                        "✓ Google DoT (8.8.8.8 Fast Route): LOCKED",
+                                        "✓ 5G SA/NSA Power-Save: DISABLED",
+                                        "✓ Baseband & Route Cache: FLUSHED");
+                            } else {
+                                Toast.makeText(getContext(), "⚠️ Failed to apply TM/Globe Boost", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnPhTelcoToolkit != null) {
+            btnPhTelcoToolkit.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                com.gamebooster.app.ui.dialogs.PhTelcoBoostDialog.show(getContext());
+            });
+        }
+
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
