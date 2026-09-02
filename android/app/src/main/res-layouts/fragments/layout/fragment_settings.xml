@@ -388,15 +388,6 @@
                     android:text="⚡ Android 13–16 ADPF Power Hint Engine (Dynamic Headroom)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
-
-                <Switch
-                    android:id="@+id/switch_video_saver"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="🔋 Video Background Battery Saver (Static Glass UI)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- CARD 4: NETWORK & LATENCY OPTIMIZATION -->
@@ -570,50 +561,7 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
-                <!-- PHILIPPINE TELCO 5G GAMING DATA SUPERCHARGER -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/btn_ph_tnt_smart"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🇵🇭 BOOST TNT/SMART"
-                        android:textColor="@color/accent_neon_green"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_ph_tm_globe"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="3dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🇵🇭 BOOST TM/GLOBE"
-                        android:textColor="@color/accent_cyan"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btn_ph_telco_toolkit"
-                    android:layout_width="match_parent"
-                    android:layout_height="42dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🇵🇭 PH TELCO 5G APN &amp; BASEBAND TOOLKIT"
-                    android:textColor="#FACC15"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
 
                 <Switch
                     android:id="@+id/switch_5g_6g_data"

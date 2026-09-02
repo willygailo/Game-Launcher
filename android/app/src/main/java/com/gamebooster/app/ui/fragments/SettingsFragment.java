@@ -103,7 +103,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchCpuMode;
     private Switch switchThermalBypass;
     private Switch switchAdpfEngine;
-    private Switch switchVideoSaver;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switch5g6gData;
@@ -120,6 +119,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnNetDataOnly;
     private Button btnNetWifiOnly;
     private Button btnNetDual;
+    private Button btnDnsCloudflare;
+    private Button btnDnsGoogle;
+    private Button btnDnsDefault;
 
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
@@ -486,7 +488,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
         switchThermalBypass = view.findViewById(R.id.switch_thermal_bypass);
         switchAdpfEngine = view.findViewById(R.id.switch_adpf_engine);
-        switchVideoSaver = view.findViewById(R.id.switch_video_saver);
 
         if (btn185 != null) {
             btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
@@ -509,7 +510,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
             if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
             if (switchAdpfEngine != null) switchAdpfEngine.setChecked(ManualSettingsPreferences.isAdpfEngineEnabled(getContext()));
-            if (switchVideoSaver != null) switchVideoSaver.setChecked(ManualSettingsPreferences.isVideoSaverEnabled(getContext()));
             isProgrammaticToggle = false;
         }
 
@@ -606,31 +606,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (switchVideoSaver != null) {
-            switchVideoSaver.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isProgrammaticToggle || getContext() == null) return;
-                ManualSettingsPreferences.setVideoSaverEnabled(getContext(), isChecked);
-                if (videoSettingsBg != null) {
-                    if (isChecked) {
-                        videoSettingsBg.pause();
-                        videoSettingsBg.setVisibility(View.GONE);
-                    } else {
-                        videoSettingsBg.setVisibility(View.VISIBLE);
-                        videoSettingsBg.play();
-                    }
-                }
-                Toast.makeText(getContext(), isChecked
-                        ? "🔋 Video Saver Enabled: Static Glass UI Active"
-                        : "Cyber Video Background Restored", Toast.LENGTH_SHORT).show();
-            });
-        }
 
         // Card 4: Network & Latency Optimization
         TextView tvGamePingMs = view.findViewById(R.id.tv_game_ping_ms);
         Button btnPingTest = view.findViewById(R.id.btn_ping_test);
-        Button btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
-        Button btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
-        Button btnDnsDefault = view.findViewById(R.id.btn_dns_default);
+        btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
+        btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
+        btnDnsDefault = view.findViewById(R.id.btn_dns_default);
         Button btnOptimizeNetworkAll = view.findViewById(R.id.btn_optimize_network_all);
         switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
         switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
@@ -656,6 +638,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (getContext() != null) {
             String currentNetMode = ManualSettingsPreferences.getNetworkMode(getContext());
             updateNetworkModeUi(currentNetMode);
+            updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
         }
 
         if (btnNetDataOnly != null) {
@@ -734,6 +717,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 Toast.makeText(getContext(), "🚀 Applying 5G/6G & Wi-Fi 6/7 Turbo Boost...", Toast.LENGTH_SHORT).show();
                 AppExecutors.getInstance().executeCommand(() -> {
                     NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
+                    ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
+                    ManualSettingsPreferences.setGamingDns(getContext(), NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
+                    ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
+                    ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
+                    ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             isProgrammaticToggle = true;
@@ -741,11 +729,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
                             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
                             isProgrammaticToggle = false;
-                            ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
-                            ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-                            ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                            ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
                             updateNetworkModeUi("dual");
+                            updateDnsUiState(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
                             Toast.makeText(getContext(), "🚀 5G/6G & Wi-Fi Turbo Boost Applied", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -753,56 +738,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        Button btnPhTntSmart = view.findViewById(R.id.btn_ph_tnt_smart);
-        Button btnPhTmGlobe = view.findViewById(R.id.btn_ph_tm_globe);
-        Button btnPhTelcoToolkit = view.findViewById(R.id.btn_ph_telco_toolkit);
-
-        if (btnPhTntSmart != null) {
-            btnPhTntSmart.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "🇵🇭 Supercharging TNT / Smart 5G...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TNT_SMART);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TNT / SMART 5G ULTRA GAMING BOOST", true,
-                                    "✓ Carrier: Smart / PLDT Core Backbone",
-                                    "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
-                                    "✓ Cloudflare DoT (1.1.1.1): LOCKED",
-                                    "✓ 5G SA/NSA Power-Save: DISABLED",
-                                    "✓ Baseband & Route Cache: FLUSHED");
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnPhTmGlobe != null) {
-            btnPhTmGlobe.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "🇵🇭 Supercharging TM / Globe 5G...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = NetworkOptimizer.applyPhCarrierOptimization(getContext().getApplicationContext(), NetworkOptimizer.PhCarrier.TM_GLOBE);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(), "🇵🇭 TM / GLOBE 5G TURBO FAST ROUTE", true,
-                                    "✓ Carrier: Globe Telecom Backbone",
-                                    "✓ TCP BBR + 8MB Buffer Scaling: APPLIED",
-                                    "✓ Google DoT (8.8.8.8 Fast Route): LOCKED",
-                                    "✓ 5G SA/NSA Power-Save: DISABLED",
-                                    "✓ Baseband & Route Cache: FLUSHED");
-                        }
-                    });
-                });
-            });
-        }
-
-        if (btnPhTelcoToolkit != null) {
-            btnPhTelcoToolkit.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                com.gamebooster.app.ui.dialogs.PhTelcoBoostDialog.show(getContext());
-            });
-        }
 
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -854,32 +789,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (btnPingTest != null && tvGamePingMs != null) {
             btnPingTest.setOnClickListener(v -> {
-                tvGamePingMs.setText("📡 Testing Game Server Latency...");
+                tvGamePingMs.setText("📡 Testing Live Game Server Latency...");
                 btnPingTest.setEnabled(false);
 
                 AppExecutors.getInstance().executeCommand(() -> {
-                    long startTime = System.currentTimeMillis();
-                    boolean reachable = false;
-                    long pingMs = -1;
-                    try {
-                        java.net.InetAddress address = java.net.InetAddress.getByName("1.1.1.1");
-                        reachable = address.isReachable(2000);
-                        pingMs = System.currentTimeMillis() - startTime;
-                    } catch (Exception ignored) {}
-
-                    final long finalPing = pingMs;
-                    final boolean isOk = reachable && finalPing > 0;
+                    NetworkOptimizer.PingStats stats = NetworkOptimizer.measureRealPingMs();
 
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         btnPingTest.setEnabled(true);
-                        if (isOk) {
-                            String quality = finalPing < 35 ? "[EXCELLENT / ULTRA PING]" : (finalPing < 70 ? "[GOOD / NORMAL]" : "[HIGH LATENCY]");
-                            tvGamePingMs.setText("📡 Game Server Ping: " + finalPing + " ms " + quality);
-                            tvGamePingMs.setTextColor(finalPing < 35 ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#00F0FF"));
+                        if (stats.reachable && stats.avgLatencyMs > 0) {
+                            tvGamePingMs.setText("📡 Game Server Ping: " + stats.avgLatencyMs + " ms " + stats.quality + " (Jitter: " + stats.jitterMs + "ms)");
+                            tvGamePingMs.setTextColor(stats.qualityColor);
                         } else {
-                            tvGamePingMs.setText("📡 Game Server Ping: 28 ms [ULTRA LOW LATENCY]");
-                            tvGamePingMs.setTextColor(android.graphics.Color.parseColor("#00FF66"));
+                            tvGamePingMs.setText("📡 Game Server Ping: TIMEOUT / NO INTERNET");
+                            tvGamePingMs.setTextColor(0xFFEF4444);
                         }
                     });
                 });
@@ -1315,10 +1239,36 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         return view;
     }
 
+    private void updateDnsUiState(String dnsMode) {
+        if (getContext() == null) return;
+        if (btnDnsCloudflare == null || btnDnsGoogle == null || btnDnsDefault == null) return;
+
+        btnDnsCloudflare.setBackgroundResource(R.drawable.btn_cyber_dark);
+        btnDnsCloudflare.setTextColor(0xFFFFFFFF);
+        btnDnsGoogle.setBackgroundResource(R.drawable.btn_cyber_dark);
+        btnDnsGoogle.setTextColor(0xFFFFFFFF);
+        btnDnsDefault.setBackgroundResource(R.drawable.btn_cyber_dark);
+        btnDnsDefault.setTextColor(0xFF94A3B8);
+
+        if ("GOOGLE_8_8_8_8".equalsIgnoreCase(dnsMode)) {
+            btnDnsGoogle.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            btnDnsGoogle.setTextColor(0xFF000000);
+        } else if ("SYSTEM_DEFAULT".equalsIgnoreCase(dnsMode)) {
+            btnDnsDefault.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            btnDnsDefault.setTextColor(0xFF000000);
+        } else {
+            btnDnsCloudflare.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            btnDnsCloudflare.setTextColor(0xFF000000);
+        }
+    }
+
     private void applyGamingDns(NetworkOptimizer.DnsMode mode, String msg) {
         if (getContext() == null) return;
+        ManualSettingsPreferences.setGamingDns(getContext(), mode.name());
+        updateDnsUiState(mode.name());
         AppExecutors.getInstance().executeCommand(() -> {
             NetworkOptimizer.applyGamingDns(getContext(), mode);
+            NetworkOptimizer.flushDnsCache();
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (isAdded() && getContext() != null) {
                     Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -1456,6 +1406,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
                 }
                 updateNetworkModeUi(ManualSettingsPreferences.getNetworkMode(getContext()));
+                updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
                 isProgrammaticToggle = false;
             }
 

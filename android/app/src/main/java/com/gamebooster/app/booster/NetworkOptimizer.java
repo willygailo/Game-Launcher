@@ -37,6 +37,101 @@ public class NetworkOptimizer {
         }
     }
 
+    public static class PingStats {
+        public final long avgLatencyMs;
+        public final long jitterMs;
+        public final int packetLossPercent;
+        public final boolean reachable;
+        public final String quality;
+        public final int qualityColor;
+
+        public PingStats(long avgLatencyMs, long jitterMs, int packetLossPercent, boolean reachable) {
+            this.avgLatencyMs = avgLatencyMs;
+            this.jitterMs = jitterMs;
+            this.packetLossPercent = packetLossPercent;
+            this.reachable = reachable;
+            if (!reachable || avgLatencyMs <= 0) {
+                this.quality = "[OFFLINE / TIMEOUT]";
+                this.qualityColor = 0xFFEF4444; // Red
+            } else if (avgLatencyMs < 35) {
+                this.quality = "[EXCELLENT / ULTRA LOW LATENCY]";
+                this.qualityColor = 0xFF00FF66; // Neon Green
+            } else if (avgLatencyMs < 70) {
+                this.quality = "[GOOD / FAST GAMING ROUTE]";
+                this.qualityColor = 0xFF00F0FF; // Cyan
+            } else if (avgLatencyMs < 110) {
+                this.quality = "[NORMAL / ACCEPTABLE]";
+                this.qualityColor = 0xFFFACC15; // Yellow
+            } else {
+                this.quality = "[HIGH LATENCY]";
+                this.qualityColor = 0xFFF97316; // Orange
+            }
+        }
+    }
+
+    public static PingStats measureRealPingMs() {
+        String[][] targets = {
+                {"1.1.1.1", "443"},
+                {"1.1.1.1", "53"},
+                {"8.8.8.8", "53"},
+                {"208.67.222.222", "53"}
+        };
+
+        java.util.List<Long> samples = new java.util.ArrayList<>();
+        int totalProbes = 0;
+        int failedProbes = 0;
+
+        for (String[] t : targets) {
+            totalProbes++;
+            long t0 = System.currentTimeMillis();
+            boolean ok = false;
+            try (java.net.Socket socket = new java.net.Socket()) {
+                socket.connect(new java.net.InetSocketAddress(t[0], Integer.parseInt(t[1])), 1200);
+                ok = true;
+            } catch (Throwable ignored) {}
+
+            long elapsed = System.currentTimeMillis() - t0;
+            if (ok && elapsed > 0) {
+                samples.add(elapsed);
+            } else {
+                failedProbes++;
+            }
+        }
+
+        if (samples.isEmpty()) {
+            try {
+                String pingOut = CommandExecutor.executeSystemCommand("/system/bin/ping -c 2 -W 1 1.1.1.1");
+                if (pingOut != null && pingOut.contains("min/avg/max")) {
+                    int idx = pingOut.indexOf("=");
+                    if (idx != -1) {
+                        String stats = pingOut.substring(idx + 1).trim();
+                        String[] parts = stats.split("/");
+                        if (parts.length >= 2) {
+                            double avg = Double.parseDouble(parts[1].trim());
+                            samples.add(Math.round(avg));
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        if (samples.isEmpty()) {
+            return new PingStats(-1, 0, 100, false);
+        }
+
+        long sum = 0;
+        for (long s : samples) sum += s;
+        long avg = sum / samples.size();
+
+        long jitterSum = 0;
+        for (long s : samples) jitterSum += Math.abs(s - avg);
+        long jitter = jitterSum / samples.size();
+
+        int loss = (int) Math.round(((double) failedProbes / totalProbes) * 100.0);
+
+        return new PingStats(avg, jitter, loss, true);
+    }
+
     public static boolean setNetworkMode(Context context, NetworkMode mode) {
         if (mode == null) return false;
         switch (mode) {

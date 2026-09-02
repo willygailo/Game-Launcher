@@ -42,6 +42,17 @@ public class ManualSettingsPreferences {
     private static final String KEY_GAME_DRIVER = "pref_game_driver";
     private static final String KEY_TETHER_HW = "pref_tether_hw";
     private static final String KEY_FORCE_GNSS = "pref_force_gnss";
+    private static final String KEY_GAMING_DNS = "pref_gaming_dns";
+
+    public static void setGamingDns(Context context, String dnsMode) {
+        if (context == null) return;
+        getPrefs(context).edit().putString(KEY_GAMING_DNS, dnsMode != null ? dnsMode : "CLOUDFLARE_1_1_1_1").apply();
+    }
+
+    public static String getGamingDns(Context context) {
+        if (context == null) return "CLOUDFLARE_1_1_1_1";
+        return getPrefs(context).getString(KEY_GAMING_DNS, "CLOUDFLARE_1_1_1_1");
+    }
 
     public static void setAngleMode(Context context, boolean enabled) {
         if (context == null) return;
