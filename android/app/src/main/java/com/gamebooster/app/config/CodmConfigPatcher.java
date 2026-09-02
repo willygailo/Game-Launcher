@@ -192,7 +192,7 @@ public class CodmConfigPatcher {
                     + "  <int name=\"HDRMode\" value=\"1\" />\n"
                     + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
                     + "  <int name=\"SuperResolution\" value=\"1\" />\n"
-                    + "  <int name=\"ResolutionScale\" value=\"100\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
                     + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
                     + "  <int name=\"Vsync\" value=\"0\" />\n"
                     + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
@@ -266,6 +266,166 @@ public class CodmConfigPatcher {
         }
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "CODM UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Injects 165 FPS and Ultra Graphics presets for CODM.
+     * Targets 165Hz displays (Asus ROG, Red Magic, Black Shark).
+     */
+    public static boolean patchUltraExtreme165(String packageName) {
+        if (packageName == null) return false;
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            String content;
+            if (path.endsWith(".json")) {
+                content = "{\n"
+                    + "  \"MaxFrameRate\": 165,\n"
+                    + "  \"TargetFPS\": 165,\n"
+                    + "  \"FPSLimit\": 165,\n"
+                    + "  \"FrameRateLimit\": 165,\n"
+                    + "  \"MobileFPSLimit\": 165,\n"
+                    + "  \"FrameRateLevel\": 9,\n"
+                    + "  \"GraphicQuality\": 4,\n"
+                    + "  \"TextureQuality\": 4,\n"
+                    + "  \"ShadowQuality\": 2,\n"
+                    + "  \"ShadowResolution\": 2048,\n"
+                    + "  \"AntiAliasingQuality\": 4,\n"
+                    + "  \"BloomQuality\": 5,\n"
+                    + "  \"MaxAnisotropy\": 16,\n"
+                    + "  \"LightingQuality\": 3,\n"
+                    + "  \"ParticleQuality\": 3,\n"
+                    + "  \"WaterReflection\": 1,\n"
+                    + "  \"AsyncCompute\": 1,\n"
+                    + "  \"VRS\": 1,\n"
+                    + "  \"VulkanPipelineCache\": 1,\n"
+                    + "  \"HDRMode\": 1,\n"
+                    + "  \"HDR10Plus\": 1,\n"
+                    + "  \"HDRColorMode\": 2,\n"
+                    + "  \"UltraHDMode\": 1,\n"
+                    + "  \"SuperResolution\": 1,\n"
+                    + "  \"ResolutionScale\": 120,\n"
+                    + "  \"UltraExtreme\": 1,\n"
+                    + "  \"bFramePacingEnabled\": 1,\n"
+                    + "  \"Vsync\": 0,\n"
+                    + "  \"Unlock90Hz\": 1,\n"
+                    + "  \"Unlock120Hz\": 1,\n"
+                    + "  \"Unlock144Hz\": 1,\n"
+                    + "  \"Unlock165Hz\": 1,\n"
+                    + "  \"Unlock185Hz\": 1,\n"
+                    + "  \"Unlock240Hz\": 1,\n"
+                    + "  \"Unlock144FPS\": 1,\n"
+                    + "  \"Unlock165FPS\": 1,\n"
+                    + "  \"Ultra144FPS\": 1,\n"
+                    + "  \"Ultra165FPS\": 1,\n"
+                    + "  \"TouchBoostHz\": 165,\n"
+                    + "  \"TouchPollingRate\": 1000,\n"
+                    + "  \"TouchZeroDelay\": 1,\n"
+                    + "  \"GyroSampleRate\": 1000,\n"
+                    + "  \"GyroSensitivityRatio\": 2.5,\n"
+                    + "  \"GyroZeroDelay\": 1,\n"
+                    + "  \"GyroSmoothFactor\": 1,\n"
+                    + "  \"GyroStabilization\": 1,\n"
+                    + "  \"PreloadShaders\": 1,\n"
+                    + "  \"AllowOcclusionQueries\": 1\n"
+                    + "}\n";
+            } else if (path.endsWith(".xml")) {
+                content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
+                    + "<map>\n"
+                    + "  <int name=\"MaxFrameRate\" value=\"165\" />\n"
+                    + "  <int name=\"TargetFPS\" value=\"165\" />\n"
+                    + "  <int name=\"FPSLimit\" value=\"165\" />\n"
+                    + "  <int name=\"FrameRateLimit\" value=\"165\" />\n"
+                    + "  <int name=\"MobileFPSLimit\" value=\"165\" />\n"
+                    + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
+                    + "  <int name=\"TextureQuality\" value=\"4\" />\n"
+                    + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
+                    + "  <int name=\"ShadowResolution\" value=\"2048\" />\n"
+                    + "  <int name=\"AntiAliasingQuality\" value=\"4\" />\n"
+                    + "  <int name=\"BloomQuality\" value=\"5\" />\n"
+                    + "  <int name=\"MaxAnisotropy\" value=\"16\" />\n"
+                    + "  <int name=\"HDRMode\" value=\"1\" />\n"
+                    + "  <int name=\"HDR10Plus\" value=\"1\" />\n"
+                    + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
+                    + "  <int name=\"SuperResolution\" value=\"1\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
+                    + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
+                    + "  <int name=\"Vsync\" value=\"0\" />\n"
+                    + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock144FPS\" value=\"1\" />\n"
+                    + "  <int name=\"Unlock165FPS\" value=\"1\" />\n"
+                    + "  <int name=\"Ultra144FPS\" value=\"1\" />\n"
+                    + "  <int name=\"Ultra165FPS\" value=\"1\" />\n"
+                    + "  <int name=\"TouchBoostHz\" value=\"165\" />\n"
+                    + "  <int name=\"TouchPollingRate\" value=\"1000\" />\n"
+                    + "  <int name=\"GyroSampleRate\" value=\"1000\" />\n"
+                    + "  <float name=\"GyroSensitivityRatio\" value=\"2.5\" />\n"
+                    + "  <int name=\"GyroZeroDelay\" value=\"1\" />\n"
+                    + "  <int name=\"PreloadShaders\" value=\"1\" />\n"
+                    + "</map>\n";
+            } else {
+                content = "[Graphics]\n"
+                    + "MaxFrameRate=165\n"
+                    + "TargetFPS=165\n"
+                    + "FPSLimit=165\n"
+                    + "FrameRateLimit=165\n"
+                    + "MobileFPSLimit=165\n"
+                    + "FrameRateLevel=9\n"
+                    + "UnlockFPS=1\n"
+                    + "Unlock165FPS=1\n"
+                    + "Ultra165FPS=1\n"
+                    + "HighFPSMode=3\n"
+                    + "Unlock90Hz=1\n"
+                    + "Unlock120Hz=1\n"
+                    + "Unlock144Hz=1\n"
+                    + "Unlock165Hz=1\n"
+                    + "Unlock185Hz=1\n"
+                    + "Unlock240Hz=1\n"
+                    + "GraphicQuality=4\n"
+                    + "TextureQuality=4\n"
+                    + "ShadowQuality=2\n"
+                    + "ShadowResolution=2048\n"
+                    + "AntiAliasingQuality=4\n"
+                    + "BloomQuality=5\n"
+                    + "MaxAnisotropy=16\n"
+                    + "LightingQuality=3\n"
+                    + "ParticleQuality=3\n"
+                    + "WaterReflection=1\n"
+                    + "VulkanPipelineCache=1\n"
+                    + "AsyncCompute=1\n"
+                    + "VRS=1\n"
+                    + "HDRMode=1\n"
+                    + "HDR10Plus=1\n"
+                    + "HDRColorMode=2\n"
+                    + "UltraHDMode=1\n"
+                    + "SuperResolution=1\n"
+                    + "ResolutionScale=120\n"
+                    + "UltraExtreme=1\n"
+                    + "bUseUltraExtreme=True\n"
+                    + "bFramePacingEnabled=True\n"
+                    + "Vsync=0\n"
+                    + "TouchBoostHz=165\n"
+                    + "TouchPollingRate=1000\n"
+                    + "TouchZeroDelay=1\n"
+                    + "GyroSampleRate=1000\n"
+                    + "GyroSensitivityRatio=2.5\n"
+                    + "GyroZeroDelay=1\n"
+                    + "GyroSmoothFactor=1\n"
+                    + "GyroStabilization=1\n"
+                    + "GyroLatencyMode=0\n"
+                    + "PreloadShaders=1\n";
+            }
+            if (ConfigFileHelper.writeContentAtomic(path, content)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CODM UltraExtreme165 SuperSmooth patch: " + written + " paths for " + packageName);
         return written > 0;
     }
 
@@ -349,7 +509,7 @@ public class CodmConfigPatcher {
                     + "  <int name=\"HDRMode\" value=\"1\" />\n"
                     + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
                     + "  <int name=\"SuperResolution\" value=\"1\" />\n"
-                    + "  <int name=\"ResolutionScale\" value=\"100\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
                     + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
                     + "  <int name=\"Vsync\" value=\"0\" />\n"
                     + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
@@ -376,6 +536,7 @@ public class CodmConfigPatcher {
                     + "FPSLimit=185\n"
                     + "FrameRateLimit=185\n"
                     + "MobileFPSLimit=185\n"
+                    + "FrameRateLevel=10\n"
                     + "GraphicQuality=4\n"
                     + "TextureQuality=4\n"
                     + "ShadowQuality=2\n"
@@ -384,10 +545,11 @@ public class CodmConfigPatcher {
                     + "BloomQuality=5\n"
                     + "MaxAnisotropy=16\n"
                     + "HDRMode=1\n"
+                    + "HDR10Plus=1\n"
                     + "HDRColorMode=2\n"
                     + "UltraHDMode=1\n"
                     + "SuperResolution=1\n"
-                    + "ResolutionScale=100\n"
+                    + "ResolutionScale=120\n"
                     + "UltraExtreme=1\n"
                     + "bUseUltraExtreme=True\n"
                     + "bFramePacingEnabled=True\n"
@@ -481,14 +643,21 @@ public class CodmConfigPatcher {
                         "FPSLimit=" + forcedFps + "\n" +
                         "FrameRateLimit=" + forcedFps + "\n" +
                         "MobileFPSLimit=" + forcedFps + "\n" +
+                        "FrameRateLevel=" + FpsUnlockTier.getCodmFrameRateLevel(forcedFps) + "\n" +
                         "GraphicQuality=4\n" +
                         "HDRMode=1\n" +
+                        "HDR10Plus=1\n" +
                         "HDRColorMode=2\n" +
                         "Unlock120Hz=1\n" +
                         "Unlock144Hz=1\n" +
                         "Unlock165Hz=1\n" +
                         "Unlock185Hz=1\n" +
+                        "Unlock240Hz=1\n" +
                         "SuperResolution=1\n" +
+                        "ResolutionScale=120\n" +
+                        "VulkanPipelineCache=1\n" +
+                        "AsyncCompute=1\n" +
+                        "VRS=1\n" +
                         "TouchBoostHz=" + forcedFps + "\n" +
                         "TouchPollingRate=1000\n" +
                         "TouchZeroDelay=1\n" +

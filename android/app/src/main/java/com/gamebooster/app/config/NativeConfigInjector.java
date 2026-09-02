@@ -461,7 +461,13 @@ public class NativeConfigInjector {
             "bFramePacingEnabled=1",
             "AllowOcclusionQueries=1",
             "PreloadShaders=1",
-            "ResolutionScale=100"
+            "ResolutionScale=120",
+            "HDR10Plus=1",
+            "UltraExtreme=1",
+            "UltraExtreme2026=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
     }

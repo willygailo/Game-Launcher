@@ -50,13 +50,16 @@ public class DeltaForceConfigPatcher {
         CommonConfigTuningInjector.applyAntiTelemetrySafe(packageName);
     }
 
-    /**
-     * Network Lag Compensation — 2026 Edition.
-     * Client-side lag comp + 64-tick + jitter buffer keys. UE4/5 games only (silently ignored on Unity).
-     * Ban-safe: config-file writes only.
-     */
     public static void applyNetworkLagCompensation(String packageName) {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
+    }
+
+    public static void applyPrecisionAim(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectDeltaForcePrecisionAim(path);
+        }
     }
 
     private static final String TAG = "DeltaForceConfigPatcher";

@@ -238,6 +238,18 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
+                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
+                ConfigFileHelper.patchKeys(path, new String[]{
+                    "FrameRateLevel=8",
+                    "GraphicQuality=4",
+                    "GraphicResolution=2",
+                    "MobileHDRMode=1",
+                    "bFramePacingEnabled=True",
+                    "ResolutionScale=120",
+                    "HighFPSMode=3"
+                }, "[/Script/ShadowTrackerExtra.UserSetting]");
+            }
             if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
                 written++;
             }
@@ -245,6 +257,143 @@ public class PubgConfigPatcher {
         patchActiveSavBinary(packageName, 144);
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "PUBGM UltraExtreme144 SuperSmooth patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Complete 165fps SuperSmooth + UltraExtreme Graphics patch for PUBGM / BGMI / KR.
+     * Targets 165Hz displays (Asus ROG 8, Red Magic 9, etc.) with FrameRateLevel=9 and 165 FPS limit.
+     */
+    public static boolean patchUltraExtreme165(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── SuperSmooth 165fps UE4 CVars ──
+            "+CVars=r.PUBGDeviceFPS=9",
+            "+CVars=r.PUBGMaxFPS=165",
+            "+CVars=r.PUBGFrameRateLimit=165",
+            "+CVars=r.FrameRateLimit=165",
+            "+CVars=r.MobileFPSLimit=165",
+            "+CVars=r.Vsync=0",
+            "+CVars=r.Unlock120Hz=1",
+            "+CVars=r.Unlock144Hz=1",
+            "+CVars=r.Unlock165Hz=1",
+            "+CVars=r.Unlock185Hz=1",
+            "+CVars=r.TouchBoostHz=165",
+            "+CVars=r.MobileTouchBoostRate=165",
+            "+CVars=r.FramePacing=1",
+            // ── UltraExtreme Graphics CVars ──
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.PUBGHDRMode=1",
+            "+CVars=r.PUBGQualityLevel=4",
+            "+CVars=r.PUBGSDKQualityLevel=4",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.HDR.Display.OutputDevice=1",
+            "+CVars=r.MobileContentScaleFactor=1.0",
+            "+CVars=r.MobileReduceLoadedMips=0",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.BloomQuality=5",
+            "+CVars=r.DepthOfFieldQuality=4",
+            "+CVars=r.Shadow.MaxResolution=2048",
+            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
+            "+CVars=r.ReflectionCaptureResolution=256",
+            "+CVars=r.TemporalAA.Upscale=1",
+            "+CVars=r.VelocityBlur=1",
+            "+CVars=r.AllowOcclusionQueries=1",
+            "+CVars=r.MobileTonemapperFilm=1",
+            "+CVars=r.PUBGTPPViewRange=100.00",
+            "+CVars=r.PUBGFPPViewRange=150.00",
+            "+CVars=r.SuppressLogs=1",
+            "+CVars=r.DisableDebugLog=1",
+            "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroSensitivityRatio=2.5",
+            "+CVars=r.GyroZeroDelay=1",
+            // ── INI Keys ──
+            "FPS=165",
+            "MaxFPS=165",
+            "TargetFPS=165",
+            "FrameRateLimit=165",
+            "MobileFPSLimit=165",
+            "FrameRateLevel=9",
+            "UnlockFPS=1",
+            "Unlock165FPS=1",
+            "Ultra165FPS=1",
+            "HighFPSMode=3",
+            "SuperHighFPS=1",
+            "Unlock90Hz=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            // ── UltraExtreme Graphics INI ──
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "GraphicsQuality=5",
+            "GraphicQuality=4",
+            "GraphicLevel=4",
+            "ResolutionQuality=120",
+            "ResolutionScale=120",
+            "ScreenScale=120",
+            "HDRMode=1",
+            "HDR10Plus=1",
+            "UltraHDMode=1",
+            "HDRColorMode=2",
+            "SuperResolution=1",
+            "bUseHDRMode=True",
+            "bUseHighQualityBloom=True",
+            "BloomQuality=5",
+            "AntiAliasingQuality=4",
+            "bUseAntiAliasing=True",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "TextureQuality=4",
+            "MaxAnisotropy=16",
+            "LightingQuality=3",
+            "ParticleQuality=3",
+            "WaterReflection=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "bReduceLoadedMips=False",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "TPPFieldOfView=100",
+            "FPPFieldOfView=150",
+            "bDisableAnalytics=True",
+            "bDisableBugReporting=True",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=2.5",
+            "GyroZeroDelay=1",
+            "GyroLatencyMode=0",
+            "GyroSmoothFactor=1",
+            "GyroStabilization=1",
+            "TouchBoostHz=165",
+            "TouchPollingRate=1000"
+        };
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
+                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
+                ConfigFileHelper.patchKeys(path, new String[]{
+                    "FrameRateLevel=9",
+                    "GraphicQuality=4",
+                    "GraphicResolution=2",
+                    "MobileHDRMode=1",
+                    "bFramePacingEnabled=True",
+                    "ResolutionScale=120",
+                    "HighFPSMode=3"
+                }, "[/Script/ShadowTrackerExtra.UserSetting]");
+            }
+            if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 165);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM UltraExtreme165 SuperSmooth patch: " + written + " paths for " + packageName);
         return written > 0;
     }
 
@@ -375,6 +524,18 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
+                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
+                ConfigFileHelper.patchKeys(path, new String[]{
+                    "FrameRateLevel=10",
+                    "GraphicQuality=4",
+                    "GraphicResolution=2",
+                    "MobileHDRMode=1",
+                    "bFramePacingEnabled=True",
+                    "ResolutionScale=120",
+                    "HighFPSMode=3"
+                }, "[/Script/ShadowTrackerExtra.UserSetting]");
+            }
             if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
                 written++;
             }
@@ -468,6 +629,18 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
+                    || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini") || path.endsWith("VNGEnjoyCJZC.ini")) {
+                ConfigFileHelper.patchKeys(path, new String[]{
+                    "FrameRateLevel=" + pubgFpsLevel,
+                    "GraphicQuality=4",
+                    "GraphicResolution=2",
+                    "MobileHDRMode=1",
+                    "bFramePacingEnabled=True",
+                    "ResolutionScale=120",
+                    "HighFPSMode=3"
+                }, "[/Script/ShadowTrackerExtra.UserSetting]");
+            }
             if (ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]")) {
                 written++;
             }

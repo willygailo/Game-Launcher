@@ -121,14 +121,14 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         Button btnEmptyScanApks = view.findViewById(R.id.btn_empty_scan_apks);
 
         View.OnClickListener openAddGameAction = v -> {
-            if (getContext() != null) {
-                com.gamebooster.app.ui.dialogs.AddGameDialog.show(getContext(), () -> loadAndScanGames(true));
+            if (isAdded() && getActivity() != null) {
+                com.gamebooster.app.ui.dialogs.AddGameDialog.show(requireActivity(), () -> loadAndScanGames(true));
             }
         };
 
         View.OnClickListener openClearGamesAction = v -> {
-            if (getContext() != null) {
-                com.gamebooster.app.ui.dialogs.ClearGameDialog.show(getContext(), () -> loadAndScanGames(true));
+            if (isAdded() && getActivity() != null) {
+                com.gamebooster.app.ui.dialogs.ClearGameDialog.show(requireActivity(), () -> loadAndScanGames(true));
             }
         };
 

@@ -195,16 +195,18 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
         }
 
-        // 2. PUBG Mobile / BGMI / Game for Peace / VNG / KR / New State
-        else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm") || pkg.contains("pubgmobile")) {
+        // 2. PUBG Mobile family — split by variant for accurate per-build paths
+        else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile")
+                || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm") || pkg.contains("pubgmobile")) {
+
+            // ── Shared base paths for ALL PUBGM variants ──
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
-            // 2026: EnjoyCJZC.ini — main quality/FPS controller for 2.9.x+
+            // 2026: EnjoyCJZC.ini — primary FPS/quality controller for 2.9.x+
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
-            // 2026: Quality.ini & Scalability profiles
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Quality.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Engine.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Scalability.ini");
@@ -212,11 +214,51 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SrcVersion.ini");
+
+            // ── BGMI (Battlegrounds Mobile India) — com.pubg.imobile ──
+            if (pkg.contains("imobile")) {
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BGMIUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BGMIEnjoyCJZC.ini");
+                rel.add("shared_prefs/com.pubg.imobile.v2.playerprefs.xml");
+                rel.add("shared_prefs/com.pubg.imobile_preferences.xml");
+
+            // ── PUBG KR (Korean server) — com.pubg.krmobile ──
+            } else if (pkg.contains("krmobile")) {
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/KRUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/KREnjoyCJZC.ini");
+                rel.add("shared_prefs/com.pubg.krmobile.v2.playerprefs.xml");
+                rel.add("shared_prefs/com.pubg.krmobile_preferences.xml");
+
+            // ── PUBG New State — com.pubg.newstate (different UE4 project!) ──
+            } else if (pkg.contains("newstate")) {
+                // New State uses a completely different UE4 project path structure
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/UserCustom.ini");
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/GameUserSettings.ini");
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/DeviceProfile.ini");
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/EnjoyCJZC.ini");
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/Quality.ini");
+                rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/SaveGames/Active.sav");
+                rel.add("shared_prefs/com.pubg.newstate.v2.playerprefs.xml");
+                rel.add("shared_prefs/com.pubg.newstate_preferences.xml");
+
+            // ── VNG Vietnam server — com.vng.pubgmobile ──
+            } else if (pkg.contains("vng")) {
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/VNGUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/VNGEnjoyCJZC.ini");
+                rel.add("shared_prefs/com.vng.pubgmobile.v2.playerprefs.xml");
+                rel.add("shared_prefs/com.vng.pubgmobile_preferences.xml");
+
+            // ── Global PUBGM / Game for Peace / other variants ──
+            } else {
+                rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
+                rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            }
+
+            // Shared playerprefs + file-based prefs for all variants
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/" + pkg + "_preferences.xml");
-            rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
-            rel.add("shared_prefs/" + pkg + "_preferences.xml");
         }
+
 
         // 3. Call of Duty Mobile / Warzone Mobile
         else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {

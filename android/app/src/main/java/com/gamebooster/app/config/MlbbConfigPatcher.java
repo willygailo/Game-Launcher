@@ -329,6 +329,119 @@ public class MlbbConfigPatcher {
         return written > 0;
     }
 
+    /**
+     * Injects 165fps SuperSmooth + Ultra Extreme 2026 Graphics + HDR10Plus into MLBB.
+     * Targets devices with 165Hz displays: Asus ROG 8, Nubia Red Magic 9, Xiaomi 14 Ultra.
+     * Uses MLBB-internal FrameRateLevel=5 (165fps tier) and HighFPSMode=3.
+     * Also writes HighFPSConfig.json to persist the 165fps lock across app restarts.
+     */
+    public static boolean patchUltraExtreme165(String packageName) {
+        if (packageName == null) return false;
+
+        String[] keys = {
+            // ── 165fps SuperSmooth Unlock ──
+            "HighFPSMode=3",
+            "FrameRateLevel=5",          // MLBB internal: 5 = 165fps
+            "FPS=165",
+            "MaxFPS=165",
+            "MaxFrameRate=165",
+            "TargetFPS=165",
+            "FrameRateLimit=165",
+            "HighFrameRate=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "Unlock90Hz=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            "HFR=1",
+            "ShowFPS=1",
+            // ── 2026 Max Ultra Graphics ──
+            "GraphicsPreset=5",
+            "UltraExtreme=1",
+            "UltraExtreme2026=1",
+            "bUseUltraExtreme=True",
+            "QualityLevel=3",
+            "GraphicsQuality=5",
+            "TextureQuality=3",
+            "HDMode=1",
+            "HDR10Plus=1",
+            "Shadow=1",
+            "Outline=1",
+            "LightingQuality=3",
+            "ParticleQuality=3",
+            "PostProcessing=1",
+            "WaterReflection=1",
+            "VegetationDensity=2",
+            "RenderScale=120",
+            "PhysicsSimulation=1",
+            "RealTimeLight=1",
+            "DynamicResolution=0",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "CreepHP=1",
+            "DamageText=1",
+            // ── Esports Targeting ──
+            "HeroLock=1",
+            "AimMethod=1",
+            "TargetPriority=0",
+            "SkillSmartAim=1",
+            "CameraHeight=1",
+            "ScreenShake=0",
+            "Vibrate=0",
+            // ── Damage Lock Max 2026 ──
+            "DamageLockMax=1",
+            "EffectiveDPSMode=3",
+            "PenetrationBoost=1",
+            "CritRateBoost=1",
+            "FrameSyncDamage=1",
+            "HitRegSyncRate=1000",
+            // ── Aim Assist Lock Max 2026 ──
+            "AimAssistLockMax=1",
+            "AimMagnetism=3",
+            "LockOnRange=1.0",
+            "AimSnapSpeed=10",
+            "AimStabilizer=1",
+            "HeadMagnetism=1",
+            "AdsZeroDelay=1",
+            "AimSmoothFactor=0",
+            // ── Touch Engine 1000Hz ──
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "ZeroInputLag=1"
+        };
+
+        // JSON content for HighFPSConfig.json — persists 165fps lock across app restarts
+        String highFpsJson = "{\n"
+            + "  \"HighFPSMode\": 3,\n"
+            + "  \"FrameRateLevel\": 5,\n"
+            + "  \"MaxFPS\": 165,\n"
+            + "  \"TargetFPS\": 165,\n"
+            + "  \"HDR10Plus\": 1,\n"
+            + "  \"UltraExtreme2026\": 1,\n"
+            + "  \"RenderScale\": 120,\n"
+            + "  \"Unlock165Hz\": 1,\n"
+            + "  \"UnlockFPS\": 1\n"
+            + "}";
+
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (path.endsWith("HighFPSConfig.json")) {
+                // Write full JSON blob for HighFPSConfig.json
+                if (ConfigFileHelper.writeContentAtomic(path, highFpsJson)) written++;
+            } else {
+                if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "MLBB UltraExtreme165 2026 patch: " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Safe Patch (Zero Corruption) ────────────────────────────
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
@@ -591,9 +704,10 @@ public class MlbbConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
-        final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
-        final int frameRateLevel = (forcedFps >= 185) ? 5 : (forcedFps >= 144 ? 4 : 3);
-        final int highFpsMode = (forcedFps >= 120) ? 2 : 1;
+        final int forcedFps    = FpsUnlockTier.resolveTargetFps(targetFps);
+        // Use FpsUnlockTier helpers for correct per-engine level mapping
+        final int frameRateLevel = FpsUnlockTier.getMlbbFrameRateLevel(forcedFps);
+        final int highFpsMode    = FpsUnlockTier.getMlbbHighFPSMode(forcedFps);
         String[] keys = {
             "HighFPSMode=" + highFpsMode,
             "FrameRateLevel=" + frameRateLevel,

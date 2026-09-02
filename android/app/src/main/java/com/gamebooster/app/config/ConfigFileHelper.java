@@ -42,6 +42,7 @@ public final class ConfigFileHelper {
     public static boolean writeContentAtomic(String path, String content) {
         if (path == null || path.trim().isEmpty()) return false;
         try {
+            GameConfigStorageAccessEngine.ensureAndGrantPathAccess(null, path);
             ShizukuFileManager.ensureParentDirectory(path);
             ShizukuFileManager.FileOpResult res = ShizukuFileManager.writeFileAtomic(path, content != null ? content : "", "666");
             if (res != null && res.success) {

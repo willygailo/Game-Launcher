@@ -106,6 +106,14 @@ public class ConfigBackupManager {
         return count;
     }
 
+    /**
+     * Captures originals for all resolved config paths of a game package.
+     */
+    public static int backupAllPaths(String pkg) {
+        if (pkg == null || pkg.trim().isEmpty()) return 0;
+        return backupPackage(pkg, GameConfigPathResolver.getPathsForGame(pkg));
+    }
+
     // ─── Restore ─────────────────────────────────────────────────────────────
 
     /**

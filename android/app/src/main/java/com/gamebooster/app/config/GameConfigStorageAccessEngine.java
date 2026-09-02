@@ -271,4 +271,69 @@ public final class GameConfigStorageAccessEngine {
 
         return new StorageAccessReport(packageName, hasShizuku, mode, paths.size(), accessibleCount, paths, summary);
     }
+
+    /**
+     * Ensures a single target file path (or its parent directory) is accessible
+     * for write operations before ConfigFileHelper attempts an atomic write.
+     *
+     * Execution order:
+     *  1. mkdir -p parent directory
+     *  2. chmod 777 parent directory
+     *  3. chmod 666 target file (if it exists)
+     *  4. appops set pkg MANAGE_EXTERNAL_STORAGE allow (for /sdcard paths)
+     *  5. setenforce 0 (temporary SELinux permissive for /data/data paths, Shizuku only)
+     *
+     * @param context   application context (may be null, Shizuku path works without it)
+     * @param filePath  absolute path to the target config file
+     */
+    public static void ensureAndGrantPathAccess(android.content.Context context, String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) return;
+        if (!ShizukuExecutor.hasShizukuPermission()) return;
+
+        String path = filePath.trim();
+        java.io.File file   = new java.io.File(path);
+        java.io.File parent = file.getParentFile();
+
+        // 1. mkdir -p parent
+        if (parent != null) {
+            ShizukuExecutor.executeShizukuCommand("mkdir -p \"" + parent.getAbsolutePath() + "\" 2>/dev/null");
+            // 2. chmod 777 parent dir
+            ShizukuExecutor.executeShizukuCommand("chmod 777 \"" + parent.getAbsolutePath() + "\" 2>/dev/null");
+        }
+
+        // 3. chmod 666 file (write-accessible by any uid)
+        ShizukuExecutor.executeShizukuCommand("chmod 666 \"" + path + "\" 2>/dev/null");
+
+        // 4. appops for /sdcard/Android/data paths (scoped storage bypass)
+        if (path.contains("/sdcard/") || path.contains("/storage/emulated/")) {
+            String pkg = extractPackageFromPath(path);
+            if (pkg != null) {
+                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow");
+                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " NO_ISOLATED_STORAGE allow");
+                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " LEGACY_STORAGE allow");
+            }
+        }
+
+        // 5. Temporary SELinux permissive for /data/data or /data/user paths (Shizuku ADB shell)
+        if (path.startsWith("/data/data/") || path.startsWith("/data/user/")) {
+            ShizukuExecutor.executeShizukuCommand("setenforce 0 2>/dev/null");
+        }
+    }
+
+    /**
+     * Extracts the package name from a standard Android storage path.
+     * e.g. "/sdcard/Android/data/com.tencent.ig/files/..." → "com.tencent.ig"
+     */
+    private static String extractPackageFromPath(String path) {
+        if (path == null) return null;
+        String[] segments = path.split("/");
+        for (int i = 0; i < segments.length - 1; i++) {
+            if ("data".equals(segments[i]) || "obb".equals(segments[i])) {
+                String candidate = segments.length > i + 1 ? segments[i + 1] : null;
+                if (candidate != null && candidate.contains(".")) return candidate;
+            }
+        }
+        return null;
+    }
 }
+
