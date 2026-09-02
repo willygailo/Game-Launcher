@@ -285,11 +285,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (switchEsportsAudio != null) {
             isProgrammaticToggle = true;
-            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
+            switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled(getContext()));
             isProgrammaticToggle = false;
             switchEsportsAudio.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Esports Footstep Audio Boost")) return;
                 com.gamebooster.app.booster.EsportsAudioEnhancer.setEsportsAudioMode(getContext(), isChecked);
                 Toast.makeText(getContext(), isChecked ? "🎧 Esports Footstep Audio Boost Enabled" : "Esports Audio Disabled", Toast.LENGTH_SHORT).show();
             });
@@ -461,7 +460,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (btnSensitivityCalculator != null) {
             btnSensitivityCalculator.setOnClickListener(v -> {
-                if (!requireShizukuForAction("Interactive Gyro & Recoil Tuner")) return;
                 showSensitivityCalculatorDialog();
             });
         }

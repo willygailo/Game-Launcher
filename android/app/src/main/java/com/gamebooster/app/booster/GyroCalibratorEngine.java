@@ -1,13 +1,13 @@
 package com.gamebooster.app.booster;
 
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.util.Log;
 
+import com.gamebooster.app.config.ConfigFileHelper;
+import com.gamebooster.app.config.GameConfigPathResolver;
 import com.gamebooster.app.engine.CommandExecutor;
+
+import java.util.List;
 
 public class GyroCalibratorEngine {
 
@@ -31,16 +31,21 @@ public class GyroCalibratorEngine {
         }
     }
 
+    /**
+     * Applies hardware sensor HAL bias offset and forces 1000Hz gyro polling across system and game config files.
+     */
     public static void applyZeroDriftCalibration(float biasX, float biasY, float biasZ) {
         try {
-            // Apply hardware sensor HAL bias offset & 1000Hz sampling
+            // 1. Hardware sensor HAL bias properties
             CommandExecutor.executeSystemCommand("setprop persist.sys.gyro.bias_x " + biasX);
             CommandExecutor.executeSystemCommand("setprop persist.sys.gyro.bias_y " + biasY);
             CommandExecutor.executeSystemCommand("setprop persist.sys.gyro.bias_z " + biasZ);
             CommandExecutor.executeSystemCommand("setprop debug.sensor.gyro.sample_rate 1000");
             CommandExecutor.executeSystemCommand("setprop persist.sys.sensor.gyro_delay 0");
             CommandExecutor.executeSystemCommand("setprop debug.qualcomm.sns.hal.gyro_fast 1");
-            Log.i(TAG, "⚡ Gyro Zero-Drift Calibration applied: X=" + biasX + ", Y=" + biasY + ", Z=" + biasZ);
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.sensors.gyro_sample_rate 1000");
+
+            Log.i(TAG, "⚡ Gyro Zero-Drift Calibration applied: X=" + biasX + ", Y=" + biasY + ", Z=" + biasZ + " @ 1000Hz");
         } catch (Throwable t) {
             Log.w(TAG, "Gyro calibration property write error: " + t.getMessage());
         }
