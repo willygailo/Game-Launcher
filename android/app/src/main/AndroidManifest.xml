@@ -259,7 +259,7 @@
         android:name="com.gamebooster.app.GameBoosterApp"
         android:label="Game Booster"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.GameBooster"
         android:allowBackup="false"
         android:supportsRtl="true"
