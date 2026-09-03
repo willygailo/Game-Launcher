@@ -370,19 +370,19 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "sf_zero_latency_latching",
                 "SurfaceFlinger Composition Strategy & Scheduling Turbo",
-                "Optimizes SurfaceFlinger composition strategy predictions and unthrottles early duration scheduling safely",
-                "setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3",
-                "setprop debug.sf.predict_hwc_composition_strategy 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
+                "Optimizes SurfaceFlinger composition strategy predictions, enables unsignaled buffer latching, disables backpressure drops, and aligns 500µs early phase offsets",
+                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.enable_hwc_vds 1; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop debug.sf.early_phase_offset_ns 500000; setprop debug.sf.early_app_phase_offset_ns 500000; setprop debug.sf.high_fps_early_phase_offset_ns 500000; setprop debug.sf.high_fps_early_app_phase_offset_ns 500000; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3; setprop debug.sf.showupdates 0; setprop debug.sf.showcpu 0; setprop debug.sf.showbackground 0; setprop debug.sf.showfps 0",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.sf.predict_hwc_composition_strategy 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
                 TweakCategory.CPU_GPU,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
                 "angle_vulkan_driver_preference",
-                "Targeted Game Driver Selection (Native GPU)",
-                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver with native GPU stability",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null",
+                "Targeted Game Driver Selection (Native GPU & Skia Vulkan)",
+                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver with native Skia Vulkan hardware rendering pipeline",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0; setprop debug.hwui.renderer skiavk; setprop debug.renderengine.backend vulkan; setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.render_thread_priority -20; setprop debug.sf.hw 1",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -390,19 +390,19 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "dalvik_art_jit_turbo",
                 "Dalvik / ART JIT Turbo & Hot Method Optimization",
-                "Forces JIT compilation mode, lowers compilation thresholds, expands code caches to 64MB, and maximizes execution throughput",
-                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.usejitprofiles true; setprop dalvik.vm.jitcodecachesize 64m; setprop dalvik.vm.jitinitialsize 16m; setprop dalvik.vm.jitthreshold 100; setprop dalvik.vm.dex2oat-filter speed",
-                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.dex2oat-filter speed-profile",
+                "Forces JIT compilation mode, lowers compilation threshold to 50, expands code caches to 128MB, and enables 8-thread DEX2OAT compilation",
+                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.usejitprofiles true; setprop dalvik.vm.jitcodecachesize 64m; setprop dalvik.vm.jitinitialsize 16m; setprop dalvik.vm.jitmaxsize 128m; setprop dalvik.vm.jitthreshold 50; setprop dalvik.vm.jittransitionweight 10; setprop dalvik.vm.dex2oat-filter speed; setprop dalvik.vm.dex2oat-threads 8; setprop dalvik.vm.image-dex2oat-threads 8; setprop dalvik.vm.boot-dex2oat-threads 8; setprop dalvik.vm.dex2oat-flags \"enable-fast-verify,no-relocate\"",
+                "setprop dalvik.vm.execution-mode int:jit; setprop dalvik.vm.usejit true; setprop dalvik.vm.dex2oat-filter speed-profile; setprop dalvik.vm.jitthreshold 100",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
                 "dalvik_heap_gaming_optimization",
-                "Dalvik Heap 1024MB Max Size & GC Tuning",
-                "Expands heap growth limit to 512MB and max heap to 1024MB with 0.75 target utilization to eliminate in-game garbage collection lag",
-                "setprop dalvik.vm.heapgrowthlimit 512m; setprop dalvik.vm.heapsize 1024m; setprop dalvik.vm.heaptargetutilization 0.75; setprop dalvik.vm.heapminfree 8m; setprop dalvik.vm.heapmaxfree 32m; setprop dalvik.vm.heapstartsize 32m",
-                "setprop dalvik.vm.heapgrowthlimit 256m; setprop dalvik.vm.heapsize 512m; setprop dalvik.vm.heaptargetutilization 0.75",
+                "Dalvik Heap 1024MB Max Size & Parallel GC Tuning",
+                "Expands heap growth limit to 512MB and max heap to 1024MB with 4 parallel concurrent GC threads and JNI boundary check bypass",
+                "setprop dalvik.vm.heapgrowthlimit 512m; setprop dalvik.vm.heapsize 1024m; setprop dalvik.vm.heaptargetutilization 0.85; setprop dalvik.vm.heapminfree 8m; setprop dalvik.vm.heapmaxfree 32m; setprop dalvik.vm.heapstartsize 32m; setprop dalvik.vm.heapsizelimit 1024m; setprop dalvik.vm.concurrent-gc-threads 4; setprop dalvik.vm.checkjni false",
+                "setprop dalvik.vm.heapgrowthlimit 256m; setprop dalvik.vm.heapsize 512m; setprop dalvik.vm.heaptargetutilization 0.75; setprop dalvik.vm.checkjni false",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -410,9 +410,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "cpu_multicore_topology_sched",
                 "8 / 12 / 16-Core CPU Topology & Top-App CPUSet Isolation",
-                "Allocates all CPU cores to top-app game processes, isolates background tasks to efficiency cores 0-3, and equalizes scaling frequencies",
-                "echo 0-15 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 0-15 > /dev/cpuset/foreground/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/background/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/system-background/cpus 2>/dev/null; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; setprop sys.perf.sched_uclamp_min 1024; setprop sys.perf.sched_uclamp_min_rt 1024; setprop sys.perf.sched_min_granularity_ns 250000; setprop sys.perf.sched_latency_ns 1000000; setprop sys.perf.sched_boost 1; cmd power set-fixed-performance-mode-enabled true",
-                "cmd power set-fixed-performance-mode-enabled false; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; setprop sys.perf.sched_uclamp_min 0; setprop sys.perf.sched_boost 0",
+                "Allocates all CPU cores to top-app game processes, isolates background/dex2oat tasks away from gaming cores, and tunes WALT scheduler cross-window migration",
+                "echo 0-15 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 0-15 > /dev/cpuset/foreground/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/background/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/system-background/cpus 2>/dev/null; echo 0-3 > /dev/cpuset/dex2oat/cpus 2>/dev/null; echo 0-1 > /dev/cpuset/restricted/cpus 2>/dev/null; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; setprop sys.perf.sched_uclamp_min 1024; setprop sys.perf.sched_uclamp_min_rt 1024; setprop sys.perf.sched_min_granularity_ns 250000; setprop sys.perf.sched_latency_ns 1000000; setprop sys.perf.sched_boost 1; sysctl -w kernel.sched_walt_cross_window_migration_ratio=10 2>/dev/null; sysctl -w kernel.sched_boost=1 2>/dev/null; sysctl -w kernel.sched_child_runs_first=1 2>/dev/null; sysctl -w kernel.sched_wakeup_granularity_ns=500000 2>/dev/null; cmd power set-fixed-performance-mode-enabled true",
+                "cmd power set-fixed-performance-mode-enabled false; for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; setprop sys.perf.sched_uclamp_min 0; setprop sys.perf.sched_boost 0; sysctl -w kernel.sched_boost=0 2>/dev/null",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -632,9 +632,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "vfs_cache_and_swappiness_zero",
                 "VM Swappiness 10 & VFS In-Memory Cache Shield",
-                "Tunes Linux VM memory management to keep game assets directly in RAM with 64MB reserved min-free memory pool",
-                "echo 10 > /proc/sys/vm/swappiness 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; echo 5 > /proc/sys/vm/dirty_ratio 2>/dev/null; echo 2 > /proc/sys/vm/dirty_background_ratio 2>/dev/null; echo 0 > /proc/sys/vm/page-cluster 2>/dev/null; echo 65536 > /proc/sys/vm/min_free_kbytes 2>/dev/null; echo 0 > /proc/sys/vm/watermark_boost_factor 2>/dev/null; echo 0 > /proc/sys/vm/compaction_proactiveness 2>/dev/null",
-                "echo 60 > /proc/sys/vm/swappiness 2>/dev/null; echo 100 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null",
+                "Tunes Linux VM memory management with dual sysctl/proc pipelines to keep game assets directly in RAM, delays background dirty writebacks, and reduces timer interrupt overhead",
+                "sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.dirty_expire_centisecs=3000 2>/dev/null; sysctl -w vm.dirty_writeback_centisecs=5000 2>/dev/null; sysctl -w vm.page-cluster=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.stat_interval=120 2>/dev/null",
+                "sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null; echo 100 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.stat_interval=1 2>/dev/null; sysctl -w vm.dirty_expire_centisecs=200 2>/dev/null; sysctl -w vm.dirty_writeback_centisecs=500 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -642,9 +642,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "audio_fasttrack_low_latency",
                 "Audio HAL FastTrack Low-Latency & Gapless Output",
-                "Forces audio server to use 32KB small buffers, disables deep-buffer media latency overhead, and enables high-speed resampler",
-                "setprop af.resampler.quality 4; setprop audio.deep_buffer.media false; setprop audio.offload.buffer.size.kb 32; setprop audio.offload.gapless true; setprop audio.offload.video false; setprop persist.sys.audio.latency 0",
-                "setprop audio.deep_buffer.media true; setprop audio.offload.buffer.size.kb 64",
+                "Forces audio server to use 32KB small buffers, drops audio flinger standby spin-up delay, enables Bluetooth low latency A2DP offload, and bypasses safe volume ducking",
+                "setprop af.resampler.quality 4; setprop audio.deep_buffer.media false; setprop audio.offload.buffer.size.kb 32; setprop audio.offload.gapless true; setprop audio.offload.video false; setprop persist.sys.audio.latency 0; setprop ro.audio.flinger_standbytime_ms 1000; setprop af.fast_track_multiplier 1; setprop persist.bluetooth.a2dp_offload.cap 1; setprop persist.vendor.bt.a2dp_low_latency 1; setprop persist.vendor.bt.aac_vbr_frm_chk 0; setprop audio.safemedia.bypass true",
+                "setprop audio.deep_buffer.media true; setprop audio.offload.buffer.size.kb 64; setprop ro.audio.flinger_standbytime_ms 3000; setprop persist.vendor.bt.a2dp_low_latency 0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -652,9 +652,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "disable_background_telemetry_drains",
                 "Disable GMS Analytics & Background Sync Probes",
-                "Disables background Google Play Services telemetry logging, location scanning probes, and Wi-Fi verbose logs during gameplay",
-                "settings put global wifi_verbose_logging_enabled 0; settings put global ble_scan_always_enabled 0; settings put global wifi_scan_always_enabled 0; settings put global netstats_enabled 0; setprop logcat.live enable",
-                "settings put global ble_scan_always_enabled 1; settings put global wifi_scan_always_enabled 1",
+                "Disables background Google Play Services telemetry logging, location scanning probes, Perfetto traced daemons, and dropbox dump overhead during gameplay",
+                "settings put global wifi_verbose_logging_enabled 0; settings put global ble_scan_always_enabled 0; settings put global wifi_scan_always_enabled 0; settings put global netstats_enabled 0; settings put secure send_action_app_error 0; settings put global dropbox_max_files 0; setprop persist.traced.enable 0; setprop persist.logd.size 64K; setprop logd.logpersistd false; dumpsys dropbox --clean 2>/dev/null",
+                "settings put global ble_scan_always_enabled 1; settings put global wifi_scan_always_enabled 1; setprop persist.logd.size 256K; setprop persist.traced.enable 1",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -662,9 +662,39 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "kernel_panic_and_watchdog_bypass",
                 "Kernel Watchdog & Printk Log Overhead Bypass",
-                "Suppresses kernel printk console logging and disables software watchdog timer overhead to prevent micro-interruptions",
-                "echo 0 > /proc/sys/kernel/printk 2>/dev/null; echo 0 > /proc/sys/kernel/watchdog 2>/dev/null; echo 0 > /proc/sys/kernel/nmi_watchdog 2>/dev/null; echo 0 > /proc/sys/kernel/soft_watchdog 2>/dev/null",
-                "echo 4 > /proc/sys/kernel/printk 2>/dev/null; echo 1 > /proc/sys/kernel/watchdog 2>/dev/null",
+                "Suppresses kernel printk console logging, disables software watchdog timer overhead, and locks timer migration to prevent CPU core micro-stutters",
+                "sysctl -w kernel.printk=\"0 0 0 0\" 2>/dev/null; echo 0 > /proc/sys/kernel/printk 2>/dev/null; sysctl -w kernel.watchdog=0 2>/dev/null; echo 0 > /proc/sys/kernel/watchdog 2>/dev/null; sysctl -w kernel.nmi_watchdog=0 2>/dev/null; echo 0 > /proc/sys/kernel/nmi_watchdog 2>/dev/null; sysctl -w kernel.soft_watchdog=0 2>/dev/null; echo 0 > /proc/sys/kernel/soft_watchdog 2>/dev/null; sysctl -w kernel.timer_migration=0 2>/dev/null; sysctl -w kernel.sched_tunable_scaling=0 2>/dev/null; sysctl -w kernel.perf_event_paranoid=3 2>/dev/null",
+                "sysctl -w kernel.printk=\"4 4 1 7\" 2>/dev/null; echo 4 > /proc/sys/kernel/printk 2>/dev/null; sysctl -w kernel.watchdog=1 2>/dev/null; echo 1 > /proc/sys/kernel/watchdog 2>/dev/null; sysctl -w kernel.timer_migration=1 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "ufs_storage_io_throughput_accelerator",
+                "UFS 3.1/4.0 Storage Read-Ahead & I/O Queue Accelerator",
+                "Expands storage block read-ahead to 2048KB and request queue depth to 256 across internal UFS/eMMC blocks to eliminate asset and texture streaming hitches",
+                "for q in /sys/block/sd*/queue /sys/block/mmcblk*/queue /sys/block/dm-*/queue; do [ -d \"$q\" ] && { echo 2048 > \"$q/read_ahead_kb\" 2>/dev/null; echo 256 > \"$q/nr_requests\" 2>/dev/null; echo 0 > \"$q/rotational\" 2>/dev/null; echo 0 > \"$q/add_random\" 2>/dev/null; echo 1 > \"$q/nomerges\" 2>/dev/null; }; done",
+                "for q in /sys/block/sd*/queue /sys/block/mmcblk*/queue; do [ -d \"$q\" ] && { echo 128 > \"$q/read_ahead_kb\" 2>/dev/null; echo 128 > \"$q/nr_requests\" 2>/dev/null; }; done",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "binder_ipc_latency_acceleration",
+                "Binder IPC Transaction Queue & SurfaceFlinger Sync Accelerator",
+                "Accelerates Android Binder IPC round-trip transaction latency between game clients, SurfaceFlinger graphics compositor, and Audio HAL with real-time UI thread priority",
+                "setprop sys.use_fifo_ui 1; setprop persist.sys.ui.hw 1; setprop debug.choreographer.skipwarning 100; setprop persist.sys.binder_latency 0; setprop persist.sys.sf.high_fps_late_app_phase_offset_ns 0",
+                "setprop sys.use_fifo_ui 0; setprop persist.sys.ui.hw 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "zram_lz4_swap_compression_guard",
+                "ZRAM Compression Lock & Anti-Stutter Compaction Guard",
+                "Pins ZRAM compression streams to ultra-fast LZ4, disables unevictable compaction spikes mid-game, and prevents UI thread memory allocation freezing",
+                "for z in /sys/block/zram0; do [ -d \"$z\" ] && { echo lz4 > \"$z/comp_algorithm\" 2>/dev/null; echo 0 > \"$z/max_comp_streams\" 2>/dev/null; }; done; echo 0 > /proc/sys/vm/compact_unevictable_allowed 2>/dev/null; echo 0 > /proc/sys/vm/watermark_scale_factor 2>/dev/null",
+                "echo 10 > /proc/sys/vm/watermark_scale_factor 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
