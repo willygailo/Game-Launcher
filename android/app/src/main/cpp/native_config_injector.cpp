@@ -4914,24 +4914,37 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
            << "  \"unlock_ultra_fps\": true,\n"
            << "  \"touch_rate_hz\": 1000\n"
            << "}\n";
-        content = ss.str();
     } else if (path.find(".xml") != std::string::npos) {
-        std::ostringstream ss;
-        ss << "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-           << "<map>\n"
-           << "  <string name=\"SystemInfo_graphicsDeviceName\">" << gpu << "</string>\n"
-           << "  <string name=\"SystemInfo_graphicsDeviceVendor\">Qualcomm</string>\n"
-           << "  <string name=\"SystemInfo_deviceModel\">" << soc << "</string>\n"
-           << "  <int name=\"SystemInfo_systemMemorySize\" value=\"" << ram << "\" />\n"
-           << "  <int name=\"SystemInfo_graphicsMemorySize\" value=\"8192\" />\n"
-           << "  <int name=\"TargetFrameRate\" value=\"" << hz << "\" />\n"
-           << "  <int name=\"MaxRefreshRate\" value=\"" << hz << "\" />\n"
-           << "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
-           << "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
-           << "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
-           << "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
-           << "</map>\n";
-        content = ss.str();
+        if (content.find("<map>") != std::string::npos) {
+            patch_xml_node(content, "string", "SystemInfo_graphicsDeviceName", gpu);
+            patch_xml_node(content, "string", "SystemInfo_graphicsDeviceVendor", "Qualcomm");
+            patch_xml_node(content, "string", "SystemInfo_deviceModel", soc);
+            patch_xml_node(content, "int", "SystemInfo_systemMemorySize", std::to_string(ram));
+            patch_xml_node(content, "int", "SystemInfo_graphicsMemorySize", "8192");
+            patch_xml_node(content, "int", "TargetFrameRate", std::to_string(hz));
+            patch_xml_node(content, "int", "MaxRefreshRate", std::to_string(hz));
+            patch_xml_node(content, "int", "Unlock185Hz", "1");
+            patch_xml_node(content, "int", "Unlock165Hz", "1");
+            patch_xml_node(content, "int", "Unlock144Hz", "1");
+            patch_xml_node(content, "int", "Unlock120Hz", "1");
+        } else {
+            std::ostringstream ss;
+            ss << "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
+               << "<map>\n"
+               << "  <string name=\"SystemInfo_graphicsDeviceName\">" << gpu << "</string>\n"
+               << "  <string name=\"SystemInfo_graphicsDeviceVendor\">Qualcomm</string>\n"
+               << "  <string name=\"SystemInfo_deviceModel\">" << soc << "</string>\n"
+               << "  <int name=\"SystemInfo_systemMemorySize\" value=\"" << ram << "\" />\n"
+               << "  <int name=\"SystemInfo_graphicsMemorySize\" value=\"8192\" />\n"
+               << "  <int name=\"TargetFrameRate\" value=\"" << hz << "\" />\n"
+               << "  <int name=\"MaxRefreshRate\" value=\"" << hz << "\" />\n"
+               << "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
+               << "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
+               << "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
+               << "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
+               << "</map>\n";
+            content = ss.str();
+        }
     } else {
         std::ostringstream ss;
         ss << "gpu=" << gpu << "\n"
@@ -5653,6 +5666,121 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     }
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("Codm165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// MLBB: 165 FPS & Ultra Graphics Native Injector
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbb165FpsGraphics
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps, jint qualityLevel) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    int fps = (targetFps >= 120) ? targetFps : 165;
+    int q = (qualityLevel > 0) ? qualityLevel : 3;
+    std::string fpsStr = std::to_string(fps);
+    std::string qStr = std::to_string(q);
+
+    // XML PlayerPrefs keys for MLBB
+    std::vector<std::pair<std::string, std::string>> intKeys = {
+        {"HighFPSMode", "3"},
+        {"FrameRateLevel", "6"},
+        {"QualityLevel", qStr},
+        {"GraphicsQuality", qStr},
+        {"TextureQuality", qStr},
+        {"GraphicsPreset", "5"},
+        {"HDMode", "1"},
+        {"Shadow", "1"},
+        {"Outline", "1"},
+        {"CreepHP", "1"},
+        {"DamageText", "1"},
+        {"HeroLock", "1"},
+        {"AimMethod", "1"},
+        {"TargetPriority", "0"},
+        {"SkillSmartAim", "1"},
+        {"CameraHeight", "1"},
+        {"ScreenShake", "0"},
+        {"Vibrate", "0"},
+        {"HFR", "1"},
+        {"ShowFPS", "1"},
+        {"FPS", fpsStr},
+        {"MaxFPS", fpsStr},
+        {"MaxFrameRate", fpsStr},
+        {"TargetFPS", fpsStr},
+        {"FrameRateLimit", fpsStr},
+        {"MobileFPSLimit", fpsStr},
+        {"HighFrameRate", "1"},
+        {"UnlockFPS", "1"},
+        {"SuperHighFPS", "1"},
+        {"Unlock90Hz", "1"},
+        {"Unlock120Hz", "1"},
+        {"Unlock144Hz", "1"},
+        {"Unlock165Hz", "1"},
+        {"Unlock185Hz", "1"},
+        {"Unlock240Hz", "1"},
+        {"TouchBoostHz", fpsStr},
+        {"TouchPollingRate", "1000"},
+        {"TouchSampleRate", "1000"},
+        {"HighFreqTouchHz", fpsStr},
+        {"TouchSlopReduction", "1"},
+        {"TouchResponseLevel", "3"},
+        {"InputBufferRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"ZeroInputDelay", "1"},
+        {"JoystickZeroDeadzone", "1"},
+        {"JoystickResponseLevel", "3"},
+        {"HitRegSyncRate", "1000"},
+        {"VulkanPipelineCache", "1"},
+        {"AsyncCompute", "1"},
+        {"VRS", "1"},
+        {"LightingQuality", "3"},
+        {"ParticleQuality", "3"},
+        {"PostProcessing", "1"},
+        {"WaterReflection", "1"},
+        {"VegetationDensity", "2"},
+        {"RenderScale", "120"},
+        {"PhysicsSimulation", "1"},
+        {"RealTimeLight", "1"},
+        {"DynamicResolution", "0"},
+        {"UltraExtreme", "1"},
+        {"UltraExtreme2026", "1"},
+        {"Vsync", "0"},
+        {"DisableLogging", "1"},
+        {"DisableTelemetry", "1"},
+        {"DisableCrashlytics", "1"},
+        {"AntiLog", "1"},
+        {"LogcatDisable", "1"},
+        {"PreloadShaders", "1"},
+        {"AllowOcclusionQueries", "1"}
+    };
+
+    if (content.find("<map>") == std::string::npos) {
+        content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
+    }
+
+    for (const auto &kv : intKeys) {
+        patch_xml_node(content, "int", kv.first, kv.second);
+    }
+
+    patch_xml_node(content, "string", "bUseUltraExtreme", "True");
+    patch_xml_node(content, "boolean", "bFramePacingEnabled", "true");
+
+    bool ok = write_file_atomic(pathStr, content, 0666);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("Mlbb165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 

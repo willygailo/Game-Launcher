@@ -388,8 +388,7 @@ public class MlbbConfigPatcher {
     /**
      * Injects 165fps SuperSmooth + Ultra Extreme 2026 Graphics + HDR10Plus into MLBB.
      * Targets devices with 165Hz displays: Asus ROG 8, Nubia Red Magic 9, Xiaomi 14 Ultra.
-     * Uses MLBB-internal FrameRateLevel=5 (165fps tier) and HighFPSMode=3.
-     * Also writes HighFPSConfig.json to persist the 165fps lock across app restarts.
+     * Uses MLBB-internal FrameRateLevel=6 (165fps tier) and HighFPSMode=3.
      */
     public static boolean patchUltraExtreme165(String packageName) {
         if (packageName == null) return false;
@@ -397,12 +396,13 @@ public class MlbbConfigPatcher {
         String[] keys = {
             // ── 165fps SuperSmooth Unlock ──
             "HighFPSMode=3",
-            "FrameRateLevel=5",          // MLBB internal: 5 = 165fps
+            "FrameRateLevel=6",          // MLBB internal: 6 = 165fps tier
             "FPS=165",
             "MaxFPS=165",
             "MaxFrameRate=165",
             "TargetFPS=165",
             "FrameRateLimit=165",
+            "MobileFPSLimit=165",
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
@@ -419,8 +419,9 @@ public class MlbbConfigPatcher {
             "UltraExtreme=1",
             "UltraExtreme2026=1",
             "bUseUltraExtreme=True",
+            "bFramePacingEnabled=true",
             "QualityLevel=3",
-            "GraphicsQuality=5",
+            "GraphicsQuality=3",
             "TextureQuality=3",
             "HDMode=1",
             "HDR10Plus=1",
@@ -440,6 +441,7 @@ public class MlbbConfigPatcher {
             "VRS=1",
             "CreepHP=1",
             "DamageText=1",
+            "Vsync=0",
             // ── Esports Targeting ──
             "HeroLock=1",
             "AimMethod=1",
@@ -465,37 +467,42 @@ public class MlbbConfigPatcher {
             "AdsZeroDelay=1",
             "AimSmoothFactor=0",
             // ── Touch Engine 1000Hz ──
+            "TouchBoostHz=165",
             "TouchPollingRate=1000",
+            "TouchSampleRate=1000",
+            "HighFreqTouchHz=165",
             "TouchZeroDelay=1",
-            "ZeroInputLag=1"
+            "ZeroInputLag=1",
+            "ZeroInputDelay=1",
+            "JoystickZeroDeadzone=1",
+            "JoystickResponseLevel=3",
+            "PreloadShaders=1",
+            "AllowOcclusionQueries=1",
+            "DisableLogging=1",
+            "DisableTelemetry=1",
+            "DisableCrashlytics=1",
+            "AntiLog=1"
         };
-
-        // JSON content for HighFPSConfig.json — persists 165fps lock across app restarts
-        String highFpsJson = "{\n"
-            + "  \"HighFPSMode\": 3,\n"
-            + "  \"FrameRateLevel\": 5,\n"
-            + "  \"MaxFPS\": 165,\n"
-            + "  \"TargetFPS\": 165,\n"
-            + "  \"HDR10Plus\": 1,\n"
-            + "  \"UltraExtreme2026\": 1,\n"
-            + "  \"RenderScale\": 120,\n"
-            + "  \"Unlock165Hz\": 1,\n"
-            + "  \"UnlockFPS\": 1\n"
-            + "}";
 
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (path.endsWith("HighFPSConfig.json")) {
-                // Write full JSON blob for HighFPSConfig.json
-                if (ConfigFileHelper.writeContentAtomic(path, highFpsJson)) written++;
-            } else {
-                if (ConfigFileHelper.patchKeys(path, keys, "[Graphics]")) written++;
+            if (NativeConfigInjector.injectMlbb165FpsGraphics(path, 165, 3)) {
+                written++;
+            } else if (ConfigFileHelper.patchKeys(path, keys, "<map>")) {
+                written++;
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB UltraExtreme165 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
+    }
+
+    /**
+     * Injects 165 FPS & Ultra Graphics unlock specifically for MLBB.
+     */
+    public static boolean apply165FpsGraphicsUnlock(String packageName) {
+        return patchUltraExtreme165(packageName);
     }
 
     // ─── Competitive Safe Patch (Zero Corruption) ────────────────────────────
@@ -773,12 +780,14 @@ public class MlbbConfigPatcher {
     private static boolean applyPatch(String path, int targetFps) {
         final int forcedFps    = FpsUnlockTier.resolveTargetFps(targetFps);
         // Use FpsUnlockTier helpers for correct per-engine level mapping
-        final int frameRateLevel = FpsUnlockTier.getMlbbFrameRateLevel(forcedFps);
-        final int highFpsMode    = FpsUnlockTier.getMlbbHighFPSMode(forcedFps);
+        final int frameRateLevel = (forcedFps >= 165) ? 6 : FpsUnlockTier.getMlbbFrameRateLevel(forcedFps);
+        final int highFpsMode    = (forcedFps >= 120) ? 3 : FpsUnlockTier.getMlbbHighFPSMode(forcedFps);
         String[] keys = {
             "HighFPSMode=" + highFpsMode,
             "FrameRateLevel=" + frameRateLevel,
             "QualityLevel=3",
+            "GraphicsQuality=3",
+            "TextureQuality=3",
             "HDMode=1",
             "Shadow=1",
             "Outline=1",
@@ -797,18 +806,28 @@ public class MlbbConfigPatcher {
             "MaxFPS=" + forcedFps,
             "MaxFrameRate=" + forcedFps,
             "TargetFPS=" + forcedFps,
+            "FrameRateLimit=" + forcedFps,
+            "MobileFPSLimit=" + forcedFps,
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            "TouchBoostHz=" + forcedFps,
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",
-            "ZeroInputLag=1"
+            "ZeroInputLag=1",
+            "PreloadShaders=1",
+            "AllowOcclusionQueries=1"
         };
-        return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
+        if (NativeConfigInjector.injectMlbb165FpsGraphics(path, forcedFps, 3)) {
+            return true;
+        }
+        return ConfigFileHelper.patchKeys(path, keys, "<map>");
     }
 
     // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────

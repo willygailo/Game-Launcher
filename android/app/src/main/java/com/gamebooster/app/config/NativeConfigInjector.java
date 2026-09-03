@@ -240,6 +240,7 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmFastLoadShaderBypass(String path);
     public static native boolean nativeInjectUniversalFastLoadTurbo(String path);
     public static native boolean nativeInjectCodm165FpsGraphics(String path, int targetFps, int qualityLevel);
+    public static native boolean nativeInjectMlbb165FpsGraphics(String path, int targetFps, int qualityLevel);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -1922,6 +1923,17 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try {
                 if (nativeInjectCodm165FpsGraphics(path, targetFps, qualityLevel)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbb165FpsGraphics(String path, int targetFps, int qualityLevel) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbb165FpsGraphics(path, targetFps, qualityLevel)) return true;
             } catch (Throwable ignored) {}
         }
         return false;

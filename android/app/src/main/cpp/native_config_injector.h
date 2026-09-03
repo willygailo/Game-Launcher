@@ -840,6 +840,18 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodm165FpsGraphics
   (JNIEnv *, jclass, jstring, jint, jint);
 
+/*
+ * nativeInjectMlbb165FpsGraphics
+ * MLBB — 165 FPS frame rate & Ultra HDR graphics native injection:
+ * Patches PlayerPrefs XML (<map>): HFR=1, HighFPSMode=3, FrameRateLevel=6,
+ * FPS=165, MaxFPS=165, MaxFrameRate=165, TargetFPS=165, FrameRateLimit=165,
+ * QualityLevel=3, GraphicsQuality=3, HDMode=1, Shadow=1, Outline=1,
+ * Unlock165Hz=1, Unlock165FPS=1, TouchBoostHz=165, TouchPollingRate=1000.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbb165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif
