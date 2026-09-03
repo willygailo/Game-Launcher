@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * DeepSearchScanner implements multi-platform deep scanning for Android 11 to 16.
+ * DeepSearchScanner implements multi-platform deep scanning for Android 13 to 16.
  * It bypasses Package Visibility restrictions using Shizuku ADB commands, multi-user queries,
  * third-party store discovery (TapTap, Garena, Galaxy Store, APKPure), and storage directory inspection.
  */

@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * ShizukuPermissionEnforcer — Unlocks all Android storage, data, obb,
  * restricted settings, overlay, and system permissions via elevated Shizuku shell.
- * Fully compatible with Android 11, 12, 13, 14, 15, and 16.
+ * Exclusively engineered for Android 13, 14, 15, and 16 (API 33-36).
  */
 public class ShizukuPermissionEnforcer {
 

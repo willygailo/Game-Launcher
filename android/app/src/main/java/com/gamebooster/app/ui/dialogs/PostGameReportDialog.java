@@ -164,26 +164,16 @@ public class PostGameReportDialog {
 
             String fileName = "GameReport_" + System.currentTimeMillis() + ".png";
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-                values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/GameLauncherPro");
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/GameLauncherPro");
 
-                Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                if (uri != null) {
-                    try (OutputStream out = context.getContentResolver().openOutputStream(uri)) {
-                        if (out != null) bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                        return uri;
-                    }
-                }
-            } else {
-                File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "GameLauncherPro");
-                if (!dir.exists()) dir.mkdirs();
-                File file = new File(dir, fileName);
-                try (FileOutputStream fos = new FileOutputStream(file)) {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                    return Uri.fromFile(file);
+            Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try (OutputStream out = context.getContentResolver().openOutputStream(uri)) {
+                    if (out != null) bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    return uri;
                 }
             }
         } catch (Exception e) {

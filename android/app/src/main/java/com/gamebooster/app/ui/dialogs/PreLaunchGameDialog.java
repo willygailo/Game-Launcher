@@ -206,11 +206,9 @@ public class PreLaunchGameDialog {
 
         try {
             Display display = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                try {
-                    display = context.getDisplay();
-                } catch (Throwable ignored) {}
-            }
+            try {
+                display = context.getDisplay();
+            } catch (Throwable ignored) {}
             if (display == null) {
                 if (context instanceof Activity) {
                     display = ((Activity) context).getWindowManager().getDefaultDisplay();

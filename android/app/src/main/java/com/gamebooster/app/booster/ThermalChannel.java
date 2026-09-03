@@ -45,7 +45,7 @@ public class ThermalChannel {
         batchCommands.add("cmd thermal override-status " + status);
 
         if (bypass) {
-            // Android 11+ PowerHAL Fixed Performance Mode (Sustained Clocks)
+            // Android 13-16 PowerHAL Fixed Performance Mode (Sustained Clocks)
             batchCommands.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
         } else {
             batchCommands.add("cmd power set-fixed-performance-mode-enabled false 2>/dev/null");

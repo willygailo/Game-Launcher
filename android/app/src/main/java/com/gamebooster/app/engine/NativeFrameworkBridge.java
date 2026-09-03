@@ -21,8 +21,7 @@ import android.view.WindowManager;
 /**
  * NativeFrameworkBridge — Tier 2 Android OS Native Framework API Wrapper.
  *
- * Directly interfaces with official Android SDK and modern OS APIs:
- * - Android 12 (API 31/32): GameManager Performance Mode & ADPF PerformanceHintManager
+ * Directly interfaces with official Android SDK and modern OS APIs (Android 13 to 16):
  * - Android 13 (API 33): Granular notification, Scoped Storage & Game State hooks
  * - Android 14 (API 34): WorkDuration reporting & low-jitter window constraints
  * - Android 15 (API 35): Predictive thermal headroom forecasting & dynamic ADPF scaling
@@ -40,7 +39,7 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Enforces native Android GameManager Performance Mode (API 31+ / Android 12+).
+     * Enforces native Android GameManager Performance Mode (Android 13 to 16 / API 33-36).
      * Uses official reflection on Context.GAME_SERVICE to invoke setGameMode(packageName, GAME_MODE_PERFORMANCE).
      */
     @SuppressLint("WrongConstant")
@@ -124,14 +123,14 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Starts an ADPF (Android Dynamic Performance Framework) session for target FPS (Android 12+ / API 31-36).
+     * Starts an ADPF (Android Dynamic Performance Framework) session for target FPS (Android 13-16 / API 33-36).
      */
     public static boolean startAdpfSession(Context context, int targetFps) {
         return AdpfPerformanceEngine.getInstance().startSession(context, targetFps);
     }
 
     /**
-     * Reports frame work duration to Android PowerHAL (Android 12+ / API 31-36).
+     * Reports frame work duration to Android PowerHAL (Android 13-16 / API 33-36).
      */
     public static void reportFrameDuration(long actualDurationNanos) {
         AdpfPerformanceEngine.getInstance().reportActualWorkDuration(actualDurationNanos);
@@ -180,7 +179,7 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Obtains predictive thermal headroom forecast (Android 15+ / API 35+ & Android 11+).
+     * Obtains predictive thermal headroom forecast (Android 15+ / API 35+).
      */
     public static float getPredictiveThermalHeadroom(Context context, int forecastSeconds) {
         return AdpfPerformanceEngine.getThermalHeadroom(context, forecastSeconds);
@@ -339,7 +338,7 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Applies Window optimizations: preferred refresh rate, hardware acceleration, wide gamut (Android 11+ / API 30+).
+     * Applies Window optimizations: preferred refresh rate, hardware acceleration, wide gamut (Android 13-16 / API 33-36).
      */
     public static void applyWindowOptimizations(Window window) {
         if (window == null) return;
@@ -351,7 +350,7 @@ public class NativeFrameworkBridge {
     }
 
     /**
-     * Sets preferred refresh rate directly on the Window (Android 11+ / API 30-36).
+     * Sets preferred refresh rate directly on the Window (Android 13-16 / API 33-36).
      */
     public static void setPreferredRefreshRate(Window window, float targetHz) {
         if (window == null || targetHz <= 0) return;

@@ -11,8 +11,7 @@ import java.lang.reflect.Method;
 /**
  * AdpfPerformanceEngine — Android Dynamic Performance Framework (ADPF) Bridge.
  *
- * Dedicated performance engine for modern Android versions:
- * - Android 12 (API 31/32): PerformanceHintManager & Hint Sessions (Direct PowerHAL & CPU governor hints)
+ * Dedicated performance engine for modern Android versions (Android 13 to 16):
  * - Android 13 (API 33): Dynamic Hint Session management & Process thread tracking
  * - Android 14 (API 34): WorkDuration reporting & CPU/GPU timeline synchronization
  * - Android 15 (API 35): Predictive Thermal Headroom forecasting & dynamic target duration updates
@@ -39,7 +38,7 @@ public class AdpfPerformanceEngine {
     }
 
     /**
-     * Checks if ADPF is supported on this Android device (Android 12+ / API 31+).
+     * Checks if ADPF is supported on this Android device (Android 13+ / API 33+).
      */
     public boolean isSupported(Context context) {
         ensureInitialized(context);
@@ -133,12 +132,12 @@ public class AdpfPerformanceEngine {
             } catch (Throwable ignored) {}
         }
 
-        // Fallback for Android 12-14: recreate session
+        // Fallback for Android 13-14: recreate session
         startSession(context, newFps);
     }
 
     /**
-     * Obtains predictive thermal headroom forecast (Android 15+ / API 35+ & Android 11+).
+     * Obtains predictive thermal headroom forecast (Android 15+ / API 35+).
      * @param forecastSeconds number of seconds into the future (e.g. 0 for now, 5-10 for future)
      * @return 0.0 (cold) to 1.0 (throttling threshold), or Float.NaN if unsupported
      */

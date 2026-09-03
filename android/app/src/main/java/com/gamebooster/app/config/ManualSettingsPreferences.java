@@ -238,7 +238,7 @@ public class ManualSettingsPreferences {
         String cleanPkg = packageName != null ? packageName.trim() : null;
 
         try {
-            // 1. Android Game Mode API & Per-App Refresh Rate (Official Android 11/12/13/14/15/16)
+            // 1. Android Game Mode API & Per-App Refresh Rate (Official Android 13/14/15/16)
             if (cleanPkg != null) {
                 executeCmd("cmd game mode performance " + cleanPkg);
                 executeCmd("cmd game set --fps 185 " + cleanPkg);

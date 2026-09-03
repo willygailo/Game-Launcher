@@ -57,4 +57,18 @@ public class GameModeApiSupportTest {
         assertTrue(GameModeApiSupport.isAvailable(35));
         assertTrue(GameModeApiSupport.isAvailable(36));
     }
+
+    @Test
+    public void testSupportedAndroidVersions() {
+        // Android 11 & 12 are explicitly NOT supported
+        assertFalse(GameModeApiSupport.isSupportedAndroidVersion(30)); // Android 11
+        assertFalse(GameModeApiSupport.isSupportedAndroidVersion(31)); // Android 12
+        assertFalse(GameModeApiSupport.isSupportedAndroidVersion(32)); // Android 12L
+
+        // Android 13 to 16 are strictly supported
+        assertTrue(GameModeApiSupport.isSupportedAndroidVersion(33)); // Android 13
+        assertTrue(GameModeApiSupport.isSupportedAndroidVersion(34)); // Android 14
+        assertTrue(GameModeApiSupport.isSupportedAndroidVersion(35)); // Android 15
+        assertTrue(GameModeApiSupport.isSupportedAndroidVersion(36)); // Android 16
+    }
 }

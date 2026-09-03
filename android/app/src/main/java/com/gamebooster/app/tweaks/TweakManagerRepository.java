@@ -243,7 +243,7 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "android_13_16_deviceconfig_interventions",
                 "Android 13-16 DeviceConfig Game Interventions & Phantom Killer Bypass",
-                "Locks DeviceConfig sync to persistent, enables runtime startup caches, and disables Android 12-16 phantom process killer",
+                "Locks DeviceConfig sync to persistent, enables runtime startup caches, and disables Android 13-16 phantom process killer",
                 "cmd device_config set_sync_disabled_for_tests persistent; device_config put runtime_native_boot use_app_image_startup_cache true; device_config put runtime_native_boot pin_app_image_startup_cache true; device_config put runtime_native_boot boost_sched_priority true; device_config put activity_manager max_phantom_processes 2147483647; settings put global settings_enable_monitor_phantom_procs false; settings put global cached_apps_freezer enabled",
                 "cmd device_config set_sync_disabled_for_tests none; settings put global settings_enable_monitor_phantom_procs true",
                 TweakCategory.SHIZUKU_SYSTEM,

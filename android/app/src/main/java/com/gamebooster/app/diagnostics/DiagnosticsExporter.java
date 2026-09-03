@@ -466,9 +466,8 @@ public final class DiagnosticsExporter {
         lines.add("");
 
         // 15. Android API Gates
-        lines.add("--- [15. ANDROID API GATES (API 31-36)] ---");
-        lines.add("Android 12 GameManager API (API 31+): " + (sdkInt >= 31 ? "✅ OPEN" : "❌ LOCKED"));
-        lines.add("Android 12 ADPF PerformanceHintManager (API 31+): " + (sdkInt >= 31 ? "✅ OPEN" : "❌ LOCKED"));
+        lines.add("--- [15. ANDROID API GATES (API 33-36: Android 13-16 Exclusive)] ---");
+        lines.add("Android 13 Base Platform SDK (API 33+): " + (sdkInt >= 33 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 13 GameOverlay API (API 33+): " + (sdkInt >= 33 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 14 FPS/Refresh Override (API 34+): " + (sdkInt >= 34 ? "✅ OPEN" : "❌ LOCKED"));
         lines.add("Android 15 Fixed Clocks Power Mode (API 35+): " + (sdkInt >= 35 ? "✅ OPEN" : "❌ LOCKED"));

@@ -122,7 +122,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
-    <!-- Package Visibility Queries for Android 11+ (Target SDK 30-36) -->
+    <!-- Package Visibility Queries for Android 13-16 (Target SDK 33-36) -->
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />

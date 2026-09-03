@@ -15,7 +15,13 @@ public final class GameModeApiSupport {
 
     private static final String TAG = "GameModeApiSupport";
 
-    /** GameManager service (games framework) — Android 12. */
+    /** Minimum strictly supported Android SDK: Android 13 (API 33 Tiramisu). */
+    public static final int MIN_SUPPORTED_SDK = 33;
+
+    /** Maximum supported Android SDK: Android 16 (API 36 Baklava). */
+    public static final int MAX_SUPPORTED_SDK = 36;
+
+    /** GameManager service (games framework) — Android 12+. */
     public static final int MIN_GAME_MODE_API = 31;
 
     /** `device_config put game_overlay` namespace — Android 13. */
@@ -29,6 +35,16 @@ public final class GameModeApiSupport {
 
     /** Android 16 (Baklava) API 36+. */
     public static final int ANDROID_16_API = 36;
+
+    /** Checks whether the provided SDK level is strictly within the supported Android 13-16 range. */
+    public static boolean isSupportedAndroidVersion(int sdk) {
+        return sdk >= MIN_SUPPORTED_SDK && sdk <= MAX_SUPPORTED_SDK;
+    }
+
+    /** Checks whether the running device is strictly within Android 13-16. */
+    public static boolean isCurrentDeviceSupported() {
+        return isSupportedAndroidVersion(Build.VERSION.SDK_INT);
+    }
 
     private GameModeApiSupport() {
     }
@@ -112,7 +128,7 @@ public final class GameModeApiSupport {
         int fps = targetFps > 0 ? targetFps : 185;
         java.util.List<String> commands = new java.util.ArrayList<>();
 
-        // 1. Android 11-16 Power & Fixed Performance Clocks
+        // 1. Android 13-16 Power & Fixed Performance Clocks
         commands.add("cmd power set-fixed-performance-mode-enabled true");
         commands.add("cmd power set-mode 0 1");
         commands.add("cmd power set-mode 2 1");
@@ -153,7 +169,7 @@ public final class GameModeApiSupport {
         commands.add("device_config put runtime_native_boot pin_app_image_startup_cache true");
         commands.add("device_config put runtime_native_boot boost_sched_priority true");
 
-        // 6. Android 12-16 Phantom Process Killer & Background Freezer Bypass
+        // 6. Android 13-16 Phantom Process Killer & Background Freezer Bypass
         commands.add("device_config put activity_manager max_phantom_processes 2147483647");
         commands.add("settings put global settings_enable_monitor_phantom_procs false");
         commands.add("settings put global cached_apps_freezer enabled");
@@ -202,7 +218,7 @@ public final class GameModeApiSupport {
             com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(cmd);
         }
 
-        // Second pass: apply SDK-gated commands (Android 12-16) on top of the base set
+        // Second pass: apply SDK-gated commands (Android 13-16) on top of the base set
         applyForCurrentSdk(packageName, fps);
     }
 

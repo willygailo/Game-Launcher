@@ -87,7 +87,7 @@ public class HzFpsChannel {
         int hzInt = targetHz;
         boolean ok = true;
 
-        // Stock AOSP / Pixel Standard settings (Android 11+) & Dynamic Refresh Defeat
+        // Stock AOSP / Pixel Standard settings (Android 13-16) & Dynamic Refresh Defeat
         ok &= CommandExecutor.setSystemSetting("system", "peak_refresh_rate", hzFloatStr);
         ok &= CommandExecutor.setSystemSetting("system", "min_refresh_rate", hzFloatStr);
         ok &= CommandExecutor.setSystemSetting("system", "user_refresh_rate", hzStr);
