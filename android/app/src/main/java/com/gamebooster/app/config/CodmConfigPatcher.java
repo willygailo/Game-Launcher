@@ -334,8 +334,29 @@ public class CodmConfigPatcher {
     }
 
     /**
+     * Dedicated unlocker for 165 FPS and Ultra HDR Graphics for Call of Duty Mobile.
+     */
+    public static boolean apply165FpsGraphicsUnlock(String packageName) {
+        if (packageName == null) return false;
+        final int targetFps = 165;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodm165FpsGraphics(path, targetFps, 4)) {
+                written++;
+            } else if (applyPatch(path, targetFps)) {
+                written++;
+            }
+        }
+        patchUltraExtreme165(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CODM 165 FPS & Ultra Graphics unlocked across " + written + " paths for " + packageName);
+        return written > 0;
+    }
+
+    /**
      * Injects 165 FPS and Ultra Graphics presets for CODM.
-     * Targets 165Hz displays (Asus ROG, Red Magic, Black Shark).
+     * Targets 165Hz displays (Asus ROG, Red Magic, Black Shark, etc.).
      */
     public static boolean patchUltraExtreme165(String packageName) {
         if (packageName == null) return false;
@@ -343,8 +364,60 @@ public class CodmConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
+            // First attempt high-speed native C++ injection
+            if (NativeConfigInjector.injectCodm165FpsGraphics(path, 165, 4)) {
+                written++;
+                continue;
+            }
+
             String content;
-            if (path.endsWith(".json")) {
+            if (path.contains("HardwareProfile.json")) {
+                content = "{\n"
+                    + "  \"DeviceModel\": \"SM-S948B\",\n"
+                    + "  \"DeviceBrand\": \"samsung\",\n"
+                    + "  \"Manufacturer\": \"samsung\",\n"
+                    + "  \"AndroidID\": \"7e5c8a196d8e7a4f\",\n"
+                    + "  \"SerialNumber\": \"R58MFB94F1A\",\n"
+                    + "  \"OAID\": \"bc9f2fa5-486f-33fe-8119-27e22ca088af\",\n"
+                    + "  \"MacAddress\": \"00:16:32:05:91:AD\",\n"
+                    + "  \"GPURenderer\": \"Adreno (TM) 840\",\n"
+                    + "  \"GPUVendor\": \"Qualcomm\",\n"
+                    + "  \"SoCModel\": \"SM8850-AB\",\n"
+                    + "  \"SoCManufacturer\": \"Qualcomm\",\n"
+                    + "  \"CPUCores\": 8,\n"
+                    + "  \"RAMTotalMB\": 16384,\n"
+                    + "  \"MaxFrameRate\": 165,\n"
+                    + "  \"TargetFPS\": 165,\n"
+                    + "  \"FPSLimit\": 165,\n"
+                    + "  \"FrameRateLimit\": 165,\n"
+                    + "  \"MobileFPSLimit\": 165,\n"
+                    + "  \"FrameRateLevel\": 9,\n"
+                    + "  \"GraphicQuality\": 4,\n"
+                    + "  \"UnlockUltraHighFPS\": true,\n"
+                    + "  \"Unlock185Hz\": true,\n"
+                    + "  \"Unlock165Hz\": true,\n"
+                    + "  \"Unlock144Hz\": true,\n"
+                    + "  \"Unlock120Hz\": true,\n"
+                    + "  \"VulkanSupport\": true\n"
+                    + "}\n";
+            } else if (path.contains("ControlsSettings.ini")) {
+                String[] controlKeys = {
+                    "TouchBoostHz=165",
+                    "TouchPollingRate=1000",
+                    "TouchZeroDelay=1",
+                    "GyroSampleRate=1000",
+                    "GyroSensitivityRatio=2.5",
+                    "GyroZeroDelay=1",
+                    "GyroSmoothFactor=1",
+                    "GyroStabilization=1",
+                    "JoystickZeroDeadzone=1",
+                    "JoystickResponseLevel=3"
+                };
+                if (ConfigFileHelper.patchKeys(path, controlKeys, "[TouchEngine]")) {
+                    written++;
+                }
+                continue;
+            } else if (path.endsWith(".json")) {
                 content = "{\n"
                     + "  \"MaxFrameRate\": 165,\n"
                     + "  \"TargetFPS\": 165,\n"
@@ -403,6 +476,7 @@ public class CodmConfigPatcher {
                     + "  <int name=\"FPSLimit\" value=\"165\" />\n"
                     + "  <int name=\"FrameRateLimit\" value=\"165\" />\n"
                     + "  <int name=\"MobileFPSLimit\" value=\"165\" />\n"
+                    + "  <int name=\"FrameRateLevel\" value=\"9\" />\n"
                     + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
                     + "  <int name=\"TextureQuality\" value=\"4\" />\n"
                     + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
@@ -440,16 +514,6 @@ public class CodmConfigPatcher {
                     + "FrameRateLimit=165\n"
                     + "MobileFPSLimit=165\n"
                     + "FrameRateLevel=9\n"
-                    + "UnlockFPS=1\n"
-                    + "Unlock165FPS=1\n"
-                    + "Ultra165FPS=1\n"
-                    + "HighFPSMode=3\n"
-                    + "Unlock90Hz=1\n"
-                    + "Unlock120Hz=1\n"
-                    + "Unlock144Hz=1\n"
-                    + "Unlock165Hz=1\n"
-                    + "Unlock185Hz=1\n"
-                    + "Unlock240Hz=1\n"
                     + "GraphicQuality=4\n"
                     + "TextureQuality=4\n"
                     + "ShadowQuality=2\n"
@@ -473,6 +537,18 @@ public class CodmConfigPatcher {
                     + "bUseUltraExtreme=True\n"
                     + "bFramePacingEnabled=True\n"
                     + "Vsync=0\n"
+                    + "UnlockFPS=1\n"
+                    + "HighFPSMode=3\n"
+                    + "Unlock90Hz=1\n"
+                    + "Unlock120Hz=1\n"
+                    + "Unlock144Hz=1\n"
+                    + "Unlock165Hz=1\n"
+                    + "Unlock185Hz=1\n"
+                    + "Unlock240Hz=1\n"
+                    + "Unlock144FPS=1\n"
+                    + "Unlock165FPS=1\n"
+                    + "Ultra144FPS=1\n"
+                    + "Ultra165FPS=1\n"
                     + "TouchBoostHz=165\n"
                     + "TouchPollingRate=1000\n"
                     + "TouchZeroDelay=1\n"
@@ -819,24 +895,108 @@ public class CodmConfigPatcher {
     }
 
     private static boolean applyPatch(String path, int targetFps) {
+        if (path == null || path.trim().isEmpty()) return false;
+        int level = FpsUnlockTier.getCodmFrameRateLevel(targetFps);
+        if (targetFps >= 165) level = 9;
+
+        if (path.contains("HardwareProfile.json")) {
+            String[] hwKeys = {
+                "DeviceModel=SM-S948B",
+                "DeviceBrand=samsung",
+                "Manufacturer=samsung",
+                "AndroidID=7e5c8a196d8e7a4f",
+                "SerialNumber=R58MFB94F1A",
+                "OAID=bc9f2fa5-486f-33fe-8119-27e22ca088af",
+                "MacAddress=00:16:32:05:91:AD",
+                "GPURenderer=Adreno (TM) 840",
+                "GPUVendor=Qualcomm",
+                "SoCModel=SM8850-AB",
+                "SoCManufacturer=Qualcomm",
+                "CPUCores=8",
+                "RAMTotalMB=16384",
+                "MaxFrameRate=" + targetFps,
+                "TargetFPS=" + targetFps,
+                "FPSLimit=" + targetFps,
+                "FrameRateLimit=" + targetFps,
+                "MobileFPSLimit=" + targetFps,
+                "FrameRateLevel=" + level,
+                "GraphicQuality=4",
+                "UnlockUltraHighFPS=true",
+                "Unlock185Hz=true",
+                "Unlock165Hz=true",
+                "Unlock144Hz=true",
+                "Unlock120Hz=true",
+                "VulkanSupport=true"
+            };
+            return ConfigFileHelper.patchKeys(path, hwKeys, "{}");
+        }
+
+        if (path.contains("ControlsSettings.ini")) {
+            String[] controlKeys = {
+                "TouchBoostHz=" + targetFps,
+                "TouchPollingRate=1000",
+                "TouchZeroDelay=1",
+                "GyroSampleRate=1000",
+                "GyroSensitivityRatio=2.5",
+                "GyroZeroDelay=1",
+                "GyroSmoothFactor=1",
+                "GyroStabilization=1",
+                "JoystickZeroDeadzone=1",
+                "JoystickResponseLevel=3",
+                "ZeroInputLag=1"
+            };
+            return ConfigFileHelper.patchKeys(path, controlKeys, "[TouchEngine]");
+        }
+
         String[] keys = {
             "MaxFrameRate=" + targetFps,
             "TargetFPS=" + targetFps,
             "FPSLimit=" + targetFps,
             "FrameRateLimit=" + targetFps,
             "MobileFPSLimit=" + targetFps,
+            "FrameRateLevel=" + level,
             "GraphicQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=2",
+            "ShadowResolution=2048",
+            "AntiAliasingQuality=4",
+            "BloomQuality=5",
+            "MaxAnisotropy=16",
             "HDRMode=1",
+            "HDR10Plus=1",
             "HDRColorMode=2",
+            "UltraHDMode=1",
+            "SuperResolution=1",
+            "ResolutionScale=120",
+            "UltraExtreme=1",
+            "bUseUltraExtreme=True",
+            "bFramePacingEnabled=True",
+            "Vsync=0",
+            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
             "Unlock185Hz=1",
-            "SuperResolution=1",
+            "Unlock240Hz=1",
+            "Unlock144FPS=1",
+            "Unlock165FPS=1",
+            "Unlock185FPS=1",
+            "Ultra144FPS=1",
+            "Ultra165FPS=1",
+            "HighFPSMode=3",
             "TouchBoostHz=" + targetFps,
-            "PreloadShaders=1"
+            "TouchPollingRate=1000",
+            "TouchZeroDelay=1",
+            "GyroSampleRate=1000",
+            "GyroSensitivityRatio=2.5",
+            "PreloadShaders=1",
+            "VulkanPipelineCache=1",
+            "AsyncCompute=1",
+            "VRS=1",
+            "AllowOcclusionQueries=1"
         };
-        return ConfigFileHelper.patchKeys(path, keys, "[Graphics]");
+        String section = path.endsWith(".xml") ? "<map>" : (path.endsWith(".json") ? "{}" : "[Graphics]");
+        return ConfigFileHelper.patchKeys(path, keys, section);
     }
 
     // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────

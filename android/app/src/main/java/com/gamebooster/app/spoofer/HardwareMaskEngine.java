@@ -3,6 +3,7 @@ package com.gamebooster.app.spoofer;
 import android.content.Context;
 import android.util.Log;
 import com.gamebooster.app.booster.GpuTweaksChannel;
+import com.gamebooster.app.config.ConfigFileHelper;
 import com.gamebooster.app.config.GameConfigPathResolver;
 import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -381,15 +382,44 @@ public class HardwareMaskEngine {
             pkg.contains("uamo") || pkg.contains("farlight") || pkg.contains("solarland") ||
             pkg.contains("projectc") || pkg.contains("valorant")) {
 
-            String ue4Profile = profile.generateUe4DeviceProfile(targetFps);
+            String[] profileKeys = {
+                "DeviceName=" + profile.model,
+                "DeviceBrand=" + profile.brand,
+                "DeviceManufacturer=" + profile.manufacturer,
+                "DeviceID=" + profile.getAndroidId(),
+                "DeviceSerialNumber=" + profile.getSerialNumber(),
+                "GPUFamily=" + profile.glRenderer,
+                "SoCModel=" + profile.socModel,
+                "RAMTotalMB=" + profile.ramTotalMb,
+                "+CVars=r.PUBGDeviceFPS=10",
+                "+CVars=r.PUBGDeviceFPSPolicy=1",
+                "+CVars=r.PUBGTargetFPS=" + targetFps,
+                "+CVars=r.PUBGMaxFPS=" + targetFps,
+                "+CVars=r.MobileFPSLimit=" + targetFps,
+                "+CVars=r.FrameRateLimit=" + targetFps,
+                "+CVars=r.MobileTouchBoostRate=" + targetFps,
+                "+CVars=r.MobileHDR=1",
+                "+CVars=r.Vulkan.Enable=1",
+                "+CVars=r.ShadowQuality=3",
+                "+CVars=r.MaxAnisotropy=16",
+                "+CVars=r.Tonemapper.Quality=4",
+                "+CVars=r.Streaming.PoolSize=4096",
+                "+CVars=r.Android.DisableProgramBinaryCache=0",
+                "FrameRateLevel=10",
+                "Unlock185Hz=1",
+                "Unlock165Hz=1",
+                "Unlock144Hz=1",
+                "Unlock120FPS=1"
+            };
+
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.endsWith("DeviceProfile.ini") || p.contains("Saved/Config/Android")) {
-                    String targetPath = p.endsWith(".ini") ? p : (p + "/DeviceProfile.ini");
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(targetPath, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
-                        ShizukuFileManager.ensureParentDirectory(targetPath);
-                        ShizukuFileManager.writeFile(targetPath, ue4Profile, "666");
-                    }
+                if (p.endsWith("UserCustom.ini")) {
+                    ConfigFileHelper.patchKeys(p, profileKeys, "[UserCustom DeviceProfile]");
+                } else if (p.endsWith("EnjoyCJZC.ini") || p.endsWith("EnjoyCJ.ini") || p.endsWith("BGMIEnjoyCJZC.ini") || p.endsWith("KREnjoyCJZC.ini")) {
+                    ConfigFileHelper.patchKeys(p, profileKeys, "[EnjoyCJZC DeviceProfile]");
+                } else if (p.endsWith("DeviceProfile.ini")) {
+                    ConfigFileHelper.patchKeys(p, profileKeys, "[DeviceProfile]");
                 }
             }
         }
@@ -400,7 +430,7 @@ public class HardwareMaskEngine {
             String jsonProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("HardwareProfile.json") || p.endsWith(".json")) {
+                if (p.contains("HardwareProfile.json")) {
                     if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, jsonProfile, "666");

@@ -239,6 +239,7 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmFastLoadAsyncStreaming(String path);
     public static native boolean nativeInjectCodmFastLoadShaderBypass(String path);
     public static native boolean nativeInjectUniversalFastLoadTurbo(String path);
+    public static native boolean nativeInjectCodm165FpsGraphics(String path, int targetFps, int qualityLevel);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -1913,6 +1914,17 @@ public class NativeConfigInjector {
             "MultiThreadedAssetLoading=1"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[UniversalFastLoad]");
+    }
+
+    public static boolean injectCodm165FpsGraphics(String path, int targetFps, int qualityLevel) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodm165FpsGraphics(path, targetFps, qualityLevel)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

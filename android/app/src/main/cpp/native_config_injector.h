@@ -830,6 +830,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalFastLoadTurbo
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectCodm165FpsGraphics
+ * CODM — 165 FPS frame rate & Ultra HDR graphics native injection:
+ * Patches MaxFrameRate, TargetFPS, FrameRateLimit, MobileFPSLimit, FrameRateLevel=9,
+ * GraphicQuality=4, TextureQuality=4, HDRMode, Unlock165Hz, Unlock165FPS, Ultra165FPS.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodm165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

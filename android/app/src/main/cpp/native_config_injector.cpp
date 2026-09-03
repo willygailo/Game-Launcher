@@ -4880,6 +4880,28 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     } else if (path.find(".json") != std::string::npos) {
         std::ostringstream ss;
         ss << "{\n"
+           << "  \"DeviceModel\": \"" << soc << "\",\n"
+           << "  \"DeviceBrand\": \"samsung\",\n"
+           << "  \"Manufacturer\": \"samsung\",\n"
+           << "  \"GPURenderer\": \"" << gpu << "\",\n"
+           << "  \"GPUVendor\": \"Qualcomm\",\n"
+           << "  \"SoCModel\": \"" << soc << "\",\n"
+           << "  \"SoCManufacturer\": \"Qualcomm\",\n"
+           << "  \"CPUCores\": 8,\n"
+           << "  \"RAMTotalMB\": " << ram << ",\n"
+           << "  \"MaxFrameRate\": " << hz << ",\n"
+           << "  \"TargetFPS\": " << hz << ",\n"
+           << "  \"FPSLimit\": " << hz << ",\n"
+           << "  \"FrameRateLimit\": " << hz << ",\n"
+           << "  \"MobileFPSLimit\": " << hz << ",\n"
+           << "  \"FrameRateLevel\": 9,\n"
+           << "  \"GraphicQuality\": 4,\n"
+           << "  \"UnlockUltraHighFPS\": true,\n"
+           << "  \"Unlock185Hz\": true,\n"
+           << "  \"Unlock165Hz\": true,\n"
+           << "  \"Unlock144Hz\": true,\n"
+           << "  \"Unlock120Hz\": true,\n"
+           << "  \"VulkanSupport\": true,\n"
            << "  \"gpu_renderer\": \"" << gpu << "\",\n"
            << "  \"gpu_vendor\": \"Qualcomm\",\n"
            << "  \"soc_model\": \"" << soc << "\",\n"
@@ -5537,6 +5559,100 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalFastLo
     if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("UniversalFastLoadTurbo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// CODM: 165 FPS & Ultra Graphics Native Injector
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodm165FpsGraphics
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps, jint qualityLevel) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    int fps = (targetFps >= 120) ? targetFps : 165;
+    int q = (qualityLevel > 0) ? qualityLevel : 4;
+    std::string fpsStr = std::to_string(fps);
+    std::string qStr = std::to_string(q);
+
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isControlsIni = (pathStr.rfind("ControlsSettings.ini") != std::string::npos);
+    bool isHwJson = (pathStr.rfind("HardwareProfile.json") != std::string::npos);
+
+    if (isHwJson) {
+        std::vector<std::pair<std::string, std::string>> hwKeys = {
+            {"DeviceModel", "SM-S948B"}, {"DeviceBrand", "samsung"}, {"Manufacturer", "samsung"},
+            {"GPURenderer", "Adreno (TM) 840"}, {"GPUVendor", "Qualcomm"}, {"SoCModel", "SM8850-AB"},
+            {"SoCManufacturer", "Qualcomm"}, {"CPUCores", "8"}, {"RAMTotalMB", "16384"},
+            {"MaxFrameRate", fpsStr}, {"TargetFPS", fpsStr}, {"FPSLimit", fpsStr},
+            {"FrameRateLimit", fpsStr}, {"MobileFPSLimit", fpsStr}, {"FrameRateLevel", "9"},
+            {"GraphicQuality", qStr}, {"UnlockUltraHighFPS", "true"}, {"Unlock185Hz", "true"},
+            {"Unlock165Hz", "true"}, {"Unlock144Hz", "true"}, {"Unlock120Hz", "true"},
+            {"VulkanSupport", "true"}
+        };
+        for (const auto& kv : hwKeys) {
+            bool isNum = (kv.second == "true" || kv.second == "false" ||
+                          (kv.second.find_first_not_of("0123456789.") == std::string::npos));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        }
+    } else if (isControlsIni) {
+        std::vector<std::pair<std::string, std::string>> ctrlKeys = {
+            {"TouchBoostHz", fpsStr}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+            {"GyroSampleRate", "1000"}, {"GyroSensitivityRatio", "2.5"}, {"GyroZeroDelay", "1"},
+            {"GyroSmoothFactor", "1"}, {"GyroStabilization", "1"}, {"JoystickZeroDeadzone", "1"},
+            {"JoystickResponseLevel", "3"}, {"ZeroInputLag", "1"}
+        };
+        for (const auto& kv : ctrlKeys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    } else {
+        std::vector<std::pair<std::string, std::string>> keys = {
+            {"MaxFrameRate", fpsStr}, {"TargetFPS", fpsStr}, {"FPSLimit", fpsStr},
+            {"FrameRateLimit", fpsStr}, {"MobileFPSLimit", fpsStr}, {"FrameRateLevel", "9"},
+            {"GraphicQuality", qStr}, {"TextureQuality", qStr}, {"ShadowQuality", "2"},
+            {"ShadowResolution", "2048"}, {"AntiAliasingQuality", "4"}, {"BloomQuality", "5"},
+            {"MaxAnisotropy", "16"}, {"HDRMode", "1"}, {"HDR10Plus", "1"}, {"HDRColorMode", "2"},
+            {"UltraHDMode", "1"}, {"SuperResolution", "1"}, {"ResolutionScale", "120"},
+            {"UltraExtreme", "1"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
+            {"Vsync", "0"}, {"Unlock90Hz", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"},
+            {"Unlock165Hz", "1"}, {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"},
+            {"Unlock144FPS", "1"}, {"Unlock165FPS", "1"}, {"Unlock185FPS", "1"},
+            {"Ultra144FPS", "1"}, {"Ultra165FPS", "1"},
+            {"TouchBoostHz", fpsStr}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+            {"GyroSampleRate", "1000"}, {"PreloadShaders", "1"}, {"VulkanPipelineCache", "1"},
+            {"AsyncCompute", "1"}, {"VRS", "1"}, {"AllowOcclusionQueries", "1"}
+        };
+        for (const auto& kv : keys) {
+            if (isXml) {
+                std::string t = "int";
+                if (kv.second.find('.') != std::string::npos) t = "float";
+                else if (kv.second == "True" || kv.second == "False") t = "string";
+                patch_xml_node(content, t, kv.first, kv.second);
+            } else if (isJson) {
+                bool isNum = (kv.second == "True" || kv.second == "False" ||
+                              (kv.second.find_first_not_of("0123456789.") == std::string::npos));
+                patch_json_node(content, kv.first, kv.second, isNum);
+            } else {
+                patch_key_value(content, kv.first, kv.second);
+            }
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content, 0666);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("Codm165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
