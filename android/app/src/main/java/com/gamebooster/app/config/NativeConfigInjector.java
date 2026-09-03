@@ -242,6 +242,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodm165FpsGraphics(String path, int targetFps, int qualityLevel);
     public static native boolean nativeInjectMlbb165FpsGraphics(String path, int targetFps, int qualityLevel);
     public static native boolean nativeInjectPubgm165FpsGraphics(String path, int targetFps, int qualityLevel);
+    public static native boolean nativeInjectMlbbAllHeroOverdrive(String path);
+    public static native boolean nativeInjectMlbbFannyNoEnergyLimit(String path);
+    public static native boolean nativeInjectMlbbLingNoEnergyLimit(String path);
+    public static native boolean nativeInjectMlbbAllJungleFastFarmOverdrive(String path);
+    public static native boolean nativeInjectPubgmAllScopeTieredHeadshot(String path);
+    public static native boolean nativeInjectCodmAllScopeTieredHeadshot(String path);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -1946,6 +1952,72 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try {
                 if (nativeInjectPubgm165FpsGraphics(path, targetFps, qualityLevel)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbAllHeroOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbAllHeroOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbFannyNoEnergyLimit(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFannyNoEnergyLimit(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbLingNoEnergyLimit(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbLingNoEnergyLimit(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbAllJungleFastFarmOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbAllJungleFastFarmOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectPubgmAllScopeTieredHeadshot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmAllScopeTieredHeadshot(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectCodmAllScopeTieredHeadshot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmAllScopeTieredHeadshot(path)) return true;
             } catch (Throwable ignored) {}
         }
         return false;

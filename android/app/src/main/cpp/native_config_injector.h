@@ -861,6 +861,54 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics
   (JNIEnv *, jclass, jstring, jint, jint);
 
+/*
+ * nativeInjectMlbbAllHeroOverdrive
+ * MLBB — All-hero overdrive: 10000 base damage, 3.0 crit, zero skill cost, zero CDR, hero lock, 1000Hz touch & hit-reg
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFannyNoEnergyLimit
+ * MLBB — Fanny no-energy-limit: energy limit 999, no energy decay, free cables, zero cooldown, instant cable aim
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyNoEnergyLimit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbLingNoEnergyLimit
+ * MLBB — Ling no-energy-limit: energy limit 999, no decay, free wall energy, instant swords, instant tempest cast
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingNoEnergyLimit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbAllJungleFastFarmOverdrive
+ * MLBB — All jungle fast farm overdrive: 3x smite & clear speed, 3x buff duration & gold/exp rates, instant retribution
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllJungleFastFarmOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmAllScopeTieredHeadshot
+ * PUBGM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), zero recoil, bullet tracking & gyro stabilization
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAllScopeTieredHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmAllScopeTieredHeadshot
+ * CODM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), BSA removal, zero flinch, bullet tracking & gyro stabilization
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeTieredHeadshot
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

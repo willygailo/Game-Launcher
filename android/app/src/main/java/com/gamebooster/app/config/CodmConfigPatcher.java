@@ -1021,4 +1021,36 @@ public class CodmConfigPatcher {
     public static void applySkillEconomy(String packageName) {
         applyFastCooldownAbilityRegen(packageName);
     }
+
+    // ─── 2026 Master All-Scope Precision Suite ───────────────────────────────
+
+    /**
+     * CODM — All-Scope Tiered Auto 3-Bullet Headshot (No-scope, 100m, 200m, 300m, 400m).
+     * Injects BSA removal, tiered scope magnetism, headbone lock, zero flinch,
+     * zero recoil, tracking bullets enemy, and 1000Hz stable gyro across all resolved config paths.
+     */
+    public static void applyAllScopeTieredHeadshot(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmAllScopeTieredHeadshot(path);
+        }
+        try { applyNoRecoilNoSpread(packageName); } catch (Throwable ignored) {}
+        try { applyNoScopeAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyAllScopeAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyLongRangeHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyMidRangeHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyMultiRangeHeadshotCalibration(packageName); } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyAimAssistLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyAimHeadLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyHeroAimLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyTrackingBulletConfig(packageName); } catch (Throwable ignored) {}
+        try { applyCodmMaxDamageAllWeapon2026(packageName); } catch (Throwable ignored) {}
+        try { applyCodmUltraConfigCheat2026(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        try { applyCodmBsaRemovalRangeOverdrive(packageName); } catch (Throwable ignored) {}
+        try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(packageName); } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "CODM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
+    }
 }

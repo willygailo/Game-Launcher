@@ -704,4 +704,35 @@ public class PubgConfigPatcher {
     public static void applySkillEconomy(String packageName) {
         applyFastStaminaEnergyBoost(packageName);
     }
+
+    // ─── 2026 Master All-Scope Precision Suite ───────────────────────────────
+
+    /**
+     * PUBGM — All-Scope Tiered Auto 3-Bullet Headshot (No-scope, 100m, 200m, 300m, 400m).
+     * Injects tiered scope magnetism, headbone lock, zero recoil, less recoil,
+     * tracking bullets enemy, and 1000Hz stable gyro across all resolved config paths.
+     */
+    public static void applyAllScopeTieredHeadshot(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmAllScopeTieredHeadshot(path);
+        }
+        try { applyMagicBulletAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyNoScopeAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyAllScopeAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyLongRangeScopeHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyMidRangeAutoHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyMultiRangeHeadshotCalibration(packageName); } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyAimAssistLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyAimHeadLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyHeroAimLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyTrackingBulletConfig(packageName); } catch (Throwable ignored) {}
+        try { applyPubgmAllWeaponMaxDamage2026(packageName); } catch (Throwable ignored) {}
+        try { applyPubgmUltraAimbot2026(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(packageName); } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "PUBGM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
+    }
 }

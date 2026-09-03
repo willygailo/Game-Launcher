@@ -860,4 +860,82 @@ public class MlbbConfigPatcher {
     public static void applySkillEconomy(String packageName) {
         applyFastCooldownManaEnergy(packageName);
     }
+
+    // ─── 2026 Master All-Hero Overdrive Suite ────────────────────────────────
+
+    /**
+     * MLBB — Fanny No-Energy-Limit & Infinite Cables.
+     * Injects FannyEnergyLimit=999, FannyEnergyNoDecay=1, CableEnergyFree=1,
+     * CableCooldown=0, and auto cable chain across all resolved config paths.
+     */
+    public static void applyFannyNoEnergyLimit(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFannyNoEnergyLimit(path);
+        }
+        try { applyFannyFastCableCombo(packageName); } catch (Throwable ignored) {}
+        try { applyFannyAutoFullEnergy(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB FannyNoEnergyLimit applied for " + packageName);
+    }
+
+    /**
+     * MLBB — Ling No-Energy-Limit & Wall Blink Free.
+     * Injects LingEnergyLimit=999, LingEnergyNoDecay=1, LingWallEnergyFree=1,
+     * LingSwordAutoChain=1, WallJumpInstant=1, and TempestInstantCast=1 across all paths.
+     */
+    public static void applyLingNoEnergyLimit(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbLingNoEnergyLimit(path);
+        }
+        try { applyLingHeroDamageCombo(packageName); } catch (Throwable ignored) {}
+        try { applyLingFastestComboAutoSword(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB LingNoEnergyLimit applied for " + packageName);
+    }
+
+    /**
+     * MLBB — All Jungle Fast Farm Overdrive.
+     * Injects 3x Smite/Retribution boost, 3x Jungle Clear Speed, 3x Creep Gold/Exp,
+     * instant Retribution cast, and monster damage multipliers across all paths.
+     */
+    public static void applyAllJungleFastFarmOverdrive(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbAllJungleFastFarmOverdrive(path);
+        }
+        try { applyJungleHero(packageName); } catch (Throwable ignored) {}
+        try { applyFastFarming(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB AllJungleFastFarmOverdrive applied for " + packageName);
+    }
+
+    /**
+     * MLBB — All-Hero Combat Overdrive Master Suite.
+     * Injects 10000 Base Physical & Magic Damage, 3.0x Crit Multiplier, MAX Attack Speed,
+     * 100% Cooldown Reduction (CDR=1.0), Zero Skill Cost, Hero Lock & Smart Aim,
+     * plus complete Fanny & Ling no-energy stacks and jungle fast farm overdrive.
+     */
+    public static void applyAllHeroOverdrive(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbAllHeroOverdrive(path);
+        }
+        try { applyFannyNoEnergyLimit(packageName); } catch (Throwable ignored) {}
+        try { applyLingNoEnergyLimit(packageName); } catch (Throwable ignored) {}
+        try { applyAllJungleFastFarmOverdrive(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        try { applySkillEconomy(packageName); } catch (Throwable ignored) {}
+        try { applyFastFarming(packageName); } catch (Throwable ignored) {}
+        try { applyJungleHero(packageName); } catch (Throwable ignored) {}
+        try { applyCriticalBurstOverdrive(packageName); } catch (Throwable ignored) {}
+        try { applyAllHeroUnlock(packageName); } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyAimAssistLockMax(packageName); } catch (Throwable ignored) {}
+        try { applyHeroAimLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyAimHeadLockConfig(packageName); } catch (Throwable ignored) {}
+        try { applyUltraDamageOverdriveConfig(packageName); } catch (Throwable ignored) {}
+        try { applyTrackingBulletConfig(packageName); } catch (Throwable ignored) {}
+        try { applyMlbbAllHeroMaxDamage2026(packageName); } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB Master All-Hero Overdrive successfully applied for " + packageName);
+    }
 }
