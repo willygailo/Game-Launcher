@@ -632,7 +632,7 @@ public class HardwareMaskEngine {
                 batchCmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
-                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
 
                 // Inject hardware profile into app data dir
                 injectTailoredGameHardwareConfigs(pkg, profile);
@@ -691,7 +691,7 @@ public class HardwareMaskEngine {
 
     public static void maskForAndroid13(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
         cmds.add("cmd appops set " + pkg + " MANAGE_GAME_MODE allow 2>/dev/null");
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }

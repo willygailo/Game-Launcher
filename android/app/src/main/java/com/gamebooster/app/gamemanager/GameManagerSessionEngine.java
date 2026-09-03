@@ -101,12 +101,29 @@ public final class GameManagerSessionEngine {
         // ── 5. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
-        // ── 5b. Stealth In-Lobby Configuration & Overdrive Injection ──────────
+        // ── 5b. Direct Launch Configuration & Overdrive Injection to Target Paths ──
         try {
-            com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetFps);
-            Log.i(TAG, "🛡️ Scheduled in-lobby safe injection for " + pkg + " @ " + targetFps + " FPS (Anti-Detection Protected)");
+            com.gamebooster.app.config.LobbyInjectionEngine.setActiveGame(pkg, targetFps);
+            Log.i(TAG, "⚡ [Launch AutoInject] Direct configuration injection for " + pkg + " @ " + targetFps + " FPS...");
+
+            // 1. Direct FPS patches and format-aware configurations (sav, ini, json, xml)
+            GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
+            NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
+
+            // 2. Load competitive profile and apply tunings (aim assist, zero delay, graphics)
+            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
+            if (profile == null) {
+                profile = new CompetitiveCfgProfile(gameKey, targetFps, true, true);
+            }
+            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+
+            // 3. Dispatch full game-specific suite directly to true target paths (MLBB, PUBGM, CODM, etc.)
+            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg);
+
+            Log.i(TAG, "✅ [Launch AutoInject COMPLETE] Configs successfully injected to target paths for " + pkg);
         } catch (Throwable t) {
-            Log.w(TAG, "Lobby injection scheduling warning: " + t.getMessage());
+            Log.w(TAG, "Auto injection on launch note: " + t.getMessage());
         }
 
         // ── 6. Force High Hardware Display Refresh Rate ──────────────────────

@@ -82,7 +82,7 @@ public final class GameModeApiSupport {
                 "cmd game mode 2 " + pkg,
                 "cmd game set --fps 185 " + pkg,
                 "cmd window set-app-refresh-rate " + pkg + " 185",
-                "device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=true,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high"
+                "device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=false,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high"
         );
     }
 
@@ -185,7 +185,7 @@ public final class GameModeApiSupport {
             commands.add("cmd game set --fps " + fps + " " + pkg);
             commands.add("cmd window set-app-refresh-rate " + pkg + " " + fps);
             commands.add("cmd package compile -m speed -f " + pkg);
-            commands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
+            commands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=false,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
         } else {
             String targetCsv = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
             commands.add("settings put global game_driver_all_apps 0");
@@ -220,7 +220,7 @@ public final class GameModeApiSupport {
             cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
         }
         if (sdk >= MIN_GAME_OVERLAY_API && !pkg.isEmpty()) {
-            cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=true,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+            cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
         }
         if (sdk >= MIN_APP_REFRESH_RATE_API && !pkg.isEmpty()) {
             cmds.add("cmd game set --fps " + fps + " " + pkg + " 2>/dev/null");

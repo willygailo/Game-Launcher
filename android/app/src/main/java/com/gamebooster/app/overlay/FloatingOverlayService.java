@@ -43,7 +43,6 @@ import com.gamebooster.app.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.device.DisplayCapabilitiesDetector;
-import com.gamebooster.app.config.LobbyInjectionEngine;
 import com.gamebooster.app.gamespace.GameSpaceDndManager;
 
 import java.net.InetSocketAddress;
@@ -119,7 +118,6 @@ public class FloatingOverlayService extends Service {
     private Button btnHudDnd;
     private Button btnHudTouch;
     private Button btnHudNet;
-    private Button btnHudInjectLobby;
 
     // State Variables
     private static final int[] REFRESH_RATE_TIERS = {185};
@@ -313,8 +311,6 @@ public class FloatingOverlayService extends Service {
         btnHudDnd = overlayView.findViewById(R.id.btn_hud_dnd);
         btnHudTouch = overlayView.findViewById(R.id.btn_hud_touch);
         btnHudNet = overlayView.findViewById(R.id.btn_hud_net);
-        // Inject-in-lobby quick-action button (may be null if layout not updated yet; handled gracefully)
-        btnHudInjectLobby = overlayView.findViewById(R.id.btn_hud_inject_lobby);
     }
 
     private void setupActionButtons() {
@@ -448,73 +444,6 @@ public class FloatingOverlayService extends Service {
                         scheduleAutoCollapse();
                     });
                 });
-            });
-        }
-
-        // 7. ⚡ INJECT IN LOBBY — Stealth 2026 Overdrive Quick-Trigger
-        if (btnHudInjectLobby != null) {
-            btnHudInjectLobby.setOnClickListener(v -> {
-                performHaptic();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    // Dynamically detect which game is active on screen right now (MLBB, PUBGM, CODM, etc.)
-                    String detectedPkg = com.gamebooster.app.games.ForegroundGameDetector.detectActiveGame(getApplicationContext());
-                    if (detectedPkg == null || detectedPkg.trim().isEmpty()) {
-                        detectedPkg = LobbyInjectionEngine.getActiveGamePackage();
-                    }
-                    final String targetPkg = (detectedPkg != null && !detectedPkg.trim().isEmpty()) ? detectedPkg.trim() : null;
-
-                    if (targetPkg != null) {
-                        final String gameTitle = com.gamebooster.app.games.GamePackageRegistry.getGameTitle(targetPkg, getApplicationContext());
-                        LobbyInjectionEngine.triggerManualLobbyInject(getApplicationContext(), targetPkg);
-
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            if (btnHudInjectLobby != null) {
-                                btnHudInjectLobby.setTextColor(Color.parseColor("#00FF66"));
-                                btnHudInjectLobby.setText("⚡ " + gameTitle + " INJECTED");
-                            }
-                            if (tvHudProfileBadge != null) {
-                                tvHudProfileBadge.setText("⚡ ACTIVE: " + gameTitle + " • 185Hz/165Hz OVERDRIVE");
-                            }
-                            Toast.makeText(getApplicationContext(),
-                                    "🎮 Detected & Injected: " + gameTitle + " (165/185 FPS Active)",
-                                    Toast.LENGTH_SHORT).show();
-                            scheduleAutoCollapse();
-                        });
-                    } else {
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            Toast.makeText(getApplicationContext(),
-                                    "⚠️ No game detected in foreground! Please open MLBB, PUBGM, CODM, etc.",
-                                    Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                });
-            });
-
-            btnHudInjectLobby.setOnLongClickListener(v -> {
-                performHaptic();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String activePkg2 = com.gamebooster.app.games.ForegroundGameDetector.detectActiveGame(getApplicationContext());
-                    if (activePkg2 == null || activePkg2.trim().isEmpty()) {
-                        activePkg2 = LobbyInjectionEngine.getActiveGamePackage();
-                    }
-                    final String targetPkg2 = activePkg2;
-                    final String gameTitle2 = com.gamebooster.app.games.GamePackageRegistry.getGameTitle(targetPkg2, getApplicationContext());
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (targetPkg2 != null) {
-                            LobbyInjectionEngine.scheduleLobbyInjection(
-                                    getApplicationContext(), targetPkg2, 185, 18);
-                            Toast.makeText(getApplicationContext(),
-                                    "⏳ Auto-Injection re-scheduled for " + gameTitle2 + " in 18s",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "⚠️ Please open a game before scheduling auto-injection",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-                return true;
             });
         }
     }
