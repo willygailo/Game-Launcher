@@ -15,6 +15,13 @@ import java.util.List;
 public class MlbbConfigPatcher {
 
 
+    public static void applyFastLoadSplashBypass(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbFastLoadSplashBypass(path);
+        }
+    }
+
     public static void applyUltraDamageAllHero(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {

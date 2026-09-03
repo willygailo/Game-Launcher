@@ -153,6 +153,13 @@ public class CodmConfigPatcher {
         }
     }
 
+    public static void applyFastLoadShaderBypass(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmFastLoadShaderBypass(path);
+        }
+    }
+
     private static final String TAG = "CodmConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

@@ -216,4 +216,54 @@ public class ConfigPatcherTest {
         boolean postLocked = GameSecurityBypassEngine.postInjectionBypassAndLock("com.activision.callofduty.shooter");
         assertTrue(postLocked);
     }
+
+    @Test
+    public void testFastLoadAndSplashBypassPatching() {
+        // MLBB Fast-Load XML
+        String originalXml = "<map>\n    <int name=\"QualityType\" value=\"2\" />\n</map>";
+        String[] mlbbFastLoadKeys = new String[]{
+                "SkipOpenVideo=1",
+                "SkipSplashVideo=1",
+                "FastLoadAssets=1",
+                "HighQualityLoad=0",
+                "DragonResourceOptimize=1"
+        };
+        String patchedXml = ConfigFileHelper.patchXmlContent(originalXml, mlbbFastLoadKeys);
+        assertNotNull(patchedXml);
+        assertTrue(patchedXml.contains("SkipOpenVideo"));
+        assertTrue(patchedXml.contains("SkipSplashVideo"));
+        assertTrue(patchedXml.contains("FastLoadAssets"));
+        assertTrue(patchedXml.contains("HighQualityLoad"));
+        assertTrue(patchedXml.contains("DragonResourceOptimize"));
+
+        // PUBGM Async Streaming INI
+        String originalIni = "[UserCustom DeviceProfile]\n+CVars=r.PUBGDeviceFPSPolicy=185";
+        String[] pubgmFastLoadKeys = new String[]{
+                "s.AsyncLoadingThreadEnabled=True",
+                "s.AsyncLoadingTimeLimit=10.0",
+                "r.ShaderCompiler.CoreCount=8",
+                "bSkipSplash=True"
+        };
+        String patchedIni = ConfigFileHelper.patchIniContent(originalIni, pubgmFastLoadKeys, "[PubgmFastLoad]");
+        assertNotNull(patchedIni);
+        assertTrue(patchedIni.contains("s.AsyncLoadingThreadEnabled"));
+        assertTrue(patchedIni.contains("s.AsyncLoadingTimeLimit"));
+        assertTrue(patchedIni.contains("r.ShaderCompiler.CoreCount"));
+        assertTrue(patchedIni.contains("bSkipSplash"));
+
+        // CODM Fast-Load JSON
+        String originalJson = "{\"GraphicQuality\": 4}";
+        String[] codmFastLoadKeys = new String[]{
+                "FastLoad=1",
+                "SkipIntroMovie=1",
+                "ShaderPrewarmAtStartup=0",
+                "PreloadWeaponModels=0"
+        };
+        String patchedJson = ConfigFileHelper.patchJsonContent(originalJson, codmFastLoadKeys);
+        assertNotNull(patchedJson);
+        assertTrue(patchedJson.contains("FastLoad"));
+        assertTrue(patchedJson.contains("SkipIntroMovie"));
+        assertTrue(patchedJson.contains("ShaderPrewarmAtStartup"));
+        assertTrue(patchedJson.contains("PreloadWeaponModels"));
+    }
 }

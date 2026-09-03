@@ -765,12 +765,21 @@ public final class CommonConfigTuningInjector {
         applySkillEconomyMasterSuite(packageName);
         // 2026 Universal Combat Mechanics & True Damage Overdrive
         applyUniversalCombatMechanicsOverdrive(packageName);
+        // 2026 Universal Fast Loading & Splash Bypass Turbo
+        applyUniversalFastLoadTurbo(packageName);
     }
 
     public static void applyUniversalCombatMechanicsOverdrive(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return;
         for (String path : getPaths(packageName)) {
             NativeConfigInjector.injectUniversalCombatMechanicsOverdrive(path);
+        }
+    }
+
+    public static void applyUniversalFastLoadTurbo(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectUniversalFastLoadTurbo(path);
         }
     }
 }

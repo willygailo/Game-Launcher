@@ -131,8 +131,14 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2: INSTANT FOREGROUND DISPATCH (0ms Latency on UI Thread)
+        // STEP 2: INSTANT FOREGROUND DISPATCH & PRE-LAUNCH TURBO BURST
         // ═══════════════════════════════════════════════════════════
+        try {
+            com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
+        } catch (Throwable t) {
+            Log.w(TAG, "FastLoad burst trigger note for " + pkg + ": " + t.getMessage());
+        }
+
         boolean launchedDirectly = false;
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
@@ -274,6 +280,7 @@ public final class GameManagerLauncher {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
+                    com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);
                 } catch (Throwable t) {
                     Log.w(TAG, "Session engine begin warning: " + t.getMessage());
                 }

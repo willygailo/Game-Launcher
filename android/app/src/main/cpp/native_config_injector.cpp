@@ -1085,22 +1085,6 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
-  (JNIEnv *env, jclass, jstring jPath, jfloat cdrRatio) {
-    if (!jPath) return JNI_FALSE;
-    const char *path = env->GetStringUTFChars(jPath, nullptr);
-    std::string pathStr(path);
-    std::vector<std::pair<std::string, std::string>> keys = {
-        {"CooldownReduction", "1"}, {"SkillCDRatio", "0"}, {"UltCDReduction", "1"},
-        {"ItemCDReduction", "1"}, {"SkillInstantReset", "1"}, {"EnergyRegenBoost", "10"},
-        {"ManaRegenBoost", "10"}, {"FastCooldownMax", "1"}, {"ZeroInputLag", "1"},
-        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
-    };
-    bool ok = apply_keys_to_file(pathStr, path, keys, "FastCooldown");
-    env->ReleaseStringUTFChars(jPath, path);
-    return ok ? JNI_TRUE : JNI_FALSE;
-}
-
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectShield1500
   (JNIEnv *env, jclass, jstring jPath, jfloat shieldMult, jfloat defBoost) {
     if (!jPath) return JNI_FALSE;
@@ -4598,6 +4582,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         // PUBGM keys
         {"VehicleCooldown",        "0.0"},
         {"AdrenalineCooldown",     "0.0"},
+        // Legacy & general speed keys
+        {"CooldownReduction",      "1"},
+        {"SkillCDRatio",           "0"},
+        {"SkillInstantReset",      "1"},
+        {"FastCooldownMax",        "1"},
+        {"EnergyRegenBoost",       "10"},
+        {"ManaRegenBoost",         "10"},
+        {"ZeroInputLag",           "1"},
+        {"TouchPollingRate",       "1000"},
+        {"TouchZeroDelay",         "1"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "FastCooldown2026");
     env->ReleaseStringUTFChars(jPath, path);
@@ -5411,5 +5405,140 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     LOGI("UniversalCombatMechanicsOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSplashBypass(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"SkipOpenVideo", "1"}, {"SkipSplashVideo", "1"},
+        {"FastLoadAssets", "1"}, {"DragonResourceOptimize", "1"},
+        {"HighQualityLoad", "0"}, {"UIAsyncLoad", "1"},
+        {"AudioPreload", "0"}, {"AsyncShaderWarmup", "1"},
+        {"PreloadResources", "1"}, {"PreloadHeroes", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) {
+            patch_xml_node(content, "int", kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbFastLoadSplashBypass injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAsyncStreaming(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"s.AsyncLoadingThreadEnabled", "True"},
+        {"s.AsyncLoadingTimeLimit", "10.0"},
+        {"s.PriorityAsyncLoadingExtraTime", "20.0"},
+        {"r.TextureStreaming", "1"},
+        {"r.Streaming.PoolSize", "1024"},
+        {"r.Streaming.UseBackgroundThreadPool", "1"},
+        {"r.ShaderCompiler.CoreCount", "8"},
+        {"r.ShaderPipelineCache.StartupMode", "3"},
+        {"bSkipSplash", "True"},
+        {"bSkipMovie", "True"},
+        {"r.Streaming.HLODStrategy", "2"}
+    };
+    for (const auto& kv : keys) {
+        if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmFastLoadAsyncStreaming injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadShaderBypass(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"FastLoad", "1"}, {"SkipIntroMovie", "1"},
+        {"AsyncAssetLoading", "1"}, {"TextureStreamBufferSize", "512"},
+        {"MaxAsyncLoadingTasks", "8"}, {"PreloadWeaponModels", "0"},
+        {"ShaderPrewarmAtStartup", "0"}, {"FastShaderWarmup", "1"},
+        {"LoadBalanceMode", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isJson) {
+            patch_json_node(content, kv.first, kv.second, true);
+        } else if (isXml) {
+            patch_xml_node(content, "int", kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmFastLoadShaderBypass injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalFastLoadTurbo(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"FastLoad", "1"}, {"SkipSplash", "1"},
+        {"SkipIntro", "1"}, {"AsyncLoadingThread", "1"},
+        {"ShaderPrewarmAsync", "1"}, {"TextureStreamingBufferMB", "512"},
+        {"MultiThreadedAssetLoading", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) {
+            patch_xml_node(content, "int", kv.first, kv.second);
+        } else if (isJson) {
+            patch_json_node(content, kv.first, kv.second, true);
+        } else if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("UniversalFastLoadTurbo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
 
 

@@ -202,6 +202,7 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyFannyFastestCable(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyMlbbPenetrationCritBurst(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFastLoadSplashBypass(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -237,6 +238,7 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyFastLoadAsyncStreaming(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -272,6 +274,7 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyFastLoadShaderBypass(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {
@@ -437,5 +440,6 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUltraExtreme240FpsGraphics(pkg); } catch (Throwable ignored) {}
+        try { CommonConfigTuningInjector.applyUniversalFastLoadTurbo(pkg); } catch (Throwable ignored) {}
     }
 }

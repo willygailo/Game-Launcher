@@ -802,9 +802,38 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatMechanicsOverdrive
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbFastLoadSplashBypass
+ * MLBB — Fast-path asset unbundling, skip intro/splash videos, low-poly initial boot, UI async load, deferred audio load
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSplashBypass
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFastLoadAsyncStreaming
+ * PUBGM — UE4 dedicated async loader thread, 8-core concurrent shader compilation, 1024MB texture stream pool, skip movies/splash
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAsyncStreaming
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmFastLoadShaderBypass
+ * CODM — Fast load flag, skip Activision/TiMi splash, async asset loading, deferred weapon mesh prewarm, fast shader cache bypass
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadShaderBypass
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalFastLoadTurbo
+ * Universal — Multi-threaded asset streaming and high-speed texture streaming cache
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalFastLoadTurbo
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif // GAMEBOOSTER_NATIVE_CONFIG_INJECTOR_H
+
 

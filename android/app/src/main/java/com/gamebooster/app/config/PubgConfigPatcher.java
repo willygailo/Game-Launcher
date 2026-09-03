@@ -157,6 +157,13 @@ public class PubgConfigPatcher {
         }
     }
 
+    public static void applyFastLoadAsyncStreaming(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmFastLoadAsyncStreaming(path);
+        }
+    }
+
     private static final String TAG = "PubgConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

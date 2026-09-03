@@ -235,6 +235,10 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmBallisticsVelocityPenetration(String path);
     public static native boolean nativeInjectCodmBsaRemovalRangeOverdrive(String path);
     public static native boolean nativeInjectUniversalCombatMechanicsOverdrive(String path);
+    public static native boolean nativeInjectMlbbFastLoadSplashBypass(String path);
+    public static native boolean nativeInjectPubgmFastLoadAsyncStreaming(String path);
+    public static native boolean nativeInjectCodmFastLoadShaderBypass(String path);
+    public static native boolean nativeInjectUniversalFastLoadTurbo(String path);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -545,6 +549,7 @@ public class NativeConfigInjector {
             injectHitRegDpsBoost(path);
             injectUniversalZeroDelaySkillTapAllHero(path);
             injectUniversalCombatMechanicsOverdrive(path);
+            injectUniversalFastLoadTurbo(path);
 
             // Specialized mechanics by game package
             if (isMlbb) {
@@ -552,13 +557,16 @@ public class NativeConfigInjector {
                 injectMlbbLingFastestSword(path);
                 injectMlbbFannyFastestCable(path);
                 injectMlbbPenetrationCritBurst(path);
+                injectMlbbFastLoadSplashBypass(path);
             } else if (packageName.toLowerCase().contains("tencent.ig") || packageName.toLowerCase().contains("pubg")) {
                 injectPubgmBallisticsVelocityPenetration(path);
+                injectPubgmFastLoadAsyncStreaming(path);
             } else if (packageName.toLowerCase().contains("callofduty")) {
                 injectCodmBsaRemovalRangeOverdrive(path);
+                injectCodmFastLoadShaderBypass(path);
             }
         }
-        Log.i(TAG, "Injected real engine configs + fast loot/sprint + aim calibration to " + count + " paths for " + packageName);
+        Log.i(TAG, "Injected real engine configs + fast load + fast loot/sprint + aim calibration to " + count + " paths for " + packageName);
         return count;
     }
 
@@ -1828,6 +1836,83 @@ public class NativeConfigInjector {
             "EffectiveDPSMultiplier=3.0"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[UniversalCombat]");
+    }
+
+    public static boolean injectMlbbFastLoadSplashBypass(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFastLoadSplashBypass(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "SkipOpenVideo=1", "SkipSplashVideo=1",
+            "FastLoadAssets=1", "DragonResourceOptimize=1",
+            "HighQualityLoad=0", "UIAsyncLoad=1",
+            "AudioPreload=0", "AsyncShaderWarmup=1",
+            "PreloadResources=1", "PreloadHeroes=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastLoad]");
+    }
+
+    public static boolean injectPubgmFastLoadAsyncStreaming(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmFastLoadAsyncStreaming(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "s.AsyncLoadingThreadEnabled=True",
+            "s.AsyncLoadingTimeLimit=10.0",
+            "s.PriorityAsyncLoadingExtraTime=20.0",
+            "r.TextureStreaming=1",
+            "r.Streaming.PoolSize=1024",
+            "r.Streaming.UseBackgroundThreadPool=1",
+            "r.ShaderCompiler.CoreCount=8",
+            "r.ShaderPipelineCache.StartupMode=3",
+            "bSkipSplash=True",
+            "bSkipMovie=True",
+            "r.Streaming.HLODStrategy=2"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmFastLoad]");
+    }
+
+    public static boolean injectCodmFastLoadShaderBypass(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmFastLoadShaderBypass(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FastLoad=1", "SkipIntroMovie=1",
+            "AsyncAssetLoading=1", "TextureStreamBufferSize=512",
+            "MaxAsyncLoadingTasks=8", "PreloadWeaponModels=0",
+            "ShaderPrewarmAtStartup=0", "FastShaderWarmup=1",
+            "LoadBalanceMode=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmFastLoad]");
+    }
+
+    public static boolean injectUniversalFastLoadTurbo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectUniversalFastLoadTurbo(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FastLoad=1", "SkipSplash=1",
+            "SkipIntro=1", "AsyncLoadingThread=1",
+            "ShaderPrewarmAsync=1", "TextureStreamingBufferMB=512",
+            "MultiThreadedAssetLoading=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UniversalFastLoad]");
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────
