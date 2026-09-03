@@ -102,72 +102,33 @@ public class PreLaunchGameDialog {
         int maxSupportedHz = getDisplayMaxHz(context);
         tvDisplayHz.setText("Detected Display: Up to " + maxSupportedHz + "Hz Native Refresh Rate");
 
-        // 3. Bind Radio Buttons
+        // 3. Bind Radio Buttons (120 FPS to 185 FPS Esports Standard)
         RadioGroup rgFps = view.findViewById(R.id.rg_pre_launch_fps);
         RadioButton rb185 = view.findViewById(R.id.rb_pre_fps_185);
         RadioButton rb165 = view.findViewById(R.id.rb_pre_fps_165);
         RadioButton rb144 = view.findViewById(R.id.rb_pre_fps_144);
         RadioButton rb120 = view.findViewById(R.id.rb_pre_fps_120);
-        RadioButton rb90 = view.findViewById(R.id.rb_pre_fps_90);
-        RadioButton rb60 = view.findViewById(R.id.rb_pre_fps_60);
 
-        // Dynamically show FPS choices based on detected hardware max Hz
-        if (maxSupportedHz >= 185) {
-            if (rb185 != null) rb185.setVisibility(View.VISIBLE);
-            if (rb165 != null) rb165.setVisibility(View.VISIBLE);
-            if (rb144 != null) rb144.setVisibility(View.VISIBLE);
-            if (rb120 != null) rb120.setVisibility(View.VISIBLE);
-            if (rb90 != null) rb90.setVisibility(View.VISIBLE);
-        } else if (maxSupportedHz >= 165) {
-            if (rb185 != null) rb185.setVisibility(View.GONE);
-            if (rb165 != null) rb165.setVisibility(View.VISIBLE);
-            if (rb144 != null) rb144.setVisibility(View.VISIBLE);
-            if (rb120 != null) rb120.setVisibility(View.VISIBLE);
-            if (rb90 != null) rb90.setVisibility(View.VISIBLE);
-        } else if (maxSupportedHz >= 144) {
-            if (rb185 != null) rb185.setVisibility(View.GONE);
-            if (rb165 != null) rb165.setVisibility(View.GONE);
-            if (rb144 != null) rb144.setVisibility(View.VISIBLE);
-            if (rb120 != null) rb120.setVisibility(View.VISIBLE);
-            if (rb90 != null) rb90.setVisibility(View.VISIBLE);
-        } else if (maxSupportedHz >= 120) {
-            if (rb185 != null) rb185.setVisibility(View.GONE);
-            if (rb165 != null) rb165.setVisibility(View.GONE);
-            if (rb144 != null) rb144.setVisibility(View.GONE);
-            if (rb120 != null) rb120.setVisibility(View.VISIBLE);
-            if (rb90 != null) rb90.setVisibility(View.VISIBLE);
-        } else if (maxSupportedHz >= 90) {
-            if (rb185 != null) rb185.setVisibility(View.GONE);
-            if (rb165 != null) rb165.setVisibility(View.GONE);
-            if (rb144 != null) rb144.setVisibility(View.GONE);
-            if (rb120 != null) rb120.setVisibility(View.GONE);
-            if (rb90 != null) rb90.setVisibility(View.VISIBLE);
-        } else {
-            if (rb185 != null) rb185.setVisibility(View.GONE);
-            if (rb165 != null) rb165.setVisibility(View.GONE);
-            if (rb144 != null) rb144.setVisibility(View.GONE);
-            if (rb120 != null) rb120.setVisibility(View.GONE);
-            if (rb90 != null) rb90.setVisibility(View.GONE);
-        }
+        // All esports high-framerate tiers available for user override
+        if (rb185 != null) rb185.setVisibility(View.VISIBLE);
+        if (rb165 != null) rb165.setVisibility(View.VISIBLE);
+        if (rb144 != null) rb144.setVisibility(View.VISIBLE);
+        if (rb120 != null) rb120.setVisibility(View.VISIBLE);
 
-        // Set active selection: load previously saved FPS or default to hardware max
+        // Set active selection: load previously saved FPS or default to 185 FPS (minimum 120 FPS)
         int savedFps = GameProfilePreferences.getTargetHz(context, pkg);
         if (savedFps <= 0) {
-            savedFps = maxSupportedHz;
+            savedFps = maxSupportedHz >= 120 ? maxSupportedHz : 185;
         }
 
-        if (savedFps >= 185 && rb185 != null && rb185.getVisibility() == View.VISIBLE) {
+        if (savedFps >= 185 && rb185 != null) {
             rb185.setChecked(true);
-        } else if (savedFps >= 165 && rb165 != null && rb165.getVisibility() == View.VISIBLE) {
+        } else if (savedFps >= 165 && rb165 != null) {
             rb165.setChecked(true);
-        } else if (savedFps >= 144 && rb144 != null && rb144.getVisibility() == View.VISIBLE) {
+        } else if (savedFps >= 144 && rb144 != null) {
             rb144.setChecked(true);
-        } else if (savedFps >= 120 && rb120 != null && rb120.getVisibility() == View.VISIBLE) {
+        } else if (rb120 != null) {
             rb120.setChecked(true);
-        } else if (savedFps >= 90 && rb90 != null && rb90.getVisibility() == View.VISIBLE) {
-            rb90.setChecked(true);
-        } else if (rb60 != null) {
-            rb60.setChecked(true);
         }
 
         // 4. Action Buttons
@@ -184,12 +145,8 @@ public class PreLaunchGameDialog {
                 selectedFps = 165;
             } else if (rb144 != null && rb144.isChecked()) {
                 selectedFps = 144;
-            } else if (rb120 != null && rb120.isChecked()) {
-                selectedFps = 120;
-            } else if (rb90 != null && rb90.isChecked()) {
-                selectedFps = 90;
             } else {
-                selectedFps = 60;
+                selectedFps = 120;
             }
 
             final int finalFps = selectedFps;

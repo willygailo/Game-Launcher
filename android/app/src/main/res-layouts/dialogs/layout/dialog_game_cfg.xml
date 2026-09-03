@@ -154,27 +154,7 @@
                     android:layout_height="wrap_content"
                     android:buttonTint="@color/accent_cyan"
                     android:paddingVertical="4dp"
-                    android:text="⚡ 120 FPS (Ultra Smooth Tier)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp" />
-
-                <RadioButton
-                    android:id="@+id/rb_fps_90"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:buttonTint="@color/accent_cyan"
-                    android:paddingVertical="4dp"
-                    android:text="🎮 90 FPS (Balanced Esports Tier)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp" />
-
-                <RadioButton
-                    android:id="@+id/rb_fps_60"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:buttonTint="@color/accent_cyan"
-                    android:paddingVertical="4dp"
-                    android:text="🔋 60 FPS (Battery Saver Tier)"
+                    android:text="⚡ 120 FPS (Esports Flagship Tier)"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp" />
             </RadioGroup>

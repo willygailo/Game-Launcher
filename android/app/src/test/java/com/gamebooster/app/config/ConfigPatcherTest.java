@@ -13,13 +13,15 @@ public class ConfigPatcherTest {
 
     @Test
     public void testFpsUnlockTierResolution() {
-        assertEquals(90, FpsUnlockTier.resolveTargetFps(90));
+        // Legacy 60 and 90 FPS requests automatically promote to 120 FPS floor
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(60));
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(90));
         assertEquals(120, FpsUnlockTier.resolveTargetFps(120));
         assertEquals(144, FpsUnlockTier.resolveTargetFps(144));
         assertEquals(165, FpsUnlockTier.resolveTargetFps(165));
         assertEquals(185, FpsUnlockTier.resolveTargetFps(185));
-        // Fallback for custom or out-of-range values
-        assertTrue(FpsUnlockTier.resolveTargetFps(240) >= 90);
+        // Out-of-range values clamp to max tier (185 FPS)
+        assertEquals(185, FpsUnlockTier.resolveTargetFps(240));
     }
 
     @Test

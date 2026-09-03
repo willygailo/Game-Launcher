@@ -194,39 +194,9 @@
             android:layout_height="wrap_content"
             android:background="@drawable/card_glass_shape"
             android:buttonTint="@color/accent_neon_green"
-            android:layout_marginBottom="4dp"
             android:paddingVertical="8dp"
             android:paddingHorizontal="10dp"
             android:text="⚡ 120 FPS / Hz — Flagship Pro Gaming"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <!-- 90 FPS / Hz -->
-        <RadioButton
-            android:id="@+id/rb_pre_fps_90"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/card_glass_shape"
-            android:buttonTint="@color/accent_neon_green"
-            android:layout_marginBottom="4dp"
-            android:paddingVertical="8dp"
-            android:paddingHorizontal="10dp"
-            android:text="⚡ 90 FPS / Hz — Smooth Competitive Balance"
-            android:textColor="@color/text_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <!-- 60 FPS / Hz -->
-        <RadioButton
-            android:id="@+id/rb_pre_fps_60"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/card_glass_shape"
-            android:buttonTint="@color/accent_neon_green"
-            android:paddingVertical="8dp"
-            android:paddingHorizontal="10dp"
-            android:text="⚡ 60 FPS / Hz — Power Saving / Low Heat"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold" />

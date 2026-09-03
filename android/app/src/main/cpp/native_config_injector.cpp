@@ -4840,57 +4840,104 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         const char* g = env->GetStringUTFChars(jGpuRenderer, nullptr);
         if (g) { gpu = g; env->ReleaseStringUTFChars(jGpuRenderer, g); }
     }
-    std::string soc = "Snapdragon 8 Gen 3";
+    std::string soc = "Snapdragon 8 Elite";
     if (jSocModel) {
         const char* s = env->GetStringUTFChars(jSocModel, nullptr);
         if (s) { soc = s; env->ReleaseStringUTFChars(jSocModel, s); }
     }
-    int hz = targetHz > 0 ? targetHz : 185;
-    int ram = ramMb > 0 ? ramMb : 16384;
+    int hz = targetHz > 0 ? (targetHz < 120 ? 120 : (targetHz > 185 ? 185 : targetHz)) : 185;
+    int ram = ramMb > 0 ? ramMb : 24576;
+
+    struct stat stBefore;
+    bool hasStat = (stat(path.c_str(), &stBefore) == 0);
 
     std::string content;
     if (path.find(".ini") != std::string::npos) {
         std::ostringstream ss;
         ss << "[DeviceProfile]\n"
            << "DeviceName=" << soc << "\n"
+           << "BaseProfileName=Android_High\n"
            << "GpuRenderer=" << gpu << "\n"
            << "GpuVendor=Qualcomm\n"
            << "TotalMemoryMB=" << ram << "\n"
            << "MaxRefreshRate=" << hz << "\n"
            << "TargetFPS=" << hz << "\n"
            << "QualityBucket=Ultra\n"
-           << "r.MobileContentScaleFactor=1.5\n"
-           << "r.Vulkan.Enable=1\n"
-           << "r.Vulkan.FastPipeline=1\n"
-           << "r.MaxAnisotropy=16\n"
-           << "r.ShadowQuality=3\n"
-           << "r.TonemapperFilm=1\n"
-           << "TouchPollingRate=1000\n";
+           << "+CVars=r.PUBGDeviceFPS=10\n"
+           << "+CVars=r.PUBGFrameRateLimit=" << hz << "\n"
+           << "+CVars=r.MobileFPSLimit=" << hz << "\n"
+           << "+CVars=r.FrameRateLimit=" << hz << "\n"
+           << "+CVars=r.MobileTouchBoostRate=" << hz << "\n"
+           << "+CVars=r.MobileContentScaleFactor=1.0\n"
+           << "+CVars=r.Vulkan.Enable=1\n"
+           << "+CVars=r.Vulkan.FastPipeline=1\n"
+           << "+CVars=r.Streaming.PoolSize=4096\n"
+           << "+CVars=r.Android.DisableProgramBinaryCache=0\n"
+           << "+CVars=r.MaxAnisotropy=16\n"
+           << "+CVars=r.ShadowQuality=4\n"
+           << "+CVars=r.TonemapperFilm=1\n"
+           << "TouchPollingRate=1000\n"
+           << "TouchZeroDelay=1\n"
+           << "Unlock185Hz=1\n"
+           << "Unlock165Hz=1\n"
+           << "Unlock144Hz=1\n"
+           << "Unlock120FPS=1\n";
         content = ss.str();
     } else if (path.find(".json") != std::string::npos) {
         std::ostringstream ss;
         ss << "{\n"
            << "  \"gpu_renderer\": \"" << gpu << "\",\n"
+           << "  \"gpu_vendor\": \"Qualcomm\",\n"
            << "  \"soc_model\": \"" << soc << "\",\n"
            << "  \"ram_mb\": " << ram << ",\n"
            << "  \"max_fps\": " << hz << ",\n"
            << "  \"target_hz\": " << hz << ",\n"
+           << "  \"fps_limit\": " << hz << ",\n"
            << "  \"graphics_quality\": \"ultra\",\n"
            << "  \"vulkan_enabled\": true,\n"
+           << "  \"unlock_ultra_fps\": true,\n"
            << "  \"touch_rate_hz\": 1000\n"
            << "}\n";
+        content = ss.str();
+    } else if (path.find(".xml") != std::string::npos) {
+        std::ostringstream ss;
+        ss << "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
+           << "<map>\n"
+           << "  <string name=\"SystemInfo_graphicsDeviceName\">" << gpu << "</string>\n"
+           << "  <string name=\"SystemInfo_graphicsDeviceVendor\">Qualcomm</string>\n"
+           << "  <string name=\"SystemInfo_deviceModel\">" << soc << "</string>\n"
+           << "  <int name=\"SystemInfo_systemMemorySize\" value=\"" << ram << "\" />\n"
+           << "  <int name=\"SystemInfo_graphicsMemorySize\" value=\"8192\" />\n"
+           << "  <int name=\"TargetFrameRate\" value=\"" << hz << "\" />\n"
+           << "  <int name=\"MaxRefreshRate\" value=\"" << hz << "\" />\n"
+           << "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
+           << "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
+           << "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
+           << "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
+           << "</map>\n";
         content = ss.str();
     } else {
         std::ostringstream ss;
         ss << "gpu=" << gpu << "\n"
            << "soc=" << soc << "\n"
            << "ram=" << ram << "\n"
-           << "hz=" << hz << "\n";
+           << "hz=" << hz << "\n"
+           << "TargetFPS=" << hz << "\n"
+           << "Unlock185Hz=1\n"
+           << "Unlock165Hz=1\n"
+           << "Unlock144Hz=1\n"
+           << "Unlock120Hz=1\n";
         content = ss.str();
     }
 
     bool ok = write_file_atomic(path, content, 0666);
-    LOGI("HardwareMaskProfile native inject: %s [ok=%d, gpu=%s, hz=%d]", path.c_str(), ok, gpu.c_str(), hz);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path.c_str(), &times);
+    }
+    LOGI("HardwareMaskProfile native inject: %s [ok=%d, gpu=%s, hz=%d, ram=%d]", path.c_str(), ok, gpu.c_str(), hz, ram);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 

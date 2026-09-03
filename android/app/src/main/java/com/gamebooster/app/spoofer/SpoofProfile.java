@@ -211,24 +211,28 @@ public class SpoofProfile {
      */
     public String generateCpuInfo() {
         StringBuilder sb = new StringBuilder();
+        int primeCores = cpuCores >= 8 ? 2 : 1;
         for (int i = 0; i < cpuCores; i++) {
             sb.append("processor\t: ").append(i).append("\n");
-            sb.append("BogoMIPS\t: 38.40\n");
+            sb.append("BogoMIPS\t: ").append(i >= (cpuCores - primeCores) ? "48.00" : "38.40").append("\n");
             sb.append("Features\t: ").append(cpuFeatures).append("\n");
             sb.append("CPU implementer\t: 0x51\n");
             sb.append("CPU architecture: 8\n");
             sb.append("CPU variant\t: 0x1\n");
-            sb.append("CPU part\t: 0x805\n");
+            sb.append("CPU part\t: ").append(i >= (cpuCores - primeCores) ? "0x806" : "0x805").append("\n");
             sb.append("CPU revision\t: 1\n\n");
         }
         sb.append("Hardware\t: ").append(hardware != null ? hardware : "qcom").append("\n");
+        sb.append("Revision\t: 0001\n");
+        sb.append("Serial\t\t: ").append(getSerialNumber()).append("\n");
         sb.append("Processor\t: ").append(chipname != null ? chipname : socModel).append("\n");
         sb.append("SoC Model\t: ").append(socModel).append("\n");
+        sb.append("SoC Manufacturer: ").append(socManufacturer).append("\n");
         return sb.toString();
     }
 
     /**
-     * Generates a fully formatted mock /proc/meminfo string.
+     * Generates a fully formatted mock /proc/meminfo string with modern 64-bit kernel memory fields.
      */
     public String generateMemInfo() {
         long totalKb = (long) ramTotalMb * 1024L;
@@ -250,7 +254,17 @@ public class SpoofProfile {
                "Writeback:             0 kB\n" +
                "AnonPages:       3100000 kB\n" +
                "Mapped:           850000 kB\n" +
-               "Shmem:             45000 kB\n";
+               "Shmem:             45000 kB\n" +
+               "KReclaimable:     500000 kB\n" +
+               "Slab:             600000 kB\n" +
+               "SReclaimable:     500000 kB\n" +
+               "SUnreclaim:       100000 kB\n" +
+               "KernelStack:       45000 kB\n" +
+               "PageTables:        65000 kB\n" +
+               "VmallocTotal:   34359738367 kB\n" +
+               "VmallocUsed:      120000 kB\n" +
+               "CmaTotal:        1048576 kB\n" +
+               "CmaFree:          524288 kB\n";
     }
 
     /**
@@ -268,15 +282,23 @@ public class SpoofProfile {
         props.put("ro.product.board", board);
         props.put("ro.build.product", buildProduct);
 
-        // Partition Namespaces (System, Vendor, ODM, Product)
-        String[] namespaces = {"system", "vendor", "odm", "product"};
+        // Partition Namespaces (System, Vendor, ODM, Product, System_Ext)
+        String[] namespaces = {"system", "vendor", "odm", "product", "system_ext"};
         for (String ns : namespaces) {
             props.put("ro.product." + ns + ".model", model);
             props.put("ro.product." + ns + ".brand", brand);
             props.put("ro.product." + ns + ".manufacturer", manufacturer);
             props.put("ro.product." + ns + ".name", productName);
             props.put("ro.product." + ns + ".device", device);
+            props.put("ro.product." + ns + ".cpu.abilist", "arm64-v8a,armeabi-v7a,armeabi");
         }
+
+        // CPU ABI & Architecture
+        props.put("ro.arch", "arm64");
+        props.put("ro.product.cpu.abi", "arm64-v8a");
+        props.put("ro.product.cpu.abilist", "arm64-v8a,armeabi-v7a,armeabi");
+        props.put("ro.product.cpu.abilist64", "arm64-v8a");
+        props.put("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
 
         // Hardware / SoC & Platform
         props.put("ro.hardware", hardware);
@@ -284,8 +306,22 @@ public class SpoofProfile {
         props.put("ro.hardware.platform", platform);
         props.put("ro.soc.model", socModel);
         props.put("ro.soc.manufacturer", socManufacturer);
+        props.put("ro.soc.feature_level", "1");
         props.put("ro.chipname", chipname);
         props.put("ro.hardware.chipname", chipname);
+        props.put("vendor.cpu.cores", String.valueOf(cpuCores));
+        props.put("persist.sys.cpu.core_num", String.valueOf(cpuCores));
+        props.put("persist.sys.cpu.brand", socModel);
+        props.put("ro.vendor.cpu.max_freq", String.valueOf(cpuMaxFreqKhz));
+        props.put("persist.sys.cpu.freq", String.valueOf(cpuMaxFreqKhz));
+        props.put("ro.vendor.qti.soc_name", socModel);
+        if (socModel != null && socModel.contains("SM8750")) {
+            props.put("ro.vendor.qti.soc_id", "600");
+        } else if (socModel != null && socModel.contains("SM8650")) {
+            props.put("ro.vendor.qti.soc_id", "557");
+        } else if (socModel != null && socModel.contains("SM8850")) {
+            props.put("ro.vendor.qti.soc_id", "650");
+        }
 
         // Baseband & Radio Identity
         props.put("gsm.version.baseband", baseband);
@@ -304,14 +340,46 @@ public class SpoofProfile {
         props.put("ro.build.description", productName + "-user " + androidVersion + " " + displayId + " release-keys");
         props.put("ro.build.tags", "release-keys");
         props.put("ro.build.type", "user");
+        props.put("ro.build.user", "builder");
+        props.put("ro.build.host", "build-host");
         props.put("ro.debuggable", "0");
         props.put("ro.secure", "1");
+        props.put("ro.vendor.build.fingerprint", fingerprint);
+        props.put("ro.odm.build.fingerprint", fingerprint);
+        props.put("ro.system.build.fingerprint", fingerprint);
+        props.put("ro.system_ext.build.fingerprint", fingerprint);
 
         // Graphics / EGL / Vulkan
-        props.put("ro.hardware.egl", glVendor.toLowerCase().contains("arm") ? "mali" : "adreno");
+        String eglVendor = glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
+        props.put("ro.hardware.egl", eglVendor);
+        props.put("ro.hardware.vulkan", eglVendor);
         props.put("ro.opengles.version", "196610"); // OpenGL ES 3.2
+        props.put("ro.vulkan.version", vulkanVersion != null ? vulkanVersion : "1.3.280");
+        props.put("vendor.gpu.driver_version", vulkanDriverVersion != null ? vulkanDriverVersion : "512.700.0");
+        props.put("ro.vendor.gpu.name", glRenderer);
+        props.put("ro.vendor.gpu.model", glRenderer);
+        props.put("ro.vendor.gpu.vendor", glVendor);
+        props.put("vendor.gpu.available_frequencies", "1000000000,900000000,800000000,600000000,400000000");
+        props.put("debug.adreno.version", glVersion != null ? glVersion : "OpenGL ES 3.2 V@0700.0");
+        props.put("debug.egl.hw", "1");
         props.put("debug.hwui.renderer", "vulkan");
         props.put("debug.renderengine.backend", "vulkan");
+
+        // RAM & Memory Masking
+        props.put("ro.config.low_ram", "false");
+        props.put("ro.config.avoid_gfx_accel", "false");
+        props.put("ro.boot.ram_size", (ramTotalMb >= 1024 ? (ramTotalMb / 1024) + "GB" : ramTotalMb + "MB"));
+        props.put("ro.ram.total", String.valueOf(ramTotalMb));
+        props.put("ro.vendor.ram.total", String.valueOf(ramTotalMb));
+        props.put("persist.sys.ram_size", String.valueOf(ramTotalMb));
+        props.put("ro.sys.fw.bg_apps_limit", "64");
+        props.put("ro.sys.fw.empty_app_percent", "50");
+        props.put("ro.vendor.qti.am.free_page_min", "16384");
+        props.put("dalvik.vm.heapgrowthlimit", "512m");
+        props.put("dalvik.vm.heapsize", "1024m");
+        props.put("dalvik.vm.heaptargetutilization", "0.75");
+        props.put("dalvik.vm.heapminfree", "8m");
+        props.put("dalvik.vm.heapmaxfree", "32m");
 
         // Legal Sandbox Virtual Identifiers (Strictly for Game Engine Whitelists & Privacy)
         props.put("ro.serialno", getSerialNumber());
@@ -348,6 +416,7 @@ public class SpoofProfile {
     // ─────────────────────────────────────────────────────────────────────────
 
     public String generateUe4DeviceProfile(int targetFps) {
+        int clampedFps = Math.max(120, Math.min(185, targetFps));
         return "[DeviceProfile]\n" +
                 "DeviceName=" + model + "\n" +
                 "DeviceBrand=" + brand + "\n" +
@@ -357,21 +426,23 @@ public class SpoofProfile {
                 "GPUFamily=" + glRenderer + "\n" +
                 "SoCModel=" + socModel + "\n" +
                 "RAMTotalMB=" + ramTotalMb + "\n" +
-                "+CVars=r.PUBGDeviceFPS=9\n" +
-                "+CVars=r.PUBGFrameRateLimit=" + targetFps + "\n" +
-                "+CVars=r.MobileFPSLimit=" + targetFps + "\n" +
-                "+CVars=r.FrameRateLimit=" + targetFps + "\n" +
-                "+CVars=r.MobileTouchBoostRate=" + targetFps + "\n" +
+                "+CVars=r.PUBGDeviceFPS=10\n" +
+                "+CVars=r.PUBGFrameRateLimit=" + clampedFps + "\n" +
+                "+CVars=r.MobileFPSLimit=" + clampedFps + "\n" +
+                "+CVars=r.FrameRateLimit=" + clampedFps + "\n" +
+                "+CVars=r.MobileTouchBoostRate=" + clampedFps + "\n" +
                 "+CVars=r.MobileHDR=1\n" +
                 "+CVars=r.Vulkan.Enable=1\n" +
                 "+CVars=r.ShadowQuality=4\n" +
                 "+CVars=r.MaxAnisotropy=16\n" +
                 "+CVars=r.Tonemapper.Quality=4\n" +
-                "FrameRateLevel=9\n" +
+                "+CVars=r.Streaming.PoolSize=4096\n" +
+                "+CVars=r.Android.DisableProgramBinaryCache=0\n" +
+                "FrameRateLevel=10\n" +
                 "Unlock185Hz=1\n" +
                 "Unlock165Hz=1\n" +
-                "Unlock120FPS=1\n" +
-                "Unlock90FPS=1\n";
+                "Unlock144Hz=1\n" +
+                "Unlock120FPS=1\n";
     }
 
     public String generateJsonHardwareProfile(int targetFps) {

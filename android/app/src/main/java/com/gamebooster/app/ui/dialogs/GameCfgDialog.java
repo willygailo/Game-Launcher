@@ -87,8 +87,6 @@ public class GameCfgDialog {
         RadioButton rb165 = view.findViewById(R.id.rb_fps_165);
         RadioButton rb144 = view.findViewById(R.id.rb_fps_144);
         RadioButton rb120 = view.findViewById(R.id.rb_fps_120);
-        RadioButton rb90 = view.findViewById(R.id.rb_fps_90);
-        RadioButton rb60 = view.findViewById(R.id.rb_fps_60);
 
         SwitchCompat switchSuperTouch = view.findViewById(R.id.switch_super_touch);
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
@@ -190,18 +188,14 @@ public class GameCfgDialog {
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
 
             int currentFps = currentCfg.getTargetFps();
-            if (currentFps == 185 && rb185 != null) {
+            if (currentFps >= 185 && rb185 != null) {
                 rb185.setChecked(true);
-            } else if (currentFps == 165 && rb165 != null) {
+            } else if (currentFps >= 165 && rb165 != null) {
                 rb165.setChecked(true);
-            } else if (currentFps == 120 && rb120 != null) {
-                rb120.setChecked(true);
-            } else if (currentFps == 90 && rb90 != null) {
-                rb90.setChecked(true);
-            } else if (currentFps == 60 && rb60 != null) {
-                rb60.setChecked(true);
-            } else if (rb144 != null) {
+            } else if (currentFps >= 144 && rb144 != null) {
                 rb144.setChecked(true);
+            } else if (rb120 != null) {
+                rb120.setChecked(true);
             }
         }
 
@@ -240,14 +234,8 @@ public class GameCfgDialog {
                 targetFps = 165;
             } else if (rb144 != null && rb144.isChecked()) {
                 targetFps = 144;
-            } else if (rb120 != null && rb120.isChecked()) {
-                targetFps = 120;
-            } else if (rb90 != null && rb90.isChecked()) {
-                targetFps = 90;
-            } else if (rb60 != null && rb60.isChecked()) {
-                targetFps = 60;
             } else {
-                targetFps = 144;
+                targetFps = 120;
             }
 
             final boolean superTouch = switchSuperTouch.isChecked();

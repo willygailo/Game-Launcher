@@ -27,17 +27,13 @@ public class GameProfileAutoConfigurator {
     }
 
     /**
-     * Clamps a target FPS/Hz to the display's real capability.
-     * When display detection fails (fallback max of 60), the target is honored
-     * as-is instead of being clamped down on unknown hardware.
+     * Clamps a target FPS/Hz to the supported esports tiers (120 FPS to 185 FPS).
+     * Automatically elevates legacy or low frame rates to the 120 FPS floor.
      */
     public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
-        if (context == null || targetFpsHz <= 0) return targetFpsHz;
-        int maxRate = DisplayCapabilitiesDetector.detect(context).maxRefreshRate;
-        if (maxRate >= 90 && targetFpsHz > maxRate) {
-            return maxRate;
-        }
-        return targetFpsHz;
+        if (targetFpsHz <= 120) return FpsUnlockTier.FPS_120.fps;
+        if (targetFpsHz >= 185) return FpsUnlockTier.FPS_185.fps;
+        return FpsUnlockTier.resolveTargetFps(targetFpsHz);
     }
 
     /**

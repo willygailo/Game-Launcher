@@ -3,20 +3,17 @@ package com.gamebooster.app.config;
 /**
  * FpsUnlockTier — Centralized FPS tier definitions for all game config patchers.
  *
- * Supported tiers: 60 / 90 / 120 / 144 / 165 / 185 / 240 fps.
+ * Supported tiers: 120 / 144 / 165 / 185 fps.
  *
  * FPS Level mapping (PUBGM/UE4 standard):
- *   5 = 60fps, 6 = 90fps, 7 = 120fps, 8 = 144fps, 9 = 165fps, 10 = 185fps, 11 = 240fps
+ *   7 = 120fps, 8 = 144fps, 9 = 165fps, 10 = 185fps
  */
 public enum FpsUnlockTier {
 
-    FPS_60(60, 5, "60fps"),
-    FPS_90(90, 6, "90fps"),
     FPS_120(120, 7, "120fps"),
     FPS_144(144, 8, "144fps"),
     FPS_165(165, 9, "165fps"),
-    FPS_185(185, 10, "185fps"),
-    FPS_240(240, 11, "240fps");
+    FPS_185(185, 10, "185fps");
 
     /** The raw target FPS value. */
     public final int fps;
@@ -37,11 +34,12 @@ public enum FpsUnlockTier {
 
     /**
      * Resolves a requested FPS value to the nearest supported tier at-or-below
-     * the request. Invalid (<= 0) values fall back to the top tier FPS_240.
+     * the request. Clamped strictly to minimum FPS_120 and maximum FPS_185.
      */
     public static FpsUnlockTier fromFps(int targetFps) {
-        if (targetFps <= 0) return FPS_240;
-        FpsUnlockTier best = values()[0];
+        if (targetFps <= 120) return FPS_120;
+        if (targetFps >= 185) return FPS_185;
+        FpsUnlockTier best = FPS_120;
         for (FpsUnlockTier tier : values()) {
             if (tier.fps <= targetFps) best = tier;
         }
@@ -49,13 +47,15 @@ public enum FpsUnlockTier {
     }
 
     /**
-     * Returns the tier matching the given level integer, or FPS_240 if unknown.
+     * Returns the tier matching the given level integer, clamped between FPS_120 and FPS_185.
      */
     public static FpsUnlockTier fromLevel(int level) {
+        if (level <= 7) return FPS_120;
+        if (level >= 10) return FPS_185;
         for (FpsUnlockTier tier : values()) {
             if (tier.level == level) return tier;
         }
-        return FPS_240;
+        return FPS_185;
     }
 
     /**
@@ -308,7 +308,7 @@ public enum FpsUnlockTier {
              + "SuperHighFPS=1\n";
     }
 
-    private static final int[] HZ_UNLOCK_FLAGS = {90, 120, 144, 165, 185, 240};
+    private static final int[] HZ_UNLOCK_FLAGS = {120, 144, 165, 185};
 
     // ─── Per-Engine FPS Level Helpers ────────────────────────────────────────
 
@@ -316,35 +316,30 @@ public enum FpsUnlockTier {
      * Returns the MLBB internal HighFPSMode FrameRateLevel for a given FPS tier.
      *
      * MLBB Unity engine level mapping (2026):
-     *   1 = 30fps, 2 = 60fps, 3 = 90/120fps, 4 = 144fps, 5 = 165fps, 6 = 185fps
+     *   3 = 120fps, 4 = 144fps, 5 = 165fps, 6 = 185fps
      */
     public static int getMlbbFrameRateLevel(int targetFps) {
         if (targetFps >= 185) return 6;
         if (targetFps >= 165) return 5;
         if (targetFps >= 144) return 4;
-        if (targetFps >= 90)  return 3;
-        if (targetFps >= 60)  return 2;
-        return 1;
+        return 3;
     }
 
     /**
      * Returns the MLBB HighFPSMode value for a given FPS tier.
      *
      * MLBB HighFPSMode:
-     *   0 = off, 1 = up to 60fps, 2 = up to 90fps, 3 = 120fps+
+     *   3 = 120fps+
      */
     public static int getMlbbHighFPSMode(int targetFps) {
-        if (targetFps >= 120) return 3;
-        if (targetFps >= 90)  return 2;
-        if (targetFps >= 60)  return 1;
-        return 0;
+        return 3;
     }
 
     /**
      * Returns the CODM/PUBGM (UE4) internal FrameRateLevel for a given FPS tier.
      *
      * UE4 standard level mapping (2026):
-     *   5 = 60fps, 6 = 90fps, 7 = 120fps, 8 = 144fps, 9 = 165fps, 10 = 185fps, 11 = 240fps
+     *   7 = 120fps, 8 = 144fps, 9 = 165fps, 10 = 185fps
      */
     public static int getCodmFrameRateLevel(int targetFps) {
         return fromFps(targetFps).level;
@@ -362,13 +357,11 @@ public enum FpsUnlockTier {
      * Returns the generic HighFPS unlock tier value used in CODM/PUBGM GraphicQuality
      * and MLBB GraphicsPreset keys.
      *
-     * Value:  4 = max quality (Ultra Extreme 2026), 3 = high, 2 = medium, 1 = low
+     * Value:  4 = max quality (Ultra Extreme 2026), 3 = high (120fps+)
      */
     public static int getHighFPSModeValue(int targetFps) {
         if (targetFps >= 165) return 4; // Ultra Extreme 2026
-        if (targetFps >= 120) return 3; // High FPS mode
-        if (targetFps >= 90)  return 2;
-        return 1;
+        return 3; // High FPS mode (120fps+)
     }
 }
 

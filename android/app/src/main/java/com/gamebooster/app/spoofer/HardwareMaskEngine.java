@@ -71,7 +71,7 @@ public class HardwareMaskEngine {
 
             List<String> batchCommands = new ArrayList<>();
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
-            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
+            int targetHz = Math.max(120, Math.min(185, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 0: MAGISK / KERNELSU RESETPROP INJECTION (If Root Available)
@@ -83,23 +83,53 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.product.name \"" + profile.productName + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.product.board \"" + profile.board + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.product \"" + profile.buildProduct + "\" 2>/dev/null");
+
+            // Partition Namespaces via Resetprop
+            String[] rpropPartitions = {"system", "vendor", "odm", "product", "system_ext"};
+            for (String part : rpropPartitions) {
+                batchCommands.add("resetprop -n ro.product." + part + ".model \"" + profile.model + "\" 2>/dev/null");
+                batchCommands.add("resetprop -n ro.product." + part + ".brand \"" + profile.brand + "\" 2>/dev/null");
+                batchCommands.add("resetprop -n ro.product." + part + ".manufacturer \"" + profile.manufacturer + "\" 2>/dev/null");
+                batchCommands.add("resetprop -n ro.product." + part + ".device \"" + profile.device + "\" 2>/dev/null");
+                batchCommands.add("resetprop -n ro.product." + part + ".name \"" + profile.productName + "\" 2>/dev/null");
+                batchCommands.add("resetprop -n ro.product." + part + ".cpu.abilist \"arm64-v8a,armeabi-v7a,armeabi\" 2>/dev/null");
+            }
+
+            // CPU & SoC Specs
             batchCommands.add("resetprop -n ro.soc.model \"" + profile.socModel + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.soc.manufacturer \"" + profile.socManufacturer + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.soc.feature_level 1 2>/dev/null");
             batchCommands.add("resetprop -n ro.hardware \"" + profile.hardware + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.board.platform \"" + profile.platform + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.hardware.platform \"" + profile.platform + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.chipname \"" + profile.chipname + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.hardware.chipname \"" + profile.chipname + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.arch arm64 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.cpu.abi arm64-v8a 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.cpu.abilist arm64-v8a,armeabi-v7a,armeabi 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.cpu.abilist64 arm64-v8a 2>/dev/null");
+            batchCommands.add("resetprop -n ro.product.cpu.abilist32 armeabi-v7a,armeabi 2>/dev/null");
+
+            // Baseband
             batchCommands.add("resetprop -n ro.baseband \"" + profile.board + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.boot.baseband \"" + profile.board + "\" 2>/dev/null");
             batchCommands.add("resetprop -n gsm.version.baseband \"" + profile.baseband + "\" 2>/dev/null");
             batchCommands.add("resetprop -n gsm.version.baseband1 \"" + profile.baseband + "\" 2>/dev/null");
+
+            // Build Fingerprint & OS
             batchCommands.add("resetprop -n ro.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.vendor.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.odm.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.system.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.system_ext.build.fingerprint \"" + profile.fingerprint + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.display.id \"" + profile.displayId + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.release \"" + profile.androidVersion + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.sdk \"" + profile.sdkInt + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.version.security_patch \"" + profile.securityPatch + "\" 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.tags release-keys 2>/dev/null");
             batchCommands.add("resetprop -n ro.build.type user 2>/dev/null");
+            batchCommands.add("resetprop -n ro.build.user builder 2>/dev/null");
+            batchCommands.add("resetprop -n ro.build.host build-host 2>/dev/null");
             batchCommands.add("resetprop -n ro.debuggable 0 2>/dev/null");
             batchCommands.add("resetprop -n ro.secure 1 2>/dev/null");
             batchCommands.add("resetprop -n ro.boot.flash.locked 1 2>/dev/null");
@@ -109,7 +139,16 @@ public class HardwareMaskEngine {
             batchCommands.add("resetprop -n ro.boot.warranty_bit 0 2>/dev/null");
             batchCommands.add("resetprop -n ro.warranty_bit 0 2>/dev/null");
             batchCommands.add("resetprop -n sys.oem_unlock_allowed 0 2>/dev/null");
+
+            // GPU & RAM Resetprop
             batchCommands.add("resetprop -n ro.hardware.egl \"" + eglVendor + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.hardware.vulkan \"" + eglVendor + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.vendor.gpu.name \"" + profile.glRenderer + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.vendor.gpu.model \"" + profile.glRenderer + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.vendor.gpu.vendor \"" + profile.glVendor + "\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.config.low_ram false 2>/dev/null");
+            batchCommands.add("resetprop -n ro.boot.ram_size \"" + (profile.ramTotalMb / 1024) + "GB\" 2>/dev/null");
+            batchCommands.add("resetprop -n ro.ram.total \"" + profile.ramTotalMb + "\" 2>/dev/null");
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 1 & 4: SYSTEM PROPERTIES (Deduplicated Property Map)
@@ -299,6 +338,11 @@ public class HardwareMaskEngine {
             try {
                 setStaticField(android.os.Build.class, "SOC_MODEL", profile.socModel);
                 setStaticField(android.os.Build.class, "SOC_MANUFACTURER", profile.socManufacturer);
+                setStaticField(android.os.Build.class, "SUPPORTED_ABIS", new String[]{"arm64-v8a", "armeabi-v7a", "armeabi"});
+                setStaticField(android.os.Build.class, "SUPPORTED_64_BIT_ABIS", new String[]{"arm64-v8a"});
+                setStaticField(android.os.Build.class, "SUPPORTED_32_BIT_ABIS", new String[]{"armeabi-v7a", "armeabi"});
+                setStaticField(android.os.Build.class, "USER", "builder");
+                setStaticField(android.os.Build.class, "HOST", "build-host");
             } catch (Throwable ignored) {}
 
             Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ")");
