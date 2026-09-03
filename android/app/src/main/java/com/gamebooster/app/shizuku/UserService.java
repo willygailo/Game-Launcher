@@ -569,9 +569,7 @@ public class UserService extends IUserService.Stub {
                    + "sync; "
                    + "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; "
                    + "echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; "
-                   + "echo 1 > /sys/block/zram0/compact 2>/dev/null; "
-                   + "cmd activity purge-cached-processes 2>/dev/null; "
-                   + "cmd activity kill-all 2>/dev/null";
+                   + "echo 1 > /sys/block/zram0/compact 2>/dev/null";
         String res = execCommand(cmd);
         return res != null && !res.startsWith("ERROR");
     }

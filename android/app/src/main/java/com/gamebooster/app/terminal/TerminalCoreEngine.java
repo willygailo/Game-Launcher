@@ -642,7 +642,7 @@ public class TerminalCoreEngine {
                 "tweak_ram",
                 "🧹 Deep RAM Flush & Trim",
                 "Frees memory buffers and flushes application cache across the system",
-                "pm trim-caches 999999999999; am kill-all; dumpsys meminfo --oom"
+                "pm trim-caches 999999999999; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; dumpsys meminfo --oom"
         ));
 
         presetScripts.add(new TerminalScriptPreset(
@@ -677,7 +677,7 @@ public class TerminalCoreEngine {
                 "tweak_sys_secure_global",
                 "⚡ System, Secure & Global Gaming Settings",
                 "Applies maximum performance settings across system, secure, and global Android tables",
-                "settings put system touch_slop_reduction 1; settings put secure long_press_timeout 150; settings put secure screensaver_enabled 0; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put global cached_apps_freezer enabled; cmd power set-fixed-performance-mode-enabled true"
+                "settings put system touch_slop_reduction 1; settings put secure long_press_timeout 150; settings put secure screensaver_enabled 0; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; settings put global cached_apps_freezer disabled; cmd power set-fixed-performance-mode-enabled true"
         ));
 
         presetScripts.add(new TerminalScriptPreset(

@@ -480,7 +480,7 @@ public class ShizukuUserServiceConnector {
                 Log.e(TAG, "RemoteException in executeZramCompaction", e);
             }
         }
-        String res = ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null; fstrim -v /cache 2>/dev/null; sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; echo 1 > /sys/block/zram0/compact 2>/dev/null; cmd activity purge-cached-processes 2>/dev/null; cmd activity kill-all 2>/dev/null");
+        String res = ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null; fstrim -v /cache 2>/dev/null; sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; echo 1 > /sys/block/zram0/compact 2>/dev/null");
         return res != null && !res.startsWith("ERROR");
     }
 

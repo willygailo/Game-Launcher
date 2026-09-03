@@ -172,7 +172,7 @@ public final class GameModeApiSupport {
         // 6. Android 13-16 Phantom Process Killer & Background Freezer Bypass
         commands.add("device_config put activity_manager max_phantom_processes 2147483647");
         commands.add("settings put global settings_enable_monitor_phantom_procs false");
-        commands.add("settings put global cached_apps_freezer enabled");
+        commands.add("settings put global cached_apps_freezer disabled");
 
         // 7. Android 13-16 ADPF & SurfaceFlinger Phase Acceleration
         commands.add("setprop debug.sf.enable_adpf_cpu_hint true");

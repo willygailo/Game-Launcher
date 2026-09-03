@@ -134,7 +134,6 @@ public class TerminalFolderManager {
                 "# GAME BOOSTER PRO - DEEP RAM & CACHE FLUSH\n" +
                 "# ==================================================\n" +
                 "pm trim-caches 999999999999\n" +
-                "am kill-all\n" +
                 "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true\n" +
                 "dumpsys meminfo --oom | head -n 25\n" +
                 "echo '[DEEP RAM FLUSH & CACHE TRIM COMPLETE]'\n"
@@ -223,7 +222,7 @@ public class TerminalFolderManager {
                 "settings put global animator_duration_scale 0.0\n" +
                 "settings put global low_power 0\n" +
                 "settings put global ram_expand_size 0\n" +
-                "settings put global cached_apps_freezer enabled\n" +
+                "settings put global cached_apps_freezer disabled\n" +
                 "settings put global webview_multiprocess 1\n" +
                 "# 4. POWER & PERFORMANCE CMD\n" +
                 "cmd power set-fixed-performance-mode-enabled true 2>/dev/null || true\n" +

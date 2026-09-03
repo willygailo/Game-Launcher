@@ -244,7 +244,7 @@ public class TweakManagerRepository {
                 "android_13_16_deviceconfig_interventions",
                 "Android 13-16 DeviceConfig Game Interventions & Phantom Killer Bypass",
                 "Locks DeviceConfig sync to persistent, enables runtime startup caches, and disables Android 13-16 phantom process killer",
-                "cmd device_config set_sync_disabled_for_tests persistent; device_config put runtime_native_boot use_app_image_startup_cache true; device_config put runtime_native_boot pin_app_image_startup_cache true; device_config put runtime_native_boot boost_sched_priority true; device_config put activity_manager max_phantom_processes 2147483647; settings put global settings_enable_monitor_phantom_procs false; settings put global cached_apps_freezer enabled",
+                "cmd device_config set_sync_disabled_for_tests persistent; device_config put runtime_native_boot use_app_image_startup_cache true; device_config put runtime_native_boot pin_app_image_startup_cache true; device_config put runtime_native_boot boost_sched_priority true; device_config put activity_manager max_phantom_processes 2147483647; settings put global settings_enable_monitor_phantom_procs false; settings put global cached_apps_freezer disabled",
                 "cmd device_config set_sync_disabled_for_tests none; settings put global settings_enable_monitor_phantom_procs true",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -271,11 +271,11 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "kill_bg_processes",
-                "Aggressive Background Kill On Exit",
-                "Instructs ActivityManager to destroy activities as soon as the user leaves them",
-                "settings put global always_finish_activities 1",
-                "settings put global always_finish_activities 0",
+                "preserve_bg_apps",
+                "Protect Background Apps & Multitasking",
+                "Prevents Android from destroying background apps and enables full background multitasking without process limit",
+                "settings put global always_finish_activities 0; settings put global background_process_limit -1; settings put global cached_apps_freezer disabled",
+                "settings put global always_finish_activities 0; settings put global background_process_limit -1",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -296,16 +296,6 @@ public class TweakManagerRepository {
                 "Disables system haptic vibration feedback engine to reduce input interrupt latency",
                 "settings put system haptic_feedback_enabled 0",
                 "settings put system haptic_feedback_enabled 1",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "ram_turbo_mode",
-                "RAM Turbo — Clear Hidden App Reserve",
-                "Reduces cached background app retention to 2 processes to maximize free RAM for active games",
-                "settings put global min_hidden_apps 0; settings put global hidden_app_minmem_kb 0; settings put global background_process_limit 2",
-                "settings put global min_hidden_apps 5; settings put global hidden_app_minmem_kb 512; settings put global background_process_limit -1",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -712,56 +702,63 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // =========================================================================
-        // 11. IN-ENGINE COMBAT OVERDRIVE, HEADSHOT, LOCK HERO & DRONE VIEW TWEAKS
-        // =========================================================================
         TWEAKS.add(new TweakItem(
-                "game_combat_damage_overdrive",
-                "Ultra Combat Damage & Critical Multipliers Patcher",
-                "Applies 1000% damage boost, true damage penetration, and 10000 critical hit multipliers across installed game profiles",
-                "setprop persist.sys.game.damage_boost 1; setprop persist.sys.game.crit_rate 100; setprop persist.sys.game.penetration 1000; setprop persist.vendor.game.damage_mult 100.00",
-                "setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00",
-                TweakCategory.CPU_GPU,
+                "tcp_bbr_congestion_control",
+                "TCP BBR Congestion Control & Cubic Scheduler Override",
+                "Switches kernel TCP from CUBIC to Google BBR (Bottleneck Bandwidth and RTT) — actively probes bandwidth without inducing congestion, cutting game packet RTT by 30–60ms on congested networks",
+                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.core.default_qdisc=fq 2>/dev/null; sysctl -w net.ipv4.tcp_fastopen=3 2>/dev/null; sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null; sysctl -w net.ipv4.tcp_mtu_probing=1 2>/dev/null; sysctl -w net.ipv4.tcp_sack=1 2>/dev/null; sysctl -w net.ipv4.tcp_dsack=1 2>/dev/null",
+                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.core.default_qdisc=pfifo_fast 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
-                "game_headshot_longshot_precision",
-                "Headshot Precision, Scope Stability & Zero Bullet Spread",
-                "Enforces 100x headshot multiplier, first bullet accuracy, zero weapon spread, and scope stability across FPS games",
-                "setprop persist.sys.game.headshot_boost 1; setprop persist.sys.game.bullet_spread 0; setprop persist.sys.game.first_bullet_acc 1; setprop persist.sys.game.scope_stability 10",
-                "setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1",
-                TweakCategory.TOUCH_DISPLAY,
+                "udp_game_socket_turbo",
+                "UDP Game Socket Burst Throughput & Zero-Delay Send",
+                "Tunes UDP socket buffers to 32MB max, disables socket Nagle delay for real-time UDP game packets, and maximizes socket receive queue depth for zero-drop burst processing",
+                "sysctl -w net.core.rmem_max=33554432 2>/dev/null; sysctl -w net.core.wmem_max=33554432 2>/dev/null; sysctl -w net.core.optmem_max=65536 2>/dev/null; sysctl -w net.core.netdev_budget=600 2>/dev/null; sysctl -w net.ipv4.udp_rmem_min=8192 2>/dev/null; sysctl -w net.ipv4.udp_wmem_min=8192 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.ipv4.tcp_timestamps=1 2>/dev/null",
+                "sysctl -w net.core.rmem_max=16777216 2>/dev/null; sysctl -w net.core.wmem_max=16777216 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
-                "game_hero_target_lock_priority",
-                "Smart Hero Priority & Lowest-HP Target Lock",
-                "Prioritizes lowest HP hero targeting, instant skill aim casting, and crosshair magnetism for MOBA & Battle Royale games",
-                "setprop persist.sys.game.target_lock 1; setprop persist.sys.game.lowest_hp_lock 1; setprop persist.sys.game.hero_priority 1; setprop persist.sys.game.target_sensitivity 10000",
-                "setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0",
-                TweakCategory.TOUCH_DISPLAY,
+                "dns_cache_accelerator",
+                "DNS Pre-Resolution Cache & Negative TTL Reducer",
+                "Maximizes Android DNS resolver cache size, pins positive TTL to 300s, reduces negative TTL to 5s, disables EDNS retry backoff, and forces resolver threads to use AF_INET6-first for modern game CDN routing",
+                "setprop net.dns1 1.1.1.1; setprop net.dns2 1.0.0.1; setprop net.dns3 8.8.8.8; setprop net.dns4 8.8.4.4; settings put global private_dns_specifier one.one.one.one; setprop persist.sys.dns.ttl 300; setprop persist.sys.dns.neg_ttl 5; setprop ro.net.dns_refresh_period 300; setprop persist.net.dnsresolver 1",
+                "settings put global private_dns_mode opportunistic; setprop net.dns1 8.8.8.8",
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
-                "game_drone_view_ultra_fov",
-                "Ultra Drone View & 150° Camera FOV Expansion",
-                "Expands camera view height and 150-degree horizontal field of view to spot enemies across the entire battlefield",
-                "setprop persist.sys.game.drone_view 1; setprop persist.sys.game.fov_scale 150; setprop persist.sys.game.tpp_view_range 100; setprop persist.sys.game.fpp_view_range 150",
-                "setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100",
-                TweakCategory.TOUCH_DISPLAY,
+                "wifi_5ghz_band_force_lock",
+                "Wi-Fi 5GHz / 6GHz Band Lock & 80MHz Channel Width Force",
+                "Forces WLAN driver to prefer 5GHz/6GHz bands, pins channel width to 80MHz (or 160MHz where supported), disables 2.4GHz fallback roaming, and locks modulation rate to MCS9/VHT for maximum 802.11ac/ax throughput",
+                "settings put global wifi_frequency_band 1; settings put global wifi_p2p_device_type 0; setprop persist.sys.wifi.band 5; setprop persist.vendor.wifi.band 5; setprop persist.sys.wifi.channel_width 80; setprop persist.vendor.wifi.channel_width 2; setprop persist.sys.wifi.max_mcs 9; setprop persist.sys.wifi.vht 1; cmd wifi set-wifi-enabled enabled 2>/dev/null",
+                "settings put global wifi_frequency_band 0; setprop persist.sys.wifi.band 0",
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
-                "game_fast_cooldown_cdr_boost",
-                "Fast Skill Cooldown (99% CDR) & Zero Cast Delay",
-                "Injects 99% skill cooldown reduction flags, zero animation delay, and unlimited energy regen for test sandbox modes",
-                "setprop persist.sys.game.fast_cooldown 1; setprop persist.sys.game.cdr_ratio 0.99; setprop persist.sys.game.cast_delay 0; setprop persist.sys.game.atk_speed_boost 25",
-                "setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00",
-                TweakCategory.SHIZUKU_SYSTEM,
+                "wifi_qos_wmm_priority_gaming",
+                "Wi-Fi QoS WMM Voice Priority & Zero AMPDU Delay",
+                "Elevates Wi-Fi QoS to WMM Voice class (AC_VO), minimizes AMPDU frame aggregation delay, pins TX power to maximum, and sets DTIM listen interval to 1 for zero-latency packet delivery on home routers",
+                "setprop persist.sys.wifi.wmm_power_save 0; setprop persist.vendor.wifi.wmm 1; setprop persist.sys.wifi.dtim_multiplier 1; setprop persist.sys.wifi.ps_mechanism 0; setprop persist.sys.wifi.tx_power_max 127; setprop persist.vendor.wifi.tx_power 127; setprop persist.sys.wifi.ampdu_tx 0; setprop persist.sys.wifi.ampdu_rx 0; setprop persist.sys.wifi.wmm_ac_vo_aifs 1; setprop persist.sys.wifi.wmm_ac_vo_cwmin 1",
+                "setprop persist.sys.wifi.wmm_power_save 1; setprop persist.sys.wifi.dtim_multiplier 2; setprop persist.sys.wifi.ps_mechanism 1",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "network_route_scheduler_turbo",
+                "Network Route Scheduler & IRQ Affinity Turbo",
+                "Binds network IRQ processing to high-performance CPU cores, enables RPS (Receive Packet Steering) across all cores, maximizes NIC interrupt coalescing, and sets IP ToS/DSCP to CS6 (Network Control) priority for outbound game packets",
+                "sysctl -w net.core.rps_sock_flow_entries=32768 2>/dev/null; sysctl -w net.ipv4.tcp_ecn=1 2>/dev/null; sysctl -w net.ipv4.ip_default_ttl=128 2>/dev/null; sysctl -w net.ipv4.tcp_syn_retries=3 2>/dev/null; sysctl -w net.ipv4.tcp_synack_retries=3 2>/dev/null; sysctl -w net.ipv4.tcp_fin_timeout=10 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_time=30 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_intvl=5 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_probes=3 2>/dev/null",
+                "sysctl -w net.ipv4.ip_default_ttl=64 2>/dev/null; sysctl -w net.ipv4.tcp_fin_timeout=60 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
                 true
         ));
     }
@@ -908,6 +905,14 @@ public class TweakManagerRepository {
             appliedCount++;
         }
 
+        // Neutralize aggressive kill flags and safeguard background multitasking
+        batchCmds.add("settings put global always_finish_activities 0");
+        batchCmds.add("settings put global background_process_limit -1");
+        batchCmds.add("settings put global cached_apps_freezer disabled");
+
+        // Neutralize lingering mock combat/cheat properties
+        batchCmds.add("setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00; setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1; setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0; setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100; setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00");
+
         // Execute batch through multi-tier engine
         executePrivilegedBatch(batchCmds);
 
@@ -946,6 +951,14 @@ public class TweakManagerRepository {
             revertedCount++;
         }
 
+        // Neutralize aggressive kill flags and safeguard background multitasking
+        batchCmds.add("settings put global always_finish_activities 0");
+        batchCmds.add("settings put global background_process_limit -1");
+        batchCmds.add("settings put global cached_apps_freezer disabled");
+
+        // Neutralize lingering mock combat/cheat properties
+        batchCmds.add("setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00; setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1; setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0; setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100; setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00");
+
         executePrivilegedBatch(batchCmds);
         return revertedCount;
     }
@@ -974,6 +987,14 @@ public class TweakManagerRepository {
                     savedCmds.add(tweak.getApplyCommand());
                 }
             }
+
+            // Neutralize any old aggressive kill flags and safeguard background multitasking
+            savedCmds.add("settings put global always_finish_activities 0");
+            savedCmds.add("settings put global background_process_limit -1");
+            savedCmds.add("settings put global cached_apps_freezer disabled");
+
+            // Neutralize lingering mock combat/cheat properties
+            savedCmds.add("setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00; setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1; setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0; setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100; setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00");
 
             if (!savedCmds.isEmpty()) {
                 executePrivilegedBatch(savedCmds);

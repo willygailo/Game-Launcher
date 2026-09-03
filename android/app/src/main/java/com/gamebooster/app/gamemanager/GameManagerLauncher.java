@@ -32,8 +32,7 @@ import java.util.List;
  * Runs the full 4-phase pre-launch optimization pipeline before starting any game:
  *
  * PHASE 1 — PURGE & COLD START:
- *   - sync + echo 3 > /proc/sys/vm/drop_caches (RAM purge)
- *   - am kill-all (background process kill)
+ *   - sync + echo 3 > /proc/sys/vm/drop_caches (RAM purge without killing background apps)
  *   - am force-stop <pkg> (guarantees cold-start; game re-reads all patched configs)
  *
  * PHASE 2 — FRAMEWORK DRIVER & Hz FORCING:

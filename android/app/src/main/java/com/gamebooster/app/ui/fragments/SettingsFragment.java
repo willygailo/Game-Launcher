@@ -1255,7 +1255,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnSettingsScriptRam != null) {
             btnSettingsScriptRam.setOnClickListener(v -> {
                 if (!requireShizukuForAction("RAM Trimming & Process Cleanup")) return;
-                runSettingsTerminalQuickCmd("cmd package trim-caches 9223372036854775807 2>/dev/null || pm trim-caches 40000000000; am kill-all; dumpsys meminfo --oom");
+                runSettingsTerminalQuickCmd("cmd package trim-caches 9223372036854775807 2>/dev/null || pm trim-caches 40000000000; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; dumpsys meminfo --oom");
             });
         }
 
