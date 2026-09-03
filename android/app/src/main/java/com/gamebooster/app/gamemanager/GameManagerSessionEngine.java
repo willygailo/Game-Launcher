@@ -164,11 +164,13 @@ public final class GameManagerSessionEngine {
                             int pid = Integer.parseInt(pStr.trim());
                             if (pid <= 0) continue;
 
-                            // Apply safe background optimization without touching sensitive render thread signals
-                            ShizukuExecutor.executeShizukuCommands(
-                                "renice -n -10 -p " + pid + " 2>/dev/null",
-                                "ionice -c 2 -n 0 -p " + pid + " 2>/dev/null"
-                            );
+                            // Apply fast native process priority first, fallback to Shizuku shell
+                            if (!NativeConfigInjector.setProcessIOPriority(pid, -10, 1, 0)) {
+                                ShizukuExecutor.executeShizukuCommands(
+                                    "renice -n -10 -p " + pid + " 2>/dev/null",
+                                    "ionice -c 2 -n 0 -p " + pid + " 2>/dev/null"
+                                );
+                            }
                             Log.i(TAG, "✅ Safe high-priority scheduling for PID: " + pid);
                         } catch (NumberFormatException ignored) {}
                     }

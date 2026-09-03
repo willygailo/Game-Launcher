@@ -221,6 +221,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectZeroPingNetworkOverclock(String path);
     public static native boolean nativeInjectUltraExtreme240FpsGraphics(String path);
     public static native boolean nativeInjectUniversalDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectHardwareMaskProfile(String path, String gpuRenderer, String socModel, int ramMb, int targetHz);
+    public static native boolean nativeSetProcessIOPriority(int pid, int schedPriority, int ioprioClass, int ioprioLevel);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -1502,6 +1504,27 @@ public class NativeConfigInjector {
             try { return nativeInjectUniversalDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
+    }
+
+    public static boolean injectHardwareMaskProfile(String path, String gpuRenderer, String socModel, int ramMb, int targetHz) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeInjectHardwareMaskProfile(path, gpuRenderer, socModel, ramMb, targetHz);
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean setProcessIOPriority(int pid, int schedPriority, int ioprioClass, int ioprioLevel) {
+        if (pid <= 0) return false;
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeSetProcessIOPriority(pid, schedPriority, ioprioClass, ioprioLevel);
+            } catch (Throwable ignored) {}
+        }
+        return false;
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

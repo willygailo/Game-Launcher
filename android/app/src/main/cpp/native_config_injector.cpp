@@ -4825,3 +4825,89 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
          r1,r2,r3,r4,r5,r6,r7);
     return anyOk ? JNI_TRUE : JNI_FALSE;
 }
+
+// ─── Direct Hardware Mask Profile Injector ───────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHardwareMaskProfile
+  (JNIEnv *env, jclass, jstring jPath, jstring jGpuRenderer, jstring jSocModel, jint ramMb, jint targetHz) {
+    if (!jPath) return JNI_FALSE;
+    const char* pathChars = env->GetStringUTFChars(jPath, nullptr);
+    if (!pathChars) return JNI_FALSE;
+    std::string path(pathChars);
+    env->ReleaseStringUTFChars(jPath, pathChars);
+
+    std::string gpu = "Adreno (TM) 840";
+    if (jGpuRenderer) {
+        const char* g = env->GetStringUTFChars(jGpuRenderer, nullptr);
+        if (g) { gpu = g; env->ReleaseStringUTFChars(jGpuRenderer, g); }
+    }
+    std::string soc = "Snapdragon 8 Gen 3";
+    if (jSocModel) {
+        const char* s = env->GetStringUTFChars(jSocModel, nullptr);
+        if (s) { soc = s; env->ReleaseStringUTFChars(jSocModel, s); }
+    }
+    int hz = targetHz > 0 ? targetHz : 185;
+    int ram = ramMb > 0 ? ramMb : 16384;
+
+    std::string content;
+    if (path.find(".ini") != std::string::npos) {
+        std::ostringstream ss;
+        ss << "[DeviceProfile]\n"
+           << "DeviceName=" << soc << "\n"
+           << "GpuRenderer=" << gpu << "\n"
+           << "GpuVendor=Qualcomm\n"
+           << "TotalMemoryMB=" << ram << "\n"
+           << "MaxRefreshRate=" << hz << "\n"
+           << "TargetFPS=" << hz << "\n"
+           << "QualityBucket=Ultra\n"
+           << "r.MobileContentScaleFactor=1.5\n"
+           << "r.Vulkan.Enable=1\n"
+           << "r.Vulkan.FastPipeline=1\n"
+           << "r.MaxAnisotropy=16\n"
+           << "r.ShadowQuality=3\n"
+           << "r.TonemapperFilm=1\n"
+           << "TouchPollingRate=1000\n";
+        content = ss.str();
+    } else if (path.find(".json") != std::string::npos) {
+        std::ostringstream ss;
+        ss << "{\n"
+           << "  \"gpu_renderer\": \"" << gpu << "\",\n"
+           << "  \"soc_model\": \"" << soc << "\",\n"
+           << "  \"ram_mb\": " << ram << ",\n"
+           << "  \"max_fps\": " << hz << ",\n"
+           << "  \"target_hz\": " << hz << ",\n"
+           << "  \"graphics_quality\": \"ultra\",\n"
+           << "  \"vulkan_enabled\": true,\n"
+           << "  \"touch_rate_hz\": 1000\n"
+           << "}\n";
+        content = ss.str();
+    } else {
+        std::ostringstream ss;
+        ss << "gpu=" << gpu << "\n"
+           << "soc=" << soc << "\n"
+           << "ram=" << ram << "\n"
+           << "hz=" << hz << "\n";
+        content = ss.str();
+    }
+
+    bool ok = write_file_atomic(path, content, 0666);
+    LOGI("HardwareMaskProfile native inject: %s [ok=%d, gpu=%s, hz=%d]", path.c_str(), ok, gpu.c_str(), hz);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─── Direct Process I/O & Nice Priority Syscall Accelerator ──────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessIOPriority
+  (JNIEnv *, jclass, jint pid, jint schedPriority, jint ioprioClass, jint ioprioLevel) {
+    if (pid <= 0) return JNI_FALSE;
+
+    // 1. Set CFS CPU nice priority (-20 to 19, -10 is high performance)
+    int prioRes = setpriority(PRIO_PROCESS, pid, schedPriority);
+
+    // 2. Set Linux I/O scheduling class and priority (IOPRIO_CLASS_RT / IOPRIO_CLASS_BE)
+    int cls = (ioprioClass >= 1 && ioprioClass <= 3) ? ioprioClass : IOPRIO_CLASS_BE;
+    int data = (ioprioLevel >= 0 && ioprioLevel <= 7) ? ioprioLevel : 0;
+    long ioRes = syscall(SYS_ioprio_set, IOPRIO_WHO_PROCESS, pid, IOPRIO_PRIO_VALUE(cls, data));
+
+    LOGI("nativeSetProcessIOPriority: PID=%d nice=%d (res=%d) ioprio=(cls=%d, lvl=%d, res=%ld)",
+         pid, schedPriority, prioRes, cls, data, ioRes);
+    return (prioRes == 0 || ioRes == 0) ? JNI_TRUE : JNI_FALSE;
+}

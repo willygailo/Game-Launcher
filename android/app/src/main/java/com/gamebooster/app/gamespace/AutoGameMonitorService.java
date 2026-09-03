@@ -238,6 +238,10 @@ public class AutoGameMonitorService extends Service {
 
     private boolean isTransientPackage(String pkg) {
         if (pkg == null || pkg.isEmpty()) return true;
+        // Game packages are NEVER transient!
+        if (com.gamebooster.app.games.GamePackageRegistry.isKnownGame(pkg)) {
+            return false;
+        }
         if (pkg.equals("com.android.systemui")
                 || pkg.equals("com.google.android.gms")
                 || pkg.equals("com.google.android.play.games")
@@ -247,23 +251,14 @@ public class AutoGameMonitorService extends Service {
             return true;
         }
         String lower = pkg.toLowerCase(java.util.Locale.US);
+        // Exclude UI dialogues, keyboards, and overlays (do NOT exclude game publishers like tencent, garena, or hoyoverse)
         return lower.contains("inputmethod")
                 || lower.contains("permissioncontroller")
-                || lower.contains("auth")
-                || lower.contains("login")
                 || lower.contains("dialog")
                 || lower.contains("overlay")
-                || lower.contains("webview")
-                || lower.contains("browser")
-                || lower.contains("chrome")
-                || lower.contains("discord")
-                || lower.contains("facebook")
-                || lower.contains("tencent")
-                || lower.contains("garena")
-                || lower.contains("hoyoverse")
-                || lower.contains("epicgames")
+                || lower.contains("keyboard")
                 || lower.contains("admob")
-                || lower.contains("ads");
+                || lower.contains("systemui");
     }
 
     private boolean isProcessAlive(String packageName) {
@@ -293,45 +288,7 @@ public class AutoGameMonitorService extends Service {
     }
 
     private String getForegroundPackage() {
-        try {
-            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-            long time = System.currentTimeMillis();
-            UsageEvents events = usm != null ? usm.queryEvents(time - 10000, time) : null;
-            if (events != null) {
-                UsageEvents.Event event = new UsageEvents.Event();
-                String lastPkg = null;
-                while (events.hasNextEvent()) {
-                    events.getNextEvent(event);
-                    if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
-                        lastPkg = event.getPackageName();
-                    }
-                }
-                if (lastPkg != null) return lastPkg;
-            }
-        } catch (Exception ignored) {}
-
-        // Fallback: Shizuku dumpsys window inspection
-        try {
-            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                String out = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
-                if (out != null && !out.isEmpty()) {
-                    for (String line : out.split("\n")) {
-                        int slash = line.indexOf('/');
-                        if (slash > 0) {
-                            int space = line.lastIndexOf(' ', slash);
-                            if (space >= 0 && slash > space + 1) {
-                                String pkg = line.substring(space + 1, slash).trim();
-                                if (!pkg.isEmpty() && !pkg.contains(" ") && pkg.contains(".")) {
-                                    return pkg;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-
-        return null;
+        return com.gamebooster.app.games.ForegroundGameDetector.detectForegroundPackage(getApplicationContext());
     }
 
     @Override

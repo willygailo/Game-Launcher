@@ -193,6 +193,11 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/document.unity3d");
             rel.add("files/dragon2017/assets/Document/Document.unity3d");
             rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
+            // 2026: Scenes/android and UI/Art assets (Drone view & UI custom configs)
+            rel.add("files/dragon2017/assets/Scenes/android/Clan_L_01.unity3d");
+            rel.add("files/dragon2017/assets/Scenes/android/UI_Arena_01.unity3d");
+            rel.add("files/dragon2017/assets/UI/android/uiatlas.unity3d");
+            rel.add("files/dragon2017/assets/Art/android/ui_load.unity3d");
         }
 
         // 2. PUBG Mobile family — split by variant for accurate per-build paths
@@ -214,6 +219,7 @@ public class GameConfigPathResolver {
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SrcVersion.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks/game_patch.pak");
 
             // ── BGMI (Battlegrounds Mobile India) — com.pubg.imobile ──
             if (pkg.contains("imobile")) {
@@ -264,8 +270,12 @@ public class GameConfigPathResolver {
         else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Config/HardwareProfile.json");
+            rel.add("files/config/UserSetting.json");
+            rel.add("files/config/HardwareProfile.json");
             rel.add("files/GraphicsSettings.ini");
+            rel.add("files/config/GraphicsSettings.ini");
             rel.add("files/ControlsSettings.ini");
+            rel.add("files/config/ControlsSettings.ini");
             rel.add("files/UserSetting.json");
             rel.add("files/HardwareProfile.json");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini");
@@ -301,6 +311,12 @@ public class GameConfigPathResolver {
             rel.add("files/FFSettings_2026.json");
             rel.add("files/DeviceHardwareFF.json");
             rel.add("files/FFGraphicsSettings_2026.ini");
+            rel.add("files/contentcache/Compulsory/android/gameassetbundles/config/game_record.json");
+            rel.add("files/contentcache/Compulsory/android/gameassetbundles/config/ff_config.json");
+            rel.add("files/contentcache/Compulsory/android/gameassetbundles/config/setting.json");
+            rel.add("files/contentcache/Optional/android/gameassetbundles/config/game_record.json");
+            rel.add("files/contentcache/Optional/android/gameassetbundles/config/ff_config.json");
+            rel.add("files/contentcache/Optional/android/gameassetbundles/config/setting.json");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/com.dts.freefireth.v2.playerprefs.xml");
             rel.add("shared_prefs/com.dts.freefiremax.v2.playerprefs.xml");

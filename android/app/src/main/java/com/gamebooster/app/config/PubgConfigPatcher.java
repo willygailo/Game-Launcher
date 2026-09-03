@@ -335,28 +335,32 @@ public class PubgConfigPatcher {
     public static boolean applyPubgFilePatch(String path, FpsUnlockTier tier) {
         if (path == null || path.trim().isEmpty() || tier == null) return false;
 
+        // In PUBGM UE4 engine: Level 7 is 120 FPS (Ultra Extreme).
+        // Any level > 7 fails the engine enum boundary check and causes PUBGM to fallback to 90 FPS (Level 6).
+        final int effectiveLevel = (tier.fps >= 120) ? 7 : tier.level;
+
         if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
                 || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini")
                 || path.endsWith("VNGEnjoyCJZC.ini") || path.endsWith("GameUserSettings.ini")) {
             String[] userSettingKeys = {
-                "FrameRateLevel=" + tier.level,
-                "BattleFPS=" + tier.level,
-                "LobbyFPS=" + tier.level,
+                "FrameRateLevel=" + effectiveLevel,
+                "BattleFPS=" + effectiveLevel,
+                "LobbyFPS=" + effectiveLevel,
                 "FPS=" + tier.fps,
                 "MaxFPS=" + tier.fps,
                 "TargetFPS=" + tier.fps,
                 "FrameRateLimit=" + tier.fps,
                 "MobileFPSLimit=" + tier.fps,
-                "GraphicQuality=4",
-                "ArtQuality=4",
-                "ShadowQuality=2",
-                "MobileHDRMode=1",
+                "GraphicQuality=1", // 1 = Smooth (MANDATORY in PUBGM to unlock and expose 120 FPS)
+                "ArtQuality=1",
+                "ShadowQuality=1",
+                "MobileHDRMode=0",
                 "HighFPSMode=3",
-                "bUseHDRMode=True",
+                "bUseHDRMode=False",
                 "bUseUltraExtreme=True",
                 "bFramePacingEnabled=True",
-                "ResolutionScale=120",
-                "ResolutionQuality=120",
+                "ResolutionScale=100",
+                "ResolutionQuality=100",
                 "UnlockFPS=1",
                 "Unlock120Hz=1",
                 "Unlock144Hz=1",
@@ -370,9 +374,9 @@ public class PubgConfigPatcher {
         if (path.endsWith(".playerprefs.xml") || path.endsWith("_preferences.xml")) {
             String[] xmlKeys = {
                 "FPS=" + tier.fps,
-                "FrameRateLevel=" + tier.level,
-                "GraphicQuality=4",
-                "MobileHDRMode=1",
+                "FrameRateLevel=" + effectiveLevel,
+                "GraphicQuality=1",
+                "MobileHDRMode=0",
                 "HighFPSMode=3"
             };
             return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
@@ -381,9 +385,9 @@ public class PubgConfigPatcher {
         // Default: UE4 UserCustom / DeviceProfile INI
         String[] cVarsAndIniKeys = {
             // ── SuperSmooth Frame Rate & Device Profile CVars ──
-            "+CVars=r.PUBGDeviceFPS=" + tier.level,
-            "+CVars=r.DefaultDeviceFPS=" + tier.level,
-            "+CVars=r.UserFPSSetting=" + tier.level,
+            "+CVars=r.PUBGDeviceFPS=" + effectiveLevel,
+            "+CVars=r.DefaultDeviceFPS=" + effectiveLevel,
+            "+CVars=r.UserFPSSetting=" + effectiveLevel,
             "+CVars=r.PUBGMaxFPS=" + tier.fps,
             "+CVars=r.PUBGFrameRateLimit=" + tier.fps,
             "+CVars=r.FrameRateLimit=" + tier.fps,
@@ -397,26 +401,17 @@ public class PubgConfigPatcher {
             "+CVars=r.TouchBoostHz=" + tier.fps,
             "+CVars=r.MobileTouchBoostRate=" + tier.fps,
             "+CVars=r.FramePacing=1",
-            // ── UltraExtreme Graphics CVars ──
-            "+CVars=r.MobileHDR=1",
-            "+CVars=r.PUBGHDRMode=1",
-            "+CVars=r.PUBGQualityLevel=5",
-            "+CVars=r.PUBGSDKQualityLevel=5",
-            "+CVars=r.UserQualitySetting=5",
-            "+CVars=r.Tonemapper.Quality=4",
-            "+CVars=r.HDR.Display.OutputDevice=1",
+            // ── Smooth Base with High-Fidelity Rendering CVars ──
+            "+CVars=r.MobileHDR=0",
+            "+CVars=r.PUBGHDRMode=0",
+            "+CVars=r.PUBGQualityLevel=1",
+            "+CVars=r.PUBGSDKQualityLevel=1",
+            "+CVars=r.UserQualitySetting=1",
+            "+CVars=r.Tonemapper.Quality=3",
             "+CVars=r.MobileContentScaleFactor=1.0",
-            "+CVars=r.MobileReduceLoadedMips=0",
             "+CVars=r.MaxAnisotropy=16",
-            "+CVars=r.BloomQuality=5",
-            "+CVars=r.DepthOfFieldQuality=4",
-            "+CVars=r.Shadow.MaxResolution=2048",
-            "+CVars=r.Shadow.CSM.MaxMobileCascades=4",
-            "+CVars=r.ReflectionCaptureResolution=256",
             "+CVars=r.TemporalAA.Upscale=1",
-            "+CVars=r.VelocityBlur=1",
             "+CVars=r.AllowOcclusionQueries=1",
-            "+CVars=r.MobileTonemapperFilm=1",
             "+CVars=r.PUBGTPPViewRange=100.00",
             "+CVars=r.PUBGFPPViewRange=150.00",
             "+CVars=r.SuppressLogs=1",
@@ -430,7 +425,9 @@ public class PubgConfigPatcher {
             "TargetFPS=" + tier.fps,
             "FrameRateLimit=" + tier.fps,
             "MobileFPSLimit=" + tier.fps,
-            "FrameRateLevel=" + tier.level,
+            "FrameRateLevel=" + effectiveLevel,
+            "GraphicQuality=1",
+            "ArtQuality=1",
             "UnlockFPS=1",
             "Unlock120FPS=1",
             "Unlock144FPS=1",
@@ -449,29 +446,12 @@ public class PubgConfigPatcher {
             "Unlock240Hz=1",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
-            "GraphicsQuality=5",
-            "GraphicQuality=4",
-            "GraphicLevel=4",
-            "ResolutionQuality=120",
-            "ResolutionScale=120",
-            "ScreenScale=120",
-            "HDRMode=1",
-            "HDR10Plus=1",
-            "UltraHDMode=1",
-            "HDRColorMode=2",
-            "SuperResolution=1",
-            "bUseHDRMode=True",
-            "bUseHighQualityBloom=True",
-            "BloomQuality=5",
-            "AntiAliasingQuality=4",
+            "ResolutionQuality=100",
+            "ResolutionScale=100",
+            "ScreenScale=100",
+            "HDRMode=0",
+            "AntiAliasingQuality=2",
             "bUseAntiAliasing=True",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "TextureQuality=4",
-            "MaxAnisotropy=16",
-            "LightingQuality=3",
-            "ParticleQuality=3",
-            "WaterReflection=1",
             "VulkanPipelineCache=1",
             "AsyncCompute=1",
             "VRS=1",
@@ -490,11 +470,14 @@ public class PubgConfigPatcher {
 
     /**
      * Patches Active.sav binary savegame file directly using byte manipulation.
-     * Enforces FPSLevel, BattleFPS, and LobbyFPS to target levels (10=185fps, 9=165fps, 8=144fps, 7=120fps).
+     * Enforces FPSLevel, BattleFPS, and LobbyFPS to Level 7 (120 FPS / Ultra Extreme).
      */
     public static void patchActiveSavBinary(String pkg, int targetFps) {
         if (pkg == null) return;
-        final int fpsLevel = FpsUnlockTier.fromFps(targetFps).level;
+        final int rawLevel = FpsUnlockTier.fromFps(targetFps).level;
+        // In PUBGM UE4 engine: Level 7 is 120 FPS. Any level > 7 fails enum validation and clamps to 90 FPS (Level 6).
+        final int effectiveLevel = (targetFps >= 120) ? 7 : rawLevel;
+
         String[] savPaths = {
             "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav",
             "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav",
@@ -523,14 +506,15 @@ public class PubgConfigPatcher {
 
                 if (data != null && data.length > 0) {
                     boolean modified = false;
-                    modified |= patchBinarySavField(data, "FPSLevel", fpsLevel);
-                    modified |= patchBinarySavField(data, "BattleFPS", fpsLevel);
-                    modified |= patchBinarySavField(data, "LobbyFPS", fpsLevel);
+                    modified |= patchBinarySavField(data, "FPSLevel", effectiveLevel);
+                    modified |= patchBinarySavField(data, "BattleFPS", effectiveLevel);
+                    modified |= patchBinarySavField(data, "LobbyFPS", effectiveLevel);
                     modified |= patchBinarySavField(data, "HighFPSMode", 3);
-                    modified |= patchBinarySavField(data, "GraphicQuality", 4);
-                    modified |= patchBinarySavField(data, "ArtQuality", 4);
-                    modified |= patchBinarySavField(data, "ShadowQuality", 2);
-                    modified |= patchBinarySavField(data, "MobileHDRMode", 1);
+                    // Crucial: GraphicQuality must be 1 (Smooth) to prevent PUBGM from disabling 120 FPS mode
+                    modified |= patchBinarySavField(data, "GraphicQuality", 1);
+                    modified |= patchBinarySavField(data, "ArtQuality", 1);
+                    modified |= patchBinarySavField(data, "ShadowQuality", 1);
+                    modified |= patchBinarySavField(data, "MobileHDRMode", 0);
 
                     if (modified) {
                         if (ShizukuFileManager.fileExists(sav)) {
@@ -545,7 +529,7 @@ public class PubgConfigPatcher {
                 Log.w(TAG, "patchActiveSavBinary error for " + sav + ": " + t.getMessage());
             }
         }
-        Log.i(TAG, "PUBGM Active.sav binary enforced level " + fpsLevel + " (" + targetFps + " FPS) for " + pkg);
+        Log.i(TAG, "PUBGM Active.sav binary enforced level " + effectiveLevel + " (" + targetFps + " FPS) for " + pkg);
     }
 
     private static boolean patchBinarySavField(byte[] data, String fieldName, int value) {

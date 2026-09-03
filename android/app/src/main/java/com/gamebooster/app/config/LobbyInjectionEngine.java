@@ -110,6 +110,9 @@ public final class LobbyInjectionEngine {
      */
     public static void triggerManualLobbyInject(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) {
+            packageName = com.gamebooster.app.games.ForegroundGameDetector.detectActiveGame(context);
+        }
+        if (packageName == null || packageName.trim().isEmpty()) {
             packageName = sActiveGamePackage;
         }
         if (packageName == null || packageName.trim().isEmpty()) {
@@ -120,12 +123,13 @@ public final class LobbyInjectionEngine {
         if (packageName == null || packageName.trim().isEmpty()) {
             if (context != null) {
                 sMainHandler.post(() ->
-                        Toast.makeText(context, "⚠️ No active game detected to inject", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(context, "⚠️ No active game detected! Please open MLBB, PUBGM, CODM, etc.", Toast.LENGTH_SHORT).show());
             }
             return;
         }
 
         final String pkg = packageName.trim();
+        sActiveGamePackage = pkg; // Sync active package state
         final Context appContext = (context != null) ? context.getApplicationContext() : null;
         final int targetFps = sActiveTargetFps;
 
@@ -172,13 +176,15 @@ public final class LobbyInjectionEngine {
                 long duration = System.currentTimeMillis() - startTime;
                 Log.i(TAG, "✅ [Stage 2 COMPLETE] In-Lobby Injection successful for " + pkg + " in " + duration + "ms");
 
+                final String gameTitle = com.gamebooster.app.games.GamePackageRegistry.getGameTitle(pkg, context);
+
                 // Show visual confirmation on UI thread
                 sMainHandler.post(() -> {
                     try {
                         if (context != null) {
                             String msg = isManual 
-                                ? "⚡ In-Lobby 2026 Overdrive Re-Locked & Active!" 
-                                : "⚡ In-Lobby Overdrive Injected (Lobby Safe)";
+                                ? "⚡ Detected & Injected: " + gameTitle + " (" + targetFps + " FPS Overdrive)" 
+                                : "⚡ " + gameTitle + " Overdrive Injected (Lobby Safe)";
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
                         }
                     } catch (Throwable ignored) {}

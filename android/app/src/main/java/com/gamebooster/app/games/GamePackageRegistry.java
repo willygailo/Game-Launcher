@@ -198,6 +198,42 @@ public class GamePackageRegistry {
         return null;
     }
 
+    public static String getGameTitle(String packageName) {
+        return getGameTitle(packageName, null);
+    }
+
+    public static String getGameTitle(String packageName, android.content.Context context) {
+        if (packageName == null || packageName.trim().isEmpty()) return "Unknown Game";
+        String pkg = packageName.toLowerCase(java.util.Locale.ROOT).trim();
+        GameInfoSpec spec = KNOWN_GAMES.get(pkg);
+        if (spec != null && spec.title != null) {
+            return spec.title;
+        }
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) return "Mobile Legends (MLBB)";
+        if (pkg.contains("tencent.ig") || pkg.contains("pubg")) return "PUBG Mobile";
+        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("warzone")) return "Call of Duty: Mobile";
+        if (pkg.contains("freefire")) return "Free Fire";
+        if (pkg.contains("genshin")) return "Genshin Impact";
+        if (pkg.contains("wildrift")) return "Wild Rift";
+        if (pkg.contains("deltaforce")) return "Delta Force";
+        if (pkg.contains("bloodstrike")) return "Blood Strike";
+        if (pkg.contains("arenaofvalor") || pkg.contains("sgame")) return "Honor of Kings / AoV";
+        if (pkg.contains("standoff2")) return "Standoff 2";
+        if (pkg.contains("roblox")) return "Roblox";
+
+        if (context != null) {
+            try {
+                android.content.pm.PackageManager pm = context.getPackageManager();
+                android.content.pm.ApplicationInfo ai = pm.getApplicationInfo(packageName, 0);
+                CharSequence label = pm.getApplicationLabel(ai);
+                if (label != null && label.length() > 0) {
+                    return label.toString();
+                }
+            } catch (Throwable ignored) {}
+        }
+        return packageName;
+    }
+
     public enum GameType {
         MLBB,
         PUBGM,

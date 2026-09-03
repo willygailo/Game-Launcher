@@ -704,6 +704,20 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectHardwareMaskProfile
+ * Fast-path native generator for DeviceProfile.ini (UE4/5) and HardwareProfile.json (Unity)
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHardwareMaskProfile
+  (JNIEnv *, jclass, jstring, jstring, jstring, jint, jint);
+
+/*
+ * nativeSetProcessIOPriority
+ * Direct Linux SYS_ioprio_set and setpriority syscall accelerator
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessIOPriority
+  (JNIEnv *, jclass, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -2,7 +2,9 @@ package com.gamebooster.app.spoofer;
 
 import android.content.Context;
 import android.util.Log;
+import com.gamebooster.app.booster.GpuTweaksChannel;
 import com.gamebooster.app.config.GameConfigPathResolver;
+import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
@@ -356,8 +358,10 @@ public class HardwareMaskEngine {
             for (String p : paths) {
                 if (p.endsWith("DeviceProfile.ini") || p.contains("Saved/Config/Android")) {
                     String targetPath = p.endsWith(".ini") ? p : (p + "/DeviceProfile.ini");
-                    ShizukuFileManager.ensureParentDirectory(targetPath);
-                    ShizukuFileManager.writeFile(targetPath, ue4Profile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(targetPath, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(targetPath);
+                        ShizukuFileManager.writeFile(targetPath, ue4Profile, "666");
+                    }
                 }
             }
         }
@@ -369,8 +373,10 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("HardwareProfile.json") || p.endsWith(".json")) {
-                    ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, jsonProfile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(p);
+                        ShizukuFileManager.writeFile(p, jsonProfile, "666");
+                    }
                 }
             }
         }
@@ -382,8 +388,10 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("hardware_model_config.json") || p.contains("device_config.json") || p.endsWith(".json")) {
-                    ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, genshinProfile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(p);
+                        ShizukuFileManager.writeFile(p, genshinProfile, "666");
+                    }
                 }
             }
         }
@@ -394,8 +402,10 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("device_cfg.ini") || p.contains("DeviceHardware.ini") || p.endsWith("HighFPSConfig.ini")) {
-                    ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, mlbbProfile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(p);
+                        ShizukuFileManager.writeFile(p, mlbbProfile, "666");
+                    }
                 }
             }
         }
@@ -406,8 +416,10 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("device_info.json") || p.contains("DeviceHardware.ini") || p.endsWith(".json")) {
-                    ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, ffProfile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(p);
+                        ShizukuFileManager.writeFile(p, ffProfile, "666");
+                    }
                 }
             }
         }
@@ -420,8 +432,10 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("DeviceHardware.ini") || p.contains("device.ini") || p.endsWith(".ini") || p.contains("DeviceProfile.json")) {
-                    ShizukuFileManager.ensureParentDirectory(p);
-                    ShizukuFileManager.writeFile(p, hokProfile, "666");
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                        ShizukuFileManager.ensureParentDirectory(p);
+                        ShizukuFileManager.writeFile(p, hokProfile, "666");
+                    }
                 }
             }
         }
