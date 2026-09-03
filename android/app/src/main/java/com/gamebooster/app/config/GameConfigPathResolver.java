@@ -57,7 +57,7 @@ public class GameConfigPathResolver {
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
                 String scanRoots = "/sdcard/Android/data/" + pkg + "/ /storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/";
-                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"*.unity3d\" \\) 2>/dev/null";
+                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" \\) 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
@@ -174,11 +174,6 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/android/Config.xml");
             rel.add("files/dragon2017/assets/Document/android/BattleConfig.xml");
             rel.add("files/dragon2017/assets/Document/android/SystemConfig.xml");
-            rel.add("files/dragon2017/assets/Document/android/document.unity3d");
-            rel.add("files/dragon2017/assets/Document/android/Document.unity3d");
-            rel.add("files/dragon2017/assets/Document/android/graphics.unity3d");
-            rel.add("files/dragon2017/assets/Document/android/config.unity3d");
-            rel.add("files/dragon2017/assets/Document/android/highfps.unity3d");
             rel.add("files/dragon2017/assets/Document/QualityConfig.json");
             rel.add("files/dragon2017/assets/Document/GraphicsSetting.json");
             rel.add("files/dragon2017/assets/Document/HighFPSConfig.json");
@@ -190,14 +185,7 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/GraphicsSetting.xml");
             rel.add("files/dragon2017/assets/Document/HighFPSConfig.xml");
             rel.add("files/dragon2017/assets/Document/Config.xml");
-            rel.add("files/dragon2017/assets/Document/document.unity3d");
-            rel.add("files/dragon2017/assets/Document/Document.unity3d");
             rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
-            // 2026: Scenes/android and UI/Art assets (Drone view & UI custom configs)
-            rel.add("files/dragon2017/assets/Scenes/android/Clan_L_01.unity3d");
-            rel.add("files/dragon2017/assets/Scenes/android/UI_Arena_01.unity3d");
-            rel.add("files/dragon2017/assets/UI/android/uiatlas.unity3d");
-            rel.add("files/dragon2017/assets/Art/android/ui_load.unity3d");
         }
 
         // 2. PUBG Mobile family — split by variant for accurate per-build paths

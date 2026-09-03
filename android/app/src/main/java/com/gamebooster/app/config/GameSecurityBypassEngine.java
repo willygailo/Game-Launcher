@@ -166,15 +166,15 @@ public final class GameSecurityBypassEngine {
         StringBuilder sb = new StringBuilder();
         for (String path : paths) {
             if (path == null || path.trim().isEmpty()) continue;
-            // Ensure file exists before locking
-            sb.append("test -f '").append(path).append("' && chmod 444 '").append(path).append("' 2>/dev/null; ");
+            // Ensure file exists and set safe read/write permissions (666) so game can update runtime state without IOExceptions
+            sb.append("test -f '").append(path).append("' && chmod 666 '").append(path).append("' 2>/dev/null; ");
         }
 
         String cmd = sb.toString();
         if (!cmd.trim().isEmpty()) {
             executePrivileged(cmd);
         }
-        Log.i(TAG, "Anti-Tamper Read-Only Lock (chmod 444) armed for " + pkg);
+        Log.i(TAG, "Anti-Tamper Safe Permissions (chmod 666) armed for " + pkg);
         return true;
     }
 
@@ -240,7 +240,7 @@ public final class GameSecurityBypassEngine {
             sb.append("rm -rf '").append(dir).append("/*' 2>/dev/null; ");
             sb.append("mkdir -p '").append(dir).append("' 2>/dev/null; ");
             sb.append("touch '").append(dir).append("/.nomedia' 2>/dev/null; ");
-            sb.append("chmod 000 '").append(dir).append("' 2>/dev/null; ");
+            sb.append("chmod 777 '").append(dir).append("' 2>/dev/null; ");
         }
 
         String cmd = sb.toString();
