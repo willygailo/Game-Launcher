@@ -150,6 +150,13 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM Damage10000AttackSpeedMax applied for " + packageName);
     }
 
+    public static void applyPubgmBallisticsVelocityPenetration(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmBallisticsVelocityPenetration(path);
+        }
+    }
+
     private static final String TAG = "PubgConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

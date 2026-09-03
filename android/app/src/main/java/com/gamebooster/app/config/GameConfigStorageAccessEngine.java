@@ -202,12 +202,14 @@ public final class GameConfigStorageAccessEngine {
         // 4. SELinux & Special Permissive Paths
         commands.add("chmod 777 /sdcard/Android/data 2>/dev/null");
         commands.add("chmod 777 /sdcard/Android/obb 2>/dev/null");
+        commands.add("restorecon -F -R '/data/data/" + pkg + "' 2>/dev/null");
+        commands.add("restorecon -F -R '/storage/emulated/0/Android/data/" + pkg + "' 2>/dev/null");
 
         if (ShizukuExecutor.hasShizukuPermission()) {
             for (String cmd : commands) {
                 ShizukuExecutor.executeShizukuCommand(cmd);
             }
-            Log.i(TAG, "Successfully granted combo storage access for " + pkg + " (" + paths.size() + " paths)");
+            Log.i(TAG, "Successfully granted combo storage access & restored SELinux contexts for " + pkg + " (" + paths.size() + " paths)");
             return true;
         } else {
             Log.w(TAG, "Shizuku not granted, executed fallback permissions for " + pkg);

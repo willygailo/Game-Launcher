@@ -230,6 +230,11 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbLingFastestSword(String path);
     public static native boolean nativeInjectMlbbFannyFastestCable(String path);
     public static native boolean nativeInjectUniversalZeroDelaySkillTapAllHero(String path);
+    public static native boolean nativeInjectFastLootAndSprint(String path);
+    public static native boolean nativeInjectMlbbPenetrationCritBurst(String path);
+    public static native boolean nativeInjectPubgmBallisticsVelocityPenetration(String path);
+    public static native boolean nativeInjectCodmBsaRemovalRangeOverdrive(String path);
+    public static native boolean nativeInjectUniversalCombatMechanicsOverdrive(String path);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -523,6 +528,7 @@ public class NativeConfigInjector {
         if (packageName == null || packageName.trim().isEmpty()) return 0;
         List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
         int count = 0;
+        boolean isMlbb = packageName.toLowerCase().contains("mobile.legends");
         for (String path : paths) {
             if (path.endsWith("boot.config")) {
                 if (injectUnityBootConfig(path, targetFps)) count++;
@@ -531,11 +537,28 @@ public class NativeConfigInjector {
             } else {
                 if (injectUltraExtremeGraphics(path, targetFps)) count++;
             }
-            // 2026: Always inject DamageLockMax + AimAssistLockMax into every resolved path
+            // Always inject core competitive overrides into every resolved path
             injectDamageLockMax(path);
             injectAimAssistLockMax(path);
+            injectFastLootAndSprint(path);
+            injectScopeAimCalibration(path);
+            injectHitRegDpsBoost(path);
+            injectUniversalZeroDelaySkillTapAllHero(path);
+            injectUniversalCombatMechanicsOverdrive(path);
+
+            // Specialized mechanics by game package
+            if (isMlbb) {
+                injectMlbbJungleFastFarmAllHero(path);
+                injectMlbbLingFastestSword(path);
+                injectMlbbFannyFastestCable(path);
+                injectMlbbPenetrationCritBurst(path);
+            } else if (packageName.toLowerCase().contains("tencent.ig") || packageName.toLowerCase().contains("pubg")) {
+                injectPubgmBallisticsVelocityPenetration(path);
+            } else if (packageName.toLowerCase().contains("callofduty")) {
+                injectCodmBsaRemovalRangeOverdrive(path);
+            }
         }
-        Log.i(TAG, "Injected real engine configs + DamageLockMax + AimAssistLockMax to " + count + " paths for " + packageName);
+        Log.i(TAG, "Injected real engine configs + fast loot/sprint + aim calibration to " + count + " paths for " + packageName);
         return count;
     }
 
@@ -1538,63 +1561,273 @@ public class NativeConfigInjector {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastLootAndWeaponSwap(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectFastLootAndWeaponSwap(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "AutoPickup=1", "AutoPickupSpeed=2",
+            "PUBGAutoLoot=1", "PUBGPickupPriority=1",
+            "PUBGFastWeaponSwitch=1", "FastWeaponSwitch=1",
+            "QuickThrow=1", "FastADS=1", "OneTapADS=1",
+            "QuickLoot=1", "QuickReload=1",
+            "PUBGQuickOpenScope=1", "PickupRangeBoost=1.5",
+            "LootResponseTime=0", "WeaponSwapResponseMs=0",
+            "AutoWeaponEquip=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FastLootWeaponSwap]");
     }
 
     public static boolean injectInstantSprintTurbo(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectInstantSprintTurbo(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectInstantSprintTurbo(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "AutoSprint=1", "bSprintAlways=True",
+            "SprintSensitivity=100", "MovementDeadzone=0",
+            "FastSlide=1", "SlideDelayMs=0",
+            "SprintAcceleration=10", "JoyStickDeadzone=0",
+            "TouchResponseSprint=1000", "bAlwaysRun=True",
+            "SprintThreshold=0.01", "InstantSprintEngage=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[InstantSprintTurbo]");
     }
 
     public static boolean injectMultiRangeHeadshotCalibration(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMultiRangeHeadshotCalibration(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectMultiRangeHeadshotCalibration(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "ShortRangeAimAssist=1", "HipfireDeadzone=0",
+            "HipfireSensitivityBoost=1.2", "RedDotSensScale=1.0",
+            "HoloSensScale=1.0", "MidRangeAimAssist=1",
+            "Scope2xSensitivity=1.0", "Scope3xSensitivity=0.9",
+            "Scope4xSensitivity=0.85", "Scope3xGyroStabilization=1",
+            "LongRangeHeadshotPrecision=1", "Scope6xSensitivity=0.75",
+            "Scope8xSensitivity=0.65", "Scope8xPrecisionFilter=1",
+            "GyroSampleRate=1000", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "AimMagnetism=3",
+            "AimLockHead=1", "TargetTrackingAccuracy=1.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MultiRangeHeadshot]");
     }
 
     public static boolean injectMlbbJungleFastFarmAllHero(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbJungleFastFarmAllHero(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectMlbbJungleFastFarmAllHero(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "JungleFastFarmAllHero=1", "AutoSmiteMonsters=1",
+            "JungleRetributionInstant=1", "MonsterTargetLock=1",
+            "CreepSmartTarget=1", "CampClearOptimized=1",
+            "JunglePathEfficiency=10", "BuffMonsterPriority=1",
+            "RetributionExecutionRange=1.5", "JungleTimerAccurate=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[JungleFarm]");
     }
 
     public static boolean injectMlbbLingFastestSword(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbLingFastestSword(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectMlbbLingFastestSword(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "LingSwordPathResponsiveness=10", "LingSwordAutoLock=1",
+            "LingSwordZeroDelay=1", "SwordTouchSampling=1000",
+            "TempestOfBladesFastSword=1", "LingDashResetZeroLatency=1",
+            "LingWallJumpSpeed=5", "LingSwordMagnetism=1",
+            "Ling4SwordInstantCombo=1", "LingEnergyRestoreFast=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[LingFastSword]");
     }
 
     public static boolean injectMlbbFannyFastestCable(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbFannyFastestCable(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectMlbbFannyFastestCable(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "FannyZeroCableDelay=1", "FannyCableSpeed=10",
+            "FannyMultiCableInstantCast=1", "CableWallSnapSens=5.0",
+            "SkillCastResponseTime=0", "FannyDualCableInstant=1",
+            "FannyWallSnapMagnetism=3", "FannyEnergySaving=1",
+            "FannyInstantRecall=1", "FannyStraightCableSpeed=10"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FannyFastCable]");
     }
 
     public static boolean injectUniversalZeroDelaySkillTapAllHero(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectUniversalZeroDelaySkillTapAllHero(path); } catch (Throwable ignored) {}
+            try {
+                if (nativeInjectUniversalZeroDelaySkillTapAllHero(path)) return true;
+            } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "SkillQueueInstant=1", "SmartSkillCastZeroDelay=1",
+            "AutoAttackAnimationCancel=1", "ComboChainBufferMs=0",
+            "TouchSamplingRate=1000", "ZeroDelaySkillTap=1",
+            "InstantSkillCancelThreshold=0", "HeroTargetLockPriority=1",
+            "FastSkillReleaseSpeed=10", "InputQueueBypass=1",
+            "bZeroLatencyInput=True"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ZeroDelaySkills]");
+    }
+
+    public static boolean injectFastLootAndSprint(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectFastLootAndSprint(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AutoPickup=1", "AutoPickupSpeed=2",
+            "PUBGAutoLoot=1", "PUBGPickupPriority=1",
+            "PUBGFastWeaponSwitch=1", "FastWeaponSwitch=1",
+            "QuickThrow=1", "FastADS=1", "OneTapADS=1",
+            "QuickLoot=1", "QuickReload=1",
+            "PUBGQuickOpenScope=1", "PickupRangeBoost=1.5",
+            "LootResponseTime=0", "AutoSprint=1",
+            "bSprintAlways=True", "SprintSensitivity=100",
+            "MovementDeadzone=0", "FastSlide=1",
+            "SlideDelayMs=0", "SprintAcceleration=10",
+            "JoyStickDeadzone=0", "TouchResponseSprint=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FastLootSprint]");
+    }
+
+    public static boolean injectMlbbPenetrationCritBurst(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbPenetrationCritBurst(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "PhysicalPenetrationRatio=1.0", "MagicPenetrationRatio=1.0",
+            "FlatArmorShred=100", "TrueDamageConversion=1.0",
+            "PenetrationScaleFactor=2.0", "CriticalRateThreshold=1.0",
+            "CriticalDamageMultiplier=3.0", "CritBurstMultiplier=2.5",
+            "CritPacingZeroDelay=1", "OugiShadowKillSpeed=10",
+            "ShadowInstantSwap=1", "ShadowTargetLock=1",
+            "GusionDaggerReturnSpeed=10", "SwordSpikeInstantReset=1",
+            "IncandescenceDoubleDash=1", "ShunpoInvincibilityFrames=10",
+            "WayOfDragonInstantKick=1", "PunctureResetWindow=10",
+            "ThornedRoseCenterHit=1", "PhantomExecutionInstant=1",
+            "ClaudeStackMaxMaintain=1", "WanwanWeaknessHitboxBoost=2.0",
+            "CrossbowOfTangInstantTrigger=1", "BattleSpellExecutionThreshold=1.0",
+            "ExecuteAutoTrigger=1", "LordTurtleStealPacing=1",
+            "RetributionStealSyncRate=1000", "LifestealCoefficient=1.0",
+            "SpellVampCoefficient=1.0", "AntiHealBypass=1",
+            "ShieldAbsorbRatio=2.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbCritPenetration]");
+    }
+
+    public static boolean injectPubgmBallisticsVelocityPenetration(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmBallisticsVelocityPenetration(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MuzzleVelocityBoost=2.0", "BulletFlightTimeZero=1",
+            "ClientHitRegistrationPacing=1000", "HitScanSimulation=1",
+            "NetClientLagCompensation=1", "ArmorPenetrationLevel3=1.0",
+            "HelmetPenetrationLevel3=1.0", "LimbDamageMultiplier=1.5",
+            "FleshDamageMultiplier=2.0", "VestDamageBypass=1",
+            "ShotgunPelletSpread=0.0", "ChokeTightness=1.0",
+            "PelletDamageFull=1", "DBS_DoubleTapDelayMs=0",
+            "SniperHeadshotDamage=300", "BoltActionQuickCycle=1",
+            "NoScopeCrosshairAccuracy=1.0", "BulletPenetrationDistance=1000",
+            "M416_VerticalRecoilMin=0", "BerylM762_HorizontalBounce=0",
+            "AKM_FirstShotKick=0", "CameraShakeIntensity=0.0",
+            "ScopeVisualBob=0.0", "VehicleDamageMultiplier=2.5",
+            "VehicleOccupantPenetration=1",
+            "+CVars=r.PUBGMuzzleVelocityBoost=2.0",
+            "+CVars=r.PUBGBulletFlightTimeZero=1",
+            "+CVars=r.PUBGHitScanSimulation=1",
+            "+CVars=r.PUBGArmorPenetrationLevel3=1.0",
+            "+CVars=r.PUBGHelmetPenetrationLevel3=1.0",
+            "+CVars=r.PUBGLimbDamageMultiplier=1.5",
+            "+CVars=r.PUBGFleshDamageMultiplier=2.0",
+            "+CVars=r.PUBGVestDamageBypass=1",
+            "+CVars=r.PUBGShotgunPelletSpread=0.0",
+            "+CVars=r.PUBGChokeTightness=1.0",
+            "+CVars=r.PUBGSniperHeadshotDamage=300",
+            "+CVars=r.PUBGCameraShakeIntensity=0.0",
+            "+CVars=r.PUBGScopeVisualBob=0.0",
+            "+CVars=r.PUBGVehicleDamageMultiplier=2.5"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmBallistics]");
+    }
+
+    public static boolean injectCodmBsaRemovalRangeOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmBsaRemovalRangeOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "BulletSpreadAccuracy=0.0", "ADSBulletSpreadDecay=0.0",
+            "HipfireBloom=0.0", "InitialBulletSpread=0.0",
+            "DamageRangeFalloff=0.0", "DamageRangeMultiplier=3.0",
+            "MinDamageMultiplier=1.0", "DamagePerShotMax=100",
+            "SprintToFireDelayMs=0", "ADSTransitionTimeMs=0",
+            "FastBoltPullSpeed=2.0", "QuickDrawFactor=2.0",
+            "HitFlinchScale=0.0", "FlinchRecoveryRate=10.0",
+            "ScreenShakeScale=0.0", "QuickScopeAccuracyThreshold=1.0",
+            "BlankScopeAccuracy=1.0", "SniperADSIdleSway=0.0",
+            "OneShotKillHitbox=1", "ShotgunDamagePerPellet=50",
+            "PelletSpreadADS=0.0", "PumpActionCycleMs=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmBsaRange]");
+    }
+
+    public static boolean injectUniversalCombatMechanicsOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectUniversalCombatMechanicsOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "TouchSampleRate=1000", "TouchZeroDelay=1",
+            "InputBufferRate=1000", "ZeroLatencyEventQueue=1",
+            "AttackAnimationCancel=1", "PostAttackRecoveryFrames=0",
+            "PreAttackWindupFrames=0", "FrameSyncDamage=1",
+            "ClientDamagePacing=185", "NetworkDamagePacketBatching=0",
+            "UniversalArmorPiercing=1.0", "TrueDamageMode=1",
+            "EffectiveDPSMultiplier=3.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UniversalCombat]");
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

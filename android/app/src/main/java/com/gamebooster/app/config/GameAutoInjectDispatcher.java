@@ -72,6 +72,7 @@ public final class GameAutoInjectDispatcher {
         // ── 1. Pre-flight: ensure and grant all path access (chmod 777/666 + appops) ──
         try {
             GameConfigStorageAccessEngine.grantAllPathsAccess(context, pkg);
+            GameSecurityBypassEngine.unlockForInjection(pkg);
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ Pre-flight storage access grant note for " + pkg + ": " + t.getMessage());
         }
@@ -139,7 +140,15 @@ public final class GameAutoInjectDispatcher {
                     }
                     break;
             }
-            Log.i(TAG, "✅ [AutoInject] Successfully completed injection for " + pkg);
+
+            // ── 4. Post-flight: 4-Layer Security Bypass, SELinux restore, Anti-Tamper Chmod 444 Lock & Telemetry Nulling ──
+            try {
+                GameSecurityBypassEngine.postInjectionBypassAndLock(pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "⚠️ Post-flight security bypass note for " + pkg + ": " + t.getMessage());
+            }
+
+            Log.i(TAG, "✅ [AutoInject] Successfully completed injection & security bypass for " + pkg);
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ [AutoInject] Non-fatal error during auto-injection for " + pkg + ": " + t.getMessage(), t);
         }
@@ -192,6 +201,7 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyLingFastestSword(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFannyFastestCable(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyMlbbPenetrationCritBurst(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -226,6 +236,7 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -260,6 +271,7 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {
@@ -283,6 +295,7 @@ public final class GameAutoInjectDispatcher {
         try { FreeFireConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
+        try { CommonConfigTuningInjector.applyUniversalCombatMechanicsOverdrive(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectHok(String pkg) {

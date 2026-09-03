@@ -767,6 +767,41 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalZeroDelaySkillTapAllHero
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectFastLootAndSprint
+ * Universal — Auto-loot, fast gun pickup, pickup priority, auto-sprint, instant slide
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastLootAndSprint
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbPenetrationCritBurst
+ * MLBB — 100% Malefic Roar/Divine Glaive penetration, 3.0x crit multiplier, hero execution mechanics, instant battle spell
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbPenetrationCritBurst
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmBallisticsVelocityPenetration
+ * PUBGM — 2.0x Muzzle velocity, instant hit-reg/desync fix, Lv3 vest/helmet shredder, shotgun tight slug, sniper 300 damage lock
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmBallisticsVelocityPenetration
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmBsaRemovalRangeOverdrive
+ * CODM — BSA elimination, infinite damage range falloff bypass, instant ADS, zero hit-flinch, sniper blank-scope hitscan
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmBsaRemovalRangeOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalCombatMechanicsOverdrive
+ * Universal — 1000Hz touch-to-damage, attack animation canceling, frame-synced damage, true damage conversion
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatMechanicsOverdrive
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

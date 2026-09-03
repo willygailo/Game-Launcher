@@ -162,6 +162,13 @@ public class MlbbConfigPatcher {
         }
     }
 
+    public static void applyMlbbPenetrationCritBurst(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbPenetrationCritBurst(path);
+        }
+    }
+
     private static final String TAG = "MlbbConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

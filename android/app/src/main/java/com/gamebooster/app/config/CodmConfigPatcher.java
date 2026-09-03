@@ -146,6 +146,13 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM Damage10000AttackSpeedMax applied for " + packageName);
     }
 
+    public static void applyCodmBsaRemovalRangeOverdrive(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmBsaRemovalRangeOverdrive(path);
+        }
+    }
+
     private static final String TAG = "CodmConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

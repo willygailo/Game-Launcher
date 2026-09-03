@@ -761,8 +761,16 @@ public final class CommonConfigTuningInjector {
         applyAimAssistLockMax(packageName);
         applyVulkanPipelinePrime(packageName);
         applyAntiTelemetrySafe(packageName);
-        applyNetworkLagCompensation(packageName);
         // 2026 Skill Economy Overdrive — fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
         applySkillEconomyMasterSuite(packageName);
+        // 2026 Universal Combat Mechanics & True Damage Overdrive
+        applyUniversalCombatMechanicsOverdrive(packageName);
+    }
+
+    public static void applyUniversalCombatMechanicsOverdrive(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        for (String path : getPaths(packageName)) {
+            NativeConfigInjector.injectUniversalCombatMechanicsOverdrive(path);
+        }
     }
 }
