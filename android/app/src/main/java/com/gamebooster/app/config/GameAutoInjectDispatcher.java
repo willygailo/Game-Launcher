@@ -187,6 +187,11 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
         // 2026 Skill Economy: fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
         try { MlbbConfigPatcher.applyFastCooldownManaEnergy(pkg); } catch (Throwable ignored) {}
+        // 2026 Advanced Legal Optimizations: Jungle Fast Farm, Ling Sword, Fanny Cable, Zero-Delay Skill Tap
+        try { MlbbConfigPatcher.applyJungleFastFarmAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyLingFastestSword(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFannyFastestCable(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -216,6 +221,11 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
         // 2026 Skill Economy: fast stamina, adrenaline energy, HP regen, zero vehicle cooldown
         try { PubgConfigPatcher.applyFastStaminaEnergyBoost(pkg); } catch (Throwable ignored) {}
+        // 2026 Advanced Legal Optimizations: Fast Loot & Weapon Swap, Instant Sprint, Multi-Range Headshot
+        try { PubgConfigPatcher.applyFastLootAndWeaponSwap(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -245,6 +255,11 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
         // 2026 Skill Economy: zero operator/tactical/lethal cooldowns, max scorestreak, HP regen
         try { CodmConfigPatcher.applyFastCooldownAbilityRegen(pkg); } catch (Throwable ignored) {}
+        // 2026 Advanced Legal Optimizations: Fast Loot & Weapon Swap, Instant Sprint, Multi-Range Headshot
+        try { CodmConfigPatcher.applyFastLootAndWeaponSwap(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {
@@ -263,6 +278,11 @@ public final class GameAutoInjectDispatcher {
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUltraExtreme240FpsGraphics(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
+        // 2026 Advanced Legal Optimizations: Fast Loot & Weapon Swap, Instant Sprint, Multi-Range Headshot
+        try { FreeFireConfigPatcher.applyFastLootAndWeaponSwap(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyInstantSprintTurbo(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectHok(String pkg) {

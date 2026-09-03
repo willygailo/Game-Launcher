@@ -143,13 +143,14 @@ public class HardwareMaskEngine {
             }
             String targetGamesCsv = String.join(",", allGamePkgs);
 
+            batchCommands.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+            batchCommands.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+            batchCommands.add("settings delete global angle_enabled_pkgs 2>/dev/null");
             batchCommands.add("settings put global angle_gl_driver_all_angle 0");
             batchCommands.add("settings put global game_driver_all_apps 0");
             batchCommands.add("settings put global updatable_driver_all_apps 0");
             batchCommands.add("settings put global game_driver_opt_in_apps \"" + targetGamesCsv + "\"");
             batchCommands.add("settings put global updatable_driver_production_opt_in_apps \"" + targetGamesCsv + "\"");
-            batchCommands.add("settings put global angle_gl_driver_selection_pkgs \"" + targetGamesCsv + "\"");
-            batchCommands.add("settings put global angle_gl_driver_selection_values angle");
 
             // Display & SurfaceFlinger Frame Rates
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
@@ -518,7 +519,10 @@ public class HardwareMaskEngine {
             resetCmds.add("settings put system device_name \"" + android.os.Build.MODEL + "\" 2>/dev/null");
             resetCmds.add("settings put global game_driver_opt_in_apps \"\" 2>/dev/null");
             resetCmds.add("settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null");
-            resetCmds.add("settings put global angle_gl_driver_selection_pkgs \"\" 2>/dev/null");
+            resetCmds.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+            resetCmds.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+            resetCmds.add("settings delete global angle_enabled_pkgs 2>/dev/null");
+            resetCmds.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
             resetCmds.add("settings put secure limit_ad_tracking 0 2>/dev/null");
             ShizukuExecutor.executeShizukuCommands(resetCmds);
             Log.i(TAG, "Hardware mask reset completed.");
@@ -596,8 +600,9 @@ public class HardwareMaskEngine {
                 String gameDriverCsv = String.join(",", appPkgs);
                 batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverCsv + "\"");
                 batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverCsv + "\"");
-                batchCmds.add("settings put global angle_gl_driver_selection_pkgs \"" + gameDriverCsv + "\"");
-                batchCmds.add("settings put global angle_gl_driver_selection_values angle");
+                batchCmds.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+                batchCmds.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+                batchCmds.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
             }
 
             if (ShizukuExecutor.hasShizukuPermission()) {

@@ -649,7 +649,7 @@ public class TerminalCoreEngine {
                 "tweak_touch",
                 "🎯 Zero Touch Slop & 1000Hz Gyro (Super Smooth)",
                 "Configures touch slop reduction, 1000Hz polling rate, hardware smoothing & gyro stabilization",
-                "setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 0; settings put system touch_slop_reduction 1; setprop sys.use_fifo 1; setprop persist.sys.touch.pressure.scale 0.0001; setprop debug.sensor.gyro.sample_rate 1000; setprop debug.sensor.gyro.smooth 1; setprop debug.sensor.gyro.stabilization 1; setprop persist.sys.gyro.filter 1; setprop persist.sys.gyro.delay 0"
+                "setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 0; settings put system touch_slop_reduction 1; setprop persist.sys.touch.pressure.scale 0.0001; setprop debug.sensor.gyro.sample_rate 1000; setprop debug.sensor.gyro.smooth 1; setprop debug.sensor.gyro.stabilization 1; setprop persist.sys.gyro.filter 1; setprop persist.sys.gyro.delay 0"
         ));
 
         presetScripts.add(new TerminalScriptPreset(

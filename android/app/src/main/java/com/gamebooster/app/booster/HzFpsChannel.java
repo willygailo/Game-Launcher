@@ -145,7 +145,6 @@ public class HzFpsChannel {
         CommandExecutor.setSystemProperty("debug.sf.fps_limit", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_FPSLIMIT", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_POWERMODE", "1");
-        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
         CommandExecutor.setSystemProperty("persist.sys.game.fps", hzStr);
 
         return RefreshRateResult.success(requestedHz, targetHz);

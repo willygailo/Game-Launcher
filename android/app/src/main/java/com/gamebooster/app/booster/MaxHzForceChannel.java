@@ -110,7 +110,6 @@ public final class MaxHzForceChannel {
         ok += run("setprop debug.gr.swapinterval 0");                                total++;
         ok += run("setprop debug.egl.swapinterval 0");                               total++;
         ok += run("setprop debug.egl.force_msaa 1");                                 total++;
-        ok += run("setprop debug.sf.disable_backpressure 1");                        total++;
         ok += run("setprop debug.sf.early_phase_offset_ns 0");                       total++;
         ok += run("setprop debug.sf.early_app_phase_offset_ns 0");                   total++;
         ok += run("setprop persist.sys.game.fps "              + hz);                total++;

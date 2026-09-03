@@ -120,6 +120,34 @@ public class MlbbConfigPatcher {
         }
     }
 
+    public static void applyJungleFastFarmAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbJungleFastFarmAllHero(path);
+        }
+    }
+
+    public static void applyLingFastestSword(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbLingFastestSword(path);
+        }
+    }
+
+    public static void applyFannyFastestCable(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbFannyFastestCable(path);
+        }
+    }
+
+    public static void applyUniversalZeroDelaySkillTapAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectUniversalZeroDelaySkillTapAllHero(path);
+        }
+    }
+
     public static void applyMlbbAllHeroMaxDamage2026(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {

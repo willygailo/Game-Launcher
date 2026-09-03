@@ -329,8 +329,7 @@ public class GameCfgDialog {
                         sb.append("cmd game set --fps ").append(targetFps).append(" ").append(pkg).append(" 2>/dev/null; ");
                         sb.append("service call SurfaceFlinger 1035 i32 ").append(targetFps).append(" 2>/dev/null; ");
                         sb.append("setprop debug.sf.nobootanimation 1; ");
-                        sb.append("setprop debug.hwui.render_dirty_regions false; ");
-                        sb.append("setprop debug.sf.disable_backpressure 1");
+                        sb.append("setprop debug.hwui.render_dirty_regions false");
                         if (targetFps >= 144) {
                             sb.append("; setprop debug.sf.use_phase_offsets_as_durations 1; ");
                             sb.append("setprop debug.sf.late.sf.duration 10500000; ");

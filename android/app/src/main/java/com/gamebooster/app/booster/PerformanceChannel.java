@@ -111,9 +111,10 @@ public class PerformanceChannel {
                     "settings put global game_driver_opt_in_apps " + targetGamesCsv + "\n" +
                     "settings put global game_driver_prerelease_opt_in_apps " + targetGamesCsv + "\n" +
                     "settings put global updatable_driver_production_opt_in_apps " + targetGamesCsv + "\n" +
+                    "settings delete global angle_gl_driver_selection_pkgs\n" +
+                    "settings delete global angle_gl_driver_selection_values\n" +
+                    "settings delete global angle_enabled_pkgs\n" +
                     "settings put global angle_gl_driver_all_angle 0\n" +
-                    "settings put global angle_enabled_pkgs 1\n" +
-                    "settings put global angle_gl_driver_selection_pkgs " + targetGamesCsv + "\n" +
                     // 3. JVM / Dalvik / ART Runtime Performance Turbo
                     "setprop dalvik.vm.execution-mode int:jit\n" +
                     "setprop dalvik.vm.usejit true\n" +
@@ -139,7 +140,6 @@ public class PerformanceChannel {
                     "echo 0-" + maxCore + " > /dev/cpuset/restricted/cpus 2>/dev/null\n" +
                     "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done\n" +
                     "setprop sys.games.cpu_affinity 1\n" +
-                    "setprop sys.use_fifo 1\n" +
                     "setprop sys.perf.sched_uclamp_min 1024\n" +
                     "setprop sys.perf.sched_uclamp_min_rt 1024\n" +
                     "setprop sys.perf.sched_min_granularity_ns 250000\n" +
@@ -149,15 +149,10 @@ public class PerformanceChannel {
                     "cmd power set-fixed-performance-mode-enabled true\n" +
                     // 5. Universal & Chipset GPU Graphics Processing (Snapdragon, MediaTek, Tensor, Exynos)
                     "setprop debug.sf.hw 1\n" +
-                    "setprop debug.hwui.renderer vulkan\n" +
-                    "setprop debug.renderengine.backend vulkan\n" +
                     "setprop debug.renderengine.skia_pipeline true\n" +
                     "setprop debug.hwui.use_gpu_pixel_buffers true\n" +
                     "setprop debug.hwui.render_thread_priority -20\n" +
                     "setprop debug.hwui.skip_empty_damage true\n" +
-                    "setprop debug.sf.latch_unsignaled 1\n" +
-                    "setprop debug.sf.disable_backpressure 1\n" +
-                    "setprop debug.sf.enable_gl_backpressure 0\n" +
                     "setprop debug.sf.predict_hwc_composition_strategy 1\n" +
                     "setprop debug.sf.enable_adpf_cpu_hint true\n" +
                     "setprop debug.hwui.use_hint_manager true\n" +

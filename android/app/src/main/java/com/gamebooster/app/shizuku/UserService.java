@@ -329,7 +329,6 @@ public class UserService extends IUserService.Stub {
                      "if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; " +
                      "done; " +
                      "setprop sys.games.cpu_affinity 1; " +
-                     "setprop sys.use_fifo 1; " +
                      "setprop sys.perf.sched_uclamp_min 1024; " +
                      "setprop sys.perf.sched_uclamp_min_rt 1024; " +
                      "setprop sys.perf.sched_min_granularity_ns 250000; " +
@@ -371,9 +370,6 @@ public class UserService extends IUserService.Stub {
                      "setprop debug.hwui.render_thread_priority -20; " +
                      "setprop debug.hwui.skip_empty_damage true; " +
                      "setprop debug.sf.hw 1; " +
-                     "setprop debug.sf.latch_unsignaled 1; " +
-                     "setprop debug.sf.disable_backpressure 1; " +
-                     "setprop debug.sf.enable_gl_backpressure 0; " +
                      "setprop debug.sf.predict_hwc_composition_strategy 1; " +
                      "setprop debug.sf.enable_adpf_cpu_hint true; " +
                      "setprop debug.hwui.use_hint_manager true; " +
@@ -514,9 +510,6 @@ public class UserService extends IUserService.Stub {
                      "cmd thermal override-status 0; " +
                      "setprop debug.thermal.throttle.disable 1; " +
                      "setprop debug.performance.tuning 1; " +
-                     "setprop debug.sf.disable_backpressure 1; " +
-                     "setprop debug.sf.latch_unsignaled 1; " +
-                     "setprop debug.hwui.renderer vulkan; " +
                      "setprop debug.sensor.gyro.sample_rate 1000; " +
                      "setprop debug.sensor.gyro.smooth 1; " +
                      "setprop debug.sensor.gyro.stabilization 1; " +
@@ -526,7 +519,6 @@ public class UserService extends IUserService.Stub {
                      "setprop persist.sys.touch.report_rate 1000; " +
                      "setprop persist.vendor.touch.sampling_rate 1000; " +
                      "setprop view.touch_slop 0; " +
-                     "setprop sys.use_fifo 1; " +
                      "for c in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo performance > $c 2>/dev/null; done; " +
                      "for g in /sys/class/kgsl/kgsl-3d0/force_bus_on /sys/class/kgsl/kgsl-3d0/force_clk_on; do echo 1 > $g 2>/dev/null; done";
         execCommand(cmd);
@@ -630,17 +622,25 @@ public class UserService extends IUserService.Stub {
         return res != null && !res.startsWith("ERROR");
     }
 
+    private boolean mIsResolutionScaled = false;
+
     @Override
     public boolean setResolutionScale(int width, int height) {
         if (width <= 0 || height <= 0) return false;
         String cmd = "wm size " + width + "x" + height + " 2>/dev/null";
         String res = execCommand(cmd);
-        return res != null && !res.startsWith("ERROR");
+        boolean ok = res != null && !res.startsWith("ERROR");
+        if (ok) mIsResolutionScaled = true;
+        return ok;
     }
 
     @Override
     public void resetResolutionScale() {
+        if (!mIsResolutionScaled) {
+            return;
+        }
         execCommand("wm size reset 2>/dev/null; wm density reset 2>/dev/null");
+        mIsResolutionScaled = false;
     }
 
     @Override
@@ -648,14 +648,16 @@ public class UserService extends IUserService.Stub {
         if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
         String type = driverType != null ? driverType.toLowerCase() : "vulkan";
         String cmd;
-        if ("angle".equals(type)) {
-            cmd = "settings put global angle_gl_driver_selection_pkgs " + packageName + " 2>/dev/null; "
-                + "settings put global angle_gl_driver_selection_values angle 2>/dev/null";
-        } else if ("system".equals(type) || "default".equals(type)) {
-            cmd = "settings put global game_driver_opt_in_apps \"\" 2>/dev/null; "
-                + "settings put global angle_gl_driver_selection_pkgs \"\" 2>/dev/null";
+        if ("system".equals(type) || "default".equals(type)) {
+            cmd = "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
+                + "settings delete global angle_gl_driver_selection_values 2>/dev/null; "
+                + "settings put global angle_gl_driver_all_angle 0 2>/dev/null; "
+                + "settings put global game_driver_opt_in_apps \"\" 2>/dev/null";
         } else {
-            cmd = "settings put global game_driver_opt_in_apps " + packageName + " 2>/dev/null; "
+            cmd = "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
+                + "settings delete global angle_gl_driver_selection_values 2>/dev/null; "
+                + "settings put global angle_gl_driver_all_angle 0 2>/dev/null; "
+                + "settings put global game_driver_opt_in_apps " + packageName + " 2>/dev/null; "
                 + "settings put global updatable_driver_production_opt_in_apps " + packageName + " 2>/dev/null";
         }
         String res = execCommand(cmd);

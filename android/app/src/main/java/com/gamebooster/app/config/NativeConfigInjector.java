@@ -223,6 +223,13 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectUniversalDamage10000AttackSpeedMax(String path);
     public static native boolean nativeInjectHardwareMaskProfile(String path, String gpuRenderer, String socModel, int ramMb, int targetHz);
     public static native boolean nativeSetProcessIOPriority(int pid, int schedPriority, int ioprioClass, int ioprioLevel);
+    public static native boolean nativeInjectFastLootAndWeaponSwap(String path);
+    public static native boolean nativeInjectInstantSprintTurbo(String path);
+    public static native boolean nativeInjectMultiRangeHeadshotCalibration(String path);
+    public static native boolean nativeInjectMlbbJungleFastFarmAllHero(String path);
+    public static native boolean nativeInjectMlbbLingFastestSword(String path);
+    public static native boolean nativeInjectMlbbFannyFastestCable(String path);
+    public static native boolean nativeInjectUniversalZeroDelaySkillTapAllHero(String path);
 
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
@@ -1523,6 +1530,69 @@ public class NativeConfigInjector {
             try {
                 return nativeSetProcessIOPriority(pid, schedPriority, ioprioClass, ioprioLevel);
             } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectFastLootAndWeaponSwap(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectFastLootAndWeaponSwap(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectInstantSprintTurbo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectInstantSprintTurbo(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMultiRangeHeadshotCalibration(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMultiRangeHeadshotCalibration(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbJungleFastFarmAllHero(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbJungleFastFarmAllHero(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbLingFastestSword(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbLingFastestSword(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectMlbbFannyFastestCable(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectMlbbFannyFastestCable(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectUniversalZeroDelaySkillTapAllHero(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { return nativeInjectUniversalZeroDelaySkillTapAllHero(path); } catch (Throwable ignored) {}
         }
         return false;
     }

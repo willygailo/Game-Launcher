@@ -125,7 +125,6 @@ public class TerminalFolderManager {
                 "setprop debug.input.max_events_per_sec 1000\n" +
                 "setprop view.touch_slop 1\n" +
                 "settings put system touch_slop_reduction 1\n" +
-                "setprop sys.use_fifo 1\n" +
                 "setprop persist.sys.touch.pressure.scale 0.001\n" +
                 "echo '[ZERO TOUCH SLOP & 1000Hz POLLING ACTIVE]'\n"
         );
@@ -163,9 +162,9 @@ public class TerminalFolderManager {
                 "echo '[CLOUDFLARE GAMING DNS CONFIGURED]'\n"
         );
 
-        createScriptIfNotExists("6_gpu_angle_vulkan_driver.sh",
+        createScriptIfNotExists("6_gpu_game_driver_native.sh",
                 "# ==================================================\n" +
-                "# GAME BOOSTER PRO - PER-GAME ANGLE & VULKAN DRIVER\n" +
+                "# GAME BOOSTER PRO - PER-GAME GAME DRIVER (NATIVE GPU)\n" +
                 "# ==================================================\n" +
                 "settings put global angle_gl_driver_all_angle 0\n" +
                 "settings put global game_driver_all_apps 0\n" +
@@ -173,10 +172,10 @@ public class TerminalFolderManager {
                 "GAMES='com.mobile.legends,com.tencent.ig,com.activision.callofduty.shooter,com.dts.freefireth,com.miHoYo.GenshinImpact,com.riotgames.league.wildrift,com.axlebolt.standoff2,com.levelinfinite.sgameGlobal,com.roblox.client,com.farlightgames.farlight84.android'\n" +
                 "settings put global game_driver_opt_in_apps $GAMES\n" +
                 "settings put global updatable_driver_production_opt_in_apps $GAMES\n" +
-                "settings put global angle_gl_driver_selection_pkgs $GAMES\n" +
-                "settings put global angle_gl_driver_selection_values angle,angle,angle,angle,angle,angle,angle,angle,angle,angle\n" +
-                "setprop debug.hwui.renderer vulkan\n" +
-                "echo '[PER-GAME ANGLE & GAME DRIVER ENABLED FOR COMPETITIVE GAMES]'\n"
+                "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null\n" +
+                "settings delete global angle_gl_driver_selection_values 2>/dev/null\n" +
+                "settings delete global angle_enabled_pkgs 2>/dev/null\n" +
+                "echo '[PER-GAME NATIVE GAME DRIVER ENABLED (ANGLE PURGED)]'\n"
         );
 
         createScriptIfNotExists("7_thermal_throttle_bypass.sh",

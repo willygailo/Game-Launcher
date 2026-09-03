@@ -39,7 +39,7 @@ import java.util.List;
  * PHASE 2 — FRAMEWORK DRIVER & Hz FORCING:
  *   - settings put global game_driver_opt_in_apps <pkg> (GPU Vulkan Game Driver)
  *   - settings put global updatable_driver_production_opt_in_apps <pkg>
- *   - settings put global angle_gl_driver_selection_pkgs <pkg>
+ *   - settings delete global angle_gl_driver_selection_pkgs (Clean native GPU driver)
  *   - cmd game mode performance <pkg> (Android Game Mode API)
  *   - cmd window set-app-refresh-rate <pkg> <fps>
  *   - cmd game set --fps <fps> <pkg>
@@ -245,14 +245,16 @@ public final class GameManagerLauncher {
                     Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
                 }
 
-                // Apply GPU Game Driver & Vulkan isolation
+                // Apply GPU Game Driver & Vulkan isolation (Purging unstable ANGLE layer)
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommands(
                         "settings put global game_driver_all_apps 0 2>/dev/null",
+                        "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null",
+                        "settings delete global angle_gl_driver_selection_values 2>/dev/null",
+                        "settings delete global angle_enabled_pkgs 2>/dev/null",
                         "settings put global angle_gl_driver_all_angle 0 2>/dev/null",
                         "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
                         "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
-                        "settings put global angle_gl_driver_selection_pkgs " + pkg + " 2>/dev/null",
                         "cmd game mode performance " + pkg + " 2>/dev/null",
                         "cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null",
                         "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null",
@@ -261,7 +263,6 @@ public final class GameManagerLauncher {
                         "setprop debug.sf.fps_limit " + fps,
                         "setprop persist.sys.NV_FPSLIMIT " + fps,
                         "setprop debug.sf.nobootanimation 1",
-                        "setprop debug.sf.disable_backpressure 1",
                         "setprop debug.hwui.render_dirty_regions false",
                         "setprop debug.egl.hw 1",
                         "setprop debug.sf.hw 1"

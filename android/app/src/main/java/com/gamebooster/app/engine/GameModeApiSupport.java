@@ -141,7 +141,6 @@ public final class GameModeApiSupport {
 
         // 4. Multi-Core CPU Scheduling & uclamp Boost (8/12/16+ cores)
         commands.add("setprop sys.games.cpu_affinity 1");
-        commands.add("setprop sys.use_fifo 1");
         commands.add("setprop sys.perf.sched_uclamp_min 1024");
         commands.add("setprop sys.perf.sched_uclamp_min_rt 1024");
         commands.add("setprop sys.perf.sched_min_granularity_ns 250000");

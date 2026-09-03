@@ -43,7 +43,6 @@ public class GpuTweaksChannel {
         ok &= CommandExecutor.setSystemProperty("debug.hwui.use_gpu_pixel_buffers", "true");
         ok &= CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "-20");
         ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
 
         // Apply Vulkan Game Overlay to all registered games on Android 13+
         for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
@@ -98,8 +97,6 @@ public class GpuTweaksChannel {
     public static boolean enableTensorBoost() {
         boolean ok = true;
         ok &= CommandExecutor.setSystemProperty("debug.tensor.gpu.boost", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
         return ok;
     }
 
@@ -251,57 +248,35 @@ public class GpuTweaksChannel {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         String pkg = packageName.trim();
 
-        // Always guarantee global switches are 0 to protect system and normal apps
-        CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0");
-        CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0");
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
+        // Always delete/clear global ANGLE switches to prevent game crashes
+        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings delete global angle_enabled_pkgs 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0 2>/dev/null");
 
         if (driverType == GraphicsDriverType.GAME_DRIVER) {
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + pkg);
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + pkg);
             CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
             return true;
-        } else if (driverType == GraphicsDriverType.ANGLE_VULKAN) {
-            CommandExecutor.setSystemProperty("debug.angle.backend", "2");
-            CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 1");
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs " + pkg);
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values angle");
-            return true;
         } else {
             // Revert back to default
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");
             CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs \"\"");
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values \"\"");
             return true;
         }
     }
 
     public static boolean setAngleMode(boolean enabled) {
-        String targetCsv = getTargetGamesCsv();
-        // Never allow global all angle to prevent crashing system apps
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0");
-
-        if (enabled) {
-            CommandExecutor.setSystemProperty("debug.angle.backend", "2");
-            CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 1");
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs " + targetCsv);
-
-            String[] pkgs = targetCsv.split(",");
-            StringBuilder values = new StringBuilder();
-            for (int i = 0; i < pkgs.length; i++) {
-                if (i > 0) values.append(",");
-                values.append("angle");
-            }
-            String res = CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values " + values.toString());
-            return CommandExecutor.isSuccessOutput(res);
-        } else {
-            CommandExecutor.setSystemProperty("debug.angle.backend", "0");
-            CommandExecutor.executeSystemCommand("settings put global angle_enabled_pkgs 0");
-            CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_pkgs \"\"");
-            String res = CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_selection_values \"\"");
-            return CommandExecutor.isSuccessOutput(res);
-        }
+        // Purge unstable ANGLE layer
+        CommandExecutor.setSystemProperty("debug.angle.backend", "0");
+        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings delete global angle_enabled_pkgs 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+        return true;
     }
 
     public static boolean setGameDriverMode(boolean enabled) {

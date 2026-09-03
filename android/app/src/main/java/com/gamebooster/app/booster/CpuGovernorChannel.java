@@ -61,7 +61,6 @@ public class CpuGovernorChannel {
         sb.append("done; ");
 
         sb.append("setprop sys.games.cpu_affinity 1; ");
-        sb.append("setprop sys.use_fifo 1; ");
         sb.append("setprop sys.perf.sched_uclamp_min 1024; ");
         sb.append("setprop sys.perf.sched_uclamp_min_rt 1024; ");
         sb.append("setprop sys.perf.sched_min_granularity_ns 250000; ");
@@ -152,7 +151,6 @@ public class CpuGovernorChannel {
             CommandExecutor.executeSystemCommand("cmd power set-mode 0 1");
             CommandExecutor.executeSystemCommand("cmd power set-fixed-performance-mode-enabled true");
             CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "-20");
-            CommandExecutor.setSystemProperty("sys.use_fifo", "1");
             CommandExecutor.setSystemProperty("sys.games.cpu_affinity", "1");
 
             // Tune multi-core CPU topology (8-core, 12-core, 16-core+)

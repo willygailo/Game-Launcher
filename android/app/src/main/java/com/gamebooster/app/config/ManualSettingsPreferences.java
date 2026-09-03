@@ -263,20 +263,11 @@ public class ManualSettingsPreferences {
                 com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
             }
 
-            // 4. ANGLE Graphics Backend (Per-Application only — never all apps)
-            if (isAngleModeEnabled(context)) {
-                String targetPkgs = (cleanPkg != null) ? cleanPkg : com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
-                executeCmd("settings put global angle_gl_driver_all_angle 0");
-                executeCmd("settings put global angle_enabled_pkgs 1");
-                executeCmd("settings put global angle_gl_driver_selection_pkgs " + targetPkgs);
-                String[] pkgs = targetPkgs.split(",");
-                StringBuilder values = new StringBuilder();
-                for (int i = 0; i < pkgs.length; i++) {
-                    if (i > 0) values.append(",");
-                    values.append("angle");
-                }
-                executeCmd("settings put global angle_gl_driver_selection_values " + values.toString());
-            }
+            // 4. ANGLE Graphics Backend (Purged for stability)
+            executeCmd("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+            executeCmd("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+            executeCmd("settings delete global angle_enabled_pkgs 2>/dev/null");
+            executeCmd("settings put global angle_gl_driver_all_angle 0");
 
             // 5. Game Driver / Updatable Driver (Per-Application only — never all apps)
             if (isGameDriverEnabled(context)) {
@@ -327,8 +318,6 @@ public class ManualSettingsPreferences {
             executeCmd("setprop persist.sys.fps 185");
             executeCmd("setprop debug.cpurend.fps 185");
             executeCmd("setprop persist.sys.power.game_mode 1");
-            executeCmd("setprop debug.sf.disable_backpressure 1");
-            executeCmd("setprop debug.sf.latch_unsignaled 1");
 
             // Disable Android Match Content Frame Rate & System Refresh Rate Limiters
             executeCmd("settings put system match_content_frame_rate 0");

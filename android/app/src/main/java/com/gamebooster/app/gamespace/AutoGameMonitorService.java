@@ -179,8 +179,8 @@ public class AutoGameMonitorService extends Service {
 
                 // Debounce exit: verify game process liveness before resetting refresh rates & governors
                 consecutiveUnfocusedCount++;
-                if (consecutiveUnfocusedCount < 4 || isProcessAlive(lastActiveGamePackage)) {
-                    Log.d(TAG, "Game PID/Process still active or debouncing (" + consecutiveUnfocusedCount + "/4) for: " + lastActiveGamePackage);
+                if (consecutiveUnfocusedCount < 6 || isProcessAlive(lastActiveGamePackage)) {
+                    Log.d(TAG, "Game PID/Process still active or debouncing (" + consecutiveUnfocusedCount + "/6) for: " + lastActiveGamePackage);
                     return;
                 }
 
@@ -195,7 +195,9 @@ public class AutoGameMonitorService extends Service {
                 com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
                 com.gamebooster.app.overlay.GameTurboEdgeService.stop(getApplicationContext());
                 com.gamebooster.app.overlay.VisualFilterOverlayService.stopFilter(getApplicationContext());
-                com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
+                if (com.gamebooster.app.engine.ResolutionScalerEngine.isResolutionScaled()) {
+                    com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
+                }
 
                 final com.gamebooster.app.overlay.GameSessionReport report =
                         com.gamebooster.app.overlay.GameSessionRecorder.getInstance().endSession(getApplicationContext());
@@ -265,10 +267,18 @@ public class AutoGameMonitorService extends Service {
         if (packageName == null || packageName.isEmpty()) return false;
         try {
             if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                String pid = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pidof " + packageName);
-                if (pid != null && !pid.trim().isEmpty() && !pid.startsWith("ERROR")) {
+                String pgrep = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(
+                        "pgrep -f \"" + packageName + "\" 2>/dev/null || pidof " + packageName + " 2>/dev/null");
+                if (pgrep != null && !pgrep.trim().isEmpty() && !pgrep.startsWith("ERROR")) {
                     return true;
                 }
+            }
+        } catch (Exception ignored) {}
+        try {
+            String procCheck = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
+                    "pgrep -f \"" + packageName + "\" 2>/dev/null");
+            if (procCheck != null && !procCheck.trim().isEmpty() && !procCheck.startsWith("ERROR")) {
+                return true;
             }
         } catch (Exception ignored) {}
         try {
@@ -277,7 +287,7 @@ public class AutoGameMonitorService extends Service {
                 java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am.getRunningAppProcesses();
                 if (procs != null) {
                     for (android.app.ActivityManager.RunningAppProcessInfo info : procs) {
-                        if (packageName.equals(info.processName)) {
+                        if (packageName.equals(info.processName) || (info.pkgList != null && java.util.Arrays.asList(info.pkgList).contains(packageName))) {
                             return true;
                         }
                     }

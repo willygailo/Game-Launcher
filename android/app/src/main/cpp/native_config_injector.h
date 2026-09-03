@@ -718,6 +718,55 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessIOPriority
   (JNIEnv *, jclass, jint, jint, jint);
 
+/*
+ * nativeInjectFastLootAndWeaponSwap
+ * Zero-delay weapon pickup, auto-loot prioritization, and instant weapon draw
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastLootAndWeaponSwap
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectInstantSprintTurbo
+ * 0ms analog stick deadzone and instant forward sprint transition
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectInstantSprintTurbo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMultiRangeHeadshotCalibration
+ * Multi-range micro-aim precision (short CQB, mid 2x-4x recoil stabilization, long sniper micro-aim)
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMultiRangeHeadshotCalibration
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbJungleFastFarmAllHero
+ * MLBB — Jungle monster target priority, Retribution instant cast timing, and creep HP thresholding
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleFastFarmAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbLingFastestSword
+ * MLBB — Ling Tempest of Blades 4-sword rapid retrieval pathing & instant dash reset
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingFastestSword
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFannyFastestCable
+ * MLBB — Fanny instant dual/multi-cable trajectory prediction, wall-snap responsiveness, and zero input lag
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyFastestCable
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalZeroDelaySkillTapAllHero
+ * Universal touch-to-skill zero-latency queue bypass, 1000Hz sampling, and instant combo chaining
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalZeroDelaySkillTapAllHero
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

@@ -379,20 +379,20 @@ public class TweakManagerRepository {
         // =========================================================================
         TWEAKS.add(new TweakItem(
                 "sf_zero_latency_latching",
-                "SurfaceFlinger Zero-Latency Latching & Queue Elimination",
-                "Forces SurfaceFlinger to latch buffers unsignaled without waiting for fence sync and unthrottles early duration scheduling",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3",
-                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.enable_gl_backpressure 1; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
+                "SurfaceFlinger Composition Strategy & Scheduling Turbo",
+                "Optimizes SurfaceFlinger composition strategy predictions and unthrottles early duration scheduling safely",
+                "setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3",
+                "setprop debug.sf.predict_hwc_composition_strategy 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
                 TweakCategory.CPU_GPU,
                 true
         ));
 
         TWEAKS.add(new TweakItem(
                 "angle_vulkan_driver_preference",
-                "Targeted Game Driver & ANGLE Vulkan 3D Selection",
-                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver and ANGLE Vulkan 3D driver without forcing global apps",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global angle_gl_driver_all_angle 0; settings put global angle_enabled_pkgs 1; settings put global angle_gl_driver_selection_pkgs " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; setprop debug.angle.backend 2",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings put global angle_enabled_pkgs 0; settings put global angle_gl_driver_selection_pkgs \"\"; setprop debug.angle.backend 0",
+                "Targeted Game Driver Selection (Native GPU)",
+                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver with native GPU stability",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -491,8 +491,8 @@ public class TweakManagerRepository {
                 "cpu_core_pinning_and_oom_lock",
                 "CPU Thread Affinity & LMK OOM Immunity Lock",
                 "Instructs kernel scheduler to prioritize foreground game processes with maximum real-time priority and LMK immunity",
-                "setprop sys.games.cpu_affinity 1; setprop sys.use_fifo 1; setprop sys.perf.sched_uclamp_min 1024",
-                "setprop sys.games.cpu_affinity 0; setprop sys.use_fifo 0; setprop sys.perf.sched_uclamp_min 0",
+                "setprop sys.games.cpu_affinity 1; setprop sys.perf.sched_uclamp_min 1024",
+                "setprop sys.games.cpu_affinity 0; setprop sys.perf.sched_uclamp_min 0",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -619,9 +619,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "vulkan_compute_shader_turbo",
                 "Vulkan Compute Shader & Direct Compositing",
-                "Forces Vulkan HWUI renderer, disables SurfaceFlinger GL backpressure, and enables asynchronous compute shader pipelines",
-                "setprop debug.hwui.renderer vulkan; setprop debug.renderengine.backend vulkan; setprop debug.sf.disable_backpressure 1; setprop debug.hwui.skip_empty_damage true; setprop debug.hwui.fps_divisor 1; setprop debug.hwui.profile false",
-                "setprop debug.sf.disable_backpressure 0; setprop debug.hwui.renderer default",
+                "Enables Skia Vulkan pipeline and optimizes HWUI buffer damage profiling safely",
+                "setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.skip_empty_damage true; setprop debug.hwui.fps_divisor 1; setprop debug.hwui.profile false",
+                "setprop debug.hwui.profile true",
                 TweakCategory.CPU_GPU,
                 true
         ));

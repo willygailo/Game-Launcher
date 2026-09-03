@@ -154,13 +154,21 @@ public final class ResolutionScalerEngine {
         return true;
     }
 
-    /**
-     * Resets screen resolution and density back to stock physical values.
-     */
     public static boolean resetResolutionSync() {
+        if (!sIsScaled) {
+            Log.d(TAG, "Screen resolution was not scaled; skipping wm size reset to prevent game surface disruption.");
+            return true;
+        }
         executePrivileged("wm size reset; wm density reset");
         sIsScaled = false;
         Log.i(TAG, "Resolution reset to stock physical display.");
+        return true;
+    }
+
+    public static boolean forceResetResolutionSync() {
+        executePrivileged("wm size reset; wm density reset");
+        sIsScaled = false;
+        Log.i(TAG, "Forced resolution reset to stock physical display.");
         return true;
     }
 

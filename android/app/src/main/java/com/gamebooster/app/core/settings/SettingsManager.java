@@ -102,7 +102,6 @@ public class SettingsManager {
         ShizukuExecutor.executeShizukuCommand("setprop " + KEY_GYRO_RATE + " " + profile.getGyroRate());
         ShizukuExecutor.executeShizukuCommand("settings put system " + KEY_POINTER_SPEED + " " + profile.getPointerSpeed());
         ShizukuExecutor.executeShizukuCommand("setprop " + KEY_PRESSURE_SCALE + " " + profile.getPressureScale());
-        ShizukuExecutor.executeShizukuCommand("setprop sys.use_fifo 1");
 
         prefs.edit().putBoolean(KEY_IS_TUNED, true).apply();
         return true;
@@ -131,7 +130,6 @@ public class SettingsManager {
         restoreProp(KEY_GYRO_RATE);
         restoreSetting("system", KEY_POINTER_SPEED);
         restoreProp(KEY_PRESSURE_SCALE);
-        ShizukuExecutor.executeShizukuCommand("setprop sys.use_fifo 0");
 
         prefs.edit().putBoolean(KEY_IS_TUNED, false).apply();
         Log.i(TAG, "All system settings reverted to original defaults.");

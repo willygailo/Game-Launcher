@@ -79,6 +79,34 @@ public class FreeFireConfigPatcher {
         }
     }
 
+    public static void applyFastLootAndWeaponSwap(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFastLootAndWeaponSwap(path);
+        }
+    }
+
+    public static void applyInstantSprintTurbo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectInstantSprintTurbo(path);
+        }
+    }
+
+    public static void applyMultiRangeHeadshotCalibration(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMultiRangeHeadshotCalibration(path);
+        }
+    }
+
+    public static void applyUniversalZeroDelaySkillTapAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectUniversalZeroDelaySkillTapAllHero(path);
+        }
+    }
+
     private static final String TAG = "FreeFireConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

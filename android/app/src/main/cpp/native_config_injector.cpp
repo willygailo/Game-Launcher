@@ -4911,3 +4911,226 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
          pid, schedPriority, prioRes, cls, data, ioRes);
     return (prioRes == 0 || ioRes == 0) ? JNI_TRUE : JNI_FALSE;
 }
+
+// =============================================================================
+// ─── Fast Loot & Instant Weapon Swap ─────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastLootAndWeaponSwap
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"AutoPickUpSpeed", "100"}, {"bAutoPickUpSpeedPriority", "True"},
+        {"PickUpSearchRadius", "2500"}, {"QuickLootThreshold", "0"},
+        {"LootBoxRenderPriority", "1"}, {"WeaponSwitchZeroDelay", "1"},
+        {"QuickDrawLatencyReduction", "0"}, {"bFastEquipEnabled", "True"},
+        {"InstantLootResponse", "1"}, {"FastWeaponSwapSpeedMultiplier", "2.0"},
+        {"ZeroLootDelay", "1"}, {"bFastItemPickup", "True"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastLootAndWeaponSwap injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Instant Sprint Turbo ────────────────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectInstantSprintTurbo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"SprintSensitivity", "100"}, {"JoystickDeadZone", "0"},
+        {"SprintDelayZero", "1"}, {"InstantSprintThreshold", "0.01"},
+        {"FastSprintResponse", "1"}, {"SprintForwardDeadzone", "0"},
+        {"ZeroSprintTransitionLag", "1"}, {"bInstantSprintActive", "True"},
+        {"TouchAnalogSensitivity", "2.0"}, {"RunLockZeroLatency", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("InstantSprintTurbo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Multi-Range Headshot Precision Calibration ──────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMultiRangeHeadshotCalibration
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"CloseRangeAimSensMultiplier", "1.5"}, {"HipFireFovStability", "1"},
+        {"TouchZeroFriction", "1"}, {"MidRangeRecoilStability", "1"},
+        {"AimFovSmoothCurve", "0"}, {"CrosshairSwayElimination", "1"},
+        {"LongRangeMicroAimPrecision", "1000"}, {"SniperScopeZeroLatency", "1"},
+        {"SteadyAimFovLock", "1"}, {"SubPixelAimCalibration", "1"},
+        {"GyroMicroSensitivityBoost", "1.4"}, {"HeadshotHitboxAimMagnetism", "1"},
+        {"DynamicAimAcceleration", "0"}, {"bMultiRangeHeadshotEnabled", "True"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MultiRangeHeadshotCalibration injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Jungle Fast Farm All Hero ─────────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleFastFarmAllHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"MonsterTargetPriority", "1"}, {"CreepLockPriority", "1"},
+        {"SmartRetributionHpThreshold", "1"}, {"TargetLowestHpMonster", "1"},
+        {"JungleClearSpeedBoost", "1"}, {"RetributionInstantCast", "1"},
+        {"FastCampPathingSens", "10"}, {"AutoObjectiveSmiteLock", "1"},
+        {"CreepAttackPriority", "1"}, {"JungleAttackSpeedRatio", "2.0"},
+        {"ZeroJungleDelay", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbJungleFastFarmAllHero injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Ling Fastest Sword (Tempest of Blades) ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingFastestSword
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"LingSwordPathResponsiveness", "10"}, {"LingSwordAutoLock", "1"},
+        {"LingSwordZeroDelay", "1"}, {"SwordTouchSampling", "1000"},
+        {"TempestOfBladesFastSword", "1"}, {"LingDashResetZeroLatency", "1"},
+        {"LingWallJumpSpeed", "5"}, {"LingSwordMagnetism", "1"},
+        {"Ling4SwordInstantCombo", "1"}, {"LingEnergyRestoreFast", "1"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbLingFastestSword injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Fanny Fastest Cable (Zero Delay & Wall Snap) ──────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyFastestCable
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"FannyZeroCableDelay", "1"}, {"FannyCableSpeed", "10"},
+        {"FannyMultiCableInstantCast", "1"}, {"CableWallSnapSens", "5.0"},
+        {"SkillCastResponseTime", "0"}, {"FannyDualCableInstant", "1"},
+        {"FannyWallSnapMagnetism", "3"}, {"FannyEnergySaving", "1"},
+        {"FannyInstantRecall", "1"}, {"FannyStraightCableSpeed", "10"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbFannyFastestCable injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal Zero-Delay Skill Tap & Combo All Hero ─────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalZeroDelaySkillTapAllHero
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"SkillQueueInstant", "1"}, {"SmartSkillCastZeroDelay", "1"},
+        {"AutoAttackAnimationCancel", "1"}, {"ComboChainBufferMs", "0"},
+        {"TouchSamplingRate", "1000"}, {"ZeroDelaySkillTap", "1"},
+        {"InstantSkillCancelThreshold", "0"}, {"HeroTargetLockPriority", "1"},
+        {"FastSkillReleaseSpeed", "10"}, {"InputQueueBypass", "1"},
+        {"bZeroLatencyInput", "True"}
+    };
+    for (const auto& kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("UniversalZeroDelaySkillTapAllHero injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
