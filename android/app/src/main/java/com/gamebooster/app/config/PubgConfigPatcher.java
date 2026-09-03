@@ -389,10 +389,14 @@ public class PubgConfigPatcher {
     public static boolean applyPubgFilePatch(String path, FpsUnlockTier tier, boolean enableHdr) {
         if (path == null || path.trim().isEmpty() || tier == null) return false;
 
+        final int qualityLevel = enableHdr ? 4 : 1; // 4 = HDR, 1 = Smooth
+        if (NativeConfigInjector.injectPubgm165FpsGraphics(path, tier.fps, qualityLevel)) {
+            return true;
+        }
+
         // In PUBGM UE4 engine: Level 7 is 120 FPS (Ultra Extreme).
         // Any level > 7 fails the engine enum boundary check and causes PUBGM to fallback to 90 FPS (Level 6).
         final int effectiveLevel = (tier.fps >= 120) ? 7 : tier.level;
-        final int qualityLevel = enableHdr ? 4 : 1; // 4 = HDR, 1 = Smooth
 
         if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
                 || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini")

@@ -852,6 +852,15 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbb165FpsGraphics
   (JNIEnv *, jclass, jstring, jint, jint);
 
+/*
+ * nativeInjectPubgm165FpsGraphics
+ * PUBGM — 165 FPS frame rate & HDR graphics native injection:
+ * Formats: UserCustom.ini, EnjoyCJZC.ini, GameUserSettings.ini, Active.sav, XML prefs.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

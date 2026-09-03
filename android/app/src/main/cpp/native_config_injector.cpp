@@ -16,6 +16,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
@@ -5781,6 +5782,216 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     }
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("Mlbb165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─── GVAS Binary Property Helper for PUBGM Active.sav ─────────────────────────
+static bool patch_gvas_int_property_cpp(std::vector<uint8_t> &data, const std::string &propName, int value) {
+    if (data.empty() || propName.empty()) return false;
+    const char propTag[] = "IntProperty\0";
+    size_t nameLen = propName.length();
+    size_t tagLen = sizeof(propTag); // 13 bytes including null terminator
+    bool modified = false;
+
+    for (size_t i = 0; i + nameLen + tagLen + 13 <= data.size(); i++) {
+        if (memcmp(data.data() + i, propName.data(), nameLen) == 0) {
+            for (size_t j = i + nameLen; j <= i + nameLen + 48 && j + tagLen + 13 <= data.size(); j++) {
+                if (memcmp(data.data() + j, propTag, 12) == 0) {
+                    size_t valOffset = j + 12 + 9;
+                    if (valOffset + 4 <= data.size()) {
+                        data[valOffset]     = (uint8_t)(value & 0xFF);
+                        data[valOffset + 1] = (uint8_t)((value >> 8) & 0xFF);
+                        data[valOffset + 2] = (uint8_t)((value >> 16) & 0xFF);
+                        data[valOffset + 3] = (uint8_t)((value >> 24) & 0xFF);
+                        modified = true;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return modified;
+}
+
+// =============================================================================
+// PUBGM: 165 FPS & HDR Graphics Native Injector
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics
+  (JNIEnv *env, jclass, jstring jPath, jint targetFps, jint qualityLevel) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    int fps = (targetFps >= 120) ? targetFps : 165;
+    // In PUBGM UE4 engine: Level 7 is 120/165 FPS tier. Levels > 7 fail validation.
+    int effectiveLevel = (fps >= 120) ? 7 : 6;
+    int q = (qualityLevel > 0) ? qualityLevel : 4; // 4 = HDR
+    std::string fpsStr = std::to_string(fps);
+    std::string effLvlStr = std::to_string(effectiveLevel);
+    std::string qStr = std::to_string(q);
+
+    // 1. Binary GVAS savegame (Active.sav / ActiveShadow.sav)
+    if (pathStr.rfind(".sav") != std::string::npos || pathStr.find("Active") != std::string::npos) {
+        std::ifstream file(pathStr, std::ios::binary);
+        if (!file.is_open()) {
+            env->ReleaseStringUTFChars(jPath, path);
+            return JNI_FALSE;
+        }
+        std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        if (data.empty()) {
+            env->ReleaseStringUTFChars(jPath, path);
+            return JNI_FALSE;
+        }
+
+        bool mod = false;
+        mod |= patch_gvas_int_property_cpp(data, "FPSLevel", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "BattleFPS", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "LobbyFPS", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "MainCityFPS", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "HighFPSMode", 3);
+        mod |= patch_gvas_int_property_cpp(data, "BattleRenderQuality", q);
+        mod |= patch_gvas_int_property_cpp(data, "LobbyRenderQuality", q);
+        mod |= patch_gvas_int_property_cpp(data, "MainCityRenderQuality", q);
+        mod |= patch_gvas_int_property_cpp(data, "GraphicQuality", q);
+        mod |= patch_gvas_int_property_cpp(data, "ArtQuality", q);
+        mod |= patch_gvas_int_property_cpp(data, "MobileHDRMode", 1);
+        mod |= patch_gvas_int_property_cpp(data, "ShadowQuality", 3);
+        mod |= patch_gvas_int_property_cpp(data, "ShadowSwitch", 1);
+        mod |= patch_gvas_int_property_cpp(data, "AutoChangeQuality", 0);
+
+        std::string tmpPath = pathStr + ".tmp";
+        std::ofstream out(tmpPath, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+            env->ReleaseStringUTFChars(jPath, path);
+            return JNI_FALSE;
+        }
+        out.write(reinterpret_cast<const char*>(data.data()), data.size());
+        out.close();
+        chmod(tmpPath.c_str(), 0666);
+        bool ok = (rename(tmpPath.c_str(), pathStr.c_str()) == 0);
+        if (ok && hasStat) {
+            struct utimbuf t;
+            t.actime = stBefore.st_atime;
+            t.modtime = stBefore.st_mtime;
+            utime(path, &t);
+        }
+        env->ReleaseStringUTFChars(jPath, path);
+        LOGI("PubgmActiveSav 165 FPS & HDR injected: %s [ok=%d]", pathStr.c_str(), ok);
+        return ok ? JNI_TRUE : JNI_FALSE;
+    }
+
+    // 2. INI / XML Text configs
+    std::string content = read_file_posix(pathStr);
+
+    if (pathStr.rfind(".xml") != std::string::npos) {
+        if (content.find("<map>") == std::string::npos) {
+            content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
+        }
+        patch_xml_node(content, "int", "FPS", fpsStr);
+        patch_xml_node(content, "int", "FrameRateLevel", effLvlStr);
+        patch_xml_node(content, "int", "GraphicQuality", qStr);
+        patch_xml_node(content, "int", "MobileHDRMode", "1");
+        patch_xml_node(content, "int", "HighFPSMode", "3");
+        patch_xml_node(content, "int", "Unlock165Hz", "1");
+        patch_xml_node(content, "int", "Unlock165FPS", "1");
+    } else if (pathStr.find("EnjoyCJZC.ini") != std::string::npos || pathStr.find("EnjoyCJ.ini") != std::string::npos) {
+        // EnjoyCJZC UserSetting section
+        std::vector<std::pair<std::string, std::string>> enjoyKeys = {
+            {"FrameRateLevel", effLvlStr}, {"BattleFPS", effLvlStr}, {"LobbyFPS", effLvlStr},
+            {"FPS", fpsStr}, {"MaxFPS", fpsStr}, {"TargetFPS", fpsStr}, {"FrameRateLimit", fpsStr},
+            {"MobileFPSLimit", fpsStr}, {"GraphicQuality", qStr}, {"ArtQuality", qStr},
+            {"ShadowQuality", "3"}, {"MobileHDRMode", "1"}, {"HighFPSMode", "3"},
+            {"bUseHDRMode", "True"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
+            {"UnlockFPS", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"}, {"Unlock165Hz", "1"},
+            {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"}, {"Unlock165FPS", "1"}, {"Ultra165FPS", "1"},
+            {"+CVars=r.PUBGDeviceFPS", effLvlStr}, {"+CVars=r.PUBGTargetFPS", fpsStr},
+            {"+CVars=r.MobileHDR", "1"}, {"+CVars=r.PUBGHDRMode", "1"}
+        };
+        for (const auto &kv : enjoyKeys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    } else if (pathStr.find("GameUserSettings.ini") != std::string::npos) {
+        std::vector<std::pair<std::string, std::string>> gusKeys = {
+            {"FrameRateLimit", fpsStr + ".000000"}, {"bUseVSync", "False"},
+            {"bUseDynamicResolution", "False"}, {"ResolutionSizeX", "2400"},
+            {"ResolutionSizeY", "1080"}, {"LastUserConfirmedResolutionSizeX", "2400"},
+            {"LastUserConfirmedResolutionSizeY", "1080"}
+        };
+        for (const auto &kv : gusKeys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    } else {
+        // UserCustom.ini / DeviceProfile.ini / Quality.ini
+        std::vector<std::pair<std::string, std::string>> ue4Keys = {
+            {"+CVars=r.PUBGDeviceFPS", effLvlStr},
+            {"+CVars=r.PUBGDeviceFPSPolicy", "1"},
+            {"+CVars=r.DefaultDeviceFPS", effLvlStr},
+            {"+CVars=r.UserFPSSetting", effLvlStr},
+            {"+CVars=r.PUBGTargetFPS", fpsStr},
+            {"+CVars=r.PUBGMaxFPS", fpsStr},
+            {"+CVars=r.PUBGFrameRateLimit", fpsStr},
+            {"+CVars=r.FrameRateLimit", fpsStr},
+            {"+CVars=r.MobileFPSLimit", fpsStr},
+            {"+CVars=r.Vsync", "0"},
+            {"+CVars=r.Unlock120Hz", "1"},
+            {"+CVars=r.Unlock144Hz", "1"},
+            {"+CVars=r.Unlock165Hz", "1"},
+            {"+CVars=r.Unlock185Hz", "1"},
+            {"+CVars=r.Unlock240Hz", "1"},
+            {"+CVars=r.TouchBoostHz", fpsStr},
+            {"+CVars=r.MobileTouchBoostRate", fpsStr},
+            {"+CVars=r.FramePacing", "1"},
+            {"+CVars=r.MobileHDR", "1"},
+            {"+CVars=r.PUBGHDRMode", "1"},
+            {"+CVars=r.PUBGQualityLevel", qStr},
+            {"+CVars=r.PUBGSDKQualityLevel", qStr},
+            {"+CVars=r.UserQualitySetting", qStr},
+            {"+CVars=r.ShadowQuality", "3"},
+            {"+CVars=r.PostProcessAAQuality", "3"},
+            {"+CVars=r.Tonemapper.Quality", "4"},
+            {"+CVars=r.MobileContentScaleFactor", "1.0"},
+            {"+CVars=r.MaxAnisotropy", "16"},
+            {"+CVars=r.TemporalAA.Upscale", "1"},
+            {"+CVars=r.AllowOcclusionQueries", "1"},
+            {"+CVars=r.Vulkan.Enable", "1"},
+            {"+CVars=r.Vulkan.PipelineCache", "1"},
+            {"+CVars=r.AsyncCompute", "1"},
+            {"+CVars=r.VRS.Enable", "1"},
+            {"FPS", fpsStr},
+            {"MaxFPS", fpsStr},
+            {"TargetFPS", fpsStr},
+            {"FrameRateLimit", fpsStr},
+            {"MobileFPSLimit", fpsStr},
+            {"FrameRateLevel", effLvlStr},
+            {"GraphicQuality", qStr},
+            {"ArtQuality", qStr},
+            {"UnlockFPS", "1"},
+            {"Unlock165FPS", "1"},
+            {"Ultra165FPS", "1"},
+            {"HighFPSMode", "3"},
+            {"HDRMode", "1"},
+            {"TouchBoostHz", fpsStr},
+            {"TouchPollingRate", "1000"}
+        };
+        for (const auto &kv : ue4Keys) {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content, 0666);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("Pubgm165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
