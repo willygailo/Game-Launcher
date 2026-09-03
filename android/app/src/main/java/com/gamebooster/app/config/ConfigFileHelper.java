@@ -307,6 +307,7 @@ public final class ConfigFileHelper {
             StringBuilder sb = new StringBuilder("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n");
             for (String kv : keyValues) {
                 if (kv == null || kv.trim().isEmpty()) continue;
+                if (kv.startsWith("+CVars=") || kv.startsWith("-CVars=")) continue;
                 int eq = kv.indexOf('=');
                 if (eq > 0) {
                     String k = kv.substring(0, eq).trim();
@@ -323,6 +324,7 @@ public final class ConfigFileHelper {
 
         for (String kv : keyValues) {
             if (kv == null || kv.trim().isEmpty()) continue;
+            if (kv.startsWith("+CVars=") || kv.startsWith("-CVars=")) continue;
             int eq = kv.indexOf('=');
             if (eq <= 0) continue;
             String k = kv.substring(0, eq).trim();

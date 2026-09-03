@@ -134,6 +134,7 @@ public final class GameManagerLauncher {
         // STEP 2: INSTANT FOREGROUND DISPATCH & PRE-LAUNCH TURBO BURST
         // ═══════════════════════════════════════════════════════════
         try {
+            com.gamebooster.app.config.GameSecurityBypassEngine.purgeCorruptedAssetCaches(pkg);
             com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
         } catch (Throwable t) {
             Log.w(TAG, "FastLoad burst trigger note for " + pkg + ": " + t.getMessage());
@@ -141,9 +142,7 @@ public final class GameManagerLauncher {
 
         boolean launchedDirectly = false;
         if (targetIntent != null) {
-            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             try {
                 context.startActivity(targetIntent);
@@ -220,23 +219,12 @@ public final class GameManagerLauncher {
 
                         if (!isInstalled) {
                             AppExecutors.getInstance().postToMainThread(() -> {
-                                Toast.makeText(appContext, "⚠️ " + gameTitle + " is not installed on this device. Redirecting to Play Store...", Toast.LENGTH_LONG).show();
-                                try {
-                                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg));
-                                    marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    context.startActivity(marketIntent);
-                                } catch (Throwable e) {
-                                    try {
-                                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg));
-                                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        context.startActivity(webIntent);
-                                    } catch (Throwable ignored) {}
-                                }
-                                if (listener != null) listener.onLaunchFailed(pkg, "App not installed");
+                                Toast.makeText(appContext, "❌ Game Not Installed: " + gameTitle, Toast.LENGTH_SHORT).show();
+                                if (listener != null) listener.onLaunchFailed(pkg, "Package " + pkg + " not installed on device");
                             });
                         } else {
                             AppExecutors.getInstance().postToMainThread(() -> {
-                                Toast.makeText(appContext, "⚠️ Hindi mabuksan ang " + gameTitle + ". Pakitiyak na naka-grant ang Shizuku o buksan ang laro nang direkta.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(appContext, "⚠️ Elevated Launch Dispatched for " + gameTitle, Toast.LENGTH_SHORT).show();
                                 if (listener != null) listener.onLaunchFailed(pkg, "Unable to launch game activity directly");
                             });
                         }
@@ -251,21 +239,12 @@ public final class GameManagerLauncher {
                     Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
                 }
 
-                // Apply GPU Game Driver & Vulkan isolation (Purging unstable ANGLE layer)
+                // Apply GPU Game Driver & Display isolation without unstable overrides
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommands(
-                        "settings put global game_driver_all_apps 0 2>/dev/null",
-                        "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null",
-                        "settings delete global angle_gl_driver_selection_values 2>/dev/null",
-                        "settings delete global angle_enabled_pkgs 2>/dev/null",
-                        "settings put global angle_gl_driver_all_angle 0 2>/dev/null",
-                        "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
-                        "settings put global updatable_driver_production_opt_in_apps " + pkg + " 2>/dev/null",
                         "cmd game mode performance " + pkg + " 2>/dev/null",
                         "cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null",
                         "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null",
-                        "service call SurfaceFlinger 1035 i32 " + fps + " 2>/dev/null",
-                        "service call SurfaceFlinger 1036 i32 " + fps + " 2>/dev/null",
                         "setprop debug.sf.fps_limit " + fps,
                         "setprop persist.sys.NV_FPSLIMIT " + fps,
                         "setprop debug.sf.nobootanimation 1",

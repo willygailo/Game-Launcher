@@ -46,7 +46,6 @@ public final class GameFastLoadAccelerator {
         burstCommands.add("cmd game set --mode 2 " + pkg + " 2>/dev/null || true");
 
         // 2. Pre-Launch RAM Flush & Direct Contiguous Memory Compaction
-        burstCommands.add("am kill-all 2>/dev/null || true");
         burstCommands.add("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true");
         burstCommands.add("echo 1 > /proc/sys/vm/compact_memory 2>/dev/null || true");
 
@@ -73,9 +72,6 @@ public final class GameFastLoadAccelerator {
                 ShellExecutor.executeCommand(cmd);
             }
         }
-
-        // 5. Asynchronous Ahead-Of-Time (AOT) Machine Code Check
-        verifyAndWarmupArtAot(pkg);
     }
 
     /**

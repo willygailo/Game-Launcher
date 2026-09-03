@@ -170,35 +170,14 @@ public class HardwareMaskEngine {
             }
 
             // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 2: GPU, DRIVER ROUTING & FRAME RATE FORCING
+            //  LAYER 2: DISPLAY REFRESH RATE & SCHEDULER TUNING
             // ═══════════════════════════════════════════════════════════════════
-            batchCommands.add("setprop debug.hwui.renderer vulkan");
-            batchCommands.add("setprop debug.renderengine.backend vulkan");
-
-            // Build unique, deduplicated list of target games for driver routing
-            Set<String> allGamePkgs = new LinkedHashSet<>(com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet());
-            if (packageName != null && !packageName.trim().isEmpty()) {
-                allGamePkgs.add(packageName.trim());
-            }
-            String targetGamesCsv = String.join(",", allGamePkgs);
-
-            batchCommands.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
-            batchCommands.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
-            batchCommands.add("settings delete global angle_enabled_pkgs 2>/dev/null");
-            batchCommands.add("settings put global angle_gl_driver_all_angle 0");
-            batchCommands.add("settings put global game_driver_all_apps 0");
-            batchCommands.add("settings put global updatable_driver_all_apps 0");
-            batchCommands.add("settings put global game_driver_opt_in_apps \"" + targetGamesCsv + "\"");
-            batchCommands.add("settings put global updatable_driver_production_opt_in_apps \"" + targetGamesCsv + "\"");
-
             // Display & SurfaceFlinger Frame Rates
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
             batchCommands.add("settings put system min_refresh_rate " + targetHz + ".0");
             batchCommands.add("settings put system user_refresh_rate " + targetHz);
             batchCommands.add("settings put global peak_refresh_rate " + targetHz + ".0");
             batchCommands.add("settings put global min_refresh_rate " + targetHz + ".0");
-            batchCommands.add("service call SurfaceFlinger 1035 i32 " + targetHz);
-            batchCommands.add("service call SurfaceFlinger 1036 i32 " + targetHz);
             batchCommands.add("setprop debug.sf.fps_limit " + targetHz);
             batchCommands.add("setprop persist.sys.NV_FPSLIMIT " + targetHz);
             batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
@@ -245,6 +224,10 @@ public class HardwareMaskEngine {
             batchCommands.add("settings put global send_action_app_error 0");
 
             // Apply AppOps shield to all known games with zero duplicate commands
+            Set<String> allGamePkgs = new LinkedHashSet<>(com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet());
+            if (packageName != null && !packageName.trim().isEmpty()) {
+                allGamePkgs.add(packageName.trim());
+            }
             for (String gamePkg : allGamePkgs) {
                 if (gamePkg != null && !gamePkg.isEmpty()) {
                     applyAppOpsShieldForPackage(batchCommands, gamePkg);
@@ -443,14 +426,10 @@ public class HardwareMaskEngine {
 
         // 4. Mobile Legends
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            String mlbbProfile = profile.generateMlbbDeviceConfig(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("device_cfg.ini") || p.contains("DeviceHardware.ini") || p.endsWith("HighFPSConfig.ini")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
-                        ShizukuFileManager.ensureParentDirectory(p);
-                        ShizukuFileManager.writeFile(p, mlbbProfile, "666");
-                    }
+                if (p.contains("playerprefs") || p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
                 }
             }
         }

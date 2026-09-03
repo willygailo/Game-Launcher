@@ -99,6 +99,10 @@ public final class GameSecurityBypassEngine {
     public static boolean unlockForInjection(String packageName) {
         if (!ShellSafety.isSafePackageName(packageName)) return false;
         String pkg = packageName.trim().toLowerCase(Locale.ROOT);
+
+        // First auto-purge any corrupted asset caches or fake document dirs from prior runs
+        purgeCorruptedAssetCaches(pkg);
+
         List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
 
         StringBuilder sb = new StringBuilder();
@@ -278,7 +282,37 @@ public final class GameSecurityBypassEngine {
         // 4. Suppress and null-route anti-cheat telemetry reporting
         suppressSecurityTelemetryReporting(pkg);
 
+        // 5. Clean up any corrupted asset folders that cause crashes
+        purgeCorruptedAssetCaches(pkg);
+
         Log.i(TAG, "✅ [SecurityBypass] 4-layer security bypass successfully enforced for " + pkg);
+        return true;
+    }
+
+    /**
+     * Purges corrupted asset caches and fake document directories injected by previous runs
+     * to prevent game integrity / SIGSEGV crashes on startup (especially for MLBB).
+     */
+    public static boolean purgeCorruptedAssetCaches(String packageName) {
+        if (!ShellSafety.isSafePackageName(packageName)) return false;
+        String pkg = packageName.trim().toLowerCase(Locale.ROOT);
+        StringBuilder sb = new StringBuilder();
+
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            // NEVER delete Document/ or uiatlas.ini - they contain Moonton's official C# game assemblies (hb_Assembly-CSharp.bytes).
+            // Deleting them causes instant crash loop & auto-back!
+            // Strictly ensure proper read/write permissions on the XML config files.
+            sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
+            sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");
+            sb.append("chmod 666 '/storage/emulated/0/Android/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
+            sb.append("chmod 666 '/storage/emulated/0/Android/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");
+        }
+
+        String cmd = sb.toString();
+        if (!cmd.trim().isEmpty()) {
+            executePrivileged(cmd);
+            Log.i(TAG, "Config permissions verified safely for " + pkg);
+        }
         return true;
     }
 

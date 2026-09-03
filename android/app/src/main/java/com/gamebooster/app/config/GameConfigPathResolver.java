@@ -57,13 +57,13 @@ public class GameConfigPathResolver {
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
                 String scanRoots = "/sdcard/Android/data/" + pkg + "/ /storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/";
-                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" \\) 2>/dev/null";
+                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" \\) ! -path \"*/assets/*\" ! -path \"*/dragon2017/*\" ! -path \"*/lib/*\" ! -path \"*/cache/*\" 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
                     for (String line : output.split("\n")) {
                         String path = line.trim();
-                        if (!path.isEmpty()) {
+                        if (!path.isEmpty() && !path.contains("/assets/") && !path.contains("/dragon2017/") && !path.contains("/lib/")) {
                             resultSet.add(path);
                         }
                     }
@@ -141,51 +141,25 @@ public class GameConfigPathResolver {
      * Public: pure package-signature logic (used by unit tests).
      */
     public static List<String> getKnownRelativePathsForPackage(String pkg) {
-        pkg = pkg.trim().toLowerCase();
         List<String> rel = new ArrayList<>();
+        if (pkg == null) return rel;
 
-        // 1. Mobile Legends: Bang Bang (all regional versions - safe PlayerPrefs XML targets only)
-        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("mlbb")) {
-            // 2026: v3 playerprefs (MLBB 1.9.x+)
+        // 1. Mobile Legends: Bang Bang
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            // MLBB exclusively uses PlayerPrefs XML for all user graphics/FPS/engine settings.
+            // Strictly avoid dragon2017/assets/ which triggers Moonton anti-cheat/integrity SIGSEGV crashes.
             rel.add("shared_prefs/" + pkg + ".v3.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v3.playerprefs.xml");
-            // v2 playerprefs (older fallback)
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
+            rel.add("shared_prefs/" + pkg + "_preferences.xml");
+            rel.add("shared_prefs/com.mobile.legends_preferences.xml");
+            rel.add("files/" + pkg + ".v3.playerprefs.xml");
+            rel.add("files/com.mobile.legends.v3.playerprefs.xml");
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/com.mobile.legends.v2.playerprefs.xml");
-            rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("files/" + pkg + "_preferences.xml");
-            rel.add("files/dragon2017/assets/UI/android/uiatlas.ini");
-            // 2026: MLBB Document & Document/android config files (JSON, XML, Unity3D)
-            rel.add("files/dragon2017/assets/Document/android/QualityConfig.json");
-            rel.add("files/dragon2017/assets/Document/android/GraphicsSetting.json");
-            rel.add("files/dragon2017/assets/Document/android/HighFPSConfig.json");
-            rel.add("files/dragon2017/assets/Document/android/HardwareLevel.json");
-            rel.add("files/dragon2017/assets/Document/android/ModelQuality.json");
-            rel.add("files/dragon2017/assets/Document/android/BattleConfig.json");
-            rel.add("files/dragon2017/assets/Document/android/SystemConfig.json");
-            rel.add("files/dragon2017/assets/Document/android/Config.json");
-            rel.add("files/dragon2017/assets/Document/android/document.xml");
-            rel.add("files/dragon2017/assets/Document/android/Document.xml");
-            rel.add("files/dragon2017/assets/Document/android/QualityConfig.xml");
-            rel.add("files/dragon2017/assets/Document/android/GraphicsSetting.xml");
-            rel.add("files/dragon2017/assets/Document/android/HighFPSConfig.xml");
-            rel.add("files/dragon2017/assets/Document/android/Config.xml");
-            rel.add("files/dragon2017/assets/Document/android/BattleConfig.xml");
-            rel.add("files/dragon2017/assets/Document/android/SystemConfig.xml");
-            rel.add("files/dragon2017/assets/Document/QualityConfig.json");
-            rel.add("files/dragon2017/assets/Document/GraphicsSetting.json");
-            rel.add("files/dragon2017/assets/Document/HighFPSConfig.json");
-            rel.add("files/dragon2017/assets/Document/HardwareLevel.json");
-            rel.add("files/dragon2017/assets/Document/Config.json");
-            rel.add("files/dragon2017/assets/Document/document.xml");
-            rel.add("files/dragon2017/assets/Document/Document.xml");
-            rel.add("files/dragon2017/assets/Document/QualityConfig.xml");
-            rel.add("files/dragon2017/assets/Document/GraphicsSetting.xml");
-            rel.add("files/dragon2017/assets/Document/HighFPSConfig.xml");
-            rel.add("files/dragon2017/assets/Document/Config.xml");
-            rel.add("files/dragon2017/assets/Document/mlbb_graphics_2026.json");
+            rel.add("files/com.mobile.legends_preferences.xml");
         }
 
         // 2. PUBG Mobile family — split by variant for accurate per-build paths
