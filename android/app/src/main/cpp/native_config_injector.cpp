@@ -117,7 +117,11 @@ static bool write_file_atomic(const std::string& path, const std::string& conten
     
     int fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (fd < 0) {
-        LOGE("Failed to open temporary file for atomic write: %s", tmpPath.c_str());
+        if (errno == EACCES || errno == EPERM) {
+            LOGW("POSIX write_file_atomic EACCES/EPERM (Android 13-16 scoped storage) for %s - delegating to privileged Shizuku pipeline", path.c_str());
+        } else {
+            LOGE("Failed to open temporary file for atomic write: %s (errno=%d)", tmpPath.c_str(), errno);
+        }
         return false;
     }
 
@@ -134,7 +138,7 @@ static bool write_file_atomic(const std::string& path, const std::string& conten
     close(fd);
 
     if (rename(tmpPath.c_str(), path.c_str()) != 0) {
-        LOGE("Atomic rename failed from %s to %s", tmpPath.c_str(), path.c_str());
+        LOGW("Atomic rename failed from %s to %s (errno=%d)", tmpPath.c_str(), path.c_str(), errno);
         unlink(tmpPath.c_str());
         return false;
     }
@@ -143,7 +147,12 @@ static bool write_file_atomic(const std::string& path, const std::string& conten
 
 static std::string read_file_posix(const std::string& path) {
     int fd = open(path.c_str(), O_RDONLY);
-    if (fd < 0) return "";
+    if (fd < 0) {
+        if (errno == EACCES || errno == EPERM) {
+            LOGW("POSIX read_file_posix EACCES/EPERM (Android 13-16 scoped storage) for %s", path.c_str());
+        }
+        return "";
+    }
 
     struct stat st;
     if (fstat(fd, &st) < 0 || st.st_size == 0) {
@@ -409,6 +418,56 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jstring JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchContentInMemory
+  (JNIEnv *env, jclass, jstring jContent, jobjectArray jKeys, jobjectArray jValues, jint formatType) {
+    if (!jContent) return nullptr;
+    const char *rawContent = env->GetStringUTFChars(jContent, nullptr);
+    std::string content = rawContent ? rawContent : "";
+    env->ReleaseStringUTFChars(jContent, rawContent);
+
+    if (!jKeys || !jValues) {
+        return env->NewStringUTF(content.c_str());
+    }
+
+    jsize count = env->GetArrayLength(jKeys);
+    bool isXml = (formatType == 1 || content.find("<map>") != std::string::npos);
+    bool isJson = (formatType == 2 || (!content.empty() && content.front() == '{'));
+    bool isCvar = (formatType == 0 && (content.find("+CVars=") != std::string::npos || content.find("[UserCustom") != std::string::npos));
+
+    for (jsize i = 0; i < count; i++) {
+        auto jKeyStr = (jstring) env->GetObjectArrayElement(jKeys, i);
+        auto jValStr = (jstring) env->GetObjectArrayElement(jValues, i);
+        if (jKeyStr && jValStr) {
+            const char *rawK = env->GetStringUTFChars(jKeyStr, nullptr);
+            const char *rawV = env->GetStringUTFChars(jValStr, nullptr);
+            std::string k = rawK ? rawK : "";
+            std::string v = rawV ? rawV : "";
+            if (k.rfind("+CVars=", 0) == 0) {
+                k = k.substr(7);
+            }
+            if (isXml) {
+                std::string tag = "int";
+                if (v == "True" || v == "False") tag = "string";
+                else if (v.find('.') != std::string::npos) tag = "float";
+                patch_xml_node(content, tag, k, v);
+            } else if (isJson) {
+                bool isNum = (!v.empty() && (isdigit((unsigned char)v[0]) || v[0] == '-'));
+                patch_json_node(content, k, v, isNum);
+            } else if (isCvar) {
+                patch_cvar(content, k, v);
+            } else {
+                patch_key_value(content, k, v);
+            }
+            env->ReleaseStringUTFChars(jKeyStr, rawK);
+            env->ReleaseStringUTFChars(jValStr, rawV);
+        }
+        if (jKeyStr) env->DeleteLocalRef(jKeyStr);
+        if (jValStr) env->DeleteLocalRef(jValStr);
+    }
+
+    return env->NewStringUTF(content.c_str());
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchXmlKey
   (JNIEnv *env, jclass, jstring jPath, jstring jTag, jstring jKey, jstring jValue) {
     if (!jPath || !jTag || !jKey || !jValue) return JNI_FALSE;
@@ -501,7 +560,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     else if (policy == 2) schedPolicy = SCHED_RR;
 
     int ret = sched_setscheduler(pid, schedPolicy, &param);
-    return (ret == 0) ? JNI_TRUE : JNI_TRUE; // Success or graceful nice fallback
+    return (ret == 0) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetIoPriority

@@ -138,14 +138,22 @@ public final class GameSecurityBypassEngine {
 
         // 1. Restore SELinux contexts for the package directory trees
         sb.append("restorecon -F -R '/data/data/").append(pkg).append("' 2>/dev/null; ");
+        sb.append("restorecon -F -R '/data/user/0/").append(pkg).append("' 2>/dev/null; ");
         sb.append("restorecon -F -R '/storage/emulated/0/Android/data/").append(pkg).append("' 2>/dev/null; ");
         sb.append("restorecon -F -R '/sdcard/Android/data/").append(pkg).append("' 2>/dev/null; ");
 
-        // 2. Chown files to the game's actual UID/GID and force app_data_file SELinux label
+        // 2. Chown files and parent dirs to the game's actual UID/GID and force app_data_file SELinux label
         for (String path : paths) {
             if (path == null || path.trim().isEmpty()) continue;
+            File parent = new File(path).getParentFile();
             if (identity.isValid) {
+                if (parent != null) {
+                    sb.append("chown ").append(identity.uid).append(":").append(identity.gid).append(" '").append(parent.getAbsolutePath()).append("' 2>/dev/null; ");
+                }
                 sb.append("chown ").append(identity.uid).append(":").append(identity.gid).append(" '").append(path).append("' 2>/dev/null; ");
+            }
+            if (parent != null) {
+                sb.append("chcon u:object_r:app_data_file:s0 '").append(parent.getAbsolutePath()).append("' 2>/dev/null; ");
             }
             sb.append("chcon u:object_r:app_data_file:s0 '").append(path).append("' 2>/dev/null; ");
         }
@@ -191,14 +199,20 @@ public final class GameSecurityBypassEngine {
         String pkg = packageName.trim().toLowerCase(Locale.ROOT);
 
         StringBuilder sb = new StringBuilder();
+        // Resolve official base.apk path via 'pm path' on Android 13-16 or glob fallback
+        sb.append("APK_PATH=\"$(pm path '").append(pkg).append("' 2>/dev/null | sed -n 's/^package://p' | head -n 1)\"; ");
+        sb.append("if [ -z \"$APK_PATH\" ] || [ ! -f \"$APK_PATH\" ]; then ");
+        sb.append("APK_PATH=\"$(ls /data/app/*/'").append(pkg).append("'*/base.apk 2>/dev/null | head -n 1)\"; ");
+        sb.append("fi; ");
+
         for (String path : paths) {
             if (path == null || path.trim().isEmpty()) continue;
             File parent = new File(path).getParentFile();
             String parentDir = parent != null ? parent.getAbsolutePath() : "/sdcard/Android/data/" + pkg;
 
-            // Priority: Touch against official base.apk; fallback to parent directory
-            sb.append("touch -r \"$(ls /data/app/*/'").append(pkg).append("'*/base.apk 2>/dev/null | head -n 1)\" '")
-              .append(path).append("' 2>/dev/null || touch -r '").append(parentDir).append("' '").append(path).append("' 2>/dev/null; ");
+            sb.append("if [ -n \"$APK_PATH\" ] && [ -f \"$APK_PATH\" ]; then ")
+              .append("touch -r \"$APK_PATH\" '").append(path).append("' 2>/dev/null; else ")
+              .append("touch -r '").append(parentDir).append("' '").append(path).append("' 2>/dev/null; fi; ");
         }
 
         String cmd = sb.toString();
@@ -216,25 +230,50 @@ public final class GameSecurityBypassEngine {
     public static boolean suppressSecurityTelemetryReporting(String packageName) {
         if (!ShellSafety.isSafePackageName(packageName)) return false;
         String pkg = packageName.trim().toLowerCase(Locale.ROOT);
+        GameIdentity identity = resolveGameUidGid(pkg);
 
         List<String> telemetryDirs = Arrays.asList(
-                // PUBG Mobile / Tencent ACE & Bugly
+                // ── PUBG Mobile / Tencent ACE, Bugly & UE4 Telemetry ──
                 "/sdcard/Android/data/" + pkg + "/files/Saved/Logs",
                 "/sdcard/Android/data/" + pkg + "/files/Saved/Crashes",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/Saved/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/Saved/Crashes",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/Saved/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/Saved/Crashes",
                 "/data/data/" + pkg + "/files/tlog",
                 "/data/data/" + pkg + "/files/Logs",
                 "/data/data/" + pkg + "/files/crash_report",
                 "/data/data/" + pkg + "/files/turing_log",
                 "/data/data/" + pkg + "/app_bugly",
-                // Mobile Legends / Moonton Telemetry
+                "/data/data/" + pkg + "/files/ano_tmp",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/ano_tmp",
+                "/data/data/" + pkg + "/files/tss_log",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/tss_log",
+
+                // ── Mobile Legends: Bang Bang / Moonton Telemetry ──
                 "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/crashes",
                 "/data/data/" + pkg + "/files/apm_logs",
                 "/data/data/" + pkg + "/files/common_log",
-                // CODM / Activision / Tencent
+                "/data/data/" + pkg + "/files/xlog",
+                "/data/data/" + pkg + "/files/crash_dump",
+                "/data/data/" + pkg + "/files/MtpSdk",
+                "/data/data/" + pkg + "/app_vshell",
+
+                // ── Call of Duty: Mobile / TiMi & Activision Telemetry ──
                 "/sdcard/Android/data/" + pkg + "/files/tss_log",
                 "/data/data/" + pkg + "/files/tss_log",
                 "/data/data/" + pkg + "/files/anr",
-                // Free Fire / Garena
+                "/data/data/" + pkg + "/files/unity_crash",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/Unity/crashes",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/unity_crash",
+                "/data/data/" + pkg + "/files/ano_tmp",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/ano_tmp",
+
+                // ── Free Fire / Garena ──
                 "/sdcard/Android/data/" + pkg + "/files/report",
                 "/data/data/" + pkg + "/files/report"
         );
@@ -245,13 +284,17 @@ public final class GameSecurityBypassEngine {
             sb.append("mkdir -p '").append(dir).append("' 2>/dev/null; ");
             sb.append("touch '").append(dir).append("/.nomedia' 2>/dev/null; ");
             sb.append("chmod 777 '").append(dir).append("' 2>/dev/null; ");
+            if (identity.isValid) {
+                sb.append("chown ").append(identity.uid).append(":").append(identity.gid).append(" '").append(dir).append("' '").append(dir).append("/.nomedia' 2>/dev/null; ");
+            }
+            sb.append("chcon u:object_r:app_data_file:s0 '").append(dir).append("' '").append(dir).append("/.nomedia' 2>/dev/null; ");
         }
 
         String cmd = sb.toString();
         if (!cmd.trim().isEmpty()) {
             executePrivileged(cmd);
         }
-        Log.i(TAG, "Security telemetry reporting directories neutralized for " + pkg);
+        Log.i(TAG, "Security telemetry reporting directories neutralized and chowned for " + pkg);
         return true;
     }
 

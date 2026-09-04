@@ -218,6 +218,9 @@ public final class GameManagerSessionEngine {
         Log.i(TAG, "Restoring baseline — ending GameManager Session for: " + packageName);
         GameStateReverter.revertToBaseline(appContext);
         GameManagerStatus.getInstance().setActiveSession(null);
+        if (packageName != null) {
+            com.gamebooster.app.config.GameAutoInjectDispatcher.resetPackageInjectionState(packageName);
+        }
     }
 
     /**

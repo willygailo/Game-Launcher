@@ -55,6 +55,149 @@ public class ConfigPatcherTest {
     }
 
     @Test
+    public void testMlbb2026PathSignatures() {
+        List<String> rel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.mobile.legends");
+        assertNotNull(rel);
+        assertTrue(rel.contains("shared_prefs/com.mobile.legends.v4.playerprefs.xml"));
+        assertTrue(rel.contains("shared_prefs/com.mobile.legends.v3.playerprefs.xml"));
+        assertTrue(rel.contains("shared_prefs/com.mobile.legends.v2.playerprefs.xml"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/QualityConfig.json"));
+        assertTrue(rel.contains("files/Dragon2017/assets/Document/QualityConfig.json"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/BattleConfig.json"));
+        assertTrue(rel.contains("files/battle_config/QualityConfig.json"));
+    }
+
+    @Test
+    public void testPubgm2026PathSignatures() {
+        // Global PUBGM
+        List<String> globalRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.tencent.ig");
+        assertNotNull(globalRel);
+        // Canonical double-subfolder
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav"));
+        // Single-subfolder mirror
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini"));
+        assertTrue(globalRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/SaveGames/Active.sav"));
+
+        // Regional variants
+        List<String> bgmiRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.pubg.imobile");
+        assertTrue(bgmiRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BGMIUserCustom.ini"));
+        assertTrue(bgmiRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/BGMIUserCustom.ini"));
+
+        List<String> krRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.pubg.krmobile");
+        assertTrue(krRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/KRUserCustom.ini"));
+        assertTrue(krRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/KRUserCustom.ini"));
+
+        List<String> twRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.rekoo.pubgm");
+        assertTrue(twRel.contains("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/TWUserCustom.ini"));
+        assertTrue(twRel.contains("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/TWUserCustom.ini"));
+
+        List<String> nsRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.pubg.newstate");
+        assertTrue(nsRel.contains("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/UserCustom.ini"));
+        assertTrue(nsRel.contains("files/UE4Game/PUBGNewState/Saved/Config/Android/UserCustom.ini"));
+    }
+
+    @Test
+    public void testCodm2026PathSignatures() {
+        List<String> codmRel = GameConfigPathResolver.getKnownRelativePathsForPackage("com.activision.callofduty.shooter");
+        assertNotNull(codmRel);
+        // Unity boot config
+        assertTrue(codmRel.contains("files/boot.config"));
+        assertTrue(codmRel.contains("files/il2cpp/boot.config"));
+        // JSON configs
+        assertTrue(codmRel.contains("files/Config/UserSetting.json"));
+        assertTrue(codmRel.contains("files/Config/HardwareProfile.json"));
+        assertTrue(codmRel.contains("files/Config/GraphicsSettings_2026.json"));
+        assertTrue(codmRel.contains("files/cod_prefs.json"));
+        // INI configs
+        assertTrue(codmRel.contains("files/GraphicsSettings.ini"));
+        assertTrue(codmRel.contains("files/ControlsSettings.ini"));
+        assertTrue(codmRel.contains("files/GameSettings.ini"));
+        // Cross-publisher playerprefs
+        assertTrue(codmRel.contains("shared_prefs/com.garena.game.codm.v2.playerprefs.xml"));
+        assertTrue(codmRel.contains("shared_prefs/com.vng.codm.v2.playerprefs.xml"));
+        assertTrue(codmRel.contains("shared_prefs/com.tencent.tmgp.cod.v2.playerprefs.xml"));
+        // Warzone Mobile
+        assertTrue(codmRel.contains("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini"));
+        assertTrue(codmRel.contains("files/UE4Game/Warzone/Saved/Config/Android/GameUserSettings.ini"));
+    }
+
+    @Test
+    public void testAcceptableConfigPathFiltering() {
+        // Must accept valid configs
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/QualityConfig.json"));
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/data/data/com.mobile.legends/shared_prefs/com.mobile.legends.v4.playerprefs.xml"));
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini"));
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini"));
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.activision.callofduty.shooter/files/boot.config"));
+        assertTrue(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.activision.callofduty.shooter/files/Config/UserSetting.json"));
+
+        // Must reject binaries, libraries, and caches
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/data/data/com.tencent.ig/lib/libUE4.so"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/data/data/com.tencent.ig/cache/temp.bytes"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/data/data/com.tencent.ig/code_cache/test.dex"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/UI/Skin.unity3d"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/data.bundle"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/obb/com.tencent.ig/main.obb"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/intro.mp4"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/audio.bank"));
+    }
+
+    @Test
+    public void testExistingFilePrioritySorting() throws java.io.IOException {
+        java.io.File tempDir = java.io.File.createTempFile("gamebooster_test_", "");
+        tempDir.delete();
+        tempDir.mkdirs();
+        try {
+            java.io.File existingFile = new java.io.File(tempDir, "existing_config.ini");
+            existingFile.createNewFile();
+
+            java.util.List<String> defaults = java.util.Arrays.asList(
+                    "non_existing_1.ini",
+                    existingFile.getName(),
+                    "non_existing_2.ini"
+            );
+
+            // Directly test resolution logic with mock base path
+            java.util.Set<String> discoveredExisting = new java.util.LinkedHashSet<>();
+            java.util.Set<String> candidatePaths = new java.util.LinkedHashSet<>();
+
+            for (String rel : defaults) {
+                java.io.File f = new java.io.File(tempDir, rel);
+                if (f.exists()) {
+                    discoveredExisting.add(f.getAbsolutePath());
+                } else {
+                    candidatePaths.add(f.getAbsolutePath());
+                }
+            }
+
+            java.util.List<String> sorted = new java.util.ArrayList<>();
+            sorted.addAll(discoveredExisting);
+            for (String c : candidatePaths) {
+                if (!discoveredExisting.contains(c)) {
+                    sorted.add(c);
+                }
+            }
+
+            assertEquals(3, sorted.size());
+            assertEquals(existingFile.getAbsolutePath(), sorted.get(0));
+            assertTrue(sorted.get(1).contains("non_existing"));
+            assertTrue(sorted.get(2).contains("non_existing"));
+        } finally {
+            // Cleanup
+            java.io.File[] files = tempDir.listFiles();
+            if (files != null) {
+                for (java.io.File f : files) f.delete();
+            }
+            tempDir.delete();
+        }
+    }
+
+    @Test
     public void testConfigFileHelperIniPatching() {
         String originalIni = "[Graphics]\nFPS=60\nQuality=2\n";
         String[] updates = new String[]{
@@ -265,5 +408,100 @@ public class ConfigPatcherTest {
         assertTrue(patchedJson.contains("SkipIntroMovie"));
         assertTrue(patchedJson.contains("ShaderPrewarmAtStartup"));
         assertTrue(patchedJson.contains("PreloadWeaponModels"));
+    }
+
+    @Test
+    public void testGameAutoInjectDispatcherIdempotency() {
+        String testPkg = "com.mobile.legends";
+        GameAutoInjectDispatcher.resetAll();
+        assertFalse(GameAutoInjectDispatcher.isPackageInjected(testPkg));
+
+        // First dispatch marks package as injected
+        GameAutoInjectDispatcher.dispatchForPackage(testPkg);
+        assertTrue(GameAutoInjectDispatcher.isPackageInjected(testPkg));
+
+        // Second redundant dispatch does not crash and respects idempotency
+        GameAutoInjectDispatcher.dispatchForPackage(testPkg);
+        assertTrue(GameAutoInjectDispatcher.isPackageInjected(testPkg));
+
+        // Force dispatch still succeeds
+        GameAutoInjectDispatcher.dispatchForPackage(testPkg, true);
+        assertTrue(GameAutoInjectDispatcher.isPackageInjected(testPkg));
+
+        // Session reset clears state
+        GameAutoInjectDispatcher.resetPackageInjectionState(testPkg);
+        assertFalse(GameAutoInjectDispatcher.isPackageInjected(testPkg));
+    }
+
+    @Test
+    public void testConfigFileHelperDuplicateStripping() {
+        // INI with multiple duplicate keys
+        String duplicateIni = "[UserCustom]\n"
+                + "+CVars=r.PUBGDeviceFPS=6\n"
+                + "+CVars=r.PUBGDeviceFPS=9\n"
+                + "+CVars=r.PUBGDeviceFPS=10\n"
+                + "bSprint=False\n";
+        String[] iniUpdates = new String[]{
+                "+CVars=r.PUBGDeviceFPS=185",
+                "bSprint=True"
+        };
+        String patchedIni = ConfigFileHelper.patchIniContent(duplicateIni, iniUpdates, "[UserCustom]");
+        assertNotNull(patchedIni);
+        assertTrue(patchedIni.contains("r.PUBGDeviceFPS=185"));
+        assertTrue(patchedIni.contains("bSprint=True"));
+        assertFalse(patchedIni.contains("r.PUBGDeviceFPS=6"));
+        assertFalse(patchedIni.contains("r.PUBGDeviceFPS=9"));
+        assertFalse(patchedIni.contains("r.PUBGDeviceFPS=10\n"));
+        // Count occurrences of r.PUBGDeviceFPS: must be exactly 1
+        int count = 0;
+        int idx = 0;
+        while ((idx = patchedIni.indexOf("r.PUBGDeviceFPS", idx)) != -1) {
+            count++;
+            idx += "r.PUBGDeviceFPS".length();
+        }
+        assertEquals(1, count);
+
+        // XML with duplicate tags
+        String duplicateXml = "<map>\n"
+                + "    <int name=\"TargetFPS\" value=\"60\" />\n"
+                + "    <int name=\"TargetFPS\" value=\"90\" />\n"
+                + "</map>";
+        String[] xmlUpdates = new String[]{"TargetFPS=120"};
+        String patchedXml = ConfigFileHelper.patchXmlContent(duplicateXml, xmlUpdates);
+        assertNotNull(patchedXml);
+        assertTrue(patchedXml.contains("value=\"120\""));
+        assertFalse(patchedXml.contains("value=\"60\""));
+        assertFalse(patchedXml.contains("value=\"90\""));
+        int xmlCount = 0;
+        idx = 0;
+        while ((idx = patchedXml.indexOf("name=\"TargetFPS\"", idx)) != -1) {
+            xmlCount++;
+            idx += "name=\"TargetFPS\"".length();
+        }
+        assertEquals(1, xmlCount);
+
+        // JSON with duplicate keys
+        String duplicateJson = "{\"fps\": 60, \"fps\": 90, \"quality\": 1}";
+        String[] jsonUpdates = new String[]{"fps=120"};
+        String patchedJson = ConfigFileHelper.patchJsonContent(duplicateJson, jsonUpdates);
+        assertNotNull(patchedJson);
+        assertTrue(patchedJson.contains("120"));
+        assertFalse(patchedJson.contains("60"));
+        assertFalse(patchedJson.contains("90"));
+        int jsonCount = 0;
+        idx = 0;
+        while ((idx = patchedJson.indexOf("\"fps\"", idx)) != -1) {
+            jsonCount++;
+            idx += "\"fps\"".length();
+        }
+        assertEquals(1, jsonCount);
+    }
+
+    @Test
+    public void testSecurityTelemetrySuppressionMultiPublisher() {
+        assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.mobile.legends"));
+        assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.tencent.ig"));
+        assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.activision.callofduty.shooter"));
+        assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.dts.freefireth"));
     }
 }

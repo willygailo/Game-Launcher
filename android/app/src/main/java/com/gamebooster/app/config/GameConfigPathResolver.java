@@ -36,35 +36,36 @@ public class GameConfigPathResolver {
      * Resolves all valid and candidate config paths for a given game package.
      * Combines predefined known paths with dynamic filesystem discovery.
      */
+    /**
+     * Resolves all valid and candidate config paths for a given game package.
+     * Combines predefined known paths with dynamic filesystem discovery.
+     * Prioritizes files that physically exist on device so newly moved/updated files are patched first.
+     */
     public static List<String> resolveConfigPaths(String packageName, List<String> defaultRelativePaths) {
         if (packageName == null || packageName.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
         String pkg = packageName.trim().toLowerCase();
-        Set<String> resultSet = new LinkedHashSet<>();
+        Set<String> discoveredExisting = new LinkedHashSet<>();
+        Set<String> candidatePaths = new LinkedHashSet<>();
 
-        if (defaultRelativePaths != null) {
-            for (String relative : defaultRelativePaths) {
-                String cleanRel = relative.startsWith("/") ? relative.substring(1) : relative;
-                for (String root : generateBasePaths(pkg)) {
-                    resultSet.add(root + "/" + cleanRel);
-                }
-            }
-        }
-
-        // 2. Perform Dynamic Privileged Deep Search via Shizuku if available
+        // 1. Dynamic Privileged Deep Search via Shizuku if available
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String scanRoots = "/sdcard/Android/data/" + pkg + "/ /storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/";
-                String cmd = "find " + scanRoots + " -maxdepth 6 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" \\) ! -path \"*/assets/*\" ! -path \"*/dragon2017/*\" ! -path \"*/lib/*\" ! -path \"*/cache/*\" 2>/dev/null";
+                String scanRoots = "/storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/ /sdcard/Android/data/" + pkg + "/";
+                // Depth 8 covers deeply nested UE4 (files/UE4Game/.../Saved/Config/Android/) and Unity subtrees
+                // Exclude only binaries (so, apk, unity3d, bundle, bytes, obb, mp4, bank, lib, cache)
+                String cmd = "find " + scanRoots + " -maxdepth 8 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"boot.config\" \\) "
+                        + "! -name \"*.so\" ! -name \"*.apk\" ! -name \"*.unity3d\" ! -name \"*.bundle\" ! -name \"*.bytes\" ! -name \"*.obb\" ! -name \"*.mp4\" ! -name \"*.bank\" "
+                        + "! -path \"*/lib/*\" ! -path \"*/cache/*\" ! -path \"*/code_cache/*\" ! -path \"*/crashlytics/*\" 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
                     for (String line : output.split("\n")) {
                         String path = line.trim();
-                        if (!path.isEmpty() && !path.contains("/assets/") && !path.contains("/dragon2017/") && !path.contains("/lib/")) {
-                            resultSet.add(path);
+                        if (isAcceptableConfigPath(path)) {
+                            discoveredExisting.add(path);
                         }
                     }
                 }
@@ -73,9 +74,86 @@ public class GameConfigPathResolver {
             }
         }
 
-        List<String> resolvedList = new ArrayList<>(resultSet);
+        // 2. Java-Based Filesystem Scan (direct storage / accessible paths)
+        try {
+            for (String root : generateBasePaths(pkg)) {
+                File rootDir = new File(root);
+                if (rootDir.exists() && rootDir.isDirectory()) {
+                    scanDirectoryForConfigsJava(rootDir, 0, 8, discoveredExisting);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Java filesystem scan error for " + pkg + ": " + t.getMessage());
+        }
+
+        // 3. Predefined Known Relative Paths
+        if (defaultRelativePaths != null) {
+            for (String relative : defaultRelativePaths) {
+                String cleanRel = relative.startsWith("/") ? relative.substring(1) : relative;
+                for (String root : generateBasePaths(pkg)) {
+                    String fullPath = root + "/" + cleanRel;
+                    File f = new File(fullPath);
+                    if (f.exists()) {
+                        discoveredExisting.add(fullPath);
+                    } else {
+                        candidatePaths.add(fullPath);
+                    }
+                }
+            }
+        }
+
+        // Existing files on device come FIRST, followed by candidate/fallback paths
+        List<String> resolvedList = new ArrayList<>(discoveredExisting.size() + candidatePaths.size());
+        resolvedList.addAll(discoveredExisting);
+        for (String c : candidatePaths) {
+            if (!discoveredExisting.contains(c)) {
+                resolvedList.add(c);
+            }
+        }
+
         CACHED_PATHS.put(pkg, resolvedList);
         return resolvedList;
+    }
+
+    /**
+     * Checks if a path is a valid non-binary configuration target.
+     */
+    public static boolean isAcceptableConfigPath(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        String lower = path.toLowerCase();
+        if (lower.contains("/lib/") || lower.contains("/cache/") || lower.contains("/code_cache/") || lower.contains("/crashlytics/")) {
+            return false;
+        }
+        if (lower.endsWith(".so") || lower.endsWith(".apk") || lower.endsWith(".unity3d") || lower.endsWith(".bundle")
+                || lower.endsWith(".bytes") || lower.endsWith(".obb") || lower.endsWith(".mp4") || lower.endsWith(".bank")
+                || lower.endsWith(".dex") || lower.endsWith(".jar")) {
+            return false;
+        }
+        return lower.endsWith(".ini") || lower.endsWith(".json") || lower.endsWith(".xml")
+                || lower.endsWith(".cfg") || lower.endsWith(".sav") || lower.endsWith(".dat")
+                || lower.endsWith("boot.config") || lower.endsWith(".properties");
+    }
+
+    /**
+     * Recursive Java directory scanner for non-binary game configuration files.
+     */
+    private static void scanDirectoryForConfigsJava(File dir, int depth, int maxDepth, Set<String> outPaths) {
+        if (dir == null || !dir.exists() || depth > maxDepth) return;
+        File[] files = dir.listFiles();
+        if (files == null) return;
+        for (File f : files) {
+            String name = f.getName().toLowerCase();
+            if (f.isDirectory()) {
+                if (name.equals("lib") || name.equals("cache") || name.equals("code_cache") || name.equals("crashlytics")) {
+                    continue;
+                }
+                scanDirectoryForConfigsJava(f, depth + 1, maxDepth, outPaths);
+            } else if (f.isFile()) {
+                if (isAcceptableConfigPath(f.getAbsolutePath())) {
+                    outPaths.add(f.getAbsolutePath());
+                }
+            }
+        }
     }
 
     /**
@@ -100,6 +178,14 @@ public class GameConfigPathResolver {
     public static void ensureDirectoriesForPaths(List<String> paths) {
         if (paths == null || paths.isEmpty()) return;
         for (String path : paths) {
+            if (path == null || path.trim().isEmpty()) continue;
+            try {
+                File f = new File(path);
+                File parent = f.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+            } catch (Throwable ignored) {}
             ShizukuFileManager.ensureParentDirectory(path);
         }
     }
@@ -144,68 +230,114 @@ public class GameConfigPathResolver {
         List<String> rel = new ArrayList<>();
         if (pkg == null) return rel;
 
-        // 1. Mobile Legends: Bang Bang
+        // 1. Mobile Legends: Bang Bang (Moonton Project NEXT 2026 update)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-            // MLBB exclusively uses PlayerPrefs XML for all user graphics/FPS/engine settings.
-            // Strictly avoid dragon2017/assets/ which triggers Moonton anti-cheat/integrity SIGSEGV crashes.
+            // PlayerPrefs XML: v4 (2026 update), v3, v2, and base preferences
+            rel.add("shared_prefs/" + pkg + ".v4.playerprefs.xml");
+            rel.add("shared_prefs/com.mobile.legends.v4.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + ".v3.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v3.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.mobile.legends.v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/com.mobile.legends_preferences.xml");
+            rel.add("shared_prefs/com.mobile.legends.xml");
+            rel.add("shared_prefs/" + pkg + ".xml");
+
+            rel.add("files/" + pkg + ".v4.playerprefs.xml");
+            rel.add("files/com.mobile.legends.v4.playerprefs.xml");
             rel.add("files/" + pkg + ".v3.playerprefs.xml");
             rel.add("files/com.mobile.legends.v3.playerprefs.xml");
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/com.mobile.legends.v2.playerprefs.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("files/com.mobile.legends_preferences.xml");
+            rel.add("files/com.mobile.legends.xml");
+            rel.add("files/" + pkg + ".xml");
+
+            // Document & battle configs (JSON settings introduced/relocated in NEXT 2026)
+            rel.add("files/dragon2017/assets/Document/QualityConfig.json");
+            rel.add("files/Dragon2017/assets/Document/QualityConfig.json");
+            rel.add("files/dragon2017/assets/Document/BattleConfig.json");
+            rel.add("files/Dragon2017/assets/Document/BattleConfig.json");
+            rel.add("files/dragon2017/assets/Document/Config.json");
+            rel.add("files/dragon2017/assets/Document/GraphicSetting.json");
+            rel.add("files/dragon2017/assets/Document/GameConfig.json");
+            rel.add("files/dragon2017/assets/Document/HeroConfig.json");
+            rel.add("files/Config/QualityConfig.json");
+            rel.add("files/battle_config/QualityConfig.json");
+            rel.add("files/battle_config/BattleConfig.json");
         }
 
-        // 2. PUBG Mobile family — split by variant for accurate per-build paths
+        // 2. PUBG Mobile family — split by variant for accurate per-build paths (3.x 2026 update)
         else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile")
-                || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm") || pkg.contains("pubgmobile")) {
+                || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm") || pkg.contains("pubgmobile")
+                || pkg.contains("rekoo.pubgm") || pkg.contains("iglite")) {
 
-            // ── Shared base paths for ALL PUBGM variants ──
+            // ── Canonical Double-Subfolder UE4 Configs ──
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
-            // 2026: EnjoyCJZC.ini — primary FPS/quality controller for 2.9.x+
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Quality.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Engine.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Scalability.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/ChineseUserCustom.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/CompatibilityProfile.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/Graphics.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BaseDeviceProfile.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/SrcVersion.ini");
             rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks/game_patch.pak");
 
+            // ── Single-Subfolder Mirrors (seen in engine refactors & certain distributions) ──
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJZC.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/EnjoyCJ.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/SettingInfo.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/Quality.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/Engine.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/Scalability.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/CompatibilityProfile.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/Graphics.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/BaseDeviceProfile.ini");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/SaveGames/Active.sav");
+            rel.add("files/UE4Game/ShadowTrackerExtra/Saved/SaveGames/ActiveShadow.sav");
+
             // ── BGMI (Battlegrounds Mobile India) — com.pubg.imobile ──
             if (pkg.contains("imobile")) {
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BGMIUserCustom.ini");
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/BGMIEnjoyCJZC.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/BGMIUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/BGMIEnjoyCJZC.ini");
                 rel.add("shared_prefs/com.pubg.imobile.v2.playerprefs.xml");
                 rel.add("shared_prefs/com.pubg.imobile_preferences.xml");
 
-            // ── PUBG KR (Korean server) — com.pubg.krmobile ──
+            // ── PUBG KR (Korean/Japan server) — com.pubg.krmobile ──
             } else if (pkg.contains("krmobile")) {
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/KRUserCustom.ini");
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/KREnjoyCJZC.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/KRUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/KREnjoyCJZC.ini");
                 rel.add("shared_prefs/com.pubg.krmobile.v2.playerprefs.xml");
                 rel.add("shared_prefs/com.pubg.krmobile_preferences.xml");
 
-            // ── PUBG New State — com.pubg.newstate (different UE4 project!) ──
+            // ── PUBG New State — com.pubg.newstate (different UE4 project root) ──
             } else if (pkg.contains("newstate")) {
-                // New State uses a completely different UE4 project path structure
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/UserCustom.ini");
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/GameUserSettings.ini");
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/DeviceProfile.ini");
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/EnjoyCJZC.ini");
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/Config/Android/Quality.ini");
                 rel.add("files/UE4Game/PUBGNewState/PUBGNewState/Saved/SaveGames/Active.sav");
+                rel.add("files/UE4Game/PUBGNewState/Saved/Config/Android/UserCustom.ini");
+                rel.add("files/UE4Game/PUBGNewState/Saved/Config/Android/GameUserSettings.ini");
+                rel.add("files/UE4Game/PUBGNewState/Saved/Config/Android/DeviceProfile.ini");
                 rel.add("shared_prefs/com.pubg.newstate.v2.playerprefs.xml");
                 rel.add("shared_prefs/com.pubg.newstate_preferences.xml");
 
@@ -213,10 +345,21 @@ public class GameConfigPathResolver {
             } else if (pkg.contains("vng")) {
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/VNGUserCustom.ini");
                 rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/VNGEnjoyCJZC.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/VNGUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/VNGEnjoyCJZC.ini");
                 rel.add("shared_prefs/com.vng.pubgmobile.v2.playerprefs.xml");
                 rel.add("shared_prefs/com.vng.pubgmobile_preferences.xml");
 
-            // ── Global PUBGM / Game for Peace / other variants ──
+            // ── Taiwan server — com.rekoo.pubgm ──
+            } else if (pkg.contains("rekoo")) {
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/TWUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/TWEnjoyCJZC.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/TWUserCustom.ini");
+                rel.add("files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/TWEnjoyCJZC.ini");
+                rel.add("shared_prefs/com.rekoo.pubgm.v2.playerprefs.xml");
+                rel.add("shared_prefs/com.rekoo.pubgm_preferences.xml");
+
+            // ── Global PUBGM (com.tencent.ig) / other variants ──
             } else {
                 rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
                 rel.add("shared_prefs/" + pkg + "_preferences.xml");
@@ -228,33 +371,52 @@ public class GameConfigPathResolver {
         }
 
 
-        // 3. Call of Duty Mobile / Warzone Mobile
-        else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+        // 3. Call of Duty Mobile / Warzone Mobile (2026 TiMi / Activision update)
+        else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone") || pkg.contains("tmgp.cod")) {
+            // Unity boot configs (frame rate, gfx job mode, wait-for-present)
+            rel.add("files/boot.config");
+            rel.add("files/il2cpp/boot.config");
+            rel.add("files/Unity/boot.config");
+
+            // JSON and INI configuration profiles
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Config/HardwareProfile.json");
             rel.add("files/config/UserSetting.json");
             rel.add("files/config/HardwareProfile.json");
+            rel.add("files/Config/GraphicsSettings_2026.json");
             rel.add("files/GraphicsSettings.ini");
             rel.add("files/config/GraphicsSettings.ini");
             rel.add("files/ControlsSettings.ini");
             rel.add("files/config/ControlsSettings.ini");
+            rel.add("files/GameSettings.ini");
+            rel.add("files/config/DeviceHardware.ini");
             rel.add("files/UserSetting.json");
             rel.add("files/HardwareProfile.json");
+            rel.add("files/cod_prefs.json");
+
+            // Warzone Mobile UE4 paths
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/GameUserSettings.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/UserCustom.ini");
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/DeviceProfile.ini");
-            // 2026: Quality.ini — new CODM quality config
             rel.add("files/UE4Game/Warzone/Warzone/Saved/Config/Android/Quality.ini");
-            // 2026: cod_prefs.json — CODM 2026 client preferences
-            rel.add("files/cod_prefs.json");
+            rel.add("files/UE4Game/Warzone/Saved/Config/Android/GameUserSettings.ini");
+            rel.add("files/UE4Game/Warzone/Saved/Config/Android/UserCustom.ini");
+            rel.add("files/UE4Game/Warzone/Saved/Config/Android/DeviceProfile.ini");
+
+            // PlayerPrefs across Activision (Global), Garena (SEA), VNG (VN), TiMi (CN)
             rel.add("files/" + pkg + ".v2.playerprefs.xml");
             rel.add("files/com.garena.game.codm.v2.playerprefs.xml");
             rel.add("files/com.activision.callofduty.shooter.v2.playerprefs.xml");
+            rel.add("files/com.vng.codm.v2.playerprefs.xml");
+            rel.add("files/com.tencent.tmgp.cod.v2.playerprefs.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("files/app_pref.xml");
+
             rel.add("shared_prefs/" + pkg + ".v2.playerprefs.xml");
             rel.add("shared_prefs/com.garena.game.codm.v2.playerprefs.xml");
             rel.add("shared_prefs/com.activision.callofduty.shooter.v2.playerprefs.xml");
+            rel.add("shared_prefs/com.vng.codm.v2.playerprefs.xml");
+            rel.add("shared_prefs/com.tencent.tmgp.cod.v2.playerprefs.xml");
             rel.add("shared_prefs/" + pkg + "_preferences.xml");
             rel.add("shared_prefs/app_pref.xml");
         }

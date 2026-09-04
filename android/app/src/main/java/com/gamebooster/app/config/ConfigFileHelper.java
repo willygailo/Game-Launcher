@@ -41,6 +41,25 @@ public final class ConfigFileHelper {
      */
     public static boolean writeContentAtomic(String path, String content) {
         if (path == null || path.trim().isEmpty()) return false;
+
+        // Tier 1: Fast direct JVM write if path is directly accessible
+        try {
+            File f = new File(path);
+            if (f.getParentFile() != null && !f.getParentFile().exists()) {
+                f.getParentFile().mkdirs();
+            }
+            if (!f.exists() || f.canWrite()) {
+                try (FileOutputStream fos = new FileOutputStream(f)) {
+                    fos.write((content != null ? content : "").getBytes(StandardCharsets.UTF_8));
+                    fos.flush();
+                    return true;
+                }
+            }
+        } catch (Throwable directEx) {
+            Log.d(TAG, "Direct write failed (expected on Android 13-16 scoped storage): " + directEx.getMessage());
+        }
+
+        // Tier 2: Elevated Shizuku / AIDL IUserService / privileged shell for Android 13-16 scoped storage
         try {
             GameConfigStorageAccessEngine.ensureAndGrantPathAccess(null, path);
             ShizukuFileManager.ensureParentDirectory(path);
@@ -52,21 +71,7 @@ public final class ConfigFileHelper {
             Log.d(TAG, "ShizukuFileManager write attempt note: " + t.getMessage());
         }
 
-        // Direct JVM file write fallback for accessible paths (e.g. app-private or SAF accessible)
-        try {
-            File f = new File(path);
-            if (f.getParentFile() != null && !f.getParentFile().exists()) {
-                f.getParentFile().mkdirs();
-            }
-            try (FileOutputStream fos = new FileOutputStream(f)) {
-                fos.write((content != null ? content : "").getBytes(StandardCharsets.UTF_8));
-                fos.flush();
-                return true;
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "Direct file write fallback failed for " + path + ": " + t.getMessage());
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -93,6 +98,10 @@ public final class ConfigFileHelper {
                 }
             }
             String updatedContent = patchContentInMemory(existingContent, keyValues, defaultSection, path);
+            if (existingContent != null && !existingContent.isEmpty() && existingContent.equals(updatedContent)) {
+                Log.d(TAG, "Content already matches desired config for " + path + " - skipping write (no-op).");
+                return true;
+            }
             return writeContentAtomic(path, updatedContent);
         } catch (Throwable t) {
             Log.w(TAG, "patchKeys failed for " + path + ": " + t.getMessage(), t);
@@ -107,6 +116,38 @@ public final class ConfigFileHelper {
         if (content == null) content = "";
         String lowerPath = path != null ? path.toLowerCase() : "";
 
+        // Tier 1: Try accelerated C++ in-memory parsing if native engine is loaded and content exists
+        if (NativeConfigInjector.isNativeLoaded() && keyValues != null && keyValues.length > 0 && !content.isEmpty()) {
+            try {
+                List<String> kList = new ArrayList<>(keyValues.length);
+                List<String> vList = new ArrayList<>(keyValues.length);
+                for (String kv : keyValues) {
+                    if (kv != null) {
+                        int eq = kv.indexOf('=');
+                        if (eq > 0) {
+                            kList.add(kv.substring(0, eq).trim());
+                            vList.add(kv.substring(eq + 1).trim());
+                        }
+                    }
+                }
+                if (!kList.isEmpty()) {
+                    int formatType = lowerPath.endsWith(".json") ? 2 : (lowerPath.endsWith(".xml") ? 1 : 0);
+                    String nativePatched = NativeConfigInjector.patchContentNativeInMemory(
+                            content,
+                            kList.toArray(new String[0]),
+                            vList.toArray(new String[0]),
+                            formatType
+                    );
+                    if (nativePatched != null && !nativePatched.isEmpty()) {
+                        return nativePatched;
+                    }
+                }
+            } catch (Throwable t) {
+                Log.d(TAG, "Native in-memory patcher note: " + t.getMessage());
+            }
+        }
+
+        // Tier 2: Pure Java resilient parsers (guarantees zero corrupted sections/tags)
         if (lowerPath.endsWith(".json")) {
             return patchJsonContent(content, keyValues);
         } else if (lowerPath.endsWith(".xml")) {
@@ -158,7 +199,10 @@ public final class ConfigFileHelper {
             formattedTargetSection = "[" + formattedTargetSection + "]";
         }
 
-        // Pass 1: Update existing keys in-place
+        java.util.Set<String> managedKeys = new java.util.HashSet<>(pendingKeys.keySet());
+        java.util.Set<String> seenKeys = new java.util.HashSet<>();
+
+        // Pass 1: Update existing keys in-place and discard duplicate occurrences
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             String trimmed = line.trim();
@@ -181,9 +225,17 @@ public final class ConfigFileHelper {
             }
 
             String lineKey = extractNormalizedKey(trimmed);
-            if (pendingKeys.containsKey(lineKey)) {
-                String replacement = pendingKeys.remove(lineKey);
-                resultLines.add(replacement);
+            if (!lineKey.isEmpty() && managedKeys.contains(lineKey)) {
+                if (!seenKeys.contains(lineKey)) {
+                    seenKeys.add(lineKey);
+                    String replacement = pendingKeys.remove(lineKey);
+                    if (replacement != null) {
+                        resultLines.add(replacement);
+                    }
+                } else {
+                    // Duplicate key in file — discard to eliminate conflicts
+                    Log.d(TAG, "Discarded duplicate INI key: " + lineKey);
+                }
             } else {
                 resultLines.add(line);
             }
@@ -242,12 +294,17 @@ public final class ConfigFileHelper {
             String v = kv.substring(eq + 1).trim();
             String jsonVal = formatJsonValue(v);
 
-            // Match the key anywhere in the JSON, replacing its value
-            Pattern keyPattern = Pattern.compile(
-                    "(\"" + Pattern.quote(k) + "\"\\s*:\\s*)(\"[^\"]*\"|[^,\\n}\\]]+)");
+            // Match key in the JSON, replacing the first occurrence and stripping any duplicates
+            Pattern keyPattern = Pattern.compile("(\"" + Pattern.quote(k) + "\"\\s*:\\s*)(\"[^\"]*\"|[^,\\n}\\]]+)(,?)");
             Matcher matcher = keyPattern.matcher(updated);
             if (matcher.find()) {
-                updated = matcher.replaceFirst("$1" + Matcher.quoteReplacement(jsonVal));
+                StringBuffer jsonSb = new StringBuffer();
+                matcher.appendReplacement(jsonSb, "$1" + Matcher.quoteReplacement(jsonVal) + "$3");
+                while (matcher.find()) {
+                    matcher.appendReplacement(jsonSb, ""); // strip duplicate
+                }
+                matcher.appendTail(jsonSb);
+                updated = jsonSb.toString();
             } else {
                 unmappedKeys.add("  \"" + k + "\": " + jsonVal);
             }
@@ -334,7 +391,14 @@ public final class ConfigFileHelper {
             Pattern keyPattern = Pattern.compile("<(int|string|float|boolean|long)\\s+name=\"" + Pattern.quote(k) + "\"[^>]*>(.*?</\\1>)?");
             Matcher matcher = keyPattern.matcher(updated);
             if (matcher.find()) {
-                updated = matcher.replaceAll(Matcher.quoteReplacement(replacementTag));
+                // Replace the first occurrence, strip any subsequent duplicate occurrences
+                StringBuffer xmlSb = new StringBuffer();
+                matcher.appendReplacement(xmlSb, Matcher.quoteReplacement(replacementTag));
+                while (matcher.find()) {
+                    matcher.appendReplacement(xmlSb, ""); // discard duplicate
+                }
+                matcher.appendTail(xmlSb);
+                updated = xmlSb.toString();
             } else {
                 unmappedEntries.add("  " + replacementTag);
             }

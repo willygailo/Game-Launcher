@@ -165,7 +165,15 @@ public final class ShizukuFileManager {
 
             // 2. Base64 Shell Pipeline Fallback
             byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-            String b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+            String b64;
+            try {
+                b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+                if (b64 == null) {
+                    b64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                }
+            } catch (Throwable t) {
+                b64 = java.util.Base64.getEncoder().encodeToString(bytes);
+            }
 
             String writeCmd = "echo '" + b64 + "' | base64 -d > '" + path + "' && chmod " + mode + " '" + path + "'";
 

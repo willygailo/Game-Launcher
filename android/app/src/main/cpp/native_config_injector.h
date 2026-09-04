@@ -107,6 +107,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
 /*
  * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativePatchContentInMemory
+ * Signature: (Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchContentInMemory
+  (JNIEnv *, jclass, jstring, jobjectArray, jobjectArray, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
  * Method:    nativePatchXmlKey
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
  */

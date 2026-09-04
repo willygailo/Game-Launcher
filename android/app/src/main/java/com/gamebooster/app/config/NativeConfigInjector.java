@@ -44,7 +44,8 @@ public class NativeConfigInjector {
 
     // ─── Native C++ JNI Declarations ─────────────────────────────────────────
 
-    public static native boolean nativeInjectConfig(String path, String content);
+        public static native boolean nativeInjectConfig(String path, String content);
+    public static native String nativePatchContentInMemory(String content, String[] keys, String[] values, int formatType);
     public static native boolean nativePatchKey(String path, String key, String value);
     public static native boolean nativeBatchPatchKeys(String path, String[] keys, String[] values);
     public static native boolean nativePatchXmlKey(String path, String tag, String key, String value);
@@ -249,6 +250,42 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmAllScopeTieredHeadshot(String path);
     public static native boolean nativeInjectCodmAllScopeTieredHeadshot(String path);
 
+    /**
+     * Fast zero-dependency C++ in-memory patcher for game configuration buffers.
+     * Format types: 0 = INI/CVar, 1 = XML (<map>), 2 = JSON.
+     * Returns null if native engine is unavailable or fails, allowing seamless Java fallback.
+     */
+    public static String patchContentNativeInMemory(String content, String[] keys, String[] values, int formatType) {
+        if (content == null || keys == null || values == null) return null;
+        if (keys.length == 0 || keys.length != values.length) return null;
+        if (sNativeLibraryLoaded) {
+            try {
+                String patched = nativePatchContentInMemory(content, keys, values, formatType);
+                if (patched != null && !patched.isEmpty()) {
+                    return patched;
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Native in-memory patcher fallback: " + t.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Executes elevated kernel process/thread tuning commands via Shizuku (UID 2000 shell)
+     * with unprivileged shell fallback.
+     */
+    public static void executeElevatedCommand(String command) {
+        if (command == null || command.trim().isEmpty()) return;
+        try {
+            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(command);
+                return;
+            }
+        } catch (Throwable ignored) {}
+        CommandExecutor.executeSystemCommand(command);
+    }
+
     // ─── Real Kernel & Process Optimization Methods ──────────────────────────
 
     /**
@@ -264,8 +301,8 @@ public class NativeConfigInjector {
             }
         }
         String maskHex = (cpuMask > 0) ? Integer.toHexString(cpuMask) : "f0";
-        CommandExecutor.executeSystemCommand("taskset -p " + maskHex + " " + pid);
-        CommandExecutor.executeSystemCommand("renice -n -20 -p " + pid);
+        executeElevatedCommand("taskset -p " + maskHex + " " + pid);
+        executeElevatedCommand("renice -n -20 -p " + pid);
         return true;
     }
 
@@ -281,8 +318,8 @@ public class NativeConfigInjector {
                 Log.w(TAG, "Native RT scheduling fallback: " + t.getMessage());
             }
         }
-        CommandExecutor.executeSystemCommand("chrt -f -p 99 " + pid);
-        CommandExecutor.executeSystemCommand("renice -n -20 -p " + pid);
+        executeElevatedCommand("chrt -f -p 99 " + pid);
+        executeElevatedCommand("renice -n -20 -p " + pid);
         return true;
     }
 
@@ -298,7 +335,7 @@ public class NativeConfigInjector {
                 Log.w(TAG, "Native IO priority fallback: " + t.getMessage());
             }
         }
-        CommandExecutor.executeSystemCommand("ionice -c 1 -n 0 -p " + pid);
+        executeElevatedCommand("ionice -c 1 -n 0 -p " + pid);
         return true;
     }
 
@@ -322,7 +359,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeForceVulkanPipelineCache(path, pkg);
+                if (nativeForceVulkanPipelineCache(path, pkg)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native Vulkan cache fallback: " + t.getMessage());
             }
@@ -377,7 +414,7 @@ public class NativeConfigInjector {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
             try {
-                return nativeOptimizeMemoryMapping(path);
+                if (nativeOptimizeMemoryMapping(path)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native memory mapping fallback: " + t.getMessage());
             }
@@ -456,7 +493,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectNextGenEngineOptimizations(path, targetFps, engineType);
+                if (nativeInjectNextGenEngineOptimizations(path, targetFps, engineType)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native Next-Gen engine fallback: " + t.getMessage());
             }
@@ -478,7 +515,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectNextGenTouchSampling(path, pollingRateHz);
+                if (nativeInjectNextGenTouchSampling(path, pollingRateHz)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native touch sampling fallback: " + t.getMessage());
             }
@@ -504,7 +541,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectUltraExtremeGraphics(path, targetFps);
+                if (nativeInjectUltraExtremeGraphics(path, targetFps)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native Ultra Extreme Graphics fallback: " + t.getMessage());
             }
@@ -584,7 +621,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectScopeAimCalibration(path);
+                if (nativeInjectScopeAimCalibration(path)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native scope aim fallback: " + t.getMessage());
             }
@@ -623,7 +660,7 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectHitRegDpsBoost(path);
+                if (nativeInjectHitRegDpsBoost(path)) return true;
             } catch (Throwable t) {
                 Log.w(TAG, "Native hit-reg fallback: " + t.getMessage());
             }
@@ -840,7 +877,7 @@ public class NativeConfigInjector {
     public static boolean injectAimAssist(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAimAssist1000(path, 1000, 1.0f); } catch (Throwable ignored) {}
+            try { if (nativeInjectAimAssist1000(path, 1000, 1.0f)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -848,7 +885,7 @@ public class NativeConfigInjector {
     public static boolean injectNoRecoil(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectScopeZeroRecoil(path, 0.0f, 100); } catch (Throwable ignored) {}
+            try { if (nativeInjectScopeZeroRecoil(path, 0.0f, 100)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -856,7 +893,7 @@ public class NativeConfigInjector {
     public static boolean injectHighDamage(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+            try { if (nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -864,7 +901,7 @@ public class NativeConfigInjector {
     public static boolean injectHighDamage(String path, int targetFps) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+            try { if (nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -872,7 +909,7 @@ public class NativeConfigInjector {
     public static boolean injectTrackingBullet(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectTrackingBullet1000(path, 1000.0f, 3.0f); } catch (Throwable ignored) {}
+            try { if (nativeInjectTrackingBullet1000(path, 1000.0f, 3.0f)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -880,7 +917,7 @@ public class NativeConfigInjector {
     public static boolean injectArmorDef(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectArmorDef1000(path, 3000.0f, 0.99f); } catch (Throwable ignored) {}
+            try { if (nativeInjectArmorDef1000(path, 3000.0f, 0.99f)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -888,7 +925,7 @@ public class NativeConfigInjector {
     public static boolean injectSpeedBoost(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectSpeedBoost(path, 1.5f, 1.5f); } catch (Throwable ignored) {}
+            try { if (nativeInjectSpeedBoost(path, 1.5f, 1.5f)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -896,7 +933,7 @@ public class NativeConfigInjector {
     public static boolean injectHeroDamage1000(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100); } catch (Throwable ignored) {}
+            try { if (nativeInjectHeroDamage1000(path, 1.5f, 2.0f, 100, 100)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -904,7 +941,7 @@ public class NativeConfigInjector {
     public static boolean injectAimHeadLock(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAimHeadLock(path, 1.0f, 10); } catch (Throwable ignored) {}
+            try { if (nativeInjectAimHeadLock(path, 1.0f, 10)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -912,7 +949,7 @@ public class NativeConfigInjector {
     public static boolean injectUltraDamageOverdrive(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectUltraDamageOverdrive(path, 1.5f, 3.0f, 1.0f); } catch (Throwable ignored) {}
+            try { if (nativeInjectUltraDamageOverdrive(path, 1.5f, 3.0f, 1.0f)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -920,7 +957,7 @@ public class NativeConfigInjector {
     public static boolean injectHeroAimLock(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHeroAimLock(path, 0, 1.0f); } catch (Throwable ignored) {}
+            try { if (nativeInjectHeroAimLock(path, 0, 1.0f)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -928,7 +965,7 @@ public class NativeConfigInjector {
     public static boolean injectFastCooldown(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastCooldown(path, 0.001f); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastCooldown(path, 0.001f)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -936,7 +973,7 @@ public class NativeConfigInjector {
     public static boolean injectFastFullMana(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastFullMana(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastFullMana(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -944,7 +981,7 @@ public class NativeConfigInjector {
     public static boolean injectFastFullEnergy(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastFullEnergy(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastFullEnergy(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -952,7 +989,7 @@ public class NativeConfigInjector {
     public static boolean injectFastHpRegen(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastHpRegen(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastHpRegen(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -960,7 +997,7 @@ public class NativeConfigInjector {
     public static boolean injectFastStaminaFuryRegen(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastStaminaFuryRegen(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastStaminaFuryRegen(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -968,7 +1005,7 @@ public class NativeConfigInjector {
     public static boolean injectZeroSkillCost(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectZeroSkillCost(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectZeroSkillCost(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -976,7 +1013,7 @@ public class NativeConfigInjector {
     public static boolean injectMaxUltCharge(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMaxUltCharge(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMaxUltCharge(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -984,7 +1021,7 @@ public class NativeConfigInjector {
     public static boolean injectSkillEconomyMasterSuite(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectSkillEconomyMasterSuite(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectSkillEconomyMasterSuite(path)) return true; } catch (Throwable ignored) {}
         }
         // Fallback: fire each sub-injector individually
         boolean ok = false;
@@ -1003,7 +1040,7 @@ public class NativeConfigInjector {
     public static boolean injectShield1500(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectShield1500(path, 3.0f, 3000.0f); } catch (Throwable ignored) {}
+            try { if (nativeInjectShield1500(path, 3.0f, 3000.0f)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1011,7 +1048,7 @@ public class NativeConfigInjector {
     public static boolean injectDroneView(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectDroneView(path, 180, 180); } catch (Throwable ignored) {}
+            try { if (nativeInjectDroneView(path, 180, 180)) return true; } catch (Throwable ignored) {}
         }
         return injectUltraExtremeGraphics(path, 120);
     }
@@ -1023,7 +1060,7 @@ public class NativeConfigInjector {
     public static boolean injectLingHeroDamageCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectLingHeroDamageCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectLingHeroDamageCombo(path)) return true; } catch (Throwable ignored) {}
         }
         // Fallback: apply hit-reg DPS boost + scope aim calibration
         return injectHitRegDpsBoost(path) | injectScopeAimCalibration(path);
@@ -1036,7 +1073,7 @@ public class NativeConfigInjector {
     public static boolean injectMagicBulletAimbot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMagicBulletAimbot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMagicBulletAimbot(path)) return true; } catch (Throwable ignored) {}
         }
         // Fallback: scope aim calibration covers most aimbot/recoil keys
         return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
@@ -1049,7 +1086,7 @@ public class NativeConfigInjector {
     public static boolean injectNoRecoilNoSpread(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectNoRecoilNoSpread(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectNoRecoilNoSpread(path)) return true; } catch (Throwable ignored) {}
         }
         // Fallback: scope aim calibration + hit-reg for max recoil/aim coverage
         return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
@@ -1065,7 +1102,7 @@ public class NativeConfigInjector {
     public static boolean injectSaDamagePlus(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectSaDamagePlus(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectSaDamagePlus(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
     }
@@ -1077,7 +1114,7 @@ public class NativeConfigInjector {
     public static boolean injectFastFarming(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastFarming(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastFarming(path)) return true; } catch (Throwable ignored) {}
         }
         return injectHitRegDpsBoost(path);
     }
@@ -1090,7 +1127,7 @@ public class NativeConfigInjector {
     public static boolean injectJungleHero(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectJungleHero(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectJungleHero(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
     }
@@ -1103,7 +1140,7 @@ public class NativeConfigInjector {
     public static boolean injectAllHeroUnlock(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAllHeroUnlock(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAllHeroUnlock(path)) return true; } catch (Throwable ignored) {}
         }
         // Fallback: at minimum inject touch precision for lobby stability
         return injectNextGenTouchSampling(path, 1000);
@@ -1112,7 +1149,7 @@ public class NativeConfigInjector {
     public static boolean injectFannyFastCableCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFannyFastCableCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFannyFastCableCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1120,7 +1157,7 @@ public class NativeConfigInjector {
     public static boolean injectGusionDaggerCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectGusionDaggerCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectGusionDaggerCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1128,7 +1165,7 @@ public class NativeConfigInjector {
     public static boolean injectChouKickCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectChouKickCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectChouKickCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1136,7 +1173,7 @@ public class NativeConfigInjector {
     public static boolean injectHayabusaShadowCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHayabusaShadowCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectHayabusaShadowCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1144,7 +1181,7 @@ public class NativeConfigInjector {
     public static boolean injectBeatrixAllGunDamage(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectBeatrixAllGunDamage(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectBeatrixAllGunDamage(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectScopeAimCalibration(path);
     }
@@ -1152,7 +1189,7 @@ public class NativeConfigInjector {
     public static boolean injectCriticalBurstOverdrive(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCriticalBurstOverdrive(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCriticalBurstOverdrive(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
     }
@@ -1160,7 +1197,7 @@ public class NativeConfigInjector {
     public static boolean injectAllGunWeaponCalibration(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAllGunWeaponCalibration(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAllGunWeaponCalibration(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path) | injectHitRegDpsBoost(path);
     }
@@ -1168,7 +1205,7 @@ public class NativeConfigInjector {
     public static boolean injectAllScopeMasteryCalibration(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAllScopeMasteryCalibration(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAllScopeMasteryCalibration(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1180,7 +1217,7 @@ public class NativeConfigInjector {
     public static boolean injectNoScopeAimbot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectNoScopeAimbot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectNoScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1188,7 +1225,7 @@ public class NativeConfigInjector {
     public static boolean injectAllScopeAimbot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAllScopeAimbot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAllScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path) | injectNextGenTouchSampling(path, 1000);
     }
@@ -1196,7 +1233,7 @@ public class NativeConfigInjector {
     public static boolean injectLongRangeScopeHeadshot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectLongRangeScopeHeadshot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectLongRangeScopeHeadshot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1204,7 +1241,7 @@ public class NativeConfigInjector {
     public static boolean injectMidRangeAutoHeadshot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMidRangeAutoHeadshot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMidRangeAutoHeadshot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1212,7 +1249,7 @@ public class NativeConfigInjector {
     public static boolean injectPubgmFastAttackSpeed(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectPubgmFastAttackSpeed(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectPubgmFastAttackSpeed(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1220,7 +1257,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmNoScopeAimbot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmNoScopeAimbot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmNoScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -1228,7 +1265,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmAllScopeAimbot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmAllScopeAimbot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmAllScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1236,7 +1273,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmLongRangeHeadshot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmLongRangeHeadshot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmLongRangeHeadshot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1244,7 +1281,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmMidRangeHeadshot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmMidRangeHeadshot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmMidRangeHeadshot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1252,7 +1289,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmFastAttackSpeed(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmFastAttackSpeed(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmFastAttackSpeed(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1260,7 +1297,7 @@ public class NativeConfigInjector {
     public static boolean injectMlbbUltraDamageAllHero(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbUltraDamageAllHero(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMlbbUltraDamageAllHero(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path) | injectHitRegDpsBoost(path);
     }
@@ -1268,7 +1305,7 @@ public class NativeConfigInjector {
     public static boolean injectMlbbArmorAllHero(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbArmorAllHero(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMlbbArmorAllHero(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1276,7 +1313,7 @@ public class NativeConfigInjector {
     public static boolean injectFannyAutoFullEnergy(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFannyAutoFullEnergy(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFannyAutoFullEnergy(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1284,7 +1321,7 @@ public class NativeConfigInjector {
     public static boolean injectLingFastestComboAutoSword(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectLingFastestComboAutoSword(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectLingFastestComboAutoSword(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1292,7 +1329,7 @@ public class NativeConfigInjector {
     public static boolean injectGusionUltraOverdrive(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectGusionUltraOverdrive(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectGusionUltraOverdrive(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1300,7 +1337,7 @@ public class NativeConfigInjector {
     public static boolean injectAllHeroItemSkillBoost(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAllHeroItemSkillBoost(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAllHeroItemSkillBoost(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1308,7 +1345,7 @@ public class NativeConfigInjector {
     public static boolean injectFastAttackSpeedAllHero(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastAttackSpeedAllHero(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastAttackSpeedAllHero(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1316,7 +1353,7 @@ public class NativeConfigInjector {
     public static boolean injectKaguraCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectKaguraCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectKaguraCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1324,7 +1361,7 @@ public class NativeConfigInjector {
     public static boolean injectZilongAutoSlash(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectZilongAutoSlash(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectZilongAutoSlash(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1332,7 +1369,7 @@ public class NativeConfigInjector {
     public static boolean injectSaberCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectSaberCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectSaberCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1340,7 +1377,7 @@ public class NativeConfigInjector {
     public static boolean injectAlucardLifestealCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectAlucardLifestealCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectAlucardLifestealCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1348,7 +1385,7 @@ public class NativeConfigInjector {
     public static boolean injectYiSunShinCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectYiSunShinCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectYiSunShinCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1356,7 +1393,7 @@ public class NativeConfigInjector {
     public static boolean injectChouFreestyleCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectChouFreestyleCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectChouFreestyleCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1364,7 +1401,7 @@ public class NativeConfigInjector {
     public static boolean injectLancelotDashCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectLancelotDashCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectLancelotDashCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1372,7 +1409,7 @@ public class NativeConfigInjector {
     public static boolean injectFrancoHookCombo(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFrancoHookCombo(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFrancoHookCombo(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1380,7 +1417,7 @@ public class NativeConfigInjector {
     public static boolean injectFreeFireAutoHeadshot(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFreeFireAutoHeadshot(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFreeFireAutoHeadshot(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1388,7 +1425,7 @@ public class NativeConfigInjector {
     public static boolean injectFreeFireFastGlooWall(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFreeFireFastGlooWall(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFreeFireFastGlooWall(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1396,7 +1433,7 @@ public class NativeConfigInjector {
     public static boolean injectBloodStrikeZeroRecoil(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectBloodStrikeZeroRecoil(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectBloodStrikeZeroRecoil(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1404,7 +1441,7 @@ public class NativeConfigInjector {
     public static boolean injectDeltaForcePrecisionAim(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectDeltaForcePrecisionAim(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectDeltaForcePrecisionAim(path)) return true; } catch (Throwable ignored) {}
         }
         return injectScopeAimCalibration(path);
     }
@@ -1412,7 +1449,7 @@ public class NativeConfigInjector {
     public static boolean injectHokAutoSmiteObjective(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHokAutoSmiteObjective(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectHokAutoSmiteObjective(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1420,7 +1457,7 @@ public class NativeConfigInjector {
     public static boolean injectMlbbAllHeroMaxDamage2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbAllHeroMaxDamage2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMlbbAllHeroMaxDamage2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1428,7 +1465,7 @@ public class NativeConfigInjector {
     public static boolean injectMlbbUltimateDamageOverdrive2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbUltimateDamageOverdrive2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMlbbUltimateDamageOverdrive2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1436,7 +1473,7 @@ public class NativeConfigInjector {
     public static boolean injectPubgmAllWeaponMaxDamage2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectPubgmAllWeaponMaxDamage2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectPubgmAllWeaponMaxDamage2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1444,7 +1481,7 @@ public class NativeConfigInjector {
     public static boolean injectPubgmUltraAimbot2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectPubgmUltraAimbot2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectPubgmUltraAimbot2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectAimAssistLockMax(path);
     }
@@ -1452,7 +1489,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmMaxDamageAllWeapon2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmMaxDamageAllWeapon2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmMaxDamageAllWeapon2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1460,7 +1497,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmUltraConfigCheat2026(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmUltraConfigCheat2026(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmUltraConfigCheat2026(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1468,7 +1505,7 @@ public class NativeConfigInjector {
     public static boolean injectMlbbDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectMlbbDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectMlbbDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1476,7 +1513,7 @@ public class NativeConfigInjector {
     public static boolean injectPubgmDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectPubgmDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectPubgmDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1484,7 +1521,7 @@ public class NativeConfigInjector {
     public static boolean injectCodmDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectCodmDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectCodmDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1492,7 +1529,7 @@ public class NativeConfigInjector {
     public static boolean injectFreeFireDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFreeFireDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFreeFireDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1500,7 +1537,7 @@ public class NativeConfigInjector {
     public static boolean injectHokDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectHokDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectHokDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1508,7 +1545,7 @@ public class NativeConfigInjector {
     public static boolean injectWildRiftDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectWildRiftDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectWildRiftDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1516,7 +1553,7 @@ public class NativeConfigInjector {
     public static boolean injectFastReloadQuickSwap(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectFastReloadQuickSwap(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectFastReloadQuickSwap(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1524,7 +1561,7 @@ public class NativeConfigInjector {
     public static boolean injectWallPiercingArmorShredder(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectWallPiercingArmorShredder(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectWallPiercingArmorShredder(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1532,7 +1569,7 @@ public class NativeConfigInjector {
     public static boolean injectZeroPingNetworkOverclock(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectZeroPingNetworkOverclock(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectZeroPingNetworkOverclock(path)) return true; } catch (Throwable ignored) {}
         }
         return injectNextGenTouchSampling(path, 1000);
     }
@@ -1540,7 +1577,7 @@ public class NativeConfigInjector {
     public static boolean injectUltraExtreme240FpsGraphics(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectUltraExtreme240FpsGraphics(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectUltraExtreme240FpsGraphics(path)) return true; } catch (Throwable ignored) {}
         }
         return injectUltraExtremeGraphics(path, 240);
     }
@@ -1548,7 +1585,7 @@ public class NativeConfigInjector {
     public static boolean injectUniversalDamage10000AttackSpeedMax(String path) {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
-            try { return nativeInjectUniversalDamage10000AttackSpeedMax(path); } catch (Throwable ignored) {}
+            try { if (nativeInjectUniversalDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
         }
         return injectDamageLockMax(path);
     }
@@ -1558,20 +1595,29 @@ public class NativeConfigInjector {
         ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try {
-                return nativeInjectHardwareMaskProfile(path, gpuRenderer, socModel, ramMb, targetHz);
+                if (nativeInjectHardwareMaskProfile(path, gpuRenderer, socModel, ramMb, targetHz)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "GpuRenderer=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
+            "SocModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
+            "SystemRamMB=" + (ramMb > 0 ? ramMb : 16384),
+            "DisplayRefreshRate=" + (targetHz > 0 ? targetHz : 120),
+            "TargetFPS=" + (targetHz > 0 ? targetHz : 120),
+            "HardwareProfileTier=4"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[HardwareProfile]");
     }
 
     public static boolean setProcessIOPriority(int pid, int schedPriority, int ioprioClass, int ioprioLevel) {
         if (pid <= 0) return false;
         if (sNativeLibraryLoaded) {
             try {
-                return nativeSetProcessIOPriority(pid, schedPriority, ioprioClass, ioprioLevel);
+                if (nativeSetProcessIOPriority(pid, schedPriority, ioprioClass, ioprioLevel)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        executeElevatedCommand("ionice -c " + ioprioClass + " -n " + ioprioLevel + " -p " + pid);
+        return true;
     }
 
     public static boolean injectFastLootAndWeaponSwap(String path) {

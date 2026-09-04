@@ -22,16 +22,52 @@ public final class GameAutoInjectDispatcher {
 
     private static final String TAG = "GameAutoInject";
 
+    // Thread-safe map tracking packages with active injection state to prevent duplicate/conflict injection
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> sInjectedPackages = new java.util.concurrent.ConcurrentHashMap<>();
+
     private GameAutoInjectDispatcher() {
     }
 
     /**
-     * Dispatches automatic configuration and script injection for the specified game package (no context).
+     * Checks whether configuration injection has already been performed for the given package in this session.
+     */
+    public static boolean isPackageInjected(String packageName) {
+        if (packageName == null) return false;
+        return sInjectedPackages.containsKey(packageName.trim().toLowerCase());
+    }
+
+    /**
+     * Resets the injection state for a package (e.g. on game session end).
+     */
+    public static void resetPackageInjectionState(String packageName) {
+        if (packageName != null) {
+            sInjectedPackages.remove(packageName.trim().toLowerCase());
+            Log.d(TAG, "Reset injection state for " + packageName);
+        }
+    }
+
+    /**
+     * Resets all recorded injection states across all packages.
+     */
+    public static void resetAll() {
+        sInjectedPackages.clear();
+        Log.d(TAG, "Reset all injection states");
+    }
+
+    /**
+     * Dispatches automatic configuration and script injection for the specified game package (no context, no force).
      *
      * @param packageName target game package identifier
      */
     public static void dispatchForPackage(String packageName) {
-        dispatchForPackage(null, packageName);
+        dispatchForPackage(null, packageName, false);
+    }
+
+    /**
+     * Dispatches automatic configuration with force flag.
+     */
+    public static void dispatchForPackage(String packageName, boolean force) {
+        dispatchForPackage(null, packageName, force);
     }
 
     /**
@@ -50,21 +86,32 @@ public final class GameAutoInjectDispatcher {
 
     /**
      * Dispatches automatic configuration and script injection for the specified game package with optional Context.
-     * Executes synchronously within the background worker thread of GameManagerSessionEngine or GameBoosterService.
-     *
-     * Execution order:
-     *  1. Pre-flight storage permission & chmod grant (grantAllPathsAccess)
-     *  2. Automatic configuration backup (backupAllPaths)
-     *  3. Game-specific tuning and max FPS/Graphics patch injection
+     * Skips redundant execution if the package was already injected in the active session.
+     */
+    public static void dispatchForPackage(Context context, String packageName) {
+        dispatchForPackage(context, packageName, false);
+    }
+
+    /**
+     * Dispatches automatic configuration and script injection with explicit force override.
      *
      * @param context     application Context (can be null; Shizuku works without it)
      * @param packageName target game package identifier
+     * @param force       if true, ignores previous injection state and reapplies
      */
-    public static void dispatchForPackage(Context context, String packageName) {
+    public static void dispatchForPackage(Context context, String packageName, boolean force) {
         if (packageName == null || packageName.trim().isEmpty()) {
             return;
         }
         final String pkg = packageName.trim();
+        final String pkgLower = pkg.toLowerCase();
+
+        // Check if already applied to prevent duplicate writes, file lock contention, and conflicts
+        if (!force && sInjectedPackages.containsKey(pkgLower)) {
+            Log.i(TAG, "⚡ [AutoInject] Configs already cleanly applied for " + pkg + ". Skipping redundant re-injection to avoid conflicts & duplicates.");
+            return;
+        }
+
         final GameType gameType = GamePackageRegistry.getGameType(pkg);
 
         Log.i(TAG, "🚀 [AutoInject] Dispatching automatic injection for " + pkg + " (Type: " + gameType + ")");
@@ -149,6 +196,7 @@ public final class GameAutoInjectDispatcher {
             }
 
             Log.i(TAG, "✅ [AutoInject] Successfully completed injection & security bypass for " + pkg);
+            sInjectedPackages.put(pkgLower, System.currentTimeMillis());
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ [AutoInject] Non-fatal error during auto-injection for " + pkg + ": " + t.getMessage(), t);
         }
