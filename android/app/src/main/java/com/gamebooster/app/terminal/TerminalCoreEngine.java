@@ -654,9 +654,9 @@ public class TerminalCoreEngine {
 
         presetScripts.add(new TerminalScriptPreset(
                 "tweak_gpu",
-                "🚀 GPU Game Driver & ANGLE Mode",
-                "Inspects ANGLE OpenGL ES layer and global Game Driver bindings",
-                "settings get global game_driver_all_apps; settings get global angle_gl_driver_all_angle; getprop debug.hwui.renderer"
+                "🚀 GPU Game Driver Status (ANGLE Purged)",
+                "Inspects native Game Driver bindings and confirms ANGLE layer is purged",
+                "settings get global game_driver_opt_in_apps; settings get global angle_gl_driver_all_angle; getprop debug.hwui.renderer"
         ));
 
         presetScripts.add(new TerminalScriptPreset(

@@ -2,6 +2,6 @@
 <game-mode-config
     supportsPerformanceMode="true"
     supportsBatteryMode="true"
-    allowAngle="true"
+    allowAngle="false"
     allowDownscaling="false"
     allowFpsOverride="false" />

@@ -64,8 +64,8 @@ public final class WebViewBoosterChannel {
                 "--enable-quic " +
                 "--enable-tcp-fastopen " +
                 "--enable-fast-unload " +
-                "--enable-features=Vulkan,UseSkiaRenderer,DefaultAngleVulkan,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,VulkanFromANGLE,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebGPU " +
-                "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading " +
+                "--enable-features=Vulkan,UseSkiaRenderer,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebGPU " +
+                "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE " +
                 "--num-raster-threads=" + rasterThreads + " " +
                 "--enable-drdc " +
                 "--enable-threaded-compositing " +

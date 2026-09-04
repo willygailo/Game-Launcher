@@ -62,7 +62,7 @@ public class GpuTweaksChannel {
         // Apply Vulkan Game Overlay to all registered games on Android 13+
         for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
             try {
-                CommandExecutor.executeSystemCommand("device_config put game_overlay " + pkg + " mode=2,fps=185:mode=3,fps=185");
+                CommandExecutor.executeSystemCommand("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=185:mode=3,useAngle=false,fps=185");
             } catch (Throwable ignored) {}
         }
         return ok;
@@ -289,6 +289,7 @@ public class GpuTweaksChannel {
         CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings delete global angle_enabled_pkgs 2>/dev/null");
+        CommandExecutor.executeSystemCommand("settings delete global angle_defer_init 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
         return true;
     }

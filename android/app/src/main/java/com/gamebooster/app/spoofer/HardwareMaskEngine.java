@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * 2. GPU / GRAPHICS MASKING:
  *    - Injects Flagship GL Renderer (e.g. Adreno 840 / Immortalis-G925), GL Vendor, GL Version, Vulkan Driver.
- *    - Activates ANGLE GL Driver, Updatable Production Game Driver, and Vulkan RenderEngine backend.
+ *    - Activates Updatable Production Game Driver and Vulkan RenderEngine backend while strictly purging ANGLE.
  *
  * 3. RAM / MEMORY MASKING:
  *    - Spoofs Total RAM (16GB / 24GB LPDDR5X) & MemAvailable in system props and staged /proc/meminfo.
