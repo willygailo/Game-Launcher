@@ -496,16 +496,14 @@ public class HardwareMaskEngine {
      */
     public static boolean maskPackage(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
-        SpoofProfile profile = null;
-        if (activeId != null && !activeId.trim().isEmpty()) {
-            profile = SpoofProfileRegistry.getById(activeId);
+        if (context == null || !SpoofPreferences.isSpoofEnabled(context)) return false;
+        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
+        if (activeId == null || activeId.trim().isEmpty()) {
+            return false;
         }
+        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
         if (profile == null) {
-            profile = SpoofProfileRegistry.getDefaultProfile();
-        }
-        if (profile == null) {
-            Log.d(TAG, "No spoof profile available. Skipping maskPackage.");
+            Log.d(TAG, "No spoof profile available for id: " + activeId + ". Skipping maskPackage.");
             return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
@@ -515,19 +513,16 @@ public class HardwareMaskEngine {
      * Masks ALL installed applications and games on the device across Android 13, 14, 15, and 16.
      */
     public static int maskAllInstalledApplications(Context context) {
-        String activeId = context != null ? SpoofPreferences.getActiveProfileId(context) : null;
-        SpoofProfile profile = activeId != null ? SpoofProfileRegistry.getById(activeId) : null;
-        if (profile == null) {
-            profile = SpoofProfileRegistry.getDefaultProfile();
-        }
+        if (context == null || !SpoofPreferences.isSpoofEnabled(context)) return 0;
+        String activeId = SpoofPreferences.getActiveProfileId(context);
+        if (activeId == null || activeId.trim().isEmpty()) return 0;
+        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
+        if (profile == null) return 0;
         return maskAllInstalledApplications(context, profile);
     }
 
     public static int maskAllInstalledApplications(Context context, SpoofProfile profile) {
-        if (context == null) return 0;
-        if (profile == null) {
-            profile = SpoofProfileRegistry.getDefaultProfile();
-        }
+        if (context == null || profile == null) return 0;
 
         int count = 0;
         try {

@@ -159,12 +159,12 @@ public class SpoofProfileRegistry {
     }
 
     /**
-     * Get default flagship profile (Samsung Galaxy S26 Ultra -> ROG 9 Pro -> Black Shark 5 Pro).
+     * Get default flagship profile (Samsung Galaxy S25 Ultra -> ROG 9 Pro -> REDMAGIC 10 Pro+).
      */
     public static SpoofProfile getDefaultProfile() {
-        SpoofProfile p = getById("samsung_s26_ultra");
-        if (p == null) p = getById("asus_rog9_pro_edition");
-        if (p == null) p = getById("blackshark_5_pro");
+        SpoofProfile p = getById("samsung_s25_ultra");
+        if (p == null) p = getById("asus_rog9_pro");
+        if (p == null) p = getById("redmagic_10_pro_plus");
         if (p == null && !ALL_BY_ID.isEmpty()) {
             return ALL_BY_ID.values().iterator().next();
         }

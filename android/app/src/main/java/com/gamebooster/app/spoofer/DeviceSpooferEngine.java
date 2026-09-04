@@ -87,12 +87,12 @@ public class DeviceSpooferEngine {
      * Returns the recommended spoof profile for a given game package name.
      * Picks the best-fit device to unlock the highest FPS/graphics tier:
      * - PUBGM / BGMI / Free Fire → REDMAGIC 10 Pro+ (165Hz eSports)
-     * - CODM / Warzone / Blood Strike → Samsung Galaxy S26 Ultra (Snapdragon 8 Elite / Adreno 840)
+     * - CODM / Warzone / Blood Strike → Samsung Galaxy S25 Ultra (Snapdragon 8 Elite / Adreno 830)
      * - MLBB / HOK / Wild Rift / Roblox → ASUS ROG Phone 9 Pro (185Hz / 165Hz Extreme)
      * - Genshin / Honkai / ZZZ / Wuthering Waves → Xiaomi 15 Ultra (Vulkan Ultra)
      */
     public static SpoofProfile getRecommendedProfile(String packageName) {
-        if (packageName == null) return SpoofProfileRegistry.getById("samsung_s26_ultra");
+        if (packageName == null) return SpoofProfileRegistry.getById("samsung_s25_ultra");
         String pkg = packageName.toLowerCase();
 
         // 1. PUBGM / BGMI / Free Fire / Battle Royale (eSports high refresh rate)
@@ -100,21 +100,21 @@ public class DeviceSpooferEngine {
             pkg.contains("krmobile") || pkg.contains("vng.pubgmobile") || pkg.contains("freefire") || 
             pkg.contains("arenabreakout") || pkg.contains("farlight84")) {
             SpoofProfile p = SpoofProfileRegistry.getById("redmagic_10_pro_plus");
-            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
-        // 2. CODM / Warzone / Blood Strike / Tactical FPS (Snapdragon 8 Elite / Adreno 840)
+        // 2. CODM / Warzone / Blood Strike / Tactical FPS (Snapdragon 8 Elite / Adreno 830)
         if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike") || 
             pkg.contains("standoff2") || pkg.contains("deltaforce")) {
-            return SpoofProfileRegistry.getById("samsung_s26_ultra");
+            return SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
         // 3. MLBB / HOK / Arena of Valor / Wild Rift / Roblox (185Hz / Ultra-low Touch Latency)
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || pkg.contains("sgame") || 
             pkg.contains("wildrift") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || 
             pkg.contains("kgvn") || pkg.contains("kgid") || pkg.contains("roblox")) {
-            SpoofProfile p = SpoofProfileRegistry.getById("asus_rog9_pro_edition");
-            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("asus_rog9_pro");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
         // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves (Vulkan Ultra Tier 5)
@@ -122,11 +122,11 @@ public class DeviceSpooferEngine {
             pkg.contains("cognosphere") || pkg.contains("mihoyo") || pkg.contains("hoyoverse") || 
             pkg.contains("nap") || pkg.contains("wutheringwaves")) {
             SpoofProfile p = SpoofProfileRegistry.getById("xiaomi_15_ultra");
-            return p != null ? p : SpoofProfileRegistry.getById("samsung_s26_ultra");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
         // Default Flagship Profile
-        return SpoofProfileRegistry.getById("samsung_s26_ultra");
+        return SpoofProfileRegistry.getById("samsung_s25_ultra");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

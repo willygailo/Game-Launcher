@@ -3,7 +3,6 @@ package com.gamebooster.app.spoofer;
 import com.gamebooster.app.booster.GpuTweaksChannel;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,6 +26,22 @@ public class HardwareMaskEngineTest {
         for (String id : profiles.keySet()) {
             assertTrue("Duplicate profile ID found: " + id, seenIds.add(id));
         }
+
+        // Verify zero duplicate display names or models within each brand
+        for (String brand : SpoofProfileRegistry.getBrandNames()) {
+            List<SpoofProfile> brandProfiles = SpoofProfileRegistry.getByBrand(brand);
+            assertNotNull(brandProfiles);
+            assertFalse(brandProfiles.isEmpty());
+
+            Set<String> displayNames = new HashSet<>();
+            Set<String> models = new HashSet<>();
+            for (SpoofProfile p : brandProfiles) {
+                assertTrue("Duplicate display name in brand " + brand + ": " + p.displayName,
+                        displayNames.add(p.displayName));
+                assertTrue("Duplicate model code in brand " + brand + ": " + p.model,
+                        models.add(p.model));
+            }
+        }
     }
 
     @Test
@@ -44,19 +59,19 @@ public class HardwareMaskEngineTest {
         assertNotNull(farlightProfile);
         assertEquals("redmagic_10_pro_plus", farlightProfile.id);
 
-        // CODM / Warzone -> S26 Ultra
+        // CODM / Warzone -> S25 Ultra
         SpoofProfile codmProfile = DeviceSpooferEngine.getRecommendedProfile("com.activision.callofduty.shooter");
         assertNotNull(codmProfile);
-        assertEquals("samsung_s26_ultra", codmProfile.id);
+        assertEquals("samsung_s25_ultra", codmProfile.id);
 
         // MLBB / HOK -> ASUS ROG 9 Pro
         SpoofProfile mlbbProfile = DeviceSpooferEngine.getRecommendedProfile("com.mobile.legends");
         assertNotNull(mlbbProfile);
-        assertEquals("asus_rog9_pro_edition", mlbbProfile.id);
+        assertEquals("asus_rog9_pro", mlbbProfile.id);
 
         SpoofProfile hokProfile = DeviceSpooferEngine.getRecommendedProfile("com.levelinfinite.sgameGlobal");
         assertNotNull(hokProfile);
-        assertEquals("asus_rog9_pro_edition", hokProfile.id);
+        assertEquals("asus_rog9_pro", hokProfile.id);
 
         // Genshin -> Xiaomi 15 Ultra
         SpoofProfile genshinProfile = DeviceSpooferEngine.getRecommendedProfile("com.miHoYo.GenshinImpact");
