@@ -105,8 +105,9 @@ public class GameBoosterService extends Service {
                 NativeFrameworkBridge.startAdpfSession(getApplicationContext(), forcedHz);
                 HzFpsChannel.setRefreshRate(getApplicationContext(), forcedHz);
 
-                // 2. Privileged Shizuku tweaks when available
-                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                // 2. Privileged Shizuku tweaks when available (wait up to 300ms for connection)
+                boolean shizukuReady = com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().ensureReady(300);
+                if (shizukuReady || ShizukuManager.isShizukuRunningAndGranted()) {
                     ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     MaxHzForceChannel.forceApply(forcedHz);
                     HzFpsChannel.forceSetRefreshRate(getApplicationContext(), forcedHz);
@@ -135,8 +136,9 @@ public class GameBoosterService extends Service {
                 GameProfileAutoConfigurator.autoConfigGamePackage(getApplicationContext(), packageName, targetHz);
                 com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(packageName);
 
-                // 2. Privileged Shizuku enhancements
-                if (ShizukuManager.isShizukuRunningAndGranted()) {
+                // 2. Privileged Shizuku enhancements (wait up to 300ms for connection)
+                boolean shizukuReady = com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().ensureReady(300);
+                if (shizukuReady || ShizukuManager.isShizukuRunningAndGranted()) {
                     ShizukuUserServiceConnector.getInstance().enforceAppOpsAndPermissions(packageName);
                     ShizukuUserServiceConnector.getInstance().setGameModeApi(packageName, targetHz);
 

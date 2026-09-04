@@ -77,7 +77,9 @@ public class ShizukuExecutor {
 
             Process process = null;
             try {
-                process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+                java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
+                newProcessMethod.setAccessible(true);
+                process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
                 if (process != null) {
                     return readProcessOutput(process, 4000L);
                 }

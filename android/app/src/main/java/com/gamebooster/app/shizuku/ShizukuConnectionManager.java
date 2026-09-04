@@ -57,6 +57,9 @@ public class ShizukuConnectionManager {
     public void addConnectionListener(ConnectionListener listener) {
         if (listener != null && !listeners.contains(listener)) {
             listeners.add(listener);
+            try {
+                listener.onConnectionStateChanged(state);
+            } catch (Throwable ignored) {}
         }
     }
 

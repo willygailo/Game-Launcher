@@ -836,9 +836,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        // Card 5: Advanced System Tweaks Engine
         tvTweaksStatus = view.findViewById(R.id.tv_tweaks_status);
         bannerDisconnect = view.findViewById(R.id.banner_shizuku_disconnect);
+        if (bannerDisconnect != null) {
+            bannerDisconnect.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    ShizukuManager.handleShizukuCardClick(getContext());
+                    refreshAllStatuses();
+                }
+            });
+        }
         RecyclerView rvTweaks = view.findViewById(R.id.rv_tweaks_list);
 
         EditText etSearchTweaks = view.findViewById(R.id.et_search_tweaks);
@@ -1475,6 +1482,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             }
             if (bannerDisconnect != null) {
                 bannerDisconnect.setVisibility(alive ? View.GONE : View.VISIBLE);
+                if (!alive && bannerDisconnect instanceof android.view.ViewGroup) {
+                    android.view.ViewGroup vg = (android.view.ViewGroup) bannerDisconnect;
+                    if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof TextView) {
+                        TextView tv = (TextView) vg.getChildAt(0);
+                        if (rikka.shizuku.Shizuku.pingBinder()) {
+                            tv.setText("⚡ Shizuku Running but Not Granted! Tap here to Grant Permission & Force Tweaks.");
+                        } else {
+                            tv.setText("⚠️ Shizuku Disconnected. Tap here to Connect / Start Shizuku to apply system tweaks.");
+                        }
+                    }
+                }
             }
             updateTerminalStatusInSettings();
         } catch (Throwable t) {
