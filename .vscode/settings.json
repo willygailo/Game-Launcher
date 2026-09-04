@@ -14,5 +14,6 @@
     "java.import.gradle.java.home": "/usr/lib/jvm/java-17-openjdk-amd64",
     "java.import.gradle.version": "8.13",
     "java.import.gradle.wrapper.enabled": true,
-    "java.import.gradle.user.home": "/home/willygailo/.gradle"
+    "java.import.gradle.user.home": "/home/willygailo/.gradle",
+    "java.configuration.updateBuildConfiguration": "automatic"
 }
