@@ -1,4 +1,11 @@
 #include "config_common.h"
+#include <cctype>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <memory>
+#include <unordered_map>
 
 // ─── Fast Internal CRC32 Implementation ──────────────────────────────────────
 uint32_t calculate_crc32(const uint8_t* data, size_t length) {

@@ -15,15 +15,8 @@
 #include <ctime>
 #include <cstring>
 #include <cstdint>
-#include <cctype>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <memory>
-#include <unordered_map>
 #include <utility>
 
 #if __has_include(<android/log.h>)
