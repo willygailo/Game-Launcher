@@ -100,10 +100,13 @@ public class ShizukuConnectionManager {
             } else if (alive) {
                 setState(State.IDLE);
             } else {
-                setState(State.DEAD);
+                // Pending binder handshake — do not jump to DEAD immediately
+                setState(State.BINDING);
+                scheduleReconnect();
             }
         } catch (Throwable t) {
-            setState(State.DEAD);
+            setState(State.BINDING);
+            scheduleReconnect();
         }
     }
 
@@ -126,10 +129,16 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
+                    ShizukuFileManager.grantAllStoragePermissions(ctx);
+                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                }
             } else if (alive) {
                 setState(State.IDLE);
             } else {
-                setState(State.DEAD);
+                setState(State.BINDING);
             }
         } catch (Throwable t) {
             Log.w(TAG, "onBinderReceived error", t);
@@ -245,13 +254,25 @@ public class ShizukuConnectionManager {
                         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                             ShizukuUserServiceConnector.getInstance().bindService();
                         }
+                        android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                        if (ctx != null) {
+                            ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
+                            ShizukuFileManager.grantAllStoragePermissions(ctx);
+                            com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                        }
                         return;
                     }
 
                     if (attempt == 0 || attempt % 10 == 0) {
                         Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet");
                     }
-                    setState(alive ? State.IDLE : State.DEAD);
+                    if (alive) {
+                        setState(State.IDLE);
+                    } else if (attempt < 3) {
+                        setState(State.BINDING);
+                    } else {
+                        setState(State.DEAD);
+                    }
                     sleepQuietly(backoffMs(attempt++));
                 }
                 Log.d(TAG, "Reconnect loop finished after " + MAX_RETRY_ATTEMPTS + " attempts");

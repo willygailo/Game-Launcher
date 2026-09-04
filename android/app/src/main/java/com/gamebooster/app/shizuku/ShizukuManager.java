@@ -209,19 +209,57 @@ public class ShizukuManager {
         }
 
         try {
+            boolean binderAlive = Shizuku.pingBinder();
             boolean installed = isShizukuInstalled(context);
-            String actionBtnText = installed ? "OPEN SHIZUKU MANAGER" : "INSTALL SHIZUKU";
-            String message = "'" + featureTitle + "' requires active Shizuku ADB access for privileged system control.\n\n" +
-                    (installed ? "Please start and authorize GAME BOOSTER in Shizuku." : "Shizuku Manager is not installed on this device. Please install and start Shizuku.");
 
-            new AlertDialog.Builder(context)
-                    .setTitle("⚡ SHIZUKU ADB PRIVILEGE REQUIRED")
-                    .setMessage(message)
-                    .setPositiveButton(actionBtnText, (dialog, which) -> openOrInstallShizukuManager(context))
-                    .setNegativeButton("CANCEL", null)
-                    .show();
+            if (binderAlive) {
+                new AlertDialog.Builder(context)
+                        .setTitle("⚡ SHIZUKU PERMISSION REQUIRED")
+                        .setMessage("'" + featureTitle + "' requires Shizuku privileged shell authorization.\n\nShizuku is running! Tap 'GRANT PERMISSION' to authorize Game Booster immediately.")
+                        .setPositiveButton("GRANT PERMISSION", (dialog, which) -> requestShizukuPermission())
+                        .setNeutralButton("OPEN SHIZUKU", (dialog, which) -> openOrInstallShizukuManager(context))
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+            } else {
+                String actionBtnText = installed ? "START SHIZUKU MANAGER" : "INSTALL SHIZUKU";
+                String message = "'" + featureTitle + "' requires active Shizuku ADB access for privileged system control.\n\n" +
+                        (installed ? "Shizuku is installed but not running. Please start Shizuku service via Wireless Debugging or Root, then return here." : "Shizuku Manager is not installed on this device. Please install and start Shizuku.");
+
+                new AlertDialog.Builder(context)
+                        .setTitle("⚡ SHIZUKU ADB PRIVILEGE REQUIRED")
+                        .setMessage(message)
+                        .setPositiveButton(actionBtnText, (dialog, which) -> openOrInstallShizukuManager(context))
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+            }
         } catch (Throwable t) {
             Log.w(TAG, "Failed to show Shizuku permission dialog: " + t.getMessage());
+        }
+    }
+
+    /**
+     * Interactive 1-tap handler when the user taps on Shizuku status cards, strips, or banners.
+     */
+    public static void handleShizukuCardClick(Context context) {
+        if (context == null) return;
+
+        if (isShizukuRunningAndGranted()) {
+            android.widget.Toast.makeText(context, "⚡ Shizuku Active: Forcing Privileged Permissions & Tweaks...", android.widget.Toast.LENGTH_SHORT).show();
+            com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                    ShizukuPermissionEnforcer.enforceAllPermissions(context);
+                    ShizukuFileManager.grantAllStoragePermissions(context);
+                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(context);
+                    ShizukuConnectionManager.getInstance().onBinderReceived();
+                } catch (Throwable t) {
+                    Log.w(TAG, "Force sync error: " + t.getMessage());
+                }
+            });
+        } else if (Shizuku.pingBinder()) {
+            requestShizukuPermission();
+        } else {
+            showShizukuPermissionDialog(context, "Shizuku Privileged Engine");
         }
     }
 }

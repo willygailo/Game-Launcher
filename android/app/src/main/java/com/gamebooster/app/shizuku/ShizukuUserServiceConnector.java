@@ -119,12 +119,7 @@ public class ShizukuUserServiceConnector {
                 Log.d(TAG, "Binding Shizuku UserService via AIDL (processSuffix=service, daemon=true, version=" + BuildConfig.VERSION_CODE + ")...");
                 isBinding = true;
                 bindingStartedAt = System.currentTimeMillis();
-                try {
-                    Shizuku.peekUserService(serviceArgs, serviceConnection);
-                } catch (Throwable ignored) {}
-                if (!isServiceConnected()) {
-                    Shizuku.bindUserService(serviceArgs, serviceConnection);
-                }
+                Shizuku.bindUserService(serviceArgs, serviceConnection);
             } else {
                 Log.d(TAG, "Shizuku not ready for bind (ping=" + (Shizuku.pingBinder()) + ")");
             }

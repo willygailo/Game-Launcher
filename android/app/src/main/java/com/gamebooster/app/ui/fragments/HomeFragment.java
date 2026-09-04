@@ -88,19 +88,18 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         View chipEngineMode = view.findViewById(R.id.chip_engine_mode);
         if (chipEngineMode != null) {
             chipEngineMode.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    Toast.makeText(getContext(), "⚡ Shizuku API is active and fully functioning!", Toast.LENGTH_SHORT).show();
-                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        ShizukuFileManager.grantAllStoragePermissions(getContext().getApplicationContext());
-                    });
-                } else if (ShizukuExecutor.isShizukuAvailable()) {
-                    Toast.makeText(getContext(), "⚡ Requesting Shizuku Permission...", Toast.LENGTH_SHORT).show();
-                    ShizukuManager.requestShizukuPermission();
-                } else {
-                    ShizukuManager.showShizukuPermissionDialog(getContext(), "Full Shizuku API Engine");
+                if (getContext() != null) {
+                    ShizukuManager.handleShizukuCardClick(getContext());
+                    updateStatusStrip();
                 }
-                updateStatusStrip();
+            });
+        }
+        if (tvEngineMode != null) {
+            tvEngineMode.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    ShizukuManager.handleShizukuCardClick(getContext());
+                    updateStatusStrip();
+                }
             });
         }
 
@@ -322,9 +321,9 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 tvEngineMode.setText("⚡ " + osBadge);
                 tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FF66"));
             }
-        } else if (ShizukuExecutor.isShizukuAvailable()) {
+        } else if (ShizukuExecutor.isShizukuAvailable() || rikka.shizuku.Shizuku.pingBinder()) {
             if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ SHIZUKU API: GRANT PERMISSION");
+                tvEngineMode.setText("⚡ SHIZUKU API: GRANT PERMISSION (TAP)");
                 tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FFCC00"));
             }
         } else if (tvEngineMode != null
@@ -333,12 +332,12 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             tvEngineMode.setText("🔄 Shizuku connecting…");
             tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FCA5A5"));
         } else if (tvEngineMode != null && conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.DEAD) {
-            tvEngineMode.setText("⚠️ Shizuku Disconnected");
+            tvEngineMode.setText("⚠️ Shizuku Disconnected (Tap to connect)");
             tvEngineMode.setTextColor(android.graphics.Color.parseColor("#EF4444"));
         } else {
             EngineMode engineMode = CommandExecutor.getActiveEngineMode();
             if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ " + engineMode.getDisplayName());
+                tvEngineMode.setText("⚡ " + engineMode.getDisplayName() + " (Tap to connect Shizuku)");
                 tvEngineMode.setTextColor(engineMode.getColorHex());
             }
         }

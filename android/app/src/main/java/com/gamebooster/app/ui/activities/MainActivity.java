@@ -301,7 +301,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     protected void onDestroy() {
         super.onDestroy();
         ShizukuManager.removeStateListener(this);
-        ShizukuManager.unregisterBinderListeners();
     }
 
     @Override
