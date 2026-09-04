@@ -9,14 +9,16 @@
 *.aar
 *.klib
 *.bundle
+*.apk.idsig
 
-# Shizuku / Rish runtime assets exception (MUST BE PRESERVED)
+# Runtime Assets & Precompiled JNI Exceptions (MUST BE PRESERVED)
 !**/shizuku/*.dex
 !**/assets/shizuku/*.dex
 !*rish_shizuku.dex
 !**/assets/shizuku/*
+!**/src/main/jniLibs/**/*.so
 
-# Gradle build cache & output directories
+# Gradle Build Cache, Daemon & Outputs
 .gradle/
 **/build/
 build/
@@ -25,6 +27,8 @@ android/build/
 android/app/build/
 **/reports/
 **/test-results/
+.gradle-build-id
+daemon/
 
 # JaCoCo Code Coverage Data
 *.exec
@@ -32,11 +36,19 @@ android/app/build/
 build/jacoco/
 **/jacoco/
 
-# Android Baseline Profiles
+# Android Baseline Profiles & R8 / ProGuard Dumps
 *.prof
 *.profm
+**/proguard/
+**/mapping/
+mapping.txt
+seeds.txt
+usage.txt
+dump.txt
 
-# Native / NDK / C++ build outputs
+# ====================================================================
+# Native, NDK, C++ & CMake Build Outputs
+# ====================================================================
 .cxx/
 **/.cxx/
 .externalNativeBuild/
@@ -45,27 +57,35 @@ android/app/.externalNativeBuild/
 obj/
 CMakeFiles/
 CMakeCache.txt
-*.cmake
 cmake_install.cmake
+*.cmake
+compile_commands.json
+.ninja_deps
+.ninja_log
+*.ninja
 
-# Kotlin & Java caches
+# Kotlin, Java & Incremental Build Caches
 .kotlin/
 .incremental/
+*.kotlin_module
+*.kotlin_builtins
 
 # ====================================================================
-# Local Configuration, Keys & Secrets
+# Local Configuration, Keys, Properties & Secrets
 # ====================================================================
 local.properties
 *.local.properties
 android/local.properties
 secrets.properties
 gradle.properties.private
+keystore.properties
+signing.properties
 
 # Google Services & Firebase Private Configs
 google-services.json
 GoogleService-Info.plist
 
-# Signing & Keystores
+# Signing Keys, Keystores & Certificates
 *.jks
 *.keystore
 debug.keystore
@@ -77,8 +97,8 @@ release.keystore
 *.key
 *.pk8
 *.pem
-keystore.properties
-signing.properties
+*.cer
+*.der
 
 # Environment Variables
 .env
@@ -86,8 +106,9 @@ signing.properties
 !.env.example
 
 # ====================================================================
-# Android Studio / IntelliJ IDEA / VS Code / Editors
+# Android Studio, IntelliJ IDEA, VS Code & Editor Caches
 # ====================================================================
+# IntelliJ IDEA / Android Studio
 .idea/
 *.iml
 .navigation/
@@ -98,6 +119,7 @@ captures/
 *.iws
 *.ids
 *.ipr
+*.drawio.bkp
 
 # Eclipse
 .project
@@ -111,13 +133,15 @@ captures/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+.history/
 
 # NetBeans
 nbproject/private/
 
 # ====================================================================
-# Operating System & Environment Caches
+# Operating System & Filesystem Artifacts
 # ====================================================================
+# macOS
 .DS_Store
 .DS_Store?
 ._*
@@ -139,14 +163,21 @@ $RECYCLE.BIN/
 *.bak
 *.tmp
 *.orig
+*.fuse_hidden*
+.directory
 
 # ====================================================================
-# Logs, Diagnostic Dumps & AI Assistant Data
+# Logs, Diagnostic Dumps, Crash Reports & AI Assistant Data
 # ====================================================================
 *.log
 hs_err_pid*
 replay_pid*
+core
+core.*
 scratch/
+**/scratch/
 .antigravity/
 .gemini/
 .agents/
+.claude/
+.cursor/
