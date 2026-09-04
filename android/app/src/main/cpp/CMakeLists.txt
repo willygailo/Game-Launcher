@@ -8,7 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(
     gamebooster_native
     SHARED
+    config_common.cpp
     native_config_injector.cpp
+    mlbb_injector.cpp
+    pubgm_injector.cpp
+    codm_injector.cpp
+    other_games_injector.cpp
+    universal_combat_injector.cpp
 )
 
 target_compile_options(

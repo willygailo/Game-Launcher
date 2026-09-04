@@ -3,83 +3,103 @@
 
 #include <jni.h>
 
-/*
- * nativeInjectYiSunShinCombo
- * MLBB — Yi Sun-shin weapon switch rapid combo + global ult lock:
- * YiSunShinAutoSwitch=1, YiSunShinMeleeCrit=1, YiSunShinShipBuffInstant=1,
- * AttackSpeedBoost=MAX, PhysicalDamageBase=2500, DamageLockMax=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectYiSunShinCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectChouFreestyleCombo
- * MLBB — Chou freestyle combo + Shunpo immune:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouFreestyleCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectLancelotDashCombo
- * MLBB — Lancelot infinite triangular dash reset:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLancelotDashCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectFrancoHookCombo
- * MLBB — Franco 100% magnet hook + instant suppress:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFrancoHookCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectFreeFireAutoHeadshot
- * Free Fire — Drag headshot magnetism + zero bloom:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireAutoHeadshot
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectFreeFireFastGlooWall
- * Free Fire — 360 Instant gloo wall + fast reload:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireFastGlooWall
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectBloodStrikeZeroRecoil
- * Blood Strike — Zero recoil + fast slide cancel:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeZeroRecoil
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectDeltaForcePrecisionAim
- * Delta Force — Sniper bullet drop + thermal precision:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForcePrecisionAim
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectHokAutoSmiteObjective
- * HOK — 100% smite steal priority + predictive aim:
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokAutoSmiteObjective
-  (JNIEnv *, jclass, jstring);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// =============================================================================
+// ─── Core System, Engine & Kernel Layer ───
+// =============================================================================
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeSetProcessCpuAffinity
+ * Signature: (II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessCpuAffinity
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeSetThreadSchedulingPolicy
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetThreadSchedulingPolicy
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeSetIoPriority
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetIoPriority
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * nativeSetProcessIOPriority
+ * Direct Linux SYS_ioprio_set and setpriority syscall accelerator
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessIOPriority
+  (JNIEnv *, jclass, jint, jint, jint, jint);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeOptimizeMemoryMapping
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeOptimizeMemoryMapping
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeFastMemorySync
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastMemorySync
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeForceVulkanPipelineCache
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeForceVulkanPipelineCache
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeInjectVulkanOptimization
+ * Signature: (Ljava/lang/String;)Z
+ *
+ * 2026: Optimizes Vulkan pipeline cache, async shader compilation,
+ * and graphics settings. Ban-safe: config-file writes only.
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectVulkanOptimization
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativePreserveFileTimestamps
+ * Signature: (Ljava/lang/String;JJ)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePreserveFileTimestamps
+  (JNIEnv *, jclass, jstring, jlong, jlong);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeStealthWrite
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeStealthWrite
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_gamebooster_app_config_NativeConfigInjector
+ * Method:    nativeCalculateConfigCrc32
+ * Signature: (Ljava/lang/String;)J
+ */
+JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCalculateConfigCrc32
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_gamebooster_app_config_NativeConfigInjector
@@ -128,78 +148,6 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
  */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePatchJsonKey
   (JNIEnv *, jclass, jstring, jstring, jstring, jboolean);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeSetProcessCpuAffinity
- * Signature: (II)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessCpuAffinity
-  (JNIEnv *, jclass, jint, jint);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeSetThreadSchedulingPolicy
- * Signature: (III)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetThreadSchedulingPolicy
-  (JNIEnv *, jclass, jint, jint, jint);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeSetIoPriority
- * Signature: (III)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetIoPriority
-  (JNIEnv *, jclass, jint, jint, jint);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeOptimizeMemoryMapping
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeOptimizeMemoryMapping
-  (JNIEnv *, jclass, jstring);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeForceVulkanPipelineCache
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeForceVulkanPipelineCache
-  (JNIEnv *, jclass, jstring, jstring);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeFastMemorySync
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastMemorySync
-  (JNIEnv *, jclass, jstring);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativePreserveFileTimestamps
- * Signature: (Ljava/lang/String;JJ)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativePreserveFileTimestamps
-  (JNIEnv *, jclass, jstring, jlong, jlong);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeStealthWrite
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeStealthWrite
-  (JNIEnv *, jclass, jstring, jstring);
-
-/*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeCalculateConfigCrc32
- * Signature: (Ljava/lang/String;)J
- */
-JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCalculateConfigCrc32
-  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_gamebooster_app_config_NativeConfigInjector
@@ -290,70 +238,15 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * Class:     com_gamebooster_app_config_NativeConfigInjector
- * Method:    nativeInjectVulkanOptimization
- * Signature: (Ljava/lang/String;)Z
- *
- * 2026: Optimizes Vulkan pipeline cache, async shader compilation,
- * and graphics settings. Ban-safe: config-file writes only.
+ * nativeInjectHardwareMaskProfile
+ * Fast-path native generator for DeviceProfile.ini (UE4/5) and HardwareProfile.json (Unity)
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectVulkanOptimization
-  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHardwareMaskProfile
+  (JNIEnv *, jclass, jstring, jstring, jstring, jint, jint);
 
-// ─── Backward-Compatibility / Safe Performance Aliases ─────────────────────────────────────
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost
-  (JNIEnv *, jclass, jstring, jfloat, jfloat, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroRecoil
-  (JNIEnv *, jclass, jstring, jfloat, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist
-  (JNIEnv *, jclass, jstring, jint, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroDamage1000
-  (JNIEnv *, jclass, jstring, jfloat, jfloat, jint, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil
-  (JNIEnv *, jclass, jstring, jfloat, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000
-  (JNIEnv *, jclass, jstring, jint, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef1000
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
-  (JNIEnv *, jclass, jstring, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectShield1500
-  (JNIEnv *, jclass, jstring, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDroneView
-  (JNIEnv *, jclass, jstring, jint, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimHeadLock
-  (JNIEnv *, jclass, jstring, jfloat, jint);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraDamageOverdrive
-  (JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroAimLock
-  (JNIEnv *, jclass, jstring, jint, jfloat);
-
-// ─── New 2026 Game-Specific Tweaks ──────────────────────────────────────────
+// =============================================================================
+// ─── Mobile Legends: Bang Bang (MLBB) Dedicated Injectors ───
+// =============================================================================
 
 /*
  * nativeInjectLingHeroDamageCombo
@@ -366,37 +259,235 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectMagicBulletAimbot
- * PUBGM — Magic bullet + zero-spread aimbot.
- * Injects predictive aim, gyro 1000Hz, no-spread, zero-sway, and
- * bullet-velocity compensation CVars for all weapon classes.
- * Signature: (Ljava/lang/String;)Z
+ * MLBB Hero-Specific Combo & Damage Scripts
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMagicBulletAimbot
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyFastCableCombo
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectNoRecoilNoSpread
- * CODM — No recoil + no spread + aimbot precision.
- * Injects zero-recoil, zero-spread, aim magnetism, scope stabilization,
- * and 1000Hz gyro tracking across all CODM config formats (INI/JSON/XML).
- * Signature: (Ljava/lang/String;)Z
+ * nativeInjectGusionDaggerCombo
+ * Method signature: JNIEnv *, jclass, jstring
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoRecoilNoSpread
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionDaggerCombo
   (JNIEnv *, jclass, jstring);
 
-// ─── MLBB SA / Farming / Jungle / All-Hero Features ──────────────────────────
+/*
+ * nativeInjectChouKickCombo
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouKickCombo
+  (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectSaDamagePlus
- * MLBB SA server — Damage+ modifier:
- * Boosts effective DPS via DamageLockMax, EffectiveDPSMode=3, CritRateBoost,
- * PenetrationBoost, FrameSyncDamage, HitRegSyncRate=1000, AimMagnetism=3,
- * SkillSmartAim, HeroLock, TouchPollingRate=1000, zero input lag.
- * Works across SA server PlayerPrefs XML / boot.config / INI formats.
+ * nativeInjectHayabusaShadowCombo
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHayabusaShadowCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectBeatrixAllGunDamage
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBeatrixAllGunDamage
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectKaguraCombo
+ * MLBB — Kagura instant umbrella rapid combo:
+ * KaguraUmbrellaThrow=1, KaguraZeroReturnDelay=1, KaguraSkillChain=1,
+ * KaguraYinYangMax=1, DamageLockMax=1, HitRegSyncRate=1000.
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaDamagePlus
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectKaguraCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectZilongAutoSlash
+ * MLBB — Zilong fastest auto slash + spear flip:
+ * ZilongAutoSlash=1, ZilongSpearFlipInstant=1, ZilongDragonFlurry=1,
+ * AttackSpeedBoost=MAX, BasicAttackRate=MAX, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZilongAutoSlash
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectSaberCombo
+ * MLBB — Saber triple strike instant combo:
+ * SaberTripleStrikeInstant=1, SaberChaseZeroDelay=1, SaberUltLock=1,
+ * DamageLockMax=1, CritRateBoost=1, PenetrationBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaberCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAlucardLifestealCombo
+ * MLBB — Alucard lifesteal burst + full sustain:
+ * AlucardLifesteal=MAX, AlucardOmniVamp=1, AlucardResetChain=1,
+ * AlucardPhantomStepInstant=1, DamageLockMax=1, LifestealBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAlucardLifestealCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectYiSunShinCombo
+ * MLBB — Yi Sun-shin weapon switch rapid combo + global ult lock:
+ * YiSunShinAutoSwitch=1, YiSunShinMeleeCrit=1, YiSunShinShipBuffInstant=1,
+ * AttackSpeedBoost=MAX, PhysicalDamageBase=2500, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectYiSunShinCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectChouFreestyleCombo
+ * MLBB — Chou freestyle combo + Shunpo immune:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouFreestyleCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLancelotDashCombo
+ * MLBB — Lancelot infinite triangular dash reset:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLancelotDashCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFrancoHookCombo
+ * MLBB — Franco 100% magnet hook + instant suppress:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFrancoHookCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFannyAutoFullEnergy
+ * MLBB — Fanny auto full energy + free cable:
+ * FannyEnergyRegen=MAX, CableEnergyFree=1, AutoEnergyRefill=1,
+ * EnergyRegenRate=10, CableCooldown=0, FannyMultiCableCombo=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyAutoFullEnergy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLingFastestComboAutoSword
+ * MLBB — Ling fastest combo + auto sword chain:
+ * LingSwordAutoChain=1, BlinkChainMax=1, WallJumpInstant=1,
+ * TempestInstantCast=1, ZeroInputDelay=1, DamageLockMax=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingFastestComboAutoSword
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectGusionUltraOverdrive
+ * MLBB — Gusion ultra combo + 2500 damage + 3000 armor:
+ * All Gusion dagger keys + GusionArmorMax=3000, GusionUltraBurst=1,
+ * GusionInstantRecall=1, UltraDamageOverdrive=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionUltraOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbLingFastestSword
+ * MLBB — Ling Tempest of Blades 4-sword rapid retrieval pathing & instant dash reset
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingFastestSword
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFannyFastestCable
+ * MLBB — Fanny instant dual/multi-cable trajectory prediction, wall-snap responsiveness, and zero input lag
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyFastestCable
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbHeroUnlimitedEnergy
+ * MLBB — Ling, Fanny, Hayabusa, Gusion 4-hero unlimited energy, zero skill cost & infinite mobility
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbHeroUnlimitedEnergy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbAllHeroBoostAndArmor
+ * MLBB — All-hero damage boost (2.0x, true dmg, 3.0x crit), faster cooldown reduction (40% CDR) & armor boost (1.5x, 10000 def)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroBoostAndArmor
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbUltraDamageAllHero
+ * MLBB — 2500+ damage all hero:
+ * PhysicalDamageBase=2500, MagicDamageBase=2500, TrueDmgMultiplier,
+ * CritMultiplier=3, PenetrationBoost, FrameSyncDamage, HitReg=1000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDamageAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbArmorAllHero
+ * MLBB — 3000+ armor all hero:
+ * PhysicalDefense=3000, MagicDefense=3000, DamageReduction=0.99,
+ * ShieldBoost, PhysicalShield=5000, MagicShield=5000.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAllHeroItemSkillBoost
+ * MLBB — All hero item + skill max boost:
+ * ItemStatBoost=MAX, SkillDamageBoost=MAX, CooldownReduction=0,
+ * LifestealBoost=1, SpellVampBoost=1, MovementSpeedBoost=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroItemSkillBoost
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastAttackSpeedAllHero
+ * MLBB — Attack speed MAX all hero:
+ * AttackSpeedBoost=MAX, BasicAttackRate=MAX, AutoAttackInterval=0,
+ * AttackAnimSpeed=10, HitRegSyncRate=1000, AttackSpeedCap=10.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastAttackSpeedAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbAllHeroOverdrive
+ * MLBB — All-hero overdrive: 10000 base damage, 3.0 crit, zero skill cost, zero CDR, hero lock, 1000Hz touch & hit-reg
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFannyNoEnergyLimit
+ * MLBB — Fanny no-energy-limit: energy limit 999, no energy decay, free cables, zero cooldown, instant cable aim
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyNoEnergyLimit
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbLingNoEnergyLimit
+ * MLBB — Ling no-energy-limit: energy limit 999, no decay, free wall energy, instant swords, instant tempest cast
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingNoEnergyLimit
   (JNIEnv *, jclass, jstring);
 
 /*
@@ -432,36 +523,100 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * MLBB Hero-Specific Combo & Damage Scripts
+ * nativeInjectSaDamagePlus
+ * MLBB SA server — Damage+ modifier:
+ * Boosts effective DPS via DamageLockMax, EffectiveDPSMode=3, CritRateBoost,
+ * PenetrationBoost, FrameSyncDamage, HitRegSyncRate=1000, AimMagnetism=3,
+ * SkillSmartAim, HeroLock, TouchPollingRate=1000, zero input lag.
+ * Works across SA server PlayerPrefs XML / boot.config / INI formats.
+ * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyFastCableCombo
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionDaggerCombo
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectChouKickCombo
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHayabusaShadowCombo
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBeatrixAllGunDamage
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCriticalBurstOverdrive
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaDamagePlus
   (JNIEnv *, jclass, jstring);
 
 /*
- * All-Gun & All-Scope Universal Calibrations
+ * nativeInjectMlbbJungleFastFarmAllHero
+ * MLBB — Jungle monster target priority, Retribution instant cast timing, and creep HP thresholding
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllGunWeaponCalibration
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleFastFarmAllHero
   (JNIEnv *, jclass, jstring);
 
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeMasteryCalibration
+/*
+ * nativeInjectMlbbAllJungleFastFarmOverdrive
+ * MLBB — All jungle fast farm overdrive: 3x smite & clear speed, 3x buff duration & gold/exp rates, instant retribution
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllJungleFastFarmOverdrive
   (JNIEnv *, jclass, jstring);
 
-// ─── PUBGM: Aimbot Expansion ─────────────────────────────────────────────────
+/*
+ * nativeInjectMlbbSmartSkillMagnetAim
+ * MLBB — Dual-priority smart skill aim: lowest HP enemy hero (maliit na buhay) & closest enemy hero (malapit na hero)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSmartSkillMagnetAim
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbPenetrationCritBurst
+ * MLBB — 100% Malefic Roar/Divine Glaive penetration, 3.0x crit multiplier, hero execution mechanics, instant battle spell
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbPenetrationCritBurst
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFastLoadSplashBypass
+ * MLBB — Fast-path asset unbundling, skip intro/splash videos, low-poly initial boot, UI async load, deferred audio load
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSplashBypass
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbb165FpsGraphics
+ * MLBB — 165 FPS frame rate & Ultra HDR graphics native injection:
+ * Patches PlayerPrefs XML (<map>): HFR=1, HighFPSMode=3, FrameRateLevel=6,
+ * FPS=165, MaxFPS=165, MaxFrameRate=165, TargetFPS=165, FrameRateLimit=165,
+ * QualityLevel=3, GraphicsQuality=3, HDMode=1, Shadow=1, Outline=1,
+ * Unlock165Hz=1, Unlock165FPS=1, TouchBoostHz=165, TouchPollingRate=1000.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbb165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * nativeInjectMlbbAllHeroMaxDamage2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroMaxDamage2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbUltimateDamageOverdrive2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltimateDamageOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+// =============================================================================
+// ─── PUBG Mobile (PUBGM) Dedicated Injectors ───
+// =============================================================================
+
+/*
+ * nativeInjectMagicBulletAimbot
+ * PUBGM — Magic bullet + zero-spread aimbot.
+ * Injects predictive aim, gyro 1000Hz, no-spread, zero-sway, and
+ * bullet-velocity compensation CVars for all weapon classes.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMagicBulletAimbot
+  (JNIEnv *, jclass, jstring);
 
 /*
  * nativeInjectNoScopeAimbot
@@ -513,7 +668,71 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastAttackSpeed
   (JNIEnv *, jclass, jstring);
 
-// ─── CODM: Aimbot Expansion ──────────────────────────────────────────────────
+/*
+ * nativeInjectPubgmBallisticsVelocityPenetration
+ * PUBGM — 2.0x Muzzle velocity, instant hit-reg/desync fix, Lv3 vest/helmet shredder, shotgun tight slug, sniper 300 damage lock
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmBallisticsVelocityPenetration
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgm165FpsGraphics
+ * PUBGM — 165 FPS frame rate & HDR graphics native injection:
+ * Formats: UserCustom.ini, EnjoyCJZC.ini, GameUserSettings.ini, Active.sav, XML prefs.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * nativeInjectPubgmDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmAllScopeTieredHeadshot
+ * PUBGM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), zero recoil, bullet tracking & gyro stabilization
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAllScopeTieredHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmAllWeaponMaxDamage2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAllWeaponMaxDamage2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmUltraAimbot2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmUltraAimbot2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFastLoadAsyncStreaming
+ * PUBGM — UE4 dedicated async loader thread, 8-core concurrent shader compilation, 1024MB texture stream pool, skip movies/splash
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAsyncStreaming
+  (JNIEnv *, jclass, jstring);
+
+// =============================================================================
+// ─── Call of Duty Mobile (CODM) Dedicated Injectors ───
+// =============================================================================
+
+/*
+ * nativeInjectNoRecoilNoSpread
+ * CODM — No recoil + no spread + aimbot precision.
+ * Injects zero-recoil, zero-spread, aim magnetism, scope stabilization,
+ * and 1000Hz gyro tracking across all CODM config formats (INI/JSON/XML).
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoRecoilNoSpread
+  (JNIEnv *, jclass, jstring);
 
 /*
  * nativeInjectCodmNoScopeAimbot
@@ -565,166 +784,350 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastAttackSpeed
   (JNIEnv *, jclass, jstring);
 
-// ─── MLBB: Ultra Damage / Armor / Hero Expansions ────────────────────────────
-
 /*
- * nativeInjectMlbbUltraDamageAllHero
- * MLBB — 2500+ damage all hero:
- * PhysicalDamageBase=2500, MagicDamageBase=2500, TrueDmgMultiplier,
- * CritMultiplier=3, PenetrationBoost, FrameSyncDamage, HitReg=1000.
- * Signature: (Ljava/lang/String;)Z
+ * nativeInjectCodmBsaRemovalRangeOverdrive
+ * CODM — BSA elimination, infinite damage range falloff bypass, instant ADS, zero hit-flinch, sniper blank-scope hitscan
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDamageAllHero
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmBsaRemovalRangeOverdrive
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectMlbbArmorAllHero
- * MLBB — 3000+ armor all hero:
- * PhysicalDefense=3000, MagicDefense=3000, DamageReduction=0.99,
- * ShieldBoost, PhysicalShield=5000, MagicShield=5000.
+ * nativeInjectCodmAllScopeTieredHeadshot
+ * CODM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), BSA removal, zero flinch, bullet tracking & gyro stabilization
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorAllHero
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeTieredHeadshot
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectFannyAutoFullEnergy
- * MLBB — Fanny auto full energy + free cable:
- * FannyEnergyRegen=MAX, CableEnergyFree=1, AutoEnergyRefill=1,
- * EnergyRegenRate=10, CableCooldown=0, FannyMultiCableCombo=1.
- * Signature: (Ljava/lang/String;)Z
+ * nativeInjectCodmDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFannyAutoFullEnergy
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectLingFastestComboAutoSword
- * MLBB — Ling fastest combo + auto sword chain:
- * LingSwordAutoChain=1, BlinkChainMax=1, WallJumpInstant=1,
- * TempestInstantCast=1, ZeroInputDelay=1, DamageLockMax=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLingFastestComboAutoSword
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectGusionUltraOverdrive
- * MLBB — Gusion ultra combo + 2500 damage + 3000 armor:
- * All Gusion dagger keys + GusionArmorMax=3000, GusionUltraBurst=1,
- * GusionInstantRecall=1, UltraDamageOverdrive=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGusionUltraOverdrive
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectAllHeroItemSkillBoost
- * MLBB — All hero item + skill max boost:
- * ItemStatBoost=MAX, SkillDamageBoost=MAX, CooldownReduction=0,
- * LifestealBoost=1, SpellVampBoost=1, MovementSpeedBoost=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllHeroItemSkillBoost
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectFastAttackSpeedAllHero
- * MLBB — Attack speed MAX all hero:
- * AttackSpeedBoost=MAX, BasicAttackRate=MAX, AutoAttackInterval=0,
- * AttackAnimSpeed=10, HitRegSyncRate=1000, AttackSpeedCap=10.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastAttackSpeedAllHero
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectKaguraCombo
- * MLBB — Kagura instant umbrella rapid combo:
- * KaguraUmbrellaThrow=1, KaguraZeroReturnDelay=1, KaguraSkillChain=1,
- * KaguraYinYangMax=1, DamageLockMax=1, HitRegSyncRate=1000.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectKaguraCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectZilongAutoSlash
- * MLBB — Zilong fastest auto slash + spear flip:
- * ZilongAutoSlash=1, ZilongSpearFlipInstant=1, ZilongDragonFlurry=1,
- * AttackSpeedBoost=MAX, BasicAttackRate=MAX, DamageLockMax=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZilongAutoSlash
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectSaberCombo
- * MLBB — Saber triple strike instant combo:
- * SaberTripleStrikeInstant=1, SaberChaseZeroDelay=1, SaberUltLock=1,
- * DamageLockMax=1, CritRateBoost=1, PenetrationBoost=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSaberCombo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectAlucardLifestealCombo
- * MLBB — Alucard lifesteal burst + full sustain:
- * AlucardLifesteal=MAX, AlucardOmniVamp=1, AlucardResetChain=1,
- * AlucardPhantomStepInstant=1, DamageLockMax=1, LifestealBoost=1.
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAlucardLifestealCombo
-  (JNIEnv *, jclass, jstring);
-
-// ─── 2026 Master 10000+ Damage & Attack Speed Overdrive Suite ───────────────
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbDamage10000AttackSpeedMax
-  (JNIEnv *, jclass, jstring);
-
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamage10000AttackSpeedMax
-  (JNIEnv *, jclass, jstring);
-
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectCodm165FpsGraphics
+ * CODM — 165 FPS frame rate & Ultra HDR graphics native injection:
+ * Patches MaxFrameRate, TargetFPS, FrameRateLimit, MobileFPSLimit, FrameRateLevel=9,
+ * GraphicQuality=4, TextureQuality=4, HDRMode, Unlock165Hz, Unlock165FPS, Ultra165FPS.
+ * Signature: (Ljava/lang/String;II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodm165FpsGraphics
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * nativeInjectCodmMaxDamageAllWeapon2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMaxDamageAllWeapon2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmUltraConfigCheat2026
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmUltraConfigCheat2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmFastLoadShaderBypass
+ * CODM — Fast load flag, skip Activision/TiMi splash, async asset loading, deferred weapon mesh prewarm, fast shader cache bypass
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadShaderBypass
+  (JNIEnv *, jclass, jstring);
+
+// =============================================================================
+// ─── Other Supported Titles (Free Fire, Blood Strike, Delta Force, HOK, Wild Rift) ───
+// =============================================================================
+
+/*
+ * nativeInjectFreeFireAutoHeadshot
+ * Free Fire — Drag headshot magnetism + zero bloom:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireAutoHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFreeFireFastGlooWall
+ * Free Fire — 360 Instant gloo wall + fast reload:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireFastGlooWall
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFreeFireDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFreeFireDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectBloodStrikeZeroRecoil
+ * Blood Strike — Zero recoil + fast slide cancel:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeZeroRecoil
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectDeltaForcePrecisionAim
+ * Delta Force — Sniper bullet drop + thermal precision:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForcePrecisionAim
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectHokAutoSmiteObjective
+ * HOK — 100% smite steal priority + predictive aim:
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokAutoSmiteObjective
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectHokDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHokDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectWildRiftDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectWildRiftDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
+// =============================================================================
+// ─── Universal Combat & Cross-Game Overdrive ───
+// =============================================================================
+
+/*
+ * nativeInjectDamageBoost
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jint);
+
+/*
+ * nativeInjectZeroRecoil
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroRecoil
+  (JNIEnv *, jclass, jstring, jfloat, jint);
+
+/*
+ * nativeInjectAimAssist
+ * Method signature: JNIEnv *, jclass, jstring, jint, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * nativeInjectTrackingBullet
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectArmorDef
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectSpeedBoost
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSpeedBoost
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectHeroDamage1000
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat, jint, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroDamage1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jint, jint);
+
+/*
+ * nativeInjectScopeZeroRecoil
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil
+  (JNIEnv *, jclass, jstring, jfloat, jint);
+
+/*
+ * nativeInjectAimAssist1000
+ * Method signature: JNIEnv *, jclass, jstring, jint, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000
+  (JNIEnv *, jclass, jstring, jint, jfloat);
+
+/*
+ * nativeInjectTrackingBullet1000
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectArmorDef1000
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArmorDef1000
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectShield1500
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectShield1500
+  (JNIEnv *, jclass, jstring, jfloat, jfloat);
+
+/*
+ * nativeInjectDroneView
+ * Method signature: JNIEnv *, jclass, jstring, jint, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDroneView
+  (JNIEnv *, jclass, jstring, jint, jint);
+
+/*
+ * nativeInjectAimHeadLock
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jint
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimHeadLock
+  (JNIEnv *, jclass, jstring, jfloat, jint);
+
+/*
+ * nativeInjectUltraDamageOverdrive
+ * Method signature: JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraDamageOverdrive
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat);
+
+/*
+ * nativeInjectHeroAimLock
+ * Method signature: JNIEnv *, jclass, jstring, jint, jfloat
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHeroAimLock
+  (JNIEnv *, jclass, jstring, jint, jfloat);
+
+/*
+ * nativeInjectCriticalBurstOverdrive
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCriticalBurstOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * All-Gun & All-Scope Universal Calibrations
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllGunWeaponCalibration
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAllScopeMasteryCalibration
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeMasteryCalibration
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastReloadQuickSwap
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastReloadQuickSwap
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectWallPiercingArmorShredder
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectWallPiercingArmorShredder
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectZeroPingNetworkOverclock
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroPingNetworkOverclock
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectUltraExtreme240FpsGraphics
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraExtreme240FpsGraphics
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectUniversalDamage10000AttackSpeedMax
+ * Method signature: JNIEnv *, jclass, jstring
+ */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalDamage10000AttackSpeedMax
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectHardwareMaskProfile
- * Fast-path native generator for DeviceProfile.ini (UE4/5) and HardwareProfile.json (Unity)
+ * nativeInjectFastCooldown
+ * Method signature: JNIEnv *, jclass, jstring, jfloat
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHardwareMaskProfile
-  (JNIEnv *, jclass, jstring, jstring, jstring, jint, jint);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastCooldown
+  (JNIEnv *, jclass, jstring, jfloat);
 
 /*
- * nativeSetProcessIOPriority
- * Direct Linux SYS_ioprio_set and setpriority syscall accelerator
+ * nativeInjectFastFullMana
+ * Method signature: JNIEnv *, jclass, jstring
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessIOPriority
-  (JNIEnv *, jclass, jint, jint, jint);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullMana
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastFullEnergy
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastFullEnergy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastHpRegen
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastHpRegen
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFastStaminaFuryRegen
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastStaminaFuryRegen
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectZeroSkillCost
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroSkillCost
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMaxUltCharge
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMaxUltCharge
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectSkillEconomyMasterSuite
+ * Method signature: JNIEnv *, jclass, jstring
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSkillEconomyMasterSuite
+  (JNIEnv *, jclass, jstring);
 
 /*
  * nativeInjectFastLootAndWeaponSwap
@@ -748,27 +1151,6 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectMlbbJungleFastFarmAllHero
- * MLBB — Jungle monster target priority, Retribution instant cast timing, and creep HP thresholding
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleFastFarmAllHero
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbLingFastestSword
- * MLBB — Ling Tempest of Blades 4-sword rapid retrieval pathing & instant dash reset
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingFastestSword
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbFannyFastestCable
- * MLBB — Fanny instant dual/multi-cable trajectory prediction, wall-snap responsiveness, and zero input lag
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyFastestCable
-  (JNIEnv *, jclass, jstring);
-
-/*
  * nativeInjectUniversalZeroDelaySkillTapAllHero
  * Universal touch-to-skill zero-latency queue bypass, 1000Hz sampling, and instant combo chaining
  */
@@ -783,27 +1165,6 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectMlbbPenetrationCritBurst
- * MLBB — 100% Malefic Roar/Divine Glaive penetration, 3.0x crit multiplier, hero execution mechanics, instant battle spell
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbPenetrationCritBurst
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectPubgmBallisticsVelocityPenetration
- * PUBGM — 2.0x Muzzle velocity, instant hit-reg/desync fix, Lv3 vest/helmet shredder, shotgun tight slug, sniper 300 damage lock
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmBallisticsVelocityPenetration
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectCodmBsaRemovalRangeOverdrive
- * CODM — BSA elimination, infinite damage range falloff bypass, instant ADS, zero hit-flinch, sniper blank-scope hitscan
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmBsaRemovalRangeOverdrive
-  (JNIEnv *, jclass, jstring);
-
-/*
  * nativeInjectUniversalCombatMechanicsOverdrive
  * Universal — 1000Hz touch-to-damage, attack animation canceling, frame-synced damage, true damage conversion
  */
@@ -811,110 +1172,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring);
 
 /*
- * nativeInjectMlbbFastLoadSplashBypass
- * MLBB — Fast-path asset unbundling, skip intro/splash videos, low-poly initial boot, UI async load, deferred audio load
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSplashBypass
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectPubgmFastLoadAsyncStreaming
- * PUBGM — UE4 dedicated async loader thread, 8-core concurrent shader compilation, 1024MB texture stream pool, skip movies/splash
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAsyncStreaming
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectCodmFastLoadShaderBypass
- * CODM — Fast load flag, skip Activision/TiMi splash, async asset loading, deferred weapon mesh prewarm, fast shader cache bypass
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadShaderBypass
-  (JNIEnv *, jclass, jstring);
-
-/*
  * nativeInjectUniversalFastLoadTurbo
  * Universal — Multi-threaded asset streaming and high-speed texture streaming cache
  */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalFastLoadTurbo
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectCodm165FpsGraphics
- * CODM — 165 FPS frame rate & Ultra HDR graphics native injection:
- * Patches MaxFrameRate, TargetFPS, FrameRateLimit, MobileFPSLimit, FrameRateLevel=9,
- * GraphicQuality=4, TextureQuality=4, HDRMode, Unlock165Hz, Unlock165FPS, Ultra165FPS.
- * Signature: (Ljava/lang/String;II)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodm165FpsGraphics
-  (JNIEnv *, jclass, jstring, jint, jint);
-
-/*
- * nativeInjectMlbb165FpsGraphics
- * MLBB — 165 FPS frame rate & Ultra HDR graphics native injection:
- * Patches PlayerPrefs XML (<map>): HFR=1, HighFPSMode=3, FrameRateLevel=6,
- * FPS=165, MaxFPS=165, MaxFrameRate=165, TargetFPS=165, FrameRateLimit=165,
- * QualityLevel=3, GraphicsQuality=3, HDMode=1, Shadow=1, Outline=1,
- * Unlock165Hz=1, Unlock165FPS=1, TouchBoostHz=165, TouchPollingRate=1000.
- * Signature: (Ljava/lang/String;II)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbb165FpsGraphics
-  (JNIEnv *, jclass, jstring, jint, jint);
-
-/*
- * nativeInjectPubgm165FpsGraphics
- * PUBGM — 165 FPS frame rate & HDR graphics native injection:
- * Formats: UserCustom.ini, EnjoyCJZC.ini, GameUserSettings.ini, Active.sav, XML prefs.
- * Signature: (Ljava/lang/String;II)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics
-  (JNIEnv *, jclass, jstring, jint, jint);
-
-/*
- * nativeInjectMlbbAllHeroOverdrive
- * MLBB — All-hero overdrive: 10000 base damage, 3.0 crit, zero skill cost, zero CDR, hero lock, 1000Hz touch & hit-reg
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroOverdrive
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbFannyNoEnergyLimit
- * MLBB — Fanny no-energy-limit: energy limit 999, no energy decay, free cables, zero cooldown, instant cable aim
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFannyNoEnergyLimit
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbLingNoEnergyLimit
- * MLBB — Ling no-energy-limit: energy limit 999, no decay, free wall energy, instant swords, instant tempest cast
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLingNoEnergyLimit
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbAllJungleFastFarmOverdrive
- * MLBB — All jungle fast farm overdrive: 3x smite & clear speed, 3x buff duration & gold/exp rates, instant retribution
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllJungleFastFarmOverdrive
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectPubgmAllScopeTieredHeadshot
- * PUBGM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), zero recoil, bullet tracking & gyro stabilization
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAllScopeTieredHeadshot
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectCodmAllScopeTieredHeadshot
- * CODM — Tiered all-scope auto 3-bullet headshot (100m, 200m, 300m, 400m), BSA removal, zero flinch, bullet tracking & gyro stabilization
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeTieredHeadshot
   (JNIEnv *, jclass, jstring);
 
 /*
@@ -933,35 +1194,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRifleScopeTieredHeadshot
   (JNIEnv *, jclass, jstring);
 
-/*
- * nativeInjectMlbbSmartSkillMagnetAim
- * MLBB — Dual-priority smart skill aim: lowest HP enemy hero (maliit na buhay) & closest enemy hero (malapit na hero)
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSmartSkillMagnetAim
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbHeroUnlimitedEnergy
- * MLBB — Ling, Fanny, Hayabusa, Gusion 4-hero unlimited energy, zero skill cost & infinite mobility
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbHeroUnlimitedEnergy
-  (JNIEnv *, jclass, jstring);
-
-/*
- * nativeInjectMlbbAllHeroBoostAndArmor
- * MLBB — All-hero damage boost (2.0x, true dmg, 3.0x crit), faster cooldown reduction (40% CDR) & armor boost (1.5x, 10000 def)
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroBoostAndArmor
-  (JNIEnv *, jclass, jstring);
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif // GAMEBOOSTER_NATIVE_CONFIG_INJECTOR_H
-
-
-
