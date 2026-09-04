@@ -312,10 +312,10 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "art_dexopt_speed_compile",
-                "ART Speed-Profile AOT Game Compilation",
-                "Ahead-of-Time compiles installed competitive games with compiler speed optimizations via Shizuku",
-                "cmd package compile -m speed -f com.mobile.legends; cmd package compile -m speed -f com.tencent.ig; cmd package compile -m speed -f com.activision.callofduty.shooter; cmd package compile -m speed -f com.dts.freefireth; cmd package compile -m speed -f com.proximabeta.mf.uamo; cmd package compile -m speed -f com.riotgames.league.wildrift",
-                "cmd package compile -m quicken -f com.mobile.legends",
+                "ART Speed-Profile AOT Game Optimization",
+                "Configures the Android Runtime (ART) compilation policy to native speed filter for high-performance execution",
+                "setprop pm.dexopt.bg-dexopt speed; setprop pm.dexopt.install speed; setprop dalvik.vm.dex2oat-filter speed",
+                "setprop pm.dexopt.bg-dexopt speed-profile; setprop pm.dexopt.install speed-profile; setprop dalvik.vm.dex2oat-filter speed-profile",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));

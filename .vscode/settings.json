@@ -1,0 +1,18 @@
+{
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "/usr/lib/jvm/java-17-openjdk-amd64",
+            "default": true
+        },
+        {
+            "name": "JavaSE-21",
+            "path": "/usr/lib/jvm/java-21-openjdk-amd64"
+        }
+    ],
+    "java.jdt.ls.java.home": "/usr/lib/jvm/java-17-openjdk-amd64",
+    "java.import.gradle.java.home": "/usr/lib/jvm/java-17-openjdk-amd64",
+    "java.import.gradle.version": "8.13",
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.user.home": "/home/willygailo/.gradle"
+}

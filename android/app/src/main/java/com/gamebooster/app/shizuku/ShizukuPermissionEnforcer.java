@@ -219,23 +219,12 @@ public class ShizukuPermissionEnforcer {
         try {
             String pkg = gamePackageName.trim();
             List<String> cmds = new ArrayList<>();
-            cmds.add("pm grant " + pkg + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null");
-            cmds.add("pm grant " + pkg + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null");
-            cmds.add("pm grant " + pkg + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null");
-            cmds.add("pm grant " + pkg + " android.permission.WRITE_SETTINGS 2>/dev/null");
-            cmds.add("pm grant " + pkg + " android.permission.SYSTEM_ALERT_WINDOW 2>/dev/null");
-
-            cmds.add("cmd appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null");
-            cmds.add("cmd appops set " + pkg + " READ_EXTERNAL_STORAGE allow 2>/dev/null");
-            cmds.add("cmd appops set " + pkg + " WRITE_EXTERNAL_STORAGE allow 2>/dev/null");
-            cmds.add("cmd appops set " + pkg + " LEGACY_STORAGE allow 2>/dev/null");
-            cmds.add("cmd appops set " + pkg + " NO_ISOLATED_STORAGE allow 2>/dev/null");
+            // Allow uninterrupted background execution for target game
             cmds.add("cmd appops set " + pkg + " RUN_IN_BACKGROUND allow 2>/dev/null");
             cmds.add("cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
             cmds.add("cmd appops set " + pkg + " AUTO_START allow 2>/dev/null");
-            cmds.add("cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow 2>/dev/null");
 
-            // Enable Game Mode performance intervention
+            // Enable Game Mode performance intervention & max display refresh rate
             cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
             cmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
             cmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");

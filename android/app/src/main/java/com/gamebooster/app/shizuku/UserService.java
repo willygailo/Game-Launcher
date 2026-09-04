@@ -483,26 +483,13 @@ public class UserService extends IUserService.Stub {
     @Override
     public void enforceAppOpsAndPermissions(String packageName) {
         if (packageName == null || packageName.isEmpty()) return;
-        String[] permissions = new String[]{
-                "android.permission.MANAGE_EXTERNAL_STORAGE",
-                "android.permission.READ_EXTERNAL_STORAGE",
-                "android.permission.WRITE_EXTERNAL_STORAGE",
-                "android.permission.WRITE_SETTINGS",
-                "android.permission.SYSTEM_ALERT_WINDOW"
-        };
-        for (String perm : permissions) {
-            execCommand("pm grant " + packageName + " " + perm + " 2>/dev/null");
-        }
+        // Never grant or mutate MANAGE_EXTERNAL_STORAGE or storage appops on target game packages!
+        // Android ActivityManagerService immediately terminates any running game UID with SIGKILL
+        // if storage permissions/appops change while the process is active.
         String[] appOps = new String[]{
-                "MANAGE_EXTERNAL_STORAGE",
-                "READ_EXTERNAL_STORAGE",
-                "WRITE_EXTERNAL_STORAGE",
-                "LEGACY_STORAGE",
-                "NO_ISOLATED_STORAGE",
                 "RUN_IN_BACKGROUND",
                 "RUN_ANY_IN_BACKGROUND",
-                "AUTO_START",
-                "SYSTEM_ALERT_WINDOW"
+                "AUTO_START"
         };
         for (String op : appOps) {
             execCommand("cmd appops set " + packageName + " " + op + " allow 2>/dev/null");

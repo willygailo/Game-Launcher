@@ -167,25 +167,7 @@ public final class GameConfigStorageAccessEngine {
         List<String> paths = resolveAllStoragePaths(context, pkg);
         List<String> commands = new ArrayList<>();
 
-        // 1. AppOps bypass for Scoped Storage & Manage External Storage
-        commands.add("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow");
-        commands.add("appops set " + pkg + " NO_ISOLATED_STORAGE allow");
-        commands.add("appops set " + pkg + " LEGACY_STORAGE allow");
-        commands.add("appops set " + pkg + " READ_EXTERNAL_STORAGE allow");
-        commands.add("appops set " + pkg + " WRITE_EXTERNAL_STORAGE allow");
-        commands.add("appops set " + pkg + " ACCESS_RESTRICTED_SETTINGS allow");
-
-        // 2. Grant permissions to Launcher package as well
-        if (context != null) {
-            String myPkg = context.getPackageName();
-            commands.add("appops set " + myPkg + " MANAGE_EXTERNAL_STORAGE allow");
-            commands.add("appops set " + myPkg + " NO_ISOLATED_STORAGE allow");
-            commands.add("appops set " + myPkg + " LEGACY_STORAGE allow");
-            commands.add("appops set " + myPkg + " READ_EXTERNAL_STORAGE allow");
-            commands.add("appops set " + myPkg + " WRITE_EXTERNAL_STORAGE allow");
-        }
-
-        // 3. Filesystem Chmod 777 & Directory Access (Never run mkdir -p on file paths)
+        // 1. Filesystem Chmod 777 & Directory Access (Never run mkdir -p on file paths)
         for (String path : paths) {
             if (isFileLikePath(path)) {
                 File parent = new File(path).getParentFile();
@@ -306,17 +288,7 @@ public final class GameConfigStorageAccessEngine {
         // 3. chmod 666 file (write-accessible by any uid)
         ShizukuExecutor.executeShizukuCommand("chmod 666 \"" + path + "\" 2>/dev/null");
 
-        // 4. appops for /sdcard/Android/data paths (scoped storage bypass)
-        if (path.contains("/sdcard/") || path.contains("/storage/emulated/")) {
-            String pkg = extractPackageFromPath(path);
-            if (pkg != null) {
-                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " MANAGE_EXTERNAL_STORAGE allow");
-                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " NO_ISOLATED_STORAGE allow");
-                ShizukuExecutor.executeShizukuCommand("appops set " + pkg + " LEGACY_STORAGE allow");
-            }
-        }
-
-        // 5. Temporary SELinux permissive for /data/data or /data/user paths (Shizuku ADB shell)
+        // 4. Temporary SELinux permissive for /data/data or /data/user paths (Shizuku ADB shell)
         if (path.startsWith("/data/data/") || path.startsWith("/data/user/")) {
             ShizukuExecutor.executeShizukuCommand("setenforce 0 2>/dev/null");
         }
