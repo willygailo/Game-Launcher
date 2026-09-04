@@ -24,6 +24,15 @@ import com.gamebooster.app.shizuku.RishManager;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 
+import com.gamebooster.app.config.CfgProfileManager;
+import com.gamebooster.app.config.CommonConfigTuningInjector;
+import com.gamebooster.app.config.CompetitiveCfgProfile;
+import com.gamebooster.app.config.GameAutoInjectDispatcher;
+import com.gamebooster.app.config.GameConfigPatcher;
+import com.gamebooster.app.config.GameConfigStorageAccessEngine;
+import com.gamebooster.app.config.GameSecurityBypassEngine;
+import com.gamebooster.app.config.NativeConfigInjector;
+
 import java.util.List;
 
 /**
@@ -128,6 +137,11 @@ public final class GameManagerLauncher {
         if (targetIntent == null && pm != null) {
             targetIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
         }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 1.5: SYNCHRONOUS PRE-LAUNCH CONFIG INJECTION & BYPASS
+        // ═══════════════════════════════════════════════════════════
+        preparePreLaunchConfigInjection(appContext, pkg, fps);
 
         // ═══════════════════════════════════════════════════════════
         // STEP 2: INSTANT FOREGROUND DISPATCH & PRE-LAUNCH TURBO BURST
@@ -280,5 +294,48 @@ public final class GameManagerLauncher {
                 }
             }
         });
+    }
+
+    /**
+     * Executes synchronous pre-launch configuration injection, permissions granting,
+     * C++ native patches, and anti-tamper security bypass locks before the game activity starts.
+     * Guarantees that target configuration files (PlayerPrefs XML, UserCustom.ini, GameUserSettings.ini)
+     * are 100% updated on disk before the game engine initializes and reads them.
+     */
+    public static void preparePreLaunchConfigInjection(Context context, String pkg, int targetFps) {
+        if (pkg == null || pkg.trim().isEmpty()) return;
+        try {
+            Log.i(TAG, "⚡ [PreLaunch Sync] Injecting game configs and bypass locks for " + pkg + " @ " + targetFps + " FPS...");
+
+            // 1. Ensure storage access permissions (Android 13-16 scoped storage / Shizuku / SAF)
+            GameConfigStorageAccessEngine.grantAllPathsAccess(context, pkg);
+
+            // 2. Unlock all target config paths for writing (chmod 777/666) & purge stale caches
+            GameSecurityBypassEngine.unlockForInjection(pkg);
+
+            // 3. Apply format-specific game FPS and graphics unlocks
+            GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
+
+            // 4. Run native C++ / JNI config injector (damage locks, touch polling, 185 FPS unlocks)
+            NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
+
+            // 5. Load or create full-featured competitive profile and apply all enabled tunings
+            String gameKey = CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
+            if (profile == null) {
+                profile = new CompetitiveCfgProfile(gameKey, targetFps, true, true);
+            }
+            CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+
+            // 6. Dispatch complete game-specific auto-inject suite (MLBB, PUBGM, CODM, etc.)
+            GameAutoInjectDispatcher.dispatchForPackage(context, pkg, true);
+
+            // 7. Enforce SELinux context bypass, UID/GID ownership, and safe anti-tamper permissions
+            GameSecurityBypassEngine.postInjectionBypassAndLock(pkg);
+
+            Log.i(TAG, "✅ [PreLaunch Sync COMPLETE] All config patches & bypasses applied to disk for " + pkg);
+        } catch (Throwable t) {
+            Log.e(TAG, "⚠️ Pre-launch config injection error for " + pkg + ": " + t.getMessage(), t);
+        }
     }
 }
