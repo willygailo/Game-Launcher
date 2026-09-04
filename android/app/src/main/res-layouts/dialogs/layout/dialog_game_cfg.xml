@@ -328,20 +328,10 @@
                     android:buttonTint="@color/accent_cyan"
                     android:checked="true"
                     android:paddingVertical="3dp"
-                    android:text="🎮 System Vulkan Game Driver (Recommended)"
+                    android:text="🎮 System Vulkan Game Driver (MLBB / CODM / PUBGM Only)"
                     android:textColor="@color/text_primary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
-
-                <RadioButton
-                    android:id="@+id/rb_driver_angle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:buttonTint="@color/accent_neon_green"
-                    android:paddingVertical="3dp"
-                    android:text="⚡ ANGLE (OpenGL over Vulkan Translation)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp" />
 
                 <RadioButton
                     android:id="@+id/rb_driver_default"

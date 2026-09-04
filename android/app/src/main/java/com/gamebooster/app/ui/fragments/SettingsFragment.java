@@ -97,7 +97,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private final SpannableStringBuilder settingsTerminalBuffer = new SpannableStringBuilder();
 
     // Hardware & Boost Switches
-    private Switch switchAngleMode;
     private Switch switchGameDriver;
     private Switch switchGpuMode;
     private Switch switchCpuMode;
@@ -473,12 +472,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnPro144 = view.findViewById(R.id.btn_apply_144_profile);
         Button btnPerformance = view.findViewById(R.id.btn_apply_2d_profile);
 
-        switchAngleMode = view.findViewById(R.id.switch_angle_mode);
         switchGameDriver = view.findViewById(R.id.switch_game_driver);
         switchGpuMode = view.findViewById(R.id.switch_gpu_mode);
         switchCpuMode = view.findViewById(R.id.switch_cpu_mode);
         switchThermalBypass = view.findViewById(R.id.switch_thermal_bypass);
         switchAdpfEngine = view.findViewById(R.id.switch_adpf_engine);
+
+        // Always ensure ANGLE driver is permanently purged from Android Settings
+        AppExecutors.getInstance().executeCommand(GpuTweaksChannel::purgeAngleDriver);
 
         if (btn185 != null) {
             btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
@@ -495,29 +496,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (getContext() != null) {
             isProgrammaticToggle = true;
-            if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
             if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
             if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
             if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
             if (switchAdpfEngine != null) switchAdpfEngine.setChecked(ManualSettingsPreferences.isAdpfEngineEnabled(getContext()));
             isProgrammaticToggle = false;
-        }
-
-        if (switchAngleMode != null) {
-            switchAngleMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Google ANGLE Vulkan Driver")) return;
-                ManualSettingsPreferences.setAngleMode(getContext(), isChecked);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    GpuTweaksChannel.setAngleMode(isChecked);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Google ANGLE Vulkan Driver Applied" : "ANGLE Driver Disabled", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
         }
 
         if (switchGameDriver != null) {
@@ -529,7 +513,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     GpuTweaksChannel.setGameDriverMode(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Graphics Driver Applied" : "Game Driver Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ System Game Driver Applied (MLBB, CODM, PUBGM)" : "Game Driver Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1467,7 +1451,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchAutoGameBoost != null) switchAutoGameBoost.setChecked(com.gamebooster.app.gamespace.AutoGameMonitorService.isRunning());
                 if (switchEsportsAudio != null) switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
                 if (switchAntiLog != null) switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
-                if (switchAngleMode != null) switchAngleMode.setChecked(ManualSettingsPreferences.isAngleModeEnabled(getContext()));
                 if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
                 if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));

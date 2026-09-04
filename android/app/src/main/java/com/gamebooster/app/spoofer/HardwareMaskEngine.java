@@ -648,15 +648,24 @@ public class HardwareMaskEngine {
                 count++;
             }
 
-            // Global Android Driver Enforcements
-            if (!appPkgs.isEmpty()) {
-                String gameDriverCsv = String.join(",", appPkgs);
-                batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverCsv + "\"");
-                batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverCsv + "\"");
-                batchCmds.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
-                batchCmds.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
-                batchCmds.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+            // Global Android Driver Enforcements (Strictly MLBB, CODM, PUBGM only; ANGLE Purged)
+            List<String> eligibleGameDriverPkgs = new ArrayList<>();
+            for (String p : appPkgs) {
+                if (com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(p)) {
+                    eligibleGameDriverPkgs.add(p);
+                }
             }
+            String gameDriverCsv = String.join(",", eligibleGameDriverPkgs);
+            batchCmds.add("settings put global game_driver_all_apps 0 2>/dev/null");
+            batchCmds.add("settings put global updatable_driver_all_apps 0 2>/dev/null");
+            batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverCsv + "\"");
+            batchCmds.add("settings put global game_driver_prerelease_opt_in_apps \"" + gameDriverCsv + "\"");
+            batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverCsv + "\"");
+            batchCmds.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+            batchCmds.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+            batchCmds.add("settings delete global angle_enabled_pkgs 2>/dev/null");
+            batchCmds.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+            batchCmds.add("setprop debug.angle.backend 0");
 
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommands(batchCmds);

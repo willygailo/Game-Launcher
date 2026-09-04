@@ -9,26 +9,41 @@ import java.util.Set;
 
 public class GpuTweaksChannel {
 
-    public static final String TARGET_GAMES_PACKAGES =
-            "com.mobile.legends,com.mobilelegends.mi,com.vng.mlbbvn,com.mobilelegends.na,com.mobilelegends.hw,com.mobile.legends.moonton,com.mobile.legends.kr,com.mobile.legends.jp," +
-            "com.tencent.ig,com.pubg.imobile,com.vng.pubgmobile,com.pubg.krmobile,com.rekoo.pubgm,com.tencent.tmgp.pubgmhd,com.tencent.iglite,com.pubg.newstate,com.tencent.tmgp.pubgm," +
+    /**
+     * Dedicated packages eligible for Game Driver opt-in.
+     * Exclusively includes:
+     * - Mobile Legends: Bang Bang (MLBB) & Regional / Store Editions
+     * - Call of Duty: Mobile (CODM) & Regional Editions & Warzone Mobile
+     * - PUBG Mobile (PUBGM) & Regional Editions (BGMI, VNG, KR/JP, Peacekeeper Elite)
+     */
+    public static final String GAME_DRIVER_PACKAGES_MLBB_CODM_PUBGM =
+            // Mobile Legends: Bang Bang (MLBB) & Regional Variants
+            "com.mobile.legends,com.mobilelegends.mi,com.vng.mlbbvn,com.mobile.legends.vng,com.mobilelegends.na,com.mobilelegends.hw,com.mobile.legends.moonton,com.mobile.legends.kr,com.mobile.legends.jp," +
+            // Call of Duty: Mobile (CODM) & Regional Variants & Warzone Mobile
             "com.activision.callofduty.shooter,com.garena.game.codm,com.tencent.tmgp.kr.codm,com.vng.codmvn,com.tencent.tmgp.cod,com.activision.callofduty.warzone," +
-            "com.dts.freefireth,com.dts.freefiremax," +
-            "com.miHoYo.GenshinImpact,com.cognosphere.GenshinImpact,com.HoYoverse.hkrpgoversea,com.HoYoverse.nap,com.miHoYo.bh3oversea,com.kurogame.wutheringwaves.global," +
-            "com.levelinfinite.sgameGlobal,com.levelinfinite.sgameGlobal.gpkg,com.tencent.tmgp.sgame,com.garena.game.kgtw,com.garena.game.kgvn,com.garena.game.kgid,com.riotgames.league.wildrift," +
-            "com.roblox.client,com.riotgames.valorant.mobile,com.riotgames.valorantmobile,com.tencent.tmgp.projectc,com.farlightgames.farlight84.android,com.miracle.farlight84," +
-            "com.netease.bloodstrike,com.netease.newspike,com.axlebolt.standoff2," +
-            "com.h20.carxstreet,com.gameloft.anmp.android.glofta9hm,com.ea.games.r3_row,com.garena.game.fdtw," +
-            "com.proximabeta.mf.uamo,com.levelinfinite.deltaforce," +
-            "com.supercell.brawlstars,com.supercell.clashroyale,com.supercell.clashofclans,com.supercell.squad";
+            // PUBG Mobile & Regional Variants & BGMI
+            "com.tencent.ig,com.pubg.imobile,com.vng.pubgmobile,com.pubg.krmobile,com.rekoo.pubgm,com.tencent.tmgp.pubgmhd,com.tencent.iglite,com.pubg.newstate,com.tencent.tmgp.pubgm";
+
+    public static final String TARGET_GAMES_PACKAGES = GAME_DRIVER_PACKAGES_MLBB_CODM_PUBGM;
 
     /**
-     * Dynamically compiles the complete CSV of target game packages from GamePackageRegistry.
+     * Returns true ONLY if the package is a known MLBB, CODM, or PUBGM release.
+     */
+    public static boolean isGameDriverEligible(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String target = packageName.trim().toLowerCase();
+        for (String p : GAME_DRIVER_PACKAGES_MLBB_CODM_PUBGM.split(",")) {
+            if (target.equals(p.trim().toLowerCase())) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Compiles the CSV of target game packages strictly for Game Driver opt-in (MLBB, CODM, PUBGM only).
      */
     public static String getTargetGamesCsv() {
         Set<String> set = new LinkedHashSet<>();
-        set.addAll(GamePackageRegistry.getAllKnownGames().keySet());
-        for (String p : TARGET_GAMES_PACKAGES.split(",")) {
+        for (String p : GAME_DRIVER_PACKAGES_MLBB_CODM_PUBGM.split(",")) {
             String clean = p.trim();
             if (!clean.isEmpty()) set.add(clean);
         }
@@ -219,8 +234,7 @@ public class GpuTweaksChannel {
 
     public enum GraphicsDriverType {
         DEFAULT("Default System Driver"),
-        GAME_DRIVER("Vulkan Game Driver (Hardware Accelerated)"),
-        ANGLE_VULKAN("ANGLE (OpenGL over Vulkan)");
+        GAME_DRIVER("Vulkan Game Driver (MLBB / CODM / PUBGM Only)");
 
         public final String label;
         GraphicsDriverType(String label) {
@@ -243,40 +257,45 @@ public class GpuTweaksChannel {
 
     /**
      * Applies graphics driver for a single target game package without affecting global applications.
+     * Game Driver is strictly applied if the package is MLBB, CODM, or PUBGM; otherwise defaults to system driver.
      */
     public static boolean setTargetGameDriver(String packageName, GraphicsDriverType driverType) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         String pkg = packageName.trim();
 
-        // Always delete/clear global ANGLE switches to prevent game crashes
-        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
-        CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values 2>/dev/null");
-        CommandExecutor.executeSystemCommand("settings delete global angle_enabled_pkgs 2>/dev/null");
-        CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+        // Always purge global ANGLE switches to prevent game crashes & latency
+        purgeAngleDriver();
         CommandExecutor.executeSystemCommand("settings put global game_driver_all_apps 0 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings put global updatable_driver_all_apps 0 2>/dev/null");
 
-        if (driverType == GraphicsDriverType.GAME_DRIVER) {
+        if (driverType == GraphicsDriverType.GAME_DRIVER && isGameDriverEligible(pkg)) {
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + pkg);
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + pkg);
             CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
             return true;
         } else {
-            // Revert back to default
+            // Revert back to default system driver for non-eligible or default-selected
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");
             CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
             return true;
         }
     }
 
-    public static boolean setAngleMode(boolean enabled) {
-        // Purge unstable ANGLE layer
+    /**
+     * Purges and neutralizes ANGLE across the Android system globally.
+     */
+    public static boolean purgeAngleDriver() {
         CommandExecutor.setSystemProperty("debug.angle.backend", "0");
         CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings delete global angle_gl_driver_selection_values 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings delete global angle_enabled_pkgs 2>/dev/null");
         CommandExecutor.executeSystemCommand("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
         return true;
+    }
+
+    public static boolean setAngleMode(boolean enabled) {
+        // Enforce total purge of ANGLE driver regardless of legacy flag
+        return purgeAngleDriver();
     }
 
     public static boolean setGameDriverMode(boolean enabled) {

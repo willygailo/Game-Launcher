@@ -317,20 +317,11 @@
                 </LinearLayout>
 
                 <Switch
-                    android:id="@+id/switch_angle_mode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Google ANGLE Vulkan Driver (OpenGL ES ➔ Vulkan for Games)"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
-
-                <Switch
                     android:id="@+id/switch_game_driver"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="System Updatable Game Driver (Production Driver for Games)"
+                    android:layout_marginTop="14dp"
+                    android:text="System Updatable Game Driver (MLBB, CODM &amp; PUBGM Only)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 

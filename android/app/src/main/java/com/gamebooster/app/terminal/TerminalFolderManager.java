@@ -163,18 +163,20 @@ public class TerminalFolderManager {
 
         createScriptIfNotExists("6_gpu_game_driver_native.sh",
                 "# ==================================================\n" +
-                "# GAME BOOSTER PRO - PER-GAME GAME DRIVER (NATIVE GPU)\n" +
+                "# GAME BOOSTER PRO - GAME DRIVER (MLBB / CODM / PUBGM ONLY)\n" +
                 "# ==================================================\n" +
                 "settings put global angle_gl_driver_all_angle 0\n" +
+                "setprop debug.angle.backend 0\n" +
                 "settings put global game_driver_all_apps 0\n" +
                 "settings put global updatable_driver_all_apps 0\n" +
-                "GAMES='com.mobile.legends,com.tencent.ig,com.activision.callofduty.shooter,com.dts.freefireth,com.miHoYo.GenshinImpact,com.riotgames.league.wildrift,com.axlebolt.standoff2,com.levelinfinite.sgameGlobal,com.roblox.client,com.farlightgames.farlight84.android'\n" +
+                "GAMES='com.mobile.legends,com.mobilelegends.mi,com.vng.mlbbvn,com.mobile.legends.vng,com.mobilelegends.na,com.mobilelegends.hw,com.mobile.legends.moonton,com.mobile.legends.kr,com.mobile.legends.jp,com.activision.callofduty.shooter,com.garena.game.codm,com.tencent.tmgp.kr.codm,com.vng.codmvn,com.tencent.tmgp.cod,com.activision.callofduty.warzone,com.tencent.ig,com.pubg.imobile,com.vng.pubgmobile,com.pubg.krmobile,com.rekoo.pubgm,com.tencent.tmgp.pubgmhd,com.tencent.iglite,com.pubg.newstate,com.tencent.tmgp.pubgm'\n" +
                 "settings put global game_driver_opt_in_apps $GAMES\n" +
+                "settings put global game_driver_prerelease_opt_in_apps $GAMES\n" +
                 "settings put global updatable_driver_production_opt_in_apps $GAMES\n" +
                 "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null\n" +
                 "settings delete global angle_gl_driver_selection_values 2>/dev/null\n" +
                 "settings delete global angle_enabled_pkgs 2>/dev/null\n" +
-                "echo '[PER-GAME NATIVE GAME DRIVER ENABLED (ANGLE PURGED)]'\n"
+                "echo '[GAME DRIVER APPLIED FOR MLBB / CODM / PUBGM (ANGLE PURGED)]'\n"
         );
 
         createScriptIfNotExists("7_thermal_throttle_bypass.sh",

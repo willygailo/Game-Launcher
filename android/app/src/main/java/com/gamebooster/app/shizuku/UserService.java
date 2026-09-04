@@ -308,6 +308,11 @@ public class UserService extends IUserService.Stub {
                      "settings put global updatable_driver_all_apps 0; " +
                      "settings put global game_driver_opt_in_apps " + targetGamesCsv + "; " +
                      "settings put global updatable_driver_production_opt_in_apps " + targetGamesCsv + "; " +
+                     "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; " +
+                     "settings delete global angle_gl_driver_selection_values 2>/dev/null; " +
+                     "settings delete global angle_enabled_pkgs 2>/dev/null; " +
+                     "settings put global angle_gl_driver_all_angle 0 2>/dev/null; " +
+                     "setprop debug.angle.backend 0; " +
                      "setprop dalvik.vm.execution-mode int:jit; " +
                      "setprop dalvik.vm.usejit true; " +
                      "setprop dalvik.vm.usejitprofiles true; " +
@@ -645,15 +650,21 @@ public class UserService extends IUserService.Stub {
     public boolean setGameGpuDriver(String packageName, String driverType) {
         if (packageName == null || !packageName.matches("^[a-zA-Z0-9_.]+$")) return false;
         String type = driverType != null ? driverType.toLowerCase() : "vulkan";
+        boolean eligible = com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(packageName);
         String cmd;
-        if ("system".equals(type) || "default".equals(type)) {
-            cmd = "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
+        if ("system".equals(type) || "default".equals(type) || !eligible) {
+            cmd = "setprop debug.angle.backend 0; "
+                + "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
                 + "settings delete global angle_gl_driver_selection_values 2>/dev/null; "
+                + "settings delete global angle_enabled_pkgs 2>/dev/null; "
                 + "settings put global angle_gl_driver_all_angle 0 2>/dev/null; "
-                + "settings put global game_driver_opt_in_apps \"\" 2>/dev/null";
+                + "settings put global game_driver_opt_in_apps \"\" 2>/dev/null; "
+                + "settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null";
         } else {
-            cmd = "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
+            cmd = "setprop debug.angle.backend 0; "
+                + "settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; "
                 + "settings delete global angle_gl_driver_selection_values 2>/dev/null; "
+                + "settings delete global angle_enabled_pkgs 2>/dev/null; "
                 + "settings put global angle_gl_driver_all_angle 0 2>/dev/null; "
                 + "settings put global game_driver_opt_in_apps " + packageName + " 2>/dev/null; "
                 + "settings put global updatable_driver_production_opt_in_apps " + packageName + " 2>/dev/null";

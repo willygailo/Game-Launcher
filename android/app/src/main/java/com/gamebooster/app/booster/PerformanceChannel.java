@@ -105,7 +105,7 @@ public class PerformanceChannel {
                     "settings put system transition_animation_scale 0.0\n" +
                     "settings put system animator_duration_scale 0.0\n" +
                     "cmd activity update-configuration --anim-scale 0.0\n" +
-                    // 2. Targeted Game Driver & ANGLE Driver (Target Games ONLY)
+                    // 2. Targeted Game Driver (MLBB, CODM & PUBGM Exclusively; ANGLE Purged)
                     "settings put global game_driver_all_apps 0\n" +
                     "settings put global updatable_driver_all_apps 0\n" +
                     "settings put global game_driver_opt_in_apps " + targetGamesCsv + "\n" +
@@ -115,6 +115,7 @@ public class PerformanceChannel {
                     "settings delete global angle_gl_driver_selection_values\n" +
                     "settings delete global angle_enabled_pkgs\n" +
                     "settings put global angle_gl_driver_all_angle 0\n" +
+                    "setprop debug.angle.backend 0\n" +
                     // 3. JVM / Dalvik / ART Runtime Performance Turbo
                     "setprop dalvik.vm.execution-mode int:jit\n" +
                     "setprop dalvik.vm.usejit true\n" +

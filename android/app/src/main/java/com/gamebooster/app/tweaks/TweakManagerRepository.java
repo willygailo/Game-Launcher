@@ -378,11 +378,11 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "angle_vulkan_driver_preference",
-                "Targeted Game Driver Selection (Native GPU & Skia Vulkan)",
-                "Opt-ins all registered competitive game packages (MLBB, PUBGM, CODM, Free Fire, HoK, Genshin, Roblox, etc.) to Updatable Game Driver with native Skia Vulkan hardware rendering pipeline",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0; setprop debug.hwui.renderer skiavk; setprop debug.renderengine.backend vulkan; setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.render_thread_priority -20; setprop debug.sf.hw 1",
-                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"",
+                "game_driver_mlbb_codm_pubgm_preference",
+                "Targeted Game Driver (MLBB, CODM & PUBGM Exclusive)",
+                "Opt-ins MLBB, CODM, and PUBGM to vendor-optimized Updatable Game Driver with native Skia Vulkan while keeping ANGLE completely purged for stutter-free performance",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global game_driver_prerelease_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings put global updatable_driver_production_opt_in_apps " + com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv() + "; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0 2>/dev/null; setprop debug.angle.backend 0; setprop debug.hwui.renderer skiavk; setprop debug.renderengine.backend vulkan; setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.render_thread_priority -20; setprop debug.sf.hw 1",
+                "settings put global game_driver_all_apps 0; settings put global updatable_driver_all_apps 0; settings put global game_driver_opt_in_apps \"\"; settings put global updatable_driver_production_opt_in_apps \"\"; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; settings put global angle_gl_driver_all_angle 0 2>/dev/null; setprop debug.angle.backend 0; setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -1031,9 +1031,7 @@ public class TweakManagerRepository {
             }
 
             // 2. Re-apply manual hardware engine settings permanently (Zero Auto-Off)
-            if (ManualSettingsPreferences.isAngleModeEnabled(context)) {
-                com.gamebooster.app.booster.GpuTweaksChannel.setAngleMode(true);
-            }
+            com.gamebooster.app.booster.GpuTweaksChannel.purgeAngleDriver();
             if (ManualSettingsPreferences.isGameDriverEnabled(context)) {
                 com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(true);
             }

@@ -54,14 +54,15 @@ public class ManualSettingsPreferences {
         return getPrefs(context).getString(KEY_GAMING_DNS, "CLOUDFLARE_1_1_1_1");
     }
 
+    @Deprecated
     public static void setAngleMode(Context context, boolean enabled) {
         if (context == null) return;
-        getPrefs(context).edit().putBoolean(KEY_ANGLE_MODE, enabled).apply();
+        getPrefs(context).edit().putBoolean(KEY_ANGLE_MODE, false).apply();
     }
 
+    @Deprecated
     public static boolean isAngleModeEnabled(Context context) {
-        if (context == null) return false;
-        return getPrefs(context).getBoolean(KEY_ANGLE_MODE, false);
+        return false;
     }
 
     public static void setGameDriverEnabled(Context context, boolean enabled) {
@@ -263,20 +264,26 @@ public class ManualSettingsPreferences {
                 com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
             }
 
-            // 4. ANGLE Graphics Backend (Purged for stability)
+            // 4. ANGLE Graphics Backend (Strictly Purged for stability)
             executeCmd("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
             executeCmd("settings delete global angle_gl_driver_selection_values 2>/dev/null");
             executeCmd("settings delete global angle_enabled_pkgs 2>/dev/null");
-            executeCmd("settings put global angle_gl_driver_all_angle 0");
+            executeCmd("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+            executeCmd("setprop debug.angle.backend 0");
 
-            // 5. Game Driver / Updatable Driver (Per-Application only — never all apps)
+            // 5. Game Driver / Updatable Driver (Strictly MLBB, CODM, and PUBGM only)
             if (isGameDriverEnabled(context)) {
-                String targetPkgs = (cleanPkg != null) ? cleanPkg : com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+                String targetPkgs;
+                if (cleanPkg != null) {
+                    targetPkgs = com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(cleanPkg) ? cleanPkg : "";
+                } else {
+                    targetPkgs = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
+                }
                 executeCmd("settings put global game_driver_all_apps 0");
                 executeCmd("settings put global updatable_driver_all_apps 0");
-                executeCmd("settings put global game_driver_opt_in_apps " + targetPkgs);
-                executeCmd("settings put global game_driver_prerelease_opt_in_apps " + targetPkgs);
-                executeCmd("settings put global updatable_driver_production_opt_in_apps " + targetPkgs);
+                executeCmd("settings put global game_driver_opt_in_apps \"" + targetPkgs + "\"");
+                executeCmd("settings put global game_driver_prerelease_opt_in_apps \"" + targetPkgs + "\"");
+                executeCmd("settings put global updatable_driver_production_opt_in_apps \"" + targetPkgs + "\"");
             }
 
             // 6. Network Low-Latency, 5G/6G & Dual WiFi/Cellular Boost

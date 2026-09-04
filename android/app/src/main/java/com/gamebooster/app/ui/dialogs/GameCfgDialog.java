@@ -95,8 +95,21 @@ public class GameCfgDialog {
         // Graphics Driver RadioGroup
         RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
         RadioButton rbDriverGame = view.findViewById(R.id.rb_driver_game_driver);
-        RadioButton rbDriverAngle = view.findViewById(R.id.rb_driver_angle);
         RadioButton rbDriverDefault = view.findViewById(R.id.rb_driver_default);
+
+        boolean isGameDriverEligible = com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(pkg);
+        if (rbDriverGame != null && rbDriverDefault != null) {
+            if (!isGameDriverEligible) {
+                rbDriverGame.setEnabled(false);
+                rbDriverGame.setAlpha(0.5f);
+                rbDriverGame.setText("🎮 System Vulkan Game Driver (MLBB / CODM / PUBGM Only - N/A)");
+                rbDriverDefault.setChecked(true);
+            } else {
+                rbDriverGame.setEnabled(true);
+                rbDriverGame.setAlpha(1.0f);
+                rbDriverGame.setChecked(true);
+            }
+        }
 
         // Resolution Scaler RadioGroup
         RadioGroup rgResolution = view.findViewById(R.id.rg_resolution_scaler);
@@ -243,12 +256,10 @@ public class GameCfgDialog {
             final boolean antiLog = switchAntiLog.isChecked();
 
             final com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType driverType;
-            if (rbDriverAngle != null && rbDriverAngle.isChecked()) {
-                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.ANGLE_VULKAN;
-            } else if (rbDriverDefault != null && rbDriverDefault.isChecked()) {
-                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT;
-            } else {
+            if (rbDriverGame != null && rbDriverGame.isChecked() && com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(pkg)) {
                 driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.GAME_DRIVER;
+            } else {
+                driverType = com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT;
             }
 
             final float targetScale;
