@@ -260,8 +260,6 @@ public final class GameSecurityBypassEngine {
                 "/data/data/" + pkg + "/files/common_log",
                 "/data/data/" + pkg + "/files/xlog",
                 "/data/data/" + pkg + "/files/crash_dump",
-                "/data/data/" + pkg + "/files/MtpSdk",
-                "/data/data/" + pkg + "/app_vshell",
 
                 // ── Call of Duty: Mobile / TiMi & Activision Telemetry ──
                 "/sdcard/Android/data/" + pkg + "/files/tss_log",
@@ -344,11 +342,21 @@ public final class GameSecurityBypassEngine {
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             // NEVER delete Document/ or uiatlas.ini - they contain Moonton's official C# game assemblies (hb_Assembly-CSharp.bytes).
             // Deleting them causes instant crash loop & auto-back!
+            // Clean up any stray .nomedia placed into app_vshell or MtpSdk from older versions
+            sb.append("rm -f '/data/data/").append(pkg).append("/app_vshell/.nomedia' '/data/data/").append(pkg).append("/files/MtpSdk/.nomedia' 2>/dev/null; ");
+            // Repair truncated / 0-byte PlayerPrefs XML files that cause Unity XML parser to throw exceptions and crash
+            sb.append("for f in '/data/data/").append(pkg).append("/shared_prefs/'*.xml '/data/data/").append(pkg).append("/files/'*.xml '/sdcard/Android/data/").append(pkg).append("/files/'*.xml; do ");
+            sb.append("  if [ -f \"$f\" ] && [ $(wc -c < \"$f\" 2>/dev/null || echo 0) -lt 50 ]; then ");
+            sb.append("    echo \"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\\n<map>\\n</map>\" > \"$f\" 2>/dev/null; ");
+            sb.append("  fi; ");
+            sb.append("done; ");
             // Strictly ensure proper read/write permissions on the XML config files.
             sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
             sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");
             sb.append("chmod 666 '/storage/emulated/0/Android/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
             sb.append("chmod 666 '/storage/emulated/0/Android/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");
+            sb.append("chmod 666 '/data/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");
+            sb.append("chmod 666 '/data/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
         }
 
         String cmd = sb.toString();

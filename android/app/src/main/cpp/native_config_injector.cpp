@@ -4905,118 +4905,153 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     struct stat stBefore;
     bool hasStat = (stat(path.c_str(), &stBefore) == 0);
 
-    std::string content;
+    // CRITICAL FIX: Read existing file content from disk to prevent wiping existing user data / configs!
+    std::string content = read_file_posix(path);
+
     if (path.find(".ini") != std::string::npos) {
-        std::ostringstream ss;
-        ss << "[DeviceProfile]\n"
-           << "DeviceName=" << soc << "\n"
-           << "BaseProfileName=Android_High\n"
-           << "GpuRenderer=" << gpu << "\n"
-           << "GpuVendor=Qualcomm\n"
-           << "TotalMemoryMB=" << ram << "\n"
-           << "MaxRefreshRate=" << hz << "\n"
-           << "TargetFPS=" << hz << "\n"
-           << "QualityBucket=Ultra\n"
-           << "+CVars=r.PUBGDeviceFPS=10\n"
-           << "+CVars=r.PUBGFrameRateLimit=" << hz << "\n"
-           << "+CVars=r.MobileFPSLimit=" << hz << "\n"
-           << "+CVars=r.FrameRateLimit=" << hz << "\n"
-           << "+CVars=r.MobileTouchBoostRate=" << hz << "\n"
-           << "+CVars=r.MobileContentScaleFactor=1.0\n"
-           << "+CVars=r.Vulkan.Enable=1\n"
-           << "+CVars=r.Vulkan.FastPipeline=1\n"
-           << "+CVars=r.Streaming.PoolSize=4096\n"
-           << "+CVars=r.Android.DisableProgramBinaryCache=0\n"
-           << "+CVars=r.MaxAnisotropy=16\n"
-           << "+CVars=r.ShadowQuality=4\n"
-           << "+CVars=r.TonemapperFilm=1\n"
-           << "TouchPollingRate=1000\n"
-           << "TouchZeroDelay=1\n"
-           << "Unlock185Hz=1\n"
-           << "Unlock165Hz=1\n"
-           << "Unlock144Hz=1\n"
-           << "Unlock120FPS=1\n";
-        content = ss.str();
-    } else if (path.find(".json") != std::string::npos) {
-        std::ostringstream ss;
-        ss << "{\n"
-           << "  \"DeviceModel\": \"" << soc << "\",\n"
-           << "  \"DeviceBrand\": \"samsung\",\n"
-           << "  \"Manufacturer\": \"samsung\",\n"
-           << "  \"GPURenderer\": \"" << gpu << "\",\n"
-           << "  \"GPUVendor\": \"Qualcomm\",\n"
-           << "  \"SoCModel\": \"" << soc << "\",\n"
-           << "  \"SoCManufacturer\": \"Qualcomm\",\n"
-           << "  \"CPUCores\": 8,\n"
-           << "  \"RAMTotalMB\": " << ram << ",\n"
-           << "  \"MaxFrameRate\": " << hz << ",\n"
-           << "  \"TargetFPS\": " << hz << ",\n"
-           << "  \"FPSLimit\": " << hz << ",\n"
-           << "  \"FrameRateLimit\": " << hz << ",\n"
-           << "  \"MobileFPSLimit\": " << hz << ",\n"
-           << "  \"FrameRateLevel\": 9,\n"
-           << "  \"GraphicQuality\": 4,\n"
-           << "  \"UnlockUltraHighFPS\": true,\n"
-           << "  \"Unlock185Hz\": true,\n"
-           << "  \"Unlock165Hz\": true,\n"
-           << "  \"Unlock144Hz\": true,\n"
-           << "  \"Unlock120Hz\": true,\n"
-           << "  \"VulkanSupport\": true,\n"
-           << "  \"gpu_renderer\": \"" << gpu << "\",\n"
-           << "  \"gpu_vendor\": \"Qualcomm\",\n"
-           << "  \"soc_model\": \"" << soc << "\",\n"
-           << "  \"ram_mb\": " << ram << ",\n"
-           << "  \"max_fps\": " << hz << ",\n"
-           << "  \"target_hz\": " << hz << ",\n"
-           << "  \"fps_limit\": " << hz << ",\n"
-           << "  \"graphics_quality\": \"ultra\",\n"
-           << "  \"vulkan_enabled\": true,\n"
-           << "  \"unlock_ultra_fps\": true,\n"
-           << "  \"touch_rate_hz\": 1000\n"
-           << "}\n";
-    } else if (path.find(".xml") != std::string::npos) {
-        if (content.find("<map>") != std::string::npos) {
-            patch_xml_node(content, "string", "SystemInfo_graphicsDeviceName", gpu);
-            patch_xml_node(content, "string", "SystemInfo_graphicsDeviceVendor", "Qualcomm");
-            patch_xml_node(content, "string", "SystemInfo_deviceModel", soc);
-            patch_xml_node(content, "int", "SystemInfo_systemMemorySize", std::to_string(ram));
-            patch_xml_node(content, "int", "SystemInfo_graphicsMemorySize", "8192");
-            patch_xml_node(content, "int", "TargetFrameRate", std::to_string(hz));
-            patch_xml_node(content, "int", "MaxRefreshRate", std::to_string(hz));
-            patch_xml_node(content, "int", "Unlock185Hz", "1");
-            patch_xml_node(content, "int", "Unlock165Hz", "1");
-            patch_xml_node(content, "int", "Unlock144Hz", "1");
-            patch_xml_node(content, "int", "Unlock120Hz", "1");
-        } else {
+        if (content.empty()) {
             std::ostringstream ss;
-            ss << "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-               << "<map>\n"
-               << "  <string name=\"SystemInfo_graphicsDeviceName\">" << gpu << "</string>\n"
-               << "  <string name=\"SystemInfo_graphicsDeviceVendor\">Qualcomm</string>\n"
-               << "  <string name=\"SystemInfo_deviceModel\">" << soc << "</string>\n"
-               << "  <int name=\"SystemInfo_systemMemorySize\" value=\"" << ram << "\" />\n"
-               << "  <int name=\"SystemInfo_graphicsMemorySize\" value=\"8192\" />\n"
-               << "  <int name=\"TargetFrameRate\" value=\"" << hz << "\" />\n"
-               << "  <int name=\"MaxRefreshRate\" value=\"" << hz << "\" />\n"
-               << "  <int name=\"Unlock185Hz\" value=\"1\" />\n"
-               << "  <int name=\"Unlock165Hz\" value=\"1\" />\n"
-               << "  <int name=\"Unlock144Hz\" value=\"1\" />\n"
-               << "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
-               << "</map>\n";
+            ss << "[DeviceProfile]\n"
+               << "DeviceName=" << soc << "\n"
+               << "BaseProfileName=Android_High\n"
+               << "GpuRenderer=" << gpu << "\n"
+               << "GpuVendor=Qualcomm\n"
+               << "TotalMemoryMB=" << ram << "\n"
+               << "MaxRefreshRate=" << hz << "\n"
+               << "TargetFPS=" << hz << "\n"
+               << "QualityBucket=Ultra\n"
+               << "+CVars=r.PUBGDeviceFPS=10\n"
+               << "+CVars=r.PUBGFrameRateLimit=" << hz << "\n"
+               << "+CVars=r.MobileFPSLimit=" << hz << "\n"
+               << "+CVars=r.FrameRateLimit=" << hz << "\n"
+               << "+CVars=r.MobileTouchBoostRate=" << hz << "\n"
+               << "+CVars=r.MobileContentScaleFactor=1.0\n"
+               << "+CVars=r.Vulkan.Enable=1\n"
+               << "+CVars=r.Vulkan.FastPipeline=1\n"
+               << "+CVars=r.Streaming.PoolSize=4096\n"
+               << "+CVars=r.Android.DisableProgramBinaryCache=0\n"
+               << "+CVars=r.MaxAnisotropy=16\n"
+               << "+CVars=r.ShadowQuality=4\n"
+               << "+CVars=r.TonemapperFilm=1\n"
+               << "TouchPollingRate=1000\n"
+               << "TouchZeroDelay=1\n"
+               << "Unlock185Hz=1\n"
+               << "Unlock165Hz=1\n"
+               << "Unlock144Hz=1\n"
+               << "Unlock120FPS=1\n";
+            content = ss.str();
+        } else {
+            // Safely patch or append keys to existing INI
+            std::vector<std::string> keysToPatch = {
+                "DeviceName=" + soc,
+                "GpuRenderer=" + gpu,
+                "TotalMemoryMB=" + std::to_string(ram),
+                "MaxRefreshRate=" + std::to_string(hz),
+                "TargetFPS=" + std::to_string(hz)
+            };
+            for (const auto& kv : keysToPatch) {
+                size_t eq = kv.find('=');
+                if (eq != std::string::npos) {
+                    std::string k = kv.substr(0, eq);
+                    size_t pos = content.find(k + "=");
+                    if (pos != std::string::npos) {
+                        size_t end = content.find('\n', pos);
+                        if (end == std::string::npos) end = content.length();
+                        content.replace(pos, end - pos, kv);
+                    } else {
+                        size_t sec = content.find("[DeviceProfile]");
+                        if (sec != std::string::npos) {
+                            size_t afterSec = content.find('\n', sec);
+                            if (afterSec != std::string::npos) {
+                                content.insert(afterSec + 1, kv + "\n");
+                            } else {
+                                content += "\n" + kv + "\n";
+                            }
+                        } else {
+                            content += "\n[DeviceProfile]\n" + kv + "\n";
+                        }
+                    }
+                }
+            }
+        }
+    } else if (path.find(".json") != std::string::npos) {
+        if (content.empty()) {
+            std::ostringstream ss;
+            ss << "{\n"
+               << "  \"DeviceModel\": \"" << soc << "\",\n"
+               << "  \"DeviceBrand\": \"samsung\",\n"
+               << "  \"Manufacturer\": \"samsung\",\n"
+               << "  \"GPURenderer\": \"" << gpu << "\",\n"
+               << "  \"GPUVendor\": \"Qualcomm\",\n"
+               << "  \"SoCModel\": \"" << soc << "\",\n"
+               << "  \"SoCManufacturer\": \"Qualcomm\",\n"
+               << "  \"CPUCores\": 8,\n"
+               << "  \"RAMTotalMB\": " << ram << ",\n"
+               << "  \"MaxFrameRate\": " << hz << ",\n"
+               << "  \"TargetFPS\": " << hz << ",\n"
+               << "  \"FPSLimit\": " << hz << ",\n"
+               << "  \"FrameRateLimit\": " << hz << ",\n"
+               << "  \"MobileFPSLimit\": " << hz << ",\n"
+               << "  \"FrameRateLevel\": 9,\n"
+               << "  \"GraphicQuality\": 4,\n"
+               << "  \"UnlockUltraHighFPS\": true,\n"
+               << "  \"Unlock185Hz\": true,\n"
+               << "  \"Unlock165Hz\": true,\n"
+               << "  \"Unlock144Hz\": true,\n"
+               << "  \"Unlock120Hz\": true,\n"
+               << "  \"VulkanSupport\": true,\n"
+               << "  \"gpu_renderer\": \"" << gpu << "\",\n"
+               << "  \"gpu_vendor\": \"Qualcomm\",\n"
+               << "  \"soc_model\": \"" << soc << "\",\n"
+               << "  \"ram_mb\": " << ram << ",\n"
+               << "  \"max_fps\": " << hz << ",\n"
+               << "  \"target_hz\": " << hz << ",\n"
+               << "  \"fps_limit\": " << hz << ",\n"
+               << "  \"graphics_quality\": \"ultra\",\n"
+               << "  \"vulkan_enabled\": true,\n"
+               << "  \"unlock_ultra_fps\": true,\n"
+               << "  \"touch_rate_hz\": 1000\n"
+               << "}\n";
+            content = ss.str();
+        } else {
+            patch_json_node(content, "GPURenderer", gpu, false);
+            patch_json_node(content, "GPUVendor", "Qualcomm", false);
+            patch_json_node(content, "SoCModel", soc, false);
+            patch_json_node(content, "RAMTotalMB", std::to_string(ram), true);
+            patch_json_node(content, "MaxFrameRate", std::to_string(hz), true);
+            patch_json_node(content, "TargetFPS", std::to_string(hz), true);
+            patch_json_node(content, "Unlock120Hz", "true", true);
+            patch_json_node(content, "Unlock165Hz", "true", true);
+        }
+    } else if (path.find(".xml") != std::string::npos) {
+        if (content.empty() || content.find("<map>") == std::string::npos) {
+            content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
+        }
+        patch_xml_node(content, "string", "SystemInfo_graphicsDeviceName", gpu);
+        patch_xml_node(content, "string", "SystemInfo_graphicsDeviceVendor", "Qualcomm");
+        patch_xml_node(content, "string", "SystemInfo_deviceModel", soc);
+        patch_xml_node(content, "int", "SystemInfo_systemMemorySize", std::to_string(ram));
+        patch_xml_node(content, "int", "SystemInfo_graphicsMemorySize", "8192");
+        patch_xml_node(content, "int", "TargetFrameRate", std::to_string(hz));
+        patch_xml_node(content, "int", "MaxRefreshRate", std::to_string(hz));
+        patch_xml_node(content, "int", "Unlock185Hz", "1");
+        patch_xml_node(content, "int", "Unlock165Hz", "1");
+        patch_xml_node(content, "int", "Unlock144Hz", "1");
+        patch_xml_node(content, "int", "Unlock120Hz", "1");
+    } else {
+        if (content.empty()) {
+            std::ostringstream ss;
+            ss << "gpu=" << gpu << "\n"
+               << "soc=" << soc << "\n"
+               << "ram=" << ram << "\n"
+               << "hz=" << hz << "\n"
+               << "TargetFPS=" << hz << "\n"
+               << "Unlock185Hz=1\n"
+               << "Unlock165Hz=1\n"
+               << "Unlock144Hz=1\n"
+               << "Unlock120Hz=1\n";
             content = ss.str();
         }
-    } else {
-        std::ostringstream ss;
-        ss << "gpu=" << gpu << "\n"
-           << "soc=" << soc << "\n"
-           << "ram=" << ram << "\n"
-           << "hz=" << hz << "\n"
-           << "TargetFPS=" << hz << "\n"
-           << "Unlock185Hz=1\n"
-           << "Unlock165Hz=1\n"
-           << "Unlock144Hz=1\n"
-           << "Unlock120Hz=1\n";
-        content = ss.str();
     }
 
     bool ok = write_file_atomic(path, content, 0666);

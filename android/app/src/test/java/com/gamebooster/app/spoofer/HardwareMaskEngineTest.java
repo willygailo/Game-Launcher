@@ -74,7 +74,18 @@ public class HardwareMaskEngineTest {
             assertTrue("Command must target MLBB only: " + cmd, cmd.contains("com.mobile.legends"));
             assertFalse("Command must not affect global ro properties: " + cmd, cmd.contains("resetprop"));
             assertFalse("Command must not set ro.product: " + cmd, cmd.contains("ro.product"));
+            assertFalse("MLBB must be exempted from READ_PHONE_STATE to avoid Moonton security crashes: " + cmd, cmd.contains("READ_PHONE_STATE"));
+            assertFalse("MLBB must be exempted from READ_DEVICE_IDENTIFIERS: " + cmd, cmd.contains("READ_DEVICE_IDENTIFIERS"));
         }
+
+        // Non-MLBB games (e.g. PUBG) should include telephony privacy shield
+        Set<String> pubgCommands = new LinkedHashSet<>();
+        HardwareMaskEngine.applyAppOpsShieldForPackage(pubgCommands, "com.tencent.ig");
+        boolean hasPhoneState = false;
+        for (String cmd : pubgCommands) {
+            if (cmd.contains("READ_PHONE_STATE")) hasPhoneState = true;
+        }
+        assertTrue("Non-MLBB games must include READ_PHONE_STATE shield", hasPhoneState);
     }
 
     @Test

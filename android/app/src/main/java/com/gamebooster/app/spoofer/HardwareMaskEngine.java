@@ -5,6 +5,7 @@ import android.util.Log;
 import com.gamebooster.app.booster.GpuTweaksChannel;
 import com.gamebooster.app.config.ConfigFileHelper;
 import com.gamebooster.app.config.GameConfigPathResolver;
+import com.gamebooster.app.config.MlbbConfigPatcher;
 import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
@@ -376,6 +377,9 @@ public class HardwareMaskEngine {
 
         // 4. Mobile Legends
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            try {
+                MlbbConfigPatcher.patchUltraExtreme165(packageName);
+            } catch (Throwable ignored) {}
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("playerprefs") || p.endsWith(".xml")) {
@@ -674,11 +678,16 @@ public class HardwareMaskEngine {
     public static void applyAppOpsShieldForPackage(Collection<String> batchCommands, String pkg) {
         if (pkg == null || pkg.trim().isEmpty() || batchCommands == null) return;
         String p = pkg.trim();
-        batchCommands.add("cmd appops set " + p + " READ_DEVICE_IDENTIFIERS ignore 2>/dev/null");
+        boolean isMlbb = p.contains("mobile.legends") || p.contains("mobilelegends");
+        // Moonton's native identity checker triggers fatal security exceptions or crash loops
+        // if READ_PHONE_STATE / READ_DEVICE_IDENTIFIERS are forcefully set to 'ignore'.
+        if (!isMlbb) {
+            batchCommands.add("cmd appops set " + p + " READ_DEVICE_IDENTIFIERS ignore 2>/dev/null");
+            batchCommands.add("cmd appops set " + p + " READ_PHONE_STATE ignore 2>/dev/null");
+            batchCommands.add("cmd appops set " + p + " READ_PRIVILEGED_PHONE_STATE ignore 2>/dev/null");
+        }
         batchCommands.add("cmd appops set " + p + " GET_USAGE_STATS ignore 2>/dev/null");
         batchCommands.add("cmd appops set " + p + " ACCESS_AD_ID ignore 2>/dev/null");
-        batchCommands.add("cmd appops set " + p + " READ_PHONE_STATE ignore 2>/dev/null");
-        batchCommands.add("cmd appops set " + p + " READ_PRIVILEGED_PHONE_STATE ignore 2>/dev/null");
         batchCommands.add("cmd appops set " + p + " ACTIVITY_RECOGNITION ignore 2>/dev/null");
     }
 

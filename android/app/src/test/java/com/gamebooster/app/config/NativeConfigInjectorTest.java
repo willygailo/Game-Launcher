@@ -146,4 +146,32 @@ public class NativeConfigInjectorTest {
         assertTrue(patched.contains("FPS=120"));
         assertTrue(patched.contains("Vsync=0"));
     }
+
+    @Test
+    public void testHardwareMaskProfileXmlPreservesExistingContent() throws IOException {
+        File xmlFile = new File(mTempDir, "com.mobile.legends.v4.playerprefs.xml");
+        String initialXml = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
+                + "<map>\n"
+                + "  <string name=\"account_session_token\">AUTH_TOKEN_REAL_987</string>\n"
+                + "  <int name=\"user_level\" value=\"45\" />\n"
+                + "</map>\n";
+        Files.write(xmlFile.toPath(), initialXml.getBytes(StandardCharsets.UTF_8));
+
+        boolean ok = NativeConfigInjector.injectHardwareMaskProfile(
+                xmlFile.getAbsolutePath(),
+                "Adreno (TM) 840",
+                "Snapdragon 8 Elite",
+                24576,
+                165
+        );
+        assertTrue("XML profile injection must succeed", ok);
+
+        String result = new String(Files.readAllBytes(xmlFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue("Must preserve account session token", result.contains("AUTH_TOKEN_REAL_987"));
+        assertTrue("Must preserve user level", result.contains("user_level"));
+        assertTrue("Must contain GPU renderer", result.contains("Adreno (TM) 840"));
+        assertTrue("Must contain SoC model", result.contains("Snapdragon 8 Elite"));
+        assertTrue("Must contain valid XML map tag", result.contains("<map>") && result.contains("</map>"));
+        assertFalse("Must not inject raw INI header into XML", result.contains("[HardwareProfile]"));
+    }
 }

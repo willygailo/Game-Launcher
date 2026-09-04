@@ -1603,6 +1603,18 @@ public class NativeConfigInjector {
                 if (nativeInjectHardwareMaskProfile(path, gpuRenderer, socModel, ramMb, targetHz)) return true;
             } catch (Throwable ignored) {}
         }
+        if (path.toLowerCase().endsWith(".xml")) {
+            String[] xmlKeys = {
+                "SystemInfo_graphicsDeviceName=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
+                "SystemInfo_graphicsDeviceVendor=Qualcomm",
+                "SystemInfo_deviceModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
+                "SystemInfo_systemMemorySize=" + (ramMb > 0 ? ramMb : 16384),
+                "TargetFrameRate=" + (targetHz > 0 ? targetHz : 120),
+                "MaxRefreshRate=" + (targetHz > 0 ? targetHz : 120),
+                "Unlock120Hz=1"
+            };
+            return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
+        }
         String[] keys = {
             "GpuRenderer=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
             "SocModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
