@@ -83,14 +83,7 @@ public final class GameSpoofSafetyRegistry {
         if (packageName == null) return false;
         String pkg = packageName.toLowerCase();
         if (pkg.equals("com.gamebooster.app")) return true;
-        if (riskTierFor(pkg) != RiskTier.LOW_RISK) return true;
-        for (String pattern : MEDIUM_RISK_PATTERNS) {
-            if (pkg.contains(pattern)) return true;
-        }
-        for (String pattern : HIGH_RISK_PATTERNS) {
-            if (pkg.contains(pattern)) return true;
-        }
-        return false;
+        return riskTierFor(pkg) != RiskTier.LOW_RISK;
     }
 
     public static String describe(RiskTier tier) {

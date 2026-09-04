@@ -314,35 +314,7 @@ public class HardwareMaskEngine {
             pkg.contains("uamo") || pkg.contains("farlight") || pkg.contains("solarland") ||
             pkg.contains("projectc") || pkg.contains("valorant")) {
 
-            String[] profileKeys = {
-                "DeviceName=" + profile.model,
-                "DeviceBrand=" + profile.brand,
-                "DeviceManufacturer=" + profile.manufacturer,
-                "DeviceID=" + profile.getAndroidId(),
-                "DeviceSerialNumber=" + profile.getSerialNumber(),
-                "GPUFamily=" + profile.glRenderer,
-                "SoCModel=" + profile.socModel,
-                "RAMTotalMB=" + profile.ramTotalMb,
-                "+CVars=r.PUBGDeviceFPS=10",
-                "+CVars=r.PUBGDeviceFPSPolicy=1",
-                "+CVars=r.PUBGTargetFPS=" + targetFps,
-                "+CVars=r.PUBGMaxFPS=" + targetFps,
-                "+CVars=r.MobileFPSLimit=" + targetFps,
-                "+CVars=r.FrameRateLimit=" + targetFps,
-                "+CVars=r.MobileTouchBoostRate=" + targetFps,
-                "+CVars=r.MobileHDR=1",
-                "+CVars=r.Vulkan.Enable=1",
-                "+CVars=r.ShadowQuality=3",
-                "+CVars=r.MaxAnisotropy=16",
-                "+CVars=r.Tonemapper.Quality=4",
-                "+CVars=r.Streaming.PoolSize=4096",
-                "+CVars=r.Android.DisableProgramBinaryCache=0",
-                "FrameRateLevel=10",
-                "Unlock185Hz=1",
-                "Unlock165Hz=1",
-                "Unlock144Hz=1",
-                "Unlock120FPS=1"
-            };
+            String[] profileKeys = profile.generateUe4DeviceProfileKeys(targetFps);
 
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
@@ -527,10 +499,10 @@ public class HardwareMaskEngine {
         String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
         SpoofProfile profile = null;
         if (activeId != null && !activeId.trim().isEmpty()) {
-            profile = DeviceSpooferEngine.getProfileById(activeId);
+            profile = SpoofProfileRegistry.getById(activeId);
         }
         if (profile == null) {
-            profile = DeviceSpooferEngine.getDefaultProfile();
+            profile = SpoofProfileRegistry.getDefaultProfile();
         }
         if (profile == null) {
             Log.d(TAG, "No spoof profile available. Skipping maskPackage.");
@@ -543,9 +515,10 @@ public class HardwareMaskEngine {
      * Masks ALL installed applications and games on the device across Android 13, 14, 15, and 16.
      */
     public static int maskAllInstalledApplications(Context context) {
-        SpoofProfile profile = DeviceSpooferEngine.getActiveProfile();
+        String activeId = context != null ? SpoofPreferences.getActiveProfileId(context) : null;
+        SpoofProfile profile = activeId != null ? SpoofProfileRegistry.getById(activeId) : null;
         if (profile == null) {
-            profile = DeviceSpooferEngine.getDefaultProfile();
+            profile = SpoofProfileRegistry.getDefaultProfile();
         }
         return maskAllInstalledApplications(context, profile);
     }
@@ -553,7 +526,7 @@ public class HardwareMaskEngine {
     public static int maskAllInstalledApplications(Context context, SpoofProfile profile) {
         if (context == null) return 0;
         if (profile == null) {
-            profile = DeviceSpooferEngine.getDefaultProfile();
+            profile = SpoofProfileRegistry.getDefaultProfile();
         }
 
         int count = 0;

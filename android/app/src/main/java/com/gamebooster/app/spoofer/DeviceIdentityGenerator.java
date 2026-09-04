@@ -30,11 +30,7 @@ public final class DeviceIdentityGenerator {
     public static String generateAndroidId(SpoofProfile profile) {
         String seed = (profile != null ? profile.id + ":" + profile.model + ":" + profile.brand : "generic_default");
         byte[] hash = sha256(seed + ":android_id_v2");
-        StringBuilder sb = new StringBuilder(16);
-        for (int i = 0; i < 8; i++) {
-            sb.append(String.format("%02x", hash[i]));
-        }
-        return sb.toString().toLowerCase(Locale.US);
+        return toHex16(hash);
     }
 
     /**
@@ -125,11 +121,7 @@ public final class DeviceIdentityGenerator {
      */
     public static String generateGsfId(SpoofProfile profile) {
         byte[] hash = sha256((profile != null ? profile.id : "default") + ":gsf_id_v2");
-        StringBuilder sb = new StringBuilder(16);
-        for (int i = 0; i < 8; i++) {
-            sb.append(String.format("%02x", hash[i]));
-        }
-        return sb.toString().toLowerCase(Locale.US);
+        return toHex16(hash);
     }
 
     /**
@@ -215,6 +207,14 @@ public final class DeviceIdentityGenerator {
             alternate = !alternate;
         }
         return (sum * 9) % 10;
+    }
+
+    private static String toHex16(byte[] hash) {
+        StringBuilder sb = new StringBuilder(16);
+        for (int i = 0; i < 8; i++) {
+            sb.append(String.format("%02x", hash[i]));
+        }
+        return sb.toString().toLowerCase(Locale.US);
     }
 
     private static byte[] sha256(String input) {

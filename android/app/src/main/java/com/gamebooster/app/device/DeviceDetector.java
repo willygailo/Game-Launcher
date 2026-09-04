@@ -85,15 +85,7 @@ public class DeviceDetector {
     }
 
     private static ChipsetVendor inferVendorFromProfile(SpoofProfile profile) {
-        if (profile == null) return ChipsetVendor.QUALCOMM;
-        String mfg = profile.socManufacturer != null ? profile.socManufacturer.toLowerCase() : "";
-        String soc = profile.socModel != null ? profile.socModel.toLowerCase() : "";
-        if (mfg.contains("mediatek") || soc.contains("dimensity")) return ChipsetVendor.MEDIATEK;
-        if (mfg.contains("samsung") || soc.contains("exynos")) return ChipsetVendor.EXYNOS;
-        if (mfg.contains("google") || soc.contains("tensor")) return ChipsetVendor.TENSOR;
-        if (mfg.contains("unisoc")) return ChipsetVendor.UNISOC;
-        if (mfg.contains("hisilicon") || soc.contains("kirin")) return ChipsetVendor.KIRIN;
-        return ChipsetVendor.QUALCOMM;
+        return profile != null ? profile.getChipsetVendor() : ChipsetVendor.QUALCOMM;
     }
 
     private static String socModelOrEmpty() {

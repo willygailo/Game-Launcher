@@ -29,7 +29,7 @@ public class NubiaProfiles {
                 4320000,
                 "ARM64-v9.2-A",
                 "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop sha3 asimddp sha512 sve asimdfhm",
-                "nubia/NX789J/NX789J:15/UKQ1.231003.002/REDMAGICOS10.0:user/release-keys",
+                "nubia/NX789J_Plus/NX789J_Plus:15/UKQ1.231003.002/REDMAGICOS10.0:user/release-keys",
                 "REDMAGICOS10.0",
                 "15",
                 35,

@@ -5,7 +5,6 @@ import android.util.Log;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 import com.gamebooster.app.spoofer.DeviceSpooferEngine;
-import com.gamebooster.app.spoofer.HardwareMaskEngine;
 import com.gamebooster.app.spoofer.SpoofPreferences;
 import com.gamebooster.app.spoofer.SpoofProfile;
 import java.util.List;
@@ -456,7 +455,6 @@ public class GameConfigPatcher {
                 SpoofProfile spoofProf = DeviceSpooferEngine.getProfileById(profileId);
                 if (spoofProf != null) {
                     DeviceSpooferEngine.applySpoofing(context, pkg);
-                    HardwareMaskEngine.injectTailoredGameHardwareConfigs(pkg, spoofProf);
                     Log.i(TAG, "Injected hardware spoof identity (" + spoofProf.displayName + ") into " + pkg);
                 }
             }

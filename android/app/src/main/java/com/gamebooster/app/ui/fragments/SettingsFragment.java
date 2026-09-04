@@ -1066,8 +1066,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
                 // 2. Perform background real-world hardware & game file injection
                 AppExecutors.getInstance().executeCommand(() -> {
-                    boolean applied = DeviceSpooferEngine.forceApplySpoof(getContext(), profile.id, null);
-                    int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), profile);
+                    int count = DeviceSpooferEngine.forceApplyGlobalSpoof(getContext(), profile.id);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (!isAdded() || getContext() == null) return;
                         updateSpoofUiState();
@@ -1155,8 +1154,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(finalProf.id);
                             updateSpoofUiState();
                             AppExecutors.getInstance().executeCommand(() -> {
-                                boolean applied = DeviceSpooferEngine.forceApplySpoof(getContext(), finalProf.id, null);
-                                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getContext(), finalProf);
+                                int maskedCount = DeviceSpooferEngine.forceApplyGlobalSpoof(getContext(), finalProf.id);
                                 AppExecutors.getInstance().postToMainThread(() -> {
                                     if (isAdded() && getContext() != null) {
                                         updateSpoofUiState();

@@ -1,7 +1,9 @@
 package com.gamebooster.app.spoofer;
 
+import com.gamebooster.app.device.DeviceDetector;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -186,10 +188,41 @@ public class SpoofProfile {
         return base.toUpperCase().replace(" ", "_") + "_MODEM_V1.0";
     }
 
+    public DeviceDetector.ChipsetVendor getChipsetVendor() {
+        String mfg = socManufacturer != null ? socManufacturer.toLowerCase(Locale.US) : "";
+        String soc = socModel != null ? socModel.toLowerCase(Locale.US) : "";
+        String b = brand != null ? brand.toLowerCase(Locale.US) : "";
+
+        if (mfg.contains("mediatek") || soc.contains("dimensity") || soc.contains("mt")) {
+            return DeviceDetector.ChipsetVendor.MEDIATEK;
+        }
+        if (mfg.contains("samsung") || soc.contains("exynos")) {
+            return DeviceDetector.ChipsetVendor.EXYNOS;
+        }
+        if (mfg.contains("google") || soc.contains("tensor")) {
+            return DeviceDetector.ChipsetVendor.TENSOR;
+        }
+        if (mfg.contains("unisoc")) {
+            return DeviceDetector.ChipsetVendor.UNISOC;
+        }
+        if (mfg.contains("hisilicon") || soc.contains("kirin")) {
+            return DeviceDetector.ChipsetVendor.KIRIN;
+        }
+        if (mfg.contains("apple") || soc.contains("apple") || b.contains("apple") || soc.matches("a1[0-9].*") || soc.matches("m[0-9].*")) {
+            return DeviceDetector.ChipsetVendor.APPLE;
+        }
+        return DeviceDetector.ChipsetVendor.QUALCOMM;
+    }
+
     private static String inferSocManufacturer(String socModel, String brand) {
-        if (socModel != null && socModel.toLowerCase().contains("dimensity")) return "MediaTek";
-        if (socModel != null && (socModel.toLowerCase().contains("a18") || socModel.toLowerCase().contains("a17") || socModel.toLowerCase().contains("apple") || socModel.toLowerCase().contains("m4"))) return "Apple";
-        if (brand != null && brand.equalsIgnoreCase("apple")) return "Apple";
+        String soc = socModel != null ? socModel.toLowerCase(Locale.US) : "";
+        String b = brand != null ? brand.toLowerCase(Locale.US) : "";
+        if (soc.contains("dimensity") || soc.contains("mt")) return "MediaTek";
+        if (soc.contains("exynos")) return "Samsung";
+        if (soc.contains("tensor")) return "Google";
+        if (soc.contains("unisoc")) return "Unisoc";
+        if (soc.contains("kirin")) return "HiSilicon";
+        if (soc.contains("a18") || soc.contains("a17") || soc.contains("apple") || soc.contains("m4") || b.contains("apple")) return "Apple";
         return "Qualcomm";
     }
 
@@ -415,34 +448,46 @@ public class SpoofProfile {
     //  In-Game Engine Profile Generators (For Top Titles)
     // ─────────────────────────────────────────────────────────────────────────
 
-    public String generateUe4DeviceProfile(int targetFps) {
+    public String[] generateUe4DeviceProfileKeys(int targetFps) {
         int clampedFps = Math.max(120, Math.min(185, targetFps));
-        return "[DeviceProfile]\n" +
-                "DeviceName=" + model + "\n" +
-                "DeviceBrand=" + brand + "\n" +
-                "DeviceManufacturer=" + manufacturer + "\n" +
-                "DeviceID=" + getAndroidId() + "\n" +
-                "DeviceSerialNumber=" + getSerialNumber() + "\n" +
-                "GPUFamily=" + glRenderer + "\n" +
-                "SoCModel=" + socModel + "\n" +
-                "RAMTotalMB=" + ramTotalMb + "\n" +
-                "+CVars=r.PUBGDeviceFPS=10\n" +
-                "+CVars=r.PUBGFrameRateLimit=" + clampedFps + "\n" +
-                "+CVars=r.MobileFPSLimit=" + clampedFps + "\n" +
-                "+CVars=r.FrameRateLimit=" + clampedFps + "\n" +
-                "+CVars=r.MobileTouchBoostRate=" + clampedFps + "\n" +
-                "+CVars=r.MobileHDR=1\n" +
-                "+CVars=r.Vulkan.Enable=1\n" +
-                "+CVars=r.ShadowQuality=4\n" +
-                "+CVars=r.MaxAnisotropy=16\n" +
-                "+CVars=r.Tonemapper.Quality=4\n" +
-                "+CVars=r.Streaming.PoolSize=4096\n" +
-                "+CVars=r.Android.DisableProgramBinaryCache=0\n" +
-                "FrameRateLevel=10\n" +
-                "Unlock185Hz=1\n" +
-                "Unlock165Hz=1\n" +
-                "Unlock144Hz=1\n" +
-                "Unlock120FPS=1\n";
+        return new String[] {
+            "DeviceName=" + model,
+            "DeviceBrand=" + brand,
+            "DeviceManufacturer=" + manufacturer,
+            "DeviceID=" + getAndroidId(),
+            "DeviceSerialNumber=" + getSerialNumber(),
+            "GPUFamily=" + glRenderer,
+            "SoCModel=" + socModel,
+            "RAMTotalMB=" + ramTotalMb,
+            "+CVars=r.PUBGDeviceFPS=10",
+            "+CVars=r.PUBGDeviceFPSPolicy=1",
+            "+CVars=r.PUBGTargetFPS=" + clampedFps,
+            "+CVars=r.PUBGMaxFPS=" + clampedFps,
+            "+CVars=r.MobileFPSLimit=" + clampedFps,
+            "+CVars=r.FrameRateLimit=" + clampedFps,
+            "+CVars=r.MobileTouchBoostRate=" + clampedFps,
+            "+CVars=r.MobileHDR=1",
+            "+CVars=r.Vulkan.Enable=1",
+            "+CVars=r.ShadowQuality=4",
+            "+CVars=r.MaxAnisotropy=16",
+            "+CVars=r.Tonemapper.Quality=4",
+            "+CVars=r.Streaming.PoolSize=4096",
+            "+CVars=r.Android.DisableProgramBinaryCache=0",
+            "FrameRateLevel=10",
+            "Unlock185Hz=1",
+            "Unlock165Hz=1",
+            "Unlock144Hz=1",
+            "Unlock120FPS=1"
+        };
+    }
+
+    public String generateUe4DeviceProfile(int targetFps) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[DeviceProfile]\n");
+        for (String key : generateUe4DeviceProfileKeys(targetFps)) {
+            sb.append(key).append("\n");
+        }
+        return sb.toString();
     }
 
     public String generateJsonHardwareProfile(int targetFps) {

@@ -119,8 +119,7 @@ public class SpoofBrandSelectorDialog {
 
             // 2. Perform background injection & force apply
             AppExecutors.getInstance().executeCommand(() -> {
-                boolean applied = DeviceSpooferEngine.forceApplySpoof(context, selectedProfile.id, null);
-                int count = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(context, selectedProfile);
+                int count = DeviceSpooferEngine.forceApplyGlobalSpoof(context, selectedProfile.id);
                 AppExecutors.getInstance().postToMainThread(() -> {
                     if (dialog.isShowing()) {
                         dialog.dismiss();

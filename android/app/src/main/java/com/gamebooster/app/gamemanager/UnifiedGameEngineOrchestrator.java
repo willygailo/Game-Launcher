@@ -24,12 +24,10 @@ import com.gamebooster.app.engine.NativeFrameworkBridge;
 import com.gamebooster.app.gamespace.GameSpaceDndManager;
 import com.gamebooster.app.gamespace.GameStateReverter;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
-import com.gamebooster.app.spoofer.DeviceIdentityGenerator;
 import com.gamebooster.app.spoofer.GameSpoofSafetyRegistry;
 import com.gamebooster.app.spoofer.HardwareMaskEngine;
 import com.gamebooster.app.spoofer.SpoofProfile;
 import com.gamebooster.app.spoofer.SpoofProfileRegistry;
-import com.gamebooster.app.spoofer.SpoofSanityChecker;
 import com.gamebooster.app.tweaks.TweakCategory;
 import com.gamebooster.app.tweaks.TweakItem;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
@@ -131,19 +129,9 @@ public final class UnifiedGameEngineOrchestrator {
                 if (targetHz <= 0) targetHz = targetPreset.defaultHz;
 
                 // ── Step 2: Spoofer Hardware Masking & Tailored Engine Injection ──
-                SpoofProfile activeProfile = null;
-                if (appContext != null) {
-                    String activeId = com.gamebooster.app.spoofer.SpoofPreferences.getActiveProfileId(appContext);
-                    if (activeId != null && !activeId.isEmpty()) {
-                        activeProfile = SpoofProfileRegistry.getById(activeId);
-                    }
-                }
-                if (activeProfile == null) {
-                    activeProfile = SpoofProfileRegistry.getById("asus_rog8_pro");
-                }
-                if (activeProfile != null) {
-                    Log.i(TAG, "▶ Step 2: Applying Hardware Masking via Spoofer: " + activeProfile.displayName);
-                    HardwareMaskEngine.applyFullHardwareMask(appContext, activeProfile, pkg, riskTier);
+                if (appContext != null && com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(appContext)) {
+                    Log.i(TAG, "▶ Step 2: Applying Hardware Masking via Spoofer for " + pkg);
+                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(appContext, pkg);
                 }
 
                 // ── Step 3: Booster Hardware Channels & Display Refresh Rate ──

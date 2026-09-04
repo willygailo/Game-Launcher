@@ -3,6 +3,7 @@ package com.gamebooster.app.spoofer;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+import com.gamebooster.app.device.DeviceDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +95,15 @@ public class SpoofValidator {
 
         Log.d(TAG, result.toString());
         return result;
+    }
+
+    /**
+     * Pre-apply sanity check: evaluates GPU and SoC family compatibility.
+     */
+    public static SpoofSanityChecker.SanityResult checkPreApplySanity(
+            DeviceDetector.ChipsetVendor deviceChipset, SpoofProfile profile,
+            GameSpoofSafetyRegistry.RiskTier riskTier) {
+        return SpoofSanityChecker.checkForGame(deviceChipset, profile, riskTier);
     }
 
     /**

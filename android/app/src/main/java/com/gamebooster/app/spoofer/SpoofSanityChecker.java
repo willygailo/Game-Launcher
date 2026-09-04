@@ -83,17 +83,8 @@ public final class SpoofSanityChecker {
     /**
      * Infers the SoC vendor a profile impersonates from its socModel string.
      */
-    static DeviceDetector.ChipsetVendor inferProfileSoCVendor(SpoofProfile profile) {
-        if (profile == null) return null;
-        String soc = profile.socModel != null ? profile.socModel.toLowerCase() : "";
-        if (soc.contains("dimensity") || soc.contains("mt")) return DeviceDetector.ChipsetVendor.MEDIATEK;
-        if (soc.contains("exynos")) return DeviceDetector.ChipsetVendor.EXYNOS;
-        if (soc.contains("tensor")) return DeviceDetector.ChipsetVendor.TENSOR;
-        if (soc.contains("kirin")) return DeviceDetector.ChipsetVendor.KIRIN;
-        if (soc.contains("unisoc")) return DeviceDetector.ChipsetVendor.UNISOC;
-        if (soc.contains("snapdragon") || soc.contains("sm8") || soc.contains("sm7") || soc.contains("sm6")) return DeviceDetector.ChipsetVendor.QUALCOMM;
-        if (soc.contains("apple") || soc.matches("a1[0-9].*")) return DeviceDetector.ChipsetVendor.APPLE;
-        return null;
+    public static DeviceDetector.ChipsetVendor inferProfileSoCVendor(SpoofProfile profile) {
+        return profile != null ? profile.getChipsetVendor() : null;
     }
 
     /**

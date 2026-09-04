@@ -29,7 +29,7 @@ public class VivoProfiles {
                 4860000,
                 "ARM64-v9.4-A",
                 "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop sha3 asimddp sha512 sve asimdfhm",
-                "vivo/V2508A/V2508A:16/AP4A.250405.001/OriginOS6.0:user/release-keys",
+                "vivo/V2508A_Ultra/V2508A_Ultra:16/AP4A.250405.001/OriginOS6.0:user/release-keys",
                 "OriginOS6.0",
                 "16",
                 36,

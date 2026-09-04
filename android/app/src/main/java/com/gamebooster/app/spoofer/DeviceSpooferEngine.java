@@ -76,14 +76,7 @@ public class DeviceSpooferEngine {
     }
 
     public static SpoofProfile getDefaultProfile() {
-        SpoofProfile p = SpoofProfileRegistry.getById("samsung_s26_ultra");
-        if (p == null) p = SpoofProfileRegistry.getById("asus_rog9_pro_edition");
-        if (p == null) p = SpoofProfileRegistry.getById("blackshark_5_pro");
-        if (p == null) {
-            Map<String, SpoofProfile> all = SpoofProfileRegistry.getAllProfiles();
-            if (!all.isEmpty()) return all.values().iterator().next();
-        }
-        return p;
+        return SpoofProfileRegistry.getDefaultProfile();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -184,7 +177,7 @@ public class DeviceSpooferEngine {
             GameSpoofSafetyRegistry.RiskTier riskTier =
                     GameSpoofSafetyRegistry.riskTierFor(packageName);
             SpoofSanityChecker.SanityResult sanity =
-                    SpoofSanityChecker.checkForGame(deviceChipset, profile, riskTier);
+                    SpoofValidator.checkPreApplySanity(deviceChipset, profile, riskTier);
             if (!sanity.allowed) {
                 lastSanityBlockReason = sanity.reason;
                 lastSanityWarning = null;
