@@ -186,7 +186,21 @@ public class PerformanceChannel {
                     "setprop debug.tensor.gpu.boost 1\n" +
                     "setprop debug.exynos.performance.mode 1\n" +
                     "setprop debug.xclipse.gpu.boost 1\n" +
-                    "echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null\n" +
+                    "setprop debug.xclipse.driver.mode 1\n" +
+                    "echo on > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null\n" +
+                    "for f in /sys/devices/platform/17000000.gpu/devfreq/*/governor; do echo performance > \"$f\" 2>/dev/null; done\n" +
+                    "setprop debug.kirin.gpu.boost 1\n" +
+                    "setprop persist.sys.huawei.perf_mode 1\n" +
+                    "setprop persist.sys.hisilicon.game_mode 1\n" +
+                    "for f in /sys/class/devfreq/gpufreq/governor; do echo performance > \"$f\" 2>/dev/null; done\n" +
+                    "echo on > /sys/devices/platform/e82c0000.mali/power/control 2>/dev/null\n" +
+                    "setprop debug.unisoc.gpu.boost 1\n" +
+                    "setprop persist.sys.sprd.perf_mode 1\n" +
+                    "setprop persist.sys.sprd.game_mode 1\n" +
+                    "setprop debug.sprd.fps.boost 1\n" +
+                    "echo 1 > /sys/class/devfreq/scene-frequency/sprd_governor/scene_boost 2>/dev/null\n" +
+                    "for f in /sys/class/devfreq/sprd-mali/governor; do echo performance > \"$f\" 2>/dev/null; done\n" +
+                    "echo on > /sys/devices/platform/sprd-mali/power/control 2>/dev/null\n" +
                     "setprop debug.egl.force_msaa 1\n" +
                     "setprop debug.egl.buffcount 3\n" +
                     "setprop persist.sys.use_16bpp_alpha 1\n" +

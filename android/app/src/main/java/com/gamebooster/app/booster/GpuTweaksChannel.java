@@ -51,13 +51,12 @@ public class GpuTweaksChannel {
     }
 
     public static boolean enableVulkanRenderer() {
-        boolean ok = true;
-        ok &= CommandExecutor.setSystemProperty("debug.hwui.renderer", "vulkan");
-        ok &= CommandExecutor.setSystemProperty("debug.renderengine.backend", "vulkan");
-        ok &= CommandExecutor.setSystemProperty("debug.renderengine.skia_pipeline", "true");
-        ok &= CommandExecutor.setSystemProperty("debug.hwui.use_gpu_pixel_buffers", "true");
-        ok &= CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "-20");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+        CommandExecutor.setSystemProperty("debug.hwui.renderer", "vulkan");
+        CommandExecutor.setSystemProperty("debug.renderengine.backend", "vulkan");
+        CommandExecutor.setSystemProperty("debug.renderengine.skia_pipeline", "true");
+        CommandExecutor.setSystemProperty("debug.hwui.use_gpu_pixel_buffers", "true");
+        CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "-20");
+        CommandExecutor.setSystemProperty("debug.sf.hw", "1");
 
         // Apply Vulkan Game Overlay to all registered games on Android 13+
         for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
@@ -65,17 +64,16 @@ public class GpuTweaksChannel {
                 CommandExecutor.executeSystemCommand("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=185:mode=3,useAngle=false,fps=185");
             } catch (Throwable ignored) {}
         }
-        return ok;
+        return true;
     }
 
     public static boolean enableAdrenoTurbo() {
-        boolean ok = true;
-        ok &= CommandExecutor.setSystemProperty("debug.adreno.turbo", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.adreno.perf_level", "0");
-        ok &= CommandExecutor.setSystemProperty("debug.qualcomm.sns.hal", "0");
-        ok &= CommandExecutor.setSystemProperty("vendor.perf.gestureFlingBoost", "1");
-        ok &= CommandExecutor.setSystemProperty("persist.vendor.qti.games.gt.enable", "1");
-        ok &= CommandExecutor.setSystemProperty("vendor.gpu.power_mode", "1");
+        CommandExecutor.setSystemProperty("debug.adreno.turbo", "1");
+        CommandExecutor.setSystemProperty("debug.adreno.perf_level", "0");
+        CommandExecutor.setSystemProperty("debug.qualcomm.sns.hal", "0");
+        CommandExecutor.setSystemProperty("vendor.perf.gestureFlingBoost", "1");
+        CommandExecutor.setSystemProperty("persist.vendor.qti.games.gt.enable", "1");
+        CommandExecutor.setSystemProperty("vendor.gpu.power_mode", "1");
 
         // Sysfs GPU devfreq clock and power rail locks for Adreno (Snapdragon)
         CommandExecutor.executeSystemCommand(
@@ -85,17 +83,16 @@ public class GpuTweaksChannel {
                 "echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; " +
                 "echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null"
         );
-        return ok;
+        return true;
     }
 
     public static boolean enableMediaTekGedBoost() {
-        boolean ok = true;
-        ok &= CommandExecutor.setSystemProperty("debug.mali.sched.priority", "-20");
-        ok &= CommandExecutor.setSystemProperty("debug.mali.force_gpu_boost", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.mali.realtime", "1");
-        ok &= CommandExecutor.setSystemProperty("persist.vendor.ged.boost", "1");
-        ok &= CommandExecutor.setSystemProperty("persist.vendor.dpt.enable", "1");
-        ok &= CommandExecutor.setSystemProperty("vendor.ppt.boost", "1");
+        CommandExecutor.setSystemProperty("debug.mali.sched.priority", "-20");
+        CommandExecutor.setSystemProperty("debug.mali.force_gpu_boost", "1");
+        CommandExecutor.setSystemProperty("debug.mali.realtime", "1");
+        CommandExecutor.setSystemProperty("persist.vendor.ged.boost", "1");
+        CommandExecutor.setSystemProperty("persist.vendor.dpt.enable", "1");
+        CommandExecutor.setSystemProperty("vendor.ppt.boost", "1");
 
         // MediaTek GPU Engine Driver (GED) kernel game mode & PID boost
         CommandExecutor.executeSystemCommand(
@@ -106,25 +103,24 @@ public class GpuTweaksChannel {
                 "echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; " +
                 "for g in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$g\" 2>/dev/null; done"
         );
-        return ok;
+        return true;
     }
 
     public static boolean enableTensorBoost() {
-        boolean ok = true;
-        ok &= CommandExecutor.setSystemProperty("debug.tensor.gpu.boost", "1");
-        return ok;
+        CommandExecutor.setSystemProperty("debug.tensor.gpu.boost", "1");
+        return true;
     }
 
     public static boolean enableExynosXclipseBoost() {
-        boolean ok = true;
-        ok &= CommandExecutor.setSystemProperty("debug.exynos.performance.mode", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.xclipse.gpu.boost", "1");
+        CommandExecutor.setSystemProperty("debug.exynos.performance.mode", "1");
+        CommandExecutor.setSystemProperty("debug.xclipse.gpu.boost", "1");
         CommandExecutor.executeSystemCommand("echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null");
-        return ok;
+        return true;
     }
 
     public static boolean enableForceMsaa() {
-        return CommandExecutor.setSystemProperty("debug.egl.force_msaa", "1");
+        CommandExecutor.setSystemProperty("debug.egl.force_msaa", "1");
+        return true;
     }
 
     /**
@@ -232,6 +228,78 @@ public class GpuTweaksChannel {
         return true;
     }
 
+    /**
+     * Extended Samsung Exynos GPU flags (AMD RDNA Xclipse 950/940/920/530 & Mali G78/G77/G68).
+     */
+    public static boolean applyExtendedExynosFlags() {
+        StringBuilder sb = new StringBuilder();
+        // Xclipse & Exynos Mali GPU devfreq performance governor
+        sb.append("for f in /sys/devices/platform/17000000.gpu/devfreq/*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+
+        // Exynos power control lock
+        sb.append("echo on > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null; ");
+
+        CommandExecutor.setSystemProperty("debug.xclipse.driver.mode", "1");
+        CommandExecutor.setSystemProperty("debug.exynos.gos.disable", "1");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
+    /**
+     * HiSilicon Kirin GPU Boost (Maleoon 910 & Mali-G78/G76 on Kirin 9010/9000S/9000/990/980).
+     */
+    public static boolean enableKirinBoost() {
+        CommandExecutor.setSystemProperty("debug.kirin.gpu.boost", "1");
+        CommandExecutor.setSystemProperty("persist.sys.huawei.perf_mode", "1");
+        CommandExecutor.setSystemProperty("persist.sys.hisilicon.game_mode", "1");
+        CommandExecutor.setSystemProperty("persist.sys.performance", "1");
+        return true;
+    }
+
+    /**
+     * Extended HiSilicon Kirin GPU flags.
+     */
+    public static boolean applyExtendedKirinFlags() {
+        StringBuilder sb = new StringBuilder();
+        // Kirin Maleoon & Mali devfreq governor
+        sb.append("for f in /sys/class/devfreq/gpufreq/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("echo on > /sys/devices/platform/e82c0000.mali/power/control 2>/dev/null; ");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
+    /**
+     * UNISOC GPU Boost (Tiger T820/T760/T619/T618/T616/T612/T610/T606 Mali-G57/G52).
+     */
+    public static boolean enableUnisocBoost() {
+        CommandExecutor.setSystemProperty("debug.unisoc.gpu.boost", "1");
+        CommandExecutor.setSystemProperty("persist.sys.sprd.perf_mode", "1");
+        CommandExecutor.setSystemProperty("persist.sys.sprd.game_mode", "1");
+        CommandExecutor.setSystemProperty("debug.sprd.fps.boost", "1");
+        CommandExecutor.setSystemProperty("persist.sys.sprd.highperf", "1");
+        return true;
+    }
+
+    /**
+     * Extended UNISOC GPU & DevFreq scene boost flags.
+     */
+    public static boolean applyExtendedUnisocFlags() {
+        StringBuilder sb = new StringBuilder();
+        // UNISOC Spreadtrum scene-frequency boost
+        sb.append("echo 1 > /sys/class/devfreq/scene-frequency/sprd_governor/scene_boost 2>/dev/null; ");
+        // UNISOC Mali devfreq governor lock
+        sb.append("for f in /sys/class/devfreq/sprd-mali/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("echo on > /sys/devices/platform/sprd-mali/power/control 2>/dev/null; ");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        return true;
+    }
+
     public enum GraphicsDriverType {
         DEFAULT("Default System Driver"),
         GAME_DRIVER("Vulkan Game Driver (MLBB / CODM / PUBGM Only)");
@@ -243,16 +311,21 @@ public class GpuTweaksChannel {
     }
 
     public static boolean setGpuMaxPerformance() {
-        boolean ok = enableVulkanRenderer();
-        ok &= enableAdrenoTurbo();
-        ok &= applyExtendedAdrenoFlags();
-        ok &= enableMediaTekGedBoost();
-        ok &= applyExtendedMediaTekFlags();
-        ok &= enableTensorBoost();
-        ok &= applyExtendedTensorFlags();
-        ok &= enableExynosXclipseBoost();
-        ok &= enableForceMsaa();
-        return ok;
+        enableVulkanRenderer();
+        enableAdrenoTurbo();
+        applyExtendedAdrenoFlags();
+        enableMediaTekGedBoost();
+        applyExtendedMediaTekFlags();
+        enableTensorBoost();
+        applyExtendedTensorFlags();
+        enableExynosXclipseBoost();
+        applyExtendedExynosFlags();
+        enableKirinBoost();
+        applyExtendedKirinFlags();
+        enableUnisocBoost();
+        applyExtendedUnisocFlags();
+        enableForceMsaa();
+        return true;
     }
 
     /**

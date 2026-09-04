@@ -87,7 +87,15 @@ public class ThermalChannel {
         batchCommands.add("setprop debug.power.thermal.limit " + enableProp);
 
         // ═══════════════════════════════════════════════════════════════════
-        // LAYER 5: LINUX KERNEL SYSFS THERMAL ZONES & TRIP POINTS
+        // LAYER 5: HISILICON KIRIN & UNISOC THERMAL MITIGATION
+        // ═══════════════════════════════════════════════════════════════════
+        batchCommands.add("setprop persist.sys.huawei.thermal.mode " + (bypass ? "performance" : "normal"));
+        batchCommands.add("setprop debug.kirin.thermal.disabled " + disableProp);
+        batchCommands.add("setprop persist.sys.sprd.thermal.mode " + (bypass ? "performance" : "normal"));
+        batchCommands.add("setprop debug.sprd.thermal.disabled " + disableProp);
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LAYER 6: LINUX KERNEL SYSFS THERMAL ZONES & TRIP POINTS
         // ═══════════════════════════════════════════════════════════════════
         if (bypass) {
             batchCommands.add("for z in /sys/class/thermal/thermal_zone*/mode; do echo disabled > $z 2>/dev/null; done");

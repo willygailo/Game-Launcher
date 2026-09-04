@@ -633,42 +633,30 @@ public class HardwareMaskEngine {
 
     public static void maskAllAndroidVersions(Context context, String packageName, int targetHz) {
         if (packageName == null || packageName.trim().isEmpty()) return;
-        String pkg = packageName.trim();
-        int hz = targetHz > 0 ? targetHz : 185;
-        maskForAndroid13(pkg, hz);
-        maskForAndroid14(pkg, hz);
-        maskForAndroid15(pkg, hz);
-        maskForAndroid16(pkg, hz);
+        com.gamebooster.app.engine.AndroidVersionSupportManager.applyVersionOptimizations(context, packageName.trim(), targetHz);
     }
 
     public static void maskForAndroid13(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
-        cmds.add("cmd appops set " + pkg + " MANAGE_GAME_MODE allow 2>/dev/null");
+        com.gamebooster.app.engine.AndroidVersionSupportManager.applyAndroid13Optimizations(pkg, targetHz, cmds);
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
     public static void maskForAndroid14(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
-        cmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
-        cmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
+        com.gamebooster.app.engine.AndroidVersionSupportManager.applyAndroid14Optimizations(pkg, targetHz, cmds);
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
     public static void maskForAndroid15(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
-        cmds.add("cmd power set-mode 0 1 2>/dev/null");
-        cmds.add("cmd power set-mode 2 1 2>/dev/null");
+        com.gamebooster.app.engine.AndroidVersionSupportManager.applyAndroid15Optimizations(pkg, targetHz, cmds);
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 
     public static void maskForAndroid16(String pkg, int targetHz) {
         List<String> cmds = new ArrayList<>();
-        cmds.add("cmd game set --performance-class 3 " + pkg + " 2>/dev/null");
-        cmds.add("device_config put runtime_native_boot use_app_image_startup_cache true 2>/dev/null");
-        cmds.add("device_config put runtime_native_boot boost_sched_priority true 2>/dev/null");
+        com.gamebooster.app.engine.AndroidVersionSupportManager.applyAndroid16Optimizations(pkg, targetHz, cmds);
         if (ShizukuExecutor.hasShizukuPermission()) ShizukuExecutor.executeShizukuCommands(cmds);
     }
 

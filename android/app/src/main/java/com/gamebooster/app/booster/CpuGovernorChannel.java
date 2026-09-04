@@ -131,10 +131,15 @@ public class CpuGovernorChannel {
         sb.append("echo 0 > /dev/stune/top-app/schedtune.prefer_idle 2>/dev/null; ");
         sb.append("echo 100 > /dev/stune/foreground/schedtune.boost 2>/dev/null; ");
         sb.append("echo 0 > /dev/stune/foreground/schedtune.prefer_idle 2>/dev/null; ");
-        sb.append("echo 0 > /dev/stune/background/schedtune.boost 2>/dev/null; ");
         // WALT/HMP per-cluster boost props (Qualcomm WALT scheduler)
         sb.append("setprop vendor.perf.cpu.boost.duration 2000; ");
         sb.append("setprop vendor.perf.cpu.boost.type 4; ");
+        // MediaTek / Exynos / Tensor / Kirin / UNISOC CPU sched boosts
+        sb.append("setprop persist.vendor.cpu.boost 1; ");
+        sb.append("setprop sys.exynos.perf.mode 1; ");
+        sb.append("setprop vendor.perf.gestureFlingBoost 1; ");
+        sb.append("setprop persist.sys.cpufreq.boost 1; ");
+        sb.append("setprop persist.sys.sprd.coreboost 1; ");
 
         // ── 5. energyaware_latency / cpuidle latency governor ────────────────
         // Disable deep C-states between game frames via cpu_dma_latency fd-pin (best-effort)
