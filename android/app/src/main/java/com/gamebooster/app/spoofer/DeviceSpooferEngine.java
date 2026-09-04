@@ -282,7 +282,8 @@ public class DeviceSpooferEngine {
     }
 
     /**
-     * Forcefully applies a specific spoof profile ID across ALL installed apps and games.
+     * Applies a specific spoof profile ID across installed games and target titles
+     * without altering global Android OS identity or SafetyNet/Play Integrity.
      */
     public static int forceApplyGlobalSpoof(Context context, String profileId) {
         if (profileId == null || profileId.trim().isEmpty()) return 0;
