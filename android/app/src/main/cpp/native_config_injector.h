@@ -917,10 +917,51 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeTieredHeadshot
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectNoScopeTieredHeadshotAllGun
+ * All Guns — Tiered No-Scope auto headshot (20m, 40m, 50m, 100m) hipfire lock & zero spread
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoScopeTieredHeadshotAllGun
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectRifleScopeTieredHeadshot
+ * All Rifle Guns — Tiered Scope-On auto headshot (100m, 200m, 300m, 400m), lead comp & bullet drop
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRifleScopeTieredHeadshot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbSmartSkillMagnetAim
+ * MLBB — Dual-priority smart skill aim: lowest HP enemy hero (maliit na buhay) & closest enemy hero (malapit na hero)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSmartSkillMagnetAim
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbHeroUnlimitedEnergy
+ * MLBB — Ling, Fanny, Hayabusa, Gusion 4-hero unlimited energy, zero skill cost & infinite mobility
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbHeroUnlimitedEnergy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbAllHeroBoostAndArmor
+ * MLBB — All-hero damage boost (2.0x, true dmg, 3.0x crit), faster cooldown reduction (40% CDR) & armor boost (1.5x, 10000 def)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroBoostAndArmor
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif // GAMEBOOSTER_NATIVE_CONFIG_INJECTOR_H
+
 
 

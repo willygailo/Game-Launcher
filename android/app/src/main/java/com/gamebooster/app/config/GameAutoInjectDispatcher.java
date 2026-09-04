@@ -252,6 +252,9 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyMlbbPenetrationCritBurst(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFastLoadSplashBypass(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllHeroOverdrive(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applySmartSkillMagnetAim(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFourHeroUnlimitedEnergy(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyAllHeroBoostAndArmor(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFannyNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
@@ -261,7 +264,10 @@ public final class GameAutoInjectDispatcher {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
         try { PubgConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyTieredScopeRifleHeadshot(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyMagicBulletAimbot(pkg); } catch (Throwable ignored) {}
+
         try { PubgConfigPatcher.applyNoScopeAimbot(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAllScopeAimbot(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyLongRangeScopeHeadshot(pkg); } catch (Throwable ignored) {}
@@ -298,7 +304,10 @@ public final class GameAutoInjectDispatcher {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
         try { CodmConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyTieredScopeRifleHeadshot(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyNoRecoilNoSpread(pkg); } catch (Throwable ignored) {}
+
         try { CodmConfigPatcher.applyNoScopeAimbot(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAllScopeAimbot(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyLongRangeHeadshot(pkg); } catch (Throwable ignored) {}

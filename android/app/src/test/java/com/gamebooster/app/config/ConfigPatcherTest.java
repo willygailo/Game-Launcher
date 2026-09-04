@@ -504,4 +504,138 @@ public class ConfigPatcherTest {
         assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.activision.callofduty.shooter"));
         assertTrue(GameSecurityBypassEngine.suppressSecurityTelemetryReporting("com.dts.freefireth"));
     }
+
+    @Test
+    public void testNoScopeTieredHeadshotKeys() throws java.io.IOException {
+        java.io.File tempFile = java.io.File.createTempFile("noscope_test_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectNoScopeTieredHeadshotAllGun(tempFile.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempFile.toPath()));
+            // 20m, 40m, 50m, 100m verification
+            assertTrue(content.contains("NoScopeHeadshot20m=1"));
+            assertTrue(content.contains("AimMagnetism20m=3"));
+            assertTrue(content.contains("NoScopeHeadshot40m=1"));
+            assertTrue(content.contains("AimMagnetism40m=3"));
+            assertTrue(content.contains("NoScopeHeadshot50m=1"));
+            assertTrue(content.contains("AimMagnetism50m=3"));
+            assertTrue(content.contains("NoScopeHeadshot100m=1"));
+            assertTrue(content.contains("AimMagnetism100m=3"));
+            assertTrue(content.contains("AllGunNoScopeHeadshot=1"));
+        } finally {
+            tempFile.delete();
+        }
+    }
+
+    @Test
+    public void testRifleScopeTieredHeadshotKeys() throws java.io.IOException {
+        java.io.File tempFile = java.io.File.createTempFile("riflescope_test_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectRifleScopeTieredHeadshot(tempFile.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempFile.toPath()));
+            // 100m, 200m, 300m, 400m verification
+            assertTrue(content.contains("RifleScopeHeadshot100m=1"));
+            assertTrue(content.contains("RifleScopeMagnetism100m=3"));
+            assertTrue(content.contains("RifleScopeHeadshot200m=1"));
+            assertTrue(content.contains("RifleScopeMagnetism200m=3"));
+            assertTrue(content.contains("RifleScopeHeadshot300m=1"));
+            assertTrue(content.contains("BulletDropComp300m=1"));
+            assertTrue(content.contains("RifleScopeHeadshot400m=1"));
+            assertTrue(content.contains("Scope8xLongRangeHeadLock=1"));
+            assertTrue(content.contains("AllRifleAutoHeadshot=1"));
+        } finally {
+            tempFile.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbSmartSkillMagnetAimKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_aim_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbSmartSkillMagnetAim(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            // Dual-priority: Lowest HP (maliit na buhay) & Closest hero (malapit na hero)
+            assertTrue(content.contains("SkillTargetPriority"));
+            assertTrue(content.contains("LowestHpFirst"));
+            assertTrue(content.contains("TargetLockLowestHp"));
+            assertTrue(content.contains("SkillTargetPrioritySecondary"));
+            assertTrue(content.contains("ClosestHero"));
+            assertTrue(content.contains("TargetLockNearest"));
+            assertTrue(content.contains("AimMagnetSkillLock"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbHeroUnlimitedEnergyKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_energy_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbHeroUnlimitedEnergy(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            // Ling, Fanny, Hayabusa, Gusion unlimited energy
+            assertTrue(content.contains("UnlimitedEnergyMode"));
+            assertTrue(content.contains("LingEnergyLimit"));
+            assertTrue(content.contains("LingZeroEnergyCost"));
+            assertTrue(content.contains("FannyEnergyLimit"));
+            assertTrue(content.contains("FannyZeroEnergyCost"));
+            assertTrue(content.contains("HayaEnergyLimit"));
+            assertTrue(content.contains("HayaZeroEnergyCost"));
+            assertTrue(content.contains("GusionEnergyLimit"));
+            assertTrue(content.contains("GusionZeroEnergyCost"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbAllHeroBoostAndArmorKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_boost_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbAllHeroBoostAndArmor(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            // Boost damage, faster cooldown, boost armor
+            assertTrue(content.contains("AllHeroDamageMultiplier"));
+            assertTrue(content.contains("2.0"));
+            assertTrue(content.contains("SkillCooldownReduction"));
+            assertTrue(content.contains("0.40"));
+            assertTrue(content.contains("HeroPhysicalArmorBoost"));
+            assertTrue(content.contains("1.5"));
+            assertTrue(content.contains("PhysicalDefense"));
+            assertTrue(content.contains("MagicDefense"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmAndCodmTieredHeadshotPatcherMethods() throws java.io.IOException {
+        java.io.File pubgmFile = java.io.File.createTempFile("pubgm_tiered_", ".ini");
+        java.io.File codmFile = java.io.File.createTempFile("codm_tiered_", ".json");
+        try {
+            assertTrue(NativeConfigInjector.injectPubgmAllScopeTieredHeadshot(pubgmFile.getAbsolutePath()));
+            String pubgContent = new String(java.nio.file.Files.readAllBytes(pubgmFile.toPath()));
+            assertTrue(pubgContent.contains("NoScopeHeadshot20m=1"));
+            assertTrue(pubgContent.contains("NoScopeHeadshot50m=1"));
+            assertTrue(pubgContent.contains("RifleScopeHeadshot100m=1"));
+            assertTrue(pubgContent.contains("RifleScopeHeadshot400m=1"));
+
+            java.nio.file.Files.write(codmFile.toPath(), "{}".getBytes());
+            assertTrue(NativeConfigInjector.injectCodmAllScopeTieredHeadshot(codmFile.getAbsolutePath()));
+            String codmContent = new String(java.nio.file.Files.readAllBytes(codmFile.toPath()));
+            assertTrue(codmContent.contains("NoScopeHeadshot20m"));
+            assertTrue(codmContent.contains("RifleScopeHeadshot400m"));
+        } finally {
+            pubgmFile.delete();
+            codmFile.delete();
+        }
+    }
 }
+

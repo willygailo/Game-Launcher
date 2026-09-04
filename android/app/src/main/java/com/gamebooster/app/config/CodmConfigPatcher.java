@@ -1025,6 +1025,28 @@ public class CodmConfigPatcher {
     // ─── 2026 Master All-Scope Precision Suite ───────────────────────────────
 
     /**
+     * CODM — Tiered No-Scope Auto Headshot for all guns (20m, 40m, 50m, 100m).
+     */
+    public static void applyTieredNoScopeHeadshotAllGun(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectNoScopeTieredHeadshotAllGun(path);
+        }
+        Log.i(TAG, "CODM Tiered No-Scope Headshot (20m-100m) applied for " + packageName);
+    }
+
+    /**
+     * CODM — Tiered Scope-On Auto Headshot for all rifle guns (100m, 200m, 300m, 400m).
+     */
+    public static void applyTieredScopeRifleHeadshot(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectRifleScopeTieredHeadshot(path);
+        }
+        Log.i(TAG, "CODM Tiered Rifle Scope Headshot (100m-400m) applied for " + packageName);
+    }
+
+    /**
      * CODM — All-Scope Tiered Auto 3-Bullet Headshot (No-scope, 100m, 200m, 300m, 400m).
      * Injects BSA removal, tiered scope magnetism, headbone lock, zero flinch,
      * zero recoil, tracking bullets enemy, and 1000Hz stable gyro across all resolved config paths.
@@ -1034,6 +1056,8 @@ public class CodmConfigPatcher {
         for (String path : paths) {
             NativeConfigInjector.injectCodmAllScopeTieredHeadshot(path);
         }
+        try { applyTieredNoScopeHeadshotAllGun(packageName); } catch (Throwable ignored) {}
+        try { applyTieredScopeRifleHeadshot(packageName); } catch (Throwable ignored) {}
         try { applyNoRecoilNoSpread(packageName); } catch (Throwable ignored) {}
         try { applyNoScopeAimbot(packageName); } catch (Throwable ignored) {}
         try { applyAllScopeAimbot(packageName); } catch (Throwable ignored) {}
@@ -1054,3 +1078,4 @@ public class CodmConfigPatcher {
         Log.i(TAG, "CODM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
     }
 }
+

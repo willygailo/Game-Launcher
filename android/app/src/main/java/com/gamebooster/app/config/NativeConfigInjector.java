@@ -249,6 +249,11 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbAllJungleFastFarmOverdrive(String path);
     public static native boolean nativeInjectPubgmAllScopeTieredHeadshot(String path);
     public static native boolean nativeInjectCodmAllScopeTieredHeadshot(String path);
+    public static native boolean nativeInjectNoScopeTieredHeadshotAllGun(String path);
+    public static native boolean nativeInjectRifleScopeTieredHeadshot(String path);
+    public static native boolean nativeInjectMlbbSmartSkillMagnetAim(String path);
+    public static native boolean nativeInjectMlbbHeroUnlimitedEnergy(String path);
+    public static native boolean nativeInjectMlbbAllHeroBoostAndArmor(String path);
 
     /**
      * Fast zero-dependency C++ in-memory patcher for game configuration buffers.
@@ -2011,7 +2016,43 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbbAllHeroOverdrive(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "DamageLockMax=1", "PhysicalDamageBase=10000", "MagicDamageBase=10000",
+            "AllHeroDamageMultiplier=2.0", "CritMultiplier=3.0", "CritRateBoost=1",
+            "TrueDmgConversion=1", "PenetrationBoost=1", "AttackSpeedBoost=MAX",
+            "BasicAttackRate=MAX", "AutoAttackInterval=0", "CooldownReduction=1.0",
+            "SkillCDRatio=0", "SkillCooldownReduction=0.40", "GlobalCDR=40",
+            "ZeroSkillCost=1", "FastSkillCycle=1", "ZeroSkillLag=1", "SkillCastDelayMs=0",
+            "FastSkillReleaseSpeed=10", "ZeroDelaySkillTap=1", "EffectiveDPSMode=3",
+            "FrameSyncDamage=1", "HitRegSyncRate=1000", "TouchPollingRate=1000",
+            "ZeroInputDelay=1", "ZeroInputLag=1", "TouchZeroDelay=1", "InputBufferRate=1000",
+            "SkillTargetPriority=LowestHpFirst", "TargetLockLowestHp=1", "SmartAimLowestHp=1",
+            "LockLowestHpHero=1", "LowestHpAutoLock=1", "LowestHpMagnetLock=1",
+            "ExecuteThresholdLowestHp=1.0", "SkillTargetPrioritySecondary=ClosestHero",
+            "TargetLockNearest=1", "SmartAimClosestHero=1", "LockClosestHero=1",
+            "ClosestHeroMagnetLock=1", "ClosestHeroAutoLock=1", "ProximitySkillAimSnap=1",
+            "HeroLock=1", "SkillSmartAim=1", "AimMagnetism=3", "AimMagnetSkillLock=1",
+            "AutoAimAssist=1", "SkillAutoMagnet=1", "SkillSnapNearest=1", "SkillSnapLowestHp=1",
+            "HeroPhysicalArmorBoost=1.5", "HeroMagicResistBoost=1.5", "PhysicalDefense=10000",
+            "MagicDefense=10000", "ArmorRating=10000", "ShieldAbsorbRatio=2.0",
+            "DamageReductionPercent=50", "FlatArmorBoost=500", "MaxHealthBoost=10000", "HealthRegenRate=1000",
+            "UnlimitedEnergyMode=1", "EnergyRegenBoost=10.0", "EnergyConsumption=0",
+            "EnergyNoDecay=1", "FullEnergyStart=1",
+            "LingEnergyLimit=999", "LingEnergyNoDecay=1", "LingWallEnergyFree=1",
+            "LingZeroEnergyCost=1", "LingLightnessMax=1", "LingSwordAutoChain=1", "WallJumpInstant=1", "TempestInstantCast=1",
+            "FannyEnergyLimit=999", "FannyEnergyNoDecay=1", "FannyEnergyRegen=MAX",
+            "FannyEnergyFull=1", "FannyZeroEnergyCost=1", "FannyCableInfinite=1",
+            "CableEnergyFree=1", "FannyMultiCableCombo=1", "CableCooldown=0", "FannyInstantCableAim=1",
+            "HayaEnergyLimit=999", "HayaEnergyNoDecay=1", "HayaZeroEnergyCost=1",
+            "HayaShadowZeroEnergy=1", "HayaShadowChain=1", "HayaShadowKillMax=1",
+            "HayaZeroDelaySwap=1", "HayaShadowRange=2", "HayaPhantomTracking=1", "OugiShadowKillSpeed=10", "ShadowInstantSwap=1",
+            "GusionEnergyLimit=999", "GusionEnergyNoDecay=1", "GusionZeroEnergyCost=1",
+            "GusionManaCostZero=1", "GusionDashReset=1", "GusionDaggerReturn=1",
+            "GusionInstant10Daggers=1", "GusionSkillChainSpeed=10", "GusionDaggerReturnSpeed=10",
+            "SwordSpikeInstantReset=1", "IncandescenceDoubleDash=1",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbAllHeroOverdrive]");
     }
 
     public static boolean injectMlbbFannyNoEnergyLimit(String path) {
@@ -2022,7 +2063,17 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbbFannyNoEnergyLimit(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "FannyEnergyRegen=MAX", "FannyEnergyLimit=999", "FannyEnergyNoDecay=1",
+            "FannyEnergyFull=1", "FannyEnergyMax=1", "AutoEnergyRefill=1",
+            "CableEnergyFree=1", "FannyMultiCableCombo=1", "CableCooldown=0",
+            "FannyCableCooldown=0", "ZeroSkillCost=1", "FannyInstantCableAim=1",
+            "FannyEnergyStartFull=1", "FannyCableChain=1", "FannyCableInstantRecast=1",
+            "FannyInstantRecall=1", "SkillAutoChain=1", "AimMagnetism=3",
+            "SkillSmartAim=1", "ZeroInputDelay=1", "ZeroInputLag=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFannyNoEnergy]");
     }
 
     public static boolean injectMlbbLingNoEnergyLimit(String path) {
@@ -2033,7 +2084,17 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbbLingNoEnergyLimit(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "LingEnergyLimit=999", "LingEnergyNoDecay=1", "LingWallEnergyFree=1",
+            "LingEnergyStartFull=1", "LingEnergyRegen=MAX", "ZeroSkillCost=1",
+            "LingSwordAutoChain=1", "LingBlinkChainMax=1", "BlinkChainMax=1",
+            "LingWallBlink=1", "WallJumpInstant=1", "LingInstantDash=1",
+            "TempestInstantCast=1", "LingUltInstant=1", "LingTempestBladeSpeed=10",
+            "LingSwordSpawnInstant=1", "ZeroInputDelay=1", "ZeroInputLag=1",
+            "DamageLockMax=1", "EffectiveDPSMode=3", "FrameSyncDamage=1",
+            "CooldownReduction=1", "SkillCDRatio=0", "SkillAutoChain=1", "AimMagnetism=3"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbLingNoEnergy]");
     }
 
     public static boolean injectMlbbAllJungleFastFarmOverdrive(String path) {
@@ -2044,7 +2105,16 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbbAllJungleFastFarmOverdrive(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "SmiteBoost=3", "JungleClearSpeed=3", "BuffDuration=3",
+            "BuffSteal=1", "MonsterDamageBoost=3", "ObjectivePriority=1",
+            "CounterJungle=1", "GoldRateBoost=3", "ExpRateBoost=3",
+            "CreepGoldMultiplier=3", "JungleExpBoost=3", "FastLevelUp=1",
+            "SmiteRange=1", "ClearSpeedBoost=1", "RetributionInstantCast=1",
+            "RetributionDamageMax=1", "AutoSmiteLock=1", "JungleMonsterTrueDmg=1",
+            "ZeroInputDelay=1", "HitRegSyncRate=1000", "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbJungleFastFarm]");
     }
 
     public static boolean injectPubgmAllScopeTieredHeadshot(String path) {
@@ -2055,7 +2125,24 @@ public class NativeConfigInjector {
                 if (nativeInjectPubgmAllScopeTieredHeadshot(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "NoScopeHeadshot20m=1", "AimMagnetism20m=3", "HipfireLock20m=1", "NoScopeAimLock20m=1", "NoScopeSpread20m=0", "CQBAutoHeadshot20m=1",
+            "NoScopeHeadshot40m=1", "AimMagnetism40m=3", "HipfireLock40m=1", "NoScopeAimLock40m=1", "NoScopeSpread40m=0", "CloseRangeHeadshot40m=1",
+            "NoScopeHeadshot50m=1", "AimMagnetism50m=3", "HipfireLock50m=1", "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "MidRangeNoScope50m=1",
+            "NoScopeHeadshot100m=1", "AimMagnetism100m=3", "HipfireLock100m=1", "NoScopeAimLock100m=1", "NoScopeSpread100m=0", "ExtremeNoScope100m=1",
+            "AllGunNoScopeHeadshot=1", "NoScopeHeadLock=1", "NoScopeAimMagnetism=3", "NoScopeCrosshairAccuracy=1.0",
+            "HipfireMagnetism=3", "HipfireHeadLock=1", "CrosshairTightness=1.0", "NoScopeRecoilZero=1",
+            "RifleScopeHeadshot100m=1", "RifleScopeMagnetism100m=3", "AimSnapHead100m=1", "Scope1xHeadLock=1", "Scope1xAimMagnetism=3", "ScopeRedDotHeadLock=1", "ScopeHoloHeadLock=1",
+            "RifleScopeHeadshot200m=1", "RifleScopeMagnetism200m=3", "AimSnapHead200m=1", "Scope2xHeadLock=1", "Scope3xHeadLock=1", "Scope2xZeroRecoil=1", "Scope3xZeroRecoil=1", "PredictiveAim200m=1",
+            "RifleScopeHeadshot300m=1", "RifleScopeMagnetism300m=3", "AimSnapHead300m=1", "Scope4xHeadLock=1", "Scope6xHeadLock=1", "BulletDropComp300m=1", "ZeroBreathSway300m=1",
+            "RifleScopeHeadshot400m=1", "RifleScopeMagnetism400m=3", "AimSnapHead400m=1", "Scope8xLongRangeHeadLock=1", "BulletDropComp400m=1", "TargetLeadComp400m=1", "ExtremeRangeHeadLock400m=1", "ZeroMicroJitter400m=1",
+            "AllRifleAutoHeadshot=1", "RifleZeroRecoil=1", "RifleZeroSpread=1", "RifleScopeAimMagnetism=3",
+            "AutoHeadshotBurst=3", "Auto3BulletHeadshot=1", "HeadshotBurstCount=3",
+            "WeaponRecoilScale=0", "WeaponSpreadScale=0", "RecoilZero=1", "LessRecoil=1",
+            "BulletTrackingEnemy=1", "TrackingBullet=1", "GyroSampleRate=1000", "GyroZeroDelay=1",
+            "HitRegSyncRate=1000", "ZeroInputDelay=1", "AimSnapSpeed=10", "ZeroADSDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmTieredHeadshot]");
     }
 
     public static boolean injectCodmAllScopeTieredHeadshot(String path) {
@@ -2066,8 +2153,143 @@ public class NativeConfigInjector {
                 if (nativeInjectCodmAllScopeTieredHeadshot(path)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        String[] keys = {
+            "NoScopeHeadshot20m=1", "AimMagnetism20m=3", "HipfireLock20m=1", "NoScopeAimLock20m=1", "NoScopeSpread20m=0", "CQBAutoHeadshot20m=1",
+            "NoScopeHeadshot40m=1", "AimMagnetism40m=3", "HipfireLock40m=1", "NoScopeAimLock40m=1", "NoScopeSpread40m=0", "CloseRangeHeadshot40m=1",
+            "NoScopeHeadshot50m=1", "AimMagnetism50m=3", "HipfireLock50m=1", "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "MidRangeNoScope50m=1",
+            "NoScopeHeadshot100m=1", "AimMagnetism100m=3", "HipfireLock100m=1", "NoScopeAimLock100m=1", "NoScopeSpread100m=0", "ExtremeNoScope100m=1",
+            "AllGunNoScopeHeadshot=1", "NoScopeHeadLock=1", "NoScopeAimMagnetism=3", "NoScopeCrosshairAccuracy=1.0",
+            "HipfireMagnetism=3", "HeadBoneLock=1", "InstantAimSnap=1", "TrackingBullet=1",
+            "RifleScopeHeadshot100m=1", "RifleScopeMagnetism100m=3", "AimSnapHead100m=1", "Scope1xHeadLock=1", "Scope1xAimMagnetism=3",
+            "RifleScopeHeadshot200m=1", "RifleScopeMagnetism200m=3", "AimSnapHead200m=1", "MidScopeRecoilZero=1", "ARSMGHeadLock=1", "ScopeAimMag=3", "GyroMidStabilize=1", "PredictiveAim200m=1",
+            "RifleScopeHeadshot300m=1", "RifleScopeMagnetism300m=3", "AimSnapHead300m=1", "SniperMarkHeadLock=1", "BulletDropCompensation=1", "ZeroHoldBreath=1", "LRScopeAimLock=1", "BulletDropComp300m=1",
+            "RifleScopeHeadshot400m=1", "RifleScopeMagnetism400m=3", "AimSnapHead400m=1", "SniperBlankScope=1", "HitscanLRLock=1", "ZeroMicroJitter=1", "UltraRangeHeadLock=1", "LongRangePrecision400m=1",
+            "AllRifleAutoHeadshot=1", "RifleZeroRecoil=1", "RifleZeroSpread=1", "RifleScopeAimMagnetism=3",
+            "AutoHeadshotBurst=3", "Auto3BulletHeadshot=1", "HeadshotBurstCount=3",
+            "BSARemoval=1", "WeaponSpread=0", "RecoilScale=0", "ZeroRecoil=1", "LessRecoil=1",
+            "BulletTrackingEnemy=1", "ZeroFlinch=1", "GyroSampleRate=1000", "GyroZeroDelay=1",
+            "HitRegSyncRate=1000", "ZeroInputDelay=1", "ADSInstantTransition=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmTieredHeadshot]");
     }
+
+    public static boolean injectNoScopeTieredHeadshotAllGun(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectNoScopeTieredHeadshotAllGun(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "NoScopeHeadshot20m=1", "AimMagnetism20m=3", "HipfireLock20m=1", "NoScopeAimLock20m=1", "NoScopeSpread20m=0", "CQBAutoHeadshot20m=1",
+            "NoScopeHeadshot40m=1", "AimMagnetism40m=3", "HipfireLock40m=1", "NoScopeAimLock40m=1", "NoScopeSpread40m=0", "CloseRangeHeadshot40m=1",
+            "NoScopeHeadshot50m=1", "AimMagnetism50m=3", "HipfireLock50m=1", "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "MidRangeNoScope50m=1",
+            "NoScopeHeadshot100m=1", "AimMagnetism100m=3", "HipfireLock100m=1", "NoScopeAimLock100m=1", "NoScopeSpread100m=0", "ExtremeNoScope100m=1",
+            "AllGunNoScopeHeadshot=1", "NoScopeHeadLock=1", "NoScopeAimMagnetism=3", "NoScopeCrosshairAccuracy=1.0",
+            "HipfireMagnetism=3", "HipfireHeadLock=1", "CrosshairTightness=1.0", "NoScopeRecoilZero=1",
+            "WeaponSpreadScale=0", "AutoHeadshotBurst=3", "Auto3BulletHeadshot=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[NoScopeTieredHeadshot]");
+    }
+
+    public static boolean injectRifleScopeTieredHeadshot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectRifleScopeTieredHeadshot(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "RifleScopeHeadshot100m=1", "RifleScopeMagnetism100m=3", "AimSnapHead100m=1", "Scope1xHeadLock=1", "Scope1xAimMagnetism=3", "ScopeRedDotHeadLock=1", "ScopeHoloHeadLock=1",
+            "RifleScopeHeadshot200m=1", "RifleScopeMagnetism200m=3", "AimSnapHead200m=1", "Scope2xHeadLock=1", "Scope3xHeadLock=1", "Scope2xZeroRecoil=1", "Scope3xZeroRecoil=1", "PredictiveAim200m=1",
+            "RifleScopeHeadshot300m=1", "RifleScopeMagnetism300m=3", "AimSnapHead300m=1", "Scope4xHeadLock=1", "Scope6xHeadLock=1", "BulletDropComp300m=1", "ZeroBreathSway300m=1",
+            "RifleScopeHeadshot400m=1", "RifleScopeMagnetism400m=3", "AimSnapHead400m=1", "Scope8xLongRangeHeadLock=1", "BulletDropComp400m=1", "TargetLeadComp400m=1", "ExtremeRangeHeadLock400m=1", "ZeroMicroJitter400m=1",
+            "AllRifleAutoHeadshot=1", "RifleZeroRecoil=1", "RifleZeroSpread=1", "RifleScopeAimMagnetism=3",
+            "BulletTrackingEnemy=1", "ZeroADSDelay=1", "GyroStabilization=1", "GyroSampleRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RifleScopeTieredHeadshot]");
+    }
+
+    public static boolean injectMlbbSmartSkillMagnetAim(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbSmartSkillMagnetAim(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "SkillTargetPriority=LowestHpFirst", "TargetLockLowestHp=1", "SmartAimLowestHp=1",
+            "LockLowestHpHero=1", "LowestHpAutoLock=1", "LowestHpMagnetLock=1",
+            "ExecuteThresholdLowestHp=1.0",
+            "SkillTargetPrioritySecondary=ClosestHero", "TargetLockNearest=1",
+            "SmartAimClosestHero=1", "LockClosestHero=1", "ClosestHeroMagnetLock=1",
+            "ClosestHeroAutoLock=1", "ProximitySkillAimSnap=1",
+            "HeroLock=1", "SkillSmartAim=1", "AimMagnetism=3", "AimMagnetSkillLock=1",
+            "AutoAimAssist=1", "SkillAutoMagnet=1", "SkillSnapNearest=1", "SkillSnapLowestHp=1",
+            "AimSnapSpeed=10", "AimSmoothFactor=0", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroDelaySkillTap=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbSmartSkillAim]");
+    }
+
+    public static boolean injectMlbbHeroUnlimitedEnergy(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbHeroUnlimitedEnergy(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "UnlimitedEnergyMode=1", "EnergyRegenBoost=10.0", "EnergyConsumption=0",
+            "ZeroSkillCost=1", "EnergyNoDecay=1", "FullEnergyStart=1",
+            "LingEnergyLimit=999", "LingEnergyNoDecay=1", "LingWallEnergyFree=1",
+            "LingZeroEnergyCost=1", "LingLightnessMax=1", "LingSwordAutoChain=1",
+            "WallJumpInstant=1", "TempestInstantCast=1",
+            "FannyEnergyLimit=999", "FannyEnergyNoDecay=1", "FannyEnergyRegen=MAX",
+            "FannyEnergyFull=1", "FannyZeroEnergyCost=1", "FannyCableInfinite=1",
+            "CableEnergyFree=1", "FannyMultiCableCombo=1", "CableCooldown=0",
+            "FannyInstantCableAim=1",
+            "HayaEnergyLimit=999", "HayaEnergyNoDecay=1", "HayaZeroEnergyCost=1",
+            "HayaShadowZeroEnergy=1", "HayaShadowChain=1", "HayaShadowKillMax=1",
+            "HayaZeroDelaySwap=1", "HayaShadowRange=2", "HayaPhantomTracking=1",
+            "OugiShadowKillSpeed=10", "ShadowInstantSwap=1",
+            "GusionEnergyLimit=999", "GusionEnergyNoDecay=1", "GusionZeroEnergyCost=1",
+            "GusionManaCostZero=1", "GusionDashReset=1", "GusionDaggerReturn=1",
+            "GusionInstant10Daggers=1", "GusionSkillChainSpeed=10", "GusionDaggerReturnSpeed=10",
+            "SwordSpikeInstantReset=1", "IncandescenceDoubleDash=1",
+            "ZeroInputDelay=1", "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbHeroEnergy]");
+    }
+
+    public static boolean injectMlbbAllHeroBoostAndArmor(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbAllHeroBoostAndArmor(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AllHeroDamageMultiplier=2.0", "DamageLockMax=1", "PhysicalDamageBase=10000",
+            "MagicDamageBase=10000", "CritMultiplier=3.0", "CritRateBoost=1",
+            "TrueDmgConversion=1", "PenetrationBoost=1", "AttackSpeedBoost=MAX",
+            "BasicAttackRate=MAX", "EffectiveDPSMode=3",
+            "SkillCooldownReduction=0.40", "GlobalCDR=40", "CooldownReduction=1.0",
+            "SkillCDRatio=0", "FastSkillCycle=1", "ZeroSkillLag=1",
+            "SkillCastDelayMs=0", "FastSkillReleaseSpeed=10", "ZeroDelaySkillTap=1",
+            "HeroPhysicalArmorBoost=1.5", "HeroMagicResistBoost=1.5", "PhysicalDefense=10000",
+            "MagicDefense=10000", "ArmorRating=10000", "ShieldAbsorbRatio=2.0",
+            "DamageReductionPercent=50", "FlatArmorBoost=500", "MaxHealthBoost=10000",
+            "HealthRegenRate=1000", "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbHeroBoostArmor]");
+    }
+
 
     // ─── Helper Methods ───────────────────────────────────────────────────────
 

@@ -6068,15 +6068,47 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"DamageLockMax", "1"}, {"PhysicalDamageBase", "10000"}, {"MagicDamageBase", "10000"},
-        {"CritMultiplier", "3.0"}, {"CritRateBoost", "1"}, {"TrueDmgConversion", "1"}, {"PenetrationBoost", "1"},
+        {"AllHeroDamageMultiplier", "2.0"}, {"CritMultiplier", "3.0"}, {"CritRateBoost", "1"},
+        {"TrueDmgConversion", "1"}, {"PenetrationBoost", "1"},
         {"AttackSpeedBoost", "MAX"}, {"BasicAttackRate", "MAX"}, {"AutoAttackInterval", "0"},
-        {"CooldownReduction", "1.0"}, {"SkillCDRatio", "0"}, {"ZeroSkillCost", "1"},
+        {"CooldownReduction", "1.0"}, {"SkillCDRatio", "0"}, {"SkillCooldownReduction", "0.40"},
+        {"GlobalCDR", "40"}, {"ZeroSkillCost", "1"}, {"FastSkillCycle", "1"}, {"ZeroSkillLag", "1"},
+        {"SkillCastDelayMs", "0"}, {"FastSkillReleaseSpeed", "10"}, {"ZeroDelaySkillTap", "1"},
         {"EffectiveDPSMode", "3"}, {"FrameSyncDamage", "1"},
         {"HitRegSyncRate", "1000"}, {"TouchPollingRate", "1000"}, {"ZeroInputDelay", "1"}, {"ZeroInputLag", "1"},
         {"TouchZeroDelay", "1"}, {"InputBufferRate", "1000"},
-        {"HeroLock", "1"}, {"SkillSmartAim", "1"}, {"AimMagnetism", "3"},
-        {"AutoAimAssist", "1"}, {"TargetLockNearest", "1"}, {"PhysicalDefense", "10000"}, {"MagicDefense", "10000"},
-        {"ArmorRating", "10000"}, {"MaxHealthBoost", "10000"}, {"HealthRegenRate", "1000"},
+        // Smart Skill Magnet Aim (Dual-Priority: Lowest HP hero & Closest hero)
+        {"SkillTargetPriority", "LowestHpFirst"}, {"TargetLockLowestHp", "1"}, {"SmartAimLowestHp", "1"},
+        {"LockLowestHpHero", "1"}, {"LowestHpAutoLock", "1"}, {"LowestHpMagnetLock", "1"},
+        {"ExecuteThresholdLowestHp", "1.0"},
+        {"SkillTargetPrioritySecondary", "ClosestHero"}, {"TargetLockNearest", "1"},
+        {"SmartAimClosestHero", "1"}, {"LockClosestHero", "1"}, {"ClosestHeroMagnetLock", "1"},
+        {"ClosestHeroAutoLock", "1"}, {"ProximitySkillAimSnap", "1"},
+        {"HeroLock", "1"}, {"SkillSmartAim", "1"}, {"AimMagnetism", "3"}, {"AimMagnetSkillLock", "1"},
+        {"AutoAimAssist", "1"}, {"SkillAutoMagnet", "1"}, {"SkillSnapNearest", "1"}, {"SkillSnapLowestHp", "1"},
+        // Armor & Defense Overdrive
+        {"HeroPhysicalArmorBoost", "1.5"}, {"HeroMagicResistBoost", "1.5"},
+        {"PhysicalDefense", "10000"}, {"MagicDefense", "10000"},
+        {"ArmorRating", "10000"}, {"ShieldAbsorbRatio", "2.0"}, {"DamageReductionPercent", "50"},
+        {"FlatArmorBoost", "500"}, {"MaxHealthBoost", "10000"}, {"HealthRegenRate", "1000"},
+        // 4-Hero Unlimited Energy (Ling, Fanny, Hayabusa, Gusion)
+        {"UnlimitedEnergyMode", "1"}, {"EnergyRegenBoost", "10.0"}, {"EnergyConsumption", "0"},
+        {"EnergyNoDecay", "1"}, {"FullEnergyStart", "1"},
+        {"LingEnergyLimit", "999"}, {"LingEnergyNoDecay", "1"}, {"LingWallEnergyFree", "1"},
+        {"LingZeroEnergyCost", "1"}, {"LingLightnessMax", "1"}, {"LingSwordAutoChain", "1"},
+        {"WallJumpInstant", "1"}, {"TempestInstantCast", "1"},
+        {"FannyEnergyLimit", "999"}, {"FannyEnergyNoDecay", "1"}, {"FannyEnergyRegen", "MAX"},
+        {"FannyEnergyFull", "1"}, {"FannyZeroEnergyCost", "1"}, {"FannyCableInfinite", "1"},
+        {"CableEnergyFree", "1"}, {"FannyMultiCableCombo", "1"}, {"CableCooldown", "0"},
+        {"FannyInstantCableAim", "1"},
+        {"HayaEnergyLimit", "999"}, {"HayaEnergyNoDecay", "1"}, {"HayaZeroEnergyCost", "1"},
+        {"HayaShadowZeroEnergy", "1"}, {"HayaShadowChain", "1"}, {"HayaShadowKillMax", "1"},
+        {"HayaZeroDelaySwap", "1"}, {"HayaShadowRange", "2"}, {"HayaPhantomTracking", "1"},
+        {"OugiShadowKillSpeed", "10"}, {"ShadowInstantSwap", "1"},
+        {"GusionEnergyLimit", "999"}, {"GusionEnergyNoDecay", "1"}, {"GusionZeroEnergyCost", "1"},
+        {"GusionManaCostZero", "1"}, {"GusionDashReset", "1"}, {"GusionDaggerReturn", "1"},
+        {"GusionInstant10Daggers", "1"}, {"GusionSkillChainSpeed", "10"}, {"GusionDaggerReturnSpeed", "10"},
+        {"SwordSpikeInstantReset", "1"}, {"IncandescenceDoubleDash", "1"},
         {"bFramePacingEnabled", "True"}, {"r.OneFrameThreadLag", "0"}, {"r.FinishCurrentFrame", "0"}
     };
     for (const auto &kv : keys) {
@@ -6215,22 +6247,19 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
     bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
     std::vector<std::pair<std::string, std::string>> keys = {
-        // Tiered scopes & distances: No-scope / 100m
-        {"NoScopeAimMagnetism", "3"}, {"NoScopeHeadLock", "1"}, {"NoScopeTrackingBullet", "1"},
-        {"Scope1xAimMagnetism", "3"}, {"Scope1xHeadLock", "1"}, {"Scope1xTrackingBullet", "1"},
-        {"AimMagnetism100m", "3"}, {"HeadMagnetism100m", "1"}, {"TrackingBullet100m", "1"},
-        {"HipfireAimLock", "1"}, {"HipfireTracking", "1"},
-        // 200m (2x, 3x)
-        {"Scope2xZeroRecoil", "1"}, {"Scope2xPredictiveAim", "1"}, {"Scope2xHeadLock", "1"}, {"Scope2xGyroStabilize", "1"},
-        {"Scope3xZeroRecoil", "1"}, {"Scope3xPredictiveAim", "1"}, {"Scope3xHeadLock", "1"}, {"Scope3xGyroStabilize", "1"},
-        {"AimMagnetism200m", "3"}, {"HeadLock200m", "1"}, {"PredictiveAim200m", "1"}, {"GyroStabilize200m", "1"},
-        // 300m (4x, 6x)
-        {"Scope4xBulletDropComp", "1"}, {"Scope4xSniperHeadLock", "1"}, {"Scope4xZeroBreathSway", "1"}, {"Scope4xAimLock", "1"},
-        {"Scope6xBulletDropComp", "1"}, {"Scope6xSniperHeadLock", "1"}, {"Scope6xZeroBreathSway", "1"}, {"Scope6xAimLock", "1"},
-        {"AimMagnetism300m", "3"}, {"HeadLock300m", "1"}, {"BulletDropComp300m", "1"}, {"ZeroBreathSway300m", "1"},
-        // 400m (8x)
-        {"Scope8xLongRangeHeadLock", "1"}, {"Scope8xThermalPrecision", "1"}, {"Scope8xZeroMicroJitter", "1"}, {"Scope8xBulletVelComp", "1"},
-        {"AimMagnetism400m", "3"}, {"HeadLock400m", "1"}, {"LongRangePrecision400m", "1"}, {"BulletDropComp400m", "1"},
+        // ─── Tiered No-Scope Auto Headshot (20m, 40m, 50m, 100m - All Guns) ─────
+        {"NoScopeHeadshot20m", "1"}, {"AimMagnetism20m", "3"}, {"HipfireLock20m", "1"}, {"NoScopeAimLock20m", "1"}, {"NoScopeSpread20m", "0"}, {"CQBAutoHeadshot20m", "1"},
+        {"NoScopeHeadshot40m", "1"}, {"AimMagnetism40m", "3"}, {"HipfireLock40m", "1"}, {"NoScopeAimLock40m", "1"}, {"NoScopeSpread40m", "0"}, {"CloseRangeHeadshot40m", "1"},
+        {"NoScopeHeadshot50m", "1"}, {"AimMagnetism50m", "3"}, {"HipfireLock50m", "1"}, {"NoScopeAimLock50m", "1"}, {"NoScopeSpread50m", "0"}, {"MidRangeNoScope50m", "1"},
+        {"NoScopeHeadshot100m", "1"}, {"AimMagnetism100m", "3"}, {"HipfireLock100m", "1"}, {"NoScopeAimLock100m", "1"}, {"NoScopeSpread100m", "0"}, {"ExtremeNoScope100m", "1"},
+        {"AllGunNoScopeHeadshot", "1"}, {"NoScopeHeadLock", "1"}, {"NoScopeAimMagnetism", "3"}, {"NoScopeCrosshairAccuracy", "1.0"},
+        {"HipfireMagnetism", "3"}, {"HipfireHeadLock", "1"}, {"CrosshairTightness", "1.0"}, {"NoScopeRecoilZero", "1"},
+        // ─── Tiered Scope-On Auto Headshot (100m, 200m, 300m, 400m - All Rifles) ─
+        {"RifleScopeHeadshot100m", "1"}, {"RifleScopeMagnetism100m", "3"}, {"AimSnapHead100m", "1"}, {"Scope1xHeadLock", "1"}, {"Scope1xAimMagnetism", "3"}, {"ScopeRedDotHeadLock", "1"}, {"ScopeHoloHeadLock", "1"},
+        {"RifleScopeHeadshot200m", "1"}, {"RifleScopeMagnetism200m", "3"}, {"AimSnapHead200m", "1"}, {"Scope2xHeadLock", "1"}, {"Scope3xHeadLock", "1"}, {"Scope2xZeroRecoil", "1"}, {"Scope3xZeroRecoil", "1"}, {"PredictiveAim200m", "1"},
+        {"RifleScopeHeadshot300m", "1"}, {"RifleScopeMagnetism300m", "3"}, {"AimSnapHead300m", "1"}, {"Scope4xHeadLock", "1"}, {"Scope6xHeadLock", "1"}, {"BulletDropComp300m", "1"}, {"ZeroBreathSway300m", "1"},
+        {"RifleScopeHeadshot400m", "1"}, {"RifleScopeMagnetism400m", "3"}, {"AimSnapHead400m", "1"}, {"Scope8xLongRangeHeadLock", "1"}, {"BulletDropComp400m", "1"}, {"TargetLeadComp400m", "1"}, {"ExtremeRangeHeadLock400m", "1"}, {"ZeroMicroJitter400m", "1"},
+        {"AllRifleAutoHeadshot", "1"}, {"RifleZeroRecoil", "1"}, {"RifleZeroSpread", "1"}, {"RifleScopeAimMagnetism", "3"},
         // Global PUBG gunplay, burst & gyro stabilization
         {"AutoHeadshotBurst", "3"}, {"Auto3BulletHeadshot", "1"}, {"HeadshotBurstCount", "3"},
         {"WeaponRecoilScale", "0"}, {"WeaponSpreadScale", "0"}, {"RecoilZero", "1"},
@@ -6270,18 +6299,19 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
     bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
     std::vector<std::pair<std::string, std::string>> keys = {
-        // 100m / No-scope / Hipfire
+        // ─── Tiered No-Scope Auto Headshot (20m, 40m, 50m, 100m - All Guns) ─────
+        {"NoScopeHeadshot20m", "1"}, {"AimMagnetism20m", "3"}, {"HipfireLock20m", "1"}, {"NoScopeAimLock20m", "1"}, {"NoScopeSpread20m", "0"}, {"CQBAutoHeadshot20m", "1"},
+        {"NoScopeHeadshot40m", "1"}, {"AimMagnetism40m", "3"}, {"HipfireLock40m", "1"}, {"NoScopeAimLock40m", "1"}, {"NoScopeSpread40m", "0"}, {"CloseRangeHeadshot40m", "1"},
+        {"NoScopeHeadshot50m", "1"}, {"AimMagnetism50m", "3"}, {"HipfireLock50m", "1"}, {"NoScopeAimLock50m", "1"}, {"NoScopeSpread50m", "0"}, {"MidRangeNoScope50m", "1"},
+        {"NoScopeHeadshot100m", "1"}, {"AimMagnetism100m", "3"}, {"HipfireLock100m", "1"}, {"NoScopeAimLock100m", "1"}, {"NoScopeSpread100m", "0"}, {"ExtremeNoScope100m", "1"},
+        {"AllGunNoScopeHeadshot", "1"}, {"NoScopeHeadLock", "1"}, {"NoScopeAimMagnetism", "3"}, {"NoScopeCrosshairAccuracy", "1.0"},
         {"HipfireMagnetism", "3"}, {"HeadBoneLock", "1"}, {"InstantAimSnap", "1"}, {"TrackingBullet", "1"},
-        {"NoScopeAimMagnetism", "3"}, {"NoScopeHeadLock", "1"}, {"AimMagnetism100m", "3"}, {"HeadMagnetism100m", "1"},
-        // 200m (Tactical Scope, 3x, 4x)
-        {"MidScopeRecoilZero", "1"}, {"ARSMGHeadLock", "1"}, {"ScopeAimMag", "3"}, {"GyroMidStabilize", "1"},
-        {"AimMagnetism200m", "3"}, {"HeadLock200m", "1"}, {"PredictiveAim200m", "1"},
-        // 300m (4x, 4.4x, Tactical Scope)
-        {"SniperMarkHeadLock", "1"}, {"BulletDropCompensation", "1"}, {"ZeroHoldBreath", "1"}, {"LRScopeAimLock", "1"},
-        {"AimMagnetism300m", "3"}, {"HeadLock300m", "1"}, {"BulletDropComp300m", "1"},
-        // 400m (Sniper Scope, 6x, 8x, RTG)
-        {"SniperBlankScope", "1"}, {"HitscanLRLock", "1"}, {"ZeroMicroJitter", "1"}, {"UltraRangeHeadLock", "1"},
-        {"AimMagnetism400m", "3"}, {"HeadLock400m", "1"}, {"LongRangePrecision400m", "1"},
+        // ─── Tiered Scope-On Auto Headshot (100m, 200m, 300m, 400m - All Rifles) ─
+        {"RifleScopeHeadshot100m", "1"}, {"RifleScopeMagnetism100m", "3"}, {"AimSnapHead100m", "1"}, {"Scope1xHeadLock", "1"}, {"Scope1xAimMagnetism", "3"},
+        {"RifleScopeHeadshot200m", "1"}, {"RifleScopeMagnetism200m", "3"}, {"AimSnapHead200m", "1"}, {"MidScopeRecoilZero", "1"}, {"ARSMGHeadLock", "1"}, {"ScopeAimMag", "3"}, {"GyroMidStabilize", "1"}, {"PredictiveAim200m", "1"},
+        {"RifleScopeHeadshot300m", "1"}, {"RifleScopeMagnetism300m", "3"}, {"AimSnapHead300m", "1"}, {"SniperMarkHeadLock", "1"}, {"BulletDropCompensation", "1"}, {"ZeroHoldBreath", "1"}, {"LRScopeAimLock", "1"}, {"BulletDropComp300m", "1"},
+        {"RifleScopeHeadshot400m", "1"}, {"RifleScopeMagnetism400m", "3"}, {"AimSnapHead400m", "1"}, {"SniperBlankScope", "1"}, {"HitscanLRLock", "1"}, {"ZeroMicroJitter", "1"}, {"UltraRangeHeadLock", "1"}, {"LongRangePrecision400m", "1"},
+        {"AllRifleAutoHeadshot", "1"}, {"RifleZeroRecoil", "1"}, {"RifleZeroSpread", "1"}, {"RifleScopeAimMagnetism", "3"},
         // Global CODM gunplay, burst, BSA removal & gyro stabilization
         {"AutoHeadshotBurst", "3"}, {"Auto3BulletHeadshot", "1"}, {"HeadshotBurstCount", "3"},
         {"BSARemoval", "1"}, {"WeaponSpread", "0"}, {"RecoilScale", "0"}, {"ZeroRecoil", "1"},
@@ -6306,6 +6336,205 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     LOGI("CodmAllScopeTieredHeadshot injected: %s [ok=%d]", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+// =============================================================================
+// ─── Universal: Tiered No-Scope Auto Headshot (20m, 40m, 50m, 100m - All Guns)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoScopeTieredHeadshotAllGun
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"NoScopeHeadshot20m", "1"}, {"AimMagnetism20m", "3"}, {"HipfireLock20m", "1"}, {"NoScopeAimLock20m", "1"}, {"NoScopeSpread20m", "0"}, {"CQBAutoHeadshot20m", "1"},
+        {"NoScopeHeadshot40m", "1"}, {"AimMagnetism40m", "3"}, {"HipfireLock40m", "1"}, {"NoScopeAimLock40m", "1"}, {"NoScopeSpread40m", "0"}, {"CloseRangeHeadshot40m", "1"},
+        {"NoScopeHeadshot50m", "1"}, {"AimMagnetism50m", "3"}, {"HipfireLock50m", "1"}, {"NoScopeAimLock50m", "1"}, {"NoScopeSpread50m", "0"}, {"MidRangeNoScope50m", "1"},
+        {"NoScopeHeadshot100m", "1"}, {"AimMagnetism100m", "3"}, {"HipfireLock100m", "1"}, {"NoScopeAimLock100m", "1"}, {"NoScopeSpread100m", "0"}, {"ExtremeNoScope100m", "1"},
+        {"AllGunNoScopeHeadshot", "1"}, {"NoScopeHeadLock", "1"}, {"NoScopeAimMagnetism", "3"}, {"NoScopeCrosshairAccuracy", "1.0"},
+        {"HipfireMagnetism", "3"}, {"HipfireHeadLock", "1"}, {"CrosshairTightness", "1.0"}, {"NoScopeRecoilZero", "1"},
+        {"WeaponSpreadScale", "0"}, {"AutoHeadshotBurst", "3"}, {"Auto3BulletHeadshot", "1"}, {"HitRegSyncRate", "1000"}
+    };
+    for (const auto &kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("NoScopeTieredHeadshotAllGun injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Tiered Scope-On Auto Headshot (100m, 200m, 300m, 400m - Rifles)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRifleScopeTieredHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"RifleScopeHeadshot100m", "1"}, {"RifleScopeMagnetism100m", "3"}, {"AimSnapHead100m", "1"}, {"Scope1xHeadLock", "1"}, {"Scope1xAimMagnetism", "3"}, {"ScopeRedDotHeadLock", "1"}, {"ScopeHoloHeadLock", "1"},
+        {"RifleScopeHeadshot200m", "1"}, {"RifleScopeMagnetism200m", "3"}, {"AimSnapHead200m", "1"}, {"Scope2xHeadLock", "1"}, {"Scope3xHeadLock", "1"}, {"Scope2xZeroRecoil", "1"}, {"Scope3xZeroRecoil", "1"}, {"PredictiveAim200m", "1"},
+        {"RifleScopeHeadshot300m", "1"}, {"RifleScopeMagnetism300m", "3"}, {"AimSnapHead300m", "1"}, {"Scope4xHeadLock", "1"}, {"Scope6xHeadLock", "1"}, {"BulletDropComp300m", "1"}, {"ZeroBreathSway300m", "1"},
+        {"RifleScopeHeadshot400m", "1"}, {"RifleScopeMagnetism400m", "3"}, {"AimSnapHead400m", "1"}, {"Scope8xLongRangeHeadLock", "1"}, {"BulletDropComp400m", "1"}, {"TargetLeadComp400m", "1"}, {"ExtremeRangeHeadLock400m", "1"}, {"ZeroMicroJitter400m", "1"},
+        {"AllRifleAutoHeadshot", "1"}, {"RifleZeroRecoil", "1"}, {"RifleZeroSpread", "1"}, {"RifleScopeAimMagnetism", "3"},
+        {"BulletTrackingEnemy", "1"}, {"ZeroADSDelay", "1"}, {"GyroStabilization", "1"}, {"GyroSampleRate", "1000"}, {"HitRegSyncRate", "1000"}
+    };
+    for (const auto &kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("RifleScopeTieredHeadshot injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Dual-Priority Smart Skill Aim (Lowest HP Hero & Closest Hero) ──────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSmartSkillMagnetAim
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // Lowest HP Hero Target Lock (maliit na buhay)
+        {"SkillTargetPriority", "LowestHpFirst"}, {"TargetLockLowestHp", "1"}, {"SmartAimLowestHp", "1"},
+        {"LockLowestHpHero", "1"}, {"LowestHpAutoLock", "1"}, {"LowestHpMagnetLock", "1"},
+        {"ExecuteThresholdLowestHp", "1.0"},
+        // Closest Hero Target Lock (malapit na hero)
+        {"SkillTargetPrioritySecondary", "ClosestHero"}, {"TargetLockNearest", "1"},
+        {"SmartAimClosestHero", "1"}, {"LockClosestHero", "1"}, {"ClosestHeroMagnetLock", "1"},
+        {"ClosestHeroAutoLock", "1"}, {"ProximitySkillAimSnap", "1"},
+        // Magnet Aim & Skill Calibration
+        {"HeroLock", "1"}, {"SkillSmartAim", "1"}, {"AimMagnetism", "3"}, {"AimMagnetSkillLock", "1"},
+        {"AutoAimAssist", "1"}, {"SkillAutoMagnet", "1"}, {"SkillSnapNearest", "1"}, {"SkillSnapLowestHp", "1"},
+        {"AimSnapSpeed", "10"}, {"AimSmoothFactor", "0"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroDelaySkillTap", "1"}, {"HitRegSyncRate", "1000"}
+    };
+    for (const auto &kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbSmartSkillMagnetAim injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: 4-Hero Unlimited Energy (Ling, Fanny, Hayabusa, Gusion) ───────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbHeroUnlimitedEnergy
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // Global Energy Baseline
+        {"UnlimitedEnergyMode", "1"}, {"EnergyRegenBoost", "10.0"}, {"EnergyConsumption", "0"},
+        {"ZeroSkillCost", "1"}, {"EnergyNoDecay", "1"}, {"FullEnergyStart", "1"},
+        // Ling Unlimited Energy & Wall Blink
+        {"LingEnergyLimit", "999"}, {"LingEnergyNoDecay", "1"}, {"LingWallEnergyFree", "1"},
+        {"LingZeroEnergyCost", "1"}, {"LingLightnessMax", "1"}, {"LingSwordAutoChain", "1"},
+        {"WallJumpInstant", "1"}, {"TempestInstantCast", "1"},
+        // Fanny Unlimited Energy & Free Cables
+        {"FannyEnergyLimit", "999"}, {"FannyEnergyNoDecay", "1"}, {"FannyEnergyRegen", "MAX"},
+        {"FannyEnergyFull", "1"}, {"FannyZeroEnergyCost", "1"}, {"FannyCableInfinite", "1"},
+        {"CableEnergyFree", "1"}, {"FannyMultiCableCombo", "1"}, {"CableCooldown", "0"},
+        {"FannyInstantCableAim", "1"},
+        // Hayabusa Unlimited Energy & Shadow Swaps
+        {"HayaEnergyLimit", "999"}, {"HayaEnergyNoDecay", "1"}, {"HayaZeroEnergyCost", "1"},
+        {"HayaShadowZeroEnergy", "1"}, {"HayaShadowChain", "1"}, {"HayaShadowKillMax", "1"},
+        {"HayaZeroDelaySwap", "1"}, {"HayaShadowRange", "2"}, {"HayaPhantomTracking", "1"},
+        {"OugiShadowKillSpeed", "10"}, {"ShadowInstantSwap", "1"},
+        // Gusion Unlimited Energy / Zero Mana & 10 Daggers
+        {"GusionEnergyLimit", "999"}, {"GusionEnergyNoDecay", "1"}, {"GusionZeroEnergyCost", "1"},
+        {"GusionManaCostZero", "1"}, {"GusionDashReset", "1"}, {"GusionDaggerReturn", "1"},
+        {"GusionInstant10Daggers", "1"}, {"GusionSkillChainSpeed", "10"}, {"GusionDaggerReturnSpeed", "10"},
+        {"SwordSpikeInstantReset", "1"}, {"IncandescenceDoubleDash", "1"},
+        {"ZeroInputDelay", "1"}, {"TouchPollingRate", "1000"}, {"HitRegSyncRate", "1000"}
+    };
+    for (const auto &kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbHeroUnlimitedEnergy injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: All-Hero Damage Boost, CDR & Armor Fortification ──────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroBoostAndArmor
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // Auto Boost Damage All Hero
+        {"AllHeroDamageMultiplier", "2.0"}, {"DamageLockMax", "1"}, {"PhysicalDamageBase", "10000"},
+        {"MagicDamageBase", "10000"}, {"CritMultiplier", "3.0"}, {"CritRateBoost", "1"},
+        {"TrueDmgConversion", "1"}, {"PenetrationBoost", "1"}, {"AttackSpeedBoost", "MAX"},
+        {"BasicAttackRate", "MAX"}, {"EffectiveDPSMode", "3"},
+        // Faster Cooldown Skills
+        {"SkillCooldownReduction", "0.40"}, {"GlobalCDR", "40"}, {"CooldownReduction", "1.0"},
+        {"SkillCDRatio", "0"}, {"FastSkillCycle", "1"}, {"ZeroSkillLag", "1"},
+        {"SkillCastDelayMs", "0"}, {"FastSkillReleaseSpeed", "10"}, {"ZeroDelaySkillTap", "1"},
+        // Boost Armor & Magic Defense
+        {"HeroPhysicalArmorBoost", "1.5"}, {"HeroMagicResistBoost", "1.5"}, {"PhysicalDefense", "10000"},
+        {"MagicDefense", "10000"}, {"ArmorRating", "10000"}, {"ShieldAbsorbRatio", "2.0"},
+        {"DamageReductionPercent", "50"}, {"FlatArmorBoost", "500"}, {"MaxHealthBoost", "10000"},
+        {"HealthRegenRate", "1000"}, {"TouchPollingRate", "1000"}, {"HitRegSyncRate", "1000"}
+    };
+    for (const auto &kv : keys) {
+        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbAllHeroBoostAndArmor injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
 
 
 

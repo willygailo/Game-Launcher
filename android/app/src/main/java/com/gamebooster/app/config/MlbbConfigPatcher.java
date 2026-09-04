@@ -909,6 +909,53 @@ public class MlbbConfigPatcher {
     }
 
     /**
+     * MLBB — Dual-Priority Smart Skill Magnet Aim (Lowest HP Hero & Closest Hero).
+     * Locks and magnets skills onto the lowest HP enemy hero (maliit na buhay) for executions,
+     * and auto-snaps to the nearest enemy hero (malapit na hero) for reflex defense/combos.
+     */
+    public static void applySmartSkillMagnetAim(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbSmartSkillMagnetAim(path);
+        }
+        Log.i(TAG, "MLBB SmartSkillMagnetAim (Lowest HP & Closest Hero) applied for " + packageName);
+    }
+
+    /**
+     * MLBB — 4-Hero Unlimited Energy Suite (Ling, Fanny, Hayabusa, Gusion).
+     * Grants unlimited energy, zero energy decay, zero skill cost, and instant skill reset
+     * for Ling, Fanny, Hayabusa, and Gusion.
+     */
+    public static void applyFourHeroUnlimitedEnergy(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbHeroUnlimitedEnergy(path);
+        }
+        try { applyFannyNoEnergyLimit(packageName); } catch (Throwable ignored) {}
+        try { applyLingNoEnergyLimit(packageName); } catch (Throwable ignored) {}
+        try { applyHayabusaShadowCombo(packageName); } catch (Throwable ignored) {}
+        try { applyGusionDaggerCombo(packageName); } catch (Throwable ignored) {}
+        try { applyGusionUltraOverdrive(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB FourHeroUnlimitedEnergy (Ling, Fanny, Haya, Gusion) applied for " + packageName);
+    }
+
+    /**
+     * MLBB — All-Hero Damage Boost, Faster Skill Cooldown & Armor Fortification.
+     * Injects 2.0x damage multiplier, 10000 base damage, 40% CDR / 0s skill delay,
+     * 1.5x physical armor, 1.5x magic defense, and 50% damage reduction across all heroes.
+     */
+    public static void applyAllHeroBoostAndArmor(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbAllHeroBoostAndArmor(path);
+        }
+        try { applyArmorAllHero(packageName); } catch (Throwable ignored) {}
+        try { applyUltraDamageAllHero(packageName); } catch (Throwable ignored) {}
+        try { applyFastCooldownManaEnergy(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB AllHeroBoostAndArmor applied for " + packageName);
+    }
+
+    /**
      * MLBB — All-Hero Combat Overdrive Master Suite.
      * Injects 10000 Base Physical & Magic Damage, 3.0x Crit Multiplier, MAX Attack Speed,
      * 100% Cooldown Reduction (CDR=1.0), Zero Skill Cost, Hero Lock & Smart Aim,
@@ -919,6 +966,9 @@ public class MlbbConfigPatcher {
         for (String path : paths) {
             NativeConfigInjector.injectMlbbAllHeroOverdrive(path);
         }
+        try { applySmartSkillMagnetAim(packageName); } catch (Throwable ignored) {}
+        try { applyFourHeroUnlimitedEnergy(packageName); } catch (Throwable ignored) {}
+        try { applyAllHeroBoostAndArmor(packageName); } catch (Throwable ignored) {}
         try { applyFannyNoEnergyLimit(packageName); } catch (Throwable ignored) {}
         try { applyLingNoEnergyLimit(packageName); } catch (Throwable ignored) {}
         try { applyAllJungleFastFarmOverdrive(packageName); } catch (Throwable ignored) {}
@@ -939,3 +989,4 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB Master All-Hero Overdrive successfully applied for " + packageName);
     }
 }
+
