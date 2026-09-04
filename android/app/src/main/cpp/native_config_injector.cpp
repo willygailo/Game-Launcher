@@ -5545,6 +5545,7 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSpl
     std::string pathStr(path); std::string content = read_file_posix(pathStr);
     struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
     bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
     std::vector<std::pair<std::string,std::string>> keys = {
         {"SkipOpenVideo", "1"}, {"SkipSplashVideo", "1"},
         {"FastLoadAssets", "1"}, {"DragonResourceOptimize", "1"},
@@ -5555,6 +5556,8 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastLoadSpl
     for (const auto& kv : keys) {
         if (isXml) {
             patch_xml_node(content, "int", kv.first, kv.second);
+        } else if (isJson) {
+            patch_json_node(content, kv.first, kv.second, true);
         } else {
             patch_key_value(content, kv.first, kv.second);
         }
@@ -5856,6 +5859,29 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"AllowOcclusionQueries", "1"}
     };
 
+    // Handle JSON Document files safely: NEVER write XML into .json files!
+    if (pathStr.rfind(".json") != std::string::npos) {
+        if (content.empty() || content.find('{') == std::string::npos || content.find("<map>") != std::string::npos) {
+            content = "{\n  \"HighFPSMode\": 3,\n  \"FrameRateLevel\": 6,\n  \"QualityLevel\": 3\n}\n";
+        }
+        for (const auto &kv : intKeys) {
+            patch_json_node(content, kv.first, kv.second, true);
+        }
+        patch_json_node(content, "bUseUltraExtreme", "True", false);
+        patch_json_node(content, "bFramePacingEnabled", "true", false);
+
+        bool ok = write_file_atomic(pathStr, content, 0666);
+        if (ok && hasStat) {
+            struct utimbuf t;
+            t.actime = stBefore.st_atime;
+            t.modtime = stBefore.st_mtime;
+            utime(path, &t);
+        }
+        env->ReleaseStringUTFChars(jPath, path);
+        LOGI("Mlbb165FpsGraphics JSON injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
+        return ok ? JNI_TRUE : JNI_FALSE;
+    }
+
     if (content.find("<map>") == std::string::npos) {
         content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
     }
@@ -5875,7 +5901,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         utime(path, &t);
     }
     env->ReleaseStringUTFChars(jPath, path);
-    LOGI("Mlbb165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
+    LOGI("Mlbb165FpsGraphics XML injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 

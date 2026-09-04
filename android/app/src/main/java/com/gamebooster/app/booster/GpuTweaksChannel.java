@@ -344,7 +344,7 @@ public class GpuTweaksChannel {
         if (driverType == GraphicsDriverType.GAME_DRIVER && isGameDriverEligible(pkg)) {
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + pkg);
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + pkg);
-            CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + pkg);
+            CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
             return true;
         } else {
             // Revert back to default system driver for non-eligible or default-selected
@@ -381,7 +381,7 @@ public class GpuTweaksChannel {
         if (enabled) {
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps " + targetCsv);
             CommandExecutor.executeSystemCommand("settings put global game_driver_prerelease_opt_in_apps " + targetCsv);
-            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps " + targetCsv);
+            String res = CommandExecutor.executeSystemCommand("settings put global updatable_driver_production_opt_in_apps \"\"");
             return CommandExecutor.isSuccessOutput(res);
         } else {
             CommandExecutor.executeSystemCommand("settings put global game_driver_opt_in_apps \"\"");

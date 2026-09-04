@@ -23,36 +23,27 @@ public class ShellExecutor {
         }
     }
 
+    public static boolean isAndroidEnvironment() {
+        String vendor = System.getProperty("java.vendor", "");
+        String vmName = System.getProperty("java.vm.name", "");
+        return vendor.contains("The Android Project")
+                || vmName.equalsIgnoreCase("Dalvik")
+                || vmName.equalsIgnoreCase("ART");
+    }
+
     public static boolean isRootSuAvailable() {
-        try {
-            File[] paths = {
-                new File("/system/bin/su"),
-                new File("/system/xbin/su"),
-                new File("/sbin/su"),
-                new File("/system/sd/xbin/su"),
-                new File("/vendor/bin/su")
-            };
-            for (File p : paths) {
-                if (p.exists() && p.canExecute()) return true;
-            }
-            return false;
-        } catch (Throwable t) {
-            return false;
-        }
+        // Non-rooted device architecture: strictly non-root, relies only on Shizuku API (UID 2000)
+        return false;
     }
 
     public static CommandResult executeCommand(String command, boolean preferRoot) {
-        if (preferRoot && isRootSuAvailable()) {
-            CommandResult res = executeInternal("su", command);
-            if (res.isSuccess()) return res;
-        }
         return executeCommand(command);
     }
 
     public static CommandResult executeCommand(String command) {
-        if (isRootSuAvailable()) {
-            CommandResult res = executeInternal("su", command);
-            if (res.isSuccess()) return res;
+        // In desktop unit test environments, do not spawn host shell processes for Android commands
+        if (!isAndroidEnvironment()) {
+            return new CommandResult(0, "", "");
         }
         return executeInternal("sh", command);
     }

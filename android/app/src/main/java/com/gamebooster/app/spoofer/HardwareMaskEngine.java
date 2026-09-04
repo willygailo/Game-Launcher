@@ -5,6 +5,7 @@ import android.util.Log;
 import com.gamebooster.app.booster.GpuTweaksChannel;
 import com.gamebooster.app.config.ConfigFileHelper;
 import com.gamebooster.app.config.GameConfigPathResolver;
+import com.gamebooster.app.config.GameSecurityBypassEngine;
 import com.gamebooster.app.config.MlbbConfigPatcher;
 import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -74,7 +75,17 @@ public class HardwareMaskEngine {
 
             Set<String> batchCommands = new LinkedHashSet<>();
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
-            int targetHz = Math.max(120, Math.min(185, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
+            int maxPhysicalHz = 120;
+            if (context != null) {
+                try {
+                    com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                            com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(context);
+                    if (caps != null && caps.maxRefreshRate > 0) {
+                        maxPhysicalHz = caps.maxRefreshRate;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : maxPhysicalHz));
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 1: LAUNCHER TELEMETRY & APP-SCOPED PROPS (Zero OS Tampering)
@@ -123,7 +134,7 @@ public class HardwareMaskEngine {
                 batchCommands.add("cmd game mode performance " + pkg + " 2>/dev/null");
                 batchCommands.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
                 batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
-                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0 2>/dev/null");
             }
 
             // ═══════════════════════════════════════════════════════════════════
@@ -166,10 +177,10 @@ public class HardwareMaskEngine {
 
             // Trigger Shizuku display refresh rate and game driver forcing
             if (packageName != null && !packageName.trim().isEmpty()) {
-                com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(packageName.trim());
+                com.gamebooster.app.engine.GameModeApiSupport.setGameModePerformance(packageName.trim(), targetHz);
             }
-            if (profile.maxRefreshRateHz > 60) {
-                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(profile.maxRefreshRateHz);
+            if (targetHz > 60) {
+                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
             }
 
             // ═══════════════════════════════════════════════════════════════════
@@ -377,6 +388,7 @@ public class HardwareMaskEngine {
 
         // 4. Mobile Legends
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            GameSecurityBypassEngine.purgeCorruptedAssetCaches(packageName);
             try {
                 MlbbConfigPatcher.patchUltraExtreme165(packageName);
             } catch (Throwable ignored) {}
@@ -386,6 +398,7 @@ public class HardwareMaskEngine {
                     NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
                 }
             }
+            GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
         // 5. Free Fire / Free Fire MAX
@@ -550,7 +563,15 @@ public class HardwareMaskEngine {
             Set<String> batchCmds = new LinkedHashSet<>();
 
             Set<String> gamePkgs = new LinkedHashSet<>();
-            int targetHz = profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185;
+            int maxPhysicalHz = 120;
+            try {
+                com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                        com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(context);
+                if (caps != null && caps.maxRefreshRate > 0) {
+                    maxPhysicalHz = caps.maxRefreshRate;
+                }
+            } catch (Throwable ignored) {}
+            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : maxPhysicalHz));
 
             if (installedGames != null) {
                 for (com.gamebooster.app.games.GameAppInfo game : installedGames) {
@@ -578,7 +599,7 @@ public class HardwareMaskEngine {
                 batchCmds.add("cmd game mode performance " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
                 batchCmds.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
-                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high 2>/dev/null");
+                batchCmds.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0 2>/dev/null");
 
                 // Inject hardware profile into target game data dir
                 injectTailoredGameHardwareConfigs(pkg, profile);
@@ -598,7 +619,7 @@ public class HardwareMaskEngine {
             batchCmds.add("settings put global updatable_driver_all_apps 0 2>/dev/null");
             batchCmds.add("settings put global game_driver_opt_in_apps \"" + gameDriverCsv + "\"");
             batchCmds.add("settings put global game_driver_prerelease_opt_in_apps \"" + gameDriverCsv + "\"");
-            batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"" + gameDriverCsv + "\"");
+            batchCmds.add("settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null");
             batchCmds.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
             batchCmds.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
             batchCmds.add("settings delete global angle_enabled_pkgs 2>/dev/null");

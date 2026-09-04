@@ -70,6 +70,8 @@ public final class AntiLogPatcher {
 
     // ─── Per-Game Anti-Log Application ─────────────────────────────────────────
 
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> sLastAntiLogApplied = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
      * Applies anti-log, log directory purging, and telemetry suppression for a specific game package.
      *
@@ -79,6 +81,13 @@ public final class AntiLogPatcher {
     public static boolean applyAntiLog(String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         String pkg = packageName.toLowerCase(Locale.ROOT).trim();
+
+        Long last = sLastAntiLogApplied.get(pkg);
+        long now = System.currentTimeMillis();
+        if (last != null && (now - last) < 5000) {
+            return true; // Debounce: already applied in the last 5 seconds
+        }
+        sLastAntiLogApplied.put(pkg, now);
 
         List<String> logPaths = getLogPathsForPackage(pkg);
         StringBuilder sb = new StringBuilder();

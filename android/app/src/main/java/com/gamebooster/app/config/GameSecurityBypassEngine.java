@@ -344,12 +344,47 @@ public final class GameSecurityBypassEngine {
             // Deleting them causes instant crash loop & auto-back!
             // Clean up any stray .nomedia placed into app_vshell or MtpSdk from older versions
             sb.append("rm -f '/data/data/").append(pkg).append("/app_vshell/.nomedia' '/data/data/").append(pkg).append("/files/MtpSdk/.nomedia' 2>/dev/null; ");
-            // Repair truncated / 0-byte PlayerPrefs XML files that cause Unity XML parser to throw exceptions and crash
-            sb.append("for f in '/data/data/").append(pkg).append("/shared_prefs/'*.xml '/data/data/").append(pkg).append("/files/'*.xml '/sdcard/Android/data/").append(pkg).append("/files/'*.xml; do ");
-            sb.append("  if [ -f \"$f\" ] && [ $(wc -c < \"$f\" 2>/dev/null || echo 0) -lt 50 ]; then ");
-            sb.append("    echo \"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\\n<map>\\n</map>\" > \"$f\" 2>/dev/null; ");
+
+            // Remove ALL fake JSON files placed into assets/Document/ or files/ that cause Moonton's native asset loader to abort
+            sb.append("rm -f '/sdcard/Android/data/").append(pkg).append("/files/dragon2017/assets/Document/'*.json ")
+              .append("'/sdcard/Android/data/").append(pkg).append("/files/Dragon2017/assets/Document/'*.json ")
+              .append("'/storage/emulated/0/Android/data/").append(pkg).append("/files/dragon2017/assets/Document/'*.json ")
+              .append("'/storage/emulated/0/Android/data/").append(pkg).append("/files/Dragon2017/assets/Document/'*.json ")
+              .append("'/data/data/").append(pkg).append("/files/dragon2017/assets/Document/'*.json ")
+              .append("'/data/data/").append(pkg).append("/files/QualityConfig.json ")
+              .append("'/data/data/").append(pkg).append("/files/BattleConfig.json ")
+              .append("'/data/data/").append(pkg).append("/files/GraphicSetting.json ")
+              .append("'/data/data/").append(pkg).append("/files/GameConfig.json 2>/dev/null; ");
+            sb.append("for j in '/sdcard/Android/data/").append(pkg).append("/files/'*.json ")
+              .append("'/storage/emulated/0/Android/data/").append(pkg).append("/files/'*.json ")
+              .append("'/data/data/").append(pkg).append("/files/'*.json; do ");
+            sb.append("  if [ -f \"$j\" ] && (grep -q '<map>' \"$j\" 2>/dev/null || grep -q '<?xml' \"$j\" 2>/dev/null); then ");
+            sb.append("    rm -f \"$j\" 2>/dev/null; ");
             sb.append("  fi; ");
             sb.append("done; ");
+
+            // Repair truncated / 0-byte PlayerPrefs XML files that cause Unity XML parser to throw exceptions and crash
+            sb.append("for f in '/data/data/").append(pkg).append("/shared_prefs/'*.xml '/data/data/").append(pkg).append("/files/'*.xml '/sdcard/Android/data/").append(pkg).append("/files/'*.xml '/storage/emulated/0/Android/data/").append(pkg).append("/files/'*.xml; do ");
+            sb.append("  if [ -f \"$f\" ]; then ");
+            sb.append("    SZ=$(wc -c < \"$f\" 2>/dev/null || echo 0); ");
+            sb.append("    if [ \"$SZ\" -lt 50 ] || (! grep -q '<map>' \"$f\" 2>/dev/null) || (! grep -q '</map>' \"$f\" 2>/dev/null); then ");
+            sb.append("      printf \"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\\n<map>\\n</map>\\n\" > \"$f\" 2>/dev/null; ");
+            sb.append("    fi; ");
+            sb.append("  fi; ");
+            sb.append("done; ");
+
+            // Re-align ownership of shared_prefs and files to game's UID to prevent EACCES/SecurityException
+            sb.append("GAME_UID=$(dumpsys package '").append(pkg).append("' 2>/dev/null | grep 'userId=' | head -n 1 | sed 's/.*userId=//;s/[^0-9]//g'); ");
+            sb.append("if [ -z \"$GAME_UID\" ]; then ");
+            sb.append("  GAME_UID=$(stat -c \"%u\" '/data/data/").append(pkg).append("' 2>/dev/null || cmd package list packages -U '").append(pkg).append("' 2>/dev/null | grep -o 'uid:[0-9]*' | cut -d: -f2); ");
+            sb.append("fi; ");
+            sb.append("if [ -n \"$GAME_UID\" ] && [ \"$GAME_UID\" -gt 9999 ] 2>/dev/null; then ");
+            sb.append("  chown -R $GAME_UID:$GAME_UID '/data/data/").append(pkg).append("/shared_prefs' 2>/dev/null; ");
+            sb.append("  chown -R $GAME_UID:$GAME_UID '/data/data/").append(pkg).append("/files' 2>/dev/null; ");
+            sb.append("  restorecon -F -R '/data/data/").append(pkg).append("/shared_prefs' 2>/dev/null; ");
+            sb.append("  restorecon -F -R '/data/data/").append(pkg).append("/files' 2>/dev/null; ");
+            sb.append("fi; ");
+
             // Strictly ensure proper read/write permissions on the XML config files.
             sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/files/'*.xml 2>/dev/null; ");
             sb.append("chmod 666 '/sdcard/Android/data/").append(pkg).append("/shared_prefs/'*.xml 2>/dev/null; ");

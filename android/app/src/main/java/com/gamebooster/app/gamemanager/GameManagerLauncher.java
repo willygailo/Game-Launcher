@@ -230,10 +230,19 @@ public final class GameManagerLauncher {
                     }
                 }
 
-                // Apply 185/165/144/120 Hz lock to SurfaceFlinger, AOSP & OEM
+                // Apply 185/165/144/120 Hz lock to SurfaceFlinger, AOSP & OEM clamped to device display limits
+                int maxPhysicalHz = 120;
                 try {
-                    MaxHzForceChannel.forceApply(fps);
-                    HzFpsChannel.forceSetRefreshRate(appContext, fps);
+                    com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                            com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(appContext);
+                    if (caps != null && caps.maxRefreshRate > 0) {
+                        maxPhysicalHz = caps.maxRefreshRate;
+                    }
+                } catch (Throwable ignored) {}
+                final int safeFps = Math.max(60, Math.min(maxPhysicalHz, fps));
+                try {
+                    MaxHzForceChannel.forceApply(safeFps);
+                    HzFpsChannel.forceSetRefreshRate(appContext, safeFps);
                 } catch (Throwable t) {
                     Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
                 }
@@ -242,10 +251,11 @@ public final class GameManagerLauncher {
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommands(
                         "cmd game mode performance " + pkg + " 2>/dev/null",
-                        "cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null",
-                        "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null",
-                        "setprop debug.sf.fps_limit " + fps,
-                        "setprop persist.sys.NV_FPSLIMIT " + fps,
+                        "cmd window set-app-refresh-rate " + pkg + " " + safeFps + " 2>/dev/null",
+                        "cmd game set --fps " + safeFps + " " + pkg + " 2>/dev/null",
+                        "settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null",
+                        "setprop debug.sf.fps_limit " + safeFps,
+                        "setprop persist.sys.NV_FPSLIMIT " + safeFps,
                         "setprop debug.sf.nobootanimation 1",
                         "setprop debug.hwui.render_dirty_regions false",
                         "setprop debug.egl.hw 1",

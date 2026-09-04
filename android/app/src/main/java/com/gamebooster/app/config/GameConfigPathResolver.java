@@ -252,9 +252,6 @@ public class GameConfigPathResolver {
             rel.add("files/com.mobile.legends.v2.playerprefs.xml");
             rel.add("files/" + pkg + "_preferences.xml");
             rel.add("files/com.mobile.legends_preferences.xml");
-            rel.add("files/com.mobile.legends.xml");
-            rel.add("files/" + pkg + ".xml");
-
             // Document & battle configs (JSON settings introduced/relocated in NEXT 2026)
             rel.add("files/dragon2017/assets/Document/QualityConfig.json");
             rel.add("files/Dragon2017/assets/Document/QualityConfig.json");

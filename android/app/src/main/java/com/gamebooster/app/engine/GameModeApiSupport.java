@@ -91,14 +91,21 @@ public final class GameModeApiSupport {
 
     /** Forces Android Game Mode Performance via Shizuku shell. */
     public static void setGameModePerformance(String packageName) {
+        setGameModePerformance(packageName, 120);
+    }
+
+    /** Forces Android Game Mode Performance with specified safe target refresh rate. */
+    public static void setGameModePerformance(String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) return;
         String pkg = packageName.trim();
+        int fps = targetFps > 0 ? targetFps : 120;
         com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
-                "cmd game mode performance " + pkg,
-                "cmd game mode 2 " + pkg,
-                "cmd game set --fps 185 " + pkg,
-                "cmd window set-app-refresh-rate " + pkg + " 185",
-                "device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=false,fps=185,downscaleFactor=1.0,cpuPriority=high,gpuPriority=high"
+                "cmd game mode performance " + pkg + " 2>/dev/null",
+                "cmd game mode 2 " + pkg + " 2>/dev/null",
+                "cmd game set --fps " + fps + " " + pkg + " 2>/dev/null",
+                "cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null",
+                "device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + fps + ",downscaleFactor=1.0:mode=3,useAngle=false,fps=" + fps + ",downscaleFactor=1.0 2>/dev/null",
+                "settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null"
         );
     }
 
@@ -195,23 +202,22 @@ public final class GameModeApiSupport {
             commands.add("settings put global game_driver_all_apps 0");
             commands.add("settings put global updatable_driver_all_apps 0");
             commands.add("settings put global game_driver_opt_in_apps " + pkg);
-            commands.add("settings put global updatable_driver_production_opt_in_apps " + pkg);
-            commands.add("cmd game mode performance " + pkg);
-            commands.add("cmd game mode 2 " + pkg);
-            commands.add("cmd game set --fps " + fps + " " + pkg);
-            commands.add("cmd window set-app-refresh-rate " + pkg + " " + fps);
-            commands.add("cmd package compile -m speed -f " + pkg);
-            commands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high:mode=3,useAngle=false,fps=" + fps + ",downscaleFactor=1.0,cpuPriority=high,gpuPriority=high");
+            commands.add("settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null");
+            commands.add("cmd game mode performance " + pkg + " 2>/dev/null");
+            commands.add("cmd game mode 2 " + pkg + " 2>/dev/null");
+            commands.add("cmd game set --fps " + fps + " " + pkg + " 2>/dev/null");
+            commands.add("cmd window set-app-refresh-rate " + pkg + " " + fps + " 2>/dev/null");
+            commands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + fps + ",downscaleFactor=1.0:mode=3,useAngle=false,fps=" + fps + ",downscaleFactor=1.0 2>/dev/null");
         } else {
             String targetCsv = com.gamebooster.app.booster.GpuTweaksChannel.getTargetGamesCsv();
-            commands.add("settings put global game_driver_all_apps 0");
-            commands.add("settings put global updatable_driver_all_apps 0");
-            commands.add("settings put global game_driver_opt_in_apps " + targetCsv);
-            commands.add("settings put global updatable_driver_production_opt_in_apps " + targetCsv);
-            commands.add("cmd game mode performance global");
-            commands.add("cmd game set --fps " + fps + " global");
-            commands.add("cmd window set-app-refresh-rate global " + fps);
-            commands.add("device_config put game_overlay global mode=2,fps=" + fps + ":mode=3,fps=" + fps);
+            commands.add("settings put global game_driver_all_apps 0 2>/dev/null");
+            commands.add("settings put global updatable_driver_all_apps 0 2>/dev/null");
+            commands.add("settings put global game_driver_opt_in_apps \"" + targetCsv + "\"");
+            commands.add("settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null");
+            commands.add("cmd game mode performance global 2>/dev/null");
+            commands.add("cmd game set --fps " + fps + " global 2>/dev/null");
+            commands.add("cmd window set-app-refresh-rate global " + fps + " 2>/dev/null");
+            commands.add("device_config put game_overlay global mode=2,fps=" + fps + ":mode=3,fps=" + fps + " 2>/dev/null");
         }
 
         for (String cmd : commands) {
