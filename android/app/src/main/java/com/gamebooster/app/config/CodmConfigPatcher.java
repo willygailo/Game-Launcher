@@ -60,6 +60,22 @@ public class CodmConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    /**
+     * Executes single-pass atomic batch injection for all CODM cheats:
+     * No Recoil, No Spread, Aimbot Magnetism, Hitbox 3.0x, ESP Clarity, BSA Removal, Fast Load.
+     */
+    public static void applyCodmMasterSuite(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUniversalCombatSuite(path);
+            NativeConfigInjector.injectSilentAimbot(path);
+            NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
+            NativeConfigInjector.injectUltraWallhackEspClarity(path);
+            NativeConfigInjector.injectCodmBsaRemovalRangeOverdrive(path);
+            NativeConfigInjector.injectCodmFastLoadShaderBypass(path);
+        }
+    }
 
     public static void applyNoScopeAimbot(String packageName) {
         if (packageName == null) return;

@@ -294,10 +294,17 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
             patch_cvar(content, kv.first, kv.second);
             patch_key_value(content, kv.first, kv.second);
         } else if (isXml) {
+            std::string valLower = kv.second;
+            std::transform(valLower.begin(), valLower.end(), valLower.begin(), ::tolower);
             std::string tag = "int";
-            if (kv.second == "True" || kv.second == "False") tag = "string";
-            else if (kv.second.find('.') != std::string::npos) tag = "float";
-            patch_xml_node(content, tag, kv.first, kv.second);
+            std::string valFinal = kv.second;
+            if (valLower == "true" || valLower == "false") {
+                tag = "boolean";
+                valFinal = valLower;
+            } else if (kv.second.find('.') != std::string::npos) {
+                tag = "float";
+            }
+            patch_xml_node(content, tag, kv.first, valFinal);
         } else if (isJson) {
             bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
             patch_json_node(content, kv.first, kv.second, isNum);
@@ -343,4 +350,15 @@ bool patch_gvas_int_property_cpp(std::vector<uint8_t> &data, const std::string &
         }
     }
     return modified;
+}
+
+bool patch_gvas_multiple_int_properties_cpp(std::vector<uint8_t> &data, const std::vector<std::pair<std::string, int>> &props) {
+    if (data.empty() || props.empty()) return false;
+    bool anyModified = false;
+    for (const auto& p : props) {
+        if (patch_gvas_int_property_cpp(data, p.first, p.second)) {
+            anyModified = true;
+        }
+    }
+    return anyModified;
 }

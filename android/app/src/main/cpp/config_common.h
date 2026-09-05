@@ -18,6 +18,11 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <sstream>
+#include <fstream>
+#include <memory>
+#include <algorithm>
+#include <cctype>
 
 #if __has_include(<android/log.h>)
 #include <android/log.h>
@@ -92,7 +97,20 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
                         const std::vector<std::pair<std::string, std::string>>& keys,
                         const char* logTag);
 
+// ─── Direct Batch Injection from JNI Helper Macro ────────────────────────────
+#define JNI_INJECT_KEY_SET(env, jPath, keysVector, logTag) \
+    do { \
+        if (!(jPath)) return JNI_FALSE; \
+        const char *pStr = (env)->GetStringUTFChars((jPath), nullptr); \
+        if (!pStr) return JNI_FALSE; \
+        std::string p(pStr); \
+        bool success = apply_keys_to_file(p, pStr, (keysVector), (logTag)); \
+        (env)->ReleaseStringUTFChars((jPath), pStr); \
+        return success ? JNI_TRUE : JNI_FALSE; \
+    } while (0)
+
 // ─── GVAS Binary Property Helper for PUBGM Active.sav ─────────────────────────
 bool patch_gvas_int_property_cpp(std::vector<uint8_t> &data, const std::string &propName, int value);
+bool patch_gvas_multiple_int_properties_cpp(std::vector<uint8_t> &data, const std::vector<std::pair<std::string, int>> &props);
 
 #endif // GAMEBOOSTER_CONFIG_COMMON_H

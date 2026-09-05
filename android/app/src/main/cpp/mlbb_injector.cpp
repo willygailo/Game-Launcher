@@ -2150,3 +2150,51 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok?JNI_TRUE:JNI_FALSE;
 }
 
+// =============================================================================
+// ─── MLBB: Master All-Hero Combo Suite (Single-Pass Complete Payload) ────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMasterComboSuite
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // Ling Combo
+        {"SkillAutoChain", "1"}, {"SkillAutoCombo", "1"}, {"LingComboSpeed", "10"},
+        {"LingWallJumpDelay", "0"}, {"LingSkillChainWindow", "1"}, {"LingSwordCollectZeroDelay", "1"},
+        // Fanny Cable
+        {"FannyCableSpeed", "10"}, {"FannyZeroCableDelay", "1"}, {"FannyUnlimitedEnergy", "1"},
+        {"FannyStraightCable", "1"}, {"FannyWallHitReset", "1"},
+        // Gusion & Chou & Hayabusa & Beatrix
+        {"GusionDaggerSpeed", "10"}, {"GusionInstaRecall", "1"}, {"Gusion10DaggerCombo", "1"},
+        {"ChouFreestyleFlicker", "1"}, {"ChouKickZeroDelay", "1"}, {"ChouDashCancel", "1"},
+        {"HayaShadowSwapInstant", "1"}, {"HayaUltBurstMax", "1"},
+        {"BeatrixGunSwapInstant", "1"}, {"BeatrixSniperAimLock", "1"},
+        // Auto Retribution & Smite
+        {"AutoRetriLordTurtle", "1"}, {"RetriHpThresholdCalc", "1"}, {"InstantSmite", "1"},
+        {"ObjectiveTargetLock", "1"},
+        // Drone View & Map Hack
+        {"CameraHeight", "2"}, {"FovBoost", "1.35"}, {"MapScale", "1.2"},
+        {"MinimapEnemyPriority", "1"},
+        // Damage Lock & Pen
+        {"DamageLockMax", "1"}, {"EffectiveDPSMode", "3"}, {"HitRegSyncRate", "1000"},
+        {"FrameSyncDamage", "1"}, {"CritRateBoost", "100"}, {"CritDamageMultiplier", "3.0"},
+        {"PenetrationBoost", "1"}, {"TrueDamageBoost", "1"}, {"InstantHitReg", "1"},
+        // Hero Lock & Aim
+        {"HeroLock", "1"}, {"SkillSmartAim", "1"}, {"AimSmoothFactor", "0"},
+        {"AimSnapSpeed", "10"}, {"AimMagnetism", "3"}, {"HeadMagnetism", "1"},
+        {"AdsZeroDelay", "1"}, {"TargetPriority", "0"},
+        // Touch 1000Hz & Low Lag
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"InputBufferRate", "1000"}, {"bFramePacingEnabled", "True"},
+        {"r.OneFrameThreadLag", "0"}, {"r.FinishCurrentFrame", "0"},
+        {"ScreenShake", "0"}, {"Vibrate", "0"}, {"DamageText", "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbMasterComboSuite");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

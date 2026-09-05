@@ -44,6 +44,21 @@ public class MlbbConfigPatcher {
         }
     }
 
+    /**
+     * Executes single-pass atomic batch injection for MLBB Master Combo Suite + Drone View + Auto-Retri + 10000 Damage.
+     */
+    public static void applyMlbbMasterSuite(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbMasterComboSuite(path);
+            NativeConfigInjector.injectAutoSmiteRetribution(path);
+            NativeConfigInjector.injectUniversalCombatSuite(path);
+            NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
+            NativeConfigInjector.injectUltraWallhackEspClarity(path);
+        }
+    }
+
     public static void applyFannyAutoFullEnergy(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {

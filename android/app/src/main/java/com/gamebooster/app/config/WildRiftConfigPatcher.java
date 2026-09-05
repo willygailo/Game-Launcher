@@ -65,6 +65,24 @@ public class WildRiftConfigPatcher {
         }
     }
 
+    public static void applyWildRiftMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("AttackSpeedCapOverclock", "1");
+        keys.put("MaxAttackSpeedLimit", "5.0");
+        keys.put("ZeroWindupBasicAttack", "1");
+        keys.put("SmartOrbwalkCancel", "1");
+        keys.put("SkillInstantCast", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[WildRiftMasterSuite]");
+        }
+    }
+
     private static final String TAG = "WildRiftConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

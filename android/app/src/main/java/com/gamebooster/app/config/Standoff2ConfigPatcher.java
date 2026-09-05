@@ -57,6 +57,31 @@ public class Standoff2ConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    public static void applyTick128ZeroSpread(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectStandoff2Tick128ZeroSpread(path);
+        }
+    }
+
+    public static void applyStandoff2MasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("cl_updaterate", "128");
+        keys.put("cl_cmdrate", "128");
+        keys.put("rate", "786432");
+        keys.put("weapon_spread_scale", "0");
+        keys.put("recoil_scale_x", "0");
+        keys.put("recoil_scale_y", "0");
+        keys.put("touch_smooth_factor", "0");
+        keys.put("touch_sampling_hz", "1000");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[Standoff2MasterSuite]");
+        }
+    }
+
     private static final String TAG = "Standoff2ConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

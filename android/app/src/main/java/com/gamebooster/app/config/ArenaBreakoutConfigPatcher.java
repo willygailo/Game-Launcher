@@ -57,6 +57,32 @@ public class ArenaBreakoutConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    public static void applyThermalFootstepAudio(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectArenaBreakoutThermalFootstepAudio(path);
+        }
+    }
+
+    public static void applyArenaBreakoutMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("ThermalClarityBoost", "1");
+        keys.put("ThermalNoiseReduction", "1");
+        keys.put("FootstepAudioGainDb", "12.0");
+        keys.put("OccludedAudioClarity", "1");
+        keys.put("ZeroSniperSway", "1");
+        keys.put("AimMagnetism", "3");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[ArenaBreakoutMasterSuite]");
+        }
+    }
+
     private static final String TAG = "ArenaBreakoutConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

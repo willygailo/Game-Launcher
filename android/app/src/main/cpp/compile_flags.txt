@@ -2,5 +2,6 @@
 -std=c++17
 -D__ANDROID__
 -DANDROID
--I/usr/lib/jvm/java-11-openjdk-amd64/include
--I/usr/lib/jvm/java-11-openjdk-amd64/include/linux
+-I.
+-I/usr/lib/jvm/java-17-openjdk-amd64/include
+-I/usr/lib/jvm/java-17-openjdk-amd64/include/linux

@@ -68,6 +68,24 @@ public class HokConfigPatcher {
         }
     }
 
+    public static void applyHokMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("AutoSmiteObjective", "1");
+        keys.put("SmitePriority", "DragonLord");
+        keys.put("SmiteHpThreshold", "1.0");
+        keys.put("SkillSmartAimLowestHp", "1");
+        keys.put("TargetLockEnemyHero", "1");
+        keys.put("HitRegSyncRate", "1000");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[HokMasterSuite]");
+        }
+    }
+
     private static final String TAG = "HokConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

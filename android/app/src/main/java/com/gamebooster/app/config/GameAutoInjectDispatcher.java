@@ -204,6 +204,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectMlbb(String pkg) {
         Log.i(TAG, "⚔️ Injecting MLBB hero combos (Ling, Fanny, Gusion, Chou, Haya, Beatrix), SA Damage+, Farming, Jungle & All-Hero...");
+        try { MlbbConfigPatcher.applyMlbbMasterSuite(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyLingHeroDamageCombo(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyUltraDamageAllHero(pkg); } catch (Throwable ignored) {}
@@ -262,6 +263,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectPubgm(String pkg) {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
+        try { PubgConfigPatcher.applyPubgmMasterSuite(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
@@ -302,6 +304,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectCodm(String pkg) {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
+        try { CodmConfigPatcher.applyCodmMasterSuite(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
@@ -342,6 +345,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectFreeFire(String pkg) {
         Log.i(TAG, "🔥 Injecting Free Fire Auto-Headshot, All-Gun & All-Scope Calibration...");
+        try { FreeFireConfigPatcher.applyFreeFireMasterSuite(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyFreeFireAutoHeadshot(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyFreeFireFastGlooWall(pkg); } catch (Throwable ignored) {}
@@ -366,6 +370,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectHok(String pkg) {
         Log.i(TAG, "👑 Injecting Honor of Kings (HOK) 165FPS & MOBA Performance Overdrive...");
+        try { HokConfigPatcher.applyHokMasterSuite(pkg); } catch (Throwable ignored) {}
         try { HokConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { HokConfigPatcher.applyAutoSmiteObjective(pkg); } catch (Throwable ignored) {}
         try { HokConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
@@ -379,6 +384,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectWildRift(String pkg) {
         Log.i(TAG, "⚡ Injecting League of Legends: Wild Rift 165FPS & Precision Overdrive...");
+        try { WildRiftConfigPatcher.applyWildRiftMasterSuite(pkg); } catch (Throwable ignored) {}
         try { WildRiftConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { WildRiftConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { WildRiftConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
@@ -391,6 +397,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectBloodStrike(String pkg) {
         Log.i(TAG, "🩸 Injecting Blood Strike Zero Recoil & 165FPS Precision...");
+        try { BloodStrikeConfigPatcher.applyBloodStrikeMasterSuite(pkg); } catch (Throwable ignored) {}
         try { BloodStrikeConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { BloodStrikeConfigPatcher.applyZeroRecoil(pkg); } catch (Throwable ignored) {}
         try { BloodStrikeConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
@@ -402,6 +409,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectStandoff2(String pkg) {
         Log.i(TAG, "🎯 Injecting Standoff 2 165FPS Precision Aim & Touch Overclock...");
+        try { Standoff2ConfigPatcher.applyStandoff2MasterSuite(pkg); } catch (Throwable ignored) {}
         try { Standoff2ConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { Standoff2ConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { Standoff2ConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
@@ -412,6 +420,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectValorant(String pkg) {
         Log.i(TAG, "🎯 Injecting Valorant Mobile 165FPS Precision Calibration...");
+        try { ValorantConfigPatcher.applyValorantMasterSuite(pkg); } catch (Throwable ignored) {}
         try { ValorantConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { ValorantConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { ValorantConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
@@ -422,6 +431,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectFarlight(String pkg) {
         Log.i(TAG, "🚀 Injecting Farlight 84 165FPS & Weapon Pacing Boost...");
+        try { FarlightConfigPatcher.applyFarlightMasterSuite(pkg); } catch (Throwable ignored) {}
         try { FarlightConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { FarlightConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { FarlightConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
@@ -432,6 +442,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectDeltaForce(String pkg) {
         Log.i(TAG, "🎖️ Injecting Delta Force Mobile 165FPS & Tactical Precision...");
+        try { DeltaForceConfigPatcher.applyDeltaForceMasterSuite(pkg); } catch (Throwable ignored) {}
         try { DeltaForceConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { DeltaForceConfigPatcher.applyPrecisionAim(pkg); } catch (Throwable ignored) {}
         try { DeltaForceConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
@@ -443,6 +454,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectArenaBreakout(String pkg) {
         Log.i(TAG, "🛡️ Injecting Arena Breakout 165FPS & Realistic Hit-Reg Lock...");
+        try { ArenaBreakoutConfigPatcher.applyArenaBreakoutMasterSuite(pkg); } catch (Throwable ignored) {}
         try { ArenaBreakoutConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { ArenaBreakoutConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { ArenaBreakoutConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}

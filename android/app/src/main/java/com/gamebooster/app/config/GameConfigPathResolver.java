@@ -33,6 +33,21 @@ public class GameConfigPathResolver {
     private static final Map<String, List<String>> CACHED_PATHS = new ConcurrentHashMap<>();
 
     /**
+     * Clears all cached config paths or for a specific package so subsequent calls re-discover freshly created game files.
+     */
+    public static void invalidateCache() {
+        CACHED_PATHS.clear();
+        Log.d(TAG, "Invalidated all config path caches");
+    }
+
+    public static void invalidateCache(String packageName) {
+        if (packageName != null) {
+            CACHED_PATHS.remove(packageName.trim().toLowerCase());
+            Log.d(TAG, "Invalidated config path cache for " + packageName);
+        }
+    }
+
+    /**
      * Resolves all valid and candidate config paths for a given game package.
      * Combines predefined known paths with dynamic filesystem discovery.
      */

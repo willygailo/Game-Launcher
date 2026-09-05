@@ -60,6 +60,31 @@ public class FarlightConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    public static void applyJetpackZeroCooldown(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFarlightJetpackZeroCooldown(path);
+        }
+    }
+
+    public static void applyFarlightMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("JetpackCooldownScale", "0");
+        keys.put("AirDashDistanceMultiplier", "2.0");
+        keys.put("VerticalBoostPower", "2.0");
+        keys.put("EnergyRechargeRateMultiplier", "5.0");
+        keys.put("FastTacticalRoll", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[FarlightMasterSuite]");
+        }
+    }
+
     private static final String TAG = "FarlightConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

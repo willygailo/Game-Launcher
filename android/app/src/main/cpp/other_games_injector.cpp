@@ -201,6 +201,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
     std::string pathStr(path);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"AttackDamageBase", "10000"},
@@ -210,6 +211,126 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "WildRiftDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Blood Strike: Slide Cancel & Fast Sprint Overdrive ──────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeSlideCancelOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"SlideCancelSync", "1"}, {"FastTacticalSprint", "1"}, {"SlideDistanceMax", "1"},
+        {"SprintToFireDelay", "0"}, {"WeaponSwitchZeroDelay", "1"}, {"ReloadCancelFast", "1"},
+        {"ZeroRecoil", "1"}, {"SpreadZero", "1"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"HitRegSyncRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "BloodStrikeSlideCancelOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Delta Force: UE5 Nanite Shader Pre-Cache & Ballistic Trajectory Lock ────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceNaniteShaderPrewarm
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"BulletDropComp", "1"}, {"MuzzleVelocityFactor", "1.0"}, {"ZeroSwaySniper", "1"},
+        {"ThermalScopeLock", "1"}, {"NaniteShaderPreCache", "1"}, {"PreloadShaders", "1"},
+        {"r.OneFrameThreadLag", "0"}, {"r.FinishCurrentFrame", "0"}, {"bFramePacingEnabled", "True"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"HitRegSyncRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "DeltaForceNaniteShaderPrewarm");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Arena Breakout: Thermal Clarity & Footstep Audio Visualizer ESP ─────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutThermalFootstepAudio
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ThermalContrastBoost", "1"}, {"FootstepSoundVFXBoost", "1"}, {"ZeroSwaySniper", "1"},
+        {"StaminaDrainReduction", "1"}, {"BulletDropComp", "1"}, {"HitRegSyncRate", "1000"},
+        {"InstantHitReg", "1"}, {"TouchPollingRate", "1000"}, {"ZeroInputLag", "1"},
+        {"AllowOcclusionQueries", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ArenaBreakoutThermalFootstepAudio");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Valorant Mobile: Counter-Strafe Zero Deadzone & Head-Level Crosshair ───
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantCounterStrafeAimLock
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"CounterStrafeDeadzone", "0"}, {"FirstBulletAccuracy", "1.0"}, {"CrosshairHeadLevelLock", "1"},
+        {"MovingSpreadFactor", "0"}, {"ZeroRecoil", "1"}, {"HeadMagnetism", "1"},
+        {"AimSnapSpeed", "10"}, {"AimSmoothFactor", "0"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"HitRegSyncRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ValorantCounterStrafeAimLock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Farlight 84: Jetpack Zero Cooldown & Air-Dash Distance Max ──────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightJetpackZeroCooldown
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"JetpackCooldownDelay", "0"}, {"AirDashDistanceMax", "1"}, {"RapidReload", "1"},
+        {"AimAssistStrength", "100"}, {"AimMagnetism", "3"}, {"ZeroRecoil", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"HitRegSyncRate", "1000"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FarlightJetpackZeroCooldown");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Standoff 2: 128-Tick Rate Network Emulation & Zero Spread ───────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Tick128ZeroSpread
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"cl_updaterate", "128"}, {"cl_cmdrate", "128"}, {"rate", "786432"},
+        {"ZeroRecoil", "1"}, {"SpreadZero", "1"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"HitRegSyncRate", "1000"},
+        {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "Standoff2Tick128ZeroSpread");
     env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }

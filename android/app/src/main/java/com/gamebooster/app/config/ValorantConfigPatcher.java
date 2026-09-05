@@ -60,6 +60,31 @@ public class ValorantConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    public static void applyCounterStrafeAimLock(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectValorantCounterStrafeAimLock(path);
+        }
+    }
+
+    public static void applyValorantMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("CounterStrafeInstantStop", "1");
+        keys.put("MovementDeadzone", "0");
+        keys.put("HeadLevelAimLock", "1");
+        keys.put("FirstBulletAccuracy100", "1");
+        keys.put("CrosshairPlacementSnapping", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[ValorantMasterSuite]");
+        }
+    }
+
     private static final String TAG = "ValorantConfigPatcher";
 
     // ─── Standard Patch ───────────────────────────────────────────────────────

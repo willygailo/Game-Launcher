@@ -319,13 +319,12 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jobjectArray jKeys, jobjectArray jValues) {
     if (!jPath || !jKeys || !jValues) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
     std::string pathStr(path);
-    std::string content = read_file_posix(pathStr);
 
     jsize count = env->GetArrayLength(jKeys);
-    bool isXml = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
-    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
-    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string, std::string>> keys;
+    keys.reserve(count);
 
     for (jsize i = 0; i < count; i++) {
         auto jKeyStr = (jstring) env->GetObjectArrayElement(jKeys, i);
@@ -333,23 +332,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         if (jKeyStr && jValStr) {
             const char *k = env->GetStringUTFChars(jKeyStr, nullptr);
             const char *v = env->GetStringUTFChars(jValStr, nullptr);
-            if (isXml) {
-                patch_xml_node(content, "string", k, v);
-            } else if (isJson) {
-                patch_json_node(content, k, v, false);
-            } else if (isCvar) {
-                patch_cvar(content, k, v);
-            } else {
-                patch_key_value(content, k, v);
+            if (k && v) {
+                keys.emplace_back(std::string(k), std::string(v));
             }
-            env->ReleaseStringUTFChars(jKeyStr, k);
-            env->ReleaseStringUTFChars(jValStr, v);
+            if (k) env->ReleaseStringUTFChars(jKeyStr, k);
+            if (v) env->ReleaseStringUTFChars(jValStr, v);
         }
         if (jKeyStr) env->DeleteLocalRef(jKeyStr);
         if (jValStr) env->DeleteLocalRef(jValStr);
     }
 
-    bool ok = write_file_atomic(pathStr, content);
+    bool ok = apply_keys_to_file(pathStr, path, keys, "BatchPatchKeys");
     env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
@@ -386,10 +379,17 @@ JNIEXPORT jstring JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_n
                 k = k.substr(7);
             }
             if (isXml) {
+                std::string valLower = v;
+                std::transform(valLower.begin(), valLower.end(), valLower.begin(), ::tolower);
                 std::string tag = "int";
-                if (v == "True" || v == "False") tag = "string";
-                else if (v.find('.') != std::string::npos) tag = "float";
-                patch_xml_node(content, tag, k, v);
+                std::string valFinal = v;
+                if (valLower == "true" || valLower == "false") {
+                    tag = "boolean";
+                    valFinal = valLower;
+                } else if (v.find('.') != std::string::npos) {
+                    tag = "float";
+                }
+                patch_xml_node(content, tag, k, valFinal);
             } else if (isJson) {
                 bool isNum = (!v.empty() && (isdigit((unsigned char)v[0]) || v[0] == '-'));
                 patch_json_node(content, k, v, isNum);

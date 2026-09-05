@@ -273,7 +273,21 @@ public final class GameSecurityBypassEngine {
 
                 // ── Free Fire / Garena ──
                 "/sdcard/Android/data/" + pkg + "/files/report",
-                "/data/data/" + pkg + "/files/report"
+                "/data/data/" + pkg + "/files/report",
+
+                // ── NetEase (Blood Strike), Delta Force & Arena Breakout 2026 ──
+                "/sdcard/Android/data/" + pkg + "/files/netease",
+                "/data/data/" + pkg + "/files/netease",
+                "/sdcard/Android/data/" + pkg + "/files/gcloud",
+                "/data/data/" + pkg + "/files/gcloud",
+                "/sdcard/Android/data/" + pkg + "/files/apollo",
+                "/data/data/" + pkg + "/files/apollo",
+                "/sdcard/Android/data/" + pkg + "/files/hawk_logs",
+                "/data/data/" + pkg + "/files/hawk_logs",
+                "/sdcard/Android/data/" + pkg + "/files/intl_service",
+                "/data/data/" + pkg + "/files/intl_service",
+                "/data/data/" + pkg + "/files/m_sdk_log",
+                "/sdcard/Android/data/" + pkg + "/files/m_sdk_log"
         );
 
         StringBuilder sb = new StringBuilder();

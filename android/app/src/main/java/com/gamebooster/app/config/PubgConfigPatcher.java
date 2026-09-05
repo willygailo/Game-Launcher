@@ -64,6 +64,22 @@ public class PubgConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    /**
+     * Executes single-pass atomic batch injection for all PUBGM cheats:
+     * Magic Bullet Aimbot, Hitbox 3.0x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load.
+     */
+    public static void applyPubgmMasterSuite(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUniversalCombatSuite(path);
+            NativeConfigInjector.injectSilentAimbot(path);
+            NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
+            NativeConfigInjector.injectUltraWallhackEspClarity(path);
+            NativeConfigInjector.injectPubgmBallisticsVelocityPenetration(path);
+            NativeConfigInjector.injectPubgmFastLoadAsyncStreaming(path);
+        }
+    }
 
     public static void applyNoScopeAimbot(String packageName) {
         if (packageName == null) return;

@@ -60,6 +60,35 @@ public class BloodStrikeConfigPatcher {
         }
     }
 
+    public static void applySlideCancelOverdrive(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectBloodStrikeSlideCancelOverdrive(path);
+        }
+    }
+
+    public static void applyBloodStrikeMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("ZeroRecoil", "1");
+        keys.put("RecoilHorizontalScale", "0");
+        keys.put("RecoilVerticalScale", "0");
+        keys.put("BulletSpread", "0");
+        keys.put("SlideCancelSprintSync", "1");
+        keys.put("SlideRecoveryDelayMs", "0");
+        keys.put("SprintAccelerationMax", "1");
+        keys.put("TacticalSlideZeroLag", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : GameConfigPathResolver.getPathsForGame(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[BloodStrikeMasterSuite]");
+        }
+    }
+
     private static final String TAG = "BloodStrikeConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

@@ -110,6 +110,22 @@ public final class ConfigFileHelper {
     }
 
     /**
+     * Single-pass batch patching: applies a Map of key-value pairs to the target path atomically.
+     * Reduces 30+ separate read/write operations down to 1 atomic write.
+     */
+    public static boolean patchKeysBatch(String path, Map<String, String> keyValues, String defaultSection) {
+        if (path == null || path.trim().isEmpty() || keyValues == null || keyValues.isEmpty()) {
+            return false;
+        }
+        String[] arr = new String[keyValues.size()];
+        int idx = 0;
+        for (Map.Entry<String, String> entry : keyValues.entrySet()) {
+            arr[idx++] = entry.getKey() + "=" + entry.getValue();
+        }
+        return patchKeys(path, arr, defaultSection);
+    }
+
+    /**
      * In-memory patching of content based on file extension and format.
      */
     public static String patchContentInMemory(String content, String[] keyValues, String defaultSection, String path) {

@@ -1194,6 +1194,102 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRifleScopeTieredHeadshot
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectSilentAimbot
+ * Zero-smoothing instant snap aimbot with head magnetism
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSilentAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectHitboxMultiplier
+ * Multiplies target collision hitbox for predictive bullet hit detection
+ * Signature: (Ljava/lang/String;F)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHitboxMultiplier
+  (JNIEnv *, jclass, jstring, jfloat);
+
+/*
+ * nativeInjectUltraWallhackEspClarity
+ * Eliminates volumetric fog, boosts silhouette contrast, and forces maximum draw distance
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraWallhackEspClarity
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectAutoSmiteRetribution
+ * Predictive objective HP threshold calculator for zero-latency steal
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAutoSmiteRetribution
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalCombatSuite
+ * Single-pass injection combining damage lock, zero recoil, silent aim, hitbox, and 1000Hz hit-reg
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatSuite
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbMasterComboSuite
+ * Single-pass master hero combo suite for Mobile Legends
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMasterComboSuite
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectBloodStrikeSlideCancelOverdrive
+ * Blood Strike fast tactical sprint and instant slide cancel
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeSlideCancelOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectDeltaForceNaniteShaderPrewarm
+ * Delta Force UE5 Nanite shader pre-caching and zero sway sniper
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceNaniteShaderPrewarm
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectArenaBreakoutThermalFootstepAudio
+ * Arena Breakout thermal clarity enhancement and audio visualizer footprint lock
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutThermalFootstepAudio
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectValorantCounterStrafeAimLock
+ * Valorant Mobile zero-deadzone counter strafe and crosshair head-level lock
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantCounterStrafeAimLock
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFarlightJetpackZeroCooldown
+ * Farlight 84 air-dash distance max and jetpack zero delay
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightJetpackZeroCooldown
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectStandoff2Tick128ZeroSpread
+ * Standoff 2 128-tick network simulation and zero bullet bloom
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Tick128ZeroSpread
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

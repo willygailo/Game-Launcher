@@ -62,6 +62,38 @@ public class DeltaForceConfigPatcher {
         }
     }
 
+    public static void applyNaniteShaderPrewarm(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectDeltaForceNaniteShaderPrewarm(path);
+        }
+    }
+
+    public static void applyDeltaForceMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("ZeroSniperSway", "1");
+        keys.put("BallisticsDropCompensation", "1");
+        keys.put("BulletVelocityMultiplier", "2.5");
+        keys.put("BreathHoldDuration", "999");
+        keys.put("AimAssistStrength", "100");
+        keys.put("AimMagnetism", "3");
+        keys.put("r.Nanite", "1");
+        keys.put("r.ShaderPipelineCache.Enabled", "1");
+        keys.put("r.ShaderPipelineCache.Prewarm", "1");
+        keys.put("r.ShaderPipelineCache.BatchSize", "100");
+        keys.put("r.Vulkan.AsyncCompute", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[DeltaForceMasterSuite]");
+        }
+    }
+
     private static final String TAG = "DeltaForceConfigPatcher";
 
     public static List<String> getConfigPaths(String packageName) {

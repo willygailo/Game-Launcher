@@ -1317,16 +1317,144 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"AllRifleAutoHeadshot", "1"}, {"RifleZeroRecoil", "1"}, {"RifleZeroSpread", "1"}, {"RifleScopeAimMagnetism", "3"},
         {"BulletTrackingEnemy", "1"}, {"ZeroADSDelay", "1"}, {"GyroStabilization", "1"}, {"GyroSampleRate", "1000"}, {"HitRegSyncRate", "1000"}
     };
-    for (const auto &kv : keys) {
-        if (isXml) patch_xml_node(content, "string", kv.first, kv.second);
-        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
-        else if (isCvar) patch_cvar(content, kv.first, kv.second);
-        else patch_key_value(content, kv.first, kv.second);
-    }
-    bool ok = write_file_atomic(pathStr, content);
-    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    bool ok = apply_keys_to_file(pathStr, path, keys, "RifleScopeTieredHeadshot");
     env->ReleaseStringUTFChars(jPath, path);
-    LOGI("RifleScopeTieredHeadshot injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Silent Aimbot & Magnetic Snap (Zero Smooth / Instant Lock) ───
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSilentAimbot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimAssistEnabled", "1"}, {"AimAssistStrength", "100"}, {"AimMagnetism", "3"},
+        {"AimSnapSpeed", "10"}, {"AimSnapThreshold", "0"}, {"AimSmoothFactor", "0"},
+        {"HeadMagnetism", "1"}, {"HeadBoneAimPriority", "1"}, {"AimBoneTarget", "0"},
+        {"TargetPriority", "0"}, {"HeroLock", "1"}, {"SkillSmartAim", "1"},
+        {"AdsZeroDelay", "1"}, {"PredictiveAim", "1"}, {"AimMethod", "1"},
+        {"r.AimAssistEnabled", "1"}, {"r.AimAssistStrength", "100"}, {"r.AimMagnetism", "3"},
+        {"r.AimSnapThreshold", "0"}, {"r.HeadBoneAimPriority", "1"}, {"r.PredictiveAim", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "SilentAimbot");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Enemy Hitbox Multiplier & Bullet Collision Expander ──────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHitboxMultiplier
+  (JNIEnv *env, jclass, jstring jPath, jfloat multiplier) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    float mult = multiplier > 1.0f ? multiplier : 3.0f;
+    std::string multStr = std::to_string(mult);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"HitboxMultiplier", multStr}, {"HitboxScale", multStr}, {"EnemyHitboxSize", multStr},
+        {"HeadHitboxMultiplier", multStr}, {"ChestHitboxMultiplier", multStr},
+        {"BulletMagnetism", "1"}, {"TrackingBullet", "1"}, {"TrackingStrength", "1000"},
+        {"BulletVelocityComp", "1"}, {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"},
+        {"r.PUBGBulletVelocityCompensation", "1"}, {"r.PUBGInstantHitReg", "1"},
+        {"bHeadshotHitboxExpand", "1"}, {"HitRegistrationRate", "1000"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "HitboxMultiplier");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Ultra Wallhack ESP & Model Silhouette Visibility Overdrive ───
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUltraWallhackEspClarity
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AllowOcclusionQueries", "1"}, {"r.Fog", "0"}, {"r.VolumetricFog", "0"},
+        {"CharacterSilhouetteBoost", "1"}, {"MaxDrawDistanceScale", "2.0"},
+        {"r.ViewDistanceQuality", "3"}, {"ModelDrawDistanceScale", "2.5"},
+        {"NoGrass", "1"}, {"r.ShadowQuality", "0"}, {"DisableSmokeDistortion", "1"},
+        {"NoFlashDistortion", "1"}, {"TargetGlowOutline", "1"}, {"HighlightEnemies", "1"},
+        {"r.EyeAdaptationQuality", "0"}, {"r.BloomQuality", "0"}, {"r.DepthOfFieldQuality", "0"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UltraWallhackEspClarity");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Auto Retribution & Objective Smite Steal ─────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAutoSmiteRetribution
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AutoRetriLordTurtle", "1"}, {"RetriHpThresholdCalc", "1"}, {"InstantSmite", "1"},
+        {"ObjectiveTargetLock", "1"}, {"AutoSmiteDamage", "10000"}, {"SmiteZeroDelay", "1"},
+        {"HokSmiteObjectivePriority", "1"}, {"HokSmiteStealMax", "1"}, {"SkillSmartAim", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"HitRegSyncRate", "1000"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "AutoSmiteRetribution");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Universal: Combat Master Suite (Single-Pass Multi-Cheat Payload) ────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatSuite
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // Damage & Hit-Reg
+        {"DamageLockMax", "1"}, {"EffectiveDPSMode", "3"}, {"HitRegSyncRate", "1000"},
+        {"FrameSyncDamage", "1"}, {"CritRateBoost", "100"}, {"PenetrationBoost", "1"},
+        {"TrueDamageBoost", "1"}, {"InstantHitReg", "1"},
+        // Aimbot & Recoil
+        {"AimAssistEnabled", "1"}, {"AimAssistStrength", "100"}, {"AimMagnetism", "3"},
+        {"AimSnapSpeed", "10"}, {"AimSnapThreshold", "0"}, {"AimSmoothFactor", "0"},
+        {"HeadMagnetism", "1"}, {"HeadBoneAimPriority", "1"}, {"AimBoneTarget", "0"},
+        {"ZeroRecoil", "1"}, {"RecoilScale", "0"}, {"VerticalRecoilScale", "0"},
+        {"HorizontalRecoilScale", "0"}, {"RecoilPatternScale", "0"}, {"RecoilControlAssist", "1"},
+        {"WeaponSpread", "0"}, {"BulletSpreadScale", "0"}, {"SpreadDecayRate", "10"},
+        {"WeaponSway", "0"}, {"ZeroSwaySniper", "1"}, {"TrackingBullet", "1"},
+        {"HitboxMultiplier", "3.0"}, {"HitboxScale", "3.0"},
+        // Speed & Touch
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"TouchSlopReduction", "1"}, {"TouchResponseLevel", "3"},
+        // Frame pacing & engine
+        {"r.OneFrameThreadLag", "0"}, {"r.FinishCurrentFrame", "0"}, {"bFramePacingEnabled", "True"},
+        {"AllowOcclusionQueries", "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UniversalCombatSuite");
+    env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 

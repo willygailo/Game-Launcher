@@ -65,6 +65,20 @@ public class FreeFireConfigPatcher {
         }
     }
 
+    public static void applyAutoDragHeadshot(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFreeFireAutoDragHeadshot(path);
+        }
+    }
+
+    public static void applyInstant360GlooWall(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFreeFireInstant360GlooWall(path);
+        }
+    }
+
     public static void applyFreeFireFastGlooWall(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
@@ -104,6 +118,33 @@ public class FreeFireConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectUniversalZeroDelaySkillTapAllHero(path);
+        }
+    }
+
+    /**
+     * Executes single-pass atomic batch injection for all Free Fire cheats & optimizations.
+     */
+    public static void applyFreeFireMasterSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> keys = new java.util.HashMap<>();
+        keys.put("AutoDragHeadshot", "1");
+        keys.put("DragSensitivityRamp", "3.5");
+        keys.put("HeadBonePriority", "1");
+        keys.put("CrosshairElevateOnFire", "1");
+        keys.put("AimAssistRadius", "360");
+        keys.put("InstantGlooWall", "1");
+        keys.put("GlooWallDeployDelayMs", "0");
+        keys.put("GlooWall360Surround", "1");
+        keys.put("DamageLockMax", "1");
+        keys.put("AimAssistLockMax", "1");
+        keys.put("TouchPollingRate", "1000");
+        keys.put("TouchZeroDelay", "1");
+        keys.put("ZeroInputDelay", "1");
+        keys.put("HitRegSyncRate", "1000");
+        keys.put("FastLootWeaponSwap", "1");
+        keys.put("InstantSprintTurbo", "1");
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.batchInjectKeys(path, keys, "[FreeFireMasterSuite]");
         }
     }
 
