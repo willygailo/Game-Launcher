@@ -167,15 +167,24 @@ android {
             }
         }
     }
+    // AGP 9.4+ removed legacy applicationVariants DSL; use task post-packaging for custom output names
+}
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            if (variant.buildType.name == 'debug') {
-                outputFileName = "Game_Space_Debug.apk"
-            } else {
-                outputFileName = "Game_Space.apk"
+tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.configureEach { task ->
+    task.doLast {
+        try {
+            File dir = task.outputDirectory.get().asFile
+            File debugApk = new File(dir, "app-debug.apk")
+            if (debugApk.exists()) {
+                File target = new File(dir, "Game_Space_Debug.apk")
+                target.bytes = debugApk.bytes
             }
-        }
+            File releaseApk = new File(dir, "app-release.apk")
+            if (releaseApk.exists()) {
+                File target = new File(dir, "Game_Space.apk")
+                target.bytes = releaseApk.bytes
+            }
+        } catch (Exception ignored) {}
     }
 }
 
