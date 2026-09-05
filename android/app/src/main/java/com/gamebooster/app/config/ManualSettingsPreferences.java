@@ -103,6 +103,61 @@ public class ManualSettingsPreferences {
     private static final String KEY_THERMAL_BYPASS = "pref_thermal_bypass";
     private static final String KEY_FOCUS_MODE = "pref_focus_mode";
     private static final String KEY_FOCUS_WHITELIST = "pref_focus_whitelist";
+    private static final String KEY_UCLAMP_BOOST = "pref_uclamp_boost";
+    private static final String KEY_TOUCH_1000HZ_LOCK = "pref_touch_1000hz_lock";
+    private static final String KEY_PHANTOM_FREEZER_KILL = "pref_phantom_freezer_kill";
+    private static final String KEY_VULKAN_SKIAVK = "pref_vulkan_skiavk";
+    private static final String KEY_MEMORY_16KB_SHIELD = "pref_memory_16kb_shield";
+
+    public static void setUclampBoostEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_UCLAMP_BOOST, enabled).apply();
+    }
+
+    public static boolean isUclampBoostEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_UCLAMP_BOOST, true);
+    }
+
+    public static void setTouch1000HzLockEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_TOUCH_1000HZ_LOCK, enabled).apply();
+    }
+
+    public static boolean isTouch1000HzLockEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_TOUCH_1000HZ_LOCK, true);
+    }
+
+    public static void setPhantomFreezerKillEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_PHANTOM_FREEZER_KILL, enabled).apply();
+    }
+
+    public static boolean isPhantomFreezerKillEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_PHANTOM_FREEZER_KILL, true);
+    }
+
+    public static void setVulkanSkiaVkEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_VULKAN_SKIAVK, enabled).apply();
+    }
+
+    public static boolean isVulkanSkiaVkEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_VULKAN_SKIAVK, true);
+    }
+
+    public static void setMemory16kbShieldEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_MEMORY_16KB_SHIELD, enabled).apply();
+    }
+
+    public static boolean isMemory16kbShieldEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_MEMORY_16KB_SHIELD, true);
+    }
 
     public static void setFocusModeEnabled(Context context, boolean enabled) {
         if (context == null) return;

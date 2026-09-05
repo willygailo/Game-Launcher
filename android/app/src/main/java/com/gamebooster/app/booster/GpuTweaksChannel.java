@@ -51,12 +51,18 @@ public class GpuTweaksChannel {
     }
 
     public static boolean enableVulkanRenderer() {
-        CommandExecutor.setSystemProperty("debug.hwui.renderer", "vulkan");
+        CommandExecutor.setSystemProperty("debug.hwui.renderer", "skiavk");
         CommandExecutor.setSystemProperty("debug.renderengine.backend", "vulkan");
         CommandExecutor.setSystemProperty("debug.renderengine.skia_pipeline", "true");
         CommandExecutor.setSystemProperty("debug.hwui.use_gpu_pixel_buffers", "true");
         CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "-20");
+        CommandExecutor.setSystemProperty("debug.hwui.skip_empty_damage", "true");
         CommandExecutor.setSystemProperty("debug.sf.hw", "1");
+        CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
+        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
+        CommandExecutor.setSystemProperty("debug.sf.enable_gl_backpressure", "0");
+        CommandExecutor.setSystemProperty("debug.sf.predict_hwc_composition_strategy", "1");
+        purgeAngleDriver();
 
         // Apply Vulkan Game Overlay to all registered games on Android 13+
         for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {

@@ -170,11 +170,14 @@ public final class LobbyInjectionEngine {
                 }
                 CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
 
-                // Dispatch full game-specific 2026 Overdrive suite
-                GameAutoInjectDispatcher.dispatchForPackage(context, pkg);
+                // Dispatch full game-specific 2026 Overdrive suite with force=true to bypass previous cache
+                GameAutoInjectDispatcher.dispatchForPackage(context, pkg, true);
+
+                // Re-apply anti-tamper permissions, timestamp cloaking, and SELinux contexts right after in-lobby injection
+                GameSecurityBypassEngine.postInjectionBypassAndLock(pkg);
 
                 long duration = System.currentTimeMillis() - startTime;
-                Log.i(TAG, "✅ [Stage 2 COMPLETE] In-Lobby Injection successful for " + pkg + " in " + duration + "ms");
+                Log.i(TAG, "✅ [Stage 2 COMPLETE] In-Lobby Injection successful & locked for " + pkg + " in " + duration + "ms");
 
                 final String gameTitle = com.gamebooster.app.games.GamePackageRegistry.getGameTitle(pkg, context);
 

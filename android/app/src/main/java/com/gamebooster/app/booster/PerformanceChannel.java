@@ -139,6 +139,10 @@ public class PerformanceChannel {
                     "echo 0-" + bgCore + " > /dev/cpuset/background/cpus 2>/dev/null\n" +
                     "echo 0-" + bgCore + " > /dev/cpuset/system-background/cpus 2>/dev/null\n" +
                     "echo 0-" + maxCore + " > /dev/cpuset/restricted/cpus 2>/dev/null\n" +
+                    "echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null\n" +
+                    "echo 1024 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null\n" +
+                    "echo 1024 > /dev/cpuset/foreground/uclamp.min 2>/dev/null\n" +
+                    "echo 0 > /dev/cpuset/background/uclamp.max 2>/dev/null\n" +
                     "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done\n" +
                     "setprop sys.games.cpu_affinity 1\n" +
                     "setprop sys.perf.sched_uclamp_min 1024\n" +
@@ -149,18 +153,31 @@ public class PerformanceChannel {
                     "setprop sys.perf.sched_boost 1\n" +
                     "cmd power set-fixed-performance-mode-enabled true\n" +
                     // 5. Universal & Chipset GPU Graphics Processing (Snapdragon, MediaTek, Tensor, Exynos)
+                    "setprop debug.hwui.renderer skiavk\n" +
+                    "setprop debug.renderengine.backend vulkan\n" +
                     "setprop debug.sf.hw 1\n" +
                     "setprop debug.renderengine.skia_pipeline true\n" +
                     "setprop debug.hwui.use_gpu_pixel_buffers true\n" +
                     "setprop debug.hwui.render_thread_priority -20\n" +
                     "setprop debug.hwui.skip_empty_damage true\n" +
                     "setprop debug.sf.predict_hwc_composition_strategy 1\n" +
+                    "setprop debug.sf.latch_unsignaled 1\n" +
+                    "setprop debug.sf.disable_backpressure 1\n" +
+                    "setprop debug.sf.enable_gl_backpressure 0\n" +
+                    "setprop debug.sf.early_phase_offset_ns 0\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 0\n" +
+                    "setprop debug.sf.early_gl_phase_offset_ns 0\n" +
                     "setprop debug.sf.enable_adpf_cpu_hint true\n" +
+                    "setprop debug.sf.enable_adpf_gpu_hint true\n" +
                     "setprop debug.hwui.use_hint_manager true\n" +
                     "setprop persist.sys.adpf.enable 1\n" +
+                    "setprop persist.sys.adpf.mode 1\n" +
                     "setprop debug.adpf.hint.enabled 1\n" +
                     "setprop debug.adpf.cpu.boost 1\n" +
                     "setprop debug.adpf.gpu.boost 1\n" +
+                    "setprop debug.adpf.workload_type gaming\n" +
+                    "setprop persist.sys.adpf.headroom.boost 1\n" +
+                    "setprop persist.sys.adpf.target_fps " + hz + "\n" +
                     "setprop debug.adreno.turbo 1\n" +
                     "setprop debug.adreno.perf_level 0\n" +
                     "setprop debug.qualcomm.sns.hal 0\n" +
@@ -269,6 +286,8 @@ public class PerformanceChannel {
                     "setprop debug.input.max_events_per_sec 1000\n" +
                     "setprop debug.hwui.input_latency_timeout 0\n" +
                     "setprop persist.sys.input.latency 0\n" +
+                    "settings put system sec_touch_sensitivity 1\n" +
+                    "setprop persist.sys.sec.touch_rate 1000\n" +
                     "setprop persist.sys.touch.report_rate 1000\n" +
                     "setprop persist.vendor.touch.sampling_rate 1000\n" +
                     "setprop debug.touch.sampling_rate 1000\n" +
@@ -276,6 +295,18 @@ public class PerformanceChannel {
                     "setprop vendor.touch.game_mode 1\n" +
                     "setprop persist.asus.touch_sampling_rate 1000\n" +
                     "setprop persist.vendor.asus.touch_opt 1\n" +
+                    "setprop persist.sys.miui.game_touch_rate 1000\n" +
+                    "setprop persist.vendor.touch.touch_boost 1\n" +
+                    "setprop persist.sys.touch.smooth 1\n" +
+                    "setprop persist.vendor.oplus.touch_rate 1000\n" +
+                    "setprop persist.sys.oplus.game_touch 1\n" +
+                    "setprop persist.vivo.touch_sample_rate 1000\n" +
+                    "setprop persist.sys.vivo.gamemode.touch 1\n" +
+                    "setprop persist.sys.nubia.touch_sampling_rate 1000\n" +
+                    "setprop persist.sys.redmagic.touch_mode 1\n" +
+                    "setprop persist.mot.touch.sampling_rate 1000\n" +
+                    "setprop persist.input.velocitytracker.strategy lsq2\n" +
+                    "setprop touch.motion_filter.enable 0\n" +
                     "setprop persist.sys.touch.edge_filter 0\n" +
                     "setprop persist.vendor.touch.edge_reject 0\n" +
                     "setprop persist.sys.touch.corner_filter 0\n" +
@@ -313,6 +344,14 @@ public class PerformanceChannel {
                     "echo 65536 > /proc/sys/vm/min_free_kbytes 2>/dev/null\n" +
                     "echo 0 > /proc/sys/vm/watermark_boost_factor 2>/dev/null\n" +
                     "echo 0 > /proc/sys/vm/compaction_proactiveness 2>/dev/null\n" +
+                    "sysctl -w vm.max_map_count=1048576 2>/dev/null\n" +
+                    "echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null\n" +
+                    "device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null\n" +
+                    "settings put global settings_enable_monitor_phantom_procs false 2>/dev/null\n" +
+                    "settings put global cached_apps_freezer disabled 2>/dev/null\n" +
+                    "cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null\n" +
+                    "settings put global always_finish_activities 0 2>/dev/null\n" +
+                    "settings put global background_process_limit -1 2>/dev/null\n" +
                     "echo 0 > /proc/sys/kernel/printk 2>/dev/null\n" +
                     "echo 0 > /proc/sys/kernel/watchdog 2>/dev/null\n" +
                     "echo 0 > /proc/sys/kernel/nmi_watchdog 2>/dev/null\n" +

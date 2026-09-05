@@ -363,13 +363,10 @@ public final class GameSecurityBypassEngine {
             sb.append("  fi; ");
             sb.append("done; ");
 
-            // Repair truncated / 0-byte PlayerPrefs XML files that cause Unity XML parser to throw exceptions and crash
-            sb.append("for f in '/data/data/").append(pkg).append("/shared_prefs/'*.xml '/data/data/").append(pkg).append("/files/'*.xml '/sdcard/Android/data/").append(pkg).append("/files/'*.xml '/storage/emulated/0/Android/data/").append(pkg).append("/files/'*.xml; do ");
-            sb.append("  if [ -f \"$f\" ]; then ");
-            sb.append("    SZ=$(wc -c < \"$f\" 2>/dev/null || echo 0); ");
-            sb.append("    if [ \"$SZ\" -lt 50 ] || (! grep -q '<map>' \"$f\" 2>/dev/null) || (! grep -q '</map>' \"$f\" 2>/dev/null); then ");
-            sb.append("      printf \"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\\n<map>\\n</map>\\n\" > \"$f\" 2>/dev/null; ");
-            sb.append("    fi; ");
+            // Repair 0-byte / empty PlayerPrefs XML files specifically to prevent Unity parser crash without touching other XMLs
+            sb.append("for f in '/data/data/").append(pkg).append("/shared_prefs/'*playerprefs*.xml '/storage/emulated/0/Android/data/").append(pkg).append("/shared_prefs/'*playerprefs*.xml; do ");
+            sb.append("  if [ -f \"$f\" ] && [ ! -s \"$f\" ]; then ");
+            sb.append("    printf \"<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\\n<map>\\n</map>\\n\" > \"$f\" 2>/dev/null; ");
             sb.append("  fi; ");
             sb.append("done; ");
 

@@ -371,6 +371,89 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
+            <!-- CARD 3.5: ANDROID 13–16 ADVANCED PERFORMANCE ENGINE -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚀 ANDROID 13 / 14 / 15 / 16 ADVANCED SYSTEM ENGINE"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Exclusive next-gen kernel uclamp, 1000Hz OEM digitizers, 16KB memory page shield, &amp; ADPF 2.0 flags"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btn_apply_ultimate_android_engine"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/btn_cyber_cyan"
+                    android:text="⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)"
+                    android:textColor="#080B11"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Switch
+                    android:id="@+id/switch_uclamp_boost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="⚡ Linux Kernel uclamp 1024 Boost &amp; CPUSet Priority Lock"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_touch_1000hz_lock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🎯 Universal 1000Hz Hardware Digitizer &amp; Aim Velocity (LSQ2)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_phantom_freezer_kill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🛡️ Bypass Phantom Process Killer &amp; Cached Apps Freezer"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_vulkan_skiavk"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🔥 Native Vulkan SkiaVK Pipeline (Purge ANGLE &amp; Zero Backpressure)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_memory_16kb_shield"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="💾 16KB Page Buffer Shield &amp; Swappiness 10 (Android 15/16 Ready)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
             <!-- CARD 4: NETWORK & LATENCY OPTIMIZATION -->
             <LinearLayout
                 android:layout_width="match_parent"

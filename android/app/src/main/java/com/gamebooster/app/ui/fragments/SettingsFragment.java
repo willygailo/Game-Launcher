@@ -4,6 +4,7 @@ import com.gamebooster.app.ui.adapters.SpoofProfileAdapter;
 
 import com.gamebooster.app.ui.adapters.TweaksAdapter;
 import com.gamebooster.app.config.*;
+import com.gamebooster.app.engine.CommandExecutor;
 
 import android.content.Context;
 import android.content.Intent;
@@ -102,6 +103,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchCpuMode;
     private Switch switchThermalBypass;
     private Switch switchAdpfEngine;
+    private Switch switchUclampBoost;
+    private Switch switchTouch1000hzLock;
+    private Switch switchPhantomFreezerKill;
+    private Switch switchVulkanSkiavk;
+    private Switch switchMemory16kbShield;
+    private Button btnApplyUltimateAndroidEngine;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switch5g6gData;
@@ -478,6 +485,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchThermalBypass = view.findViewById(R.id.switch_thermal_bypass);
         switchAdpfEngine = view.findViewById(R.id.switch_adpf_engine);
 
+        switchUclampBoost = view.findViewById(R.id.switch_uclamp_boost);
+        switchTouch1000hzLock = view.findViewById(R.id.switch_touch_1000hz_lock);
+        switchPhantomFreezerKill = view.findViewById(R.id.switch_phantom_freezer_kill);
+        switchVulkanSkiavk = view.findViewById(R.id.switch_vulkan_skiavk);
+        switchMemory16kbShield = view.findViewById(R.id.switch_memory_16kb_shield);
+        btnApplyUltimateAndroidEngine = view.findViewById(R.id.btn_apply_ultimate_android_engine);
+
         // Always ensure ANGLE driver is permanently purged from Android Settings
         AppExecutors.getInstance().executeCommand(GpuTweaksChannel::purgeAngleDriver);
 
@@ -501,6 +515,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
             if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
             if (switchAdpfEngine != null) switchAdpfEngine.setChecked(ManualSettingsPreferences.isAdpfEngineEnabled(getContext()));
+
+            if (switchUclampBoost != null) switchUclampBoost.setChecked(ManualSettingsPreferences.isUclampBoostEnabled(getContext()));
+            if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(ManualSettingsPreferences.isTouch1000HzLockEnabled(getContext()));
+            if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(ManualSettingsPreferences.isPhantomFreezerKillEnabled(getContext()));
+            if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(ManualSettingsPreferences.isVulkanSkiaVkEnabled(getContext()));
+            if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(ManualSettingsPreferences.isMemory16kbShieldEnabled(getContext()));
             isProgrammaticToggle = false;
         }
 
@@ -578,6 +598,159 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 Toast.makeText(getContext(), isChecked
                         ? "⚡ Android 13–16 ADPF Power Hint Engine Enabled"
                         : "ADPF Engine Disabled", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (switchUclampBoost != null) {
+            switchUclampBoost.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Kernel uclamp 1024 Boost")) return;
+                ManualSettingsPreferences.setUclampBoostEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        com.gamebooster.app.booster.CpuGovernorChannel.tuneMultiCoreTopology();
+                        com.gamebooster.app.booster.CpuGovernorChannel.applyExtendedKernelFlags();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "⚡ Linux Kernel uclamp 1024 Boost Locked" : "uclamp Boost Reverted", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchTouch1000hzLock != null) {
+            switchTouch1000hzLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "1000Hz Hardware Digitizer")) return;
+                ManualSettingsPreferences.setTouch1000HzLockEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+                    } else {
+                        com.gamebooster.app.booster.TouchLatencyChannel.restoreDefaultTouchResponse();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🎯 Universal 1000Hz Digitizer & LSQ2 Tracking Locked" : "Touch Sampling Reverted to Default", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchPhantomFreezerKill != null) {
+            switchPhantomFreezerKill.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Phantom Process Killer Bypass")) return;
+                ManualSettingsPreferences.setPhantomFreezerKillEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        CommandExecutor.executeSystemCommand("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
+                    } else {
+                        CommandExecutor.executeSystemCommand("settings put global settings_enable_monitor_phantom_procs true 2>/dev/null; settings put global cached_apps_freezer enabled 2>/dev/null");
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🛡️ Android 13–16 Phantom Killer & App Freezer Disabled!" : "Process Freezer Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchVulkanSkiavk != null) {
+            switchVulkanSkiavk.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Vulkan SkiaVK Pipeline")) return;
+                ManualSettingsPreferences.setVulkanSkiaVkEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "🔥 Native Vulkan SkiaVK Pipeline Active (ANGLE Purged)" : "Vulkan SkiaVK Reverted", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchMemory16kbShield != null) {
+            switchMemory16kbShield.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "16KB Page Buffer Shield")) return;
+                ManualSettingsPreferences.setMemory16kbShieldEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null");
+                    } else {
+                        CommandExecutor.executeSystemCommand("sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null");
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked ? "💾 16KB Page Buffer Shield & Swappiness 10 Active!" : "Memory Tunings Reset", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnApplyUltimateAndroidEngine != null) {
+            btnApplyUltimateAndroidEngine.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("Ultimate Android 13–16 Engine")) return;
+                btnApplyUltimateAndroidEngine.setEnabled(false);
+                btnApplyUltimateAndroidEngine.setText("⏳ PUSHING NEXT-GEN ENGINE...");
+                Toast.makeText(getContext(), "🚀 Launching Ultimate Android 13–16 Performance Pipeline...", Toast.LENGTH_SHORT).show();
+
+                AppExecutors.getInstance().executeCommand(() -> {
+                    // 1. CPU & Topology
+                    com.gamebooster.app.booster.CpuGovernorChannel.tuneMultiCoreTopology();
+                    com.gamebooster.app.booster.CpuGovernorChannel.applyExtendedKernelFlags();
+                    com.gamebooster.app.booster.CpuGovernorChannel.setPerformanceLock();
+
+                    // 2. GPU & SkiaVK
+                    com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
+                    com.gamebooster.app.booster.GpuTweaksChannel.setGpuMaxPerformance();
+                    com.gamebooster.app.booster.GpuTweaksChannel.purgeAngleDriver();
+
+                    // 3. Touch 1000Hz Digitizer
+                    com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+
+                    // 4. Memory 16KB & Phantom Freezer Kill
+                    CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
+
+                    // 5. Master performance script for 185Hz
+                    com.gamebooster.app.booster.PerformanceChannel.writeAndExecutePerformanceTweaksScript(185);
+
+                    // Save all preferences
+                    ManualSettingsPreferences.setUclampBoostEnabled(getContext(), true);
+                    ManualSettingsPreferences.setTouch1000HzLockEnabled(getContext(), true);
+                    ManualSettingsPreferences.setPhantomFreezerKillEnabled(getContext(), true);
+                    ManualSettingsPreferences.setVulkanSkiaVkEnabled(getContext(), true);
+                    ManualSettingsPreferences.setMemory16kbShieldEnabled(getContext(), true);
+                    ManualSettingsPreferences.setAdpfEngineEnabled(getContext(), true);
+
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (!isAdded() || getContext() == null) return;
+                        btnApplyUltimateAndroidEngine.setEnabled(true);
+                        btnApplyUltimateAndroidEngine.setText("⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)");
+
+                        isProgrammaticToggle = true;
+                        if (switchUclampBoost != null) switchUclampBoost.setChecked(true);
+                        if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(true);
+                        if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(true);
+                        if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(true);
+                        if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(true);
+                        if (switchAdpfEngine != null) switchAdpfEngine.setChecked(true);
+                        isProgrammaticToggle = false;
+
+                        Toast.makeText(getContext(), "🔥 ULTIMATE ENGINE LOCKED: All Android 13–16 CPU/GPU/Touch/ADPF Tweaks Active!", Toast.LENGTH_LONG).show();
+                    });
+                });
             });
         }
 

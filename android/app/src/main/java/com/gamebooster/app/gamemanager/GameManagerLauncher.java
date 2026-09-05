@@ -31,6 +31,7 @@ import com.gamebooster.app.config.GameAutoInjectDispatcher;
 import com.gamebooster.app.config.GameConfigPatcher;
 import com.gamebooster.app.config.GameConfigStorageAccessEngine;
 import com.gamebooster.app.config.GameSecurityBypassEngine;
+import com.gamebooster.app.config.LobbyInjectionEngine;
 import com.gamebooster.app.config.NativeConfigInjector;
 
 import java.util.List;
@@ -120,9 +121,23 @@ public final class GameManagerLauncher {
         final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 1: RESOLVE BEST LAUNCH INTENT IMMEDIATELY (Zero I/O Lag)
+        // STEP 1: VERIFY PACKAGE INSTALLATION & RESOLVE LAUNCH INTENT
         // ═══════════════════════════════════════════════════════════
         PackageManager pm = appContext.getPackageManager();
+        boolean isInstalled = false;
+        if (pm != null) {
+            try {
+                pm.getPackageInfo(pkg, 0);
+                isInstalled = true;
+            } catch (Throwable ignored) {}
+        }
+
+        if (!isInstalled) {
+            Toast.makeText(appContext, "❌ Game Not Installed: " + gameTitle + " (Please install APK first)", Toast.LENGTH_LONG).show();
+            if (listener != null) listener.onLaunchFailed(pkg, "Package " + pkg + " is not installed on device");
+            return;
+        }
+
         Intent targetIntent = launchIntent;
         if (targetIntent == null && pm != null) {
             try {
@@ -139,23 +154,19 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 1.5: SYNCHRONOUS PRE-LAUNCH CONFIG INJECTION & BYPASS
+        // STEP 2: ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
+        // Re-applies configs after game splash/login to guarantee mods never get wiped
         // ═══════════════════════════════════════════════════════════
-        preparePreLaunchConfigInjection(appContext, pkg, fps);
+        LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2: INSTANT FOREGROUND DISPATCH & PRE-LAUNCH TURBO BURST
+        // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
         // ═══════════════════════════════════════════════════════════
-        try {
-            com.gamebooster.app.config.GameSecurityBypassEngine.purgeCorruptedAssetCaches(pkg);
-            com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
-        } catch (Throwable t) {
-            Log.w(TAG, "FastLoad burst trigger note for " + pkg + ": " + t.getMessage());
-        }
-
         boolean launchedDirectly = false;
         if (targetIntent != null) {
-            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             try {
                 context.startActivity(targetIntent);
@@ -179,10 +190,18 @@ public final class GameManagerLauncher {
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: ASYNC PARALLEL HARDWARE, DRIVER & ADVANCED BOOSTS
+        // STEP 4: ASYNC PARALLEL HARDWARE, CONFIG PREP, DRIVER & BOOSTS
         // ═══════════════════════════════════════════════════════════
         AppExecutors.getInstance().executeCommand(() -> {
             try {
+                // Background Stage 1 config injection & fast-load burst (Zero UI lag)
+                try {
+                    preparePreLaunchConfigInjection(appContext, pkg, fps);
+                    com.gamebooster.app.config.GameSecurityBypassEngine.purgeCorruptedAssetCaches(pkg);
+                    com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Pre-launch prep background error for " + pkg + ": " + t.getMessage());
+                }
                 // If direct framework launch failed, execute elevated shell dispatch immediately
                 if (!directSuccess) {
                     boolean elevatedSuccess = false;
@@ -221,26 +240,10 @@ public final class GameManagerLauncher {
                             if (listener != null) listener.onLaunchSuccess(pkg);
                         });
                     } else {
-                        // Check if package is installed on device at all
-                        boolean isInstalled = false;
-                        if (pm != null) {
-                            try {
-                                pm.getPackageInfo(pkg, 0);
-                                isInstalled = true;
-                            } catch (Throwable ignored) {}
-                        }
-
-                        if (!isInstalled) {
-                            AppExecutors.getInstance().postToMainThread(() -> {
-                                Toast.makeText(appContext, "❌ Game Not Installed: " + gameTitle, Toast.LENGTH_SHORT).show();
-                                if (listener != null) listener.onLaunchFailed(pkg, "Package " + pkg + " not installed on device");
-                            });
-                        } else {
-                            AppExecutors.getInstance().postToMainThread(() -> {
-                                Toast.makeText(appContext, "⚠️ Elevated Launch Dispatched for " + gameTitle, Toast.LENGTH_SHORT).show();
-                                if (listener != null) listener.onLaunchFailed(pkg, "Unable to launch game activity directly");
-                            });
-                        }
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            Toast.makeText(appContext, "⚠️ Elevated Launch Dispatched for " + gameTitle, Toast.LENGTH_SHORT).show();
+                            if (listener != null) listener.onLaunchFailed(pkg, "Unable to launch game activity directly");
+                        });
                     }
                 }
 

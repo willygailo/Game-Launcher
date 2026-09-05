@@ -145,6 +145,15 @@ public class ConfigPatcherTest {
         assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/obb/com.tencent.ig/main.obb"));
         assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/intro.mp4"));
         assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.tencent.ig/files/audio.bank"));
+
+        // CRITICAL: Must reject game engine manifests, asset checksums, and XML files in assets/
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/BinaryPatchMD5.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/SplitLibMD5.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/ResCheckConf.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/version/android/realversion.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/mola_config.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/NewbieOffline.xml"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath("/storage/emulated/0/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android/mode_versions_build.xml"));
     }
 
     @Test
@@ -240,6 +249,19 @@ public class ConfigPatcherTest {
         assertNotNull(patched);
         assertTrue(patched.contains("fps_limit"));
         assertTrue(patched.contains("144"));
+    }
+
+    @Test
+    public void testConfigFileHelperNonMapXmlProtection() {
+        String assetManifestXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<SOInformation>\n    <FileName>libcsharp.bytes</FileName>\n    <MD5>abcd1234efgh5678</MD5>\n</SOInformation>";
+        String[] updates = new String[]{
+                "HighFPSMode=3",
+                "FrameRateLevel=6"
+        };
+        String result = ConfigFileHelper.patchXmlContent(assetManifestXml, updates);
+        assertEquals(assetManifestXml, result);
+        assertFalse(result.contains("<map>"));
+        assertFalse(result.contains("HighFPSMode"));
     }
 
     @Test

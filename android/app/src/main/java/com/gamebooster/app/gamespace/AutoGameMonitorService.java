@@ -161,6 +161,10 @@ public class AutoGameMonitorService extends Service {
                     // Execute full GameManager Session Engine
                     com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
 
+                    int targetFps = com.gamebooster.app.config.GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
+                    if (targetFps <= 0) targetFps = 185;
+                    com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(getApplicationContext(), currentPackage, targetFps, 16);
+
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                     com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
                     if (!FloatingOverlayService.isOverlayRunning()) {

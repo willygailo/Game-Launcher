@@ -366,6 +366,10 @@ JNIEXPORT jstring JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_n
     }
 
     jsize count = env->GetArrayLength(jKeys);
+    if (formatType == 1 && !content.empty() && content.find("<map>") == std::string::npos) {
+        // Not a SharedPreferences XML - refuse to corrupt non-<map> XML files
+        return env->NewStringUTF(content.c_str());
+    }
     bool isXml = (formatType == 1 || content.find("<map>") != std::string::npos);
     bool isJson = (formatType == 2 || (!content.empty() && content.front() == '{'));
     bool isCvar = (formatType == 0 && (content.find("+CVars=") != std::string::npos || content.find("[UserCustom") != std::string::npos));
@@ -413,6 +417,13 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     const char *val = env->GetStringUTFChars(jValue, nullptr);
 
     std::string content = read_file_posix(path);
+    if (!content.empty() && content.find("<map>") == std::string::npos) {
+        env->ReleaseStringUTFChars(jPath, path);
+        env->ReleaseStringUTFChars(jTag, tag);
+        env->ReleaseStringUTFChars(jKey, key);
+        env->ReleaseStringUTFChars(jValue, val);
+        return JNI_FALSE;
+    }
     bool ok = patch_xml_node(content, tag, key, val);
     if (ok) {
         ok = write_file_atomic(path, content);

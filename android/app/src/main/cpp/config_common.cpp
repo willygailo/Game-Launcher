@@ -166,6 +166,11 @@ bool patch_cvar(std::string& content, const std::string& cvar, const std::string
 }
 
 bool patch_xml_node(std::string& content, const std::string& tag, const std::string& key, const std::string& value) {
+    // CRITICAL PROTECTION: If content is non-empty and does NOT have <map>, refuse to touch it!
+    if (!content.empty() && content.find("<map>") == std::string::npos) {
+        return false;
+    }
+
     std::string namePattern = "name=\"" + key + "\"";
     size_t pos = content.find(namePattern);
     if (pos != std::string::npos) {
@@ -199,7 +204,7 @@ bool patch_xml_node(std::string& content, const std::string& tag, const std::str
     if (mapEnd != std::string::npos) {
         content.insert(mapEnd, entry);
     } else {
-        if (content.empty() || content.find("<map>") == std::string::npos) {
+        if (content.empty()) {
             content = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n" + entry + "</map>\n";
         } else {
             content += entry;

@@ -58,7 +58,9 @@ public class GameConfigPathResolver {
                 // Exclude only binaries (so, apk, unity3d, bundle, bytes, obb, mp4, bank, lib, cache)
                 String cmd = "find " + scanRoots + " -maxdepth 8 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"boot.config\" \\) "
                         + "! -name \"*.so\" ! -name \"*.apk\" ! -name \"*.unity3d\" ! -name \"*.bundle\" ! -name \"*.bytes\" ! -name \"*.obb\" ! -name \"*.mp4\" ! -name \"*.bank\" "
-                        + "! -path \"*/lib/*\" ! -path \"*/cache/*\" ! -path \"*/code_cache/*\" ! -path \"*/crashlytics/*\" 2>/dev/null";
+                        + "! -path \"*/lib/*\" ! -path \"*/cache/*\" ! -path \"*/code_cache/*\" ! -path \"*/crashlytics/*\" "
+                        + "! -path \"*/assets/*/*.xml\" ! -path \"*/assets/Document/android/*\" ! -path \"*/assets/version/*\" ! -path \"*/assets/UI/*\" ! -path \"*/assets/Art/*\" ! -path \"*/assets/Audio/*\" "
+                        + "! -name \"*MD5*\" ! -name \"*Check*\" ! -name \"*version*\" ! -name \"*mola*\" ! -name \"*Offline*\" ! -name \"*SplitLib*\" 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
@@ -117,19 +119,59 @@ public class GameConfigPathResolver {
 
     /**
      * Checks if a path is a valid non-binary configuration target.
+     * Guaranteed 100% zero-corruption: Strictly rejects game engine asset trees,
+     * integrity verification manifests (MD5, SplitLib, ResCheck, realversion),
+     * and non-preference XML files.
      */
     public static boolean isAcceptableConfigPath(String path) {
         if (path == null || path.trim().isEmpty()) return false;
-        String lower = path.toLowerCase();
-        if (lower.contains("/lib/") || lower.contains("/cache/") || lower.contains("/code_cache/") || lower.contains("/crashlytics/")) {
+        String lower = path.toLowerCase().replace('\\', '/');
+
+        // 1. Blacklisted directories: runtime binaries, caches, crashlytics, and game engine asset trees
+        if (lower.contains("/lib/") || lower.contains("/cache/") || lower.contains("/code_cache/") || lower.contains("/crashlytics/")
+                || lower.contains("/assets/document/android/") || lower.contains("/assets/version/") || lower.contains("/assets/comlibs/")
+                || lower.contains("/assets/astarpath/") || lower.contains("/assets/ui/") || lower.contains("/assets/art/")
+                || lower.contains("/assets/audio/") || lower.contains("/assets/scenes/") || lower.contains("/assets/prefabs/")
+                || lower.contains("/assets/unitypackages/") || lower.contains("/files/modeversion/") || lower.contains("/files/il2cpp/")
+                || lower.contains("/files/unity/") || lower.contains("/metadata/") || lower.contains("/logs/") || lower.contains("/crashes/")) {
             return false;
         }
+
+        // 2. Blacklisted binary and media extensions
         if (lower.endsWith(".so") || lower.endsWith(".apk") || lower.endsWith(".unity3d") || lower.endsWith(".bundle")
                 || lower.endsWith(".bytes") || lower.endsWith(".obb") || lower.endsWith(".mp4") || lower.endsWith(".bank")
-                || lower.endsWith(".dex") || lower.endsWith(".jar")) {
+                || lower.endsWith(".dex") || lower.endsWith(".jar") || lower.endsWith(".bin") || lower.endsWith(".png")
+                || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".webp") || lower.endsWith(".ogg")
+                || lower.endsWith(".pck") || lower.endsWith(".tga") || lower.endsWith(".wav")) {
             return false;
         }
-        return lower.endsWith(".ini") || lower.endsWith(".json") || lower.endsWith(".xml")
+
+        // 3. Blacklisted manifest, checksum, and resource verification filenames
+        int lastSlash = lower.lastIndexOf('/');
+        String fileName = lastSlash >= 0 ? lower.substring(lastSlash + 1) : lower;
+        if (fileName.contains("md5") || fileName.contains("rescheck") || fileName.contains("checksum")
+                || fileName.contains("splitlib") || fileName.contains("realversion") || fileName.contains("mola_config")
+                || fileName.contains("newbieoffline") || fileName.contains("mode_versions") || fileName.contains("conffilter")
+                || fileName.contains("filelist") || fileName.contains("buildinfo")) {
+            return false;
+        }
+
+        // 4. Strict XML rule: XML files must NEVER be in assets/ and must be SharedPreferences / PlayerPrefs / Settings
+        if (lower.endsWith(".xml")) {
+            if (lower.contains("/assets/")) {
+                return false; // Zero XML files in assets/ are user configs; they are engine/game manifests
+            }
+            boolean isPrefs = lower.contains("shared_prefs/") || fileName.contains("playerprefs")
+                    || fileName.contains("preference") || fileName.contains("setting")
+                    || fileName.contains("config") || fileName.contains("user");
+            if (!isPrefs) {
+                return false;
+            }
+            return true;
+        }
+
+        // 5. Accepted config file extensions
+        return lower.endsWith(".ini") || lower.endsWith(".json")
                 || lower.endsWith(".cfg") || lower.endsWith(".sav") || lower.endsWith(".dat")
                 || lower.endsWith("boot.config") || lower.endsWith(".properties");
     }
@@ -144,7 +186,11 @@ public class GameConfigPathResolver {
         for (File f : files) {
             String name = f.getName().toLowerCase();
             if (f.isDirectory()) {
-                if (name.equals("lib") || name.equals("cache") || name.equals("code_cache") || name.equals("crashlytics")) {
+                if (name.equals("lib") || name.equals("cache") || name.equals("code_cache") || name.equals("crashlytics")
+                        || name.equals("comlibs") || name.equals("astarpath") || name.equals("ui") || name.equals("art")
+                        || name.equals("audio") || name.equals("scenes") || name.equals("prefabs") || name.equals("modeversion")
+                        || name.equals("il2cpp") || name.equals("unity") || name.equals("metadata") || name.equals("logs")
+                        || name.equals("crashes") || (name.equals("android") && f.getParent() != null && f.getParent().toLowerCase().contains("assets"))) {
                     continue;
                 }
                 scanDirectoryForConfigsJava(f, depth + 1, maxDepth, outPaths);

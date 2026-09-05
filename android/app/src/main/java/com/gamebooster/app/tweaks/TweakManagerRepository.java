@@ -791,6 +791,99 @@ public class TweakManagerRepository {
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
+
+        // =========================================================================
+        // 11. ANDROID 13 / 14 / 15 / 16 ADVANCED PERFORMANCE & FLAGSHIP TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "android_15_16_adpf_headroom_v2",
+                "Android 15 & 16 ADPF 2.0 Dynamic Thermal Headroom & Work Duration Hint",
+                "Signals ADPF 2.0 Work Duration API with GPU work duration hints, enables predictive thermal headroom, and sets gaming workload type",
+                "cmd power set-mode 0 1; cmd power set-mode 2 1; setprop debug.sf.enable_adpf_cpu_hint true; setprop debug.sf.enable_adpf_gpu_hint true; setprop persist.sys.adpf.enable 1; setprop persist.sys.adpf.mode 1; setprop debug.adpf.hint.enabled 1; setprop debug.adpf.cpu.boost 1; setprop debug.adpf.gpu.boost 1; setprop debug.adpf.workload_type gaming; setprop persist.sys.adpf.headroom.boost 1; setprop persist.sys.adpf.target_fps 185; cmd power set-fixed-performance-mode-enabled true",
+                "cmd power set-fixed-performance-mode-enabled false; setprop debug.sf.enable_adpf_cpu_hint false; setprop debug.sf.enable_adpf_gpu_hint false; setprop persist.sys.adpf.enable 0; setprop debug.adpf.hint.enabled 0",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "uclamp_cpuset_top_app_boost",
+                "Linux Kernel uclamp (1024) & Top-App CPUSet Priority Lock",
+                "Forces Linux 5.4/5.10/6.1/6.6 kernel Utilization Clamping (uclamp) to 1024 maximum for top-app games, preventing mid-game downscaling",
+                "echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 1024 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null; echo 1024 > /dev/cpuset/foreground/uclamp.min 2>/dev/null; echo 0 > /dev/cpuset/background/uclamp.max 2>/dev/null; setprop sys.perf.sched_uclamp_min 1024; setprop sys.perf.sched_uclamp_min_rt 1024; setprop sys.perf.sched_boost 1; echo 0-15 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 0-15 > /dev/cpuset/foreground/cpus 2>/dev/null",
+                "echo 0 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 0 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null; setprop sys.perf.sched_uclamp_min 0; setprop sys.perf.sched_boost 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "android_13_16_phantom_freezer_kill",
+                "Android 13–16 Phantom Process Killer & Cached Apps Freezer Immunity",
+                "Disables Android 13–16 phantom process killer (max 2B procs), disables cached apps freezer, and extends freeze debounce timeout to 24h",
+                "device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null; settings put global always_finish_activities 0 2>/dev/null; settings put global background_process_limit -1 2>/dev/null",
+                "settings put global settings_enable_monitor_phantom_procs true 2>/dev/null; settings put global cached_apps_freezer enabled 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "vendor_touch_digitizer_1000hz_universal",
+                "Universal 1000Hz Digitizer Lock (Samsung, Xiaomi, ROG, OnePlus, MTK, QTI)",
+                "Unlocks 1000Hz touch digitizer polling across all major OEM game boosters (Samsung Game Booster, Xiaomi Game Turbo, ROG Armoury Crate, HyperBoost)",
+                "settings put system touch_sensitivity 1; settings put system master_touch_sensitivity 1; settings put system sec_touch_sensitivity 1; settings put system game_mode_touch 1; setprop persist.sys.sec.touch_rate 1000; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; setprop debug.touch.sampling_rate 1000; setprop persist.sys.gamemode.touch 1; setprop vendor.touch.game_mode 1; setprop persist.asus.touch_sampling_rate 1000; setprop persist.vendor.asus.touch_opt 1; setprop persist.sys.miui.game_touch_rate 1000; setprop persist.vendor.touch.touch_boost 1; setprop persist.sys.touch.smooth 1; setprop persist.vendor.oplus.touch_rate 1000; setprop persist.sys.oplus.game_touch 1; setprop persist.vivo.touch_sample_rate 1000; setprop persist.sys.vivo.gamemode.touch 1; setprop persist.sys.nubia.touch_sampling_rate 1000; setprop persist.sys.redmagic.touch_mode 1; setprop persist.mot.touch.sampling_rate 1000; setprop persist.input.velocitytracker.strategy lsq2; setprop touch.motion_filter.enable 0; setprop view.touch_slop 0",
+                "settings put system touch_sensitivity 0; settings put system game_mode_touch 0; setprop persist.sys.touch.report_rate 120; setprop persist.vendor.touch.sampling_rate 120; setprop debug.touch.sampling_rate 120",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "surfaceflinger_185hz_unsignaled_latch",
+                "SurfaceFlinger 185Hz Unsignaled Latching & Zero Phase Delay",
+                "Forces SurfaceFlinger to latch unsignaled buffers immediately, disables backpressure drops, and sets zero phase offsets for instant display presentation",
+                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0; setprop debug.sf.high_fps_early_phase_offset_ns 0; setprop debug.sf.high_fps_early_app_phase_offset_ns 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3; setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.layer_caching_enabled 0; setprop debug.sf.enable_transaction_tracing false; setprop debug.sf.dump_frame_events 0; service call SurfaceFlinger 1008 2>/dev/null",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "vulkan_skiavk_render_thread_rt",
+                "Native Vulkan SkiaVK Pipeline & RenderThread Real-Time (-20)",
+                "Enforces pure Skia Vulkan renderer (skiavk), purges ANGLE emulation completely, activates GPU pixel buffers, and grants RenderThread RT priority (-20)",
+                "settings put global angle_gl_driver_all_angle 0 2>/dev/null; settings delete global angle_gl_driver_selection_pkgs 2>/dev/null; settings delete global angle_gl_driver_selection_values 2>/dev/null; settings delete global angle_enabled_pkgs 2>/dev/null; setprop debug.angle.backend 0; setprop debug.hwui.renderer skiavk; setprop debug.renderengine.backend vulkan; setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.render_thread_priority -20; setprop debug.hwui.skip_empty_damage true; setprop debug.sf.hw 1",
+                "setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"; setprop debug.hwui.render_thread_priority 0; setprop debug.hwui.use_gpu_pixel_buffers false",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "art_dex2oat_16core_speed",
+                "ART 16-Core Parallel AOT Speed Compiler & JIT Expansion",
+                "Directs Android Runtime (ART) to compile all game DEX bytecode using up to 16 threads, enables speed filter, expands JIT cache to 128MB, and enables fast-verify",
+                "setprop pm.dexopt.bg-dexopt speed; setprop pm.dexopt.install speed; setprop dalvik.vm.dex2oat-filter speed; setprop dalvik.vm.dex2oat-threads 16; setprop dalvik.vm.image-dex2oat-threads 16; setprop dalvik.vm.boot-dex2oat-threads 16; setprop dalvik.vm.dex2oat-flags \"enable-fast-verify,no-relocate\"; setprop dalvik.vm.usejit true; setprop dalvik.vm.usejitprofiles true; setprop dalvik.vm.jitcodecachesize 128m; setprop dalvik.vm.jitthreshold 50; setprop dalvik.vm.jittransitionweight 10",
+                "setprop pm.dexopt.bg-dexopt speed-profile; setprop pm.dexopt.install speed-profile; setprop dalvik.vm.dex2oat-filter speed-profile; setprop dalvik.vm.dex2oat-threads 4",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "memory_16kb_vm_shield",
+                "Android 15/16 16KB Page Buffer Shield & Linux VM Memory Guard",
+                "Prepares Linux VM memory mappings for Android 15/16 16KB page size architectures, expands max_map_count to 1M, locks swappiness to 10, and disables memory compaction lag",
+                "sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; echo 0 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs 2>/dev/null",
+                "sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "android_13_16_game_interventions_fps_lock",
+                "Android 13–16 Game Mode Interventions & FPS Dynamic Overlay Override",
+                "Injects cmd game mode performance, cmd game set --fps 185, and device_config put game_overlay across all games, disabling Angle and forcing max refresh rate",
+                "cmd game mode performance global 2>/dev/null; cmd game set --fps 185 global 2>/dev/null; cmd window set-app-refresh-rate global 185 2>/dev/null; device_config put game_overlay global mode=2,useAngle=false,fps=185:mode=3,useAngle=false,fps=185 2>/dev/null; setprop debug.graphics.game_default_frame_rate.disabled 1; setprop ro.vendor.dfps.enable 0; setprop vendor.display.enable_default_fps_switch 0; setprop persist.vendor.display.vrr.disable 1; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; setprop persist.sys.game.fps 185; settings put system match_content_frame_rate 0; settings put secure match_content_frame_rate_preference 0; settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0",
+                "cmd game mode standard global 2>/dev/null; cmd game reset global 2>/dev/null; setprop debug.graphics.game_default_frame_rate.disabled 0; settings put system match_content_frame_rate 1",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
     }
 
     public static List<TweakItem> getAllTweaks() {
@@ -1055,6 +1148,18 @@ public class TweakManagerRepository {
             }
             if (ManualSettingsPreferences.isForceGnssEnabled(context)) {
                 com.gamebooster.app.booster.NetworkOptimizer.setForceFullGnss(true);
+            }
+
+            // Android 13-16 Engine states
+            if (ManualSettingsPreferences.isTouch1000HzLockEnabled(context)) {
+                com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+            }
+            if (ManualSettingsPreferences.isUclampBoostEnabled(context)) {
+                com.gamebooster.app.booster.CpuGovernorChannel.tuneMultiCoreTopology();
+                com.gamebooster.app.booster.CpuGovernorChannel.applyExtendedKernelFlags();
+            }
+            if (ManualSettingsPreferences.isVulkanSkiaVkEnabled(context)) {
+                com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
             }
 
             // 3. Execute master root performance script for 185Hz

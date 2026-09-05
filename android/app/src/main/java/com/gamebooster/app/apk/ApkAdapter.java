@@ -106,17 +106,34 @@ public class ApkAdapter extends RecyclerView.Adapter<ApkAdapter.ApkViewHolder> {
                 tvStatus.setText("INSTALLED");
                 tvStatus.setBackgroundResource(R.drawable.badge_neon_green);
                 tvStatus.setTextColor(0xFF00FF66);
-                btnInstall.setText("⚡ UPDATE");
+                btnInstall.setText("🚀 PLAY");
+                btnInstall.setOnClickListener(v -> {
+                    com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, item.getPackageName());
+                });
+                btnInstall.setOnLongClickListener(v -> {
+                    if (listener != null) listener.onInstallRequested(item);
+                    return true;
+                });
+                itemView.setOnClickListener(v -> {
+                    com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, item.getPackageName());
+                });
             } else {
                 tvStatus.setVisibility(View.GONE);
                 btnInstall.setText("⚡ INSTALL");
+                btnInstall.setOnClickListener(v -> {
+                    if (listener != null) listener.onInstallRequested(item);
+                });
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) listener.onInstallRequested(item);
+                });
             }
 
-            btnInstall.setOnClickListener(v -> {
-                if (listener != null) listener.onInstallRequested(item);
-            });
-
             btnAddHome.setOnClickListener(v -> {
+                if (!item.isInstalled()) {
+                    Toast.makeText(context, "⚠️ Please install " + item.getAppName() + " first before adding to HOME!", Toast.LENGTH_SHORT).show();
+                    if (listener != null) listener.onInstallRequested(item);
+                    return;
+                }
                 GameLauncherHelper.addCustomPackage(context, item.getPackageName());
                 Toast.makeText(context, "Added " + item.getAppName() + " to HOME games!", Toast.LENGTH_SHORT).show();
                 if (listener != null) listener.onAddedToHome(item);

@@ -168,22 +168,24 @@ public class ApkInstallerEngine {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 if (ShizukuExecutor.hasShizukuPermission()) {
-                    // Try elevated Shizuku installation
-                    String cmd = "pm install -r -d \"" + apkPath + "\"";
-                    String res = ShizukuExecutor.executeShizukuCommand(cmd);
+                    long size = apkFile.length();
+                    // Attempt 1: Streaming stdin installation (bypasses Android 11-16 scoped storage limitations)
+                    String streamCmd = "cat \"" + apkPath + "\" | pm install -S " + size + " -r -d -g 2>&1";
+                    String res = ShizukuExecutor.executeShizukuCommand(streamCmd);
 
-                    if (res != null && (res.contains("Success") || res.contains("success"))) {
+                    if (res == null || !res.toLowerCase().contains("success")) {
+                        // Attempt 2: Direct path install
+                        String directCmd = "pm install -r -d -g \"" + apkPath + "\" 2>&1";
+                        res = ShizukuExecutor.executeShizukuCommand(directCmd);
+                    }
+
+                    if (res != null && res.toLowerCase().contains("success")) {
                         AppExecutors.getInstance().postToMainThread(() -> {
                             if (callback != null) callback.onResult(true, "Installed successfully via Shizuku!");
                         });
                         return;
-                    } else if (res != null && !res.startsWith("ERROR")) {
-                        // Might be session install or warning
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            if (callback != null) callback.onResult(true, "Installation output: " + res);
-                        });
-                        return;
                     }
+                    Log.w(TAG, "Shizuku silent install unconfirmed (" + res + "), falling back to system installer");
                 }
 
                 // Fallback to standard Android Package Installer Intent
@@ -197,7 +199,7 @@ public class ApkInstallerEngine {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
 
-                        if (callback != null) callback.onResult(true, "Opened system package installer");
+                        if (callback != null) callback.onResult(false, "Opened system package installer. Please confirm installation.");
                     } catch (Throwable t) {
                         Log.e(TAG, "Standard install fallback failed", t);
                         if (callback != null) callback.onResult(false, "Install failed: " + t.getMessage());

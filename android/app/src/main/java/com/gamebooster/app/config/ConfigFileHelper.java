@@ -360,7 +360,15 @@ public final class ConfigFileHelper {
 
     public static String patchXmlContent(String content, String[] keyValues) {
         if (keyValues == null || keyValues.length == 0) return content != null ? content : "<map>\n</map>";
-        if (content == null || content.trim().isEmpty() || !content.contains("<map>")) {
+
+        // CRITICAL PROTECTION: If content exists and does NOT contain <map>, it is NOT an Android SharedPreferences XML!
+        // Never overwrite unknown XML schemas (e.g. game engine manifests, SplitLibMD5.xml, etc.) - leave untouched!
+        if (content != null && !content.trim().isEmpty() && !content.contains("<map>")) {
+            Log.w(TAG, "Refusing to patch XML without <map> root tag (schema mismatch / asset protection) - leaving untouched.");
+            return content;
+        }
+
+        if (content == null || content.trim().isEmpty()) {
             StringBuilder sb = new StringBuilder("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n");
             for (String kv : keyValues) {
                 if (kv == null || kv.trim().isEmpty()) continue;

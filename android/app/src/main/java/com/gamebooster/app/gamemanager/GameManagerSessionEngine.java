@@ -121,7 +121,10 @@ public final class GameManagerSessionEngine {
             // 3. Dispatch full game-specific suite directly to true target paths (MLBB, PUBGM, CODM, etc.)
             com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg);
 
-            Log.i(TAG, "✅ [Launch AutoInject COMPLETE] Configs successfully injected to target paths for " + pkg);
+            // 4. Arm Stage 2 in-lobby persistent auto-inject to lock configs after game enters lobby
+            com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetFps, 15);
+
+            Log.i(TAG, "✅ [Launch AutoInject COMPLETE] Configs successfully injected & in-lobby guard armed for " + pkg);
         } catch (Throwable t) {
             Log.w(TAG, "Auto injection on launch note: " + t.getMessage());
         }

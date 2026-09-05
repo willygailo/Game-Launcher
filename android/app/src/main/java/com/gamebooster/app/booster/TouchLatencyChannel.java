@@ -28,7 +28,9 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("view.fading_edge_length", "0");
         ok &= CommandExecutor.setSystemProperty("ro.min_pointer_dur", "1");
 
-        // 3. 1000Hz Hardware Touch Digitizer & Sampling Rates
+        // 3. 1000Hz Hardware Touch Digitizer & Universal OEM Game Mode Locks
+        ok &= CommandExecutor.setSystemSetting("system", "sec_touch_sensitivity", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.sec.touch_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("persist.sys.touch.report_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("persist.vendor.touch.sampling_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("debug.touch.sampling_rate", "1000");
@@ -36,6 +38,16 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("vendor.touch.game_mode", "1");
         ok &= CommandExecutor.setSystemProperty("persist.asus.touch_sampling_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("persist.vendor.asus.touch_opt", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.miui.game_touch_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.touch.touch_boost", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.touch.smooth", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.oplus.touch_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.oplus.game_touch", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vivo.touch_sample_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.vivo.gamemode.touch", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.nubia.touch_sampling_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.redmagic.touch_mode", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.mot.touch.sampling_rate", "1000");
 
         // 4. InputFlinger & Input Dispatch Thread Latency Elimination
         ok &= CommandExecutor.setSystemProperty("debug.inputflinger.touch_boost", "1");
@@ -44,6 +56,8 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("debug.input.max_events_per_sec", "1000");
         ok &= CommandExecutor.setSystemProperty("debug.hwui.input_latency_timeout", "0");
         ok &= CommandExecutor.setSystemProperty("persist.sys.input.latency", "0");
+        ok &= CommandExecutor.setSystemProperty("persist.input.velocitytracker.strategy", "lsq2");
+        ok &= CommandExecutor.setSystemProperty("touch.motion_filter.enable", "0");
 
         // 5. Palm Rejection & Edge Deadzone Bypass
         ok &= CommandExecutor.setSystemProperty("persist.sys.touch.edge_filter", "0");
@@ -70,6 +84,7 @@ public class TouchLatencyChannel {
                 "settings put system pointer_speed 7",
                 "settings put system touch_sensitivity 1",
                 "settings put system master_touch_sensitivity 1",
+                "settings put system sec_touch_sensitivity 1",
                 "settings put system game_mode_touch 1",
                 "settings put system edge_touch_filter 0",
                 "settings put secure long_press_timeout 150",
@@ -79,6 +94,7 @@ public class TouchLatencyChannel {
                 "setprop view.scroll_friction 0.001",
                 "setprop view.fading_edge_length 0",
                 "setprop ro.min_pointer_dur 1",
+                "setprop persist.sys.sec.touch_rate 1000",
                 "setprop persist.sys.touch.report_rate 1000",
                 "setprop persist.vendor.touch.sampling_rate 1000",
                 "setprop debug.touch.sampling_rate 1000",
@@ -86,12 +102,24 @@ public class TouchLatencyChannel {
                 "setprop vendor.touch.game_mode 1",
                 "setprop persist.asus.touch_sampling_rate 1000",
                 "setprop persist.vendor.asus.touch_opt 1",
+                "setprop persist.sys.miui.game_touch_rate 1000",
+                "setprop persist.vendor.touch.touch_boost 1",
+                "setprop persist.sys.touch.smooth 1",
+                "setprop persist.vendor.oplus.touch_rate 1000",
+                "setprop persist.sys.oplus.game_touch 1",
+                "setprop persist.vivo.touch_sample_rate 1000",
+                "setprop persist.sys.vivo.gamemode.touch 1",
+                "setprop persist.sys.nubia.touch_sampling_rate 1000",
+                "setprop persist.sys.redmagic.touch_mode 1",
+                "setprop persist.mot.touch.sampling_rate 1000",
                 "setprop debug.inputflinger.touch_boost 1",
                 "setprop debug.inputflinger.fling_boost 1",
                 "setprop debug.input.boost_time_ms 2000",
                 "setprop debug.input.max_events_per_sec 1000",
                 "setprop debug.hwui.input_latency_timeout 0",
                 "setprop persist.sys.input.latency 0",
+                "setprop persist.input.velocitytracker.strategy lsq2",
+                "setprop touch.motion_filter.enable 0",
                 "setprop persist.sys.touch.edge_filter 0",
                 "setprop persist.vendor.touch.edge_reject 0",
                 "setprop persist.sys.touch.corner_filter 0",

@@ -1,6 +1,7 @@
 package com.gamebooster.app.config;
 
 import android.util.Log;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -774,7 +775,28 @@ public class MlbbConfigPatcher {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
-        return GameConfigPathResolver.getPathsForGame(pkg);
+        List<String> raw = GameConfigPathResolver.getPathsForGame(pkg);
+        List<String> filtered = new ArrayList<>(raw.size());
+        for (String p : raw) {
+            if (p == null) continue;
+            String lower = p.toLowerCase().replace('\\', '/');
+            // Strictly exclude any game asset / manifest / checksum paths
+            if (lower.contains("/assets/document/android") || lower.contains("/assets/version")
+                    || lower.contains("md5.xml") || lower.contains("rescheck") || lower.contains("realversion")
+                    || lower.contains("splitlib") || lower.contains("mola_config")) {
+                continue;
+            }
+            if (lower.endsWith(".xml")) {
+                if (lower.contains("/assets/")) {
+                    continue;
+                }
+                if (!lower.contains("playerprefs") && !lower.contains("preference") && !lower.contains("shared_prefs")) {
+                    continue;
+                }
+            }
+            filtered.add(p);
+        }
+        return filtered;
     }
 
     private static boolean applyPatch(String path, int targetFps) {

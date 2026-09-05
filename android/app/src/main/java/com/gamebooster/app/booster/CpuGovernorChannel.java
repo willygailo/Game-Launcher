@@ -60,6 +60,10 @@ public class CpuGovernorChannel {
         sb.append("if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
         sb.append("done; ");
 
+        sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; ");
+        sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null; ");
+        sb.append("echo 1024 > /dev/cpuset/foreground/uclamp.min 2>/dev/null; ");
+        sb.append("echo 0 > /dev/cpuset/background/uclamp.max 2>/dev/null; ");
         sb.append("setprop sys.games.cpu_affinity 1; ");
         sb.append("setprop sys.perf.sched_uclamp_min 1024; ");
         sb.append("setprop sys.perf.sched_uclamp_min_rt 1024; ");
@@ -180,6 +184,7 @@ public class CpuGovernorChannel {
             CommandExecutor.setSystemProperty("sys.games.cpu_affinity", "0");
             CommandExecutor.setSystemProperty("sys.perf.sched_uclamp_min", "0");
             CommandExecutor.setSystemProperty("sys.perf.sched_boost", "0");
+            CommandExecutor.executeSystemCommand("echo 0 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 0 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null");
 
             CommandExecutor.executeSystemCommand("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done");
 
