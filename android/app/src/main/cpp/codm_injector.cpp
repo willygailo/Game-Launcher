@@ -802,4 +802,162 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5Bu
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── CODM: Scope Target Tracking + Magic Bullet 5-Head (2026) ────────────────
+// ADSScopeHeadLock follows enemy head on scope-on. No-scope magic bullet bend.
+// 5-bullet burst headshot lock. BSA removal. Zero spread all states.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmScopeTargetTrackingMagicBullet5Head(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Scope Target Tracking ──
+        {"ScopeOnEnemyTrack",          "1"},
+        {"ScopeTrackEnemyHead",        "1"},
+        {"ADSScopeHeadLock",           "1"},
+        {"ScopedMagnetism",            "3"},
+        {"AimTrackingWhenScoped",      "1"},
+        {"CodmScopedAutoHeadLock",     "1"},
+        // ── No-Scope Magic Bullet ──
+        {"NoScopeMagicBullet",         "1"},
+        {"MagicBulletFollowEnemy",     "1"},
+        {"BulletMagnetEnemy",          "1"},
+        // ── 5-Bullet Headshot Burst Lock ──
+        {"Auto5BulletHeadshot",        "1"},
+        {"HeadshotBurstCount",         "5"},
+        {"FiveBulletHeadLock",         "1"},
+        {"HeadBoneLock",               "1"},
+        {"HeadMagnetism",              "1"},
+        {"InstantAimSnap",             "1"},
+        // ── No Spread / BSA Removal ──
+        {"WeaponSpread",               "0"},
+        {"BulletSpreadScale",          "0"},
+        {"BSARemoval",                 "1"},
+        {"HipfireSpread",              "0"},
+        {"MovingSpreadFactor",         "0"},
+        {"JumpSpreadFactor",           "0"},
+        // ── Gyro + Hit Reg ──
+        {"GyroSampleRate",             "1000"},
+        {"GyroZeroDelay",              "1"},
+        {"HitRegSyncRate",             "1000"},
+        {"TouchPollingRate",           "1000"},
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmScopeTargetTrackingMagicBullet5Head injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Fast Reload + Fast HP Regen + Fast Gun Switch + Fast Run (2026) ───
+// Zero reload, max HP instant regen, zero swap times, slide cancel instant,
+// sprint speed boost.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastReloadHpRegenGunSwitchRun(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Fast Reload ──
+        {"ReloadTimeMin",              "0"},
+        {"FastReload",                 "1"},
+        {"InstantReload",              "1"},
+        {"FastBoltPullSpeed",          "10.0"},
+        {"PumpActionCycleMs",          "0"},
+        {"MagChangeTimeMs",            "0"},
+        {"QuickReloadFactor",          "10.0"},
+        // ── Fast HP Regen ──
+        {"HpRegenRate",                "10"},
+        {"HpRegenDelay",               "0"},
+        {"FastHpRegen",                "1"},
+        {"HealthRegenMax",             "1"},
+        {"HealingRate",                "10"},
+        {"HealingSpeedMax",            "1"},
+        {"HpRegenCooldown",            "0"},
+        // ── Fast Gun Switch / Weapon Swap ──
+        {"WeaponSwapTime",             "0"},
+        {"HolsterTime",                "0"},
+        {"DrawTime",                   "0"},
+        {"FastGunSwitch",              "1"},
+        {"QuickDrawFactor",            "10.0"},
+        {"QuickDrawZeroDelay",         "1"},
+        {"SprintToFireDelayMs",        "0"},
+        {"ADSTransitionTimeMs",        "0"},
+        {"SlideCancelInstant",         "1"},
+        // ── Fast Run / Sprint ──
+        {"SprintSpeedMax",             "1"},
+        {"MovementSpeedBoost",         "1"},
+        {"SprintSpeedBoost",           "10.0"},
+        {"SlideDistanceMax",           "1"},
+        {"SlideSpeedBoost",            "1"},
+        {"FastSlide",                  "1"},
+        // ── Engine Sync ──
+        {"TouchPollingRate",           "1000"},
+        {"ZeroInputLag",               "1"},
+        {"r.OneFrameThreadLag",        "0"},
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmFastReloadHpRegenGunSwitchRun injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Full Overdrive 2026 — Master Combo (all above in one pass) ────────
+// Calls CodmScopeTargetTrackingMagicBullet5Head + CodmFastReloadHpRegenGunSwitchRun
+// + existing CodmAutoHead5BulletAimLock in one atomic sweep.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullOverdrive2026(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    env->ReleaseStringUTFChars(jPath, path);
+
+    bool r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmScopeTargetTrackingMagicBullet5Head(env, nullptr, jPath);
+    bool r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastReloadHpRegenGunSwitchRun(env, nullptr, jPath);
+    bool r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5BulletAimLock(env, nullptr, jPath);
+    LOGI("CodmFullOverdrive2026 injected [scope=%d fast=%d lock=%d]", r1, r2, r3);
+    return (r1 || r2 || r3) ? JNI_TRUE : JNI_FALSE;
+}
 

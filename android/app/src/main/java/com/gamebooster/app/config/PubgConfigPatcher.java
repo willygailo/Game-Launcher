@@ -791,6 +791,48 @@ public class PubgConfigPatcher {
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "PUBGM AutoHead 5-Bullet Aim Lock & 50m-300m Scope Tracking applied for " + packageName);
     }
+
+    /**
+     * PUBGM — Scope Target Tracking + Magic Bullet 5-Head (2026).
+     * Scope-on auto-locks enemy head. No-scope magic bullet FOV bend. 5-bullet burst headshot lock.
+     * Zero spread all states. Injects across all resolved PUBGM config paths.
+     */
+    public static void applyScopeTargetTrackingMagicBullet5Head(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmScopeTargetTrackingMagicBullet5Head(path);
+        }
+        Log.i(TAG, "PUBGM ScopeTargetTrackingMagicBullet5Head applied for " + packageName);
+    }
+
+    /**
+     * PUBGM — Fast Reload + Fast HP Regen + Fast Gun Switch + Fast Run (2026).
+     * Zero reload/bolt cycle, instant HP regen, zero weapon swap/draw time,
+     * sprint speed boost + sprint-to-fire delay = 0.
+     */
+    public static void applyFastReloadHpRegenGunSwitchRun(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmFastReloadHpRegenGunSwitchRun(path);
+        }
+        Log.i(TAG, "PUBGM FastReloadHpRegenGunSwitchRun applied for " + packageName);
+    }
+
+    /**
+     * PUBGM — Full Overdrive 2026 master combo.
+     * Fires ScopeTargetTrackingMagicBullet5Head + FastReloadHpRegenGunSwitchRun
+     * + AutoHead5BulletAimLock + AllScopeTieredHeadshot + DamageLockMax in one sweep.
+     */
+    public static void applyPubgmFullOverdrive2026(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmFullOverdrive2026(path);
+        }
+        try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyPubgmAllWeaponMaxDamage2026(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "PUBGM FullOverdrive2026 applied for " + packageName);
+    }
 }
-
-

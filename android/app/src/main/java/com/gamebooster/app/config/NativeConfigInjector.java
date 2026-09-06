@@ -258,6 +258,17 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmAutoHead5BulletAimLock(String path);
     public static native boolean nativeInjectMlbbFiveHeroNoDelayComboBoost(String path);
 
+    // ─── PUBGM: 2026 Overdrive Pack ──────────────────────────────────────────
+    public static native boolean nativeInjectPubgmScopeTargetTrackingMagicBullet5Head(String path);
+    public static native boolean nativeInjectPubgmFastReloadHpRegenGunSwitchRun(String path);
+    public static native boolean nativeInjectPubgmFullOverdrive2026(String path);
+
+    // ─── CODM: 2026 Overdrive Pack ───────────────────────────────────────────
+    public static native boolean nativeInjectCodmScopeTargetTrackingMagicBullet5Head(String path);
+    public static native boolean nativeInjectCodmFastReloadHpRegenGunSwitchRun(String path);
+    public static native boolean nativeInjectCodmFullOverdrive2026(String path);
+
+
     public static native boolean nativeInjectSilentAimbot(String path);
 
     public static native boolean nativeInjectHitboxMultiplier(String path, float multiplier);
@@ -2651,7 +2662,134 @@ public class NativeConfigInjector {
     // ─── Helper Methods ───────────────────────────────────────────────────────
 
 
+    // ─── PUBGM 2026 Overdrive Pack Wrappers ──────────────────────────────────
+
+    public static boolean injectPubgmScopeTargetTrackingMagicBullet5Head(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmScopeTargetTrackingMagicBullet5Head(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "ScopeOnEnemyTrack=1", "ScopeOnHeadLock=1", "ScopeTrackEnemy=1", "ScopeFollowEnemyHead=1",
+            "AimTrackingWhenScoped=1", "ScopedAutoHeadLock=1", "ScopedMagnetism=3",
+            "NoScopeMagicBullet=1", "MagicBulletFollowEnemy=1", "BulletFOVCorrection=1",
+            "BulletMagnetEnemy=1", "HipfireAutoAimEnemy=1", "MagicBulletEnemy=1",
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "FiveBulletHeadLock=1",
+            "BurstFireRateLock=5", "AutoHeadshotBurst=5", "AutoHeadshotLock=1",
+            "HeadBoneAimPriority=1", "HeadBoneLock=1", "HeadMagnetism=1",
+            "WeaponSpread=0", "BulletSpreadScale=0", "HipfireSpread=0",
+            "MuzzleSpread=0", "MovingSpreadFactor=0", "JumpSpreadFactor=0", "WeaponSway=0",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "TouchPollingRate=1000", "HitRegSyncRate=1000",
+            "r.AimAssistStrength=100", "r.HeadBoneAimPriority=1", "r.PUBGBulletVelocityCompensation=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmScopeTargetTrackingMagicBullet5Head]");
+    }
+
+    public static boolean injectPubgmFastReloadHpRegenGunSwitchRun(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmFastReloadHpRegenGunSwitchRun(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "ReloadTimeMin=0", "ReloadIntervalMin=0", "FastReload=1", "InstantReload=1",
+            "BoltCycleTimeMin=0", "PumpActionCycleMs=0", "MagChangeTimeMs=0",
+            "FastBoltPullSpeed=10.0", "QuickReloadFactor=10.0",
+            "HpRegenRate=10", "HpRegenDelay=0", "HealthRegenMax=1", "FastHpRegen=1",
+            "HealingRate=10", "BleedOutPrevention=1", "MaxHpRegenSpeed=1", "HealingSpeedMax=1",
+            "HealthRegenInterval=0", "HpRegenCooldown=0",
+            "WeaponSwapTime=0", "HolsterTime=0", "DrawTime=0", "FastGunSwitch=1",
+            "WeaponSwitchDelay=0", "InstantWeaponSwap=1", "QuickDrawFactor=10.0", "QuickDrawZeroDelay=1",
+            "SprintToFireDelayMs=0", "ADSTransitionTimeMs=0", "AdsZeroDelay=1",
+            "SprintSpeedMax=1", "MovementSpeedBoost=1", "SprintSpeedBoost=10.0",
+            "FastRunBoost=1", "SprintToFireDelay=0", "SlideSpeedBoost=1", "FastSlide=1",
+            "RunAnimSpeed=10.0", "JogSpeed=10.0", "MaxMoveSpeed=1",
+            "TouchPollingRate=1000", "ZeroInputLag=1", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmFastReloadHpRegenGunSwitchRun]");
+    }
+
+    public static boolean injectPubgmFullOverdrive2026(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmFullOverdrive2026(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        boolean r1 = injectPubgmScopeTargetTrackingMagicBullet5Head(path);
+        boolean r2 = injectPubgmFastReloadHpRegenGunSwitchRun(path);
+        boolean r3 = injectPubgmAutoHead5BulletAimLock(path);
+        return r1 || r2 || r3;
+    }
+
+    // ─── CODM 2026 Overdrive Pack Wrappers ───────────────────────────────────
+
+    public static boolean injectCodmScopeTargetTrackingMagicBullet5Head(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmScopeTargetTrackingMagicBullet5Head(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "ScopeOnEnemyTrack=1", "ScopeTrackEnemyHead=1", "ADSScopeHeadLock=1",
+            "ScopedMagnetism=3", "AimTrackingWhenScoped=1", "CodmScopedAutoHeadLock=1",
+            "NoScopeMagicBullet=1", "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1",
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "FiveBulletHeadLock=1",
+            "HeadBoneLock=1", "HeadMagnetism=1", "InstantAimSnap=1",
+            "WeaponSpread=0", "BulletSpreadScale=0", "BSARemoval=1",
+            "HipfireSpread=0", "MovingSpreadFactor=0", "JumpSpreadFactor=0",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "HitRegSyncRate=1000", "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmScopeTargetTrackingMagicBullet5Head]");
+    }
+
+    public static boolean injectCodmFastReloadHpRegenGunSwitchRun(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmFastReloadHpRegenGunSwitchRun(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "ReloadTimeMin=0", "FastReload=1", "InstantReload=1", "FastBoltPullSpeed=10.0",
+            "PumpActionCycleMs=0", "MagChangeTimeMs=0", "QuickReloadFactor=10.0",
+            "HpRegenRate=10", "HpRegenDelay=0", "FastHpRegen=1", "HealthRegenMax=1",
+            "HealingRate=10", "HealingSpeedMax=1", "HpRegenCooldown=0",
+            "WeaponSwapTime=0", "HolsterTime=0", "DrawTime=0", "FastGunSwitch=1",
+            "QuickDrawFactor=10.0", "QuickDrawZeroDelay=1",
+            "SprintToFireDelayMs=0", "ADSTransitionTimeMs=0", "SlideCancelInstant=1",
+            "SprintSpeedMax=1", "MovementSpeedBoost=1", "SprintSpeedBoost=10.0",
+            "SlideDistanceMax=1", "SlideSpeedBoost=1", "FastSlide=1",
+            "TouchPollingRate=1000", "ZeroInputLag=1", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmFastReloadHpRegenGunSwitchRun]");
+    }
+
+    public static boolean injectCodmFullOverdrive2026(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmFullOverdrive2026(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        boolean r1 = injectCodmScopeTargetTrackingMagicBullet5Head(path);
+        boolean r2 = injectCodmFastReloadHpRegenGunSwitchRun(path);
+        boolean r3 = injectCodmAutoHead5BulletAimLock(path);
+        return r1 || r2 || r3;
+    }
+
     private static void ensureParentDirectory(String path) {
+
         if (path == null) return;
         try {
             File f = new File(path);

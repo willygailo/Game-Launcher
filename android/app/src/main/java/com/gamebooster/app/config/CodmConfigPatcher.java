@@ -1109,6 +1109,50 @@ public class CodmConfigPatcher {
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "CODM AutoHead 5-Bullet Aim Lock & 50m-300m Scope Tracking applied for " + packageName);
     }
+
+    /**
+     * CODM — Scope Target Tracking + Magic Bullet 5-Head (2026).
+     * ADSScopeHeadLock follows enemy head. No-scope magic bullet bend. 5-bullet burst headshot lock.
+     * BSA removal, zero spread all states. Injects across all resolved CODM config paths.
+     */
+    public static void applyScopeTargetTrackingMagicBullet5Head(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmScopeTargetTrackingMagicBullet5Head(path);
+        }
+        Log.i(TAG, "CODM ScopeTargetTrackingMagicBullet5Head applied for " + packageName);
+    }
+
+    /**
+     * CODM — Fast Reload + Fast HP Regen + Fast Gun Switch + Fast Run (2026).
+     * Zero reload, instant HP regen, zero swap/draw times, slide cancel instant,
+     * sprint speed boost. Injects across all resolved CODM config paths.
+     */
+    public static void applyFastReloadHpRegenGunSwitchRun(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmFastReloadHpRegenGunSwitchRun(path);
+        }
+        Log.i(TAG, "CODM FastReloadHpRegenGunSwitchRun applied for " + packageName);
+    }
+
+    /**
+     * CODM — Full Overdrive 2026 master combo.
+     * Fires CodmScopeTargetTrackingMagicBullet5Head + CodmFastReloadHpRegenGunSwitchRun
+     * + CodmAutoHead5BulletAimLock + AllScopeTieredHeadshot + DamageLockMax in one sweep.
+     */
+    public static void applyCodmFullOverdrive2026(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmFullOverdrive2026(path);
+        }
+        try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyCodmMaxDamageAllWeapon2026(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "CODM FullOverdrive2026 applied for " + packageName);
+    }
 }
 
 
