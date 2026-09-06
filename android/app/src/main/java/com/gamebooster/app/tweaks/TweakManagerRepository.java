@@ -114,10 +114,10 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "force_4x_msaa",
-                "Force 4x MSAA Anti-Aliasing",
-                "Forces 4x Multi-Sample Anti-Aliasing in OpenGL ES 2.0/3.0 games and 3D scenes",
-                "setprop debug.egl.force_msaa 1",
+                "disable_msaa_overhead",
+                "Disable 4x MSAA Overhead & GPU Raster Boost",
+                "Keeps 4x MSAA forced off in OpenGL ES games to maximize GPU rendering throughput and eliminate FPS drops",
+                "setprop debug.egl.force_msaa 0",
                 "setprop debug.egl.force_msaa 0",
                 TweakCategory.CPU_GPU,
                 true
@@ -139,7 +139,7 @@ public class TweakManagerRepository {
                 "Disable Window Blur & Overdraw Overhead",
                 "Disables system window blur effects and GPU overdraw inspection to free GPU rasterization units",
                 "settings put global window_blurs_enabled 0; setprop debug.hwui.overdraw false",
-                "settings put global window_blurs_enabled 1; setprop debug.hwui.overdraw show",
+                "settings put global window_blurs_enabled 1; setprop debug.hwui.overdraw false",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -586,8 +586,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "transparent_hugepages_gaming",
                 "Transparent HugePages (THP) 2MB Page Allocation",
-                "Forces kernel Transparent HugePages always-on for game memory mappings, drastically reducing TLB cache misses",
-                "echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; echo 0 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs 2>/dev/null",
+                "Forces kernel Transparent HugePages with non-blocking madvise defrag for game memory mappings without background CPU spinlock",
+                "echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null",
                 "echo madvise > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -611,7 +611,7 @@ public class TweakManagerRepository {
                 "Vulkan Compute Shader & Direct Compositing",
                 "Enables Skia Vulkan pipeline and optimizes HWUI buffer damage profiling safely",
                 "setprop debug.renderengine.skia_pipeline true; setprop debug.hwui.skip_empty_damage true; setprop debug.hwui.fps_divisor 1; setprop debug.hwui.profile false",
-                "setprop debug.hwui.profile true",
+                "setprop debug.hwui.profile false",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -632,8 +632,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "vfs_cache_and_swappiness_zero",
                 "VM Swappiness 10 & VFS In-Memory Cache Shield",
-                "Tunes Linux VM memory management with dual sysctl/proc pipelines to keep game assets directly in RAM, delays background dirty writebacks, and reduces timer interrupt overhead",
-                "sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.dirty_expire_centisecs=3000 2>/dev/null; sysctl -w vm.dirty_writeback_centisecs=5000 2>/dev/null; sysctl -w vm.page-cluster=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.stat_interval=120 2>/dev/null",
+                "Tunes Linux VM memory management with dual sysctl/proc pipelines to keep game assets directly in RAM, with balanced 20/10 writeback ratios to eliminate I/O stalls",
+                "sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=20 2>/dev/null; sysctl -w vm.dirty_background_ratio=10 2>/dev/null; sysctl -w vm.dirty_expire_centisecs=3000 2>/dev/null; sysctl -w vm.dirty_writeback_centisecs=5000 2>/dev/null; sysctl -w vm.page-cluster=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.stat_interval=120 2>/dev/null",
                 "sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null; echo 100 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.stat_interval=1 2>/dev/null; sysctl -w vm.dirty_expire_centisecs=200 2>/dev/null; sysctl -w vm.dirty_writeback_centisecs=500 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -829,7 +829,7 @@ public class TweakManagerRepository {
                 "vendor_touch_digitizer_1000hz_universal",
                 "Universal 1000Hz Digitizer Lock (Samsung, Xiaomi, ROG, OnePlus, MTK, QTI)",
                 "Unlocks 1000Hz touch digitizer polling across all major OEM game boosters (Samsung Game Booster, Xiaomi Game Turbo, ROG Armoury Crate, HyperBoost)",
-                "settings put system touch_sensitivity 1; settings put system master_touch_sensitivity 1; settings put system sec_touch_sensitivity 1; settings put system game_mode_touch 1; setprop persist.sys.sec.touch_rate 1000; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; setprop debug.touch.sampling_rate 1000; setprop persist.sys.gamemode.touch 1; setprop vendor.touch.game_mode 1; setprop persist.asus.touch_sampling_rate 1000; setprop persist.vendor.asus.touch_opt 1; setprop persist.sys.miui.game_touch_rate 1000; setprop persist.vendor.touch.touch_boost 1; setprop persist.sys.touch.smooth 1; setprop persist.vendor.oplus.touch_rate 1000; setprop persist.sys.oplus.game_touch 1; setprop persist.vivo.touch_sample_rate 1000; setprop persist.sys.vivo.gamemode.touch 1; setprop persist.sys.nubia.touch_sampling_rate 1000; setprop persist.sys.redmagic.touch_mode 1; setprop persist.mot.touch.sampling_rate 1000; setprop persist.input.velocitytracker.strategy lsq2; setprop touch.motion_filter.enable 0; setprop view.touch_slop 0",
+                "settings put system touch_sensitivity 1; settings put system master_touch_sensitivity 1; settings put system sec_touch_sensitivity 1; settings put system game_mode_touch 1; setprop persist.sys.sec.touch_rate 1000; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; setprop debug.touch.sampling_rate 1000; setprop persist.sys.gamemode.touch 1; setprop vendor.touch.game_mode 1; setprop persist.asus.touch_sampling_rate 1000; setprop persist.vendor.asus.touch_opt 1; setprop persist.sys.miui.game_touch_rate 1000; setprop persist.vendor.touch.touch_boost 1; setprop persist.sys.touch.smooth 1; setprop persist.vendor.oplus.touch_rate 1000; setprop persist.sys.oplus.game_touch 1; setprop persist.vivo.touch_sample_rate 1000; setprop persist.sys.vivo.gamemode.touch 1; setprop persist.sys.nubia.touch_sampling_rate 1000; setprop persist.sys.redmagic.touch_mode 1; setprop persist.mot.touch.sampling_rate 1000; setprop persist.input.velocitytracker.strategy lsq2; setprop touch.motion_filter.enable 0; setprop view.touch_slop 2",
                 "settings put system touch_sensitivity 0; settings put system game_mode_touch 0; setprop persist.sys.touch.report_rate 120; setprop persist.vendor.touch.sampling_rate 120; setprop debug.touch.sampling_rate 120",
                 TweakCategory.TOUCH_DISPLAY,
                 true
@@ -868,8 +868,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "memory_16kb_vm_shield",
                 "Android 15/16 16KB Page Buffer Shield & Linux VM Memory Guard",
-                "Prepares Linux VM memory mappings for Android 15/16 16KB page size architectures, expands max_map_count to 1M, locks swappiness to 10, and disables memory compaction lag",
-                "sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; echo 0 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs 2>/dev/null",
+                "Prepares Linux VM memory mappings for Android 15/16 16KB page size architectures, expands max_map_count to 1M, locks swappiness to 10 with balanced 20/10 writeback, and disables memory compaction lag",
+                "sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=20 2>/dev/null; sysctl -w vm.dirty_background_ratio=10 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; sysctl -w vm.extra_free_kbytes=32768 2>/dev/null; echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null",
                 "sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -1145,9 +1145,6 @@ public class TweakManagerRepository {
             }
             if (ManualSettingsPreferences.isTetherHwEnabled(context)) {
                 com.gamebooster.app.booster.NetworkOptimizer.setTetheringHwAcceleration(true);
-            }
-            if (ManualSettingsPreferences.isForceGnssEnabled(context)) {
-                com.gamebooster.app.booster.NetworkOptimizer.setForceFullGnss(true);
             }
 
             // Android 13-16 Engine states

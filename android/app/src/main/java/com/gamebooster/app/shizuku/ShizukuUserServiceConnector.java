@@ -655,7 +655,7 @@ public class ShizukuUserServiceConnector {
             }
         }
         final int rate = rateHz > 0 ? rateHz : 1000;
-        String res = ShizukuExecutor.executeShizukuCommand("setprop persist.sys.touch.report_rate " + rate + "; setprop debug.input.max_events_per_sec " + rate + "; setprop view.touch_slop 0");
+        String res = ShizukuExecutor.executeShizukuCommand("setprop persist.sys.touch.report_rate " + rate + "; setprop debug.input.max_events_per_sec " + rate + "; setprop view.touch_slop 2");
         return res != null && !res.startsWith("ERROR");
     }
 }

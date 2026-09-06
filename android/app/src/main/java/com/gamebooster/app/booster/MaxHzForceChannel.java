@@ -17,7 +17,7 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
  *   Layer 2 — Android Game Mode API + cmd window
  *   Layer 3 — device_config game_overlay global policy
  *   Layer 4 — SurfaceFlinger direct binder (1035 + 1036)
- *   Layer 5 — setprop runtime overrides (NV_FPSLIMIT, fps_limit, swapinterval)
+ *   Layer 5 — setprop runtime overrides (NV_FPSLIMIT, fps_limit, display refresh)
  *   Layer 6 — OEM/vendor-specific refresh rate keys (auto-detected per manufacturer: ASUS ROG 185Hz, RedMagic, Xiaomi, Samsung, etc.)
  */
 public final class MaxHzForceChannel {
@@ -107,9 +107,7 @@ public final class MaxHzForceChannel {
         ok += run("setprop debug.sf.fps_limit "                + hz);                total++;
         ok += run("setprop persist.sys.NV_FPSLIMIT "           + hz);                total++;
         ok += run("setprop persist.sys.NV_POWERMODE 1");                             total++;
-        ok += run("setprop debug.gr.swapinterval 0");                                total++;
-        ok += run("setprop debug.egl.swapinterval 0");                               total++;
-        ok += run("setprop debug.egl.force_msaa 1");                                 total++;
+        ok += run("setprop debug.egl.force_msaa 0");                                 total++;
         ok += run("setprop debug.sf.early_phase_offset_ns 0");                       total++;
         ok += run("setprop debug.sf.early_app_phase_offset_ns 0");                   total++;
         ok += run("setprop persist.sys.game.fps "              + hz);                total++;

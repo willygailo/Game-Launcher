@@ -309,9 +309,11 @@ public class NetworkOptimizer {
         return CommandExecutor.isSuccessOutput(res);
     }
 
+    @Deprecated
     public static boolean setForceFullGnss(boolean enabled) {
-        CommandExecutor.executeSystemCommand("settings put global development_settings_enabled 1");
-        String res = CommandExecutor.executeSystemCommand("settings put global force_gnss_raw_measurements " + (enabled ? "1" : "0"));
+        // Disabled: Raw GNSS measurement mode prevents GPS hardware sleep and drains battery/interrupts.
+        // Always enforce 0.
+        String res = CommandExecutor.executeSystemCommand("settings put global force_gnss_raw_measurements 0");
         return CommandExecutor.isSuccessOutput(res);
     }
 

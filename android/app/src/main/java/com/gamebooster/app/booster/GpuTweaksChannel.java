@@ -125,7 +125,9 @@ public class GpuTweaksChannel {
     }
 
     public static boolean enableForceMsaa() {
-        CommandExecutor.setSystemProperty("debug.egl.force_msaa", "1");
+        // Disabled: 4x MSAA quadruples fragment shading overhead, drops FPS by 30-50%, and causes overheating.
+        // Explicitly enforce 0 to guarantee raw frame throughput and lower frame times.
+        CommandExecutor.setSystemProperty("debug.egl.force_msaa", "0");
         return true;
     }
 

@@ -218,7 +218,7 @@ public class PerformanceChannel {
                     "echo 1 > /sys/class/devfreq/scene-frequency/sprd_governor/scene_boost 2>/dev/null\n" +
                     "for f in /sys/class/devfreq/sprd-mali/governor; do echo performance > \"$f\" 2>/dev/null; done\n" +
                     "echo on > /sys/devices/platform/sprd-mali/power/control 2>/dev/null\n" +
-                    "setprop debug.egl.force_msaa 1\n" +
+                    "setprop debug.egl.force_msaa 0\n" +
                     "setprop debug.egl.buffcount 3\n" +
                     "setprop persist.sys.use_16bpp_alpha 1\n" +
                     "setprop debug.egl.multithread 1\n" +
@@ -267,7 +267,7 @@ public class PerformanceChannel {
                     "cmd thermal override-status 0\n" +
                     "setprop debug.thermal.throttle.disable 1\n" +
                     // 5. High-Frequency Touch Digitizer, InputFlinger & Palm Rejection Bypass
-                    "setprop view.touch_slop 0\n" +
+                    "setprop view.touch_slop 2\n" +
                     "setprop view.scroll_friction 0.001\n" +
                     "setprop view.fading_edge_length 0\n" +
                     "setprop ro.min_pointer_dur 1\n" +
@@ -335,11 +335,11 @@ public class PerformanceChannel {
                     "echo 0 > /dev/stune/background/schedtune.boost 2>/dev/null\n" +
                     "echo 0 > /dev/cpu_dma_latency 2>/dev/null\n" +
                     "echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null\n" +
-                    "echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null\n" +
+                    "echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null\n" +
                     "echo 10 > /proc/sys/vm/swappiness 2>/dev/null\n" +
                     "echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null\n" +
-                    "echo 5 > /proc/sys/vm/dirty_ratio 2>/dev/null\n" +
-                    "echo 2 > /proc/sys/vm/dirty_background_ratio 2>/dev/null\n" +
+                    "echo 20 > /proc/sys/vm/dirty_ratio 2>/dev/null\n" +
+                    "echo 10 > /proc/sys/vm/dirty_background_ratio 2>/dev/null\n" +
                     "echo 0 > /proc/sys/vm/page-cluster 2>/dev/null\n" +
                     "echo 65536 > /proc/sys/vm/min_free_kbytes 2>/dev/null\n" +
                     "echo 0 > /proc/sys/vm/watermark_boost_factor 2>/dev/null\n" +

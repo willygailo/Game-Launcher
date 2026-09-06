@@ -123,10 +123,10 @@ public class TerminalFolderManager {
                 "# GAME BOOSTER PRO - ULTRA 1000Hz TOUCH LATENCY\n" +
                 "# ==================================================\n" +
                 "setprop debug.input.max_events_per_sec 1000\n" +
-                "setprop view.touch_slop 1\n" +
+                "setprop view.touch_slop 2\n" +
                 "settings put system touch_slop_reduction 1\n" +
                 "setprop persist.sys.touch.pressure.scale 0.001\n" +
-                "echo '[ZERO TOUCH SLOP & 1000Hz POLLING ACTIVE]'\n"
+                "echo '[ULTRA-LOW TOUCH SLOP & 1000Hz POLLING ACTIVE]'\n"
         );
 
         createScriptIfNotExists("3_deep_ram_flush_trim.sh",

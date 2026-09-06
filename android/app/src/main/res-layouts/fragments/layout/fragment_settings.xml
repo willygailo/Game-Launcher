@@ -662,15 +662,6 @@
                     android:text="Tethering Hardware Acceleration (Hotspot Offload)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
-
-                <Switch
-                    android:id="@+id/switch_force_gnss"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Force Full GNSS Raw Measurements"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
             </LinearLayout>
 
             <!-- CARD 5: ADVANCED SYSTEM TWEAKS ENGINE -->

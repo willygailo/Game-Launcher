@@ -110,7 +110,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchMemory16kbShield;
     private Button btnApplyUltimateAndroidEngine;
     private Switch switchTetheringHw;
-    private Switch switchForceGnss;
     private Switch switch5g6gData;
     private Switch switchWifiLowLatency;
     private Switch switchDualDataWifi;
@@ -685,7 +684,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 ManualSettingsPreferences.setMemory16kbShieldEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
                     if (isChecked) {
-                        CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=5 2>/dev/null; sysctl -w vm.dirty_background_ratio=2 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null");
+                        CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=20 2>/dev/null; sysctl -w vm.dirty_background_ratio=10 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null");
                     } else {
                         CommandExecutor.executeSystemCommand("sysctl -w vm.swappiness=60 2>/dev/null; echo 60 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null");
                     }
@@ -766,7 +765,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
         switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
         switchTetheringHw = view.findViewById(R.id.switch_tethering_hw);
-        switchForceGnss = view.findViewById(R.id.switch_force_gnss);
 
         if (getContext() != null) {
             isProgrammaticToggle = true;
@@ -774,7 +772,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
             if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
-            if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
             isProgrammaticToggle = false;
         }
 
@@ -987,22 +984,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             Toast.makeText(getContext(), isChecked ? "⚡ Tethering Hardware Offload Enabled" : "Tethering Offload Disabled", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
-
-        if (switchForceGnss != null) {
-            switchForceGnss.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Force Full GNSS Measurements")) return;
-                ManualSettingsPreferences.setForceGnssEnabled(getContext(), isChecked);
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.setForceFullGnss(isChecked);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "🛰️ Force Full GNSS Measurements Enabled" : "GNSS Raw Measurements Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1441,7 +1422,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnSettingsScriptTouch != null) {
             btnSettingsScriptTouch.setOnClickListener(v -> {
                 if (!requireShizukuForAction("1000Hz Touch Optimization")) return;
-                runSettingsTerminalQuickCmd("setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 1; echo '[1000Hz TOUCH & 1ms SLOP ACTIVE]'");
+                runSettingsTerminalQuickCmd("setprop debug.input.max_events_per_sec 1000; setprop view.touch_slop 2; echo '[1000Hz TOUCH & 2px SLOP ACTIVE]'");
             });
         }
 
@@ -1637,7 +1618,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
                 if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
                 if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
-                if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
                 if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(SpoofPreferences.isSpoofEnabled(getContext()));
                 if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
                     switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());

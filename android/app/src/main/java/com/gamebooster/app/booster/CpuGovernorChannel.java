@@ -111,9 +111,9 @@ public class CpuGovernorChannel {
         sb.append("echo 10 > /proc/sys/vm/swappiness 2>/dev/null; ");
         // vfs_cache_pressure=50: keep game FS caches alive longer (default=100 reclaims aggressively)
         sb.append("echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; ");
-        // dirty_ratio=5 / dirty_background_ratio=2: fast dirty-page writeback → less RAM pressure jank
-        sb.append("echo 5 > /proc/sys/vm/dirty_ratio 2>/dev/null; ");
-        sb.append("echo 2 > /proc/sys/vm/dirty_background_ratio 2>/dev/null; ");
+        // dirty_ratio=20 / dirty_background_ratio=10: standard balanced writeback without premature synchronous I/O stalls
+        sb.append("echo 20 > /proc/sys/vm/dirty_ratio 2>/dev/null; ");
+        sb.append("echo 10 > /proc/sys/vm/dirty_background_ratio 2>/dev/null; ");
         // page-cluster=0: read single swap pages → reduces swap-in stutter on ZRAM
         sb.append("echo 0 > /proc/sys/vm/page-cluster 2>/dev/null; ");
         // compaction_proactiveness=0: disable background memory compaction during gameplay
@@ -126,8 +126,7 @@ public class CpuGovernorChannel {
         // ── 3. Transparent HugePages ─────────────────────────────────────────
         // Reduces TLB misses for the large game memory allocations (textures, geometry buffers)
         sb.append("echo always > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null; ");
-        sb.append("echo always > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; ");
-        sb.append("echo 0 > /sys/kernel/mm/transparent_hugepage/khugepaged/scan_sleep_millisecs 2>/dev/null; ");
+        sb.append("echo madvise > /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null; ");
 
         // ── 4. EAS SchedTune (Qualcomm / MediaTek Energy Aware Scheduler) ────
         // boost=100 + prefer_idle=0: game task gets maximum energy budget, never idles

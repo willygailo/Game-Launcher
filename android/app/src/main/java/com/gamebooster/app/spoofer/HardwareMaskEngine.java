@@ -115,7 +115,6 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.sf.fps_limit " + targetHz);
             batchCommands.add("setprop persist.sys.NV_FPSLIMIT " + targetHz);
             batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
-            batchCommands.add("setprop debug.gr.swapinterval 0");
 
             // Dalvik VM Memory Tuning
             batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");

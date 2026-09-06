@@ -138,10 +138,9 @@ public class HzFpsChannel {
             CommandExecutor.setSystemSetting("system", "infinix_refresh_rate", String.valueOf(hzInt));
         }
 
-        // Direct SurfaceFlinger Binder Override & Swap Interval Cap Removal (Supports 120/144/165/185Hz)
+        // Direct SurfaceFlinger Binder Override (Supports 120/144/165/185Hz)
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1035 i32 " + hzInt);
         CommandExecutor.executeSystemCommand("service call SurfaceFlinger 1036 i32 " + hzInt);
-        CommandExecutor.setSystemProperty("debug.gr.swapinterval", "0");
         CommandExecutor.setSystemProperty("debug.sf.fps_limit", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_FPSLIMIT", hzStr);
         CommandExecutor.setSystemProperty("persist.sys.NV_POWERMODE", "1");

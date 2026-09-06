@@ -85,14 +85,15 @@ public class ManualSettingsPreferences {
         return getPrefs(context).getBoolean(KEY_TETHER_HW, true);
     }
 
+    @Deprecated
     public static void setForceGnssEnabled(Context context, boolean enabled) {
         if (context == null) return;
-        getPrefs(context).edit().putBoolean(KEY_FORCE_GNSS, enabled).apply();
+        getPrefs(context).edit().putBoolean(KEY_FORCE_GNSS, false).apply();
     }
 
+    @Deprecated
     public static boolean isForceGnssEnabled(Context context) {
-        if (context == null) return false;
-        return getPrefs(context).getBoolean(KEY_FORCE_GNSS, false);
+        return false;
     }
 
     private static final String KEY_5G_6G_DATA = "pref_5g_6g_data";
@@ -356,15 +357,12 @@ public class ManualSettingsPreferences {
             if (isTetherHwEnabled(context)) {
                 executeCmd("settings put global tether_offload_disabled 0");
             }
-            if (isForceGnssEnabled(context)) {
-                executeCmd("settings put global force_gnss_raw_measurements 1");
-            }
+            // GNSS raw measurement drain is disabled to allow GPS chip to sleep & prevent CPU interrupt flood
+            executeCmd("settings put global force_gnss_raw_measurements 0");
 
             // 7. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
             // Disable Android Default Frame Rate & Disable 120Hz/60Hz Game Limiting
-            executeCmd("setprop debug.egl.force_msaa 1");
-            executeCmd("setprop debug.egl.swapinterval 0");
-            executeCmd("setprop debug.gr.swapinterval 0");
+            executeCmd("setprop debug.egl.force_msaa 0");
             executeCmd("setprop debug.hwui.fps_divisor 1");
             executeCmd("setprop debug.graphics.game_default_frame_rate.disabled 1");
             executeCmd("setprop ro.vendor.dfps.enable 0");

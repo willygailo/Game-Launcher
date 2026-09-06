@@ -382,7 +382,7 @@ public class UserService extends IUserService.Stub {
                      "setprop debug.adpf.hint.enabled 1; " +
                      "setprop debug.adpf.cpu.boost 1; " +
                      "setprop debug.adpf.gpu.boost 1; " +
-                     "setprop debug.egl.force_msaa 1; " +
+                     "setprop debug.egl.force_msaa 0; " +
                      "setprop debug.egl.buffcount 3; " +
                      "setprop persist.sys.use_16bpp_alpha 1; " +
                      "setprop debug.egl.multithread 1; " +
@@ -510,7 +510,7 @@ public class UserService extends IUserService.Stub {
                      "setprop debug.input.max_events_per_sec 1000; " +
                      "setprop persist.sys.touch.report_rate 1000; " +
                      "setprop persist.vendor.touch.sampling_rate 1000; " +
-                     "setprop view.touch_slop 0; " +
+                     "setprop view.touch_slop 2; " +
                      "for c in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo performance > $c 2>/dev/null; done; " +
                      "for g in /sys/class/kgsl/kgsl-3d0/force_bus_on /sys/class/kgsl/kgsl-3d0/force_clk_on; do echo 1 > $g 2>/dev/null; done";
         execCommand(cmd);
@@ -679,7 +679,7 @@ public class UserService extends IUserService.Stub {
                    + "setprop persist.vendor.touch.sampling_rate " + rate + " 2>/dev/null; "
                    + "setprop debug.input.max_events_per_sec " + rate + " 2>/dev/null; "
                    + "setprop debug.sensor.gyro.sample_rate " + rate + " 2>/dev/null; "
-                   + "setprop view.touch_slop 0 2>/dev/null; "
+                   + "setprop view.touch_slop 2 2>/dev/null; "
                    + "setprop persist.sys.touch.latency 0 2>/dev/null";
         String res = execCommand(cmd);
         return res != null && !res.startsWith("ERROR");

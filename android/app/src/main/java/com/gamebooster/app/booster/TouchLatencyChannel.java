@@ -23,7 +23,7 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemSetting("secure", "edge_rejection_mode", "0");
 
         // 2. View Framework & Motion Friction
-        ok &= CommandExecutor.setSystemProperty("view.touch_slop", "0");
+        ok &= CommandExecutor.setSystemProperty("view.touch_slop", "2");
         ok &= CommandExecutor.setSystemProperty("view.scroll_friction", "0.001");
         ok &= CommandExecutor.setSystemProperty("view.fading_edge_length", "0");
         ok &= CommandExecutor.setSystemProperty("ro.min_pointer_dur", "1");
@@ -90,7 +90,7 @@ public class TouchLatencyChannel {
                 "settings put secure long_press_timeout 150",
                 "settings put secure multi_press_timeout 100",
                 "settings put secure edge_rejection_mode 0",
-                "setprop view.touch_slop 0",
+                "setprop view.touch_slop 2",
                 "setprop view.scroll_friction 0.001",
                 "setprop view.fading_edge_length 0",
                 "setprop ro.min_pointer_dur 1",
