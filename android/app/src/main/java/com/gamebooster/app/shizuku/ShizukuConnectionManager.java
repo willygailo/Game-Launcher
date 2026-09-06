@@ -7,6 +7,7 @@ import com.gamebooster.app.core.AppExecutors;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import rikka.shizuku.Shizuku;
 
@@ -16,11 +17,8 @@ import rikka.shizuku.Shizuku;
  * States: IDLE → BINDING → READY ──binder died──▶ DEAD → RETRY (exponential
  * backoff, 500ms → 8s cap, auto-rebind) → READY.
  *
- * The single gate every privileged path awaits is {@link #ensureReady(long)}.
- * All state transitions notify registered listeners so the UI can render
- * "Reconnecting…" and recover without user action. Degraded no-Shizuku
- * operation is untouched: ensureReady returns false and callers keep their
- * existing Tier-2/Tier-3 fallbacks (no silent success, no blocking).
+ * Master state is strictly governed by core Shizuku binder (moe.shizuku.privileged.api).
+ * Auxiliary AIDL UserService drops do NOT declare Shizuku dead.
  */
 public class ShizukuConnectionManager {
 
@@ -43,7 +41,7 @@ public class ShizukuConnectionManager {
     private final Object lock = new Object();
 
     private volatile State state = State.IDLE;
-    private volatile boolean reconnectRunning = false;
+    private final AtomicBoolean reconnectRunning = new AtomicBoolean(false);
     private volatile boolean enabled = true;
 
     private ShizukuConnectionManager() {}
@@ -68,7 +66,7 @@ public class ShizukuConnectionManager {
     }
 
     private void setState(State newState) {
-        if (newState == null || newState == state) return;
+        if (newState == null) return;
         synchronized (lock) {
             if (newState == state) return;
             state = newState;
@@ -100,10 +98,10 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
             } else {
-                // Pending binder handshake — do not jump to DEAD immediately
                 setState(State.BINDING);
                 scheduleReconnect();
             }
@@ -115,7 +113,7 @@ public class ShizukuConnectionManager {
 
     public void stop() {
         enabled = false;
-        reconnectRunning = false;
+        reconnectRunning.set(false);
         setState(State.IDLE);
         ShizukuUserServiceConnector.getInstance().unbindService();
     }
@@ -132,12 +130,7 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
-                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-                if (ctx != null) {
-                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
-                    ShizukuFileManager.grantAllStoragePermissions(ctx);
-                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
-                }
+                ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
             } else {
@@ -148,13 +141,24 @@ public class ShizukuConnectionManager {
         }
     }
 
-    /** Binder died — jump to DEAD and start auto-recovery in the background. */
+    /** Binder died — verify with confirmation ping before transitioning to DEAD. */
     public void onBinderDead() {
-        setState(State.DEAD);
-        scheduleReconnect();
+        boolean confirmedDead = true;
+        try {
+            if (Shizuku.pingBinder()) {
+                confirmedDead = false;
+            }
+        } catch (Throwable ignored) {}
+
+        if (confirmedDead) {
+            setState(State.DEAD);
+            scheduleReconnect();
+        } else {
+            Log.d(TAG, "onBinderDead fired, but Shizuku.pingBinder() is still alive. Preserving READY state.");
+        }
     }
 
-    /** A bind attempt failed after waiting — log and keep state consistent. */
+    /** A bind attempt failed after waiting — keep state consistent. */
     public void onBindFailure() {
         if (isReady()) {
             setState(State.READY);
@@ -173,34 +177,56 @@ public class ShizukuConnectionManager {
     public boolean ensureReady(long timeoutMs) {
         if (!enabled) return false;
 
-        boolean binderAlive;
-        boolean permissionGranted;
+        boolean binderAlive = false;
+        boolean permissionGranted = false;
         try {
             binderAlive = Shizuku.pingBinder();
-            permissionGranted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (binderAlive) {
+                permissionGranted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            }
         } catch (Throwable t) {
             binderAlive = false;
             permissionGranted = false;
         }
 
-        if (!binderAlive) {
-            setState(State.DEAD);
-            scheduleReconnect();
-            return false;
-        }
-        if (!permissionGranted) {
-            setState(State.IDLE);
-            return false;
-        }
-
-        // Shizuku is fully granted & alive
-        setState(State.READY);
-
-        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            ShizukuUserServiceConnector.getInstance().bindService();
-            if (timeoutMs > 0 && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                waitForConnected(Math.min(timeoutMs, 300));
+        if (binderAlive && permissionGranted) {
+            if (state != State.READY) {
+                setState(State.READY);
             }
+            if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                ShizukuUserServiceConnector.getInstance().bindService();
+                if (timeoutMs > 0 && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
+                    waitForConnected(Math.min(timeoutMs, 250));
+                }
+            }
+            return true;
+        }
+
+        if (!binderAlive) {
+            // Secondary confirmation check before declaring DEAD to filter out transient blips
+            sleepQuietly(60);
+            try {
+                binderAlive = Shizuku.pingBinder();
+            } catch (Throwable ignored) {}
+
+            if (!binderAlive) {
+                if (state != State.DEAD) {
+                    setState(State.DEAD);
+                }
+                scheduleReconnect();
+                return false;
+            }
+        }
+
+        if (!permissionGranted) {
+            if (state != State.IDLE) {
+                setState(State.IDLE);
+            }
+            return false;
+        }
+
+        if (state != State.READY) {
+            setState(State.READY);
         }
         return true;
     }
@@ -232,9 +258,8 @@ public class ShizukuConnectionManager {
     /** Background reconnection loop: exponential backoff, auto-rebinds. */
     private void scheduleReconnect() {
         if (!enabled) return;
-        synchronized (lock) {
-            if (reconnectRunning) return;
-            reconnectRunning = true;
+        if (!reconnectRunning.compareAndSet(false, true)) {
+            return;
         }
 
         AppExecutors.getInstance().executeCommand(() -> {
@@ -257,24 +282,20 @@ public class ShizukuConnectionManager {
                         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                             ShizukuUserServiceConnector.getInstance().bindService();
                         }
-                        android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-                        if (ctx != null) {
-                            ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
-                            ShizukuFileManager.grantAllStoragePermissions(ctx);
-                            com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
-                        }
+                        ShizukuManager.triggerThrottledPostConnectionSync();
                         return;
                     }
 
                     if (attempt == 0 || attempt % 10 == 0) {
-                        Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet");
+                        Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet (alive=" + alive + ", granted=" + granted + ")");
                     }
+
                     if (alive) {
-                        setState(State.IDLE);
+                        if (state != State.IDLE) setState(State.IDLE);
                     } else if (attempt < 3) {
-                        setState(State.BINDING);
+                        if (state != State.BINDING) setState(State.BINDING);
                     } else {
-                        setState(State.DEAD);
+                        if (state != State.DEAD) setState(State.DEAD);
                     }
                     sleepQuietly(backoffMs(attempt++));
                 }
@@ -282,9 +303,7 @@ public class ShizukuConnectionManager {
             } catch (Throwable t) {
                 Log.e(TAG, "Reconnect loop error", t);
             } finally {
-                synchronized (lock) {
-                    reconnectRunning = false;
-                }
+                reconnectRunning.set(false);
             }
         });
     }

@@ -58,12 +58,9 @@ public class ShizukuExecutor {
             return "SUCCESS";
         }
 
-        // Phase 1.1: wait briefly for the AIDL user service when permission is
-        // granted but the service isn't connected yet (no cost in degraded mode, never block main thread)
+        // Phase 1.1: Trigger non-blocking UserService bind if needed
         if (hasShizukuPermission() && !ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                ShizukuConnectionManager.getInstance().ensureReady(150);
-            }
+            ShizukuUserServiceConnector.getInstance().bindService();
         }
 
         // Tier 1: If Shizuku is granted, try fast direct AIDL UserService first

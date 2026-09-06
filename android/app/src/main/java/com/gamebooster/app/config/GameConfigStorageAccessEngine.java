@@ -219,9 +219,7 @@ public final class GameConfigStorageAccessEngine {
         globalCmds.add("chmod 777 /sdcard/Android/media 2>/dev/null");
 
         if (ShizukuExecutor.hasShizukuPermission()) {
-            for (String cmd : globalCmds) {
-                ShizukuExecutor.executeShizukuCommand(cmd);
-            }
+            ShizukuExecutor.executeShizukuCommands(globalCmds);
         }
     }
 

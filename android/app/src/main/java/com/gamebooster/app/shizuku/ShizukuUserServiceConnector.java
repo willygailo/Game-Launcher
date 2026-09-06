@@ -8,9 +8,11 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.gamebooster.app.BuildConfig;
+import com.gamebooster.app.core.AppExecutors;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import rikka.shizuku.Shizuku;
 
@@ -19,22 +21,47 @@ public class ShizukuUserServiceConnector {
     private static final String TAG = "ShizukuUserService";
     private static final ShizukuUserServiceConnector INSTANCE = new ShizukuUserServiceConnector();
 
-    private IUserService userServiceInstance = null;
-    private boolean isBinding = false;
-    private long bindingStartedAt = 0L;
+    private volatile IUserService userServiceInstance = null;
+    private volatile boolean isBinding = false;
+    private volatile long bindingStartedAt = 0L;
 
-    private static final long BIND_STUCK_TIMEOUT_MS = 15000L;
+    private static final long BIND_STUCK_TIMEOUT_MS = 4000L;
+    private final AtomicBoolean rebindScheduled = new AtomicBoolean(false);
+
+    private void scheduleSilentRebind() {
+        if (rebindScheduled.compareAndSet(false, true)) {
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException ignored) {}
+                rebindScheduled.set(false);
+                if (!isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Executing silent auto-rebind for IUserService daemon...");
+                    bindService();
+                }
+            });
+        }
+    }
+
+    private void handleRemoteException(String op, Exception e) {
+        Log.w(TAG, "RemoteException in " + op + " (switching to elevated shell fallback): " + e.getMessage());
+        userServiceInstance = null;
+        isBinding = false;
+        scheduleSilentRebind();
+    }
 
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
-            Log.w(TAG, "IUserService binder died. Cleaning up reference and attempting auto-rebind.");
+            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS. Scheduling silent auto-rebind.");
             if (userServiceInstance != null) {
-                userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
+                try {
+                    userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
+                } catch (Throwable ignored) {}
             }
             userServiceInstance = null;
             isBinding = false;
-            ShizukuConnectionManager.getInstance().onBinderDead();
+            scheduleSilentRebind();
         }
     };
 
@@ -54,10 +81,10 @@ public class ShizukuUserServiceConnector {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.w(TAG, "IUserService disconnected / unbound.");
+            Log.w(TAG, "IUserService disconnected / unbound. Scheduling silent auto-rebind.");
             userServiceInstance = null;
             isBinding = false;
-            ShizukuConnectionManager.getInstance().onBinderDead();
+            scheduleSilentRebind();
         }
     };
 
@@ -74,7 +101,8 @@ public class ShizukuUserServiceConnector {
 
     public synchronized boolean isServiceConnected() {
         try {
-            return userServiceInstance != null && userServiceInstance.asBinder() != null && userServiceInstance.asBinder().isBinderAlive();
+            IUserService instance = userServiceInstance;
+            return instance != null && instance.asBinder() != null && instance.asBinder().isBinderAlive();
         } catch (Throwable t) {
             return false;
         }
@@ -104,7 +132,6 @@ public class ShizukuUserServiceConnector {
             return;
         }
         if (isBinding) {
-            // Give Shizuku sufficient time to launch the daemon before forcing a rebind
             if (System.currentTimeMillis() - bindingStartedAt < BIND_STUCK_TIMEOUT_MS) {
                 return;
             }
@@ -134,6 +161,8 @@ public class ShizukuUserServiceConnector {
         if (userServiceInstance != null) {
             try {
                 userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
+            } catch (Throwable ignored) {}
+            try {
                 Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
                 Log.d(TAG, "Shizuku UserService unbound.");
             } catch (Exception e) {
@@ -149,10 +178,10 @@ public class ShizukuUserServiceConnector {
         if (!isServiceConnected()) {
             bindService();
             if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
-                int retries = 8;
+                int retries = 6;
                 while (!isServiceConnected() && retries > 0) {
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(40);
                     } catch (InterruptedException ignored) {}
                     retries--;
                 }
@@ -162,7 +191,8 @@ public class ShizukuUserServiceConnector {
 
     public String executeCommand(String command) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             String direct = executeCommandDirect(command);
             if (direct != null) return direct;
         }
@@ -174,12 +204,12 @@ public class ShizukuUserServiceConnector {
      * {@link ShizukuExecutor} to avoid infinite mutual fallback recursion.
      */
     public String executeCommandDirect(String command) {
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.execCommand(command);
+                return instance.execCommand(command);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in execCommand", e);
-                userServiceInstance = null;
+                handleRemoteException("execCommand", e);
             }
         }
         return null;
@@ -187,12 +217,12 @@ public class ShizukuUserServiceConnector {
 
     public List<String> executeBatchCommands(List<String> commands) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.execBatchCommands(commands);
+                return instance.execBatchCommands(commands);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in execBatchCommands", e);
-                userServiceInstance = null;
+                handleRemoteException("execBatchCommands", e);
             }
         }
         return Collections.emptyList();
@@ -204,12 +234,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean writeDirectFile(String path, String content, String mode) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.writeDirectFile(path, content, mode);
+                return instance.writeDirectFile(path, content, mode);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in writeDirectFile — fallback to shell", e);
-                userServiceInstance = null;
+                handleRemoteException("writeDirectFile", e);
             }
         }
         return false;
@@ -217,12 +247,12 @@ public class ShizukuUserServiceConnector {
 
     public String readDirectFile(String path) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.readDirectFile(path);
+                return instance.readDirectFile(path);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in readDirectFile — fallback to shell", e);
-                userServiceInstance = null;
+                handleRemoteException("readDirectFile", e);
             }
         }
         return null;
@@ -230,12 +260,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean deleteDirectFile(String path) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.deleteDirectFile(path);
+                return instance.deleteDirectFile(path);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in deleteDirectFile", e);
-                userServiceInstance = null;
+                handleRemoteException("deleteDirectFile", e);
             }
         }
         return false;
@@ -243,12 +273,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean makeDirectories(String path) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.makeDirectories(path);
+                return instance.makeDirectories(path);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in makeDirectories", e);
-                userServiceInstance = null;
+                handleRemoteException("makeDirectories", e);
             }
         }
         return false;
@@ -256,12 +286,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean fileExists(String path) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.fileExists(path);
+                return instance.fileExists(path);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in fileExists", e);
-                userServiceInstance = null;
+                handleRemoteException("fileExists", e);
             }
         }
         return false;
@@ -269,11 +299,12 @@ public class ShizukuUserServiceConnector {
 
     public long getAvailableMemoryBytes() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.getAvailableMemoryBytes();
+                return instance.getAvailableMemoryBytes();
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in getAvailableMemoryBytes", e);
+                handleRemoteException("getAvailableMemoryBytes", e);
             }
         }
         return -1L;
@@ -281,12 +312,13 @@ public class ShizukuUserServiceConnector {
 
     public void forceDisplayRefreshRate(int hz) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.forceDisplayRefreshRate(hz);
+                instance.forceDisplayRefreshRate(hz);
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in forceDisplayRefreshRate", e);
+                handleRemoteException("forceDisplayRefreshRate", e);
             }
         }
         ShizukuExecutor.executeShizukuCommand("settings put system peak_refresh_rate " + hz + ".0; settings put system min_refresh_rate " + hz + ".0");
@@ -294,12 +326,13 @@ public class ShizukuUserServiceConnector {
 
     public void trimCachesAndDropCaches() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.trimCachesAndDropCaches();
+                instance.trimCachesAndDropCaches();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in trimCachesAndDropCaches", e);
+                handleRemoteException("trimCachesAndDropCaches", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("pm trim-caches 2000M; sync; echo 3 > /proc/sys/vm/drop_caches");
@@ -307,12 +340,13 @@ public class ShizukuUserServiceConnector {
 
     public void setCpuGpuPerformanceGovernors() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.setCpuGpuPerformanceGovernors();
+                instance.setCpuGpuPerformanceGovernors();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setCpuGpuPerformanceGovernors", e);
+                handleRemoteException("setCpuGpuPerformanceGovernors", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > \"$cpu\" 2>/dev/null; done; setprop debug.adreno.turbo 1; setprop debug.mali.sched.priority -20");
@@ -320,12 +354,13 @@ public class ShizukuUserServiceConnector {
 
     public void restoreCpuGpuGovernors() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.restoreCpuGpuGovernors();
+                instance.restoreCpuGpuGovernors();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in restoreCpuGpuGovernors", e);
+                handleRemoteException("restoreCpuGpuGovernors", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo schedutil > \"$cpu\" 2>/dev/null; done; cmd power set-mode 2 0; cmd power set-mode 0 0; setprop debug.adreno.turbo 0");
@@ -333,12 +368,13 @@ public class ShizukuUserServiceConnector {
 
     public void optimize5GAndWifi() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.optimize5GAndWifi();
+                instance.optimize5GAndWifi();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in optimize5GAndWifi", e);
+                handleRemoteException("optimize5GAndWifi", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("cmd wifi force-low-latency-mode enabled; cmd wifi force-hi-perf-mode enabled; settings put global wifi_scan_always_enabled 0; settings put global mobile_data_always_on 1");
@@ -346,11 +382,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean applyHardwareMask(String buildProps, String mockCpuInfo, String mockMemInfo) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.applyHardwareMask(buildProps, mockCpuInfo, mockMemInfo);
+                return instance.applyHardwareMask(buildProps, mockCpuInfo, mockMemInfo);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in applyHardwareMask", e);
+                handleRemoteException("applyHardwareMask", e);
             }
         }
         return false;
@@ -358,11 +395,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean patchGameConfigFile(String targetPath, String content, String chmodMode) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.patchGameConfigFile(targetPath, content, chmodMode);
+                return instance.patchGameConfigFile(targetPath, content, chmodMode);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in patchGameConfigFile", e);
+                handleRemoteException("patchGameConfigFile", e);
             }
         }
         return writeDirectFile(targetPath, content, chmodMode);
@@ -370,12 +408,13 @@ public class ShizukuUserServiceConnector {
 
     public void setGameModeApi(String packageName, int targetFps) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.setGameModeApi(packageName, targetFps);
+                instance.setGameModeApi(packageName, targetFps);
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setGameModeApi", e);
+                handleRemoteException("setGameModeApi", e);
             }
         }
         final int fps = targetFps > 0 ? targetFps : 185;
@@ -384,12 +423,13 @@ public class ShizukuUserServiceConnector {
 
     public void enforceAppOpsAndPermissions(String packageName) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.enforceAppOpsAndPermissions(packageName);
+                instance.enforceAppOpsAndPermissions(packageName);
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in enforceAppOpsAndPermissions", e);
+                handleRemoteException("enforceAppOpsAndPermissions", e);
             }
         }
         ShizukuPermissionEnforcer.enforceGamePermissions(packageName);
@@ -397,12 +437,13 @@ public class ShizukuUserServiceConnector {
 
     public void applyThermalAndKernelBoost() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.applyThermalAndKernelBoost();
+                instance.applyThermalAndKernelBoost();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in applyThermalAndKernelBoost", e);
+                handleRemoteException("applyThermalAndKernelBoost", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("setprop debug.thermal.throttle.disable 1; setprop debug.performance.tuning 1; setprop debug.hwui.renderer vulkan");
@@ -410,11 +451,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean setCpuAffinity(int pid, int mask) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setCpuAffinity(pid, mask);
+                return instance.setCpuAffinity(pid, mask);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setCpuAffinity", e);
+                handleRemoteException("setCpuAffinity", e);
             }
         }
         int cpuMask = mask > 0 ? mask : 0xF0;
@@ -425,11 +467,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean setProcessPriority(int pid, int niceLevel) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setProcessPriority(pid, niceLevel);
+                return instance.setProcessPriority(pid, niceLevel);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setProcessPriority", e);
+                handleRemoteException("setProcessPriority", e);
             }
         }
         int nice = (niceLevel >= -20 && niceLevel <= 19) ? niceLevel : -20;
@@ -439,11 +482,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean suppressHeadsUpNotifications(boolean suppress) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.suppressHeadsUpNotifications(suppress);
+                return instance.suppressHeadsUpNotifications(suppress);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in suppressHeadsUpNotifications", e);
+                handleRemoteException("suppressHeadsUpNotifications", e);
             }
         }
         int val = suppress ? 0 : 1;
@@ -453,11 +497,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean setGamingDnd(boolean enable) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setGamingDnd(enable);
+                return instance.setGamingDnd(enable);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setGamingDnd", e);
+                handleRemoteException("setGamingDnd", e);
             }
         }
         String filter = enable ? "priority" : "all";
@@ -468,11 +513,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean executeZramCompaction() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.executeZramCompaction();
+                return instance.executeZramCompaction();
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in executeZramCompaction", e);
+                handleRemoteException("executeZramCompaction", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("fstrim -v /data 2>/dev/null; fstrim -v /cache 2>/dev/null; sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null; echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; echo 1 > /sys/block/zram0/compact 2>/dev/null");
@@ -481,11 +527,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean setNetworkQoS(boolean prioritize) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setNetworkQoS(prioritize);
+                return instance.setNetworkQoS(prioritize);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setNetworkQoS", e);
+                handleRemoteException("setNetworkQoS", e);
             }
         }
         String netVal = prioritize ? "true" : "false";
@@ -497,11 +544,12 @@ public class ShizukuUserServiceConnector {
     public boolean freezeApp(String packageName) {
         if (packageName == null) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.freezeApp(packageName);
+                return instance.freezeApp(packageName);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in freezeApp", e);
+                handleRemoteException("freezeApp", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("am force-stop " + packageName + " 2>/dev/null; pm suspend --user 0 " + packageName + " 2>/dev/null; cmd package suspend --user 0 " + packageName + " 2>/dev/null; cmd appops set " + packageName + " RUN_IN_BACKGROUND ignore 2>/dev/null; cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND ignore 2>/dev/null; am set-standby-bucket " + packageName + " restricted 2>/dev/null; am set-standby-bucket " + packageName + " 45 2>/dev/null");
@@ -511,11 +559,12 @@ public class ShizukuUserServiceConnector {
     public boolean unfreezeApp(String packageName) {
         if (packageName == null) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.unfreezeApp(packageName);
+                return instance.unfreezeApp(packageName);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in unfreezeApp", e);
+                handleRemoteException("unfreezeApp", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("pm unsuspend --user 0 " + packageName + " 2>/dev/null; cmd package unsuspend --user 0 " + packageName + " 2>/dev/null; cmd appops set " + packageName + " RUN_IN_BACKGROUND allow 2>/dev/null; cmd appops set " + packageName + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null; am set-standby-bucket " + packageName + " active 2>/dev/null; am set-standby-bucket " + packageName + " 10 2>/dev/null");
@@ -525,11 +574,12 @@ public class ShizukuUserServiceConnector {
     public boolean speedCompileGame(String packageName) {
         if (packageName == null) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.speedCompileGame(packageName);
+                return instance.speedCompileGame(packageName);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in speedCompileGame", e);
+                handleRemoteException("speedCompileGame", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("cmd package compile -m speed -f " + packageName + " 2>/dev/null; pm compile -m speed -f " + packageName + " 2>/dev/null");
@@ -539,11 +589,12 @@ public class ShizukuUserServiceConnector {
     public boolean setResolutionScale(int width, int height) {
         if (width <= 0 || height <= 0) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setResolutionScale(width, height);
+                return instance.setResolutionScale(width, height);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setResolutionScale", e);
+                handleRemoteException("setResolutionScale", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("wm size " + width + "x" + height + " 2>/dev/null");
@@ -552,12 +603,13 @@ public class ShizukuUserServiceConnector {
 
     public void resetResolutionScale() {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                userServiceInstance.resetResolutionScale();
+                instance.resetResolutionScale();
                 return;
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in resetResolutionScale", e);
+                handleRemoteException("resetResolutionScale", e);
             }
         }
         ShizukuExecutor.executeShizukuCommands("wm size reset 2>/dev/null; wm density reset 2>/dev/null");
@@ -566,11 +618,12 @@ public class ShizukuUserServiceConnector {
     public boolean setGameGpuDriver(String packageName, String driverType) {
         if (packageName == null) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setGameGpuDriver(packageName, driverType);
+                return instance.setGameGpuDriver(packageName, driverType);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setGameGpuDriver", e);
+                handleRemoteException("setGameGpuDriver", e);
             }
         }
         return false;
@@ -579,11 +632,12 @@ public class ShizukuUserServiceConnector {
     public boolean purgeAppLogsAndTraces(String packageName) {
         if (packageName == null) return false;
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.purgeAppLogsAndTraces(packageName);
+                return instance.purgeAppLogsAndTraces(packageName);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in purgeAppLogsAndTraces", e);
+                handleRemoteException("purgeAppLogsAndTraces", e);
             }
         }
         String res = ShizukuExecutor.executeShizukuCommand("rm -rf /sdcard/Android/data/" + packageName + "/cache/* /sdcard/Android/data/" + packageName + "/files/*.log /sdcard/Android/data/" + packageName + "/files/dragon2017/assets/Logs/* 2>/dev/null");
@@ -592,11 +646,12 @@ public class ShizukuUserServiceConnector {
 
     public boolean setTouchSamplingRate(int rateHz) {
         ensureBound();
-        if (userServiceInstance != null) {
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
             try {
-                return userServiceInstance.setTouchSamplingRate(rateHz);
+                return instance.setTouchSamplingRate(rateHz);
             } catch (Exception e) {
-                Log.e(TAG, "RemoteException in setTouchSamplingRate", e);
+                handleRemoteException("setTouchSamplingRate", e);
             }
         }
         final int rate = rateHz > 0 ? rateHz : 1000;

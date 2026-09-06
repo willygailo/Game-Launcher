@@ -19,6 +19,9 @@ import java.util.List;
 public class ShizukuPermissionEnforcer {
 
     private static final String TAG = "ShizukuPermEnforcer";
+    private static volatile long lastEnforceTimestamp = 0L;
+    private static final long ENFORCE_COOLDOWN_MS = 12000L;
+    private static final Object ENFORCE_LOCK = new Object();
 
     /**
      * Unlocks full file system access, legacy storage, appops, and system permissions for the launcher and detected games.
@@ -28,6 +31,15 @@ public class ShizukuPermissionEnforcer {
         if (!ShizukuExecutor.hasShizukuPermission() && !RishManager.isAvailable(context)) {
             Log.w(TAG, "Cannot enforce permissions: Shizuku is not available or granted.");
             return;
+        }
+
+        synchronized (ENFORCE_LOCK) {
+            long now = System.currentTimeMillis();
+            if (now - lastEnforceTimestamp < ENFORCE_COOLDOWN_MS) {
+                Log.d(TAG, "enforceAllPermissions skipped: within cooldown.");
+                return;
+            }
+            lastEnforceTimestamp = now;
         }
 
         AppExecutors.getInstance().executeCommand(() -> {

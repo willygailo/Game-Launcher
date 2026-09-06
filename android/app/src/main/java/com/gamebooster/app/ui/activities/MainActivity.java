@@ -216,18 +216,21 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         }
     }
 
+    private boolean lastReportedAlive = false;
+
     @Override
     public void onBinderStateChanged(boolean alive) {
         runOnUiThread(() -> {
             if (isFinishing() || isDestroyed()) return;
             if (!alive) {
+                lastReportedAlive = false;
                 Log.d("MainActivity", "Shizuku disconnected");
             } else {
-                Toast.makeText(getApplicationContext(), "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
-                    TweakManagerRepository.restoreAppliedTweaksAsync(getApplicationContext());
-                });
+                if (!lastReportedAlive) {
+                    lastReportedAlive = true;
+                    Toast.makeText(getApplicationContext(), "⚡ Shizuku API Connected — Full Access Active!", Toast.LENGTH_SHORT).show();
+                    ShizukuManager.triggerThrottledPostConnectionSync();
+                }
             }
         });
     }

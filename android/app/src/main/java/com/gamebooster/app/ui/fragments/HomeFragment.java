@@ -48,15 +48,29 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private LoopingVideoBackgroundView videoHomeBg;
     private LoopingVideoBackgroundView videoHeroBanner;
     private final List<GameAppInfo> gameList = new ArrayList<>();
+    private boolean lastKnownShizukuActive = false;
+
+    private void handleShizukuStateUpdate() {
+        if (!isAdded() || getContext() == null) return;
+        boolean nowActive = ShizukuExecutor.hasShizukuPermission()
+                || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
+                || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
+                || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState() == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
+
+        updateStatusStrip();
+
+        if (nowActive && !lastKnownShizukuActive) {
+            lastKnownShizukuActive = true;
+            loadAndScanGames(true);
+        } else if (!nowActive) {
+            lastKnownShizukuActive = false;
+        }
+    }
+
     private final com.gamebooster.app.shizuku.ShizukuConnectionManager.ConnectionListener connListener =
             state -> {
                 if (isAdded() && getContext() != null) {
-                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                        updateStatusStrip();
-                        if (state == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY) {
-                            loadAndScanGames(true);
-                        }
-                    });
+                    com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::handleShizukuStateUpdate);
                 }
             };
 
@@ -287,12 +301,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     @Override
     public void onBinderStateChanged(boolean alive) {
         if (isAdded() && getContext() != null) {
-            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
-                updateStatusStrip();
-                if (alive) {
-                    loadAndScanGames(true);
-                }
-            });
+            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(this::handleShizukuStateUpdate);
         }
     }
 

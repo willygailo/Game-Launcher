@@ -8,8 +8,11 @@ import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.gamebooster.app.core.AppExecutors;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import rikka.shizuku.Shizuku;
 
@@ -23,10 +26,19 @@ public class ShizukuManager {
     }
 
     private static final List<ShizukuStateListener> STATE_LISTENERS = new CopyOnWriteArrayList<>();
+    private static final AtomicBoolean LISTENERS_REGISTERED = new AtomicBoolean(false);
+    private static volatile Boolean lastNotifiedAlive = null;
+
+    private static volatile long lastPostSyncTimestamp = 0L;
+    private static final long POST_SYNC_COOLDOWN_MS = 15000L;
+    private static final Object SYNC_LOCK = new Object();
 
     public static void addStateListener(ShizukuStateListener listener) {
         if (listener != null && !STATE_LISTENERS.contains(listener)) {
             STATE_LISTENERS.add(listener);
+            try {
+                listener.onBinderStateChanged(isShizukuRunningAndGranted());
+            } catch (Throwable ignored) {}
         }
     }
 
@@ -37,6 +49,10 @@ public class ShizukuManager {
     }
 
     private static void notifyStateChanged(boolean alive) {
+        if (lastNotifiedAlive != null && lastNotifiedAlive.booleanValue() == alive) {
+            return;
+        }
+        lastNotifiedAlive = alive;
         for (ShizukuStateListener l : STATE_LISTENERS) {
             try {
                 l.onBinderStateChanged(alive);
@@ -53,20 +69,11 @@ public class ShizukuManager {
             boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
             Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
             if (granted) {
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                AppExecutors.getInstance().executeCommand(() -> {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
                     } catch (Throwable ignored) {}
-                    try {
-                        android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-                        if (ctx != null) {
-                            ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
-                            ShizukuFileManager.grantAllStoragePermissions(ctx);
-                            com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
-                        }
-                    } catch (Throwable t) {
-                        Log.w(TAG, "Post-permission enforcement error: " + t.getMessage());
-                    }
+                    triggerThrottledPostConnectionSync();
                     ShizukuConnectionManager.getInstance().onBinderReceived();
                 });
             }
@@ -80,16 +87,11 @@ public class ShizukuManager {
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
             } else {
-                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                AppExecutors.getInstance().executeCommand(() -> {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
-                        android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-                        if (ctx != null) {
-                            ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
-                            ShizukuFileManager.grantAllStoragePermissions(ctx);
-                            com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
-                        }
                     } catch (Throwable ignored) {}
+                    triggerThrottledPostConnectionSync();
                     ShizukuConnectionManager.getInstance().onBinderReceived();
                 });
             }
@@ -104,6 +106,10 @@ public class ShizukuManager {
     };
 
     public static void registerBinderListeners() {
+        if (!LISTENERS_REGISTERED.compareAndSet(false, true)) {
+            Log.d(TAG, "Shizuku binder listeners already registered.");
+            return;
+        }
         try {
             Shizuku.addBinderReceivedListenerSticky(RECEIVED_LISTENER);
             Shizuku.addBinderDeadListener(DEAD_LISTENER);
@@ -111,10 +117,14 @@ public class ShizukuManager {
             Log.d(TAG, "Shizuku binder listeners registered successfully.");
         } catch (Exception e) {
             Log.e(TAG, "Failed to register Shizuku binder listeners", e);
+            LISTENERS_REGISTERED.set(false);
         }
     }
 
     public static void unregisterBinderListeners() {
+        if (!LISTENERS_REGISTERED.compareAndSet(true, false)) {
+            return;
+        }
         try {
             Shizuku.removeBinderReceivedListener(RECEIVED_LISTENER);
             Shizuku.removeBinderDeadListener(DEAD_LISTENER);
@@ -123,6 +133,34 @@ public class ShizukuManager {
         } catch (Exception e) {
             Log.e(TAG, "Failed to unregister Shizuku binder listeners", e);
         }
+    }
+
+    /**
+     * Executes throttled post-connection sync (permissions, storage, tweaks) to avoid overloading Shizuku IPC.
+     */
+    public static void triggerThrottledPostConnectionSync() {
+        synchronized (SYNC_LOCK) {
+            long now = System.currentTimeMillis();
+            if (now - lastPostSyncTimestamp < POST_SYNC_COOLDOWN_MS) {
+                Log.d(TAG, "Post-connection sync suppressed (within " + POST_SYNC_COOLDOWN_MS + "ms cooldown)");
+                return;
+            }
+            lastPostSyncTimestamp = now;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null && isShizukuRunningAndGranted()) {
+                    Log.i(TAG, "Executing throttled post-connection system sync...");
+                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx);
+                    ShizukuFileManager.grantAllStoragePermissions(ctx);
+                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(ctx);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Throttled sync error: " + t.getMessage());
+            }
+        });
     }
 
     /**
@@ -245,7 +283,7 @@ public class ShizukuManager {
 
         if (isShizukuRunningAndGranted()) {
             android.widget.Toast.makeText(context, "⚡ Shizuku Active: Forcing Privileged Permissions & Tweaks...", android.widget.Toast.LENGTH_SHORT).show();
-            com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+            AppExecutors.getInstance().executeCommand(() -> {
                 try {
                     ShizukuUserServiceConnector.getInstance().bindService();
                     ShizukuPermissionEnforcer.enforceAllPermissions(context);
