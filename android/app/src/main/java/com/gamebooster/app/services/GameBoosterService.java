@@ -79,14 +79,11 @@ public class GameBoosterService extends Service {
             ShizukuUserServiceConnector.getInstance().bindService();
         } catch (Throwable ignored) {}
 
-        // Acquire low-latency / high-performance Wi-Fi lock to prevent Wireless Debugging disconnect during gaming
+        // Acquire low-latency Wi-Fi lock to prevent Wireless Debugging disconnect during gaming
         try {
             WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wm != null) {
-                int mode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                        ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY
-                        : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
-                wifiLock = wm.createWifiLock(mode, "GameBooster:WifiLock");
+                wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "GameBooster:WifiLock");
                 wifiLock.acquire();
             }
         } catch (Throwable t) {
