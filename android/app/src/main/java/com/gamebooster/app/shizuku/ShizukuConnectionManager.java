@@ -26,7 +26,8 @@ public class ShizukuConnectionManager {
 
     private static final long BASE_BACKOFF_MS = 500;
     private static final long MAX_BACKOFF_MS = 8000;
-    private static final int MAX_RETRY_ATTEMPTS = 60;
+    private static final int MAX_BURST_ATTEMPTS = 10;
+    private static final long STEADY_POLL_INTERVAL_MS = 10000;
     private static final long CONNECT_POLL_STEP_MS = 50;
 
     public enum State { IDLE, BINDING, READY, DEAD, RETRY }
@@ -98,6 +99,7 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                ShizukuKeepAliveWatchdog.getInstance().onShizukuConnected();
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
@@ -130,6 +132,7 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                ShizukuKeepAliveWatchdog.getInstance().onShizukuConnected();
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
@@ -255,7 +258,7 @@ public class ShizukuConnectionManager {
         return ShizukuUserServiceConnector.getInstance().isServiceConnected();
     }
 
-    /** Background reconnection loop: exponential backoff, auto-rebinds. */
+    /** Background reconnection loop: 10-attempt fast exponential burst, then infinite steady-state polling. */
     private void scheduleReconnect() {
         if (!enabled) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
@@ -265,7 +268,7 @@ public class ShizukuConnectionManager {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 int attempt = 0;
-                while (enabled && attempt < MAX_RETRY_ATTEMPTS) {
+                while (enabled) {
                     boolean alive;
                     boolean granted;
                     try {
@@ -282,11 +285,12 @@ public class ShizukuConnectionManager {
                         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                             ShizukuUserServiceConnector.getInstance().bindService();
                         }
+                        ShizukuKeepAliveWatchdog.getInstance().onShizukuConnected();
                         ShizukuManager.triggerThrottledPostConnectionSync();
                         return;
                     }
 
-                    if (attempt == 0 || attempt % 10 == 0) {
+                    if (attempt == 0 || attempt % 6 == 0) {
                         Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet (alive=" + alive + ", granted=" + granted + ")");
                     }
 
@@ -297,9 +301,11 @@ public class ShizukuConnectionManager {
                     } else {
                         if (state != State.DEAD) setState(State.DEAD);
                     }
-                    sleepQuietly(backoffMs(attempt++));
+
+                    long sleepMs = (attempt < MAX_BURST_ATTEMPTS) ? backoffMs(attempt) : STEADY_POLL_INTERVAL_MS;
+                    attempt++;
+                    sleepQuietly(sleepMs);
                 }
-                Log.d(TAG, "Reconnect loop finished after " + MAX_RETRY_ATTEMPTS + " attempts");
             } catch (Throwable t) {
                 Log.e(TAG, "Reconnect loop error", t);
             } finally {

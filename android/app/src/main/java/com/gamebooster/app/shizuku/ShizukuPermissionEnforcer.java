@@ -139,12 +139,26 @@ public class ShizukuPermissionEnforcer {
                 batchCmds.add("cmd appops set " + pkg + " " + op + " allow 2>/dev/null");
             }
 
-            // 5. Battery Optimization & Doze Mode Bypass
+            // 5. Battery Optimization & Doze Mode Bypass for Launcher and Shizuku
             batchCmds.add("dumpsys deviceidle whitelist +" + pkg + " 2>/dev/null");
             batchCmds.add("cmd deviceidle whitelist +" + pkg + " 2>/dev/null");
+            batchCmds.add("dumpsys deviceidle whitelist +" + ShizukuKeepAliveWatchdog.SHIZUKU_PKG + " 2>/dev/null");
+            batchCmds.add("cmd deviceidle whitelist +" + ShizukuKeepAliveWatchdog.SHIZUKU_PKG + " 2>/dev/null");
+            batchCmds.add("am set-standby-bucket " + ShizukuKeepAliveWatchdog.SHIZUKU_PKG + " active 2>/dev/null");
+            batchCmds.add("cmd activity set-standby-bucket " + ShizukuKeepAliveWatchdog.SHIZUKU_PKG + " active 2>/dev/null");
 
-            // 6. Fast Single-Batch Execution via Shizuku
+            // 6. Phantom Process Killer & Cached Apps Freezer Immunity
+            batchCmds.add("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
+            batchCmds.add("settings put global settings_enable_monitor_phantom_procs false 2>/dev/null");
+            batchCmds.add("setprop persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null");
+            batchCmds.add("cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
+            batchCmds.add("settings put global cached_apps_freezer disabled 2>/dev/null");
+
+            // 7. Fast Single-Batch Execution via Shizuku
             ShizukuExecutor.executeShizukuCommands(batchCmds);
+
+            // 8. Enforce OOM score immunity shield
+            ShizukuKeepAliveWatchdog.getInstance().applyImmunityShieldAsync();
 
             Log.i(TAG, "All Shizuku launcher system & storage privileges auto-granted successfully!");
 

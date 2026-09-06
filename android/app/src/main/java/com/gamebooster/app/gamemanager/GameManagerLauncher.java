@@ -280,11 +280,12 @@ public final class GameManagerLauncher {
                     );
                 }
 
-                // Full Game Session: Native C++ config injection, hardware masking, locks
+                // Full Game Session: Native C++ config injection, hardware masking, locks, Shizuku watchdog
                 try {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
+                    com.gamebooster.app.services.GameBoosterService.start(appContext);
                     com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);
                 } catch (Throwable t) {
                     Log.w(TAG, "Session engine begin warning: " + t.getMessage());

@@ -1,0 +1,264 @@
+package com.gamebooster.app.shizuku;
+
+import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
+import android.util.Log;
+
+import com.gamebooster.app.core.AppExecutors;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import rikka.shizuku.Shizuku;
+
+/**
+ * ShizukuKeepAliveWatchdog — Active Immunity & Heartbeat Daemon.
+ *
+ * Prevents Shizuku from automatically turning off or disconnecting during
+ * multi-hour gaming sessions by:
+ * 1. OOM Shielding: Sets oom_score_adj = -1000 on Shizuku daemon and server processes
+ *    (SYSTEM_ADJ immunity from Android Low Memory Killer).
+ * 2. Standby & Battery Immunity: Whitelists Shizuku from Doze/deviceidle, forces
+ *    standby bucket to ACTIVE, and enables background/auto-start AppOps.
+ * 3. Phantom Process Killer Bypass: Raises max_phantom_processes to 2 Billion and
+ *    disables Android 12–16 phantom monitoring and cached apps freezer.
+ * 4. Wireless Debugging Keep-Alive: Locks Wi-Fi sleep policy and disables ADB timeouts.
+ * 5. Persistent Heartbeat: Periodically validates binder liveness and triggers
+ *    immediate reconnection/re-binding if dropped.
+ */
+public class ShizukuKeepAliveWatchdog {
+
+    private static final String TAG = "ShizukuWatchdog";
+    private static final ShizukuKeepAliveWatchdog INSTANCE = new ShizukuKeepAliveWatchdog();
+
+    public static final String SHIZUKU_PKG = "moe.shizuku.privileged.api";
+    private static final long HEARTBEAT_INTERVAL_MS = 20_000L; // 20 seconds
+    private static final long FAST_CHECK_INTERVAL_MS = 5_000L;
+
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isShieldingActive = new AtomicBoolean(false);
+
+    private HandlerThread watchdogThread;
+    private Handler watchdogHandler;
+    private Runnable heartbeatRunnable;
+
+    private volatile long lastFullShieldTimeMs = 0L;
+    private static final long FULL_SHIELD_COOLDOWN_MS = 60_000L; // Full shield reapplied at most once a minute
+
+    private ShizukuKeepAliveWatchdog() {}
+
+    public static ShizukuKeepAliveWatchdog getInstance() {
+        return INSTANCE;
+    }
+
+    public boolean isWatchdogActive() {
+        return isRunning.get();
+    }
+
+    /**
+     * Starts the keep-alive watchdog thread and periodic heartbeat.
+     */
+    public synchronized void startWatchdog(Context context) {
+        if (isRunning.compareAndSet(false, true)) {
+            Log.i(TAG, "Starting Shizuku Keep-Alive Watchdog daemon...");
+
+            watchdogThread = new HandlerThread("ShizukuWatchdogThread", Process.THREAD_PRIORITY_BACKGROUND);
+            watchdogThread.start();
+            watchdogHandler = new Handler(watchdogThread.getLooper());
+
+            heartbeatRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (!isRunning.get()) return;
+                    performHeartbeatCheck();
+                    if (watchdogHandler != null && isRunning.get()) {
+                        watchdogHandler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+                    }
+                }
+            };
+
+            // Immediate initial run
+            watchdogHandler.post(heartbeatRunnable);
+
+            // If Shizuku is already ready, enforce immunity right away
+            if (ShizukuManager.isShizukuRunningAndGranted()) {
+                applyImmunityShieldAsync();
+            }
+        }
+    }
+
+    /**
+     * Stops the keep-alive watchdog daemon.
+     */
+    public synchronized void stopWatchdog() {
+        if (isRunning.compareAndSet(true, false)) {
+            Log.i(TAG, "Stopping Shizuku Keep-Alive Watchdog daemon.");
+            if (watchdogHandler != null && heartbeatRunnable != null) {
+                watchdogHandler.removeCallbacks(heartbeatRunnable);
+            }
+            if (watchdogThread != null) {
+                watchdogThread.quitSafely();
+                watchdogThread = null;
+            }
+            watchdogHandler = null;
+            heartbeatRunnable = null;
+        }
+    }
+
+    /**
+     * Hook called immediately when Shizuku connection state becomes READY.
+     */
+    public void onShizukuConnected() {
+        Log.i(TAG, "onShizukuConnected: Triggering full immunity shield");
+        applyImmunityShieldAsync();
+    }
+
+    /**
+     * Asynchronously executes full immunity shield commands via worker executor.
+     */
+    public void applyImmunityShieldAsync() {
+        AppExecutors.getInstance().executeCommand(this::applyImmunityShieldInternal);
+    }
+
+    /**
+     * Full system-level immunity enforcement.
+     */
+    public void applyImmunityShieldInternal() {
+        if (!ShizukuExecutor.hasShizukuPermission()) {
+            Log.d(TAG, "Cannot apply immunity shield: Shizuku not permitted or running");
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - lastFullShieldTimeMs < FULL_SHIELD_COOLDOWN_MS) {
+            // Re-apply only OOM score without repeating heavy settings
+            refreshOomScoreOnly();
+            return;
+        }
+        lastFullShieldTimeMs = now;
+
+        try {
+            Log.i(TAG, "Applying complete anti-kill immunity shield for Shizuku & Game Booster...");
+            List<String> shieldCmds = buildImmunityCommands();
+            ShizukuExecutor.executeShizukuCommands(shieldCmds);
+            isShieldingActive.set(true);
+            Log.i(TAG, "Shizuku immunity shield applied successfully! (OOM -1000, PPK bypass, Doze whitelist, Wi-Fi lock)");
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to apply full immunity shield: " + t.getMessage());
+        }
+    }
+
+    /**
+     * Compiles all shell commands needed to shield Shizuku from Android system kills.
+     */
+    public List<String> buildImmunityCommands() {
+        List<String> cmds = new ArrayList<>();
+
+        // ─── 1. OOM Score Adjustment (-1000 = SYSTEM_ADJ, completely immune to LMK) ───
+        // Target Shizuku main package process
+        cmds.add("for p in $(pidof " + SHIZUKU_PKG + " 2>/dev/null); do " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "renice -n -20 -p $p 2>/dev/null; done");
+
+        // Target Shizuku standalone server / starter daemons spawned by ADB
+        cmds.add("for p in $(pgrep -f 'shizuku_server' 2>/dev/null); do " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "renice -n -20 -p $p 2>/dev/null; done");
+        cmds.add("for p in $(pgrep -f 'shizuku_starter' 2>/dev/null); do " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "renice -n -20 -p $p 2>/dev/null; done");
+        cmds.add("for p in $(pgrep -f 'moe.shizuku' 2>/dev/null); do " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "renice -n -20 -p $p 2>/dev/null; done");
+
+        // Protect our own Game Booster process from LMK during extreme gaming
+        try {
+            int myPid = Process.myPid();
+            cmds.add("echo -1000 > /proc/" + myPid + "/oom_score_adj 2>/dev/null");
+            cmds.add("renice -n -20 -p " + myPid + " 2>/dev/null");
+        } catch (Throwable ignored) {}
+
+        // ─── 2. Battery Optimization, Doze Mode & Standby Bucket Immunity ───
+        // Whitelist Shizuku from Doze mode (deviceidle)
+        cmds.add("dumpsys deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null");
+        cmds.add("cmd deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null");
+
+        // Pin Shizuku App Standby Bucket to ACTIVE (Bucket 10) so Android never treats it as RARE/RESTRICTED
+        cmds.add("am set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null");
+        cmds.add("cmd activity set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null");
+
+        // Grant continuous background execution AppOps
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_IN_BACKGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " AUTO_START allow 2>/dev/null");
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " START_FOREGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " SYSTEM_ALERT_WINDOW allow 2>/dev/null");
+
+        // ─── 3. Android 12–16 Phantom Process Killer & Cached Apps Freezer Bypass ───
+        cmds.add("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
+        cmds.add("settings put global settings_enable_monitor_phantom_procs false 2>/dev/null");
+        cmds.add("setprop persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null");
+        cmds.add("cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
+        cmds.add("settings put global cached_apps_freezer disabled 2>/dev/null");
+
+        // ─── 4. Wireless Debugging & Wi-Fi Power Saving Keep-Alive ───
+        cmds.add("settings put global adb_wifi_enabled 1 2>/dev/null");
+        cmds.add("settings put global wifi_sleep_policy 2 2>/dev/null");
+        cmds.add("cmd settings put global adb_allowed_connection_time 0 2>/dev/null");
+        cmds.add("settings put global adb_authorization_timeout 0 2>/dev/null");
+
+        return cmds;
+    }
+
+    /**
+     * Fast, low-overhead OOM score refresh targeting only the Shizuku PIDs.
+     */
+    private void refreshOomScoreOnly() {
+        try {
+            String oomCmd = "for p in $(pidof " + SHIZUKU_PKG + " 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; done; " +
+                    "for p in $(pgrep -f 'shizuku_server' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; done";
+            ShizukuExecutor.executeShizukuCommand(oomCmd);
+        } catch (Throwable ignored) {}
+    }
+
+    /**
+     * Heartbeat execution running every 20s.
+     * Verifies binder liveness, re-establishes dropped connections, and keeps UserService bound.
+     */
+    private void performHeartbeatCheck() {
+        try {
+            boolean binderAlive = false;
+            try {
+                binderAlive = Shizuku.pingBinder();
+            } catch (Throwable t) {
+                binderAlive = false;
+            }
+
+            if (binderAlive) {
+                // Shizuku core is alive!
+                // 1. Ensure state is READY
+                if (ShizukuConnectionManager.getInstance().getState() != ShizukuConnectionManager.State.READY) {
+                    ShizukuConnectionManager.getInstance().onBinderReceived();
+                }
+
+                // 2. Ensure AIDL UserService is bound
+                if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    Log.d(TAG, "Heartbeat: AIDL UserService dropped — auto-re-binding...");
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                }
+
+                // 3. Keep-alive OOM refresh
+                refreshOomScoreOnly();
+            } else {
+                // Binder is not responding!
+                Log.w(TAG, "Heartbeat: Shizuku binder not responding — notifying ConnectionManager");
+                ShizukuConnectionManager.getInstance().onBinderDead();
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Heartbeat check error: " + t.getMessage());
+        }
+    }
+}

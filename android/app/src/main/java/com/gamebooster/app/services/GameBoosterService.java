@@ -24,6 +24,9 @@ import com.gamebooster.app.booster.NetworkOptimizer;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.NativeFrameworkBridge;
+import android.net.wifi.WifiManager;
+import android.os.PowerManager;
+import com.gamebooster.app.shizuku.ShizukuKeepAliveWatchdog;
 import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
@@ -42,6 +45,30 @@ public class GameBoosterService extends Service {
     public static final String ACTION_BOOST_GAME = "com.gamebooster.app.action.BOOST_GAME";
     public static final String EXTRA_PACKAGE_NAME = "extra_package_name";
 
+    private WifiManager.WifiLock wifiLock;
+    private PowerManager.WakeLock wakeLock;
+
+    public static void start(Context context) {
+        if (context == null) return;
+        Intent intent = new Intent(context, GameBoosterService.class);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to start GameBoosterService: " + t.getMessage());
+        }
+    }
+
+    public static void stop(Context context) {
+        if (context == null) return;
+        try {
+            context.stopService(new Intent(context, GameBoosterService.class));
+        } catch (Throwable ignored) {}
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -51,6 +78,38 @@ public class GameBoosterService extends Service {
         try {
             ShizukuUserServiceConnector.getInstance().bindService();
         } catch (Throwable ignored) {}
+
+        // Acquire low-latency / high-performance Wi-Fi lock to prevent Wireless Debugging disconnect during gaming
+        try {
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm != null) {
+                int mode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                        ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY
+                        : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+                wifiLock = wm.createWifiLock(mode, "GameBooster:WifiLock");
+                wifiLock.acquire();
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to acquire WifiLock: " + t.getMessage());
+        }
+
+        // Acquire partial wake lock to prevent deep Doze during active gameplay
+        try {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GameBooster:WakeLock");
+                wakeLock.acquire(12 * 60 * 60 * 1000L); // 12 hours ceiling
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to acquire WakeLock: " + t.getMessage());
+        }
+
+        // Start dedicated Shizuku Keep-Alive Watchdog daemon
+        try {
+            ShizukuKeepAliveWatchdog.getInstance().startWatchdog(getApplicationContext());
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to start ShizukuKeepAliveWatchdog: " + t.getMessage());
+        }
     }
 
     @Override
@@ -267,6 +326,28 @@ public class GameBoosterService extends Service {
         NotificationManager nm = getSystemService(NotificationManager.class);
         if (nm != null) {
             nm.createNotificationChannel(channel);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            ShizukuKeepAliveWatchdog.getInstance().stopWatchdog();
+        } catch (Throwable ignored) {}
+
+        if (wifiLock != null && wifiLock.isHeld()) {
+            try {
+                wifiLock.release();
+            } catch (Throwable ignored) {}
+            wifiLock = null;
+        }
+
+        if (wakeLock != null && wakeLock.isHeld()) {
+            try {
+                wakeLock.release();
+            } catch (Throwable ignored) {}
+            wakeLock = null;
         }
     }
 }

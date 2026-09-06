@@ -269,22 +269,8 @@ public class AutoGameMonitorService extends Service {
 
     private boolean isProcessAlive(String packageName) {
         if (packageName == null || packageName.isEmpty()) return false;
-        try {
-            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                String pgrep = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(
-                        "pgrep -f \"" + packageName + "\" 2>/dev/null || pidof " + packageName + " 2>/dev/null");
-                if (pgrep != null && !pgrep.trim().isEmpty() && !pgrep.startsWith("ERROR")) {
-                    return true;
-                }
-            }
-        } catch (Exception ignored) {}
-        try {
-            String procCheck = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
-                    "pgrep -f \"" + packageName + "\" 2>/dev/null");
-            if (procCheck != null && !procCheck.trim().isEmpty() && !procCheck.startsWith("ERROR")) {
-                return true;
-            }
-        } catch (Exception ignored) {}
+
+        // 1. Fast zero-subprocess check via Android ActivityManager (zero fork, zero phantom process)
         try {
             android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             if (am != null) {
@@ -298,6 +284,17 @@ public class AutoGameMonitorService extends Service {
                 }
             }
         } catch (Exception ignored) {}
+
+        // 2. Direct AIDL UserService execution only if bound (no fork recursion, zero local shell spam)
+        try {
+            if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                String pidOut = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommandDirect("pidof " + packageName + " 2>/dev/null");
+                if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {}
+
         return false;
     }
 

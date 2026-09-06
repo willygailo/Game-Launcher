@@ -78,6 +78,13 @@ public final class GameManagerSessionEngine {
         GameSessionSettings.begin(appContext, pkg);
         GameManagerStatus.getInstance().setActiveSession(pkg);
 
+        // ── 1b. Start GameBooster Foreground Service & Shizuku Watchdog ─────
+        try {
+            com.gamebooster.app.services.GameBoosterService.start(appContext);
+        } catch (Throwable t) {
+            Log.w(TAG, "GameBoosterService start warning: " + t.getMessage());
+        }
+
         // ── 2. Grant full combo storage access ───────────────────────────────
         GameConfigStorageAccessEngine.grantAllPathsAccess(appContext, pkg);
 
@@ -223,6 +230,11 @@ public final class GameManagerSessionEngine {
         GameManagerStatus.getInstance().setActiveSession(null);
         if (packageName != null) {
             com.gamebooster.app.config.GameAutoInjectDispatcher.resetPackageInjectionState(packageName);
+        }
+        try {
+            com.gamebooster.app.services.GameBoosterService.stop(appContext);
+        } catch (Throwable t) {
+            Log.w(TAG, "GameBoosterService stop warning: " + t.getMessage());
         }
     }
 
