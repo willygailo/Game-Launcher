@@ -1093,5 +1093,22 @@ public class CodmConfigPatcher {
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "CODM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
     }
+
+    /**
+     * Injects Auto Head 5-Bullet Aim Assist Lock and Target Scope Tracking Lock (50m, 150m, 200m, 300m),
+     * Armor Boost, Damage Boost, and Easy Kill Enemy overrides.
+     */
+    public static void applyAutoHead5BulletAimLock(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmAutoHead5BulletAimLock(path);
+        }
+        try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
+        try { applyCodmMaxDamageAllWeapon2026(packageName); } catch (Throwable ignored) {}
+        try { applyCodmUltraConfigCheat2026(packageName); } catch (Throwable ignored) {}
+        try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "CODM AutoHead 5-Bullet Aim Lock & 50m-300m Scope Tracking applied for " + packageName);
+    }
 }
+
 

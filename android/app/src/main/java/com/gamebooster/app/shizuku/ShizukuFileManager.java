@@ -604,4 +604,40 @@ public final class ShizukuFileManager {
     public static boolean grantFullStoragePathAccess(Context context, String packageName) {
         return com.gamebooster.app.config.GameConfigStorageAccessEngine.grantAllPathsAccess(context, packageName);
     }
+
+    /**
+     * Force-unlocks and grants all permissions (AppOps MANAGE_EXTERNAL_STORAGE, read/write, chmod 777)
+     * for the launcher and target package to guarantee file access on Android 13-16.
+     */
+    public static boolean forceUnlockAndGrantPermissions(Context context, String packageName) {
+        if (context != null) {
+            grantAllStoragePermissions(context);
+        }
+        if (packageName != null && !packageName.trim().isEmpty()) {
+            grantFullStoragePathAccess(context, packageName);
+            if (hasFullAccess()) {
+                String cmd = "chmod -R 777 /sdcard/Android/data/" + packageName + " /storage/emulated/0/Android/data/" + packageName + " /data/data/" + packageName + " 2>/dev/null";
+                ShizukuExecutor.executeShizukuCommand(cmd);
+                return true;
+            }
+        }
+        return hasFullAccess();
+    }
+
+    /**
+     * Verifies whether write access is guaranteed for the given file or directory path.
+     */
+    public static boolean verifyWriteAccess(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        try {
+            File f = new File(path);
+            if (f.exists() && f.canWrite()) return true;
+            if (hasFullAccess()) {
+                String res = ShizukuExecutor.executeShizukuCommand("test -w '" + path + "' && echo CAN_WRITE");
+                return res != null && res.contains("CAN_WRITE");
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
 }
+

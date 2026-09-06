@@ -604,7 +604,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltimateDamageOverdrive2026
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbFiveHeroNoDelayComboBoost
+ * MLBB — Fanny, Gusion, Ling, Hayabusa & All-Hero fastest skills no delay,
+ * unlimited energy/mana regen, damage boost & armor rating.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFiveHeroNoDelayComboBoost
+  (JNIEnv *, jclass, jstring);
+
 // =============================================================================
+
 // ─── PUBG Mobile (PUBGM) Dedicated Injectors ───
 // =============================================================================
 
@@ -720,7 +730,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAsyncStreaming
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectPubgmAutoHead5BulletAimLock
+ * PUBGM — Auto Head 5-Bullet Aim Assist Lock on Target Scope & Aim Tracking Lock
+ * across 50m, 150m, 200m, 300m, Armor Boost, Damage Boost, Easy Kill Enemy.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5BulletAimLock
+  (JNIEnv *, jclass, jstring);
+
 // =============================================================================
+
 // ─── Call of Duty Mobile (CODM) Dedicated Injectors ───
 // =============================================================================
 
@@ -837,7 +857,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadShaderBypass
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectCodmAutoHead5BulletAimLock
+ * CODM — Auto Head 5-Bullet Aim Assist Lock on Target Scope & Aim Tracking Lock
+ * across 50m, 150m, 200m, 300m, Armor Boost, Damage Boost, Easy Kill Enemy.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5BulletAimLock
+  (JNIEnv *, jclass, jstring);
+
 // =============================================================================
+
 // ─── Other Supported Titles (Free Fire, Blood Strike, Delta Force, HOK, Wild Rift) ───
 // =============================================================================
 

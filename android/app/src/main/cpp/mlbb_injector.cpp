@@ -2198,3 +2198,117 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// MLBB: Fanny, Gusion, Ling, Haya & All-Hero Fastest Skills No Delay Combo Boost
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFiveHeroNoDelayComboBoost(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ─── Fanny: Fastest Cable & Unlimited Energy ───
+        {"FannyFastestCable",           "1"},
+        {"FannyZeroCableDelay",         "1"},
+        {"FannyCableSpeed",             "10"},
+        {"FannyNoEnergyLimit",          "1"},
+        {"FannyUnlimitedEnergy",        "1"},
+        {"FannyUnlimitedCableEnergy",   "1"},
+        {"FannyWallSnapMagnetism",      "3"},
+        {"FannyMultiCableCombo",        "1"},
+        {"FannyStraightCable",          "1"},
+        {"FannyWallHitReset",           "1"},
+
+        // ─── Gusion: Instant 10-Dagger & Dash Reset Combo ───
+        {"GusionInstant10Daggers",      "1"},
+        {"GusionZeroInputDelay",        "1"},
+        {"GusionDashReset",             "1"},
+        {"GusionFastestCombo",          "1"},
+        {"GusionDaggerReturn",          "1"},
+        {"GusionSkillChainSpeed",       "10"},
+        {"GusionInstaRecall",           "1"},
+        {"Gusion10DaggerCombo",         "1"},
+
+        // ─── Ling: Fastest Sword Auto Pick & Wall Jump Zero Delay ───
+        {"LingFastestSword",            "1"},
+        {"LingWallJumpDelay",           "0"},
+        {"LingAutoPickSwords",          "1"},
+        {"LingSwordCollectZeroDelay",   "1"},
+        {"LingQinggongEnergyZeroCost",  "1"},
+        {"LingNoEnergyLimit",           "1"},
+        {"LingComboSpeed",              "10"},
+        {"LingSkillChainWindow",        "1"},
+
+        // ─── Hayabusa: Quad Shadow Instant Teleport & Kill ───
+        {"HayaShadowQuadTeleport",      "1"},
+        {"HayaZeroDelaySwap",           "1"},
+        {"HayaShadowKillMax",           "1"},
+        {"HayaPhantomTracking",         "1"},
+        {"HayaZeroEnergyCost",          "1"},
+        {"HayaNoEnergyLimit",           "1"},
+        {"HayaShadowSwapInstant",       "1"},
+        {"HayaUltBurstMax",             "1"},
+
+        // ─── All Heroes: Fastest Skills No Delay & Instant Cast ───
+        {"SkillZeroDelay",              "1"},
+        {"SkillAutoChain",              "1"},
+        {"SkillAutoCombo",              "1"},
+        {"AnimationCancelFast",         "1"},
+        {"SkillCDRatio",                "0"},
+        {"CooldownReduction",           "1"},
+        {"SkillZeroCooldown",           "1"},
+        {"FastSkillCast",               "1"},
+        {"InstantSkillTrigger",         "1"},
+
+        // ─── Mana & Energy Regen Overdrive ───
+        {"ManaRegenBoost",              "1000"},
+        {"ManaRegenRate",               "1000"},
+        {"ZeroManaCost",                "1"},
+        {"InfiniteMana",                "1"},
+        {"EnergyRegenBoost",            "1000"},
+        {"EnergyRegenRate",             "1000"},
+        {"ZeroEnergyCost",              "1"},
+        {"InfiniteEnergy",              "1"},
+
+        // ─── Damage Overdrive & Easy Kill Enemy ───
+        {"DamageLockMax",               "10000"},
+        {"DamageBoost",                 "10000"},
+        {"PhysicalDamageBase",          "2500"},
+        {"MagicDamageBase",             "2500"},
+        {"TrueDamageBoost",             "10000"},
+        {"PenetrationBoost",            "10000"},
+        {"CritRateBoost",               "100"},
+        {"CritDamageMultiplier",        "3.0"},
+        {"EasyKillEnemy",               "1"},
+
+        // ─── Armor Boost & Defense ───
+        {"PhysicalDefense",             "10000"},
+        {"MagicDefense",                "10000"},
+        {"ArmorBoost",                  "10000"},
+        {"DamageReduction",             "0.90"},
+        {"PassiveShieldRegen",          "1"},
+
+        // ─── Targeting & High-Precision Input ───
+        {"HeroLock",                    "1"},
+        {"SkillSmartAim",               "1"},
+        {"AimMagnetism",                "3"},
+        {"AimSnapSpeed",                "10"},
+        {"HitRegSyncRate",              "1000"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"InputBufferRate",             "1000"},
+        {"bFramePacingEnabled",         "True"},
+        {"r.OneFrameThreadLag",         "0"},
+        {"r.FinishCurrentFrame",        "0"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFiveHeroNoDelayComboBoost");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+

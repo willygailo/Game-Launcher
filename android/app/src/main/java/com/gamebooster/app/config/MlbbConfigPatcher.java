@@ -1025,5 +1025,25 @@ public class MlbbConfigPatcher {
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB Master All-Hero Overdrive successfully applied for " + packageName);
     }
+
+    /**
+     * Injects Fanny, Gusion, Ling, Hayabusa & All-Hero Fastest Skills No Delay Combo Boost,
+     * Unlimited Energy, Fast Mana Regen, Damage Boost & Armor Overdrive.
+     */
+    public static void applyFiveHeroNoDelayComboBoost(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFiveHeroNoDelayComboBoost(path);
+        }
+        try { applyAllHeroOverdrive(packageName); } catch (Throwable ignored) {}
+        try { applyFannyFastCableCombo(packageName); } catch (Throwable ignored) {}
+        try { applyGusionDaggerCombo(packageName); } catch (Throwable ignored) {}
+        try { applyLingFastestComboAutoSword(packageName); } catch (Throwable ignored) {}
+        try { applyHayabusaShadowCombo(packageName); } catch (Throwable ignored) {}
+        try { applyFourHeroUnlimitedEnergy(packageName); } catch (Throwable ignored) {}
+        try { applyAllHeroBoostAndArmor(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB 5-Hero No-Delay Combo Boost (Fanny, Gusion, Ling, Haya, All-Hero) applied for " + packageName);
+    }
 }
+
 

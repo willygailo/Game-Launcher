@@ -840,3 +840,110 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAs
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// PUBGM: Auto Head 5-Bullet Aim Assist Lock & Target Scope Tracking (50m-300m)
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5BulletAimLock(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ─── 5-Bullet Auto Headshot Burst Lock ───
+        {"Auto5BulletHeadshot",       "1"},
+        {"HeadshotBurstCount",        "5"},
+        {"AutoHeadshotBurst",         "5"},
+        {"FiveBulletHeadLock",        "1"},
+        {"BurstFireRateLock",         "5"},
+        {"AutoHeadshotLock",          "1"},
+        {"HeadBoneAimPriority",       "1"},
+
+        // ─── 50m Target Scope & CQB Tracking Lock ───
+        {"ScopeLock50m",              "1"},
+        {"AimTrackingLock50m",        "1"},
+        {"RedDotHeadLock50m",         "1"},
+        {"HoloHeadLock50m",           "1"},
+        {"HipfireHeadLock50m",        "1"},
+        {"NoScopeSpread50m",          "0"},
+        {"AimMagnetism50m",           "3"},
+
+        // ─── 150m Mid-Range Scope Tracking Lock (2x / 3x) ───
+        {"ScopeLock150m",             "1"},
+        {"AimTrackingLock150m",       "1"},
+        {"Scope2xHeadLock150m",       "1"},
+        {"Scope3xHeadLock150m",       "1"},
+        {"MidRangeSnap150m",          "1"},
+        {"Scope3xGyroStabilize150m",  "1"},
+        {"AimMagnetism150m",          "3"},
+
+        // ─── 200m Long-Range Scope Tracking Lock (4x / 6x) ───
+        {"ScopeLock200m",             "1"},
+        {"AimTrackingLock200m",       "1"},
+        {"Scope4xHeadLock200m",       "1"},
+        {"PredictiveAim200m",         "1"},
+        {"ZeroSway200m",              "1"},
+        {"Scope4xGyro1000Hz",         "1"},
+        {"AimMagnetism200m",          "3"},
+
+        // ─── 300m Extreme Sniper Scope Tracking Lock (6x / 8x) ───
+        {"ScopeLock300m",             "1"},
+        {"AimTrackingLock300m",       "1"},
+        {"Scope6xHeadLock300m",       "1"},
+        {"Scope8xLongRangeHeadLock300m", "1"},
+        {"BulletDropComp300m",        "1"},
+        {"TargetLeadComp300m",        "1"},
+        {"ZeroBreathSway300m",        "1"},
+        {"AimMagnetism300m",          "3"},
+
+        // ─── Armor Boost & Damage Overdrive (Easy Kill Enemy) ───
+        {"DamageLockMax",             "10000"},
+        {"DamageBoost",               "10000"},
+        {"PhysicalDefense",           "10000"},
+        {"ArmorRating",               "10000"},
+        {"DamageReduction",           "0.90"},
+        {"TrueDamageMod",             "1"},
+        {"InstantHitReg",             "1"},
+        {"HitRegSyncRate",            "1000"},
+        {"BulletTrackingEnemy",       "1"},
+        {"WeaponRecoilScale",         "0"},
+        {"WeaponSpreadScale",         "0"},
+        {"RecoilZero",                "1"},
+        {"LessRecoil",                "1"},
+        {"TouchPollingRate",          "1000"},
+        {"GyroSampleRate",            "1000"},
+        {"ZeroInputDelay",            "1"},
+        {"r.AimAssistStrength",       "100"},
+        {"r.AimMagnetism",            "3"},
+        {"r.PUBGHeadshotMultiplier",  "3.0"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+        {"bFramePacingEnabled",       "True"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmAutoHead5BulletAimLock injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+

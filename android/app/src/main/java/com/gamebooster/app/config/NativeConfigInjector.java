@@ -254,8 +254,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbSmartSkillMagnetAim(String path);
     public static native boolean nativeInjectMlbbHeroUnlimitedEnergy(String path);
     public static native boolean nativeInjectMlbbAllHeroBoostAndArmor(String path);
+    public static native boolean nativeInjectPubgmAutoHead5BulletAimLock(String path);
+    public static native boolean nativeInjectCodmAutoHead5BulletAimLock(String path);
+    public static native boolean nativeInjectMlbbFiveHeroNoDelayComboBoost(String path);
 
     public static native boolean nativeInjectSilentAimbot(String path);
+
     public static native boolean nativeInjectHitboxMultiplier(String path, float multiplier);
     public static native boolean nativeInjectUltraWallhackEspClarity(String path);
     public static native boolean nativeInjectAutoSmiteRetribution(String path);
@@ -2575,8 +2579,77 @@ public class NativeConfigInjector {
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbHeroBoostArmor]");
     }
 
+    public static boolean injectPubgmAutoHead5BulletAimLock(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmAutoHead5BulletAimLock(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "AutoHeadshotBurst=5", "FiveBulletHeadLock=1",
+            "BurstFireRateLock=5", "AutoHeadshotLock=1", "HeadBoneAimPriority=1",
+            "ScopeLock50m=1", "AimTrackingLock50m=1", "RedDotHeadLock50m=1", "HoloHeadLock50m=1", "HipfireHeadLock50m=1", "NoScopeSpread50m=0", "AimMagnetism50m=3",
+            "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1", "Scope3xHeadLock150m=1", "MidRangeSnap150m=1", "Scope3xGyroStabilize150m=1", "AimMagnetism150m=3",
+            "ScopeLock200m=1", "AimTrackingLock200m=1", "Scope4xHeadLock200m=1", "PredictiveAim200m=1", "ZeroSway200m=1", "Scope4xGyro1000Hz=1", "AimMagnetism200m=3",
+            "ScopeLock300m=1", "AimTrackingLock300m=1", "Scope6xHeadLock300m=1", "Scope8xLongRangeHeadLock300m=1", "BulletDropComp300m=1", "TargetLeadComp300m=1", "ZeroBreathSway300m=1", "AimMagnetism300m=3",
+            "DamageLockMax=10000", "DamageBoost=10000", "PhysicalDefense=10000", "ArmorRating=10000", "DamageReduction=0.90",
+            "TrueDamageMod=1", "InstantHitReg=1", "HitRegSyncRate=1000", "BulletTrackingEnemy=1",
+            "WeaponRecoilScale=0", "WeaponSpreadScale=0", "RecoilZero=1", "LessRecoil=1",
+            "TouchPollingRate=1000", "GyroSampleRate=1000", "ZeroInputDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmAutoHead5BulletAimLock]");
+    }
+
+    public static boolean injectCodmAutoHead5BulletAimLock(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmAutoHead5BulletAimLock(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "AutoHeadshotBurst=5", "FiveBulletHeadLock=1",
+            "BurstFireRateLock=5", "HeadBoneLock=1", "InstantAimSnap=1",
+            "ScopeLock50m=1", "AimTrackingLock50m=1", "CQBAutoHeadshot50m=1", "AimMagnetism50m=3", "HipfireLock50m=1", "NoScopeSpread50m=0",
+            "ScopeLock150m=1", "AimTrackingLock150m=1", "MidRangeScopeSnap150m=1", "ScopeAimMag150m=3", "GyroMidStabilize150m=1", "AimMagnetism150m=3",
+            "ScopeLock200m=1", "AimTrackingLock200m=1", "ARSMGHeadLock200m=1", "PredictiveAim200m=1", "ZeroRecoil200m=1", "AimMagnetism200m=3",
+            "ScopeLock300m=1", "AimTrackingLock300m=1", "SniperScopeLock300m=1", "BulletDropComp300m=1", "ZeroHoldBreath300m=1", "AimMagnetism300m=3",
+            "BSARemoval=1", "BulletSpreadAccuracy=0", "RecoilScale=0", "ZeroRecoil=1", "LessRecoil=1", "WeaponSpread=0",
+            "DamageLockMax=10000", "DamageBoost=10000", "PhysicalDefense=10000", "ArmorRating=10000", "DamageReduction=0.90",
+            "TrueDamageMod=1", "InstantHitReg=1", "HitRegSyncRate=1000", "BulletTrackingEnemy=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputDelay=1", "GyroSampleRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmAutoHead5BulletAimLock]");
+    }
+
+    public static boolean injectMlbbFiveHeroNoDelayComboBoost(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFiveHeroNoDelayComboBoost(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FannyFastestCable=1", "FannyZeroCableDelay=1", "FannyCableSpeed=10", "FannyNoEnergyLimit=1", "FannyUnlimitedEnergy=1", "FannyUnlimitedCableEnergy=1", "FannyWallSnapMagnetism=3", "FannyMultiCableCombo=1",
+            "GusionInstant10Daggers=1", "GusionZeroInputDelay=1", "GusionDashReset=1", "GusionFastestCombo=1", "GusionDaggerReturn=1", "GusionSkillChainSpeed=10",
+            "LingFastestSword=1", "LingWallJumpDelay=0", "LingAutoPickSwords=1", "LingSwordCollectZeroDelay=1", "LingQinggongEnergyZeroCost=1", "LingNoEnergyLimit=1", "LingComboSpeed=10",
+            "HayaShadowQuadTeleport=1", "HayaZeroDelaySwap=1", "HayaShadowKillMax=1", "HayaPhantomTracking=1", "HayaZeroEnergyCost=1", "HayaNoEnergyLimit=1",
+            "SkillZeroDelay=1", "SkillAutoChain=1", "SkillAutoCombo=1", "AnimationCancelFast=1", "SkillCDRatio=0", "CooldownReduction=1", "SkillZeroCooldown=1", "FastSkillCast=1",
+            "ManaRegenBoost=1000", "ManaRegenRate=1000", "ZeroManaCost=1", "InfiniteMana=1",
+            "EnergyRegenBoost=1000", "EnergyRegenRate=1000", "ZeroEnergyCost=1", "InfiniteEnergy=1",
+            "DamageLockMax=10000", "DamageBoost=10000", "PhysicalDamageBase=2500", "MagicDamageBase=2500", "TrueDamageBoost=10000", "PenetrationBoost=10000", "EasyKillEnemy=1",
+            "PhysicalDefense=10000", "MagicDefense=10000", "ArmorBoost=10000", "DamageReduction=0.90",
+            "HeroLock=1", "SkillSmartAim=1", "AimMagnetism=3", "AimSnapSpeed=10", "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFiveHeroNoDelayComboBoost]");
+    }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────
+
 
     private static void ensureParentDirectory(String path) {
         if (path == null) return;

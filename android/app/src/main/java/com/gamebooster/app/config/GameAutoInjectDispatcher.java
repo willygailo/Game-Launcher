@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.games.GamePackageRegistry.GameType;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
 
 /**
  * GameAutoInjectDispatcher — Centralized router that automatically injects
@@ -118,11 +119,13 @@ public final class GameAutoInjectDispatcher {
 
         // ── 1. Pre-flight: ensure and grant all path access (chmod 777/666 + appops) ──
         try {
+            ShizukuFileManager.forceUnlockAndGrantPermissions(context, pkg);
             GameConfigStorageAccessEngine.grantAllPathsAccess(context, pkg);
             GameSecurityBypassEngine.unlockForInjection(pkg);
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ Pre-flight storage access grant note for " + pkg + ": " + t.getMessage());
         }
+
 
         // ── 2. Pre-flight: safety backup before modifying any config files ──
         try {
@@ -259,7 +262,9 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyFannyNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFiveHeroNoDelayComboBoost(pkg); } catch (Throwable ignored) {}
     }
+
 
     private static void injectPubgm(String pkg) {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
@@ -300,7 +305,9 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyFastLoadAsyncStreaming(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyAutoHead5BulletAimLock(pkg); } catch (Throwable ignored) {}
     }
+
 
     private static void injectCodm(String pkg) {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
@@ -341,7 +348,9 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyFastLoadShaderBypass(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyAutoHead5BulletAimLock(pkg); } catch (Throwable ignored) {}
     }
+
 
     private static void injectFreeFire(String pkg) {
         Log.i(TAG, "🔥 Injecting Free Fire Auto-Headshot, All-Gun & All-Scope Calibration...");
