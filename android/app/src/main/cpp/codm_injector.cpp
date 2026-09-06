@@ -506,10 +506,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         std::vector<std::pair<std::string, std::string>> keys = {
             {"MaxFrameRate", fpsStr}, {"TargetFPS", fpsStr}, {"FPSLimit", fpsStr},
             {"FrameRateLimit", fpsStr}, {"MobileFPSLimit", fpsStr}, {"FrameRateLevel", "9"},
-            {"GraphicQuality", qStr}, {"TextureQuality", qStr}, {"ShadowQuality", "2"},
-            {"ShadowResolution", "2048"}, {"AntiAliasingQuality", "4"}, {"BloomQuality", "5"},
-            {"MaxAnisotropy", "16"}, {"HDRMode", "1"}, {"HDR10Plus", "1"}, {"HDRColorMode", "2"},
-            {"UltraHDMode", "1"}, {"SuperResolution", "1"}, {"ResolutionScale", "120"},
+            {"GraphicQuality", qStr}, {"TextureQuality", qStr}, {"ShadowQuality", "0"},
+            {"ShadowResolution", "512"}, {"AntiAliasingQuality", "0"}, {"BloomQuality", "0"},
+            {"MaxAnisotropy", "1"}, {"HDRMode", "1"}, {"HDR10Plus", "1"}, {"HDRColorMode", "2"},
+            {"UltraHDMode", "1"}, {"SuperResolution", "0"}, {"ResolutionScale", "100"},
             {"UltraExtreme", "1"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
             {"Vsync", "0"}, {"Unlock90Hz", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"},
             {"Unlock165Hz", "1"}, {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"},
@@ -591,7 +591,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"JoystickZeroDeadzone","1"},{"JoystickResponseLevel","3"},
         {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},{"PreloadShaders","1"},
         {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
-        {"FrameRateLevel","9"},{"ResolutionScale","120"},
+        {"FrameRateLevel","9"},{"ResolutionScale","100"},
     };
     for(const auto& kv:k){
         if(isXml){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}
@@ -639,7 +639,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"MovementSpeedBoost","1"},{"SprintSpeedMax","1"},{"SlideDistanceMax","1"},
         {"SlideSpeedBoost","1"},{"JumpHeightBoost","1"},
         // Graphics unlock 2026
-        {"FrameRateLevel","9"},{"ResolutionScale","120"},
+        {"FrameRateLevel","9"},{"ResolutionScale","100"},
         {"HDR10Plus","1"},{"UltraExtreme2026","1"},
         {"VulkanPipelineCache","1"},{"AsyncCompute","1"},{"VRS","1"},
         {"PreloadShaders","1"},{"bPreloadShaders","True"},

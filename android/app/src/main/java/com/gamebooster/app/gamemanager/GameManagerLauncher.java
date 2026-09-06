@@ -186,6 +186,11 @@ public final class GameManagerLauncher {
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
 
+        // Arm Live HUD FPS surface tracking for this game
+        try {
+            com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(pkg);
+        } catch (Throwable ignored) {}
+
         final boolean directSuccess = launchedDirectly;
         final Intent resolvedIntent = targetIntent;
 

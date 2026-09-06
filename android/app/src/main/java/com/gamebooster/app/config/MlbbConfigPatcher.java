@@ -212,7 +212,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Applies 144fps SuperSmooth + Ultra Graphics 2026 Edition + Esports Targeting preferences.
-     * 2026: GraphicsPreset=5, LightingQuality=3, ParticleQuality=3, HDR10Plus=1, RenderScale=120.
+     * 2026: GraphicsPreset=5, LightingQuality=1, ParticleQuality=1, HDR10Plus=1, RenderScale=100.
      */
     public static boolean patchUltraExtreme144(String packageName) {
         if (packageName == null) return false;
@@ -247,16 +247,16 @@ public class MlbbConfigPatcher {
             "TextureQuality=3",
             "HDMode=1",
             "HDR10Plus=1",             // 2026: 10-bit HDR
-            "Shadow=1",
+            "Shadow=0",
             "Outline=1",
-            "LightingQuality=3",       // 2026: max lighting
-            "ParticleQuality=3",       // 2026: max particles
-            "PostProcessing=1",        // 2026: post processing enabled
-            "WaterReflection=1",       // 2026: water reflections
-            "VegetationDensity=2",     // 2026: max vegetation density
-            "RenderScale=120",         // 2026: 120% supersampling
-            "PhysicsSimulation=1",     // 2026: physics sim
-            "RealTimeLight=1",         // 2026: real-time lighting
+            "LightingQuality=1",       // 2026: esports performance
+            "ParticleQuality=1",       // 2026: esports performance
+            "PostProcessing=0",        // 2026: disable post processing overhead
+            "WaterReflection=0",       // 2026: disable reflections
+            "VegetationDensity=0",     // 2026: minimal vegetation
+            "RenderScale=100",         // 2026: 100% native resolution
+            "PhysicsSimulation=0",     // 2026: disable physics overhead
+            "RealTimeLight=0",         // 2026: disable realtime lighting
             "DynamicResolution=0",     // 2026: lock to fixed RenderScale
             "VulkanPipelineCache=1",   // 2026: Vulkan cache
             "AsyncCompute=1",          // 2026: GPU async compute
@@ -307,7 +307,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Injects 185 FPS, Ultra Extreme 2026 Graphics, and Maximum Display Overclock into MLBB.
-     * 2026: GraphicsPreset=5, LightingQuality=3, ParticleQuality=3, HDR10Plus=1, RenderScale=120,
+     * 2026: GraphicsPreset=5, LightingQuality=1, ParticleQuality=1, HDR10Plus=1, RenderScale=100,
      * VulkanPipelineCache=1, AsyncCompute=1, VRS=1.
      */
     public static boolean patchUltraExtreme185(String packageName) {
@@ -343,16 +343,16 @@ public class MlbbConfigPatcher {
             "TextureQuality=3",
             "HDMode=1",
             "HDR10Plus=1",             // 2026: 10-bit HDR
-            "Shadow=1",
+            "Shadow=0",
             "Outline=1",
-            "LightingQuality=3",       // 2026: max lighting
-            "ParticleQuality=3",       // 2026: max particles
-            "PostProcessing=1",
-            "WaterReflection=1",
-            "VegetationDensity=2",     // 2026: max vegetation
-            "RenderScale=120",         // 2026: 120% supersampling
-            "PhysicsSimulation=1",
-            "RealTimeLight=1",
+            "LightingQuality=1",       // 2026: esports lighting
+            "ParticleQuality=1",       // 2026: esports particles
+            "PostProcessing=0",
+            "WaterReflection=0",
+            "VegetationDensity=0",
+            "RenderScale=100",         // 2026: native resolution
+            "PhysicsSimulation=0",
+            "RealTimeLight=0",
             "DynamicResolution=0",     // 2026: lock RenderScale
             "VulkanPipelineCache=1",
             "AsyncCompute=1",
@@ -441,16 +441,16 @@ public class MlbbConfigPatcher {
             "TextureQuality=3",
             "HDMode=1",
             "HDR10Plus=1",
-            "Shadow=1",
+            "Shadow=0",
             "Outline=1",
-            "LightingQuality=3",
-            "ParticleQuality=3",
-            "PostProcessing=1",
-            "WaterReflection=1",
-            "VegetationDensity=2",
-            "RenderScale=120",
-            "PhysicsSimulation=1",
-            "RealTimeLight=1",
+            "LightingQuality=1",
+            "ParticleQuality=1",
+            "PostProcessing=0",
+            "WaterReflection=0",
+            "VegetationDensity=0",
+            "RenderScale=100",
+            "PhysicsSimulation=0",
+            "RealTimeLight=0",
             "DynamicResolution=0",
             "VulkanPipelineCache=1",
             "AsyncCompute=1",

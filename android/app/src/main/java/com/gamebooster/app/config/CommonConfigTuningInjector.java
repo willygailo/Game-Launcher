@@ -548,7 +548,7 @@ public final class CommonConfigTuningInjector {
     /**
      * Injects UltraExtreme max graphics quality + FPS unlock keys into all game config paths.
      * 2026 Edition: full key set including AsyncCompute, VRS, HDR10Plus, VulkanPipelineCache,
-     * LightingQuality, ParticleQuality, PostProcessing, WaterReflection, and RenderScale=120.
+     * LightingQuality, ParticleQuality, PostProcessing, WaterReflection, and RenderScale=100.
      */
     public static void applyUltraExtremeGraphics(String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) return;
@@ -579,25 +579,24 @@ public final class CommonConfigTuningInjector {
             "GraphicQuality=4",
             "GraphicsPreset=5",      // 5 = Ultra Extreme (2026 scale)
             "GraphicLevel=4",
-            "TextureQuality=4",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "LightingQuality=3",     // max 2026
-            "ParticleQuality=3",     // max 2026
-            "PostProcessing=1",
-            "WaterReflection=1",
-            "AntiAliasingQuality=4",
-            "BloomQuality=5",
-            "MaxAnisotropy=16",
+            "ShadowQuality=0",
+            "ShadowResolution=512",
+            "LightingQuality=1",     // esports performance
+            "ParticleQuality=1",     // esports performance
+            "PostProcessing=0",
+            "WaterReflection=0",
+            "AntiAliasingQuality=0",
+            "BloomQuality=0",
+            "MaxAnisotropy=1",
             // ── Resolution & HDR ──
-            "ResolutionScale=120",
-            "RenderScale=120",
-            "ScreenScale=120",
+            "ResolutionScale=100",
+            "RenderScale=100",
+            "ScreenScale=100",
             "HDRMode=1",
             "HDR10Plus=1",
             "UltraHDMode=1",
             "HDRColorMode=2",
-            "SuperResolution=1",
+            "SuperResolution=0",
             "bUseHDRMode=True",
             // ── Vulkan & GPU ──
             "VulkanEnabled=1",

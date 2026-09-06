@@ -514,7 +514,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"FrameRateLevel", effLvlStr}, {"BattleFPS", effLvlStr}, {"LobbyFPS", effLvlStr},
             {"FPS", fpsStr}, {"MaxFPS", fpsStr}, {"TargetFPS", fpsStr}, {"FrameRateLimit", fpsStr},
             {"MobileFPSLimit", fpsStr}, {"GraphicQuality", qStr}, {"ArtQuality", qStr},
-            {"ShadowQuality", "3"}, {"MobileHDRMode", "1"}, {"HighFPSMode", "3"},
+            {"ShadowQuality", "0"}, {"MobileHDRMode", "1"}, {"HighFPSMode", "3"},
             {"bUseHDRMode", "True"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
             {"UnlockFPS", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"}, {"Unlock165Hz", "1"},
             {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"}, {"Unlock165FPS", "1"}, {"Ultra165FPS", "1"},
@@ -708,8 +708,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"r.GyroSampleRate","1000"},{"r.GyroSensitivityRatio","2.5"},{"r.GyroZeroDelay","1"},
         {"r.GyroLatencyMode","0"},{"r.GyroStabilization","1"},{"r.GyroSmoothFactor","1"},
         {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},{"r.VSync","0"},
-        {"r.AllowOcclusionQueries","1"},{"r.PUBGDeviceFPS","9"},
-        {"r.PUBGMaxFPS","165"},{"r.ResolutionScale","120"},
+        {"r.AllowOcclusionQueries","1"},{"r.PUBGDeviceFPS","7"},
+        {"r.PUBGMaxFPS","165"},{"r.ResolutionScale","100"},
     };
     // Plain keys for XML/JSON/INI
     std::vector<std::pair<std::string,std::string>> pl={
@@ -738,7 +738,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"TouchPollingRate","1000"},{"TouchSampleRate","1000"},{"TouchZeroDelay","1"},
         {"ZeroInputLag","1"},{"InputBufferRate","1000"},
         {"bFramePacingEnabled","True"},{"AllowOcclusionQueries","1"},{"PreloadShaders","1"},
-        {"FrameRateLevel","9"},{"ResolutionScale","120"},{"HighFPSMode","3"},
+        {"FrameRateLevel","7"},{"ResolutionScale","100"},{"HighFPSMode","3"},
     };
     if(isCvar){for(const auto& kv:cv)patch_cvar(content,kv.first,kv.second);for(const auto& kv:pl)patch_key_value(content,kv.first,kv.second);}
     else if(isXml){for(const auto& kv:pl){std::string t="int";if(kv.second.find('.')!=std::string::npos)t="float";else if(kv.second=="True"||kv.second=="False")t="string";patch_xml_node(content,t,kv.first,kv.second);}}

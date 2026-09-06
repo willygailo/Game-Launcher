@@ -710,10 +710,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"TargetFPS", "240"}, {"MaxFrameRate", "240"}, {"FrameRateLimit", "240"},
         {"FrameRateLevel", "10"}, {"HighFPSMode", "4"}, {"Unlock240Hz", "1"},
         {"Unlock185Hz", "1"}, {"Unlock165Hz", "1"}, {"Unlock144Hz", "1"},
-        {"Vsync", "0"}, {"bFramePacingEnabled", "1"}, {"ResolutionScale", "140"},
+        {"Vsync", "0"}, {"bFramePacingEnabled", "1"}, {"ResolutionScale", "100"},
         {"HDR10Plus", "1"}, {"UltraExtreme2026", "1"}, {"VulkanPipelineCache", "1"},
         {"AsyncCompute", "1"}, {"VRS", "1"}, {"PreloadShaders", "1"},
-        {"r.PUBGDeviceFPS", "10"}, {"r.PUBGMaxFPS", "240"}, {"r.VSync", "0"}
+        {"r.PUBGDeviceFPS", "7"}, {"r.PUBGMaxFPS", "240"}, {"r.VSync", "0"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "UltraExtreme240FpsGraphics");
     env->ReleaseStringUTFChars(jPath, path);

@@ -596,7 +596,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"bFramePacingEnabled", "1"},
         {"AllowOcclusionQueries", "1"},
         {"PreloadShaders", "1"},
-        {"ResolutionScale", "120"},
+        {"ResolutionScale", "100"},
         {"HDR10Plus", "1"},
         {"UltraExtreme", "1"},
         {"UltraExtreme2026", "1"},
@@ -854,7 +854,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
                << "MaxRefreshRate=" << hz << "\n"
                << "TargetFPS=" << hz << "\n"
                << "QualityBucket=Ultra\n"
-               << "+CVars=r.PUBGDeviceFPS=10\n"
+               << "+CVars=r.PUBGDeviceFPS=7\n"
                << "+CVars=r.PUBGFrameRateLimit=" << hz << "\n"
                << "+CVars=r.MobileFPSLimit=" << hz << "\n"
                << "+CVars=r.FrameRateLimit=" << hz << "\n"
@@ -864,8 +864,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
                << "+CVars=r.Vulkan.FastPipeline=1\n"
                << "+CVars=r.Streaming.PoolSize=4096\n"
                << "+CVars=r.Android.DisableProgramBinaryCache=0\n"
-               << "+CVars=r.MaxAnisotropy=16\n"
-               << "+CVars=r.ShadowQuality=4\n"
+               << "+CVars=r.MaxAnisotropy=1\n"
+               << "+CVars=r.ShadowQuality=0\n"
                << "+CVars=r.TonemapperFilm=1\n"
                << "TouchPollingRate=1000\n"
                << "TouchZeroDelay=1\n"

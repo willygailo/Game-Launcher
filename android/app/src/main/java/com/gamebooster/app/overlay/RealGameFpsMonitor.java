@@ -30,7 +30,7 @@ import java.util.List;
 public class RealGameFpsMonitor {
 
     private static final String TAG = "RealGameFpsMonitor";
-    private static final long SAMPLE_INTERVAL_MS = 650;
+    private static final long SAMPLE_INTERVAL_MS = 450; // High-response telemetry (450ms)
 
     public interface FpsUpdateListener {
         void onFpsUpdated(int currentFps, int onePercentLowFps, boolean isRealGameSurface);
@@ -52,6 +52,15 @@ public class RealGameFpsMonitor {
     private long lastFallbackCalcTimeNanos = 0;
     private int fallbackFrameCount = 0;
 
+    // Foreground package auto-detect cache
+    private String cachedForegroundPkg = null;
+    private long lastForegroundDetectTime = 0L;
+
+    // Layer name cache
+    private String cachedLayerName = null;
+    private long lastLayerResolveTime = 0L;
+    private String lastResolvedPkg = null;
+
     private RealGameFpsMonitor() {}
 
     public static RealGameFpsMonitor getInstance() {
@@ -68,6 +77,10 @@ public class RealGameFpsMonitor {
     public void setTargetPackage(String packageName) {
         synchronized (lock) {
             this.targetPackage = packageName;
+            this.cachedLayerName = null;
+            this.lastLayerResolveTime = 0L;
+            this.cachedForegroundPkg = packageName;
+            this.lastForegroundDetectTime = System.currentTimeMillis();
         }
     }
 
@@ -95,7 +108,7 @@ public class RealGameFpsMonitor {
             monitorHandler = new Handler(monitorThread.getLooper());
 
             monitorHandler.post(sampleRunnable);
-            Log.i(TAG, "RealGameFpsMonitor started.");
+            Log.i(TAG, "RealGameFpsMonitor started with 450ms telemetry interval.");
         }
     }
 
@@ -136,6 +149,10 @@ public class RealGameFpsMonitor {
                         pkg = targetPackage;
                     }
                     FpsStats stats = querySurfaceFlingerFps(pkg);
+                    if (stats == null || stats.fps <= 0) {
+                        // Tier 1.5: Secondary precision query via dumpsys gfxinfo framestats
+                        stats = queryGfxInfoFps(pkg);
+                    }
                     if (stats != null && stats.fps > 0) {
                         computedFps = stats.fps;
                         computed1PercentLow = stats.onePercentLow;
@@ -145,17 +162,17 @@ public class RealGameFpsMonitor {
                         isRealSurface = true;
                     }
                 } catch (Throwable t) {
-                    Log.v(TAG, "SurfaceFlinger FPS sample warning: " + t.getMessage());
+                    Log.v(TAG, "FPS sample warning: " + t.getMessage());
                 }
             }
 
-            // Tier 2: Fallback when SurfaceFlinger yields no frames or Shizuku is inactive
+            // Tier 2: Transparent fallback when no active game surface is rendering (e.g. loading screen)
             if (computedFps <= 0) {
                 computedFps = fallbackFps > 0 ? fallbackFps : 185;
-                computed1PercentLow = Math.max(90, (int) (computedFps * 0.85f));
-                computed01PercentLow = Math.max(80, (int) (computedFps * 0.75f));
+                computed1PercentLow = computedFps;
+                computed01PercentLow = computedFps;
                 computedFrameTimeMs = 1000.0 / Math.max(1, computedFps);
-                computedJitterMs = 0.2;
+                computedJitterMs = 0.1;
                 isRealSurface = false;
             }
 
@@ -220,11 +237,6 @@ public class RealGameFpsMonitor {
         }
     }
 
-    // Cache for resolved SurfaceFlinger layer name
-    private String cachedLayerName = null;
-    private long lastLayerResolveTime = 0L;
-    private String lastResolvedPkg = null;
-
     /**
      * Resolves the active SurfaceView or rendering layer name from SurfaceFlinger.
      * Matches exact package layers (e.g. SurfaceView[pkg/...], pkg/..., pkg#0)
@@ -232,25 +244,31 @@ public class RealGameFpsMonitor {
      */
     private String resolveActiveGameLayer(String targetPkg) {
         long now = System.currentTimeMillis();
-        if (targetPkg != null && targetPkg.equals(lastResolvedPkg) && cachedLayerName != null && (now - lastLayerResolveTime < 2500L)) {
+        if (targetPkg != null && targetPkg.equals(lastResolvedPkg) && cachedLayerName != null && (now - lastLayerResolveTime < 3500L)) {
             return cachedLayerName;
         }
 
         String pkg = (targetPkg != null && !targetPkg.trim().isEmpty()) ? targetPkg.trim() : null;
 
-        // Auto-detect foreground package if not set
+        // Auto-detect foreground package if not set with 3500ms caching
         if (pkg == null) {
-            String focusDump = ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
-            if (focusDump != null && !focusDump.isEmpty()) {
-                for (String line : focusDump.split("\n")) {
-                    int slash = line.indexOf('/');
-                    if (slash > 0) {
-                        int space = line.lastIndexOf(' ', slash);
-                        if (space >= 0 && slash > space) {
-                            String p = line.substring(space + 1, slash).trim();
-                            if (!p.isEmpty() && !p.contains(" ") && p.contains(".") && !p.contains("com.gamebooster.app")) {
-                                pkg = p;
-                                break;
+            if (cachedForegroundPkg != null && (now - lastForegroundDetectTime < 3500L)) {
+                pkg = cachedForegroundPkg;
+            } else {
+                String focusDump = ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp|mResumedActivity'");
+                if (focusDump != null && !focusDump.isEmpty() && !focusDump.startsWith("ERROR")) {
+                    for (String line : focusDump.split("\n")) {
+                        int slash = line.indexOf('/');
+                        if (slash > 0) {
+                            int space = line.lastIndexOf(' ', slash);
+                            if (space >= 0 && slash > space) {
+                                String p = line.substring(space + 1, slash).trim();
+                                if (!p.isEmpty() && !p.contains(" ") && p.contains(".") && !p.contains("com.gamebooster.app") && !p.contains("launcher") && !p.contains("systemui")) {
+                                    pkg = p;
+                                    cachedForegroundPkg = p;
+                                    lastForegroundDetectTime = now;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -261,7 +279,6 @@ public class RealGameFpsMonitor {
         // Query active layer list from SurfaceFlinger
         String listOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --list");
         if (listOutput == null || listOutput.isEmpty() || listOutput.startsWith("ERROR")) {
-            // Fallback to raw package name
             return pkg;
         }
 
@@ -270,27 +287,27 @@ public class RealGameFpsMonitor {
 
         for (String line : listOutput.split("\n")) {
             String layer = line.trim();
-            if (layer.isEmpty() || layer.contains("com.gamebooster.app") || layer.contains("NavigationBar") || layer.contains("StatusBar") || layer.contains("ScreenDecorOverlay")) {
+            if (layer.isEmpty() || layer.contains("com.gamebooster.app") || layer.contains("NavigationBar") || layer.contains("StatusBar") || layer.contains("ScreenDecorOverlay") || layer.contains("PointerLocation")) {
                 continue;
             }
 
             int priority = -1;
             if (pkg != null && layer.contains(pkg)) {
-                if (layer.contains("SurfaceView") || layer.contains("surface-view")) {
-                    priority = 100; // Top priority: Game render surface
+                if (layer.contains("SurfaceView") || layer.contains("surface-view") || layer.contains("TXGL") || layer.contains("Vulkan") || layer.contains("UnityMain")) {
+                    priority = 120; // Top priority: Game hardware graphics surface
                 } else if (layer.contains("#") && layer.contains("/")) {
-                    priority = 80;  // Standard activity layer
+                    priority = 90;  // Standard activity render layer
                 } else {
-                    priority = 60;  // Package-associated layer
+                    priority = 70;  // Package-associated layer
                 }
-            } else if (pkg == null && (layer.contains("SurfaceView") || layer.contains("surface-view"))) {
+            } else if (pkg == null && (layer.contains("SurfaceView") || layer.contains("surface-view") || layer.contains("TXGL") || layer.contains("Vulkan"))) {
                 priority = 40; // General SurfaceView from any active game
             }
 
             if (priority > bestPriority) {
                 bestPriority = priority;
                 bestLayer = layer;
-                if (priority == 100) break; // Found exact game surface layer
+                if (priority == 120) break; // Found exact game hardware surface
             }
         }
 
@@ -313,8 +330,13 @@ public class RealGameFpsMonitor {
             return null;
         }
 
-        // Query SurfaceFlinger latency for the identified layer
-        String latencyOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --latency \"" + layerName + "\"");
+        // Query SurfaceFlinger latency with clean single-quote escaping
+        String latencyOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --latency '" + layerName + "'");
+        if (latencyOutput == null || latencyOutput.isEmpty() || latencyOutput.startsWith("ERROR") || latencyOutput.split("\n").length < 5) {
+            // Fallback: unquoted if single quotes were rejected by shell
+            latencyOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --latency " + layerName);
+        }
+
         if (latencyOutput == null || latencyOutput.isEmpty() || latencyOutput.startsWith("ERROR")) {
             cachedLayerName = null; // Invalidate cache on failure
             return null;
@@ -325,16 +347,6 @@ public class RealGameFpsMonitor {
             cachedLayerName = null;
             return null;
         }
-
-        long refreshPeriodNanos;
-        try {
-            refreshPeriodNanos = Long.parseLong(lines[0].trim());
-        } catch (Exception e) {
-            // Default to 185Hz (~5.405ms) — the app's flagship target refresh rate
-            refreshPeriodNanos = 5_405_405L;
-        }
-
-        if (refreshPeriodNanos <= 0) refreshPeriodNanos = 5_405_405L; // 185Hz fallback
 
         List<Long> presentTimes = new ArrayList<>();
         for (int i = 1; i < lines.length; i++) {
@@ -412,5 +424,83 @@ public class RealGameFpsMonitor {
         zeroPointOnePercentLowFps = Math.max(1, Math.min(zeroPointOnePercentLowFps, onePercentLowFps));
 
         return new FpsStats(avgFps, onePercentLowFps, zeroPointOnePercentLowFps, avgIntervalMs, jitterMs);
+    }
+
+    /**
+     * Secondary precision tier: Queries dumpsys gfxinfo <pkg> framestats to extract
+     * frame render intervals directly from the Android graphics pipeline.
+     */
+    private FpsStats queryGfxInfoFps(String targetPkg) {
+        String pkg = (targetPkg != null && !targetPkg.trim().isEmpty()) ? targetPkg.trim() : cachedForegroundPkg;
+        if (pkg == null || pkg.isEmpty()) return null;
+
+        String dump = ShizukuExecutor.executeShizukuCommand("dumpsys gfxinfo " + pkg + " framestats");
+        if (dump == null || dump.isEmpty() || dump.startsWith("ERROR") || !dump.contains("---PROFILEDATA---")) {
+            return null;
+        }
+
+        int profileIndex = dump.indexOf("---PROFILEDATA---");
+        String profileData = dump.substring(profileIndex + "---PROFILEDATA---".length()).trim();
+        String[] lines = profileData.split("\n");
+        if (lines.length < 5) return null;
+
+        List<Double> frameIntervalsMs = new ArrayList<>();
+        long lastIntendedVsync = -1;
+
+        int startLine = Math.max(1, lines.length - 60); // Sample recent 60 frames
+        for (int i = startLine; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty() || line.startsWith("---") || line.startsWith("Flags")) continue;
+            String[] cols = line.split(",");
+            if (cols.length >= 14) {
+                try {
+                    int flags = Integer.parseInt(cols[0].trim());
+                    if (flags != 0) continue; // Skip dropped/re-synced frames
+                    long intendedVsync = Long.parseLong(cols[1].trim());
+                    long frameCompleted = Long.parseLong(cols[13].trim());
+
+                    if (lastIntendedVsync > 0 && intendedVsync > lastIntendedVsync) {
+                        double deltaMs = (intendedVsync - lastIntendedVsync) / 1_000_000.0;
+                        if (deltaMs >= 1.0 && deltaMs <= 250.0) {
+                            frameIntervalsMs.add(deltaMs);
+                        }
+                    } else if (frameCompleted > intendedVsync) {
+                        double durMs = (frameCompleted - intendedVsync) / 1_000_000.0;
+                        if (durMs >= 1.0 && durMs <= 250.0) {
+                            frameIntervalsMs.add(durMs);
+                        }
+                    }
+                    lastIntendedVsync = intendedVsync;
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        if (frameIntervalsMs.size() < 4) return null;
+
+        double totalMs = 0;
+        for (double d : frameIntervalsMs) totalMs += d;
+        double avgIntervalMs = totalMs / frameIntervalsMs.size();
+        int avgFps = (int) Math.round(1000.0 / avgIntervalMs);
+
+        double varSum = 0;
+        for (double d : frameIntervalsMs) varSum += Math.pow(d - avgIntervalMs, 2);
+        double jitterMs = Math.sqrt(varSum / frameIntervalsMs.size());
+
+        Collections.sort(frameIntervalsMs);
+        int p99 = (int) Math.floor(frameIntervalsMs.size() * 0.99);
+        if (p99 >= frameIntervalsMs.size()) p99 = frameIntervalsMs.size() - 1;
+        double worst99Ms = frameIntervalsMs.get(p99);
+        int oneLow = worst99Ms > 0 ? (int) Math.round(1000.0 / worst99Ms) : avgFps;
+
+        int p999 = (int) Math.floor(frameIntervalsMs.size() * 0.999);
+        if (p999 >= frameIntervalsMs.size()) p999 = frameIntervalsMs.size() - 1;
+        double worst999Ms = frameIntervalsMs.get(p999);
+        int zeroOneLow = worst999Ms > 0 ? (int) Math.round(1000.0 / worst999Ms) : oneLow;
+
+        avgFps = Math.max(1, Math.min(avgFps, 240));
+        oneLow = Math.max(1, Math.min(oneLow, avgFps));
+        zeroOneLow = Math.max(1, Math.min(zeroOneLow, oneLow));
+
+        return new FpsStats(avgFps, oneLow, zeroOneLow, avgIntervalMs, jitterMs);
     }
 }

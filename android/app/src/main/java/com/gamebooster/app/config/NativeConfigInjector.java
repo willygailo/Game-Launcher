@@ -598,7 +598,7 @@ public class NativeConfigInjector {
             "bFramePacingEnabled=1",
             "AllowOcclusionQueries=1",
             "PreloadShaders=1",
-            "ResolutionScale=120",
+            "ResolutionScale=100",
             "HDR10Plus=1",
             "UltraExtreme=1",
             "UltraExtreme2026=1",

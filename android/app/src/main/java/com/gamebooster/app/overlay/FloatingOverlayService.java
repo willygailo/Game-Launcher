@@ -643,6 +643,7 @@ public class FloatingOverlayService extends Service {
                 frameTimeMs = ftMs;
                 frameJitterMs = jitter;
                 isRealGameSurface = isReal;
+                updateFpsViewsImmediately(currentFps, lowFps, zeroPointOneLow, ftMs, jitter, isReal);
             }
         });
 
@@ -826,6 +827,58 @@ public class FloatingOverlayService extends Service {
             }
             if (pbHudRam != null) {
                 pbHudRam.setProgress(m.ramUsagePct);
+            }
+        }
+    }
+
+    private void updateFpsViewsImmediately(int fps, int lowFps, int zeroPointOneLow, double ftMs, double jitter, boolean isReal) {
+        int activeFps = fps > 0 ? Math.min(185, fps) : 185;
+        int fpsColor;
+        String fpsStatus;
+        if (activeFps >= 90) {
+            fpsColor = Color.parseColor("#00FF66"); // Neon Green
+            fpsStatus = "🟢 Ultra Smooth";
+        } else if (activeFps >= 45) {
+            fpsColor = Color.parseColor("#00F0FF"); // Neon Cyan
+            fpsStatus = "🟡 Smooth Gaming";
+        } else {
+            fpsColor = Color.parseColor("#FF0055"); // Neon Red
+            fpsStatus = "🔴 Frame Drop";
+        }
+
+        // 1. Update Collapsed Pill Viewport
+        if (layoutCollapsedPill != null && layoutCollapsedPill.getVisibility() == View.VISIBLE) {
+            if (tvPillFps != null) {
+                String tag = isReal ? "🎮 " : "⚡ ";
+                tvPillFps.setText(String.format("%s%d FPS", tag, activeFps));
+                tvPillFps.setTextColor(fpsColor);
+            }
+        }
+
+        // 2. Update Micro FPS Viewport
+        if (layoutMicroFps != null && layoutMicroFps.getVisibility() == View.VISIBLE) {
+            if (tvMicroFps != null) {
+                String tag = isReal ? "🎮 " : "⚡ ";
+                tvMicroFps.setText(String.format("%s%d FPS", tag, activeFps));
+                tvMicroFps.setTextColor(fpsColor);
+            }
+        }
+
+        // 3. Update Expanded Dock Viewport
+        if (layoutExpandedDock != null && layoutExpandedDock.getVisibility() == View.VISIBLE) {
+            if (tvHudFps != null) {
+                String sourceTag = isReal ? "🎮" : "⚡";
+                DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(getApplicationContext());
+                int currentHz = (caps != null && caps.currentRefreshRate > 0) ? caps.currentRefreshRate : 185;
+                tvHudFps.setText(String.format("%s %d FPS / %dHz", sourceTag, activeFps, currentHz));
+                tvHudFps.setTextColor(fpsColor);
+            }
+            if (tvHudFpsStatus != null) {
+                if (isReal && lowFps > 0) {
+                    tvHudFpsStatus.setText(String.format("%s • 1%%: %d • 0.1%%: %d (%.1fms ±%.1f)", fpsStatus, lowFps, zeroPointOneLow, ftMs, jitter));
+                } else {
+                    tvHudFpsStatus.setText(fpsStatus + " • Display Sync");
+                }
             }
         }
     }

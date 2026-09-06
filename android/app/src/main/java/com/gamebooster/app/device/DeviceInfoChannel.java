@@ -14,7 +14,7 @@ public class DeviceInfoChannel {
 
     private static volatile Metrics sCachedMetrics;
     private static volatile long sLastMetricsFetch = 0L;
-    private static final long METRICS_CACHE_TTL_MS = 1500L;
+    private static final long METRICS_CACHE_TTL_MS = 500L;
 
     public static class Metrics {
         public final String deviceSummary;

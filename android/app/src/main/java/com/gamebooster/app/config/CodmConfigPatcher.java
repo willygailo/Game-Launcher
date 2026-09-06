@@ -214,14 +214,14 @@ public class CodmConfigPatcher {
                     + "  \"MobileFPSLimit\": 144,\n"
                     + "  \"GraphicQuality\": 4,\n"
                     + "  \"TextureQuality\": 4,\n"
-                    + "  \"ShadowQuality\": 2,\n"
-                    + "  \"ShadowResolution\": 2048,\n"
-                    + "  \"AntiAliasingQuality\": 4,\n"
-                    + "  \"BloomQuality\": 5,\n"
-                    + "  \"MaxAnisotropy\": 16,\n"
-                    + "  \"LightingQuality\": 3,\n"
-                    + "  \"ParticleQuality\": 3,\n"
-                    + "  \"WaterReflection\": 1,\n"
+                    + "  \"ShadowQuality\": 0,\n"
+                    + "  \"ShadowResolution\": 512,\n"
+                    + "  \"AntiAliasingQuality\": 0,\n"
+                    + "  \"BloomQuality\": 0,\n"
+                    + "  \"MaxAnisotropy\": 1,\n"
+                    + "  \"LightingQuality\": 1,\n"
+                    + "  \"ParticleQuality\": 1,\n"
+                    + "  \"WaterReflection\": 0,\n"
                     + "  \"AsyncCompute\": 1,\n"
                     + "  \"VRS\": 1,\n"
                     + "  \"VulkanPipelineCache\": 1,\n"
@@ -229,8 +229,8 @@ public class CodmConfigPatcher {
                     + "  \"HDR10Plus\": 1,\n"
                     + "  \"HDRColorMode\": 2,\n"
                     + "  \"UltraHDMode\": 1,\n"
-                    + "  \"SuperResolution\": 1,\n"
-                    + "  \"ResolutionScale\": 120,\n"
+                    + "  \"SuperResolution\": 0,\n"
+                    + "  \"ResolutionScale\": 100,\n"
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
@@ -264,15 +264,15 @@ public class CodmConfigPatcher {
                     + "  <int name=\"MobileFPSLimit\" value=\"144\" />\n"
                     + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
                     + "  <int name=\"TextureQuality\" value=\"4\" />\n"
-                    + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
-                    + "  <int name=\"ShadowResolution\" value=\"2048\" />\n"
-                    + "  <int name=\"AntiAliasingQuality\" value=\"4\" />\n"
-                    + "  <int name=\"BloomQuality\" value=\"5\" />\n"
-                    + "  <int name=\"MaxAnisotropy\" value=\"16\" />\n"
+                    + "  <int name=\"ShadowQuality\" value=\"0\" />\n"
+                    + "  <int name=\"ShadowResolution\" value=\"512\" />\n"
+                    + "  <int name=\"AntiAliasingQuality\" value=\"0\" />\n"
+                    + "  <int name=\"BloomQuality\" value=\"0\" />\n"
+                    + "  <int name=\"MaxAnisotropy\" value=\"1\" />\n"
                     + "  <int name=\"HDRMode\" value=\"1\" />\n"
                     + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
-                    + "  <int name=\"SuperResolution\" value=\"1\" />\n"
-                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
+                    + "  <int name=\"SuperResolution\" value=\"0\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"100\" />\n"
                     + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
                     + "  <int name=\"Vsync\" value=\"0\" />\n"
                     + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
@@ -308,14 +308,14 @@ public class CodmConfigPatcher {
                     + "Unlock240Hz=1\n"
                     + "GraphicQuality=4\n"
                     + "TextureQuality=4\n"
-                    + "ShadowQuality=2\n"
-                    + "ShadowResolution=2048\n"
-                    + "AntiAliasingQuality=4\n"
-                    + "BloomQuality=5\n"
-                    + "MaxAnisotropy=16\n"
-                    + "LightingQuality=3\n"
-                    + "ParticleQuality=3\n"
-                    + "WaterReflection=1\n"
+                    + "ShadowQuality=0\n"
+                    + "ShadowResolution=512\n"
+                    + "AntiAliasingQuality=0\n"
+                    + "BloomQuality=0\n"
+                    + "MaxAnisotropy=1\n"
+                    + "LightingQuality=1\n"
+                    + "ParticleQuality=1\n"
+                    + "WaterReflection=0\n"
                     + "VulkanPipelineCache=1\n"
                     + "AsyncCompute=1\n"
                     + "VRS=1\n"
@@ -323,8 +323,8 @@ public class CodmConfigPatcher {
                     + "HDR10Plus=1\n"
                     + "HDRColorMode=2\n"
                     + "UltraHDMode=1\n"
-                    + "SuperResolution=1\n"
-                    + "ResolutionScale=120\n"
+                    + "SuperResolution=0\n"
+                    + "ResolutionScale=100\n"
                     + "UltraExtreme=1\n"
                     + "bUseUltraExtreme=True\n"
                     + "bFramePacingEnabled=True\n"
@@ -443,14 +443,14 @@ public class CodmConfigPatcher {
                     + "  \"FrameRateLevel\": 9,\n"
                     + "  \"GraphicQuality\": 4,\n"
                     + "  \"TextureQuality\": 4,\n"
-                    + "  \"ShadowQuality\": 2,\n"
-                    + "  \"ShadowResolution\": 2048,\n"
-                    + "  \"AntiAliasingQuality\": 4,\n"
-                    + "  \"BloomQuality\": 5,\n"
-                    + "  \"MaxAnisotropy\": 16,\n"
-                    + "  \"LightingQuality\": 3,\n"
-                    + "  \"ParticleQuality\": 3,\n"
-                    + "  \"WaterReflection\": 1,\n"
+                    + "  \"ShadowQuality\": 0,\n"
+                    + "  \"ShadowResolution\": 512,\n"
+                    + "  \"AntiAliasingQuality\": 0,\n"
+                    + "  \"BloomQuality\": 0,\n"
+                    + "  \"MaxAnisotropy\": 1,\n"
+                    + "  \"LightingQuality\": 1,\n"
+                    + "  \"ParticleQuality\": 1,\n"
+                    + "  \"WaterReflection\": 0,\n"
                     + "  \"AsyncCompute\": 1,\n"
                     + "  \"VRS\": 1,\n"
                     + "  \"VulkanPipelineCache\": 1,\n"
@@ -458,8 +458,8 @@ public class CodmConfigPatcher {
                     + "  \"HDR10Plus\": 1,\n"
                     + "  \"HDRColorMode\": 2,\n"
                     + "  \"UltraHDMode\": 1,\n"
-                    + "  \"SuperResolution\": 1,\n"
-                    + "  \"ResolutionScale\": 120,\n"
+                    + "  \"SuperResolution\": 0,\n"
+                    + "  \"ResolutionScale\": 100,\n"
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
@@ -495,16 +495,16 @@ public class CodmConfigPatcher {
                     + "  <int name=\"FrameRateLevel\" value=\"9\" />\n"
                     + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
                     + "  <int name=\"TextureQuality\" value=\"4\" />\n"
-                    + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
-                    + "  <int name=\"ShadowResolution\" value=\"2048\" />\n"
-                    + "  <int name=\"AntiAliasingQuality\" value=\"4\" />\n"
-                    + "  <int name=\"BloomQuality\" value=\"5\" />\n"
-                    + "  <int name=\"MaxAnisotropy\" value=\"16\" />\n"
+                    + "  <int name=\"ShadowQuality\" value=\"0\" />\n"
+                    + "  <int name=\"ShadowResolution\" value=\"512\" />\n"
+                    + "  <int name=\"AntiAliasingQuality\" value=\"0\" />\n"
+                    + "  <int name=\"BloomQuality\" value=\"0\" />\n"
+                    + "  <int name=\"MaxAnisotropy\" value=\"1\" />\n"
                     + "  <int name=\"HDRMode\" value=\"1\" />\n"
                     + "  <int name=\"HDR10Plus\" value=\"1\" />\n"
                     + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
-                    + "  <int name=\"SuperResolution\" value=\"1\" />\n"
-                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
+                    + "  <int name=\"SuperResolution\" value=\"0\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"100\" />\n"
                     + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
                     + "  <int name=\"Vsync\" value=\"0\" />\n"
                     + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
@@ -532,14 +532,14 @@ public class CodmConfigPatcher {
                     + "FrameRateLevel=9\n"
                     + "GraphicQuality=4\n"
                     + "TextureQuality=4\n"
-                    + "ShadowQuality=2\n"
-                    + "ShadowResolution=2048\n"
-                    + "AntiAliasingQuality=4\n"
-                    + "BloomQuality=5\n"
-                    + "MaxAnisotropy=16\n"
-                    + "LightingQuality=3\n"
-                    + "ParticleQuality=3\n"
-                    + "WaterReflection=1\n"
+                    + "ShadowQuality=0\n"
+                    + "ShadowResolution=512\n"
+                    + "AntiAliasingQuality=0\n"
+                    + "BloomQuality=0\n"
+                    + "MaxAnisotropy=1\n"
+                    + "LightingQuality=1\n"
+                    + "ParticleQuality=1\n"
+                    + "WaterReflection=0\n"
                     + "VulkanPipelineCache=1\n"
                     + "AsyncCompute=1\n"
                     + "VRS=1\n"
@@ -547,8 +547,8 @@ public class CodmConfigPatcher {
                     + "HDR10Plus=1\n"
                     + "HDRColorMode=2\n"
                     + "UltraHDMode=1\n"
-                    + "SuperResolution=1\n"
-                    + "ResolutionScale=120\n"
+                    + "SuperResolution=0\n"
+                    + "ResolutionScale=100\n"
                     + "UltraExtreme=1\n"
                     + "bUseUltraExtreme=True\n"
                     + "bFramePacingEnabled=True\n"
@@ -604,14 +604,14 @@ public class CodmConfigPatcher {
                     + "  \"MobileFPSLimit\": 185,\n"
                     + "  \"GraphicQuality\": 4,\n"
                     + "  \"TextureQuality\": 4,\n"
-                    + "  \"ShadowQuality\": 2,\n"
-                    + "  \"ShadowResolution\": 2048,\n"
-                    + "  \"AntiAliasingQuality\": 4,\n"
-                    + "  \"BloomQuality\": 5,\n"
-                    + "  \"MaxAnisotropy\": 16,\n"
-                    + "  \"LightingQuality\": 3,\n"
-                    + "  \"ParticleQuality\": 3,\n"
-                    + "  \"WaterReflection\": 1,\n"
+                    + "  \"ShadowQuality\": 0,\n"
+                    + "  \"ShadowResolution\": 512,\n"
+                    + "  \"AntiAliasingQuality\": 0,\n"
+                    + "  \"BloomQuality\": 0,\n"
+                    + "  \"MaxAnisotropy\": 1,\n"
+                    + "  \"LightingQuality\": 1,\n"
+                    + "  \"ParticleQuality\": 1,\n"
+                    + "  \"WaterReflection\": 0,\n"
                     + "  \"AsyncCompute\": 1,\n"
                     + "  \"VRS\": 1,\n"
                     + "  \"VulkanPipelineCache\": 1,\n"
@@ -619,8 +619,8 @@ public class CodmConfigPatcher {
                     + "  \"HDR10Plus\": 1,\n"
                     + "  \"HDRColorMode\": 2,\n"
                     + "  \"UltraHDMode\": 1,\n"
-                    + "  \"SuperResolution\": 1,\n"
-                    + "  \"ResolutionScale\": 120,\n"
+                    + "  \"SuperResolution\": 0,\n"
+                    + "  \"ResolutionScale\": 100,\n"
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
@@ -657,15 +657,15 @@ public class CodmConfigPatcher {
                     + "  <int name=\"MobileFPSLimit\" value=\"185\" />\n"
                     + "  <int name=\"GraphicQuality\" value=\"4\" />\n"
                     + "  <int name=\"TextureQuality\" value=\"4\" />\n"
-                    + "  <int name=\"ShadowQuality\" value=\"2\" />\n"
-                    + "  <int name=\"ShadowResolution\" value=\"2048\" />\n"
-                    + "  <int name=\"AntiAliasingQuality\" value=\"4\" />\n"
-                    + "  <int name=\"BloomQuality\" value=\"5\" />\n"
-                    + "  <int name=\"MaxAnisotropy\" value=\"16\" />\n"
+                    + "  <int name=\"ShadowQuality\" value=\"0\" />\n"
+                    + "  <int name=\"ShadowResolution\" value=\"512\" />\n"
+                    + "  <int name=\"AntiAliasingQuality\" value=\"0\" />\n"
+                    + "  <int name=\"BloomQuality\" value=\"0\" />\n"
+                    + "  <int name=\"MaxAnisotropy\" value=\"1\" />\n"
                     + "  <int name=\"HDRMode\" value=\"1\" />\n"
                     + "  <int name=\"UltraHDMode\" value=\"1\" />\n"
-                    + "  <int name=\"SuperResolution\" value=\"1\" />\n"
-                    + "  <int name=\"ResolutionScale\" value=\"120\" />\n"
+                    + "  <int name=\"SuperResolution\" value=\"0\" />\n"
+                    + "  <int name=\"ResolutionScale\" value=\"100\" />\n"
                     + "  <int name=\"UltraExtreme\" value=\"1\" />\n"
                     + "  <int name=\"Vsync\" value=\"0\" />\n"
                     + "  <int name=\"Unlock120Hz\" value=\"1\" />\n"
@@ -695,17 +695,17 @@ public class CodmConfigPatcher {
                     + "FrameRateLevel=10\n"
                     + "GraphicQuality=4\n"
                     + "TextureQuality=4\n"
-                    + "ShadowQuality=2\n"
-                    + "ShadowResolution=2048\n"
-                    + "AntiAliasingQuality=4\n"
-                    + "BloomQuality=5\n"
-                    + "MaxAnisotropy=16\n"
+                    + "ShadowQuality=0\n"
+                    + "ShadowResolution=512\n"
+                    + "AntiAliasingQuality=0\n"
+                    + "BloomQuality=0\n"
+                    + "MaxAnisotropy=1\n"
                     + "HDRMode=1\n"
                     + "HDR10Plus=1\n"
                     + "HDRColorMode=2\n"
                     + "UltraHDMode=1\n"
-                    + "SuperResolution=1\n"
-                    + "ResolutionScale=120\n"
+                    + "SuperResolution=0\n"
+                    + "ResolutionScale=100\n"
                     + "UltraExtreme=1\n"
                     + "bUseUltraExtreme=True\n"
                     + "bFramePacingEnabled=True\n"
@@ -768,9 +768,9 @@ public class CodmConfigPatcher {
                         "  \"TouchPollingRate\": 1000,\n" +
                         "  \"TouchZeroDelay\": 1,\n" +
                         "  \"GyroSampleRate\": 1000,\n" +
-                        "  \"SuperResolution\": 1,\n" +
-                        "  \"AntiAliasing\": 1,\n" +
-                        "  \"ShadowQuality\": 2,\n" +
+                        "  \"SuperResolution\": 0,\n" +
+                        "  \"AntiAliasing\": 0,\n" +
+                        "  \"ShadowQuality\": 0,\n" +
                         "  \"PreloadShaders\": 1\n" +
                         "}\n";
             } else if (path.endsWith(".xml")) {
@@ -809,8 +809,8 @@ public class CodmConfigPatcher {
                         "Unlock165Hz=1\n" +
                         "Unlock185Hz=1\n" +
                         "Unlock240Hz=1\n" +
-                        "SuperResolution=1\n" +
-                        "ResolutionScale=120\n" +
+                        "SuperResolution=0\n" +
+                        "ResolutionScale=100\n" +
                         "VulkanPipelineCache=1\n" +
                         "AsyncCompute=1\n" +
                         "VRS=1\n" +
@@ -973,17 +973,17 @@ public class CodmConfigPatcher {
             "FrameRateLevel=" + level,
             "GraphicQuality=4",
             "TextureQuality=4",
-            "ShadowQuality=2",
-            "ShadowResolution=2048",
-            "AntiAliasingQuality=4",
-            "BloomQuality=5",
-            "MaxAnisotropy=16",
+            "ShadowQuality=0",
+            "ShadowResolution=512",
+            "AntiAliasingQuality=0",
+            "BloomQuality=0",
+            "MaxAnisotropy=1",
             "HDRMode=1",
             "HDR10Plus=1",
             "HDRColorMode=2",
             "UltraHDMode=1",
-            "SuperResolution=1",
-            "ResolutionScale=120",
+            "SuperResolution=0",
+            "ResolutionScale=100",
             "UltraExtreme=1",
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
