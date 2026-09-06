@@ -1839,23 +1839,61 @@ public class NativeConfigInjector {
             } catch (Throwable ignored) {}
         }
         if (path.toLowerCase().endsWith(".xml")) {
+            int fpsVal = targetHz > 0 ? targetHz : 185;
+            String highFpsModeVal = fpsVal >= 185 ? "185" : (fpsVal >= 120 ? "120" : (fpsVal >= 90 ? "90" : "60"));
+            String highFpsSeeVal = fpsVal >= 185 ? "5" : (fpsVal >= 120 ? "4" : (fpsVal >= 90 ? "3" : "2"));
             String[] xmlKeys = {
                 "SystemInfo_graphicsDeviceName=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
                 "SystemInfo_graphicsDeviceVendor=Qualcomm",
                 "SystemInfo_deviceModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
                 "SystemInfo_systemMemorySize=" + (ramMb > 0 ? ramMb : 16384),
-                "TargetFrameRate=" + (targetHz > 0 ? targetHz : 120),
-                "MaxRefreshRate=" + (targetHz > 0 ? targetHz : 120),
+                "HighFpsMode=" + highFpsModeVal,
+                "HighFpsModeSee=" + highFpsSeeVal,
+                "HighFPS=" + (fpsVal >= 185 ? "4" : (fpsVal >= 120 ? "3" : (fpsVal >= 90 ? "2" : "1"))),
+                "FpsMode=" + (fpsVal >= 185 ? "4" : (fpsVal >= 120 ? "3" : (fpsVal >= 90 ? "2" : "1"))),
+                "SupportHighFps=1",
+                "SupportHighFpsMode=1",
+                "SupportUltraFps=1",
+                "SupportUltraFpsMode=1",
+                "SupportExtremeFps=1",
+                "SupportExtremeFpsMode=1",
+                "Quality=3",
+                "QualityLevel=3",
+                "TargetFrameRate=" + fpsVal,
+                "MaxRefreshRate=" + fpsVal,
+                "Unlock185Hz=1",
+                "Unlock165Hz=1",
+                "Unlock144Hz=1",
                 "Unlock120Hz=1"
             };
             return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
+        }
+        if (path.toLowerCase().endsWith(".json")) {
+            int fpsVal = targetHz > 0 ? targetHz : 185;
+            String[] jsonKeys = {
+                "DeviceModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
+                "GPURenderer=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
+                "GPUVendor=Qualcomm",
+                "SoCModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
+                "RAMTotalMB=" + (ramMb > 0 ? ramMb : 16384),
+                "MaxFrameRate=" + fpsVal,
+                "FPSLimit=" + fpsVal,
+                "GraphicQuality=4",
+                "UnlockUltraHighFPS=true",
+                "Unlock185Hz=true",
+                "Unlock165Hz=true",
+                "Unlock144Hz=true",
+                "Unlock120Hz=true",
+                "VulkanSupport=true"
+            };
+            return ConfigFileHelper.patchKeys(path, jsonKeys, null);
         }
         String[] keys = {
             "GpuRenderer=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
             "SocModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
             "SystemRamMB=" + (ramMb > 0 ? ramMb : 16384),
-            "DisplayRefreshRate=" + (targetHz > 0 ? targetHz : 120),
-            "TargetFPS=" + (targetHz > 0 ? targetHz : 120),
+            "DisplayRefreshRate=" + (targetHz > 0 ? targetHz : 185),
+            "TargetFPS=" + (targetHz > 0 ? targetHz : 185),
             "HardwareProfileTier=4"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[HardwareProfile]");

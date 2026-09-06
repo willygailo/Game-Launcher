@@ -75,17 +75,17 @@ public class HardwareMaskEngine {
 
             Set<String> batchCommands = new LinkedHashSet<>();
             String eglVendor = profile.glVendor.toLowerCase().contains("arm") ? "mali" : "adreno";
-            int maxPhysicalHz = 120;
+            int maxPhysicalHz = 185;
             if (context != null) {
                 try {
                     com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                             com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(context);
                     if (caps != null && caps.maxRefreshRate > 0) {
-                        maxPhysicalHz = caps.maxRefreshRate;
+                        maxPhysicalHz = Math.max(185, caps.maxRefreshRate);
                     }
                 } catch (Throwable ignored) {}
             }
-            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : maxPhysicalHz));
+            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 1: LAUNCHER TELEMETRY & APP-SCOPED PROPS (Zero OS Tampering)
@@ -310,9 +310,9 @@ public class HardwareMaskEngine {
 
         // 1. Unreal Engine Games (PUBG, BGMI, Arena Breakout, Delta Force, Farlight, Valorant, Project C)
         if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
-            pkg.contains("vng.pubgmobile") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ||
-            pkg.contains("uamo") || pkg.contains("farlight") || pkg.contains("solarland") ||
-            pkg.contains("projectc") || pkg.contains("valorant")) {
+            pkg.contains("vng.pubgmobile") || pkg.contains("krmobile") || pkg.contains("arenabreakout") ||
+            pkg.contains("deltaforce") || pkg.contains("uamo") || pkg.contains("farlight") ||
+            pkg.contains("solarland") || pkg.contains("projectc") || pkg.contains("valorant")) {
 
             String[] profileKeys = profile.generateUe4DeviceProfileKeys(targetFps);
 
@@ -326,6 +326,16 @@ public class HardwareMaskEngine {
                     ConfigFileHelper.patchKeys(p, profileKeys, "[DeviceProfile]");
                 }
             }
+
+            // CRITICAL: Force binary patching of Active.sav so PUBGM and regional variants unlock 120 FPS / 90 FPS
+            if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
+                pkg.contains("vng.pubgmobile") || pkg.contains("krmobile")) {
+                try {
+                    com.gamebooster.app.config.PubgConfigPatcher.patchActiveSavBinary(packageName, targetFps, true);
+                } catch (Throwable t) {
+                    Log.w(TAG, "patchActiveSavBinary error: " + t.getMessage());
+                }
+            }
         }
 
         // 2. Call of Duty Mobile / Warzone / Blood Strike
@@ -334,8 +344,8 @@ public class HardwareMaskEngine {
             String jsonProfile = profile.generateJsonHardwareProfile(targetFps);
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
-                if (p.contains("HardwareProfile.json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                if (p.contains("HardwareProfile.json") || p.contains("device_profile.json") || p.endsWith(".json")) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, jsonProfile, "666");
                     }
@@ -350,7 +360,7 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("hardware_model_config.json") || p.contains("device_config.json") || p.endsWith(".json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, genshinProfile, "666");
                     }
@@ -362,12 +372,12 @@ public class HardwareMaskEngine {
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             GameSecurityBypassEngine.purgeCorruptedAssetCaches(packageName);
             try {
-                MlbbConfigPatcher.patchUltraExtreme165(packageName);
+                MlbbConfigPatcher.patch(packageName, targetFps);
             } catch (Throwable ignored) {}
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("playerprefs") || p.endsWith(".xml")) {
-                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps);
                 }
             }
             GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
@@ -531,15 +541,15 @@ public class HardwareMaskEngine {
             Set<String> batchCmds = new LinkedHashSet<>();
 
             Set<String> gamePkgs = new LinkedHashSet<>();
-            int maxPhysicalHz = 120;
+            int maxPhysicalHz = 185;
             try {
                 com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                         com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(context);
                 if (caps != null && caps.maxRefreshRate > 0) {
-                    maxPhysicalHz = caps.maxRefreshRate;
+                    maxPhysicalHz = Math.max(185, caps.maxRefreshRate);
                 }
             } catch (Throwable ignored) {}
-            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : maxPhysicalHz));
+            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
 
             if (installedGames != null) {
                 for (com.gamebooster.app.games.GameAppInfo game : installedGames) {

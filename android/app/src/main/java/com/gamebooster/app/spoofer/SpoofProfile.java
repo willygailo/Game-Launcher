@@ -449,7 +449,12 @@ public class SpoofProfile {
     // ─────────────────────────────────────────────────────────────────────────
 
     public String[] generateUe4DeviceProfileKeys(int targetFps) {
-        int clampedFps = Math.max(120, Math.min(185, targetFps));
+        int clampedFps = Math.max(60, Math.min(185, targetFps));
+        int effectiveLevel = (clampedFps >= 185) ? 10
+                : ((clampedFps >= 165) ? 9
+                : ((clampedFps >= 144) ? 8
+                : ((clampedFps >= 120) ? 7
+                : ((clampedFps >= 90) ? 6 : 5))));
         return new String[] {
             "DeviceName=" + model,
             "DeviceBrand=" + brand,
@@ -459,10 +464,24 @@ public class SpoofProfile {
             "GPUFamily=" + glRenderer,
             "SoCModel=" + socModel,
             "RAMTotalMB=" + ramTotalMb,
-            "+CVars=r.PUBGDeviceFPS=10",
+            "+CVars=0,2," + clampedFps,
+            "+CVars=r.PUBGDeviceFPS=" + effectiveLevel,
+            "+CVars=r.PUBGDeviceFPSLow=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSMid=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSHigh=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSExtreme=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSUltraExtreme=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSMax=" + clampedFps,
+            "+CVars=r.PUBGDeviceFPSSupport185=1",
+            "+CVars=r.PUBGDeviceFPSSupport165=1",
+            "+CVars=r.PUBGDeviceFPSSupport144=1",
+            "+CVars=r.PUBGDeviceFPSSupport120=1",
+            "+CVars=r.PUBGDeviceFPSSupport90=1",
             "+CVars=r.PUBGDeviceFPSPolicy=1",
             "+CVars=r.PUBGTargetFPS=" + clampedFps,
             "+CVars=r.PUBGMaxFPS=" + clampedFps,
+            "+CVars=r.MaxFPS=" + clampedFps,
+            "+CVars=r.UserFPS=" + clampedFps,
             "+CVars=r.MobileFPSLimit=" + clampedFps,
             "+CVars=r.FrameRateLimit=" + clampedFps,
             "+CVars=r.MobileTouchBoostRate=" + clampedFps,
@@ -473,11 +492,21 @@ public class SpoofProfile {
             "+CVars=r.Tonemapper.Quality=4",
             "+CVars=r.Streaming.PoolSize=4096",
             "+CVars=r.Android.DisableProgramBinaryCache=0",
-            "FrameRateLevel=10",
+            "FrameRateLevel=" + effectiveLevel,
+            "BattleFPS=" + effectiveLevel,
+            "LobbyFPS=" + effectiveLevel,
+            "TargetFPS=" + clampedFps,
+            "MaxFPS=" + clampedFps,
+            "FPS=" + clampedFps,
             "Unlock185Hz=1",
+            "Unlock185FPS=1",
             "Unlock165Hz=1",
+            "Unlock165FPS=1",
             "Unlock144Hz=1",
-            "Unlock120FPS=1"
+            "Unlock144FPS=1",
+            "Unlock120Hz=1",
+            "Unlock120FPS=1",
+            "Unlock90Hz=1"
         };
     }
 
@@ -491,6 +520,7 @@ public class SpoofProfile {
     }
 
     public String generateJsonHardwareProfile(int targetFps) {
+        int safeFps = targetFps > 0 ? Math.min(185, targetFps) : 185;
         return "{\n" +
                 "  \"DeviceModel\": \"" + model + "\",\n" +
                 "  \"DeviceBrand\": \"" + brand + "\",\n" +
@@ -505,12 +535,13 @@ public class SpoofProfile {
                 "  \"SoCManufacturer\": \"" + socManufacturer + "\",\n" +
                 "  \"CPUCores\": " + cpuCores + ",\n" +
                 "  \"RAMTotalMB\": " + ramTotalMb + ",\n" +
-                "  \"MaxFrameRate\": " + targetFps + ",\n" +
-                "  \"FPSLimit\": " + targetFps + ",\n" +
+                "  \"MaxFrameRate\": " + safeFps + ",\n" +
+                "  \"FPSLimit\": " + safeFps + ",\n" +
                 "  \"GraphicQuality\": 4,\n" +
                 "  \"UnlockUltraHighFPS\": true,\n" +
                 "  \"Unlock185Hz\": true,\n" +
                 "  \"Unlock165Hz\": true,\n" +
+                "  \"Unlock144Hz\": true,\n" +
                 "  \"Unlock120Hz\": true,\n" +
                 "  \"VulkanSupport\": true\n" +
                 "}\n";

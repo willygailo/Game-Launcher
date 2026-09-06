@@ -247,16 +247,16 @@ public final class GameManagerLauncher {
                     }
                 }
 
-                // Apply 185/165/144/120 Hz lock to SurfaceFlinger, AOSP & OEM clamped to device display limits
-                int maxPhysicalHz = 120;
+                // Apply 185 Hz lock to SurfaceFlinger, AOSP & OEM without clamping to 120
+                int maxPhysicalHz = 185;
                 try {
                     com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
                             com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(appContext);
                     if (caps != null && caps.maxRefreshRate > 0) {
-                        maxPhysicalHz = caps.maxRefreshRate;
+                        maxPhysicalHz = Math.max(caps.maxRefreshRate, 185);
                     }
                 } catch (Throwable ignored) {}
-                final int safeFps = Math.max(60, Math.min(maxPhysicalHz, fps));
+                final int safeFps = Math.max(60, Math.min(185, fps > 0 ? fps : 185));
                 try {
                     MaxHzForceChannel.forceApply(safeFps);
                     HzFpsChannel.forceSetRefreshRate(appContext, safeFps);

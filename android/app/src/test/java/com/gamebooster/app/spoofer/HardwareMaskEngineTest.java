@@ -125,4 +125,124 @@ public class HardwareMaskEngineTest {
 
         assertEquals(2, batch.size());
     }
+
+    @Test
+    public void testUe4ProfileKeysValidEnumAndCvars() {
+        SpoofProfile profile = DeviceSpooferEngine.getRecommendedProfile("com.tencent.ig");
+        assertNotNull(profile);
+
+        String[] keys120 = profile.generateUe4DeviceProfileKeys(120);
+        boolean hasValidFrameRateLevel = false;
+        boolean hasCVar02 = false;
+        boolean hasLevel10 = false;
+
+        for (String k : keys120) {
+            if (k.equals("FrameRateLevel=7")) hasValidFrameRateLevel = true;
+            if (k.equals("+CVars=0,2,120")) hasCVar02 = true;
+            if (k.contains("FrameRateLevel=10") || k.contains("PUBGDeviceFPS=10")) hasLevel10 = true;
+        }
+
+        assertTrue("120 FPS must use valid UE4 Level 7", hasValidFrameRateLevel);
+        assertTrue("Must include +CVars=0,2,120 for UE4 frame cap unlock", hasCVar02);
+        assertFalse("Must never output invalid Level 10 which breaks UE4 enum bounds", hasLevel10);
+    }
+
+    @Test
+    public void testInjectHardwareMaskProfileJson() throws java.io.IOException {
+        java.io.File tempJson = java.io.File.createTempFile("HardwareProfile", ".json");
+        tempJson.deleteOnExit();
+
+        boolean ok = com.gamebooster.app.config.NativeConfigInjector.injectHardwareMaskProfile(
+                tempJson.getAbsolutePath(),
+                "Adreno (TM) 750",
+                "Snapdragon 8 Gen 3",
+                16384,
+                120
+        );
+        assertTrue("JSON hardware mask injection should succeed", ok);
+
+        String content = new String(java.nio.file.Files.readAllBytes(tempJson.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue("Must contain JSON property GPURenderer", content.contains("\"GPURenderer\": \"Adreno (TM) 750\""));
+        assertTrue("Must contain JSON property MaxFrameRate", content.contains("\"MaxFrameRate\": 120"));
+        assertFalse("Must not contain INI section in JSON file", content.contains("[HardwareProfile]"));
+    }
+
+    @Test
+    public void testInjectHardwareMaskProfileXmlForMlbb() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_playerprefs", ".xml");
+        tempXml.deleteOnExit();
+
+        boolean ok = com.gamebooster.app.config.NativeConfigInjector.injectHardwareMaskProfile(
+                tempXml.getAbsolutePath(),
+                "Adreno (TM) 750",
+                "ASUS_AI2401",
+                16384,
+                120
+        );
+        assertTrue("XML playerprefs injection should succeed", ok);
+
+        String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue("Must contain HighFpsMode=120", content.contains("name=\"HighFpsMode\" value=\"120\""));
+        assertTrue("Must contain HighFpsModeSee=4", content.contains("name=\"HighFpsModeSee\" value=\"4\""));
+        assertTrue("Must contain HighFPS=3", content.contains("name=\"HighFPS\" value=\"3\""));
+        assertTrue("Must contain spoofed deviceModel", content.contains("name=\"SystemInfo_deviceModel\">ASUS_AI2401</string>"));
+    }
+
+    @Test
+    public void testUe4ProfileKeys185FpsUncapped() {
+        SpoofProfile profile = DeviceSpooferEngine.getRecommendedProfile("com.tencent.ig");
+        assertNotNull(profile);
+
+        String[] keys185 = profile.generateUe4DeviceProfileKeys(185);
+        boolean hasLevel10 = false;
+        boolean hasCVar02_185 = false;
+        boolean hasUnlock185 = false;
+
+        for (String k : keys185) {
+            if (k.equals("FrameRateLevel=10")) hasLevel10 = true;
+            if (k.equals("+CVars=0,2,185")) hasCVar02_185 = true;
+            if (k.equals("Unlock185Hz=1") || k.equals("Unlock185FPS=1")) hasUnlock185 = true;
+        }
+
+        assertTrue("185 FPS must map to FrameRateLevel=10", hasLevel10);
+        assertTrue("185 FPS must include +CVars=0,2,185", hasCVar02_185);
+        assertTrue("185 FPS must include Unlock185Hz=1 or Unlock185FPS=1", hasUnlock185);
+    }
+
+    @Test
+    public void testInjectHardwareMaskProfile185FpsJsonAndXml() throws java.io.IOException {
+        java.io.File tempJson = java.io.File.createTempFile("HardwareProfile185", ".json");
+        tempJson.deleteOnExit();
+
+        boolean okJson = com.gamebooster.app.config.NativeConfigInjector.injectHardwareMaskProfile(
+                tempJson.getAbsolutePath(),
+                "Adreno (TM) 830",
+                "SM8750-AB",
+                16384,
+                185
+        );
+        assertTrue("JSON hardware mask injection for 185 FPS should succeed", okJson);
+
+        String contentJson = new String(java.nio.file.Files.readAllBytes(tempJson.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue("Must contain MaxFrameRate: 185", contentJson.contains("\"MaxFrameRate\": 185"));
+        assertTrue("Must contain Unlock185Hz: true", contentJson.contains("\"Unlock185Hz\": true"));
+
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_playerprefs_185", ".xml");
+        tempXml.deleteOnExit();
+
+        boolean okXml = com.gamebooster.app.config.NativeConfigInjector.injectHardwareMaskProfile(
+                tempXml.getAbsolutePath(),
+                "Adreno (TM) 830",
+                "ASUS_AI2501",
+                16384,
+                185
+        );
+        assertTrue("XML playerprefs injection for 185 FPS should succeed", okXml);
+
+        String contentXml = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue("Must contain HighFpsMode=185", contentXml.contains("name=\"HighFpsMode\" value=\"185\""));
+        assertTrue("Must contain HighFpsModeSee=5", contentXml.contains("name=\"HighFpsModeSee\" value=\"5\""));
+        assertTrue("Must contain HighFPS=4", contentXml.contains("name=\"HighFPS\" value=\"4\""));
+        assertTrue("Must contain TargetFrameRate=185", contentXml.contains("name=\"TargetFrameRate\" value=\"185\""));
+    }
 }
