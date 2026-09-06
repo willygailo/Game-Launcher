@@ -92,6 +92,10 @@ public class ShizukuConnectionManager {
     public void start() {
         enabled = true;
         try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null && !Shizuku.pingBinder()) {
+                ShizukuManager.activelyFetchAndAttachBinder(ctx);
+            }
             boolean alive = Shizuku.pingBinder();
             boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
             if (granted) {
@@ -111,6 +115,24 @@ public class ShizukuConnectionManager {
             setState(State.BINDING);
             scheduleReconnect();
         }
+    }
+
+    /**
+     * Immediate recheck invoked on Activity/Fragment onResume to instantly restore READY state.
+     */
+    public void triggerImmediateRecheck(android.content.Context context) {
+        if (!enabled) enabled = true;
+        AppExecutors.getInstance().executeCommand(() -> {
+            if (context != null) {
+                ShizukuManager.activelyFetchAndAttachBinder(context);
+            }
+            if (isReady()) {
+                setState(State.READY);
+                ShizukuManager.forceNotifyStateChanged();
+            } else {
+                scheduleReconnect();
+            }
+        });
     }
 
     public void stop() {
@@ -148,6 +170,10 @@ public class ShizukuConnectionManager {
     public void onBinderDead() {
         boolean confirmedDead = true;
         try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                ShizukuManager.activelyFetchAndAttachBinder(ctx);
+            }
             if (Shizuku.pingBinder()) {
                 confirmedDead = false;
             }
@@ -158,13 +184,22 @@ public class ShizukuConnectionManager {
             scheduleReconnect();
         } else {
             Log.d(TAG, "onBinderDead fired, but Shizuku.pingBinder() is still alive. Preserving READY state.");
+            setState(State.READY);
         }
     }
 
-    /** A bind attempt failed after waiting — keep state consistent. */
+    /** A bind attempt failed after waiting — keep state consistent without killing core Shizuku status. */
     public void onBindFailure() {
         if (isReady()) {
             setState(State.READY);
+            return;
+        }
+        if (Shizuku.pingBinder()) {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                setState(State.READY);
+            } else {
+                setState(State.IDLE);
+            }
             return;
         }
         scheduleReconnect();
@@ -268,10 +303,14 @@ public class ShizukuConnectionManager {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 int attempt = 0;
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
                 while (enabled) {
                     boolean alive;
                     boolean granted;
                     try {
+                        if (ctx != null && attempt % 2 == 0) {
+                            ShizukuManager.activelyFetchAndAttachBinder(ctx);
+                        }
                         alive = Shizuku.pingBinder();
                         granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
                     } catch (Throwable t) {

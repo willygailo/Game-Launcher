@@ -266,6 +266,23 @@ public class HardwareMaskEngine {
         }
     }
 
+    private static void writeDirectLocalFile(java.io.File file, String content) {
+        try {
+            java.io.File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
+                fos.write(content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                fos.flush();
+            }
+            file.setReadable(true, false);
+            file.setWritable(true, false);
+        } catch (Throwable t) {
+            Log.w(TAG, "writeDirectLocalFile error for " + file.getAbsolutePath() + ": " + t.getMessage());
+        }
+    }
+
     /**
      * Staging mock /proc/cpuinfo, /proc/meminfo, /proc/version, and system_spoof.prop files.
      */
@@ -280,19 +297,36 @@ public class HardwareMaskEngine {
             for (Map.Entry<String, String> e : profile.generateSystemProperties().entrySet()) {
                 props.append(e.getKey()).append("=").append(e.getValue()).append("\n");
             }
+            String propsStr = props.toString();
 
-            String[] baseDirs = {
-                "/sdcard/Android/data/com.gamebooster.app/files/fake_proc/",
-                "/data/data/com.gamebooster.app/files/fake_proc/"
-            };
+            // 1. Write internal app-private files directly with Java process I/O (prevents shell UID 2000 permission denied)
+            Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            java.io.File internalDir = (ctx != null) 
+                    ? new java.io.File(ctx.getFilesDir(), "fake_proc")
+                    : new java.io.File("/data/data/com.gamebooster.app/files/fake_proc");
+            
+            writeDirectLocalFile(new java.io.File(internalDir, "fake_cpuinfo"), cpuInfo);
+            writeDirectLocalFile(new java.io.File(internalDir, "fake_meminfo"), memInfo);
+            writeDirectLocalFile(new java.io.File(internalDir, "fake_version"), procVer);
+            writeDirectLocalFile(new java.io.File(internalDir, "system_spoof.prop"), propsStr);
+            writeDirectLocalFile(new java.io.File(internalDir, "build.prop"), propsStr);
 
-            for (String dir : baseDirs) {
-                ShizukuFileManager.ensureParentDirectory(dir + "fake_cpuinfo");
-                ShizukuFileManager.writeFile(dir + "fake_cpuinfo", cpuInfo, "666");
-                ShizukuFileManager.writeFile(dir + "fake_meminfo", memInfo, "666");
-                ShizukuFileManager.writeFile(dir + "fake_version", procVer, "666");
-                ShizukuFileManager.writeFile(dir + "system_spoof.prop", props.toString(), "666");
-                ShizukuFileManager.writeFile(dir + "build.prop", props.toString(), "666");
+            // 2. Also mirror to external /sdcard directory
+            String extDir = "/sdcard/Android/data/com.gamebooster.app/files/fake_proc/";
+            java.io.File extFolder = new java.io.File(extDir);
+            if (extFolder.exists() || extFolder.mkdirs()) {
+                writeDirectLocalFile(new java.io.File(extFolder, "fake_cpuinfo"), cpuInfo);
+                writeDirectLocalFile(new java.io.File(extFolder, "fake_meminfo"), memInfo);
+                writeDirectLocalFile(new java.io.File(extFolder, "fake_version"), procVer);
+                writeDirectLocalFile(new java.io.File(extFolder, "system_spoof.prop"), propsStr);
+                writeDirectLocalFile(new java.io.File(extFolder, "build.prop"), propsStr);
+            } else {
+                ShizukuFileManager.ensureParentDirectory(extDir + "fake_cpuinfo");
+                ShizukuFileManager.writeFile(extDir + "fake_cpuinfo", cpuInfo, "666");
+                ShizukuFileManager.writeFile(extDir + "fake_meminfo", memInfo, "666");
+                ShizukuFileManager.writeFile(extDir + "fake_version", procVer, "666");
+                ShizukuFileManager.writeFile(extDir + "system_spoof.prop", propsStr, "666");
+                ShizukuFileManager.writeFile(extDir + "build.prop", propsStr, "666");
             }
         } catch (Throwable t) {
             Log.w(TAG, "exportMockProcfsPayloads error: " + t.getMessage());

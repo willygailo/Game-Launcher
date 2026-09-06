@@ -193,9 +193,13 @@ public class ShizukuKeepAliveWatchdog {
         // Grant continuous background execution AppOps
         cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_IN_BACKGROUND allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
-        cmds.add("cmd appops set " + SHIZUKU_PKG + " AUTO_START allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " START_FOREGROUND allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " SYSTEM_ALERT_WINDOW allow 2>/dev/null");
+
+        // Whitelist from network policy background restrictions
+        cmds.add("cmd netpolicy add restrict-background-whitelist " + SHIZUKU_PKG + " 2>/dev/null");
+        cmds.add("cmd netpolicy add restrict-background-whitelist com.gamebooster.app 2>/dev/null");
+        cmds.add("cmd netpolicy add restrict-background-whitelist com.android.shell 2>/dev/null");
 
         // ─── 3. Android 12–16 Phantom Process Killer & Cached Apps Freezer Bypass ───
         cmds.add("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
@@ -235,6 +239,15 @@ public class ShizukuKeepAliveWatchdog {
                 binderAlive = Shizuku.pingBinder();
             } catch (Throwable t) {
                 binderAlive = false;
+            }
+
+            if (!binderAlive) {
+                // Active recovery check before declaring dead
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuManager.activelyFetchAndAttachBinder(ctx);
+                    binderAlive = Shizuku.pingBinder();
+                }
             }
 
             if (binderAlive) {

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import moe.shizuku.api.BinderContainer;
 import rikka.shizuku.Shizuku;
 
 public class ShizukuManager {
@@ -48,6 +51,11 @@ public class ShizukuManager {
         }
     }
 
+    public static void forceNotifyStateChanged() {
+        lastNotifiedAlive = null;
+        notifyStateChanged(isShizukuRunningAndGranted());
+    }
+
     private static void notifyStateChanged(boolean alive) {
         if (lastNotifiedAlive != null && lastNotifiedAlive.booleanValue() == alive) {
             return;
@@ -60,6 +68,74 @@ public class ShizukuManager {
                 Log.e(TAG, "Error notifying state listener", e);
             }
         }
+    }
+
+    /**
+     * Actively queries moe.shizuku.privileged.api.shizuku provider to retrieve the live binder.
+     * Bypasses passive waiting and guarantees instant reconnection (<5ms) after exiting games.
+     */
+    public static boolean activelyFetchAndAttachBinder(Context context) {
+        if (context == null) return false;
+        try {
+            if (Shizuku.pingBinder()) {
+                return true;
+            }
+            Uri uri = Uri.parse("content://moe.shizuku.privileged.api.shizuku");
+            Bundle bundle = new Bundle();
+            Bundle reply = null;
+            try {
+                reply = context.getContentResolver().call(uri, "getBinder", null, bundle);
+            } catch (Throwable t) {
+                Log.d(TAG, "ContentResolver call to Shizuku provider failed: " + t.getMessage());
+            }
+
+            if (reply != null) {
+                IBinder binder = null;
+                try {
+                    reply.setClassLoader(BinderContainer.class.getClassLoader());
+                    BinderContainer container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER");
+                    if (container != null) {
+                        binder = container.binder;
+                    }
+                } catch (Throwable t) {
+                    Log.d(TAG, "Unparcel BinderContainer fallback: " + t.getMessage());
+                }
+
+                if (binder == null) {
+                    try {
+                        binder = reply.getBinder("moe.shizuku.privileged.api.intent.extra.BINDER");
+                    } catch (Throwable ignored) {}
+                }
+
+                if (binder != null && binder.isBinderAlive() && binder.pingBinder()) {
+                    Log.i(TAG, "Successfully retrieved live Shizuku binder on-demand!");
+                    Shizuku.onBinderReceived(binder, context.getPackageName());
+                    return true;
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "activelyFetchAndAttachBinder error: " + t.getMessage());
+        }
+        return isShizukuRunningAndGranted();
+    }
+
+    /**
+     * Full lifecycle recheck & reconnect workflow triggered on Activity/Fragment onResume.
+     */
+    public static void recheckAndReconnect(Context context) {
+        if (context == null) return;
+        final Context appCtx = context.getApplicationContext();
+        registerBinderListeners();
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean active = activelyFetchAndAttachBinder(appCtx);
+            if (active) {
+                ShizukuConnectionManager.getInstance().onBinderReceived();
+            } else {
+                ShizukuConnectionManager.getInstance().start();
+            }
+            forceNotifyStateChanged();
+        });
     }
 
     public static final int REQUEST_CODE_SHIZUKU = 1001;

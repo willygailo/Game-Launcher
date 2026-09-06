@@ -213,6 +213,11 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         ShizukuManager.addStateListener(this);
 
+        if (getContext() != null) {
+            ShizukuManager.recheckAndReconnect(getContext());
+            com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().triggerImmediateRecheck(getContext());
+        }
+
         try {
             if (getContext() != null) {
                 android.content.IntentFilter filter = new android.content.IntentFilter();
@@ -314,6 +319,17 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
                 || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
                 || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
+
+        if (!isShizukuActive) {
+            boolean fetched = com.gamebooster.app.shizuku.ShizukuManager.activelyFetchAndAttachBinder(getContext());
+            if (fetched) {
+                conn = com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
+                isShizukuActive = ShizukuExecutor.hasShizukuPermission()
+                        || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
+                        || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
+                        || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
+            }
+        }
 
         if (isShizukuActive) {
             if (tvEngineMode != null) {

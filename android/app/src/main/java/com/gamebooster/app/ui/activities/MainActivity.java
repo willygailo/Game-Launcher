@@ -284,6 +284,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        ShizukuManager.recheckAndReconnect(this);
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().triggerImmediateRecheck(this);
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);

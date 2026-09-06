@@ -28,14 +28,25 @@ public class ShizukuUserServiceConnector {
     private static final long BIND_STUCK_TIMEOUT_MS = 4000L;
     private final AtomicBoolean rebindScheduled = new AtomicBoolean(false);
 
+    private volatile boolean userServiceDisabled = false;
+    private int consecutiveFailures = 0;
+    private static final int MAX_CONSECUTIVE_FAILURES = 2;
+
+    public synchronized void resetUserServiceState() {
+        userServiceDisabled = false;
+        consecutiveFailures = 0;
+        isBinding = false;
+    }
+
     private void scheduleSilentRebind() {
+        if (userServiceDisabled) return;
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(500);
                 } catch (InterruptedException ignored) {}
                 rebindScheduled.set(false);
-                if (!isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                if (!userServiceDisabled && !isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "Executing silent auto-rebind for IUserService daemon...");
                     bindService();
                 }
@@ -53,7 +64,7 @@ public class ShizukuUserServiceConnector {
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
-            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS. Scheduling silent auto-rebind.");
+            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS.");
             if (userServiceInstance != null) {
                 try {
                     userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
@@ -70,6 +81,8 @@ public class ShizukuUserServiceConnector {
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "IUserService connected successfully under privileged shell UID.");
             userServiceInstance = IUserService.Stub.asInterface(service);
+            consecutiveFailures = 0;
+            userServiceDisabled = false;
             try {
                 service.linkToDeath(deathRecipient, 0);
             } catch (RemoteException e) {
@@ -81,7 +94,7 @@ public class ShizukuUserServiceConnector {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.w(TAG, "IUserService disconnected / unbound. Scheduling silent auto-rebind.");
+            Log.w(TAG, "IUserService disconnected / unbound.");
             userServiceInstance = null;
             isBinding = false;
             scheduleSilentRebind();
@@ -112,7 +125,7 @@ public class ShizukuUserServiceConnector {
         if (isServiceConnected()) {
             return true;
         }
-        if (waitTimeoutMs <= 0 || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+        if (userServiceDisabled || waitTimeoutMs <= 0 || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
             return isServiceConnected();
         }
         long deadline = System.currentTimeMillis() + waitTimeoutMs;
@@ -128,14 +141,25 @@ public class ShizukuUserServiceConnector {
     }
 
     public synchronized void bindService() {
+        if (userServiceDisabled) {
+            return;
+        }
         if (isServiceConnected()) {
+            consecutiveFailures = 0;
             return;
         }
         if (isBinding) {
             if (System.currentTimeMillis() - bindingStartedAt < BIND_STUCK_TIMEOUT_MS) {
                 return;
             }
-            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms — forcing clean rebind");
+            consecutiveFailures++;
+            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms (failure " + consecutiveFailures + "/" + MAX_CONSECUTIVE_FAILURES + ")");
+            if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                userServiceDisabled = true;
+                isBinding = false;
+                Log.w(TAG, "UserService binding failed " + consecutiveFailures + " times. Disabling AIDL UserService; falling back to 100% stable ShizukuExecutor shell.");
+                return;
+            }
             try {
                 Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
             } catch (Throwable ignored) {}
@@ -143,7 +167,7 @@ public class ShizukuUserServiceConnector {
         }
         try {
             if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Binding Shizuku UserService via AIDL (processSuffix=service, daemon=true, version=" + BuildConfig.VERSION_CODE + ")...");
+                Log.d(TAG, "Binding Shizuku UserService via AIDL (attempt " + (consecutiveFailures + 1) + ")...");
                 isBinding = true;
                 bindingStartedAt = System.currentTimeMillis();
                 Shizuku.bindUserService(serviceArgs, serviceConnection);
@@ -153,6 +177,11 @@ public class ShizukuUserServiceConnector {
         } catch (Throwable e) {
             Log.e(TAG, "Failed to bind Shizuku UserService: " + e.getMessage(), e);
             isBinding = false;
+            consecutiveFailures++;
+            if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                userServiceDisabled = true;
+                Log.w(TAG, "UserService binding error reached threshold (" + consecutiveFailures + "). Disabling AIDL UserService.");
+            }
             ShizukuConnectionManager.getInstance().onBindFailure();
         }
     }
@@ -175,11 +204,12 @@ public class ShizukuUserServiceConnector {
     }
 
     private void ensureBound() {
+        if (userServiceDisabled) return;
         if (!isServiceConnected()) {
             bindService();
             if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
                 int retries = 6;
-                while (!isServiceConnected() && retries > 0) {
+                while (!isServiceConnected() && retries > 0 && !userServiceDisabled) {
                     try {
                         Thread.sleep(40);
                     } catch (InterruptedException ignored) {}
@@ -242,7 +272,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("writeDirectFile", e);
             }
         }
-        return false;
+        return ShizukuFileManager.writeFile(path, content, mode).success;
     }
 
     public String readDirectFile(String path) {
@@ -255,7 +285,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("readDirectFile", e);
             }
         }
-        return null;
+        return ShizukuFileManager.readFile(path);
     }
 
     public boolean deleteDirectFile(String path) {
@@ -268,7 +298,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("deleteDirectFile", e);
             }
         }
-        return false;
+        return ShizukuFileManager.deleteFile(path).success;
     }
 
     public boolean makeDirectories(String path) {
@@ -281,7 +311,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("makeDirectories", e);
             }
         }
-        return false;
+        return ShizukuFileManager.makeDirectory(path);
     }
 
     public boolean fileExists(String path) {
@@ -294,7 +324,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("fileExists", e);
             }
         }
-        return false;
+        return ShizukuFileManager.fileExists(path);
     }
 
     public long getAvailableMemoryBytes() {

@@ -462,7 +462,10 @@ public class FocusModeEngine {
     public static void enableNetworkFocus(Context context) {
         if (context == null) return;
         try {
-            executeShellBatch("cmd netpolicy set restrict-background true 2>/dev/null; "
+            executeShellBatch("cmd netpolicy add restrict-background-whitelist moe.shizuku.privileged.api 2>/dev/null; "
+                    + "cmd netpolicy add restrict-background-whitelist com.gamebooster.app 2>/dev/null; "
+                    + "cmd netpolicy add restrict-background-whitelist com.android.shell 2>/dev/null; "
+                    + "cmd netpolicy set restrict-background true 2>/dev/null; "
                     + "cmd connectivity set-background-data false 2>/dev/null");
         } catch (Throwable t) {
             Log.w(TAG, "enableNetworkFocus failed: " + t.getMessage());
