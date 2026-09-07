@@ -1221,7 +1221,6 @@ public class MlbbConfigPatcher {
         try { applyLightningMovementAgility(packageName); } catch (Throwable ignored) {}
         try { applyFastestMinionKillWaveClear(packageName); } catch (Throwable ignored) {}
         try { applyFastestEnemyExecuteBurst(packageName); } catch (Throwable ignored) {}
-        try { applyMlbbFullOverdrive2026(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB JungleMasterGodSuite master combo applied for " + packageName);
     }
 }
