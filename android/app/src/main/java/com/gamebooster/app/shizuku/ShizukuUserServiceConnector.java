@@ -24,29 +24,41 @@ public class ShizukuUserServiceConnector {
     private volatile IUserService userServiceInstance = null;
     private volatile boolean isBinding = false;
     private volatile long bindingStartedAt = 0L;
+    private volatile int cachedServicePid = -1;
 
     private static final long BIND_STUCK_TIMEOUT_MS = 4000L;
     private final AtomicBoolean rebindScheduled = new AtomicBoolean(false);
 
-    private volatile boolean userServiceDisabled = false;
     private int consecutiveFailures = 0;
-    private static final int MAX_CONSECUTIVE_FAILURES = 2;
 
     public synchronized void resetUserServiceState() {
-        userServiceDisabled = false;
         consecutiveFailures = 0;
         isBinding = false;
     }
 
-    private void scheduleSilentRebind() {
-        if (userServiceDisabled) return;
+    public int getServicePid() {
+        if (cachedServicePid > 0) return cachedServicePid;
+        IUserService instance = userServiceInstance;
+        if (instance != null) {
+            try {
+                int pid = instance.getPid();
+                if (pid > 0) {
+                    cachedServicePid = pid;
+                    return pid;
+                }
+            } catch (Throwable ignored) {}
+        }
+        return -1;
+    }
+
+    public void scheduleSilentRebind() {
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(300);
                 } catch (InterruptedException ignored) {}
                 rebindScheduled.set(false);
-                if (!userServiceDisabled && !isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                if (!isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "Executing silent auto-rebind for IUserService daemon...");
                     bindService();
                 }
@@ -57,6 +69,7 @@ public class ShizukuUserServiceConnector {
     private void handleRemoteException(String op, Exception e) {
         Log.w(TAG, "RemoteException in " + op + " (switching to elevated shell fallback): " + e.getMessage());
         userServiceInstance = null;
+        cachedServicePid = -1;
         isBinding = false;
         scheduleSilentRebind();
     }
@@ -64,13 +77,14 @@ public class ShizukuUserServiceConnector {
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
-            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS.");
+            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS. Triggering auto-rebind...");
             if (userServiceInstance != null) {
                 try {
                     userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
                 } catch (Throwable ignored) {}
             }
             userServiceInstance = null;
+            cachedServicePid = -1;
             isBinding = false;
             scheduleSilentRebind();
         }
@@ -82,20 +96,28 @@ public class ShizukuUserServiceConnector {
             Log.i(TAG, "IUserService connected successfully under privileged shell UID.");
             userServiceInstance = IUserService.Stub.asInterface(service);
             consecutiveFailures = 0;
-            userServiceDisabled = false;
+            isBinding = false;
             try {
                 service.linkToDeath(deathRecipient, 0);
             } catch (RemoteException e) {
                 Log.w(TAG, "Failed to link death recipient to UserService binder", e);
             }
-            isBinding = false;
+            try {
+                int pid = userServiceInstance.getPid();
+                cachedServicePid = pid;
+                Log.i(TAG, "IUserService live PID=" + pid + " (shielding via Watchdog)");
+                ShizukuKeepAliveWatchdog.getInstance().onUserServiceConnected(pid);
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to query UserService PID", t);
+            }
             ShizukuConnectionManager.getInstance().onBinderReceived();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.w(TAG, "IUserService disconnected / unbound.");
+            Log.w(TAG, "IUserService disconnected / unbound. Auto-recovering...");
             userServiceInstance = null;
+            cachedServicePid = -1;
             isBinding = false;
             scheduleSilentRebind();
         }
@@ -115,7 +137,16 @@ public class ShizukuUserServiceConnector {
     public synchronized boolean isServiceConnected() {
         try {
             IUserService instance = userServiceInstance;
-            return instance != null && instance.asBinder() != null && instance.asBinder().isBinderAlive();
+            if (instance != null && instance.asBinder() != null && instance.asBinder().isBinderAlive()) {
+                try {
+                    return instance.ping();
+                } catch (RemoteException re) {
+                    Log.w(TAG, "UserService binder alive but ping() failed (daemon zombie): " + re.getMessage());
+                    handleRemoteException("ping", re);
+                    return false;
+                }
+            }
+            return false;
         } catch (Throwable t) {
             return false;
         }
@@ -125,7 +156,7 @@ public class ShizukuUserServiceConnector {
         if (isServiceConnected()) {
             return true;
         }
-        if (userServiceDisabled || waitTimeoutMs <= 0 || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+        if (waitTimeoutMs <= 0 || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
             return isServiceConnected();
         }
         long deadline = System.currentTimeMillis() + waitTimeoutMs;
@@ -141,9 +172,6 @@ public class ShizukuUserServiceConnector {
     }
 
     public synchronized void bindService() {
-        if (userServiceDisabled) {
-            return;
-        }
         if (isServiceConnected()) {
             consecutiveFailures = 0;
             return;
@@ -153,15 +181,10 @@ public class ShizukuUserServiceConnector {
                 return;
             }
             consecutiveFailures++;
-            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms (failure " + consecutiveFailures + "/" + MAX_CONSECUTIVE_FAILURES + ")");
-            if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-                userServiceDisabled = true;
-                isBinding = false;
-                Log.w(TAG, "UserService binding failed " + consecutiveFailures + " times. Disabling AIDL UserService; falling back to 100% stable ShizukuExecutor shell.");
-                return;
-            }
+            Log.w(TAG, "Bind stuck > " + BIND_STUCK_TIMEOUT_MS + "ms (attempt " + consecutiveFailures + "). Resetting bind attempt...");
             try {
-                Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
+                // Pass false for remove so Shizuku does not terminate the daemon process
+                Shizuku.unbindUserService(serviceArgs, serviceConnection, false);
             } catch (Throwable ignored) {}
             isBinding = false;
         }
@@ -178,11 +201,8 @@ public class ShizukuUserServiceConnector {
             Log.e(TAG, "Failed to bind Shizuku UserService: " + e.getMessage(), e);
             isBinding = false;
             consecutiveFailures++;
-            if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-                userServiceDisabled = true;
-                Log.w(TAG, "UserService binding error reached threshold (" + consecutiveFailures + "). Disabling AIDL UserService.");
-            }
             ShizukuConnectionManager.getInstance().onBindFailure();
+            scheduleSilentRebind();
         }
     }
 
@@ -192,24 +212,24 @@ public class ShizukuUserServiceConnector {
                 userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
             } catch (Throwable ignored) {}
             try {
-                Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
-                Log.d(TAG, "Shizuku UserService unbound.");
+                Shizuku.unbindUserService(serviceArgs, serviceConnection, false);
+                Log.d(TAG, "Shizuku UserService unbound cleanly.");
             } catch (Exception e) {
                 Log.e(TAG, "Error unbinding Shizuku UserService", e);
             } finally {
                 userServiceInstance = null;
+                cachedServicePid = -1;
                 isBinding = false;
             }
         }
     }
 
     private void ensureBound() {
-        if (userServiceDisabled) return;
         if (!isServiceConnected()) {
             bindService();
             if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) {
                 int retries = 6;
-                while (!isServiceConnected() && retries > 0 && !userServiceDisabled) {
+                while (!isServiceConnected() && retries > 0) {
                     try {
                         Thread.sleep(40);
                     } catch (InterruptedException ignored) {}

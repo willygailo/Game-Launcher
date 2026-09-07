@@ -56,6 +56,7 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectUniversalCombatSuite(path);
             NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
+            NativeConfigInjector.injectMlbbJungleMasterGodSuite(path);
         }
     }
 
@@ -1022,6 +1023,7 @@ public class MlbbConfigPatcher {
         try { applyUltraDamageOverdriveConfig(packageName); } catch (Throwable ignored) {}
         try { applyTrackingBulletConfig(packageName); } catch (Throwable ignored) {}
         try { applyMlbbAllHeroMaxDamage2026(packageName); } catch (Throwable ignored) {}
+        try { applyJungleMasterGodSuite(packageName); } catch (Throwable ignored) {}
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB Master All-Hero Overdrive successfully applied for " + packageName);
     }
@@ -1162,6 +1164,65 @@ public class MlbbConfigPatcher {
         try { applyDamageLockMax(packageName);          } catch (Throwable ignored) {}
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB FullOverdrive2026 master combo applied for " + packageName);
+    }
+
+    /** MLBB — Jungle Hyper Farm God Mode: 10x monster damage, 10000 true damage retribution auto-smite, creep 1-hit execute, 10x clear speed, Lord/Turtle auto-steal. */
+    public static void applyJungleHyperFarmGodMode(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbJungleHyperFarmGodMode(path);
+        }
+        try { applyAllJungleFastFarmOverdrive(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB JungleHyperFarmGodMode applied for " + packageName);
+    }
+
+    /** MLBB — Lightning Movement & Agility: 3.5x speed, river surge, zero turn delay, instant animation cancel, 1000Hz touch/joystick. */
+    public static void applyLightningMovementAgility(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbLightningMovementAgility(path);
+        }
+        Log.i(TAG, "MLBB LightningMovementAgility applied for " + packageName);
+    }
+
+    /** MLBB — Fastest Minion Kill & Wave Clear Overdrive: 10x minion damage, auto last-hit execute, instant wave clear, 5x gold/exp. */
+    public static void applyFastestMinionKillWaveClear(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFastestMinionKillWaveClear(path);
+        }
+        try { applyTowerMinionsOverdrive(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB FastestMinionKillWaveClear applied for " + packageName);
+    }
+
+    /** MLBB — Fastest Enemy Execute & Burst Magnet Overdrive: 5.0x hero damage, 10000 true damage, lowest HP smart lock magnet, zero delay skills, CC/slow immunity. */
+    public static void applyFastestEnemyExecuteBurst(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFastestEnemyExecuteBurst(path);
+        }
+        try { applySmartSkillMagnetAim(packageName); } catch (Throwable ignored) {}
+        try { applyAntiCCImmunity(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB FastestEnemyExecuteBurst applied for " + packageName);
+    }
+
+    /** MLBB — Master Jungle God Suite: Single-pass atomic injection for Hyper Farm, Lightning Movement, Wave Clear, Enemy Execute, and Full Overdrive. */
+    public static void applyJungleMasterGodSuite(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbJungleMasterGodSuite(path);
+        }
+        try { applyJungleHyperFarmGodMode(packageName); } catch (Throwable ignored) {}
+        try { applyLightningMovementAgility(packageName); } catch (Throwable ignored) {}
+        try { applyFastestMinionKillWaveClear(packageName); } catch (Throwable ignored) {}
+        try { applyFastestEnemyExecuteBurst(packageName); } catch (Throwable ignored) {}
+        try { applyMlbbFullOverdrive2026(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB JungleMasterGodSuite master combo applied for " + packageName);
     }
 }
 

@@ -38,4 +38,6 @@ interface IUserService {
     boolean setGameGpuDriver(String packageName, String driverType) = 32;
     boolean purgeAppLogsAndTraces(String packageName) = 33;
     boolean setTouchSamplingRate(int rateHz) = 34;
+    int getPid() = 35;
+    boolean ping() = 36;
 }

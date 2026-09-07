@@ -20,18 +20,30 @@ public class UserService extends IUserService.Stub {
     private Context context;
 
     public UserService() {
-        Log.i(TAG, "UserService initialized under privileged UID=" + Process.myUid());
+        Log.i(TAG, "UserService initialized under privileged UID=" + Process.myUid() + " PID=" + Process.myPid());
+        applySelfImmunity();
     }
 
     public UserService(Context context) {
         this.context = context;
-        Log.i(TAG, "UserService initialized with Context under privileged UID=" + Process.myUid());
+        Log.i(TAG, "UserService initialized with Context under privileged UID=" + Process.myUid() + " PID=" + Process.myPid());
+        applySelfImmunity();
+    }
+
+    private void applySelfImmunity() {
+        try {
+            int pid = Process.myPid();
+            // Shield UserService daemon process from Android LMK and pin CPU priority
+            Runtime.getRuntime().exec(new String[]{"sh", "-c",
+                    "echo -1000 > /proc/" + pid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + pid + "/oom_score_adj 2>/dev/null; " +
+                    "renice -n -20 -p " + pid + " 2>/dev/null"
+            });
+        } catch (Throwable ignored) {}
     }
 
     @Override
     public void destroy() {
-        Log.i(TAG, "UserService destroyed.");
-        System.exit(0);
+        Log.i(TAG, "UserService destroy invoked (preserving daemon process for instant re-bind).");
     }
 
     @Override
@@ -683,5 +695,15 @@ public class UserService extends IUserService.Stub {
                    + "setprop persist.sys.touch.latency 0 2>/dev/null";
         String res = execCommand(cmd);
         return res != null && !res.startsWith("ERROR");
+    }
+
+    @Override
+    public int getPid() {
+        return Process.myPid();
+    }
+
+    @Override
+    public boolean ping() {
+        return true;
     }
 }

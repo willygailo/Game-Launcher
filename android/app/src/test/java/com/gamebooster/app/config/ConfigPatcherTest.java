@@ -659,5 +659,102 @@ public class ConfigPatcherTest {
             codmFile.delete();
         }
     }
+
+    @Test
+    public void testMlbbJungleHyperFarmGodModeKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_jungle_farm_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbJungleHyperFarmGodMode(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            assertTrue(content.contains("RetributionTrueDamage"));
+            assertTrue(content.contains("10000"));
+            assertTrue(content.contains("MonsterDamageBoost"));
+            assertTrue(content.contains("JungleClearSpeed"));
+            assertTrue(content.contains("LordDamageBoost"));
+            assertTrue(content.contains("TurtleDamageBoost"));
+            assertTrue(content.contains("CreepGoldMultiplier"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbLightningMovementAgilityKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_move_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbLightningMovementAgility(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            assertTrue(content.contains("MovementSpeedMultiplier"));
+            assertTrue(content.contains("3.5"));
+            assertTrue(content.contains("RiverSpeedMultiplier"));
+            assertTrue(content.contains("5.0"));
+            assertTrue(content.contains("ZeroTurnDelay"));
+            assertTrue(content.contains("ZeroSkillCastDelay"));
+            assertTrue(content.contains("JoystickSensitivity"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbFastestMinionKillWaveClearKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_minion_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbFastestMinionKillWaveClear(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            assertTrue(content.contains("MinionDamageMultiplier"));
+            assertTrue(content.contains("10.0"));
+            assertTrue(content.contains("MinionExecuteThreshold"));
+            assertTrue(content.contains("100"));
+            assertTrue(content.contains("WaveClearInstant"));
+            assertTrue(content.contains("MinionGoldMultiplier"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbFastestEnemyExecuteBurstKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_enemy_test_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbFastestEnemyExecuteBurst(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            assertTrue(content.contains("HeroDamageMultiplier"));
+            assertTrue(content.contains("5.0"));
+            assertTrue(content.contains("HeroTrueDamageBoost"));
+            assertTrue(content.contains("10000"));
+            assertTrue(content.contains("PhysicalPenetrationMax"));
+            assertTrue(content.contains("CritRateBoost"));
+            assertTrue(content.contains("TargetLowestHpEnemy"));
+            assertTrue(content.contains("SlowImmunity"));
+        } finally {
+            tempXml.delete();
+        }
+    }
+
+    @Test
+    public void testMlbbJungleMasterGodSuiteKeys() throws java.io.IOException {
+        java.io.File tempXml = java.io.File.createTempFile("mlbb_master_god_", ".xml");
+        try {
+            java.nio.file.Files.write(tempXml.toPath(), "<map>\n</map>".getBytes());
+            boolean ok = NativeConfigInjector.injectMlbbJungleMasterGodSuite(tempXml.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempXml.toPath()));
+            assertTrue(content.contains("RetributionTrueDamage"));
+            assertTrue(content.contains("MovementSpeedMultiplier"));
+            assertTrue(content.contains("MinionDamageMultiplier"));
+            assertTrue(content.contains("HeroDamageMultiplier"));
+        } finally {
+            tempXml.delete();
+        }
+    }
 }
 

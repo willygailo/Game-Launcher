@@ -1320,6 +1320,50 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Tick128ZeroSpread
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbJungleHyperFarmGodMode
+ * MLBB — Ultra Fast Jungle Farming: 10x monster damage, 10000 true damage retribution/smite auto-lock,
+ * creep one-hit execute, 10x camp clear speed, instant buff steal, and auto Lord/Turtle securing.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleHyperFarmGodMode
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbLightningMovementAgility
+ * MLBB — Lightning Movement & Agility: 3.5x move speed, river surge, zero-turn delay, zero skill animation latency,
+ * instant animation cancel, and 1000Hz touch/joystick response.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLightningMovementAgility
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFastestMinionKillWaveClear
+ * MLBB — Fastest Minion Kill: 10x minion damage, auto last-hit execute, wave clear instant trigger, 5x minion gold/exp.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestMinionKillWaveClear
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFastestEnemyExecuteBurst
+ * MLBB — Fastest Enemy Kill: 5.0x hero damage, 10000 true damage, 100% physical & magic penetration,
+ * 5.0x crit multiplier, lowest HP lock-on magnet, and zero-delay skill burst.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestEnemyExecuteBurst
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbJungleMasterGodSuite
+ * MLBB — Master Jungle God Suite: Single-pass atomic injection combining Hyper-Farm, Lightning Movement,
+ * Minion Annihilation, Enemy Burst Execution, and Full Overdrive.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleMasterGodSuite
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

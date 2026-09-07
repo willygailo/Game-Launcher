@@ -12,6 +12,8 @@ import com.gamebooster.app.config.CfgProfileManager;
 import com.gamebooster.app.config.CompetitiveCfgProfile;
 import com.gamebooster.app.config.GameProfilePreferences;
 import com.gamebooster.app.gamemanager.GameManagerLauncher;
+import com.gamebooster.app.shizuku.ShizukuConnectionManager;
+import com.gamebooster.app.shizuku.ShizukuKeepAliveWatchdog;
 import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
@@ -29,6 +31,9 @@ public class BootReceiver extends BroadcastReceiver {
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             try {
+                ShizukuManager.registerBinderListeners();
+                ShizukuKeepAliveWatchdog.getInstance().startWatchdog(context);
+                ShizukuConnectionManager.getInstance().start();
                 if (ShizukuManager.isShizukuRunningAndGranted()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                     ShizukuPermissionEnforcer.enforceAllPermissions(context);

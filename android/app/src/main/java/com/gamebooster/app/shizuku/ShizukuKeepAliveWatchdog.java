@@ -35,8 +35,8 @@ public class ShizukuKeepAliveWatchdog {
     private static final ShizukuKeepAliveWatchdog INSTANCE = new ShizukuKeepAliveWatchdog();
 
     public static final String SHIZUKU_PKG = "moe.shizuku.privileged.api";
-    private static final long HEARTBEAT_INTERVAL_MS = 20_000L; // 20 seconds
-    private static final long FAST_CHECK_INTERVAL_MS = 5_000L;
+    private static final long HEARTBEAT_INTERVAL_MS = 3_000L; // Fast 3-second health check
+    private static final long FAST_CHECK_INTERVAL_MS = 1_500L;
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final AtomicBoolean isShieldingActive = new AtomicBoolean(false);
@@ -45,8 +45,12 @@ public class ShizukuKeepAliveWatchdog {
     private Handler watchdogHandler;
     private Runnable heartbeatRunnable;
 
+    private volatile int userServicePid = -1;
     private volatile long lastFullShieldTimeMs = 0L;
-    private static final long FULL_SHIELD_COOLDOWN_MS = 60_000L; // Full shield reapplied at most once a minute
+    private static final long FULL_SHIELD_COOLDOWN_MS = 30_000L; // Full shield refreshed every 30s
+
+    private android.net.wifi.WifiManager.WifiLock wifiLock;
+    private android.os.PowerManager.WakeLock wakeLock;
 
     private ShizukuKeepAliveWatchdog() {}
 
@@ -58,10 +62,27 @@ public class ShizukuKeepAliveWatchdog {
         return isRunning.get();
     }
 
+    public void onUserServiceConnected(int pid) {
+        this.userServicePid = pid;
+        if (pid > 0) {
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    String cmd = "echo -1000 > /proc/" + pid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + pid + "/oom_score_adj 2>/dev/null; " +
+                            "renice -n -20 -p " + pid + " 2>/dev/null";
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                    Log.i(TAG, "Applied immediate LMK immunity to UserService PID=" + pid);
+                } catch (Throwable ignored) {}
+            });
+        }
+    }
+
     /**
      * Starts the keep-alive watchdog thread and periodic heartbeat.
+     * Guaranteed safe to call repeatedly (idempotent).
      */
     public synchronized void startWatchdog(Context context) {
+        acquireLocks(context);
+
         if (isRunning.compareAndSet(false, true)) {
             Log.i(TAG, "Starting Shizuku Keep-Alive Watchdog daemon...");
 
@@ -90,6 +111,40 @@ public class ShizukuKeepAliveWatchdog {
         }
     }
 
+    private synchronized void acquireLocks(Context context) {
+        if (context == null) return;
+        Context appCtx = context.getApplicationContext();
+        try {
+            if (wifiLock == null) {
+                android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager) appCtx.getSystemService(Context.WIFI_SERVICE);
+                if (wm != null) {
+                    wifiLock = wm.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "GameBooster:ShizukuWifiLock");
+                    wifiLock.setReferenceCounted(false);
+                }
+            }
+            if (wifiLock != null && !wifiLock.isHeld()) {
+                wifiLock.acquire();
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to acquire WifiLock in Watchdog: " + t.getMessage());
+        }
+
+        try {
+            if (wakeLock == null) {
+                android.os.PowerManager pm = (android.os.PowerManager) appCtx.getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    wakeLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "GameBooster:ShizukuWakeLock");
+                    wakeLock.setReferenceCounted(false);
+                }
+            }
+            if (wakeLock != null && !wakeLock.isHeld()) {
+                wakeLock.acquire(12 * 60 * 60 * 1000L); // 12-hour ceiling
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to acquire WakeLock in Watchdog: " + t.getMessage());
+        }
+    }
+
     /**
      * Stops the keep-alive watchdog daemon.
      */
@@ -105,6 +160,13 @@ public class ShizukuKeepAliveWatchdog {
             }
             watchdogHandler = null;
             heartbeatRunnable = null;
+
+            if (wifiLock != null && wifiLock.isHeld()) {
+                try { wifiLock.release(); } catch (Throwable ignored) {}
+            }
+            if (wakeLock != null && wakeLock.isHeld()) {
+                try { wakeLock.release(); } catch (Throwable ignored) {}
+            }
         }
     }
 
@@ -112,7 +174,11 @@ public class ShizukuKeepAliveWatchdog {
      * Hook called immediately when Shizuku connection state becomes READY.
      */
     public void onShizukuConnected() {
-        Log.i(TAG, "onShizukuConnected: Triggering full immunity shield");
+        Log.i(TAG, "onShizukuConnected: Triggering full immunity shield and acquiring locks");
+        android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (ctx != null) {
+            acquireLocks(ctx);
+        }
         applyImmunityShieldAsync();
     }
 
@@ -160,24 +226,35 @@ public class ShizukuKeepAliveWatchdog {
         // ─── 1. OOM Score Adjustment (-1000 = SYSTEM_ADJ, completely immune to LMK) ───
         // Target Shizuku main package process
         cmds.add("for p in $(pidof " + SHIZUKU_PKG + " 2>/dev/null); do " +
-                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; " +
                 "renice -n -20 -p $p 2>/dev/null; done");
 
         // Target Shizuku standalone server / starter daemons spawned by ADB
         cmds.add("for p in $(pgrep -f 'shizuku_server' 2>/dev/null); do " +
-                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; " +
                 "renice -n -20 -p $p 2>/dev/null; done");
         cmds.add("for p in $(pgrep -f 'shizuku_starter' 2>/dev/null); do " +
-                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; " +
                 "renice -n -20 -p $p 2>/dev/null; done");
         cmds.add("for p in $(pgrep -f 'moe.shizuku' 2>/dev/null); do " +
-                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; " +
                 "renice -n -20 -p $p 2>/dev/null; done");
 
-        // Protect our own Game Booster process from LMK during extreme gaming
+        // Target privileged secondary UserService daemon process (:service)
+        cmds.add("for p in $(pgrep -f 'com.gamebooster.app:service' 2>/dev/null); do " +
+                "echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; " +
+                "renice -n -20 -p $p 2>/dev/null; done");
+
+        int uPid = userServicePid;
+        if (uPid > 0) {
+            cmds.add("echo -1000 > /proc/" + uPid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + uPid + "/oom_score_adj 2>/dev/null; " +
+                    "renice -n -20 -p " + uPid + " 2>/dev/null");
+        }
+
+        // Protect our own Game Booster launcher process from LMK
         try {
             int myPid = Process.myPid();
-            cmds.add("echo -1000 > /proc/" + myPid + "/oom_score_adj 2>/dev/null");
+            cmds.add("echo -1000 > /proc/" + myPid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + myPid + "/oom_score_adj 2>/dev/null");
             cmds.add("renice -n -20 -p " + myPid + " 2>/dev/null");
         } catch (Throwable ignored) {}
 
@@ -202,34 +279,50 @@ public class ShizukuKeepAliveWatchdog {
         cmds.add("cmd netpolicy add restrict-background-whitelist com.android.shell 2>/dev/null");
 
         // ─── 3. Android 12–16 Phantom Process Killer & Cached Apps Freezer Bypass ───
+        cmds.add("device_config set_sync_disabled_for_tests persistent 2>/dev/null");
         cmds.add("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
         cmds.add("settings put global settings_enable_monitor_phantom_procs false 2>/dev/null");
         cmds.add("setprop persist.sys.fflag.override.settings_enable_monitor_phantom_procs false 2>/dev/null");
         cmds.add("cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
         cmds.add("settings put global cached_apps_freezer disabled 2>/dev/null");
+        cmds.add("cmd power set-mode 0 1 2>/dev/null");
 
         // ─── 4. Wireless Debugging & Wi-Fi Power Saving Keep-Alive ───
         cmds.add("settings put global adb_wifi_enabled 1 2>/dev/null");
         cmds.add("settings put global wifi_sleep_policy 2 2>/dev/null");
         cmds.add("cmd settings put global adb_allowed_connection_time 0 2>/dev/null");
         cmds.add("settings put global adb_authorization_timeout 0 2>/dev/null");
+        cmds.add("settings put global wifi_wakeup_available 1 2>/dev/null");
+        cmds.add("settings put global wifi_wakeup_enabled 1 2>/dev/null");
+
+        // ─── 5. Root Auto-Resurrect Fallback (if rooted and daemon died) ───
+        cmds.add("if ! pgrep -f 'shizuku_server' >/dev/null 2>&1 && [ -x /data/adb/shizuku/shizuku_starter ]; then " +
+                "/data/adb/shizuku/shizuku_starter & fi 2>/dev/null");
 
         return cmds;
     }
 
     /**
-     * Fast, low-overhead OOM score refresh targeting only the Shizuku PIDs.
+     * Fast, low-overhead OOM score refresh targeting Shizuku PIDs and UserService daemon.
      */
     private void refreshOomScoreOnly() {
         try {
-            String oomCmd = "for p in $(pidof " + SHIZUKU_PKG + " 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; done; " +
-                    "for p in $(pgrep -f 'shizuku_server' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; done";
+            int uPid = userServicePid;
+            int myPid = Process.myPid();
+            String extra = (uPid > 0) ? ("echo -1000 > /proc/" + uPid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + uPid + "/oom_score_adj 2>/dev/null; renice -n -20 -p " + uPid + " 2>/dev/null; ") : "";
+            String myPidCmd = (myPid > 0) ? ("echo -1000 > /proc/" + myPid + "/oom_score_adj 2>/dev/null || echo 0 > /proc/" + myPid + "/oom_score_adj 2>/dev/null; renice -n -20 -p " + myPid + " 2>/dev/null; ") : "";
+            String oomCmd = "for p in $(pidof " + SHIZUKU_PKG + " 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; renice -n -20 -p $p 2>/dev/null; done; " +
+                    "for p in $(pgrep -f 'shizuku_server' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; renice -n -20 -p $p 2>/dev/null; done; " +
+                    "for p in $(pgrep -f 'shizuku_starter' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; renice -n -20 -p $p 2>/dev/null; done; " +
+                    "for p in $(pgrep -f 'moe.shizuku' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; renice -n -20 -p $p 2>/dev/null; done; " +
+                    "for p in $(pgrep -f 'com.gamebooster.app:service' 2>/dev/null); do echo -1000 > /proc/$p/oom_score_adj 2>/dev/null || echo 0 > /proc/$p/oom_score_adj 2>/dev/null; renice -n -20 -p $p 2>/dev/null; done; " +
+                    extra + myPidCmd;
             ShizukuExecutor.executeShizukuCommand(oomCmd);
         } catch (Throwable ignored) {}
     }
 
     /**
-     * Heartbeat execution running every 20s.
+     * Fast heartbeat execution running every 3s.
      * Verifies binder liveness, re-establishes dropped connections, and keeps UserService bound.
      */
     private void performHeartbeatCheck() {
@@ -242,11 +335,16 @@ public class ShizukuKeepAliveWatchdog {
             }
 
             if (!binderAlive) {
-                // Active recovery check before declaring dead
+                // Active multi-stage recovery check before declaring dead: re-fetch from provider
                 android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-                if (ctx != null) {
-                    ShizukuManager.activelyFetchAndAttachBinder(ctx);
-                    binderAlive = Shizuku.pingBinder();
+                for (int i = 0; i < 3 && !binderAlive; i++) {
+                    if (ctx != null) {
+                        ShizukuManager.activelyFetchAndAttachBinder(ctx);
+                        binderAlive = Shizuku.pingBinder();
+                    }
+                    if (!binderAlive) {
+                        try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+                    }
                 }
             }
 
@@ -257,7 +355,7 @@ public class ShizukuKeepAliveWatchdog {
                     ShizukuConnectionManager.getInstance().onBinderReceived();
                 }
 
-                // 2. Ensure AIDL UserService is bound
+                // 2. Ensure AIDL UserService is bound and responsive
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     Log.d(TAG, "Heartbeat: AIDL UserService dropped — auto-re-binding...");
                     ShizukuUserServiceConnector.getInstance().bindService();
@@ -266,7 +364,7 @@ public class ShizukuKeepAliveWatchdog {
                 // 3. Keep-alive OOM refresh
                 refreshOomScoreOnly();
             } else {
-                // Binder is not responding!
+                // Binder is genuinely not responding after active recovery
                 Log.w(TAG, "Heartbeat: Shizuku binder not responding — notifying ConnectionManager");
                 ShizukuConnectionManager.getInstance().onBinderDead();
             }

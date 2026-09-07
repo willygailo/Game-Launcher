@@ -135,4 +135,26 @@ public class ShizukuKeepAliveWatchdogTest {
         assertTrue("Must set wifi_sleep_policy to 2 (never)", hasWifiSleep);
         assertTrue("Must set adb_authorization_timeout to 0", hasAdbTimeout);
     }
+
+    @Test
+    public void testBuildImmunityCommandsContainsUserServiceShielding() {
+        ShizukuKeepAliveWatchdog watchdog = ShizukuKeepAliveWatchdog.getInstance();
+        watchdog.onUserServiceConnected(12345);
+        List<String> cmds = watchdog.buildImmunityCommands();
+
+        boolean hasServiceProcessPattern = false;
+        boolean hasSpecificPid = false;
+
+        for (String cmd : cmds) {
+            if (cmd.contains("com.gamebooster.app:service")) {
+                hasServiceProcessPattern = true;
+            }
+            if (cmd.contains("/proc/12345/oom_score_adj")) {
+                hasSpecificPid = true;
+            }
+        }
+
+        assertTrue("Must target com.gamebooster.app:service process", hasServiceProcessPattern);
+        assertTrue("Must target live UserService PID", hasSpecificPid);
+    }
 }

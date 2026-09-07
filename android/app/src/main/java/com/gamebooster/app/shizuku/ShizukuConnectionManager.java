@@ -44,8 +44,36 @@ public class ShizukuConnectionManager {
     private volatile State state = State.IDLE;
     private final AtomicBoolean reconnectRunning = new AtomicBoolean(false);
     private volatile boolean enabled = true;
+    private volatile boolean hasEverConnected = false;
 
     private ShizukuConnectionManager() {}
+
+    private boolean isEverGranted(android.content.Context ctx) {
+        if (hasEverConnected) return true;
+        if (ctx != null) {
+            try {
+                android.content.SharedPreferences prefs = ctx.getSharedPreferences("game_booster_prefs", android.content.Context.MODE_PRIVATE);
+                if (prefs.getBoolean("shizuku_ever_granted", false)) {
+                    hasEverConnected = true;
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    private void markGranted(android.content.Context ctx) {
+        hasEverConnected = true;
+        if (ctx != null) {
+            try {
+                ctx.getSharedPreferences("game_booster_prefs", android.content.Context.MODE_PRIVATE)
+                        .edit().putBoolean("shizuku_ever_granted", true).apply();
+            } catch (Throwable ignored) {}
+            try {
+                com.gamebooster.app.services.GameBoosterService.start(ctx);
+            } catch (Throwable ignored) {}
+        }
+    }
 
     public static ShizukuConnectionManager getInstance() {
         return INSTANCE;
@@ -100,6 +128,7 @@ public class ShizukuConnectionManager {
             boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
             if (granted) {
                 setState(State.READY);
+                markGranted(ctx);
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
@@ -108,11 +137,12 @@ public class ShizukuConnectionManager {
             } else if (alive) {
                 setState(State.IDLE);
             } else {
-                setState(State.BINDING);
+                setState(isEverGranted(ctx) ? State.RETRY : State.BINDING);
                 scheduleReconnect();
             }
         } catch (Throwable t) {
-            setState(State.BINDING);
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            setState(isEverGranted(ctx) ? State.RETRY : State.BINDING);
             scheduleReconnect();
         }
     }
@@ -128,6 +158,7 @@ public class ShizukuConnectionManager {
             }
             if (isReady()) {
                 setState(State.READY);
+                markGranted(context);
                 ShizukuManager.forceNotifyStateChanged();
             } else {
                 scheduleReconnect();
@@ -151,6 +182,8 @@ public class ShizukuConnectionManager {
             boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
             if (granted) {
                 setState(State.READY);
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                markGranted(ctx);
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
@@ -159,31 +192,33 @@ public class ShizukuConnectionManager {
             } else if (alive) {
                 setState(State.IDLE);
             } else {
-                setState(State.BINDING);
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                setState(isEverGranted(ctx) ? State.RETRY : State.BINDING);
             }
         } catch (Throwable t) {
             Log.w(TAG, "onBinderReceived error", t);
         }
     }
 
-    /** Binder died — verify with confirmation ping before transitioning to DEAD. */
+    /** Binder died — verify with confirmation ping and on-demand provider fetch before transitioning. */
     public void onBinderDead() {
         boolean confirmedDead = true;
         try {
             android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
             if (ctx != null) {
-                ShizukuManager.activelyFetchAndAttachBinder(ctx);
-            }
-            if (Shizuku.pingBinder()) {
-                confirmedDead = false;
+                boolean fetched = ShizukuManager.activelyFetchAndAttachBinder(ctx);
+                if (fetched || Shizuku.pingBinder()) {
+                    confirmedDead = false;
+                }
             }
         } catch (Throwable ignored) {}
 
         if (confirmedDead) {
-            setState(State.DEAD);
+            // Gracefully set RETRY instead of immediately declaring DEAD to allow auto-healing
+            setState(State.RETRY);
             scheduleReconnect();
         } else {
-            Log.d(TAG, "onBinderDead fired, but Shizuku.pingBinder() is still alive. Preserving READY state.");
+            Log.d(TAG, "onBinderDead fired, but Shizuku binder was instantly recovered. Preserving READY state.");
             setState(State.READY);
         }
     }
@@ -244,12 +279,23 @@ public class ShizukuConnectionManager {
             // Secondary confirmation check before declaring DEAD to filter out transient blips
             sleepQuietly(60);
             try {
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuManager.activelyFetchAndAttachBinder(ctx);
+                }
                 binderAlive = Shizuku.pingBinder();
             } catch (Throwable ignored) {}
 
             if (!binderAlive) {
-                if (state != State.DEAD) {
-                    setState(State.DEAD);
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (isEverGranted(ctx)) {
+                    if (state != State.RETRY) {
+                        setState(State.RETRY);
+                    }
+                } else {
+                    if (state != State.DEAD) {
+                        setState(State.DEAD);
+                    }
                 }
                 scheduleReconnect();
                 return false;
@@ -293,7 +339,7 @@ public class ShizukuConnectionManager {
         return ShizukuUserServiceConnector.getInstance().isServiceConnected();
     }
 
-    /** Background reconnection loop: 10-attempt fast exponential burst, then infinite steady-state polling. */
+    /** Background reconnection loop: 15-attempt fast burst, then resilient steady-state polling. */
     private void scheduleReconnect() {
         if (!enabled) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
@@ -308,7 +354,7 @@ public class ShizukuConnectionManager {
                     boolean alive;
                     boolean granted;
                     try {
-                        if (ctx != null && attempt % 2 == 0) {
+                        if (ctx != null) {
                             ShizukuManager.activelyFetchAndAttachBinder(ctx);
                         }
                         alive = Shizuku.pingBinder();
@@ -321,6 +367,7 @@ public class ShizukuConnectionManager {
                     if (alive && granted) {
                         // Shizuku binder and permission are active!
                         setState(State.READY);
+                        markGranted(ctx);
                         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                             ShizukuUserServiceConnector.getInstance().bindService();
                         }
@@ -335,8 +382,11 @@ public class ShizukuConnectionManager {
 
                     if (alive) {
                         if (state != State.IDLE) setState(State.IDLE);
-                    } else if (attempt < 3) {
-                        if (state != State.BINDING) setState(State.BINDING);
+                    } else if (isEverGranted(ctx)) {
+                        // If granted before, NEVER declare permanent DEAD — stay in RETRY and auto-heal
+                        if (state != State.RETRY) setState(State.RETRY);
+                    } else if (attempt < 5) {
+                        if (state != State.RETRY) setState(State.RETRY);
                     } else {
                         if (state != State.DEAD) setState(State.DEAD);
                     }
@@ -356,10 +406,10 @@ public class ShizukuConnectionManager {
     private static long backoffMs(int attempt) {
         if (attempt <= 0) return BASE_BACKOFF_MS;
         long delay = BASE_BACKOFF_MS;
-        for (int i = 1; i < Math.min(attempt, 5); i++) {
+        for (int i = 1; i < Math.min(attempt, 4); i++) {
             delay *= 2;
         }
-        return Math.min(delay, MAX_BACKOFF_MS);
+        return Math.min(delay, 2500);
     }
 
     private static void sleepQuietly(long ms) {

@@ -263,6 +263,7 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFiveHeroNoDelayComboBoost(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyJungleMasterGodSuite(pkg); } catch (Throwable ignored) {}
     }
 
 

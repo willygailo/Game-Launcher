@@ -54,6 +54,11 @@ public class NativeConfigInjectorTest {
         assertFalse(NativeConfigInjector.injectLingHeroDamageCombo(null));
         assertFalse(NativeConfigInjector.injectMagicBulletAimbot(null));
         assertFalse(NativeConfigInjector.injectNoRecoilNoSpread(null));
+        assertFalse(NativeConfigInjector.injectMlbbJungleHyperFarmGodMode(null));
+        assertFalse(NativeConfigInjector.injectMlbbLightningMovementAgility(null));
+        assertFalse(NativeConfigInjector.injectMlbbFastestMinionKillWaveClear(null));
+        assertFalse(NativeConfigInjector.injectMlbbFastestEnemyExecuteBurst(null));
+        assertFalse(NativeConfigInjector.injectMlbbJungleMasterGodSuite(null));
 
         assertFalse(NativeConfigInjector.setProcessCpuAffinity(-1, 0));
         assertFalse(NativeConfigInjector.setProcessCpuAffinity(0, 0));
@@ -116,6 +121,12 @@ public class NativeConfigInjectorTest {
         assertTrue(NativeConfigInjector.injectNoRecoilNoSpread(codmFile.getAbsolutePath()));
         String codmResult = new String(Files.readAllBytes(codmFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(codmResult.contains("GyroStabilization=1") || codmResult.contains("InputBufferRate=1000"));
+
+        File mlbbFile = new File(mTempDir, "com.mobile.legends.v4.playerprefs.xml");
+        Files.write(mlbbFile.toPath(), "<map>\n</map>".getBytes(StandardCharsets.UTF_8));
+        assertTrue(NativeConfigInjector.injectMlbbJungleMasterGodSuite(mlbbFile.getAbsolutePath()));
+        String mlbbResult = new String(Files.readAllBytes(mlbbFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(mlbbResult.contains("RetributionTrueDamage") || mlbbResult.contains("MovementSpeedMultiplier"));
     }
 
     @Test

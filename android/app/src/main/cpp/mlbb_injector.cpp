@@ -2624,3 +2624,272 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
     return (r1 || r2 || r3 || r4 || r5 || r6 || r7 || r8 || r9 || r10 || r11) ? JNI_TRUE : JNI_FALSE;
 }
+
+// =============================================================================
+// ─── 11. MLBB: Jungle Hyper Farm God Mode (Fastest Camp & Objective Clear) ───
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleHyperFarmGodMode
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Smite & Retribution Overdrive ──
+        {"RetributionTrueDamage",        "10000"},
+        {"SmiteTrueDamage",              "10000"},
+        {"RetributionDamageMax",         "10000"},
+        {"RetributionInstantCast",       "1"},
+        {"AutoSmiteLock",                "1"},
+        {"AutoRetributionSmart",         "1"},
+        {"SmartRetributionHpThreshold",   "100"},
+        {"TargetLowestHpMonster",        "1"},
+        {"SmiteRange",                   "5"},
+        {"RetributionStealSecure",       "1"},
+        {"AutoObjectiveSmiteLock",       "1"},
+        // ── Monster True Damage & Clear Speed Multiplier ──
+        {"MonsterDamageBoost",           "10"},
+        {"MonsterDamageMultiplier",      "10.0"},
+        {"JungleClearSpeed",             "10"},
+        {"ClearSpeedBoost",              "1"},
+        {"CreepOneHitExecute",           "1"},
+        {"CreepAttackPriority",          "1"},
+        {"CreepLockPriority",            "1"},
+        {"JungleAttackSpeedRatio",       "5.0"},
+        {"JungleMonsterTrueDmg",         "10000"},
+        {"MonsterDefenseIgnore",         "1"},
+        {"ZeroJungleDelay",              "1"},
+        // ── Objectives (Lord & Turtle) ──
+        {"LordDamageBoost",              "10000"},
+        {"TurtleDamageBoost",            "10000"},
+        {"ObjectiveSecuringLock",        "1"},
+        {"LordStealThreshold",           "100"},
+        {"TurtleStealThreshold",         "100"},
+        {"ObjectivePriority",            "1"},
+        {"SlayerMode",                   "1"},
+        {"BuffSteal",                    "1"},
+        {"CounterJungle",                "1"},
+        // ── Jungle Economy & Sustain ──
+        {"CreepGoldMultiplier",          "10"},
+        {"JungleExpMultiplier",          "10"},
+        {"GoldRateBoost",                "5"},
+        {"ExpRateBoost",                 "5"},
+        {"JungleExpBoost",               "10"},
+        {"FastLevelUp",                  "1"},
+        {"BlueBuffDuration",             "10"},
+        {"RedBuffDuration",              "10"},
+        {"BuffDurationMultiplier",       "10"},
+        {"JungleLifesteal",              "100"},
+        {"JungleSpellVamp",              "100"},
+        {"JungleHpRegenMultiplier",      "10.0"},
+        {"JungleManaRegenMultiplier",    "10.0"},
+        // ── Hero-Specific Jungle Accelerators ──
+        {"NolanRiftDashInstant",         "1"},
+        {"JoyPerfectRhythmBeat",         "1"},
+        {"HayabusaQuadShadowInstant",    "1"},
+        {"LingFastestSwordAuto",         "1"},
+        {"FannyFastestCableAuto",        "1"},
+        {"LancelotZeroDashDelay",        "1"},
+        {"GusionDaggerReturnFast",       "1"},
+        {"JulianEnhancedSkillBurst",     "1"},
+        {"HelcurtInstantSting",          "1"},
+        {"MartisAshuraWrathMax",         "1"},
+        {"BaxiaFastShieldRoll",          "1"},
+        {"RogerWolfLeapFast",            "1"},
+        {"KarinaShadowAssaultFast",      "1"},
+        // ── Input & Engine Synchronization ──
+        {"HitRegSyncRate",               "1000"},
+        {"TouchPollingRate",             "1000"},
+        {"TouchZeroDelay",               "1"},
+        {"ZeroInputLag",                 "1"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbJungleHyperFarmGodMode");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbJungleHyperFarmGodMode injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 12. MLBB: Lightning Movement & Agility (Fastest Rotation & Zero Latency) ─
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLightningMovementAgility
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Extreme Movement & Acceleration ──
+        {"MovementSpeedMultiplier",      "3.5"},
+        {"BaseMoveSpeedBoost",           "1000"},
+        {"SprintSpeedMax",               "1"},
+        {"FastTacticalSprint",           "1"},
+        {"SprintDelayZero",              "1"},
+        {"ZeroTurnDelay",                "1"},
+        {"RotationSpeedOverdrive",       "10"},
+        {"NoPathingFriction",            "1"},
+        {"InstantAcceleration",          "1"},
+        {"GankSpeed",                    "1"},
+        {"FastCampPathingSens",          "10"},
+        {"CampToCampDash",               "1"},
+        // ── Swift River Speed Surge ──
+        {"RiverSpeedBuff",               "5.0"},
+        {"RiverSpeedMultiplier",         "5.0"},
+        {"RiverDashBoost",               "1"},
+        // ── Animation Cancel & Zero Delay Cast ──
+        {"ZeroSkillCastDelay",           "1"},
+        {"AnimationCancelFast",          "1"},
+        {"BasicAttackAnimationCancel",   "1"},
+        {"DashSpeedMultiplier",          "3.0"},
+        {"InstantDashCast",              "1"},
+        {"SkillAutoChain",               "1"},
+        {"SkillCDRatio",                 "0.1"},
+        {"CooldownReduction",            "1"},
+        // ── 1000Hz Ultra-Low Latency Touch & Joystick ──
+        {"JoystickZeroDeadzone",         "1"},
+        {"JoystickResponseLevel",        "3"},
+        {"JoystickSensitivity",          "1000"},
+        {"TouchPollingRate",             "1000"},
+        {"TouchSampleRate",              "1000"},
+        {"TouchZeroDelay",               "1"},
+        {"ZeroInputLag",                 "1"},
+        {"TouchToDisplayLatency",        "0"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbLightningMovementAgility");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbLightningMovementAgility injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 13. MLBB: Fastest Minion Kill & Instant Wave Clear Overdrive ─────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestMinionKillWaveClear
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Minion Damage & Instant Execute ──
+        {"MinionDamageMultiplier",       "10.0"},
+        {"MinionExecuteThreshold",       "100"},
+        {"MinionOneHitKill",             "1"},
+        {"SiegeMinionDamageBoost",       "10000"},
+        {"SuperMinionDamageBoost",       "10000"},
+        {"MinionPenetrationBoost",       "1"},
+        {"MinionTrueDamageBoost",        "10000"},
+        // ── Auto Last-Hit & Wave Speed ──
+        {"MinionLastHitAssist",          "1"},
+        {"AutoLastHitMinion",            "1"},
+        {"WaveClearInstant",             "1"},
+        {"LaneClearSpeed",               "10"},
+        {"PushSpeedMultiplier",          "5.0"},
+        {"LastHitWindowMax",             "1"},
+        // ── Targeting & Economy ──
+        {"MinionAttackPriority",         "1"},
+        {"SmartMinionSelect",            "1"},
+        {"CreepMinionAutoFilter",        "1"},
+        {"MinionGoldMultiplier",         "5"},
+        {"MinionExpMultiplier",          "5"},
+        {"MinionGoldExpBonus",           "10000"},
+        {"LaneGoldMax",                  "1"},
+        // ── Engine Synchronization ──
+        {"HitRegSyncRate",               "1000"},
+        {"TouchPollingRate",             "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFastestMinionKillWaveClear");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbFastestMinionKillWaveClear injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 14. MLBB: Fastest Enemy Execute & Burst Magnet Overdrive ─────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestEnemyExecuteBurst
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Hero Burst Damage & Execution ──
+        {"HeroDamageMultiplier",         "5.0"},
+        {"HeroSkillDamageMultiplier",    "5.0"},
+        {"HeroBaseDamageMultiplier",     "5.0"},
+        {"HeroTrueDamageMult",           "5.0"},
+        {"HeroTrueDamageBoost",          "10000"},
+        {"DamageLockMax",                "1"},
+        {"EffectiveDPSMode",             "3"},
+        {"ExecutionerBurst",             "1"},
+        {"EnemyExecuteThreshold",        "60"},
+        {"InstantHitReg",                "1"},
+        {"HitRegSyncRate",               "1000"},
+        // ── Penetration & Critical Overdrive ──
+        {"PhysicalPenetrationMax",       "100"},
+        {"MagicPenetrationMax",          "100"},
+        {"PenetrationBoost",             "1"},
+        {"CritRateBoost",                "100"},
+        {"CritDamageMultiplier",         "5.0"},
+        // ── Smart Magnet Aim (Lowest HP & Closest Target Lock) ──
+        {"TargetLowestHpEnemy",          "1"},
+        {"LowestHPHeroLock",             "1"},
+        {"SmartAimMagnetStrength",       "1000"},
+        {"HeroAimAssistLock",            "1"},
+        {"HeroMagnetism",                "1000"},
+        {"SkillSmartAimMagnet",          "1"},
+        {"AimSnapSpeed",                 "10"},
+        {"AimSnapThreshold",             "0"},
+        {"AimSmoothFactor",              "0"},
+        {"HeroLock",                     "1"},
+        {"SkillSmartAim",                "1"},
+        // ── Attack Speed & Instant Skills ──
+        {"AttackSpeedRatio",             "5.0"},
+        {"MaxAttackSpeedCapBypass",      "1"},
+        {"ZeroDelaySkillTap",            "1"},
+        {"SkillCooldownReduction",       "1.0"},
+        {"ZeroSkillCost",                "1"},
+        {"FullManaEnergyAlways",         "1"},
+        {"AutoComboTrigger",             "1"},
+        // ── Survival & CC Immunity (Add More) ──
+        {"SlowImmunity",                 "1"},
+        {"TenacityMax",                  "100"},
+        {"AntiCCImmunity",               "1"},
+        {"StunDurationZero",             "1"},
+        {"TowerDamageReduction",         "0.90"},
+        {"TowerDiveArmorBoost",          "5000"},
+        // ── Engine Synchronization ──
+        {"TouchPollingRate",             "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFastestEnemyExecuteBurst");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbFastestEnemyExecuteBurst injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 15. MLBB: Master Jungle God Suite (Single-Pass Atomic Overdrive) ─────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleMasterGodSuite
+  (JNIEnv *env, jclass clazz, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+
+    jboolean r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleHyperFarmGodMode(env, clazz, jPath);
+    jboolean r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLightningMovementAgility(env, clazz, jPath);
+    jboolean r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestMinionKillWaveClear(env, clazz, jPath);
+    jboolean r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastestEnemyExecuteBurst(env, clazz, jPath);
+    jboolean r5 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFullOverdrive2026(env, clazz, jPath);
+
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    LOGI("MlbbJungleMasterGodSuite complete: %s [farm=%d move=%d minion=%d enemy=%d full=%d]",
+         path, r1, r2, r3, r4, r5);
+    env->ReleaseStringUTFChars(jPath, path);
+
+    return (r1 || r2 || r3 || r4 || r5) ? JNI_TRUE : JNI_FALSE;
+}
+

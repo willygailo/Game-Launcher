@@ -329,9 +329,7 @@ public class GameBoosterService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        try {
-            ShizukuKeepAliveWatchdog.getInstance().stopWatchdog();
-        } catch (Throwable ignored) {}
+        // Preserving ShizukuKeepAliveWatchdog across game sessions (app-wide daemon)
 
         if (wifiLock != null && wifiLock.isHeld()) {
             try {

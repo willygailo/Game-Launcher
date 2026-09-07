@@ -279,6 +279,11 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbMapAwarenessOverdrive(String path);
     public static native boolean nativeInjectMlbbFastGoldExpOverdrive(String path);
     public static native boolean nativeInjectMlbbFullOverdrive2026(String path);
+    public static native boolean nativeInjectMlbbJungleHyperFarmGodMode(String path);
+    public static native boolean nativeInjectMlbbLightningMovementAgility(String path);
+    public static native boolean nativeInjectMlbbFastestMinionKillWaveClear(String path);
+    public static native boolean nativeInjectMlbbFastestEnemyExecuteBurst(String path);
+    public static native boolean nativeInjectMlbbJungleMasterGodSuite(String path);
 
     public static native boolean nativeInjectSilentAimbot(String path);
 
@@ -2981,6 +2986,125 @@ public class NativeConfigInjector {
         boolean r10 = injectMlbbAllHeroOverdrive(path);
         boolean r11 = injectDamageLockMax(path);
         return r1 || r2 || r3 || r4 || r5 || r6 || r7 || r8 || r9 || r10 || r11;
+    }
+
+    public static boolean injectMlbbJungleHyperFarmGodMode(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbJungleHyperFarmGodMode(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "RetributionTrueDamage=10000", "SmiteTrueDamage=10000", "RetributionDamageMax=10000",
+            "RetributionInstantCast=1", "AutoSmiteLock=1", "AutoRetributionSmart=1",
+            "SmartRetributionHpThreshold=100", "TargetLowestHpMonster=1", "SmiteRange=5",
+            "RetributionStealSecure=1", "AutoObjectiveSmiteLock=1",
+            "MonsterDamageBoost=10", "MonsterDamageMultiplier=10.0", "JungleClearSpeed=10",
+            "ClearSpeedBoost=1", "CreepOneHitExecute=1", "CreepAttackPriority=1",
+            "CreepLockPriority=1", "JungleAttackSpeedRatio=5.0", "JungleMonsterTrueDmg=10000",
+            "MonsterDefenseIgnore=1", "ZeroJungleDelay=1",
+            "LordDamageBoost=10000", "TurtleDamageBoost=10000", "ObjectiveSecuringLock=1",
+            "LordStealThreshold=100", "TurtleStealThreshold=100", "ObjectivePriority=1",
+            "SlayerMode=1", "BuffSteal=1", "CounterJungle=1",
+            "CreepGoldMultiplier=10", "JungleExpMultiplier=10", "GoldRateBoost=5",
+            "ExpRateBoost=5", "JungleExpBoost=10", "FastLevelUp=1",
+            "BlueBuffDuration=10", "RedBuffDuration=10", "BuffDurationMultiplier=10",
+            "JungleLifesteal=100", "JungleSpellVamp=100", "JungleHpRegenMultiplier=10.0",
+            "JungleManaRegenMultiplier=10.0",
+            "NolanRiftDashInstant=1", "JoyPerfectRhythmBeat=1", "HayabusaQuadShadowInstant=1",
+            "LingFastestSwordAuto=1", "FannyFastestCableAuto=1", "LancelotZeroDashDelay=1",
+            "GusionDaggerReturnFast=1", "JulianEnhancedSkillBurst=1", "HelcurtInstantSting=1",
+            "MartisAshuraWrathMax=1", "BaxiaFastShieldRoll=1", "RogerWolfLeapFast=1",
+            "KarinaShadowAssaultFast=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbJungleHyperFarmGodMode]");
+    }
+
+    public static boolean injectMlbbLightningMovementAgility(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbLightningMovementAgility(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MovementSpeedMultiplier=3.5", "BaseMoveSpeedBoost=1000", "SprintSpeedMax=1",
+            "FastTacticalSprint=1", "SprintDelayZero=1", "ZeroTurnDelay=1",
+            "RotationSpeedOverdrive=10", "NoPathingFriction=1", "InstantAcceleration=1",
+            "GankSpeed=1", "FastCampPathingSens=10", "CampToCampDash=1",
+            "RiverSpeedBuff=5.0", "RiverSpeedMultiplier=5.0", "RiverDashBoost=1",
+            "ZeroSkillCastDelay=1", "AnimationCancelFast=1", "BasicAttackAnimationCancel=1",
+            "DashSpeedMultiplier=3.0", "InstantDashCast=1", "SkillAutoChain=1",
+            "SkillCDRatio=0.1", "CooldownReduction=1",
+            "JoystickZeroDeadzone=1", "JoystickResponseLevel=3", "JoystickSensitivity=1000",
+            "TouchPollingRate=1000", "TouchSampleRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "TouchToDisplayLatency=0",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbLightningMovementAgility]");
+    }
+
+    public static boolean injectMlbbFastestMinionKillWaveClear(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbFastestMinionKillWaveClear(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MinionDamageMultiplier=10.0", "MinionExecuteThreshold=100", "MinionOneHitKill=1",
+            "SiegeMinionDamageBoost=10000", "SuperMinionDamageBoost=10000",
+            "MinionPenetrationBoost=1", "MinionTrueDamageBoost=10000",
+            "MinionLastHitAssist=1", "AutoLastHitMinion=1", "WaveClearInstant=1",
+            "LaneClearSpeed=10", "PushSpeedMultiplier=5.0", "LastHitWindowMax=1",
+            "MinionAttackPriority=1", "SmartMinionSelect=1", "CreepMinionAutoFilter=1",
+            "MinionGoldMultiplier=5", "MinionExpMultiplier=5", "MinionGoldExpBonus=10000",
+            "LaneGoldMax=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastestMinionKillWaveClear]");
+    }
+
+    public static boolean injectMlbbFastestEnemyExecuteBurst(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbFastestEnemyExecuteBurst(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "HeroDamageMultiplier=5.0", "HeroSkillDamageMultiplier=5.0", "HeroBaseDamageMultiplier=5.0",
+            "HeroTrueDamageMult=5.0", "HeroTrueDamageBoost=10000",
+            "DamageLockMax=1", "EffectiveDPSMode=3", "ExecutionerBurst=1",
+            "EnemyExecuteThreshold=60", "InstantHitReg=1", "HitRegSyncRate=1000",
+            "PhysicalPenetrationMax=100", "MagicPenetrationMax=100", "PenetrationBoost=1",
+            "CritRateBoost=100", "CritDamageMultiplier=5.0",
+            "TargetLowestHpEnemy=1", "LowestHPHeroLock=1", "SmartAimMagnetStrength=1000",
+            "HeroAimAssistLock=1", "HeroMagnetism=1000", "SkillSmartAimMagnet=1",
+            "AimSnapSpeed=10", "AimSnapThreshold=0", "AimSmoothFactor=0",
+            "HeroLock=1", "SkillSmartAim=1",
+            "AttackSpeedRatio=5.0", "MaxAttackSpeedCapBypass=1", "ZeroDelaySkillTap=1",
+            "SkillCooldownReduction=1.0", "ZeroSkillCost=1", "FullManaEnergyAlways=1",
+            "AutoComboTrigger=1",
+            "SlowImmunity=1", "TenacityMax=100", "AntiCCImmunity=1", "StunDurationZero=1",
+            "TowerDamageReduction=0.90", "TowerDiveArmorBoost=5000",
+            "TouchPollingRate=1000", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastestEnemyExecuteBurst]");
+    }
+
+    public static boolean injectMlbbJungleMasterGodSuite(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbJungleMasterGodSuite(path)) return true; } catch (Throwable ignored) {}
+        }
+        boolean r1 = injectMlbbJungleHyperFarmGodMode(path);
+        boolean r2 = injectMlbbLightningMovementAgility(path);
+        boolean r3 = injectMlbbFastestMinionKillWaveClear(path);
+        boolean r4 = injectMlbbFastestEnemyExecuteBurst(path);
+        boolean r5 = injectMlbbFullOverdrive2026(path);
+        return r1 || r2 || r3 || r4 || r5;
     }
 
     private static void ensureParentDirectory(String path) {

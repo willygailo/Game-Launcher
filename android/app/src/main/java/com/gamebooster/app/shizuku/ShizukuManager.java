@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -76,6 +77,7 @@ public class ShizukuManager {
      * Bypasses passive waiting and guarantees instant reconnection (<5ms) after exiting games.
      */
     @SuppressLint("RestrictedApi")
+    @SuppressWarnings("deprecation")
     public static boolean activelyFetchAndAttachBinder(Context context) {
         if (context == null) return false;
         try {
@@ -95,7 +97,12 @@ public class ShizukuManager {
                 IBinder binder = null;
                 try {
                     reply.setClassLoader(BinderContainer.class.getClassLoader());
-                    BinderContainer container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER");
+                    BinderContainer container;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER", BinderContainer.class);
+                    } else {
+                        container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER");
+                    }
                     if (container != null) {
                         binder = container.binder;
                     }
@@ -147,6 +154,10 @@ public class ShizukuManager {
             boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
             Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
             if (granted) {
+                Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuKeepAliveWatchdog.getInstance().startWatchdog(ctx);
+                }
                 AppExecutors.getInstance().executeCommand(() -> {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
@@ -162,6 +173,10 @@ public class ShizukuManager {
     private static final Shizuku.OnBinderReceivedListener RECEIVED_LISTENER = () -> {
         Log.i(TAG, "Shizuku binder connected cleanly.");
         try {
+            Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                ShizukuKeepAliveWatchdog.getInstance().startWatchdog(ctx);
+            }
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
             } else {
@@ -178,9 +193,37 @@ public class ShizukuManager {
     };
 
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {
-        Log.w(TAG, "Shizuku binder died / service disconnected.");
-        ShizukuConnectionManager.getInstance().onBinderDead();
-        notifyStateChanged(false);
+        Log.w(TAG, "Shizuku binder dead signal received. Initiating fast active recovery grace period...");
+        AppExecutors.getInstance().executeCommand(() -> {
+            Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            boolean recovered = false;
+            // 5 fast attempts across 750ms before giving up or flickering UI
+            long[] retryDelays = new long[]{0, 50, 100, 200, 400};
+            for (long delay : retryDelays) {
+                if (delay > 0) {
+                    try { Thread.sleep(delay); } catch (InterruptedException ignored) {}
+                }
+                if (ctx != null) {
+                    recovered = activelyFetchAndAttachBinder(ctx);
+                }
+                if (!recovered) {
+                    try {
+                        recovered = Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+                    } catch (Throwable ignored) {}
+                }
+                if (recovered) break;
+            }
+
+            if (recovered || isShizukuRunningAndGranted()) {
+                Log.i(TAG, "Shizuku binder seamlessly restored during active grace period!");
+                ShizukuConnectionManager.getInstance().onBinderReceived();
+                notifyStateChanged(true);
+            } else {
+                Log.w(TAG, "Shizuku binder genuinely dead after grace period. Entering auto-reconnection loop.");
+                ShizukuConnectionManager.getInstance().onBinderDead();
+                notifyStateChanged(false);
+            }
+        });
     };
 
     public static void registerBinderListeners() {
