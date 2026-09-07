@@ -955,6 +955,99 @@ public class ConfigPatcherTest {
             assertTrue(content.contains("SlideHipfireAccuracy=1.0"));
             assertTrue(content.contains("NoScopeMagicBulletRadius=50"));
             assertTrue(content.contains("CQBMagicBulletBend=1"));
+            assertTrue(content.contains("AR_BulletVelocityBoost=1"));
+            assertTrue(content.contains("Shotgun_TightPelletSpread=1"));
+            assertTrue(content.contains("PenetrationDamageLoss=0"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmAllScopeAimbotExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_allscope_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectAllScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("InstantADSSnap=1"));
+            assertTrue(content.contains("RedDotHeadMagnet=3"));
+            assertTrue(content.contains("TacticalScopeHeadLock=1"));
+            assertTrue(content.contains("Scope4_4xHeadLock=1"));
+            assertTrue(content.contains("OWCTacticalSnap=1"));
+            assertTrue(content.contains("HoldBreathInfinite=1"));
+            assertTrue(content.contains("ScopeZeroBreathing=1"));
+            assertTrue(content.contains("ThermalHeadshotLock=1"));
+            assertTrue(content.contains("Scope8xPrecisionFilter=1"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmNoScopeAimbotExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_noscope_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectNoScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("NoScope50mOnly=1"));
+            assertTrue(content.contains("NoScopeAimbotMaxRange=50"));
+            assertTrue(content.contains("CQBAutoHeadshot50m=1"));
+            assertTrue(content.contains("CQBEnemySnap360=1"));
+            assertTrue(content.contains("ShotgunPelletSpreadScale=0"));
+            assertTrue(content.contains("SlideHipfireAccuracy=1.0"));
+            assertTrue(content.contains("NoScopeMagicBulletRadius=50"));
+            assertTrue(content.contains("CQBMagicBulletBend=1"));
+            assertTrue(content.contains("AR_BulletVelocityBoost=1"));
+            assertTrue(content.contains("Shotgun_TightPelletSpread=1"));
+            assertTrue(content.contains("PenetrationDamageLoss=0"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmAllWeaponMaxDamage2026ExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_max_damage_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmAllWeaponMaxDamage2026(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("DamageLockMax=1"));
+            assertTrue(content.contains("EffectiveDPSMode=3"));
+            assertTrue(content.contains("HeadshotMultiplier=2"));
+            assertTrue(content.contains("PenetrationDamageLoss=0"));
+            assertTrue(content.contains("ArmorPiercingOverdrive=1"));
+            assertTrue(content.contains("VestDamageBypass=1"));
+            assertTrue(content.contains("BSARemoval=1"));
+            assertTrue(content.contains("ZeroDamageDropoff=1"));
+            assertTrue(content.contains("HitRegSyncRate=1000"));
+            assertTrue(content.contains("AR_BulletVelocityBoost=1"));
+            assertTrue(content.contains("Shotgun_TightPelletSpread=1"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testCodmMaxDamageAllWeapon2026ExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("codm_max_damage_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectCodmMaxDamageAllWeapon2026(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("DamageLockMax=1"));
+            assertTrue(content.contains("EffectiveDPSMode=3"));
+            assertTrue(content.contains("HeadshotMultiplier=2"));
+            assertTrue(content.contains("PenetrationDamageLoss=0"));
+            assertTrue(content.contains("ArmorPiercingOverdrive=1"));
+            assertTrue(content.contains("VestDamageBypass=1"));
+            assertTrue(content.contains("BSARemoval=1"));
+            assertTrue(content.contains("ZeroDamageDropoff=1"));
+            assertTrue(content.contains("HitRegSyncRate=1000"));
+            assertTrue(content.contains("AR_BulletVelocityBoost=1"));
+            assertTrue(content.contains("Shotgun_TightPelletSpread=1"));
         } finally {
             tempIni.delete();
         }
